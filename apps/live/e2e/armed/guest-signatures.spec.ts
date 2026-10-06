@@ -37,6 +37,10 @@ test.describe('a first-time guest with signatures enforced', () => {
     await page.goto('/');
     await page.waitForURL(/\/new/);
     await page.getByText('New Document', { exact: false }).waitFor();
+    // Landing signs the guest before anything else; the wizard then starts from that page's identity.
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
+      .toBeTruthy();
     await startBlankDocument(page);
     await expectSignedGuestCreated(page, api);
     expectNoPageErrors(pageErrors);
@@ -57,6 +61,27 @@ test.describe('a first-time guest with signatures enforced', () => {
       .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
       .toBeTruthy();
     await startBlankDocument(page);
+    await expectSignedGuestCreated(page, api);
+    expectNoPageErrors(pageErrors);
+  });
+
+  // A first mint that never lands (offline, or a navigation that cuts it short) leaves a local unsigned
+  // id. The next load must not stay locked out with it: the worker refuses its upgrade, and the browser
+  // adopts the signed id ("A refused upgrade adopts the signed id").
+  test('recovers from a first mint that never landed', async ({ page, pageErrors }) => {
+    await page.route('**/api/guest-id', (route) => route.abort('internetdisconnected'), {
+      times: 1,
+    });
+    await page.goto('/new?blank=1');
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-id')))
+      .toBeTruthy();
+    expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig'))).toBeNull();
+
+    const api = recordApi(page);
+    await page.goto('/new?blank=1');
+    await page.locator('[data-canvas-a11y-root]').waitFor();
+    expect(api).toContain('POST 403 /api/migrate');
     await expectSignedGuestCreated(page, api);
     expectNoPageErrors(pageErrors);
   });

@@ -8,12 +8,14 @@
 //   - Legacy unsigned id (or no id): mint a server-signed id. If the
 //     worker actually signs (GUEST_ID_HMAC_SECRET set) AND there was an
 //     existing id with data, migrate that data onto the new signed id
-//     first, then adopt it. If the migrate fails, keep the old id and
-//     retry next load rather than orphaning data.
+//     first, then adopt it. If the migrate cannot reach the worker, keep the
+//     old id and retry next load rather than orphaning data; if the worker
+//     refuses it (403), adopt the signed id, since the old one is locked out.
 //   - Offline / mint fails / worker signing disabled: fall back to a
 //     local unsigned id — today's behaviour. The guest still works; they
 //     just can't prove possession until a later online bootstrap signs
-//     them (the migrate then refuses, which is the safe failure).
+//     them: with enforcement off the migrate moves their data; with it on,
+//     the worker refuses and the browser adopts the signed id.
 
 import {
   ensureGuestSelfId,
@@ -53,9 +55,13 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
   // new id here would strand the data under one this browser never kept.
   const pending = getPendingGuestUpgrade();
   if (pending && pending.from === existingId) {
-    if (!(await apiUpgradeGuestId(pending.from, pending.to, pending.sig))) {
+    const resumed = await apiUpgradeGuestId(pending.from, pending.to, pending.sig);
+    if (resumed === 'failed') {
       console.warn('[guest-identity] resuming the signed-id upgrade failed; retrying next load');
       return { id: existingId, sig: existingSig };
+    }
+    if (resumed === 'refused') {
+      console.warn('[guest-identity] the worker refused the upgrade; adopting the signed id');
     }
     setGuestIdentity(pending.to, pending.sig);
     setPendingGuestUpgrade(null);
@@ -90,10 +96,16 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
     // resumes this same upgrade on the next load.
     setPendingGuestUpgrade({ from: existingId, to: minted.ownerId, sig: minted.ownerSig });
     const upgraded = await apiUpgradeGuestId(existingId, minted.ownerId, minted.ownerSig);
-    if (!upgraded) {
-      // Couldn't move the old data — keep using the old (unsigned) id so
+    if (upgraded === 'failed') {
+      // Couldn't reach the worker: keep using the old (unsigned) id so
       // nothing is orphaned; a later load retries the upgrade.
       return { id: existingId, sig: existingSig };
+    }
+    if (upgraded === 'refused') {
+      // A refusal is final: the old id's server data is unreachable under enforcement already, and
+      // keeping the id would lock this browser out. Offline documents carry no guest id, so none
+      // are lost. Typically an id minted locally when the first mint never landed.
+      console.warn('[guest-identity] the worker refused the upgrade; adopting the signed id');
     }
   }
   setGuestIdentity(minted.ownerId, minted.ownerSig);
