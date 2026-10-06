@@ -1,44 +1,21 @@
 'use client';
 
-// Renders the open item panel or board set-up (docs/specs/026-plan/plan-board.md) beside the canvas,
-// from the editor's Plan slice and the active tab: the tab's boards give the status picker its names
-// and the set-up its board.
+// Renders the open item panel or the type editor (docs/specs/026-plan/plan-board.md) beside the canvas,
+// from the editor's Plan slice: the document's boards give the status picker its names.
 import { useMemo } from 'react';
-import type { Element } from '@livediagram/document';
-import {
-  isArchived,
-  itemLabels,
-  normaliseBoardSetup,
-  type PlanBoardSetup,
-} from '@livediagram/items';
+import { isArchived, itemLabels } from '@livediagram/items';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
 import { track } from '@/lib/telemetry';
 
-function boardsOf(elements: readonly Element[]): { id: string; setup: PlanBoardSetup }[] {
-  return elements.flatMap((el) => {
-    if (el.type !== 'shape' || el.shape !== 'plan-board') return [];
-    const setup = normaliseBoardSetup(el.planBoard);
-    return setup ? [{ id: el.id, setup }] : [];
-  });
-}
-
-export function PlanSheetsHost({
-  plan,
-  elements,
-}: {
-  plan: PlanSlice;
-  elements: readonly Element[];
-}) {
+export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   const ctx = plan.context;
-  const boards = useMemo(() => boardsOf(elements), [elements]);
-  const statuses = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const b of boards)
-      for (const c of b.setup.columns) if (!seen.has(c.status)) seen.set(c.status, c.name);
-    return [...seen].map(([status, name]) => ({ status, name }));
-  }, [boards]);
+  // Every column of the document, the open tab's first (docs/specs/026-plan/plan-templates.md "Hand-offs").
+  const statuses = useMemo(
+    () => [...ctx.statusNames].map(([status, name]) => ({ status, name })),
+    [ctx.statusNames],
+  );
   const projects = useMemo(
     () => [...ctx.items.values()].filter((i) => i.type === 'project').sort((a, b) => a.key - b.key),
     [ctx.items],

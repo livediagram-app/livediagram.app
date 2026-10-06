@@ -4,7 +4,7 @@
 // this package already imports the document one (the reverse would be a cycle).
 
 import { buildTab, stampTabKind, type Tab } from '@livediagram/document';
-import { buildTemplate } from './build-template';
+import { buildTemplate, templateTabs } from './build-template';
 import { TEMPLATES, isTemplateKind, templateCanvasOverrides, type TemplateKind } from './templates';
 
 // A template argument resolved against the catalogue; null for an unknown kind, so the caller can
@@ -32,4 +32,28 @@ export function buildTemplateTab(
     templateChosen: true,
     ...templateCanvasOverrides(kind),
   });
+}
+
+// Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
+// the first takes `first`'s id and name, the rest a fresh id each and the template's names. A template of
+// one tab makes exactly buildTemplateTab's.
+export function buildTemplateTabs(
+  first: { id: string; name: string },
+  kind: TemplateKind,
+  newId: () => string,
+  themeId?: string,
+): Tab[] {
+  return templateTabs(kind).map((def, i) =>
+    stampTabKind({
+      ...buildTab(
+        i === 0 ? first.id : newId(),
+        i === 0 ? first.name : (def.name ?? first.name),
+        def.build(0, 0),
+        'preserve',
+        themeId,
+      ),
+      templateChosen: true,
+      ...templateCanvasOverrides(kind),
+    }),
+  );
 }

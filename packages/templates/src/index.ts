@@ -6,7 +6,7 @@ export * from './templates';
 export * from './template-modes';
 export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
-export { buildTemplate } from './build-template';
+export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export { templateFamilyOf } from './template-families';
 export {
   PLAN_TEMPLATE_KINDS,

@@ -1,7 +1,15 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element, type Tab } from '@livediagram/document';
 import { presetSetup } from '@livediagram/items';
-import { statusColumnsOf } from './usePlanStatusNames';
+import { renderHook } from '@testing-library/react';
+import {
+  STATUS_SIGNATURE_CACHE_MAX,
+  documentBoardSetups,
+  documentStatusSignatures,
+  statusColumnsOf,
+  usePlanStatuses,
+} from './usePlanStatusNames';
 
 // docs/specs/026-plan/plan-board.md "All Cards".
 describe('statusColumnsOf', () => {
@@ -20,5 +28,79 @@ describe('statusColumnsOf', () => {
     expect(names[0]).toEqual([first.status, first.name]);
     expect(names.filter(([s]) => s === first.status)).toHaveLength(1);
     expect(names.some(([s]) => s === 'all' || s === 'archived')).toBe(false);
+  });
+});
+
+// docs/specs/026-plan/plan-templates.md "Hand-offs": the document's statuses, the open tab's first.
+describe('document-wide statuses', () => {
+  const board = (columns: { status: string; name: string }[], doneColumnId?: string) =>
+    ({
+      ...createShape('plan-board', 0, 0),
+      planBoard: {
+        ...presetSetup('blank'),
+        columns: columns.map((c) => ({ id: c.status, ...c })),
+        ...(doneColumnId ? { doneColumnId } : {}),
+      },
+    }) as Element;
+  const backlog = board([
+    { status: 'backlog', name: 'Backlog' },
+    { status: 'sprint', name: 'This Sprint' },
+  ]);
+  const sprint = board(
+    [
+      { status: 'sprint', name: 'Sprint Todo' },
+      { status: 'doing', name: 'Doing' },
+      { status: 'done', name: 'Done' },
+    ],
+    'done',
+  );
+  const tabs: Tab[] = [
+    { id: 'a', name: 'Backlog', elements: [backlog] },
+    { id: 'b', name: 'Sprint', elements: [sprint] },
+    { id: 'c', name: 'Flow', elements: [] },
+  ];
+
+  it('reads the open tab’s boards first, then the others in tab order', () => {
+    expect(documentBoardSetups(tabs, 'b')).toEqual([
+      sprint.type === 'shape' && sprint.planBoard,
+      backlog.type === 'shape' && backlog.planBoard,
+    ]);
+    const { result } = renderHook(() => usePlanStatuses(tabs, 'b', true));
+    expect([...result.current.names]).toEqual([
+      ['sprint', 'Sprint Todo'],
+      ['doing', 'Doing'],
+      ['done', 'Done'],
+      ['backlog', 'Backlog'],
+    ]);
+  });
+
+  it('gives a tab with no board the phases of the boards beside it', () => {
+    const { result } = renderHook(() => usePlanStatuses(tabs, 'c', true));
+    expect(result.current.phases.get('done')).toBe('done');
+    expect(result.current.phases.get('backlog')).toBe('todo');
+  });
+
+  it('reads nothing while Plan is not in play, and keeps the maps while nothing changes', () => {
+    const off = renderHook(() => usePlanStatuses(tabs, 'a', false));
+    expect(off.result.current.names.size).toBe(0);
+    const on = renderHook(({ t }) => usePlanStatuses(t, 'a', true), { initialProps: { t: tabs } });
+    const first = on.result.current;
+    // A new tab list with the same tabs (a render that changed no board).
+    on.rerender({ t: [...tabs] });
+    expect(on.result.current.names).toBe(first.names);
+    expect(on.result.current.phases).toBe(first.phases);
+  });
+
+  it('reuses the signatures while every tab’s boards are the same, and keeps the cache bounded', () => {
+    const a = documentStatusSignatures(tabs, 'a');
+    expect(documentStatusSignatures([...tabs], 'a')).toBe(a);
+    // A tab whose elements changed is read afresh.
+    const changed = [{ ...tabs[0]!, elements: [...tabs[0]!.elements] }, ...tabs.slice(1)];
+    const b = documentStatusSignatures(changed, 'a');
+    expect(b).not.toBe(a);
+    expect(b).toEqual(a);
+    for (let i = 0; i <= STATUS_SIGNATURE_CACHE_MAX; i++)
+      documentStatusSignatures([{ ...tabs[0]!, elements: [] }, ...tabs.slice(1)], 'a');
+    expect(documentStatusSignatures(tabs, 'a')).not.toBe(a);
   });
 });

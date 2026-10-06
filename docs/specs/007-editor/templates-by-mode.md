@@ -15,8 +15,9 @@ sees only what starts there.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
 - Illustrate templates: Blank Illustration, Article, Slide deck, Logo design, Group card and the
   eight [Illustrate templates](#illustrate-templates) below.
-- Plan templates: Blank Plan and the ten board templates of [Plan mode](../026-plan/plan-mode.md#templates),
-  Kanban Board among them. Plan templates come with no cards: each is a board set up for its use.
+- Plan templates: Blank Plan and the ten [Plan templates](../026-plan/plan-templates.md), Kanban Board
+  among them. Plan templates come with no cards: each but Blank Plan sets up a way of working across
+  several tabs, every one opening in Plan.
 - Every other template is a Diagram template.
 
 ## The mode filter

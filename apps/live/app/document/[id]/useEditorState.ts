@@ -7,7 +7,8 @@ import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
-import { usePlanStatusNames, usePlanStatusPhases } from '@/hooks/plan/usePlanStatusNames';
+import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
+import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
 import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
@@ -1146,6 +1147,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resetTabs,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
+  // A Plan document's statuses are read from every tab: load the rest once (usePlanTabSweep).
+  usePlanTabSweep(hydrated && planNeeded, tabs.length, loadAllTabs);
 
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
   // search panel. Fetched lazily the first time search opens so
@@ -1966,8 +1969,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Plan boards and cards (docs/specs/026-plan/): the item panel, board set-up and every action a board
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
   // The tab's status names, read only where Plan is in play (docs/specs/026-plan/plan-mode.md "Cost").
-  const planStatusNames = usePlanStatusNames(activeTab.elements, planNeeded);
-  const planStatusPhases = usePlanStatusPhases(activeTab.elements, planNeeded);
+  const { names: planStatusNames, phases: planStatusPhases } = usePlanStatuses(
+    tabs,
+    activeId,
+    planNeeded,
+  );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
   const plan = usePlanSlice({
@@ -2279,6 +2285,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelfParticipant,
     setTemplatePickerMode,
     requestFit,
+    markTabLoaded,
   });
 
   // One undo step per burst of a continuous control: the background

@@ -71,7 +71,7 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **Start** sits right before Due, on Projects (so they map onto the [Gantt chart](plan-views.md#project-gantt-chart))
   and Tasks, edited with the same date picker as Due. A start after the due date is kept, and the item panel
   says **Starts after it is due** under it, gently. Start is a card field like Due; the Roadmap board and the
-  Project Overview template show it on their cards.
+  Project Planner's Roadmap tab show it on their cards.
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
@@ -121,8 +121,8 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
   in the document that is neither archived nor in the Trash, newest change first.
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title or description, ignoring case.
-- **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of this
-  tab's boards holds (or that have no status): the strays a renamed or removed column, or another tab, left
+- **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of the
+  document's boards holds, on any tab (or that have no status): the strays a renamed or removed column left
   behind. Each carries a count.
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row shows the type's glyph, the title, and the type, number and status. Choosing one closes the popover and

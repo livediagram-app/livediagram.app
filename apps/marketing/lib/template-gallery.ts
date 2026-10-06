@@ -148,7 +148,7 @@ const MODE_BEST: Readonly<Record<EditorMode, readonly TemplateKind[]>> = {
   diagram: ['swot', 'timeline', 'flowchart'],
   draw: ['journey-doodle', 'comic-strip', 'idea-garden', 'rich-picture'],
   illustrate: ['event-poster', 'year-in-review', 'social-carousel', 'data-story'],
-  plan: ['kanban', 'team-retro', 'sprint-board', 'roadmap-board'],
+  plan: ['project-planner', 'kanban', 'team-retro', 'bug-triage'],
 };
 
 export function popularFor(choice: ModeChoice): GalleryTemplate[] {

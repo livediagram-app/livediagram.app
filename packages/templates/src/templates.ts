@@ -194,19 +194,19 @@ export type TemplateKind =
   | 'how-it-works'
   | 'versus'
   | 'social-carousel'
-  // Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): a Plan board with the set-up its
-  // use wants, opening in Plan mode, with no cards. The Kanban board
-  // ('kanban', above) is one of them; Blank Plan is the mode's blank.
+  // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
+  // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
+  // Blank Plan is the mode's blank.
   | 'blank-plan'
-  | 'sprint-board'
+  | 'project-planner'
   | 'bug-triage'
   | 'team-retro'
-  | 'roadmap-board'
   | 'weekly-planner'
-  | 'project-overview'
-  | 'daily-standup'
   | 'content-calendar'
-  | 'hiring-pipeline';
+  | 'hiring-pipeline'
+  | 'okrs'
+  | 'product-launch'
+  | 'feedback-board';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -314,61 +314,69 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'kanban',
     title: 'Kanban Board',
     description:
-      'A team mid-week: five columns with WIP limits and real cards you drag from Backlog to Done.',
+      'Continuous flow in three tabs: Board, with WIP limits from Backlog to Done; Requests, where new asks are accepted onto it; and Flow, a dashboard of where the work stands.',
   },
   {
-    kind: 'sprint-board',
-    title: 'Sprint Board',
-    description: 'A two-week sprint with a row per person, estimates and a progress bar to Done.',
+    kind: 'project-planner',
+    title: 'Project Planner',
+    description:
+      'Four tabs: a Now, Next, Later Roadmap with a Gantt chart of your projects, a Backlog of tasks by project, the Sprint board and a Daily Standup.',
     extra: true,
   },
   {
     kind: 'bug-triage',
-    title: 'Bug Triage',
-    description: 'New bugs sorted by priority, from first report to fixed or won’t fix.',
+    title: 'Bug Tracker',
+    description:
+      'Three tabs: Triage new bugs by priority, follow them through Fixing to released, and watch Health on a dashboard.',
     extra: true,
   },
   {
     kind: 'team-retro',
     title: 'Team Retro',
-    description: 'Write notes in private, reveal them together, vote, and agree actions.',
-    extra: true,
-  },
-  {
-    kind: 'roadmap-board',
-    title: 'Roadmap Board',
-    description: 'Epics on Now, Next and Later, each a card you can open and plan in.',
+    description:
+      'Three tabs: a Retro where notes stay hidden until you reveal and vote, the Actions you agree, and an Archive of past retros.',
     extra: true,
   },
   {
     kind: 'weekly-planner',
     title: 'Weekly Planner',
-    description: 'A column a day, Monday to Friday, for the things you mean to get done.',
-    extra: true,
-  },
-  {
-    kind: 'project-overview',
-    title: 'Project Overview',
     description:
-      'A row per project, its tasks from Not Started to Done, with what is at risk in amber.',
-    extra: true,
-  },
-  {
-    kind: 'daily-standup',
-    title: 'Daily Standup',
-    description: 'A row per person: yesterday, today and what is blocked, two minutes each.',
+      'Three tabs: This Week, a column a day; an Inbox to capture into; and a Calendar of what is due.',
     extra: true,
   },
   {
     kind: 'content-calendar',
     title: 'Content Calendar',
-    description: 'Ideas through drafting and review to scheduled and published, with due dates.',
+    description:
+      'Three tabs: Ideas to vote on and approve, Production from drafting to published, and a Calendar of publish dates.',
     extra: true,
   },
   {
     kind: 'hiring-pipeline',
     title: 'Hiring Pipeline',
-    description: 'Candidates from applied through screen, interview and offer to hired.',
+    description:
+      'Three tabs: open Roles on a timeline, the candidate Pipeline a row per role, and Onboarding for each new starter.',
+    extra: true,
+  },
+  {
+    kind: 'okrs',
+    title: 'OKRs',
+    description:
+      'Two tabs: Objectives on a timeline, and their Key Results by objective, on track, at risk or off track.',
+    extra: true,
+  },
+  {
+    kind: 'product-launch',
+    title: 'Product Launch',
+    description:
+      'Three tabs: workstreams on a Timeline, a Checklist per workstream, and the Launch Day go / no-go.',
+    extra: true,
+  },
+  {
+    kind: 'feedback-board',
+    title: 'Feedback Board',
+    description:
+      'Two tabs: Feedback from users, voted on and reviewed, and Delivery for what you plan, through to shipped.',
     extra: true,
   },
   {
@@ -919,17 +927,17 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   sitemap: 'hierarchies',
   // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
-  // Plan templates (docs/specs/026-plan/plan-mode.md). Blank Plan is a quick-pick; its category is nominal.
+  // Plan templates (docs/specs/026-plan/plan-templates.md). Blank Plan is a quick-pick; its category is nominal.
   'blank-plan': 'planning',
-  'sprint-board': 'planning',
+  'project-planner': 'project-management',
   'bug-triage': 'planning',
   'team-retro': 'planning',
-  'roadmap-board': 'project-management',
   'weekly-planner': 'project-management',
-  'project-overview': 'project-management',
-  'daily-standup': 'planning',
   'content-calendar': 'project-management',
   'hiring-pipeline': 'project-management',
+  okrs: 'project-management',
+  'product-launch': 'project-management',
+  'feedback-board': 'planning',
   retrospective: 'planning',
   'start-stop-continue': 'planning',
   'mad-sad-glad': 'planning',
@@ -1087,15 +1095,15 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // Plan boards (docs/specs/026-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
   kanban: 'grid',
   'blank-plan': 'grid',
-  'sprint-board': 'grid',
+  'project-planner': 'grid',
   'bug-triage': 'grid',
   'team-retro': 'grid',
-  'roadmap-board': 'grid',
   'weekly-planner': 'grid',
-  'project-overview': 'grid',
-  'daily-standup': 'grid',
   'content-calendar': 'grid',
   'hiring-pipeline': 'grid',
+  okrs: 'grid',
+  'product-launch': 'grid',
+  'feedback-board': 'grid',
   'mobile-wireframe': 'graph',
   'laptop-wireframe': 'graph',
   venn: 'blank',

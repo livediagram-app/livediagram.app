@@ -19,7 +19,9 @@ a card is never dropped into one.
 
 - **Every live card in the document**: not archived, not in the Trash, whatever board (or none) it is on,
   as an All Cards board sees them.
-- **Status phases** come from the tab's boards (not All Cards or Archive boards): a board's first column is
+- **Status phases** come from the document's boards, the open tab's first and then every other tab's in tab
+  order (not All Cards or Archive boards), so a dashboard tab with no board reads the phases of the boards
+  beside it ([Plan templates](plan-templates.md#hand-offs)): a board's first column is
   Not Started, its done column and every column after it are Done, and the columns between are In Progress.
   A board without a done column has no Done. A status two boards name takes the phase the first board gives
   it. A card with no status, or one no board names, is Not Started.
@@ -97,7 +99,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 ### Status Breakdown
 
-- A donut of every live card by status, in the order the tab's boards name them, then any other status, then
+- A donut of every live card by status, in the order the document's boards name them (the open tab's first), then any other status, then
   **No status**; the legend gives each status its name (as a column calls it), colour and count. The donut's
   middle holds the total.
 - Empty: **No cards yet. Add cards to a board to see where they stand.**
