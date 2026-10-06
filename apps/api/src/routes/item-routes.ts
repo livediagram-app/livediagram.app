@@ -10,7 +10,7 @@ import {
   ITEM_BULK_MAX,
   ITEM_STATUS_MAX,
   ITEM_WRITE_RETRIES,
-  SWIMLANE_FIELDS,
+  isSwimlaneSettable,
   applyMove,
   applyPatch,
   applyVote,
@@ -361,8 +361,8 @@ function readMove(body: Record<string, unknown>): ItemMove | ItemRejection {
   const lane = readPatch(body);
   if (typeof lane === 'string') return lane;
   const touched = [...Object.keys(lane.set ?? {}), ...(lane.clear ?? [])];
-  if (touched.some((k) => !(SWIMLANE_FIELDS as readonly string[]).includes(k)))
-    return 'place_invalid';
+  // A move sets only what a swimlane stands for (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
+  if (touched.some((k) => !isSwimlaneSettable(k))) return 'place_invalid';
   if (lane.set) move.set = lane.set;
   if (lane.clear) move.clear = lane.clear;
   if (lane.type) move.type = lane.type;

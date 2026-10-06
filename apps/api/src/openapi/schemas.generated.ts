@@ -7562,6 +7562,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "swimlaneBy": {
         "$ref": "#/components/schemas/SwimlaneBy"
       },
+      "swimlaneField": {
+        "type": "string"
+      },
       "title": {
         "type": "string"
       },
@@ -9289,7 +9292,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "type",
       "priority",
       "parent",
-      "status"
+      "status",
+      "field"
     ],
     "type": "string"
   },

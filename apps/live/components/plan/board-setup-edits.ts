@@ -28,6 +28,8 @@ export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   priority: 'By Priority',
   parent: 'By Project',
   status: 'By Status',
+  // The tile reads the field's own name (PlanBoardMenuSection); this names the setting.
+  field: 'By a Field',
 };
 
 export const CARD_FIELD_LABELS: Record<CardField, string> = {

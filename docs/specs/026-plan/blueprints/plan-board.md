@@ -11,7 +11,8 @@ editor views.
 | Plan card    | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }`      |
 | board set-up | `PlanBoardSetup` (`@livediagram/items` `board.ts`)                                |
 | column       | `PlanColumn`                                                                      |
-| swimlane     | `SwimlaneBy` + projected `lanes`                                                  |
+| swimlane     | `SwimlaneBy` (+ `swimlaneField` for `'field'`) + projected `lanes`, `swimlanes`   |
+| lane field   | `LaneField` (`laneFieldsOf`, `laneFieldOf`); a drop's patch is `laneDropPatch`    |
 | WIP limit    | `PlanColumn.wipLimit`                                                             |
 | unplaced     | projection `unplaced`                                                             |
 | quick filter | `QuickFilter` (per person, React state, never stored)                             |

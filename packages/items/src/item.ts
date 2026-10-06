@@ -1,6 +1,8 @@
 // An item: one record in a document's item store (docs/specs/026-plan/items.md).
 // The canvas only frames items; a Plan board draws many, a Plan card one.
 
+import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
+
 // A field value is any JSON value. Known fields narrow it (fields.ts);
 // unknown fields hold scalars or arrays of scalars.
 export type ItemFieldValue =
@@ -68,6 +70,19 @@ export interface ItemMove extends ItemPlace {
 
 // The fields a swimlane drop may set or clear.
 export const SWIMLANE_FIELDS = ['assignee', 'priority', 'parent'] as const;
+
+// The built-in fields a board can also lane by (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
+export const LANE_FIELD_BUILT_INS = ['labels', 'estimate', 'start', 'due'] as const;
+
+// Whether a move may set or clear this field: a swimlane's field, a field lane's built-in, or any custom
+// field (a lane by a custom field sets it).
+export function isSwimlaneSettable(key: string): boolean {
+  return (
+    (SWIMLANE_FIELDS as readonly string[]).includes(key) ||
+    (LANE_FIELD_BUILT_INS as readonly string[]).includes(key) ||
+    CUSTOM_FIELD_ID_PATTERN.test(key)
+  );
+}
 
 export function itemTitle(item: Pick<Item, 'fields'>): string {
   const title = item.fields['title'];

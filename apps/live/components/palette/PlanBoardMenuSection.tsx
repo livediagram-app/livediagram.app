@@ -11,7 +11,9 @@ import {
   CARD_SIZE_FIELDS,
   CARD_SIZES,
   SWIMLANE_BY,
+  laneFieldsOf,
   normaliseBoardSetup,
+  type LaneFieldKind,
   type CardField,
   type CardSize,
   type PlanBoardSetup,
@@ -42,6 +44,16 @@ const ROW_GLYPHS: Record<SwimlaneBy, string> = {
   priority: 'flag',
   parent: 'project',
   status: 'action',
+  field: 'note',
+};
+// A field lane's tile glyph, by how the field groups.
+const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
+  labels: 'bookmark',
+  number: 'cube',
+  date: 'calendar',
+  choice: 'star',
+  checkbox: 'task',
+  text: 'note',
 };
 const FIELD_GLYPHS: Record<CardField, string> = {
   key: 'bookmark',
@@ -112,13 +124,29 @@ export function PlanBoardMenuSection({
       </div>
       <p className={captionClass}>Swimlanes</p>
       <MenuTileGrid cols={3}>
-        {SWIMLANE_BY.map((s) => (
+        {SWIMLANE_BY.filter((s) => s !== 'field').map((s) => (
           <MenuTile
             key={s}
             icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
             label={SWIMLANE_LABELS[s]}
             active={setup.swimlaneBy === s}
-            onClick={() => set({ ...setup, swimlaneBy: s }, 'Swimlanes')}
+            onClick={() => {
+              const { swimlaneField: _drop, ...rest } = setup;
+              set({ ...rest, swimlaneBy: s }, 'Swimlanes');
+            }}
+          />
+        ))}
+      </MenuTileGrid>
+      {/* Any field the document's types offer (docs/specs/026-plan/plan-board.md "Swimlanes by a field"). */}
+      <p className={captionClass}>By a Field</p>
+      <MenuTileGrid cols={3}>
+        {laneFieldsOf(plan?.types ?? []).map((f) => (
+          <MenuTile
+            key={f.id}
+            icon={<PlanTypeGlyph glyph={LANE_KIND_GLYPHS[f.kind]} size={16} />}
+            label={f.label}
+            active={setup.swimlaneBy === 'field' && setup.swimlaneField === f.id}
+            onClick={() => set({ ...setup, swimlaneBy: 'field', swimlaneField: f.id }, 'Swimlanes')}
           />
         ))}
       </MenuTileGrid>

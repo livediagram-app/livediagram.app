@@ -10,17 +10,17 @@ is about.
 
 ## Domain language
 
-| Term             | Means                                                                                  | Never called              |
-| ---------------- | -------------------------------------------------------------------------------------- | ------------------------- |
-| **Plan board**   | The `plan-board` shape: a board set-up drawn with the items it matches                 | Kanban element, board tab |
-| **Plan card**    | The `plan-card` shape: one item on the canvas                                          | ticket element            |
-| **board set-up** | The board's stored configuration (`planBoard` on the element)                          | board config, settings    |
-| **column**       | One status the board shows, left to right                                              | lane (lanes are elements) |
-| **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, priority, parent) | lane, row                 |
-| **WIP limit**    | The most cards a column should hold                                                    | cap, max                  |
-| **unplaced**     | Items whose status is none of the board's columns                                      | orphans, hidden           |
-| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)        | filter setting            |
-| **face-down**    | A card drawn as its colour and author only, while its board hides writing              | hidden, private           |
+| Term             | Means                                                                                | Never called              |
+| ---------------- | ------------------------------------------------------------------------------------ | ------------------------- |
+| **Plan board**   | The `plan-board` shape: a board set-up drawn with the items it matches               | Kanban element, board tab |
+| **Plan card**    | The `plan-card` shape: one item on the canvas                                        | ticket element            |
+| **board set-up** | The board's stored configuration (`planBoard` on the element)                        | board config, settings    |
+| **column**       | One status the board shows, left to right                                            | lane (lanes are elements) |
+| **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, any field, ...) | lane, row                 |
+| **WIP limit**    | The most cards a column should hold                                                  | cap, max                  |
+| **unplaced**     | Items whose status is none of the board's columns                                    | orphans, hidden           |
+| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)      | filter setting            |
+| **face-down**    | A card drawn as its colour and author only, while its board hides writing            | hidden, private           |
 
 ## The board set-up
 
@@ -31,7 +31,8 @@ Stored on the element, shared by everyone, undone like any element edit:
   has 1 to 12 columns. The first column is where new items land when no column is chosen.
 - **Done column**: optionally one column is marked done: its cards draw muted and count as finished in the
   header's progress.
-- **Swimlanes**: none, or grouped by assignee, type, priority or parent.
+- **Swimlanes**: none, or grouped by assignee, type, priority, parent, status, or **any field** the document's
+  card types offer (see [Swimlanes by a field](#swimlanes-by-a-field)).
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
   checklist progress). Title always shows.
 - **Voting**: off, or on with an optional number of votes each person may spend on this board.
@@ -46,7 +47,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
   It**); the board's last column cannot be removed. Each change applies as it is made.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
-  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project, By Status;
+  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project, By Status,
+  then **By a Field**, a tile per groupable field, named by the field and drawn with its kind's glyph;
   **Add to Slides**, the whole board as a slide, [Presentation mode](../012-collaboration/presentation-mode.md#board-slides)) and
   **Cards**: the **Card Size** (Minimal, Compact or Detailed, below) and what each card face shows besides its
   title, a tile per field pressed on or off. A field the chosen size cannot draw keeps its setting but its tile is
@@ -94,6 +96,38 @@ Where each is set, so a setting lives with what it changes, never in one central
     start date reads "From 1 Oct", muted.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph), "No assignee" last.
   Each swimlane collapses on its own, per person.
+
+### Swimlanes by a field
+
+A board can group its rows by one field of its cards (`swimlaneBy: 'field'` with `swimlaneField`, the field's
+id), so a field added to a type (a Project's **Customer**) can set the rows straight away.
+
+- **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text) on any type in
+  the document's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
+  text and Link never group (each value is its own row), nor do Description, Checklist, Votes and Title.
+  Assignee, Type, Priority, Project and Status keep their own tiles.
+- **Its name** is the field's label on the first type in the catalogue that offers it (a custom field id is
+  unique within a type; two types sharing an id read as one field).
+- **Rows and their order**, each named by its value, then a **No _field_** row last (where every card without a
+  value sits, and where a card can be dropped to clear it):
+  - **Choice**: the options in their order, each a row even with no cards (so a card can be dropped into it); a
+    stored value that is no longer an option comes after them, A to Z.
+  - **Checkbox**: **Yes**, then **No**, both always shown. An unticked or unset box is No, so there is no
+    **No _field_** row.
+  - **Number** (and Estimate): lowest first. **Date** (and Start, Due): earliest first, written as stored
+    (`2026-10-06`).
+  - **Text**: A to Z, ignoring case; surrounding spaces are not part of the value, and a blank value has none.
+  - **Labels**: a card sits in the row of its **first** label; rows A to Z.
+- **Dropping a card into a row** sets the field to that row's value, as Sam's row assigns to Sam: a Choice to the
+  option, a box ticked (Yes) or cleared (No), a number, a date, the text. Into a **Labels** row it puts that label
+  first, adding it if the card did not have it (its other labels are kept). Into **No _field_** it clears the
+  field (all of a card's labels, for Labels). A card whose type does not offer the field still takes the value,
+  stored but unshown, as for any row.
+- **Keyboard**: Shift+Arrows move a card within its row, as on every board with rows; changing row is a drag.
+- **When the field goes**: a board laned by a field no type offers any more (removed from its type, the type
+  deleted, or a kind that no longer groups) shows no rows, as if it had none, and keeps the setting, so the rows
+  come back if the field does. It never fails to draw.
+- **Exports** draw a board's cards column by column, rows or not, so nothing changes there.
 - **Unplaced**: when items have a status no column shows, the header says "3 not on this board"; opening
   it lists them, each with "Move to" a column.
 - **Empty**: a board with no items shows, in its first column, "Add your first item" with the add field open
