@@ -53,6 +53,8 @@ function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComme
       onType={noop}
       onOpenItem={noop}
       onDelete={noop}
+      onDuplicate={noop}
+      onFlag={noop}
       onArchive={noop}
       onClose={noop}
       {...(withComments
