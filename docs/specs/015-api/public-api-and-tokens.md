@@ -494,6 +494,15 @@ hardening landed first:
 2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
    Shipped behind the grace switch; the operator arms it by setting
    `GUEST_SIG_ENFORCE_AFTER` ([Self-hosting](../../operations/self-hosting.md)).
+   **Armed in production from 2026-10-06**, stated in `apps/api/wrangler.toml`
+   `[vars]` (a dashboard-only value is wiped by every deploy). Production only
+   started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
+   were still unsigned when it was armed: about 219, holding 274 documents. An
+   id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
+   upgrade (migrate flow 2) without a signature, so those guests self-heal
+   whenever they return. Every id minted signed must prove possession. Retire
+   the exception (unset `GUEST_SIGNING_LIVE_AT`) once the remaining legacy ids
+   are judged gone.
    Pulled to the FRONT: it closed the cross-object escalation in
    [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history) and
    is independent of the token work, so it ships first (with the legacy-guest

@@ -26,6 +26,19 @@ export function guestSignatureEnforced(env: SigEnv, now: number): boolean {
   return Number.isFinite(cutoff) && now >= cutoff;
 }
 
+// Whether `participantCreatedAt` predates this deployment's signing, so the id
+// can only be a legacy unsigned one. Server-stamped on first write and never
+// updated, so a client cannot backdate it. False when GUEST_SIGNING_LIVE_AT is
+// unset or unreadable: no exception unless the operator states the date.
+export function isLegacyGuestEra(
+  env: { GUEST_SIGNING_LIVE_AT?: string },
+  participantCreatedAt: number | null,
+): boolean {
+  const liveAt = Number(env.GUEST_SIGNING_LIVE_AT);
+  if (!env.GUEST_SIGNING_LIVE_AT || !Number.isFinite(liveAt)) return false;
+  return participantCreatedAt !== null && participantCreatedAt < liveAt;
+}
+
 // Resource segments whose access is keyed on the resolved owner id, so a
 // guest-path request to them must prove possession of that id once enforcement
 // is on. Public / auth-bootstrap routes are deliberately excluded: `guest-id`

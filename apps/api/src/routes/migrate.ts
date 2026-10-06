@@ -2,9 +2,9 @@
 // ownership migration.
 
 import { isClerkIdShape } from '@livediagram/api-schema';
-import { guestSignatureEnforced } from '../auth/guest-rest';
+import { guestSignatureEnforced, isLegacyGuestEra } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
-import { migrateOwnerId } from '../db';
+import { getParticipant, migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import type { RouteContext } from './context';
 
@@ -75,13 +75,19 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   // names it. The global Clerk-shape refusal in index.ts only covers
   // OWNER_SCOPED_SEGMENTS, which deliberately leaves `migrate` out.
   if (isClerkIdShape(fromOwnerId)) return forbidden();
-  // Once enforcement is armed the legacy window is over: an unsigned source
-  // can no longer reach its own data, so it can't move it either.
+  // Once enforcement is armed an unsigned source must prove possession, with
+  // one exception: an id that existed before this deployment signed anything
+  // (its participant row predates GUEST_SIGNING_LIVE_AT) can still move onto a
+  // signed id, so a legacy guest who returns keeps their documents. Such an id
+  // is no more exposed than it was before enforcement; every id minted signed
+  // is refused here without its signature.
   if (
     guestSignatureEnforced(env, Date.now()) &&
     !(await verifyOwnerId(secret, fromOwnerId, request.headers.get('X-Owner-Sig')))
   ) {
-    return forbidden();
+    const participant = await getParticipant(env, fromOwnerId);
+    if (!isLegacyGuestEra(env, participant?.createdAt ?? null)) return forbidden();
+    console.warn('[migrate] legacy unsigned guest upgraded under enforcement');
   }
   if (!toOwnerId) return badRequest('toOwnerId is required');
   if (fromOwnerId === toOwnerId) return json({ migrated: ZERO });

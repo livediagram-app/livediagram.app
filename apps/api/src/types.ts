@@ -64,6 +64,12 @@ export type Env = {
   // rotated) to require a valid `X-Owner-Sig` on owner-scoped routes. No-op
   // without GUEST_ID_HMAC_SECRET.
   GUEST_SIG_ENFORCE_AFTER?: string;
+  // When this deployment started signing guest ids, epoch ms (docs/specs/015-api/public-api-and-tokens.md §4).
+  // Once enforcement is armed, an id whose participant row is older than this
+  // is a legacy (pre-signing) guest and may still run the one-time upgrade onto
+  // a signed id unsigned; every newer id must prove possession. Unset = no
+  // legacy exception.
+  GUEST_SIGNING_LIVE_AT?: string;
   // R2 bucket holding image-element bytes (docs/specs/009-elements/images.md). Optional so
   // self-hosters who haven't provisioned R2 can still deploy the
   // api worker: when unbound, the image endpoints all return 503
