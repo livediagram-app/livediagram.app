@@ -272,7 +272,7 @@ export function PlanColumnPopover({
         </SwitchRow>
       </div>
       <div className="border-t border-slate-100 px-1.5 py-1.5 dark:border-slate-800">
-        <div className="grid grid-cols-2 gap-1 px-1.5 pb-1">
+        <div className="grid grid-cols-2 gap-1 px-1.5 pb-1 pt-1.5">
           <button
             type="button"
             className={MOVE}
