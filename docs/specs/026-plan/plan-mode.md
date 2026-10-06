@@ -127,6 +127,8 @@ elements a team plans beside its boards come in Content and Tools:
   column, or over a board that does not show the type, nothing is made and the reason is said ("Drop a card into a
   column on a board", "This board shows Bug items only"). A Plan card on the canvas comes only from dragging a
   board's card off it.
+- **Pressed**, a card tile's hint at the top of the canvas says where it goes: **Select the board column you want
+  this card to appear in**, or, on a tab with no board, **Add a board first in order to use cards**.
 - Content and Tools hold the same tiles as their home categories (Write, Media, Behaviours), placing
   the same elements.
 - Draw mode's shape dock leaves the Plan categories out: they frame items, not ink.
