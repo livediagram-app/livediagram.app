@@ -24,10 +24,10 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`         | Takes `suspended`; never measures while suspended                                        |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx` | `toolbarsStale` includes `selectionMoving`                                               |
 | `apps/live/hooks/canvas/useCanvasLongTaskLog.ts`          | The `[canvas-perf] long task` debug log                                                  |
-| `apps/live/components/canvas/CanvasArrivalContext.tsx`   | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                 |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Pops in only what is added after the board arrived; no timer when nothing pops          |
+| `apps/live/components/canvas/CanvasArrivalContext.tsx`    | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                  |
+| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Pops in only what is added after the board arrived; no timer when nothing pops           |
 | `apps/live/app/globals.css`                               | The editor fade-in rule: chrome markers only, never `[data-canvas-world]`                |
-| `apps/live/e2e/perf/interactive.ts`                       | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)  |
+| `apps/live/e2e/perf/interactive.ts`                       | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure) |
 | `apps/live/e2e/perf/reference-board.ts`                   | `buildReferenceBoard(seed, count)`                                                       |
 | `apps/live/e2e/perf/budget.ts`                            | `evaluateBudget`, `budgetTable` and the budget constants (pure)                          |
 | `apps/live/e2e/perf/budget-report.ts`                     | `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue      |
@@ -252,7 +252,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   records `longtask` and `long-animation-frame` entries (`{ start, end }`, buffered) into one
   list. After the board's first element shows, the probe polls every `OPEN_POLL_MS` (1,000) until
   `interactiveMs` reports a quiet window that has actually elapsed (`now - quietFrom ≥
-  OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it). Only then
+OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it). Only then
   does it call `dismissQuickTour`, press Escape and `v`. `interactiveMs(from, busy)` is pure
   (`interactive.ts`): from the tab's GET response, the start of the first `OPEN_QUIET_MS` gap
   between busy intervals (sorted by start, overlaps merged), as an offset from `from`.
@@ -479,24 +479,24 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 
 ## Testing
 
-| Spec rule                                        | Test                                                                                                                       |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                         |
-| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                |
-| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only |
-| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                |
-| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                |
-| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                    |
-| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                        |
-| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                          |
-| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; `element-layer-props.collab.test.tsx`               |
-| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                   |
-| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                  |
-| Budget evaluation and table                      | `budget.test.ts`                                                                                                           |
-| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response              |
+| Spec rule                                        | Test                                                                                                                                            |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                              |
+| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                     |
+| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                      |
+| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                     |
+| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                     |
+| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                         |
+| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                             |
+| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                               |
+| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; `element-layer-props.collab.test.tsx`                                    |
+| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                        |
+| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                       |
+| Budget evaluation and table                      | `budget.test.ts`                                                                                                                                |
+| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                   |
 | Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world |
-| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                            |
-| The budget holds                                 | The nightly probe                                                                                                          |
+| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                 |
+| The budget holds                                 | The nightly probe                                                                                                                               |
 
 ## Constants and configuration
 
