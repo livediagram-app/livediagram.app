@@ -77,6 +77,9 @@ test.describe('a first-time guest with signatures enforced', () => {
       .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-id')))
       .toBeTruthy();
     expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig'))).toBeNull();
+    // That page is unsigned under enforcement, so its create is refused; it settles on the failure
+    // card before the next load, so none of its answers land in the next load's record.
+    await page.getByText('Couldn’t create the document').waitFor();
 
     const api = recordApi(page);
     await page.goto('/new?blank=1');
