@@ -119,7 +119,7 @@ export const ITEM_TYPES = [
     newTitle: 'New action',
     glyph: 'action',
     color: '#dc2626',
-    fields: ['title', 'status', 'assignee', 'due'],
+    fields: ['title', 'description', 'status', 'assignee', 'due', 'checklist'],
   },
 ] as const satisfies readonly ItemTypeDef[];
 
