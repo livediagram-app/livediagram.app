@@ -7,7 +7,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
-import type { ActivityFeed } from '@/app/explorer/useActivityFeed';
+import type { ThreadRow, ActivityFeed } from '@/app/explorer/useActivityFeed';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -56,7 +56,8 @@ const card = (over: Partial<ActivityCard> = {}): ActivityCard => ({
   ...over,
 });
 
-const thread = (over: Partial<ActivityThread> = {}): ActivityThread => ({
+const thread = (over: Partial<ActivityThread> = {}): ThreadRow => ({
+  kind: 'thread',
   ...place,
   elementId: 'e9',
   commentCount: 2,
@@ -129,6 +130,35 @@ describe('ActivityPane', () => {
     expect(screen.getByText('Mentioned You')).toBeTruthy();
     fireEvent.click(linkTo('Pay'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Thread');
+  });
+
+  it("lists a card's comment thread as a card row that opens the card", () => {
+    const cardThread: ThreadRow = {
+      kind: 'card',
+      documentId: 'd2',
+      documentName: 'Roadmap',
+      teamId: null,
+      via: 'own',
+      shareCode: null,
+      board: { tabId: 'tp', tabName: 'Plan', elementId: 'b1', title: 'Sprint 14' },
+      id: 'it7',
+      key: 7,
+      type: 'task',
+      title: 'Ship it',
+      commentCount: 1,
+      latest: { text: 'Over to you', authorName: 'Priya', authorColor: '#336699', at: 9 },
+      firstAt: 9,
+      youCommented: false,
+      onYourDocument: false,
+      mentionsYou: true,
+    };
+    render(<ActivityPane feed={feed({ threads: [cardThread] })} />);
+    expect(screen.getByText('Over to you')).toBeTruthy();
+    expect(screen.getByText('Mentioned You')).toBeTruthy();
+    expect(screen.getByText('Sprint 14 · Plan')).toBeTruthy();
+    expect(linkTo('#7 Ship it').getAttribute('href')).toBe('/document/d2#t=tp&el=b1&item=it7');
+    fireEvent.click(linkTo('#7 Ship it'));
+    expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'CardThread');
   });
 
   it('keeps loading, failed and empty apart', () => {

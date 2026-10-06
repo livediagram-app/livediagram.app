@@ -10,6 +10,7 @@ import {
   itemTitle,
   ITEM_TYPES,
   typeIn,
+  itemCommentCount,
   itemVoteTotal,
   isFlagged,
   isPriority,
@@ -72,6 +73,8 @@ export function svgCardFace(
   h: number,
   p: Palette,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
+  // The comment count (docs/specs/026-plan/items.md "Comments"): a board's card fields decide, as on the canvas.
+  showComments = true,
 ): string {
   const parts = [
     `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="8" fill="${p.card}" stroke="${p.border}" stroke-width="1"/>`,
@@ -99,7 +102,19 @@ export function svgCardFace(
     cx += 14;
   }
   const votes = itemVoteTotal(item);
-  if (votes > 0 && h >= 56) parts.push(text(cx, y + h - 8, 11, p.muted, `▲ ${votes}`));
+  if (votes > 0 && h >= 56) {
+    parts.push(text(cx, y + h - 8, 11, p.muted, `▲ ${votes}`));
+    cx += 34;
+  }
+  const comments = showComments ? itemCommentCount(item) : 0;
+  if (comments > 0 && h >= 56) {
+    // A speech bubble, the canvas card's comment glyph, then the count.
+    const by = y + h - 18;
+    parts.push(
+      `<path d="M${r2(cx)} ${r2(by)}h10v7h-6l-3 3v-3h-1z" fill="none" stroke="${p.muted}" stroke-width="1.2" stroke-linejoin="round"/>`,
+    );
+    parts.push(text(cx + 14, y + h - 8, 11, p.muted, String(comments)));
+  }
   const who = itemAssignee(item);
   if (who && h >= 56) {
     parts.push(
@@ -164,7 +179,18 @@ export function svgPlanBoard(
     const cards = col.lanes.flatMap((l) => l.items);
     for (const item of cards) {
       if (y + CARD_H > top + colH - 6) break;
-      parts.push(svgCardFace(item, cx + 8, y, colW - 16, CARD_H, p, types));
+      parts.push(
+        svgCardFace(
+          item,
+          cx + 8,
+          y,
+          colW - 16,
+          CARD_H,
+          p,
+          types,
+          setup.cardFields.includes('comments'),
+        ),
+      );
       y += CARD_H + CARD_GAP;
     }
   });

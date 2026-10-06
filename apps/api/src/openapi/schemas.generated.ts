@@ -229,6 +229,138 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ActivityCardThread": {
+    "additionalProperties": false,
+    "properties": {
+      "board": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "elementId": {
+                "type": "string"
+              },
+              "tabId": {
+                "type": "string"
+              },
+              "tabName": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tabId",
+              "tabName",
+              "elementId",
+              "title"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "commentCount": {
+        "type": "number"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "documentName": {
+        "type": "string"
+      },
+      "firstAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "key": {
+        "type": "number"
+      },
+      "latest": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "authorColor": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "authorName",
+          "authorColor",
+          "at"
+        ],
+        "type": "object"
+      },
+      "mentionsYou": {
+        "type": "boolean"
+      },
+      "onYourDocument": {
+        "type": "boolean"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "title": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      },
+      "youCommented": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "board",
+      "commentCount",
+      "documentId",
+      "documentName",
+      "firstAt",
+      "id",
+      "key",
+      "latest",
+      "mentionsYou",
+      "onYourDocument",
+      "shareCode",
+      "teamId",
+      "title",
+      "type",
+      "via",
+      "youCommented"
+    ],
+    "type": "object"
+  },
   "ActivityThread": {
     "additionalProperties": false,
     "properties": {

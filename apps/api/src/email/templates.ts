@@ -357,8 +357,11 @@ export function mentionedEmail(
   documentName: string,
   documentId: string,
   commentText: string,
+  // A Plan card's comment: the button opens the card (docs/specs/012-collaboration/comment-mentions.md).
+  itemId?: string,
 ): RenderedEmail {
   const base = appBaseUrl(env);
+  const docHref = `${base}/document/${encodeURIComponent(documentId)}`;
   const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
   const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
   const liveDoc =
@@ -372,8 +375,8 @@ export function mentionedEmail(
       heading: 'You were mentioned',
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
-      ctaText: 'Open the document',
-      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
+      ctaText: itemId ? 'Open the card' : 'Open the document',
+      ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate mentioned you in a comment.',

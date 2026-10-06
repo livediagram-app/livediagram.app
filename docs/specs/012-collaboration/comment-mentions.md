@@ -83,11 +83,17 @@ can open. The thread row carries `mentionsYou`, and its hint reads
 **Mentioned You** (it wins over "Your document"). A resolved thread leaves the
 page as every thread does.
 
+A Plan card's thread ([Items](../026-plan/items.md) "Comments") lists the same way, read straight from the
+item store rather than the index (the thread lives in the item, not in tab JSON): it is included when the reader
+is mentioned in it, commented in it, or owns the document, and carries the same `mentionsYou` hint
+([Activity page](../013-workspace/activity-page.md) §2.5).
+
 ## The email
 
 After a comment with mentions is added, the author's editor asks the api to
 notify: `POST /api/teams/<teamId>/notify-mention` with `{ documentId,
-commentText, mentions: [{ userId?, memberId? }] }`. It is signed-in only (the
+commentText, mentions: [{ userId?, memberId? }], itemId? }`. `itemId` is set for a comment on a Plan card: it
+must name an item of that document (else `404`), and the email's button then opens the card. It is signed-in only (the
 teams mutation gate) and best-effort: the comment has already persisted, a
 failure is swallowed, the response is `202`.
 
@@ -108,7 +114,8 @@ The server decides everything that matters:
   first 280, cut at a word with an ellipsis.
 
 The email reads **"{author} mentioned you in {document}"**, quotes the
-comment, and has one button, **Open Document**. It is sent only when email is
+comment, and has one button, **Open the document** (for a card's comment, **Open the card**, linking
+`/document/<id>#item=<itemId>`). It is sent only when email is
 configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
 
 ## Setting

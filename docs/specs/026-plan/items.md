@@ -153,7 +153,8 @@ author redaction, and the same thread list, composer and resolve control the com
   not comment reads the thread with no composer and no chip. A type that stops offering comments keeps the
   card's thread stored, unshown, like votes.
 - **On the card**: a `comments` card field (a speech-bubble glyph and the count of comments in an open thread,
-  drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it.
+  drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it. Exports and
+  thumbnails draw it too, after the votes, by the same rule (a board's card fields; a Plan card always).
 - **Writes**: add (text up to 2,000 characters, optional mentions), delete, resolve, reopen. Each is applied by the
   api to the item as stored, so concurrent comments, deletes and resolves all land. A comment's author name,
   colour and id are stamped by the server from the caller, never taken from the request. Adding to a resolved
@@ -169,8 +170,11 @@ author redaction, and the same thread list, composer and resolve control the com
   Deleting a card deletes its thread with it; undoing that delete restores the thread, keeping the author id only
   on the restorer's own comments.
 - **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
-- **Mentions** show as chips and are kept on the comment. They do not yet reach the Activity page or send email,
-  which the canvas's comments do through the tab's collaboration index.
+- **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does
+  ([Comment mentions](../012-collaboration/comment-mentions.md)): the card's thread lists on the mentioned person's
+  Activity page (with the thread's other readers: whoever commented in it, and the document's owner), and the
+  author's editor asks the api to email them, the email's button opening the card. `Comment · Mentioned` counts
+  each mentioning comment, as on the canvas.
 - **Timeline and email**: a new comment records on the document's timeline and emails the owner (when email is
   on and the commenter is not the owner), exactly as a canvas comment does; resolving records too.
 - **Offline documents** comment locally, the same rules minus the room; the thread syncs with the item.
@@ -203,7 +207,7 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - **Create, update, move, delete** with edit access.
 - **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
   name, else their invite address's local part), fetched once a document has Plan content. A guest, who has no
-  teams, can assign only themselves. A card already assigned to someone outside that list keeps them, shown in its
+  teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its
   picker.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
   [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.

@@ -59,7 +59,8 @@ Plan must cost nothing to a document that does not use it:
   document in Plan of 2 to 12 tabs loads its other tabs once a session in the background, as the search panel
   does; a larger one reads each tab's boards as it is opened.
 - **No presence chatter**: a card held (opened or dragged) is said to the room, and its release; nothing is sent
-  by a person who never holds one.
+  by a person who never holds one. A holder says it once more when someone new joins, and when their own
+  connection rejoins, so a late joiner sees it too (Collaboration, below).
 - **Server**: a tab-scoped list reads the store once and the revision without a count; a document copy carries
   its items in the same batch as its tabs.
 
@@ -144,6 +145,11 @@ hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Di
 - Everyone in the room sees item changes as they happen, in order (items' [Live for everyone](items.md#live-for-everyone)).
 - Presence shows on cards: a card someone is dragging or has open carries their colour ring and first name, sent
   as an ephemeral `plan-presence` room op that is never stored.
+- **A late joiner sees cards already held.** The room keeps no holds, so each person holding a card says it again
+  when a new person appears in the room's presence list, and when their own connection rejoins (the room gives a
+  rejoined connection a new presence id, which carries no hold until it is said). Nobody else sends anything: a
+  person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
+  drawn only for people in the presence list.
 - Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
 - Facilitation on a board (voting, a vote budget, hide writing and reveal) lives in the board's set-up, so a retro
   needs no separate session tool.

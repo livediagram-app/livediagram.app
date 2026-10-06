@@ -68,6 +68,11 @@ count, and each hidden entirely when empty:
      already treated as included: [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) emails them every new
      comment). The row carries a quiet **Your document** hint.
 
+   A Plan card's comment thread lists here too (§2.5), by the same rules, newest comment first among the
+   element threads. Its row is a card row (its type's glyph, **#key title**, **board title · tab name** or
+   **Not on a board**) whose detail is the latest comment and whose avatar is its latest author, with the same
+   **Mentioned You** / **Your document** hints; it opens the card (the `#item=` link, §1).
+
 Rows share one anatomy with the Collaborate Panel's ([Assigned actions](../012-collaboration/assigned-actions.md) §5) so a
 user recognises them: kind glyph far left (the action clipboard, the
 comment bubble); name + one-line detail in the middle; person avatar
@@ -322,10 +327,28 @@ The migration also clears `collab_index_state`, so each reader's next
 visit re-runs the §2.3 backfill and indexes the boards saved before
 this shipped. The backfill's pre-filter matches `"planBoard":` too.
 
+### 2.5 Card comment threads
+
+A Plan card's comments live in its item (`fields.comments`, [Items](../026-plan/items.md) "Comments"), not in tab
+JSON, so like §2.4 they need no projection: the read filters `items` directly, in the documents the reader can
+open (§4). A card's thread is listed when:
+
+- it holds at least one comment and is not resolved;
+- the card is neither archived nor in the Trash;
+- the reader wrote a comment in it (a comment's `authorId` ∈ `me`), is mentioned in it (a mention's `userId` ∈
+  `me`, or its `memberId` is one of the reader's `team_members` rows), or owns the document;
+- on a tab-scoped share, a board on the scoped tab shows the card (the same rule as §2.4).
+
+It is placed on a board exactly as §2.4 places a card. The read takes the newest `ACTIVITY_LIST_MAX` by latest
+comment. Migration 0074 adds a partial index, `items_open_threads ON items (document_id) WHERE
+json_extract(fields, '$.comments.resolved') = 0`, so the read seeks only cards with an open thread in each
+visible document (measured: 20,000 cards, 2,000 open 20-comment threads, ~106ms; ~200ms without it). Author ids never leave the worker: the row carries the latest author's name and colour only.
+
 ## 3. API
 
 ```
-GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[], cards: ActivityCard[] }
+GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[], cards: ActivityCard[],
+                         cardThreads: ActivityCardThread[] }
 ```
 
 Hybrid identity (Clerk user or `X-Owner-Id`); guests get their own
@@ -384,6 +407,16 @@ type ActivityCard = {
   title: string;
   status: string | null;
   updatedAt: number;
+};
+// A Plan card's unresolved comment thread the reader is in (§2.5): the card's identity and place, and the
+// thread's facts as ActivityThread has them.
+type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
+  commentCount: number;
+  latest: { text: string; authorName: string; authorColor: string; at: number };
+  firstAt: number;
+  youCommented: boolean;
+  onYourDocument: boolean;
+  mentionsYou: boolean;
 };
 ```
 

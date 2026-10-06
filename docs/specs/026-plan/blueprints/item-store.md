@@ -269,6 +269,13 @@ comment, max)` (append unless present or full, `resolved: false`), `threadWithou
   offline, `offlineWriteItemComment` applies `applyItemComment` to the record. `usePlanItems.comment(itemId,
 action)` tracks `Comment · Added|Deleted|Resolved|Unresolved · Item`, applies locally, sends, merges the answer;
   a refusal toasts ("This card holds the most comments it can", else "Couldn't save that comment") and refetches.
+  An `add` with mentions that the api accepted then calls `opts.onMentioned(text, mentions, itemId)`, which the
+  editor wires to `useCommentMentions.notifyMentioned` (`Comment · Mentioned`, then `apiNotifyMention` with
+  `itemId`, so the email opens the card).
+- **Activity**: `readActivity` adds `cardThreads` from `CARD_THREADS_SQL` (`db/plan-card-threads.ts`), the card
+  placement shared with `CARDS_SQL` (`itemPlacementCtes` in `db/plan-board-index.ts`). `useActivityFeed` merges them
+  into `threads` as `{ kind: 'card' }` rows ordered by latest comment; `ActivityPane` draws them with
+  `ActivityCardThreadRow`, linking `cardDeepLinkHref`.
   `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
   `PlanSheetsHost` hands `ItemPanel` `comments: { canComment: canVote, selfId: ownerId, onComment }`;
   `ItemFieldEditor` draws `ItemComments` for `comments`, from the shared `comment-thread-parts.tsx`

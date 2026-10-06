@@ -7,6 +7,7 @@ import {
   applyItemComment,
   createComment,
   keepOwnCommentAuthors,
+  type CommentMention,
   type ItemCommentChange,
 } from '@livediagram/document';
 import {
@@ -72,10 +73,17 @@ export function usePlanItems(opts: {
   tabScope: string | null;
   pushUndo: (step: ItemUndoStep) => void;
   onError: (message: string) => void;
+  // A card comment with mentions has landed: notify the mentioned people, as a canvas comment does
+  // (docs/specs/012-collaboration/comment-mentions.md "The email").
+  onMentioned?: (text: string, mentions: CommentMention[], itemId: string) => void;
 }): PlanItems {
   const { documentId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
-  const callbacks = useLatest({ pushUndo: opts.pushUndo, onError: opts.onError });
+  const callbacks = useLatest({
+    pushUndo: opts.pushUndo,
+    onError: opts.onError,
+    onMentioned: opts.onMentioned,
+  });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
   const [status, setStatus] = useState<PlanItemsStatus>('loading');
   const [personId, setPersonId] = useState<string | null>(null);
@@ -275,6 +283,10 @@ export function usePlanItems(opts: {
         if (answer) {
           if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
           setStore((prev) => mergeItemChanges(prev, answer.upserts, answer.removed, answer.rev));
+        }
+        // Only once the comment has landed, so a refused comment never emails anyone.
+        if (action.kind === 'add' && action.mentions?.length) {
+          callbacks.current.onMentioned?.(action.text, action.mentions, itemId);
         }
         return true;
       } catch (err) {

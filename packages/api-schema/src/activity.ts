@@ -75,10 +75,22 @@ export type ActivityCard = {
   updatedAt: number;
 };
 
+// A Plan card's unresolved comment thread the reader is in (docs/specs/013-workspace/activity-page.md §2.5):
+// the card's identity and place, and the thread's facts as ActivityThread has them. Author ids never travel.
+export type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
+  commentCount: number;
+  latest: { text: string; authorName: string; authorColor: string; at: number };
+  firstAt: number;
+  youCommented: boolean;
+  onYourDocument: boolean;
+  mentionsYou: boolean;
+};
+
 export type ActivityReadResult = {
   actions: ActivityAction[];
   threads: ActivityThread[];
   cards: ActivityCard[];
+  cardThreads: ActivityCardThread[];
 };
 
 // Ceiling per kind (actions, threads, cards) on one read. The page is an inbox, not a history: a

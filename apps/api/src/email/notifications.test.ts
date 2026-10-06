@@ -204,6 +204,12 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     expect(sent.html).toContain('Can you check this, @priya?');
   });
 
+  it("links a card's comment to the card", async () => {
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyMentioned(env, { ...input, recipientUserId: null, itemId: 'item0001' });
+    expect(vi.mocked(sendEmail).mock.calls[0]![1].html).toContain('#item=item0001');
+  });
+
   it('writes to an invited member at their invite address, with no prefs to read', async () => {
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyMentioned(env, { ...input, recipientUserId: null });

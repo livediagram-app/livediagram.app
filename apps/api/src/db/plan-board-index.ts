@@ -60,37 +60,41 @@ export async function readerPersonIds(env: Env, ownerId: string): Promise<string
   return Promise.all(ids.map((id) => itemPersonId(id)));
 }
 
-// Appended to the Activity read's scope CTEs (?1 owner, ?2 now, ?3 limit), with ?4 the JSON array of the
-// reader's person ids. `cards` is every open card on the reader, in a document they can open; a tab-scoped
-// share sees only what its tab's boards show, so there a board on that tab must hold the card (§4). `top` is
-// the newest ?3 of them, and only those are placed: `board` is a board holding the card's status, then an All
-// Cards board, then any board, by tab then board order (on a scoped share, the scoped tab's). Placing after
-// the cut keeps the per-card board lookup to ?3 rows, however many cards match.
-export const CARDS_CTES = `,
-  mine(pid) AS (SELECT value FROM json_each(?4)),
+// Placing items on the Activity page (§2.4, §2.5): a `cards` CTE of the matching items in documents the reader can
+// open, `top` the newest ?3 of them by `order` (only rows passing `keep`), and `placed` each with the board that
+// shows it. `match` filters the items (it may read `i`, `v` and the read's own CTEs); `cols` adds columns to
+// `cards`. A tab-scoped share sees only what its tab's boards show, so there a board on that tab must hold the
+// item (§4). The board is one holding the item's status, then an All Cards board, then any board, by tab then
+// board order (on a scoped share, the scoped tab's). Placing after the cut keeps the per-item board lookup to ?3
+// rows, however many items match.
+export function itemPlacementCtes(spec: {
+  match: string;
+  cols?: string;
+  keep?: string;
+  order: string;
+}): string {
+  return `,
   cards AS (
     SELECT i.document_id, i.id, i.item_key, i.type, i.updated_at,
            json_extract(i.fields, '$.title') AS title,
            json_extract(i.fields, '$.status') AS status,
            v.name AS document_name, v.team_id AS document_team_id, v.via, v.share_code,
-           v.scope_tab_id
+           v.scope_tab_id${
+             spec.cols
+               ? `,
+           ${spec.cols}`
+               : ''
+           }
       FROM items i
       JOIN visible v ON v.id = i.document_id
-     WHERE json_extract(i.fields, '$.assignee.id') IN (SELECT pid FROM mine)
-       AND json_extract(i.fields, '$.archived') IS NOT 1
-       AND json_extract(i.fields, '$.status') IS NOT 'trash'
-       AND NOT EXISTS (
-         SELECT 1 FROM document_tabs dt
-           JOIN plan_board_statuses pb
-             ON pb.tab_id = dt.tab_id AND pb.status = json_extract(i.fields, '$.status')
-          WHERE dt.document_id = i.document_id AND pb.done = 1)
+     WHERE ${spec.match}
        AND (v.scope_tab_id IS NULL
             OR EXISTS (
               SELECT 1 FROM plan_board_statuses pb
                WHERE pb.tab_id = v.scope_tab_id
                  AND pb.status IN (json_extract(i.fields, '$.status'), '*')))
   ),
-  top AS (SELECT * FROM cards ORDER BY updated_at DESC LIMIT ?3),
+  top AS (SELECT * FROM cards${spec.keep ? ` WHERE ${spec.keep}` : ''} ORDER BY ${spec.order} DESC LIMIT ?3),
   placed AS (
     SELECT c.*,
            (SELECT json_object('tabId', p.tab_id, 'tabName', p.tab_name,
@@ -112,6 +116,23 @@ export const CARDS_CTES = `,
              LIMIT 1) AS board
       FROM top c
   )`;
+}
+
+// Appended to the Activity read's scope CTEs (?1 owner, ?2 now, ?3 limit), with ?4 the JSON array of the
+// reader's person ids. `cards` is every open card on the reader: assigned to them, not archived, not in the
+// Trash, and in no column a board marks Done.
+export const CARDS_CTES = `,
+  mine(pid) AS (SELECT value FROM json_each(?4))${itemPlacementCtes({
+    match: `json_extract(i.fields, '$.assignee.id') IN (SELECT pid FROM mine)
+       AND json_extract(i.fields, '$.archived') IS NOT 1
+       AND json_extract(i.fields, '$.status') IS NOT 'trash'
+       AND NOT EXISTS (
+         SELECT 1 FROM document_tabs dt
+           JOIN plan_board_statuses pb
+             ON pb.tab_id = dt.tab_id AND pb.status = json_extract(i.fields, '$.status')
+          WHERE dt.document_id = i.document_id AND pb.done = 1)`,
+    order: 'updated_at',
+  })}`;
 
 export const CARDS_SELECT = `
   SELECT document_id, id, item_key, type, updated_at, title, status,

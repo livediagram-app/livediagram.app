@@ -1807,7 +1807,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'activity',
     tag: 'Account',
     summary:
-      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
+      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in, on elements and on Plan cards. Capped at 100 per kind, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1815,8 +1815,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
         threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
         cards: { type: 'array', items: { $ref: '#/components/schemas/ActivityCard' } },
+        cardThreads: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/ActivityCardThread' },
+        },
       },
-      required: ['actions', 'threads', 'cards'],
+      required: ['actions', 'threads', 'cards', 'cardThreads'],
     },
     statuses: [200, 400, 401],
   },
@@ -2050,6 +2054,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
             properties: { userId: { type: 'string' }, memberId: { type: 'string' } },
           },
         },
+        // A Plan card's comment: the card, so the email's button opens it.
+        itemId: { type: 'string' },
       },
       required: ['documentId', 'commentText', 'mentions'],
     },

@@ -39,8 +39,10 @@ export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): s
   return documentHref(place, `${pin(place.tabId, place.elementId)}&open=${open}`);
 }
 
-// A Plan card's row (docs/specs/013-workspace/activity-page.md §1): the board it is on, and the card.
-export function cardDeepLinkHref(card: ActivityCard): string {
+// A Plan card's row (docs/specs/013-workspace/activity-page.md §1, §2.5): the board it is on, and the card.
+export function cardDeepLinkHref(
+  card: Pick<ActivityCard, 'id' | 'board' | 'documentId' | 'via' | 'shareCode'>,
+): string {
   const item = `item=${encodeURIComponent(card.id)}`;
   return documentHref(
     card,

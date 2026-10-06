@@ -8,6 +8,7 @@ const { db } = vi.hoisted(() => ({
     acceptTeamMember: vi.fn(),
     addTeamMember: vi.fn(),
     getDocumentMeta: vi.fn(),
+    readItem: vi.fn(),
     getParticipant: vi.fn(),
     hasSharedAccess: vi.fn(),
     listInvitesByUser: vi.fn(),
@@ -828,6 +829,22 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
   it('401 for a token caller (mutations need the interactive session)', async () => {
     const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
     expect(res.status).toBe(401);
+  });
+
+  it("passes a card's id on, so the email opens the card", async () => {
+    db.readItem.mockResolvedValue({ id: 'item0001' });
+    const res = await post({ ...body, itemId: 'item0001' });
+    expect(res.status).toBe(202);
+    expect(db.readItem).toHaveBeenCalledWith({}, 'd1', 'item0001');
+    expect(vi.mocked(notifyMentioned).mock.calls[0]![1].itemId).toBe('item0001');
+  });
+
+  it('404 for a card that is not in the document, 400 for a malformed card id', async () => {
+    db.readItem.mockResolvedValue(null);
+    expect((await post({ ...body, itemId: 'item0001' })).status).toBe(404);
+    expect(notifyMentioned).not.toHaveBeenCalled();
+    expect((await post({ ...body, itemId: 'no' })).status).toBe(400);
+    expect((await post({ ...body, itemId: 7 })).status).toBe(400);
   });
 
   it('400 on a missing or oversized body', async () => {

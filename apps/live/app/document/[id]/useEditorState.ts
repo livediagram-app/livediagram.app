@@ -530,7 +530,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
-  const mentionNotifyRef = useRef<(text: string, mentions: CommentMention[]) => void>(() => {});
+  const mentionNotifyRef = useRef<
+    (text: string, mentions: CommentMention[], itemId?: string) => void
+  >(() => {});
   // Comment-thread state + handlers. The open-id drives the
   // dynamic <CommentThreadPopover> JSX gate further down; the
   // action callbacks bind to the selection popover + the popover
@@ -1044,6 +1046,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabScope: sessionTabScope,
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
+    // A card comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
+    onMentioned: (text, mentions, itemId) => mentionNotifyRef.current(text, mentions, itemId),
   });
 
   // The document's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
@@ -1116,6 +1120,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
+      // A rejoined connection has a new presence id, which carries no hold until it is said again.
+      planPresence.reannounce();
     },
   });
 
@@ -1983,7 +1989,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     planNeeded,
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
+  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded, !!clerkUserId);
   const plan = usePlanSlice({
     planItems,
     itemTypes,

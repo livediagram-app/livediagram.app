@@ -10,7 +10,8 @@
 import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livediagram/api-schema';
 import { MENTIONS_MAX } from '@livediagram/document';
-import { getDocumentMeta, getParticipant, listTeamMembers } from '../db';
+import { ITEM_ID_PATTERN } from '@livediagram/items';
+import { getDocumentMeta, getParticipant, listTeamMembers, readItem } from '../db';
 import { notifyMentioned } from '../email/notifications';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -35,6 +36,7 @@ export async function handleTeamMentionRoutes(
     documentId?: unknown;
     commentText?: unknown;
     mentions?: unknown;
+    itemId?: unknown;
   } | null;
   const documentId =
     typeof body?.documentId === 'string' ? body.documentId : legacyDocumentIdOf(body);
@@ -45,6 +47,11 @@ export async function handleTeamMentionRoutes(
   }
   if (commentText.length > MENTION_COMMENT_MAX) return badRequest('commentText too long');
   if (targets.length > MENTIONS_MAX) return badRequest('too many mentions');
+  // A Plan card's comment names its card, so the email opens it (docs/specs/012-collaboration/comment-mentions.md).
+  const itemId = body?.itemId === undefined ? null : body.itemId;
+  if (itemId !== null && (typeof itemId !== 'string' || !ITEM_ID_PATTERN.test(itemId))) {
+    return badRequest('bad itemId');
+  }
 
   // The document must live in THIS team's library: a mention is of the
   // document's own team, and its members are exactly who can open it. The
@@ -52,6 +59,8 @@ export async function handleTeamMentionRoutes(
   // never 403, so the route can't probe which documents exist.
   const liveDoc = await getDocumentMeta(env, documentId);
   if (!liveDoc || liveDoc.teamId !== teamId) return notFound();
+  // The card must be one of this document's: a link to someone else's item is refused the same way.
+  if (itemId && !(await readItem(env, liveDoc.id, itemId))) return notFound();
 
   // Each target resolves to a member of this team other than the caller;
   // anything else is skipped silently. Once each.
@@ -77,6 +86,7 @@ export async function handleTeamMentionRoutes(
         authorName,
         document: { id: liveDoc.id, name: liveDoc.name },
         commentText,
+        ...(itemId ? { itemId } : {}),
       }).catch(() => {}),
     );
   }
