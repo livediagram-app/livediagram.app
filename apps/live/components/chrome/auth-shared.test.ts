@@ -40,6 +40,26 @@ describe('resolvePostAuthDestination', () => {
     expect(resolvePostAuthDestination(params('redirect_url=evil.example'))).toBe(POST_AUTH_DEFAULT);
   });
 
+  // Browsers strip tab / newline / CR inside a URL, so these resolve to
+  // `//evil.example` once navigated.
+  it('rejects control characters that the browser strips into //host', () => {
+    for (const qs of [
+      'redirect_url=/%09/evil.example',
+      'redirect_url=/%0A/evil.example',
+      'redirect_url=/%0D/evil.example',
+      'redirect_url=/%20/evil.example',
+      'redirect_url=/x%5C..%5C/evil.example',
+    ]) {
+      expect(resolvePostAuthDestination(params(qs)), qs).toBe(POST_AUTH_DEFAULT);
+    }
+  });
+
+  it('keeps an ordinary in-app path with a query and hash', () => {
+    expect(resolvePostAuthDestination(params('redirect_url=/document/abc%3Fs%3Dx%23t%3D1'))).toBe(
+      '/document/abc?s=x#t=1',
+    );
+  });
+
   it('refuses a redirect back to the auth pages (loop guard, case-insensitive)', () => {
     expect(resolvePostAuthDestination(params('redirect_url=/sign-in'))).toBe(POST_AUTH_DEFAULT);
     expect(resolvePostAuthDestination(params('redirect_url=/sign-in?foo=bar'))).toBe(

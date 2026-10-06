@@ -1,0 +1,12 @@
+# Defense-in-depth response headers for every help page. Mirrors marketing's
+# public/_headers: the help app is static assets only (no worker), so the
+# headers go through Cloudflare Workers Static Assets' `_headers` file, which
+# Next.js copies from public/ into out/ at build time. Paths are as the assets
+# worker sees them, after the router strips `/help`.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains

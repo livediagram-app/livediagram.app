@@ -33,11 +33,22 @@ const CONFETTI_BG =
   "<circle cx='45' cy='55' r='2' fill='%23f87171'/>" +
   '</svg>")';
 
+// A tab's pattern colour is document data, so another editor (or a copied
+// Community board) chooses it, and it is spliced into SVG markup (the export
+// preview renders that as HTML) and into CSS `url(...)` values. Anything
+// outside a plain colour grammar (hex, rgb/hsl functions, a named colour)
+// becomes transparent, so a quote or `<` can never leave its attribute.
+const SAFE_CSS_COLOR = /^(#[0-9a-f]{3,8}|(rgb|rgba|hsl|hsla)\([0-9.,%\s/+-]{1,64}\)|[a-z]{1,32})$/i;
+export function safeCssColor(color: string): string {
+  return SAFE_CSS_COLOR.test(color) ? color : 'transparent';
+}
+
 // Apply the user-controlled tab background opacity by converting the
 // `#rrggbb` colour to `rgba(...)` with the supplied alpha. Hex parsing
 // is permissive — anything else falls back to the colour as-is so a
 // theme that ships a CSS keyword doesn't break.
-function applyAlpha(color: string, alpha: number): string {
+function applyAlpha(rawColor: string, alpha: number): string {
+  const color = safeCssColor(rawColor);
   if (alpha >= 1) return color;
   const match = /^#?([0-9a-f]{6})$/i.exec(color);
   if (!match) return color;
