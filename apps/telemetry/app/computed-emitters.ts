@@ -24,6 +24,7 @@ import {
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs } from '@livediagram/agent-verbs';
+import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -58,13 +59,11 @@ const DRIVE_OPEN_WITH_TYPES = tokensAfter(
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
-// Each tool the MCP server registers, as pascalToken(name).
 // The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
 const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
 
-const MCP_TOOLS = [
-  ...read('mcp/src/tools.ts').matchAll(/registerTool\(\s*server,\s*env,\s*'([a-z_]+)'/g),
-].map((m) => pascalToken(m[1]!));
+// Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
+const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
 
 // The Appearance settings' labels (packages/ui appearance-cycle.ts), the
 // editor's `UI·Toggled` type on an explicit pick.
