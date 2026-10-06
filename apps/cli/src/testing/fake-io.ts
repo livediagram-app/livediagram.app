@@ -158,6 +158,9 @@ export function fakeIo(
         if (take) take(request);
         else loopbackQueued.push(request);
       }),
+    // No platform store unless a suite gives one: the credentials file keeps the token.
+    platform: 'test',
+    runTool: async () => null,
     readAsset: async (name) => new Uint8Array(await readFile(ASSET_PATHS[name])),
     openSocket: (url) => {
       const socket = fakeSocket(url);
