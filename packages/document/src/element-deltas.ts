@@ -24,6 +24,7 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
+import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
 import {
   RESPONSES_MAX,
@@ -138,16 +139,13 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
     case 'comment-add': {
       if (!isComment(delta.comment)) return el;
       const thread = (el as { commentThread?: CommentThread }).commentThread;
-      const comments = thread?.comments ?? [];
-      if (comments.some((c) => c.id === delta.comment.id)) return el;
-      if (comments.length >= COMMENTS_MAX) return el;
-      return withThread(el, { comments: [...comments, delta.comment], resolved: false });
+      const next = threadWithComment(thread, delta.comment, COMMENTS_MAX);
+      return next === thread ? el : withThread(el, next);
     }
     case 'comment-remove': {
       const thread = (el as { commentThread?: CommentThread }).commentThread;
-      if (!thread || !thread.comments.some((c) => c.id === delta.commentId)) return el;
-      const remaining = thread.comments.filter((c) => c.id !== delta.commentId);
-      return withThread(el, remaining.length ? { ...thread, comments: remaining } : undefined);
+      const next = threadWithoutComment(thread, delta.commentId);
+      return next === thread ? el : withThread(el, next);
     }
     case 'comment-rekey': {
       const thread = (el as { commentThread?: CommentThread }).commentThread;
@@ -178,8 +176,8 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
     }
     case 'comment-resolve': {
       const thread = (el as { commentThread?: CommentThread }).commentThread;
-      if (!thread || thread.resolved === delta.resolved) return el;
-      return withThread(el, { ...thread, resolved: delta.resolved });
+      const next = threadResolved(thread, delta.resolved);
+      return next === thread ? el : withThread(el, next);
     }
     default:
       return el;
