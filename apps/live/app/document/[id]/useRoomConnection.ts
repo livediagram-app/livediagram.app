@@ -578,6 +578,8 @@ export function useRoomConnection(opts: {
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       onDocumentTrashed: () => roomDocumentTrashed(),
+      // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
+      onAccessChanged: () => window.location.reload(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };

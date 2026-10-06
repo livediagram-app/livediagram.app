@@ -26,7 +26,7 @@ function roomStubFor(env: Env, documentId: string): DurableObjectStub {
 }
 
 // A room call that gives up after `ms`: the api never waits on a room longer than that.
-async function roomFetch(
+export async function roomFetch(
   env: Env,
   documentId: string,
   path: string,

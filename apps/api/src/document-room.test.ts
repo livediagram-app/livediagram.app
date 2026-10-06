@@ -1913,6 +1913,66 @@ describe('DocumentRoom tab-scoped sessions', () => {
     }
   });
 
+  // docs/specs/015-api/api.md "Access changes end the sessions they affect": the api's internal
+  // /close-sessions ends only the matched sessions, with 4005, and broadcasts nothing.
+  describe('POST /close-sessions', () => {
+    const TAG = 'a'.repeat(64);
+    const closeSessions = (room: DocumentRoom, body: unknown) =>
+      room.fetch(
+        new Request('https://room/close-sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      );
+
+    it('closes every share-code session when a password is set, keeping the owner and team', async () => {
+      const { room, state } = newRoom();
+      const owner = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const member = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const scopedVisitor = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, owner, presence('p-o', 'edit'), null);
+      scopedSession(state, member, presence('p-m', 'edit'), null);
+      scopedSession(state, visitor, presence('p-v', 'edit'), null, 'CODE2345');
+      scopedSession(state, scopedVisitor, presence('p-s', 'view'), 't2', 'OTHER234');
+      const res = await closeSessions(room, { match: 'share-code' });
+      expect(res.status).toBe(204);
+      expect(visitor.closed).toEqual([4005, 'access-changed']);
+      expect(scopedVisitor.closed).toEqual([4005, 'access-changed']);
+      expect(owner.closed).toBeUndefined();
+      expect(member.closed).toBeUndefined();
+      // Nobody is told: the close is the whole message.
+      for (const ws of [owner, member]) expect(ops(ws)).toEqual([]);
+    });
+
+    it("closes only the departed member's sessions by their person tag", async () => {
+      const { room, state } = newRoom();
+      const gone = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const stays = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const untagged = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, gone, presence('p-g', 'edit'), null);
+      scopedSession(state, stays, presence('p-s', 'edit'), null);
+      scopedSession(state, untagged, presence('p-u', 'view'), null, 'CODE2345');
+      Object.assign(gone.attachment as object, { personTag: TAG });
+      Object.assign(stays.attachment as object, { personTag: 'b'.repeat(64) });
+      await closeSessions(room, { match: 'person', personTag: TAG });
+      expect(gone.closed).toEqual([4005, 'access-changed']);
+      expect(stays.closed).toBeUndefined();
+      expect(untagged.closed).toBeUndefined();
+    });
+
+    it('400s a match it does not know, closing nobody', async () => {
+      const { room, state } = newRoom();
+      const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, visitor, presence('p-v', 'view'), null, 'CODE2345');
+      for (const body of [{}, { match: 'everyone' }, { match: 'person', personTag: 'short' }]) {
+        expect((await closeSessions(room, body)).status).toBe(400);
+      }
+      expect(visitor.closed).toBeUndefined();
+    });
+  });
+
   it('pins the scope and code on the session at admission', () => {
     const { room } = newRoom();
     const ws = makeSocket();

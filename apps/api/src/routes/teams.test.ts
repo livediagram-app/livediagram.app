@@ -39,6 +39,13 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+// The room fan-out has its own suite (room-access-client.test.ts); here, only whether it is asked.
+const { roomAccess } = vi.hoisted(() => ({
+  roomAccess: {
+    closeMemberTeamSessions: vi.fn(async () => ({ rooms: 0, unreached: 0, truncated: false })),
+  },
+}));
+vi.mock('../room-access-client', () => roomAccess);
 // Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
 vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
@@ -511,6 +518,26 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     expect(db.handTeamWorkToHeir.mock.invocationCallOrder[0]!).toBeLessThan(
       db.removeTeamMember.mock.invocationCallOrder[0]!,
     );
+  });
+
+  // docs/specs/013-workspace/team-shared-documents.md: a member who leaves or is removed loses their
+  // open realtime sessions on the team's documents too.
+  it("ends a departing member's realtime sessions on the team's documents", async () => {
+    roomAccess.closeMemberTeamSessions.mockClear();
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
+    await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(roomAccess.closeMemberTeamSessions).toHaveBeenCalledWith({}, 't1', 'user-2');
+  });
+
+  it('asks no room to close anything when an invite is withdrawn', async () => {
+    roomAccess.closeMemberTeamSessions.mockClear();
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(
+      member({ id: 'm3', userId: null, role: 'member', status: 'invited' }),
+    );
+    await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m3'));
+    expect(roomAccess.closeMemberTeamSessions).not.toHaveBeenCalled();
   });
 
   it('a member may remove their own row (leave)', async () => {

@@ -626,3 +626,10 @@ export type RoomIncoming =
   | { kind: 'selection-released'; elementId: string; by: string }
   | CursorMessage
   | FormatMessage;
+
+// The WebSocket close code the realtime room ends a session with when an access
+// change narrows who may be in it without revoking a link (docs/specs/015-api/api.md
+// "Access changes end the sessions they affect"): a share password set, or a
+// member leaving their team. Beside 4003 (a share link changed) and 4004 (the
+// document was trashed). The editor reloads into the ordinary access path.
+export const ACCESS_CHANGED_CLOSE = 4005;

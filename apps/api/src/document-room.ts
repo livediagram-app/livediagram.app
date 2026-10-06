@@ -1,4 +1,5 @@
 import {
+  ACCESS_CHANGED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
   isPresenceOpKind,
@@ -28,6 +29,11 @@ import {
   resolveCatchup,
 } from './document-room-rules';
 import { opForScope, scopedSenderMayRelay } from './room-scope';
+import {
+  parseAccessCloseMatch,
+  sessionMatchesAccessClose,
+  type AccessCloseMatch,
+} from './room-access';
 import {
   beginGrace,
   claimBaton,
@@ -306,6 +312,15 @@ export class DocumentRoom implements DurableObject {
       await this.clearAgentsFor(op);
       return new Response(null, { status: 204 });
     }
+    // Internal, like /broadcast: an access change the api made (a share password set, a member
+    // leaving their team) ends the sessions it affects, and tells nobody else
+    // (docs/specs/015-api/api.md "Access changes end the sessions they affect").
+    if (request.method === 'POST' && url.pathname === '/close-sessions') {
+      const close = parseAccessCloseMatch(await readBody(request));
+      if (!close) return new Response('unknown match', { status: 400 });
+      this.closeSessionsForAccessChange(close);
+      return new Response(null, { status: 204 });
+    }
     if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
       return this.handleAgentPresence(request, url);
     }
@@ -510,6 +525,23 @@ export class DocumentRoom implements DurableObject {
       }
       this.opRates.delete(ws);
     }
+  }
+
+  // Close every session an access change affects (room-access.ts). The editor reloads on the
+  // close code, so the next join meets the gates again.
+  private closeSessionsForAccessChange(close: AccessCloseMatch): void {
+    let closed = 0;
+    for (const ws of this.state.getWebSockets()) {
+      if (!sessionMatchesAccessClose(this.readSession(ws), close)) continue;
+      try {
+        ws.close(ACCESS_CHANGED_CLOSE, 'access-changed');
+      } catch {
+        // Already gone.
+      }
+      this.opRates.delete(ws);
+      closed++;
+    }
+    console.info('[room-access] closed', { match: close.match, closed });
   }
 
   // After a document-trashed op has gone out, close every socket

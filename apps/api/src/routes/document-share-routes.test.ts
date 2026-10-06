@@ -17,9 +17,9 @@ const { db } = vi.hoisted(() => ({
     extendShareLink: vi.fn(),
     generateShareCode: vi.fn(() => 'CODE1234'),
     getDocument: vi.fn(),
+    getCommunityPostForDocument: vi.fn(async () => null),
     getTrashedDocumentMeta: vi.fn(async () => null),
     // No Community post stands in the way of a password here.
-    getCommunityPostForDocument: vi.fn(async () => null),
     getDocumentSharePassword: vi.fn(),
     getShareLinkIncludingExpired: vi.fn(),
     listShareLinks: vi.fn(),
@@ -332,6 +332,30 @@ describe('PUT /api/documents/:id/share-password (docs/specs/013-workspace/share-
     const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password');
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(200);
     expect(db.setDocumentSharePassword).toHaveBeenCalledWith({}, 'd_1', null);
+  });
+
+  // docs/specs/013-workspace/share-password.md: visitors a code admitted before the password meet
+  // the gate again; the room closes their sessions, off the response path.
+  it('closes the share-code sessions when a password is set, and none when it is cleared', async () => {
+    const set = roomEnv();
+    const on = ctxFor('PUT', '/api/documents/d_1/share-password', {
+      body: { password: 'hunter2' },
+      env: set.env,
+      waitUntil: true,
+    });
+    expect((await handleDocumentShareRoutes(on.ctx))!.status).toBe(200);
+    await on.settled();
+    expect(set.broadcasts).toEqual([{ match: 'share-code' }]);
+
+    const cleared = roomEnv();
+    const off = ctxFor('PUT', '/api/documents/d_1/share-password', {
+      body: { password: null },
+      env: cleared.env,
+      waitUntil: true,
+    });
+    await handleDocumentShareRoutes(off.ctx);
+    await off.settled();
+    expect(cleared.broadcasts).toEqual([]);
   });
 
   it('400s a password past the limit, storing nothing', async () => {

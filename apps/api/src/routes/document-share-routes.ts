@@ -27,6 +27,7 @@ import { notifyFirstShare } from '../email/notifications';
 import { badRequest, conflict, json, noContent, notFound } from '../responses';
 import type { ShareRole } from '../types';
 import { hashSharePassword } from '../auth/share-password-hash';
+import { closeShareCodeSessions } from '../room-access-client';
 import { broadcastShareOp } from '../room-client';
 import { recordShareLinkCreated } from '../timeline';
 import { requireOwnedDocument, type RouteContext } from './context';
@@ -132,6 +133,9 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // the owner can't see. Anything else is stored as its hash.
       const stored = password?.trim() ? await hashSharePassword(password) : null;
       await setDocumentSharePassword(env, id, stored);
+      // Visitors a share code admitted before this password meet the gate again
+      // (docs/specs/013-workspace/share-password.md). Clearing it widens access, so closes nobody.
+      if (stored !== null) ctx.waitUntil?.(closeShareCodeSessions(env, id));
       return json({ passwordSet: stored !== null });
     }
   }

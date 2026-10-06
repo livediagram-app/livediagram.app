@@ -138,10 +138,14 @@ re-shows the gate with `invalid`. Once past the gate the password is on every
 HTTP call (via `apiHeaders`) and the WS (`connectRoom`), so reads, writes,
 images, and realtime all stay authorised.
 
-Existing viewers when the owner sets or changes a password: their next API call
-fails the gate and they are re-prompted. We do not actively kick them mid-session
-(no realtime broadcast for password changes); that is acceptable for the threat
-model and can be added later like the `share-revoked` broadcast.
+Existing viewers when the owner sets or changes a password: the room closes every
+session a share code admitted (close code 4005, "access changed"), whether it
+joined with the code itself or with a ticket a share-code visitor minted. Their
+editor reloads, the reload meets the gate, and they are prompted for the new
+password. The owner and team members are untouched: their sessions were not
+admitted by a code. Clearing the password closes nobody, since it only widens
+access. The close is best-effort and off the response path: the password is
+already stored, and every later API call and room join is gated on it either way.
 
 The editor also defers two ancillary fetches behind the gate so a visitor on the
 wrong password doesn't accumulate noise: the participant fetch (`apiLoadParticipant`)
