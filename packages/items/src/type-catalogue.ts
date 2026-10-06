@@ -165,6 +165,12 @@ export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
   ];
 }
 
+// What a type calls Details (docs/specs/026-plan/item-types.md "Tabs"): renamable, never removed.
+export const DETAILS_LABEL_DEFAULT = 'Details';
+export function detailsLabelOf(type: Pick<ItemTypeDef, 'detailsLabel'>): string {
+  return type.detailsLabel || DETAILS_LABEL_DEFAULT;
+}
+
 // The fields the panel's Details shows: the type's fields in no tab (never the title or votes).
 export function detailFieldsOf(type: ItemTypeDef): string[] {
   const tabbed = new Set(tabsOf(type).flatMap((t) => t.fields));
@@ -282,6 +288,12 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (typeof read === 'string') return read;
     tabs = read;
   }
+  let detailsLabel: string | undefined;
+  if (input['detailsLabel'] !== undefined) {
+    const d = typeof input['detailsLabel'] === 'string' ? input['detailsLabel'].trim() : '';
+    if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
+    if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
+  }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -295,6 +307,7 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     fields,
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
+    ...(detailsLabel ? { detailsLabel } : {}),
   };
 }
 

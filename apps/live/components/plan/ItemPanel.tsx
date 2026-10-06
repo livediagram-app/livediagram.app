@@ -10,6 +10,7 @@ import { useState } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
   detailFieldsOf,
+  detailsLabelOf,
   isArchived,
   itemTitle,
   tabsOf,
@@ -96,7 +97,7 @@ export function ItemPanel({
     ),
   ];
   const shownTabs = mobile
-    ? [{ id: DETAILS_TAB, label: 'Details', fields: details }, ...tabs]
+    ? [{ id: DETAILS_TAB, label: detailsLabelOf(type), fields: details }, ...tabs]
     : tabs;
   const [picked, setPicked] = useState<string>(shownTabs[0]?.id ?? DETAILS_TAB);
   const current = shownTabs.find((t) => t.id === picked) ?? shownTabs[0];
@@ -288,11 +289,11 @@ export function ItemPanel({
         </div>
         {mobile ? null : (
           <aside
-            aria-label="Details"
+            aria-label={detailsLabelOf(type)}
             className="w-80 shrink-0 overflow-y-auto border-l border-slate-200 bg-slate-50/70 px-4 py-4 dark:border-slate-700 dark:bg-slate-950/40"
           >
             <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Details
+              {detailsLabelOf(type)}
             </h3>
             {details.map(detailRow)}
             {meta}

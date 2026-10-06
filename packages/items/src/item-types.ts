@@ -62,6 +62,8 @@ export interface ItemTypeDef {
   // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.
   fields: readonly string[];
   custom?: readonly CustomFieldDef[];
+  // The name the panel gives Details (its side column, and the phone's first tab); absent is "Details".
+  detailsLabel?: string;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
 }
