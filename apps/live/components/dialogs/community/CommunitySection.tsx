@@ -28,7 +28,7 @@ export function CommunitySection({
   signedIn,
   signInHref,
   teamDocument,
-  sharePassword,
+  sharePasswordSet,
   post,
   loading,
   error,
@@ -41,7 +41,7 @@ export function CommunitySection({
   signInHref: string;
   teamDocument: boolean;
   // A share password and a post exclude each other: with one set, Share to Community is disabled.
-  sharePassword: string | null;
+  sharePasswordSet: boolean;
   post: CommunityOwnPost | null;
   loading: boolean;
   error: string | null;
@@ -128,15 +128,10 @@ export function CommunitySection({
             without an account, can find this document there, view it and make their own copy.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="xs"
-              data-focus="share"
-              onClick={onPublish}
-              disabled={sharePassword !== null}
-            >
+            <Button size="xs" data-focus="share" onClick={onPublish} disabled={sharePasswordSet}>
               Share to Community
             </Button>
-            {sharePassword !== null ? (
+            {sharePasswordSet ? (
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 Remove the share password to share it to the Community.
               </span>

@@ -53,7 +53,7 @@ export function EditorTabDialogs() {
     shareDialogOpen,
     selfParticipant,
     shareLinks,
-    sharePassword,
+    sharePasswordSet,
     shareUrlFor,
     clerkUserId,
     clerkDisplayName,
@@ -131,7 +131,7 @@ export function EditorTabDialogs() {
         <ShareDialog
           participant={selfParticipant}
           links={shareLinks}
-          sharePassword={sharePassword}
+          sharePasswordSet={sharePasswordSet}
           shareUrlFor={shareUrlFor}
           tabs={tabs}
           // Signed-in via Clerk → name is locked to the account

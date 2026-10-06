@@ -27,6 +27,8 @@ vi.mock('../db', () => ({
   // Trashed documents answer 410 (docs/specs/013-workspace/trash.md); none here.
   getTrashedDocumentMeta: vi.fn(async () => null),
   getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  // The first correct entry of a legacy plain-text password stores its hash.
+  upgradeDocumentSharePassword: vi.fn(async () => {}),
   getShareLink: vi.fn(),
   getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
@@ -145,7 +147,10 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
     // 403 here; "no password required" wins regardless of what they
     // sent.
     getSharePasswordMock.mockResolvedValue(null);
-    const result = await passwordGate(FAKE_ENV, 'diag-2', 'leftover-from-old-session');
+    const result = await passwordGate(FAKE_ENV, 'diag-2', {
+      value: 'leftover-from-old-session',
+      rateKey: 'net-1',
+    });
     expect(result).toBeNull();
   });
 
@@ -163,7 +168,7 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
 
   it('returns 403 password_invalid when the visitor supplied the wrong password', async () => {
     getSharePasswordMock.mockResolvedValue('hunter2');
-    const result = await passwordGate(FAKE_ENV, 'diag-4', 'wrong');
+    const result = await passwordGate(FAKE_ENV, 'diag-4', { value: 'wrong', rateKey: 'net-1' });
     expect(result).not.toBeNull();
     expect(result!.status).toBe(403);
     expect(await result!.json()).toEqual({ error: 'password_invalid' });
@@ -171,7 +176,7 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
 
   it('returns null when the visitor supplied the exact matching password (allowed through)', async () => {
     getSharePasswordMock.mockResolvedValue('hunter2');
-    const result = await passwordGate(FAKE_ENV, 'diag-5', 'hunter2');
+    const result = await passwordGate(FAKE_ENV, 'diag-5', { value: 'hunter2', rateKey: 'net-1' });
     expect(result).toBeNull();
   });
 
@@ -182,7 +187,7 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
     // visitor never tried" — passwordGate uses != null, so '' is
     // treated as an attempted-but-wrong password. Pins the boundary.
     getSharePasswordMock.mockResolvedValue('hunter2');
-    const result = await passwordGate(FAKE_ENV, 'diag-6', '');
+    const result = await passwordGate(FAKE_ENV, 'diag-6', { value: '', rateKey: 'net-1' });
     expect(result).not.toBeNull();
     expect(result!.status).toBe(403);
     expect(await result!.json()).toEqual({ error: 'password_invalid' });
@@ -193,7 +198,7 @@ describe('passwordGate (docs/specs/013-workspace/share-password.md status-code m
     // case" change to the comparison would be a security
     // weakening. Asserting case sensitivity here pins the contract.
     getSharePasswordMock.mockResolvedValue('Hunter2');
-    const result = await passwordGate(FAKE_ENV, 'diag-7', 'hunter2');
+    const result = await passwordGate(FAKE_ENV, 'diag-7', { value: 'hunter2', rateKey: 'net-1' });
     expect(result).not.toBeNull();
     expect(result!.status).toBe(403);
   });

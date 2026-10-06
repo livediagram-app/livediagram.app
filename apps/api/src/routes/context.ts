@@ -12,6 +12,8 @@ import {
   resolveDocumentGrant,
   type DocumentGrant,
 } from '../auth/document-access';
+import type { SharePasswordAttempt } from '../auth/share-access';
+import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
 import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env } from '../types';
@@ -72,8 +74,9 @@ export function shareCodeOf(request: Request): string | null {
 // document the visitor is accessing is password-protected. Owners never
 // send it (their identity short-circuits the check); a non-owner with a
 // share code must, or the access gate denies password-protected documents.
-export function sharePasswordOf(request: Request): string | null {
-  return request.headers.get('X-Share-Password');
+export function sharePasswordOf(request: Request): SharePasswordAttempt | null {
+  const value = request.headers.get('X-Share-Password');
+  return value === null ? null : { value, rateKey: clientRateKey(request) };
 }
 
 // Route-side wrappers around canReadDocument / canEditDocument. Most

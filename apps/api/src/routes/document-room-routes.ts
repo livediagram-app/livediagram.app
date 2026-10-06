@@ -8,6 +8,7 @@ import { isClerkIdShape } from '@livediagram/api-schema';
 import { guestSignatureEnforced } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
+import { clientRateKey } from '../client-ip';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { COMMUNITY_CONTENT, gateGrant, missingDocument, type RouteContext } from './context';
@@ -153,7 +154,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // REST, so the room matches). A bad / missing password refuses the
     // upgrade outright so the room never even sees the peer.
     if (!isOwnerUpgrade && !ticketRole) {
-      if (!(await sharePasswordOk(env, id, url.searchParams.get('p')))) return forbidden();
+      const p = url.searchParams.get('p');
+      const attempt = p === null ? null : { value: p, rateKey: clientRateKey(request) };
+      if (!(await sharePasswordOk(env, id, attempt))) return forbidden();
     }
     // Presence identity is no longer forwarded: the DO assigns each session a
     // fresh ephemeral id for its broadcast presence / cursor (docs/specs/015-api/public-api-and-tokens.md §6), so

@@ -35,7 +35,7 @@ const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   ...over,
 });
 
-function setup(links: ShareLink[] = []) {
+function setup(links: ShareLink[] = [], setSharePasswordSet = vi.fn()) {
   let state = links;
   const setShareLinks = vi.fn((next: ShareLink[] | ((prev: ShareLink[]) => ShareLink[])) => {
     state = typeof next === 'function' ? next(state) : next;
@@ -46,7 +46,7 @@ function setup(links: ShareLink[] = []) {
       selfParticipant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
       setSelfParticipant: vi.fn(),
       setShareLinks,
-      setSharePassword: vi.fn(),
+      setSharePasswordSet,
       setDocumentShareable: vi.fn(),
       setDocumentShareCode: vi.fn(),
       documentShareCode: null,
@@ -96,5 +96,29 @@ describe('useShareLinks scope', () => {
     await result.current.rescopeShareLink('CODE2345', 't2');
     expect(links()).toEqual([link()]);
     expect(track).not.toHaveBeenCalled();
+  });
+});
+
+// The api answers whether a password is set, never the password itself
+// (docs/specs/013-workspace/share-password.md).
+describe('useShareLinks share password', () => {
+  it('records that a password is set, and counts it', async () => {
+    api.apiSetSharePassword.mockResolvedValue(true);
+    const setSharePasswordSet = vi.fn();
+    const { result } = setup([], setSharePasswordSet);
+    expect(await result.current.setDocumentSharePassword('hunter2')).toBe(true);
+    expect(api.apiSetSharePassword).toHaveBeenCalledWith('me', 'd1', 'hunter2');
+    expect(setSharePasswordSet).toHaveBeenCalledWith(true);
+    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'PasswordSet');
+  });
+
+  it('clears on a whitespace-only value, and counts the clear', async () => {
+    api.apiSetSharePassword.mockResolvedValue(false);
+    const setSharePasswordSet = vi.fn();
+    const { result } = setup([], setSharePasswordSet);
+    expect(await result.current.setDocumentSharePassword('   ')).toBe(false);
+    expect(api.apiSetSharePassword).toHaveBeenCalledWith('me', 'd1', null);
+    expect(setSharePasswordSet).toHaveBeenCalledWith(false);
+    expect(track).toHaveBeenCalledWith('Document', 'Shared', 'PasswordCleared');
   });
 });

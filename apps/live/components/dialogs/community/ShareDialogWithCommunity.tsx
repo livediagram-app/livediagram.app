@@ -71,7 +71,7 @@ export function ShareDialogWithCommunity({
             signedIn={signedIn}
             signInHref={authHrefWithReturn('/sign-in/', `/document/${documentId}`)}
             teamDocument={teamDocument}
-            sharePassword={share.sharePassword}
+            sharePasswordSet={share.sharePasswordSet}
             post={community.post}
             loading={community.loading}
             error={community.error}

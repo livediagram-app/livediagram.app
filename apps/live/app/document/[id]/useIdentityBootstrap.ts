@@ -93,7 +93,7 @@ export function useIdentityBootstrap(opts: {
     setSessionTabScope: (scope: string | null) => void;
     setSharedDocuments: SetState<SharedWithItem[]>;
     setShareLinks: SetState<ShareLink[]>;
-    setSharePassword: SetState<string | null>;
+    setSharePasswordSet: SetState<boolean>;
     setSharePasswordGate: SetState<{ invalid: boolean } | null>;
     setTemplatePickerMode: SetState<'welcome' | 'templates' | 'identity'>;
   };
@@ -149,7 +149,7 @@ export function useIdentityBootstrap(opts: {
     setSessionTabScope,
     setSharedDocuments,
     setShareLinks,
-    setSharePassword,
+    setSharePasswordSet,
     setSharePasswordGate,
     setTemplatePickerMode,
   } = set;
@@ -502,9 +502,9 @@ export function useIdentityBootstrap(opts: {
           // on the server to share.
           if (!offline) {
             apiListShareLinks(self.id, fetched.id)
-              .then(({ links, password }) => {
+              .then(({ links, passwordSet }) => {
                 setShareLinks(links);
-                setSharePassword(password);
+                setSharePasswordSet(passwordSet);
               })
               .catch(() => {});
           }

@@ -24,6 +24,8 @@ const getMembershipMock =
 vi.mock('../db', () => ({
   getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
   getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  // A legacy plain-text password is rewritten as a hash on its first correct entry.
+  upgradeDocumentSharePassword: async () => {},
   getMembership: (env: Env, teamId: string, userId: string) =>
     getMembershipMock(env, teamId, userId),
   communityLinkAccess: (env: Env, code: string) => communityLinkAccessMock(env, code),
@@ -38,6 +40,8 @@ const communityLinkAccessMock = vi.fn<
 // the Env shape past the type, so we hand the assertions a stub.
 import { canEditDocument, canReadDocument, resolveDocumentGrant } from './document-access';
 
+// The password a request carries, with the caller network its check spends.
+const pw = (value: string) => ({ value, rateKey: 'net-1' });
 const FAKE_ENV = {} as Env;
 
 beforeEach(() => {
@@ -249,7 +253,14 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
   it('denies a share-code edit when the password is wrong', async () => {
     getShareLinkMock.mockResolvedValue(editLink);
     getSharePasswordMock.mockResolvedValue('hunter2');
-    const allowed = await canEditDocument(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a', 'nope');
+    const allowed = await canEditDocument(
+      FAKE_ENV,
+      'diag-1',
+      null,
+      'EDIT2345',
+      'owner-a',
+      pw('nope'),
+    );
     expect(allowed).toBe(false);
   });
 
@@ -262,7 +273,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
       null,
       'EDIT2345',
       'owner-a',
-      'hunter2',
+      pw('hunter2'),
     );
     expect(allowed).toBe(true);
   });
@@ -283,7 +294,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
       null,
       'VIEW2345',
       'owner-a',
-      'hunter2',
+      pw('hunter2'),
     );
     expect(allowed).toBe(true);
   });
@@ -463,7 +474,16 @@ describe('tab-scoped links', () => {
 
 describe('resolveDocumentGrant', () => {
   const grant = (owner: string | null, code: string | null, password: string | null = null) =>
-    resolveDocumentGrant(FAKE_ENV, 'diag-1', owner, code, 'owner-a', password, null, null);
+    resolveDocumentGrant(
+      FAKE_ENV,
+      'diag-1',
+      owner,
+      code,
+      'owner-a',
+      password === null ? null : pw(password),
+      null,
+      null,
+    );
 
   it('grants the owner edit on every tab', async () => {
     expect(await grant('owner-a', null)).toEqual({
