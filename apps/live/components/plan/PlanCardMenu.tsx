@@ -10,6 +10,7 @@ import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/prim
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { isArchived, itemTitle, type PlanBoardSetup } from '@livediagram/items';
 import { PlanBoardTileArt } from './plan-tile-art';
+import { duplicateItem } from './duplicate-item';
 import { track } from '@/lib/telemetry';
 import { Portal } from '@livediagram/ui';
 import type { PlanContextValue } from './PlanContext';
@@ -180,13 +181,7 @@ export function PlanCardMenuHost({
             },
           }
         : {})}
-      onDuplicate={() => {
-        // A copy right after the card, without its votes: they were for the original.
-        const { votes: _votes, ...fields } = item.fields;
-        void _votes;
-        plan.addItem({ type: item.type, fields, status, after: item.id });
-        plan.announce('Card duplicated');
-      }}
+      onDuplicate={() => duplicateItem(plan, item)}
       onMove={(to) => {
         plan.moveItem(item.id, { status: to, before: null });
         plan.announce(`Moved to ${setup.columns.find((c) => c.status === to)?.name ?? to}`);

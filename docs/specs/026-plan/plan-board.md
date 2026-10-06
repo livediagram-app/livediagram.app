@@ -146,7 +146,9 @@ In Plan mode:
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
   closes with Escape or the close button, and follows the item if someone else moves it.
-  - **Header**: the type (a picker, with its glyph), the key, **Archive**, **Delete** and the close button.
+  - **Header**: the type (a picker, with its glyph), the key, **Help** (the `?` with a small label), a **⋯** menu
+    of **Duplicate** (a copy right after it, without its votes, as the card menu's), **Archive** (or **Restore**)
+    and **Delete**, as icon-left rows, then the close button. Someone who may only view gets no ⋯.
   - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
     other labels offered as it is typed in; Backspace in an empty field takes the last one off.

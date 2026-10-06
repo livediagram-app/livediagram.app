@@ -60,7 +60,7 @@ PlanModal.tsx            the Plan forms' modal (through Dialog), SheetRow and FI
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
 ../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, swimlanes) and Cards (fields) flyouts
-ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, Delete, close), main column
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)

@@ -20,12 +20,12 @@ import {
   type ItemPerson,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { CloseIcon, TrashIcon, relativeSince, Select } from '@livediagram/ui';
+import { CloseIcon, relativeSince, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
-import { PlanBoardTileArt } from './plan-tile-art';
+import { ItemPanelMenu } from './ItemPanelMenu';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import {
   ItemFieldEditor,
@@ -54,6 +54,7 @@ export function ItemPanel({
   onType,
   onOpenItem,
   onDelete,
+  onDuplicate,
   onArchive,
   onClose,
 }: {
@@ -75,6 +76,7 @@ export function ItemPanel({
   // Switches the panel to another item (a card's parent).
   onOpenItem: (itemId: string) => void;
   onDelete: () => void;
+  onDuplicate: () => void;
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
@@ -135,26 +137,15 @@ export function ItemPanel({
       </Select>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
       <span className="flex-1" />
-      <HelpArticleLink article="planCards" variant="icon" />
+      <HelpArticleLink article="planCards" variant="labelled" />
       {canEdit ? (
-        <button
-          type="button"
-          onClick={onArchive}
-          className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-        >
-          <PlanBoardTileArt preset="archive" size={14} />
-          {isArchived(item) ? 'Restore' : 'Archive'}
-        </button>
-      ) : null}
-      {canEdit ? (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
-        >
-          <TrashIcon size={14} />
-          Delete
-        </button>
+        <ItemPanelMenu
+          itemKey={item.key}
+          archived={isArchived(item)}
+          onDuplicate={onDuplicate}
+          onArchive={onArchive}
+          onDelete={onDelete}
+        />
       ) : null}
       <button
         type="button"
@@ -254,7 +245,7 @@ export function ItemPanel({
             <div
               role="tablist"
               aria-label="Item sections"
-              className="mb-4 flex gap-4 overflow-x-auto border-b border-slate-200 dark:border-slate-700"
+              className="mb-4 flex gap-4 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
               onKeyDown={(e) => {
                 if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
                 e.preventDefault();

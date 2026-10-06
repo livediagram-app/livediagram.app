@@ -4,6 +4,7 @@
 // from the editor's Plan slice: the document's boards give the status picker its names.
 import { useMemo } from 'react';
 import { isArchived, itemLabels } from '@livediagram/items';
+import { duplicateItem } from './duplicate-item';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
@@ -75,6 +76,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onType={(type) => ctx.patchItem(item.id, { type })}
         onOpenItem={(id) => ctx.openItem(id)}
         onDelete={() => ctx.deleteItem(item.id)}
+        onDuplicate={() => duplicateItem(ctx, item)}
         onArchive={() => {
           const was = isArchived(item);
           ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
