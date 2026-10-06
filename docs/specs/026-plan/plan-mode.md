@@ -53,6 +53,9 @@ Plan must cost nothing to a document that does not use it:
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears.
 - **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
   holds, so boards and cards re-render only when items, types, presence or the board change.
+- **Other tabs load once**: statuses are the document's ([Plan templates](plan-templates.md#hand-offs)), so a
+  document in Plan of 2 to 12 tabs loads its other tabs once a session in the background, as the search panel
+  does; a larger one reads each tab's boards as it is opened.
 - **No presence chatter**: a card held (opened or dragged) is said to the room, and its release; nothing is sent
   by a person who never holds one.
 - **Server**: a tab-scoped list reads the store once and the revision without a count; a document copy carries
@@ -128,28 +131,9 @@ elements a team plans beside its boards come in Content and Tools:
 
 ## Templates
 
-Templates that open in Plan mode are boards set up for their use, and come with **no cards**: the columns,
-swimlanes, card fields, card types and widgets are ready, and the team adds its own work.
-
-| Template         | Board                                                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| Blank Plan       | One board with no columns yet: it asks for its first                                                        |
-| Kanban Board     | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done                                                   |
-| Sprint Board     | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown                        |
-| Bug Triage       | New, Confirmed, Fixing, Fixed, Won't fix; Tasks; swimlanes by priority                                      |
-| Team Retro       | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on; how to run it                  |
-| Roadmap          | Now, Next, Later; Projects; labels, start and due dates shown                                               |
-| Weekly Planner   | Monday to Friday; due dates shown                                                                           |
-| Project Overview | Not Started, In Progress, At Risk (amber), Done; a row per project; Detailed cards with start and due dates |
-| Daily Standup    | Yesterday, Today, Blocked (red); a row per person; Compact cards; how to run it                             |
-| Content Calendar | Ideas, Drafting, In Review, Scheduled, Published; Ideas and Tasks; due dates and labels                     |
-| Hiring Pipeline  | Applied, Screen, Interview, Offer, Hired, Not Progressing; Tasks and Notes; stale cards                     |
-
-- Each template's board is wide enough that every column fits at its narrowest without scrolling sideways.
-- "How to run it" is a sticky beside the board with the session's steps.
-- The Kanban Board template is rebuilt as a Plan board; it opens in Plan. It stays in the Kanban boards family.
-- Team Retro joins the Retrospectives family beside the sticky-note formats, which stay Diagram templates.
-- Blank Plan is the mode's blank, as Blank Diagram is Diagram's.
+Templates that open in Plan mode set up a way of working across several tabs, with **no cards**:
+[Plan templates](plan-templates.md) holds the catalogue, how a template's tabs are made and how their boards
+hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Diagram's: one empty board.
 
 ## Collaboration
 
@@ -166,7 +150,7 @@ swimlanes, card fields, card types and widgets are ready, and the team adds its 
   `item ls|add|set|move|rm`, and the MCP's `list_items` and `change_items`. Items are named by number (`#12`) or
   id prefix.
 - A document made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_document`) gets the
-  same boards, with no cards, as one made in the editor.
+  same tabs and boards, with no cards, as one made in the editor ([Plan templates](plan-templates.md)).
 - A text `board` view of a tab's Plan boards for agents is a later step; `list_items` reads the same items.
 
 ## Telemetry

@@ -6,7 +6,7 @@
 import { creationIntentOf, type CreationIntent } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
-import { isTemplateKind, templateFamilyOf } from '@livediagram/templates';
+import { buildTemplateTabs, isTemplateKind, templateFamilyOf } from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 
@@ -60,6 +60,17 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
       source: Object.keys(body)[0],
     });
     out.push({ ...rest, ...compiled.tab });
+    // A template of several tabs (docs/specs/026-plan/plan-templates.md "How a template with tabs is
+    // made"): the replace filled this tab with its first; the rest follow it, each with a fresh id.
+    if (typeof template === 'string' && isTemplateKind(template)) {
+      const [, ...followers] = buildTemplateTabs(
+        { id: tabId, name: compiled.tab.name },
+        template,
+        () => crypto.randomUUID(),
+        typeof raw.theme === 'string' ? raw.theme : undefined,
+      );
+      out.push(...followers);
+    }
     if (index === 0)
       first = { tab: compiled.tab, template: typeof template === 'string' ? template : null };
   }

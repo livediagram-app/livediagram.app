@@ -14,6 +14,14 @@ const tabFlag = z
   .optional()
   .describe('A tab name or id prefix; the first tab when omitted');
 
+// A document's tabs as `tab ls` lists them: in order, numbered from 1, each with the shortest unique ref. The CLI
+// lists a pull file's tabs with it too.
+export function tabListOf(tabs: readonly { id: string; name: string; orderIndex: number }[]) {
+  const ordered = [...tabs].sort((a, b) => a.orderIndex - b.orderIndex);
+  const refs = shortestUniquePrefixes(ordered.map((t) => t.id));
+  return ordered.map((t, i) => ({ index: i + 1, ref: refs.get(t.id)!, id: t.id, name: t.name }));
+}
+
 export const tabLs = defineVerb({
   id: 'tab.ls',
   summary: "The document's tabs",
@@ -28,11 +36,7 @@ export const tabLs = defineVerb({
   listKey: 'tabs',
   run: async (ctx, { doc }) => {
     const document = await documentOf(ctx, doc);
-    const ordered = [...document.tabs].sort((a, b) => a.orderIndex - b.orderIndex);
-    const refs = shortestUniquePrefixes(ordered.map((t) => t.id));
-    return {
-      tabs: ordered.map((t, i) => ({ index: i + 1, ref: refs.get(t.id)!, id: t.id, name: t.name })),
-    };
+    return { tabs: tabListOf(document.tabs) };
   },
   text: ({ tabs }) =>
     tabs.length

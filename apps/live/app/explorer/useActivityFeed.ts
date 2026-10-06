@@ -1,7 +1,8 @@
 'use client';
 
 // The Activity page's data (docs/specs/013-workspace/activity-page.md §1, §5): one read, split into the
-// three sections the pane shows, plus the count the sidebar badge draws.
+// three sections the pane shows, plus the count the sidebar badge draws. Assigned to You holds actions and
+// Plan cards (§2.4) in one list.
 //
 // Held in Explorer state (like favourites) rather than gated to the
 // section, because the sidebar badge renders on every Explorer section
@@ -10,14 +11,17 @@
 // count, and the badge can never disagree with the page.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ActivityAction, ActivityThread } from '@livediagram/api-schema';
+import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
 import { apiListActivity } from '@/lib/api-client';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
+/** One Assigned to You row: an action or a Plan card, told apart by `kind`. */
+export type AssignedRow = ({ kind: 'action' } & ActivityAction) | ({ kind: 'card' } & ActivityCard);
+
 export type ActivityFeed = {
-  /** Open actions assigned to the reader (self-assignments included). */
-  assignedToMe: ActivityAction[];
+  /** Open actions (self-assignments included) and open Plan cards on the reader, newest first. */
+  assignedToMe: AssignedRow[];
   /** Open actions the reader assigned to somebody ELSE. */
   youAssigned: ActivityAction[];
   /** Unresolved threads the reader is in. */
@@ -31,6 +35,7 @@ export type ActivityFeed = {
 export function useActivityFeed(ownerId: string | null): ActivityFeed {
   const [actions, setActions] = useState<ActivityAction[]>([]);
   const [threads, setThreads] = useState<ActivityThread[]>([]);
+  const [cards, setCards] = useState<ActivityCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Guards a late response from a previous owner id (a guest signing in
@@ -50,6 +55,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
         if (mode === 'replace') {
           setActions([]);
           setThreads([]);
+          setCards([]);
         }
         setLoading(false);
         return;
@@ -57,6 +63,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       setError(false);
       setActions(result.actions);
       setThreads(result.threads);
+      setCards(result.cards);
       setLoading(false);
     });
   }, []);
@@ -92,7 +99,14 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
 
   // The split (docs/specs/013-workspace/activity-page.md §1): a self-assignment is "assigned to you" and
   // only that, so one action never lists twice.
-  const assignedToMe = useMemo(() => actions.filter((a) => a.assignedToMe), [actions]);
+  const assignedToMe = useMemo(
+    () =>
+      [
+        ...actions.filter((a) => a.assignedToMe).map((a) => ({ kind: 'action' as const, ...a })),
+        ...cards.map((c) => ({ kind: 'card' as const, ...c })),
+      ].sort((a, b) => b.updatedAt - a.updatedAt),
+    [actions, cards],
+  );
   const youAssigned = useMemo(
     () => actions.filter((a) => a.createdByMe && !a.assignedToMe),
     [actions],

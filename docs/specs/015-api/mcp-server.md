@@ -311,7 +311,9 @@ Quick Start picker ships ([Canvas and palette](../008-canvas/canvas-and-palette.
 `@livediagram/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
-`kind` and pass it as `template` on `create_document` / `add_tab`. Deliberately
+`kind` and pass it as `template` on `create_document` / `add_tab` (a template of several tabs, such as the
+Plan templates, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
+[Plan templates](../026-plan/plan-templates.md)). Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
@@ -800,7 +802,7 @@ Worker (no DOM, no React).
   runtime), return it as base64 MCP image content (`image/png`) — broadest client
   support vs. raw SVG.
 - **Embedded font.** Workers have no system fonts, so the worker bundles one
-  (Inter, OFL — `apps/mcp/fonts/`, wired as a `Data` module + passed to resvg as
+  (Inter, OFL — `packages/render-png/fonts/`, wired as a `Data` module + passed to resvg as
   a `fontBuffer`) and renders every label in it. Without an embedded font resvg
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to

@@ -117,15 +117,15 @@ const ALL_KINDS = [
   'pre-mortem',
   'idea-garden',
   'blank-plan',
-  'sprint-board',
+  'project-planner',
   'bug-triage',
   'team-retro',
-  'roadmap-board',
   'weekly-planner',
-  'project-overview',
-  'daily-standup',
   'content-calendar',
   'hiring-pipeline',
+  'okrs',
+  'product-launch',
+  'feedback-board',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

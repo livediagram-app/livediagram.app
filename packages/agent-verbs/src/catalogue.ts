@@ -22,8 +22,11 @@ import {
   skillPrint,
   telemetryOff,
   telemetryOn,
+  exportAll,
+  graphRender,
   pull,
   push,
+  tabRender,
   waitFor,
   watch,
 } from './verbs/local';
@@ -54,6 +57,7 @@ export const VERBS: readonly Verb[] = [
   tabLs,
   tabView,
   tabLint,
+  tabRender,
   tabDiff,
   tabAdd,
   tabRename,
@@ -72,6 +76,7 @@ export const VERBS: readonly Verb[] = [
   presenceSet,
   presenceClear,
   graphLintVerb,
+  graphRender,
   templateLs,
   templateView,
   iconSearch,
@@ -89,6 +94,7 @@ export const VERBS: readonly Verb[] = [
   watch,
   pull,
   push,
+  exportAll,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -103,7 +109,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
-  { name: 'graph', summary: 'Graph files: lint one before writing it' },
+  { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },
@@ -112,7 +118,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push'] as const;
+export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

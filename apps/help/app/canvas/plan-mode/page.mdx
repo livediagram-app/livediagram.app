@@ -31,8 +31,29 @@ Plan mode gives a tab over to boards. Its palette holds **Cards**, **Boards**, *
 
 An empty Plan tab shows **Start with a Board** in the middle: pick a board type and it is placed, empty, ready to build.
 
-- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates: **Kanban Board**, **Sprint Board**, **Bug Triage**, **Team Retro**, **Roadmap Board**, **Weekly Planner**, **Project Overview**, **Daily Standup**, **Content Calendar** and **Hiring Pipeline**. Each comes with its board set up for the job (columns, rows, card fields and widgets) and no cards, so you start straight on your own work.
+- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates. Each sets up a way of working across several tabs, with no cards, so you start straight on your own work (see [Plan templates](#plan-templates) below).
 - **On any tab:** in Plan mode, open the palette's **Boards** category (under **Plan**) and press a board (Kanban, Sprint, Retro, Roadmap, Bug triage, Week or a blank board), then click the canvas, or drag it out to the size you want.
+
+## Plan templates
+
+Every Plan template but **Blank Plan** makes several tabs, each with its board set up for the job (columns, rows, card fields and widgets), charts of your cards and, where a session is run, a how-to note, a timer and other tools beside it.
+
+| Template             | Tabs                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Project Planner**  | **Roadmap** (projects on Now, Next, Later with a Gantt chart), **Backlog**, **Sprint**, **Daily Standup** |
+| **Kanban Board**     | **Board** (with WIP limits), **Requests**, **Flow** (charts of where the work stands)                     |
+| **Bug Tracker**      | **Triage** (a row per priority), **Fixing**, **Health**                                                   |
+| **Team Retro**       | **Retro** (notes hidden until you reveal them, then a vote), **Actions**, **Archive**                     |
+| **Weekly Planner**   | **This Week**, **Inbox**, **Calendar**                                                                    |
+| **Content Calendar** | **Ideas** (voted on), **Production**, **Calendar**                                                        |
+| **Hiring Pipeline**  | **Roles** (with a Gantt chart), **Pipeline** (a row per role), **Onboarding**                             |
+| **OKRs**             | **Objectives** (with a Gantt chart), **Key Results** (on track, at risk or off track)                     |
+| **Product Launch**   | **Timeline**, **Checklist** (a row per workstream), **Launch Day** (go or no-go)                          |
+| **Feedback Board**   | **Feedback** (voted on), **Delivery**                                                                     |
+
+- **Cards move between tabs.** Boards on different tabs share some columns: move a task to **This Sprint** on the Project Planner's **Backlog** and it is on the **Sprint** board too. A card's **Status** in its panel lists the columns of every tab, so you can send it anywhere.
+- **Charts read every card**, whichever tab its board is on.
+- Picking a template from **Quick Start** on an empty tab fills that tab and adds the rest straight after it.
 
 ## Working on a board
 
@@ -43,6 +64,7 @@ An empty Plan tab shows **Start with a Board** in the middle: pick a board type 
 - **Archive a card** to take it off your boards without deleting it. An **Archive** board (in the palette's Boards) shows every archived card, and an **All Cards** board shows every other card, a row per status, so nothing gets lost between boards; drag one back onto another board, or choose **Restore**, to bring it back.
 - **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type or parent), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
 - **Open an item:** click a card. Its panel opens over the canvas: the title and the card's tabs on the left, and **Details** (status, assignee, priority and the rest) on the right, with who made it and who changed it last. The **description** is rich text: bold, italic, underline, headings, lists and links, from the toolbar over it or the usual shortcuts. Every change saves as you make it. On a phone the panel rises from the bottom, with Details as its first tab. A card type's tabs are set in [Card Types](/help/canvas/plan-mode/card-types/).
+- **Assign a card:** pick yourself or a teammate as its **Assignee**. Until it is done, the card shows up on that person's [Activity](/help/explorer/activity/) page in the Explorer, under **Assigned to You**, so they can find it without knowing which document it is in. They need to be able to open the document, so assign cards on a team document or one shared with them.
 - **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in. Drag a card from one board onto another to move it there.
 - **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your item changes in the same order as your canvas edits: a moved card goes back, a deleted item comes back with its number.
 

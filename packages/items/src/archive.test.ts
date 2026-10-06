@@ -131,7 +131,13 @@ describe('add types', () => {
       'task',
       'note',
     ]);
-    expect(presetSetup('retro').addTypes).toEqual(['note', 'idea', 'action']);
+    // A retro takes notes and ideas; its actions go on a board of their own (plan-templates.md).
+    expect(presetSetup('retro').addTypes).toEqual(['note', 'idea']);
+    expect(presetSetup('retro').columns.map((c) => c.status)).toEqual([
+      'went-well',
+      'to-improve',
+      'ideas',
+    ]);
     expect(
       normaliseBoardSetup({ ...presetSetup('blank'), addTypes: ['task', 'task', 'Bad', 3] })
         ?.addTypes,

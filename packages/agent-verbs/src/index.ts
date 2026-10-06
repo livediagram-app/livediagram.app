@@ -54,7 +54,10 @@ export {
   documentOf,
   LIST_DEFAULT_LIMIT,
   LIST_MAX_LIMIT,
+  tabOf,
   tabPath,
   type DocumentWithTabs,
 } from './verbs/shared';
 export { graphLint, graphOfSource } from './verbs/graph';
+export { tabListOf } from './verbs/tab';
+export { EXPORT_FORMATS } from './verbs/local';

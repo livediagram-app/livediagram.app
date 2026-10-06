@@ -46,7 +46,7 @@ outstanding for me right now.**
 ## 1. What the user sees
 
 An **Activity** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
-under Home, with a badge counting the open actions **assigned to
+under Home, with a badge counting the open actions and open Plan cards **assigned to
 the reader** (zero hides it: a "0 things to do" badge is noise, and
 the count only covers work waiting on them, not work they handed out).
 
@@ -54,8 +54,9 @@ The pane is a single page of three sections, each a card-list of rows
 (the same container the List view uses), each with a heading and a
 count, and each hidden entirely when empty:
 
-1. **Assigned to You** — open actions whose assignee is the reader.
-   A self-assignment ([Assigned actions](../012-collaboration/assigned-actions.md): the Myself row, the guest to-do case)
+1. **Assigned to You** — open actions whose assignee is the reader,
+   and open Plan cards ([Items](../026-plan/items.md)) whose Assignee is the reader (§2.4), in
+   one list. A self-assignment ([Assigned actions](../012-collaboration/assigned-actions.md): the Myself row, the guest to-do case)
    lands here and only here.
 2. **You Assigned** — open actions the reader assigned to _somebody
    else_. Self-assignments are excluded so one action never appears
@@ -78,9 +79,15 @@ that is the reader, labelled "You"); a **You Assigned** row shows the
 assignee's avatar with "Assigned to <name>" on hover. A thread row's
 title is the element label, its detail the latest comment's text, its
 avatar the latest author's colour, with the comment count on hover.
+A card row's glyph is its card type's (the built-in type's glyph, else a
+generic square); its title is **#key title**; its detail is the card's
+type ("Card" for a type a document added); its "where" is **board title ·
+tab name**, or **Not on a board**; its avatar is the reader ("You",
+brand-tinted) with "Assigned to you" on hover.
 
 Ordering within a section is **newest activity first**: an action's
-`updatedAt` (a reassignment or edit bumps it), a thread's latest
+`updatedAt` (a reassignment or edit bumps it), a card's `updatedAt`
+(any write to the item bumps it), a thread's latest
 comment. The page is capped at 100 rows per kind; the cap is a
 ceiling on a page nobody scrolls that far down, not a paging design.
 
@@ -90,7 +97,17 @@ with a fragment the editor reads on load:
 
 ```
 /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
+/document/<id>[?s=<code>]#t=<tabId>&el=<boardId>&item=<itemId>
 ```
+
+A card row's link names the board it is on (§2.4): the editor selects
+the board, scrolls it into view and opens the card in the item panel
+([Items](../026-plan/items.md)), as clicking the card on the board does. A card no board in
+its document shows has no tab to land on; its link is
+`#item=<itemId>` alone, which opens the document on its usual tab and
+opens the card once the item store has loaded (when the tab has no Plan
+content the store is not read, and the link degrades to opening the
+document).
 
 `#t=` is the existing tab pin ([Per-tab storage](../006-document/per-tab-storage.md)); `el` and `open` are new. Once
 the pinned tab's elements have loaded the editor selects the element,
@@ -108,7 +125,8 @@ States:
 
 - **Loading**: the Explorer's skeleton rows.
 - **Empty** (nothing open in any section): one `EmptyState` — "Nothing
-  waiting on you", with a line explaining what lands here and a link to
+  waiting on you", with a line explaining what lands here (actions and
+  Plan cards assigned to you, actions you assigned, threads you're in) and a link to
   the assigned-actions help article. No New Document CTA: a new document
   does not put anything on this page.
 - **Failed**: "Couldn't load your activity" with **Try again**. Distinct
@@ -247,10 +265,67 @@ per tab as a save, so overlapping with a live save is harmless. The
 same state row moves with the owner on migration so the seed does not
 run twice against the new id.
 
+### 2.4 Plan cards
+
+Plan cards are items in the document's item store ([Items](../026-plan/items.md), table `items`),
+not element JSON, so they need no blob projection: the read filters
+`items` directly. Two pieces make that cheap and correct:
+
+- **An expression index on the assignee.** Migration 0073 adds
+  `CREATE INDEX items_assignee ON items (json_extract(fields, '$.assignee.id'))`.
+  An item's assignee id is `itemPersonId(userId)`, a one-way hash
+  ([Item store blueprint](../026-plan/blueprints/item-store.md) "Security and trust"); the worker hashes the reader's
+  `me` set (§2.2) and the read matches the index with `IN`.
+- **`plan_board_statuses`: which statuses a board shows, and which of
+  them are Done.** Whether a card is open is a property of the boards,
+  not of the card: a status is Done when a board's done column, or a
+  column after it, holds it ([Plan views](../026-plan/plan-views.md) "What a plan view reads"). The
+  boards live in tab JSON, so they get the same treatment as actions:
+  a per-tab projection written in the tab save's batch by
+  `collabIndexStatements` (so every path in §2.1 writes it, and the copy
+  path copies it).
+
+```sql
+CREATE TABLE plan_board_statuses (
+  tab_id TEXT NOT NULL, element_id TEXT NOT NULL,
+  board_title TEXT NOT NULL,
+  status TEXT NOT NULL,      -- a column's status; '*' for an All Cards board
+  done INTEGER NOT NULL,     -- 1 when the column is the done column or after it
+  board_order INTEGER NOT NULL, -- the board's index among the tab's boards
+  position INTEGER NOT NULL, -- the column's index on its board
+  PRIMARY KEY (tab_id, status, element_id), -- the Done check seeks (tab, status)
+  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
+);
+```
+
+An Archive board writes no rows (it shows only archived cards, which
+are never listed). An All Cards board writes one `'*'` row, never Done.
+
+A card is listed when, in a document the reader can open (§4):
+
+- its `assignee.id` is the hash of an identity in `me`;
+- it is not archived (`archived` is not `true`) and not in the Trash
+  (`status` is not `trash`);
+- no board on any tab of its document marks its status Done. A card
+  whose status no board holds (a stray, or a document with no board) is
+  open: nothing says it is finished.
+
+Its place is the first board, in tab order then board order, that
+holds its status; failing that, an All Cards board; failing that, any
+board in the document; failing that, none (the `#item=` link, §1).
+
+Cards the reader assigned to somebody else are **not** listed: an
+item records who last wrote it, not who assigned it, so "You Assigned"
+stays actions only.
+
+The migration also clears `collab_index_state`, so each reader's next
+visit re-runs the §2.3 backfill and indexes the boards saved before
+this shipped. The backfill's pre-filter matches `"planBoard":` too.
+
 ## 3. API
 
 ```
-GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[] }
+GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[], cards: ActivityCard[] }
 ```
 
 Hybrid identity (Clerk user or `X-Owner-Id`); guests get their own
@@ -294,6 +369,22 @@ type ActivityThread = ActivityPlace & {
   onYourDocument: boolean;
   mentionsYou: boolean; // an entry of mentioned_ids ∈ me ∪ my team_members rows
 };
+// An open Plan card assigned to the reader (§2.4). Not an ActivityPlace:
+// a card is not an element, and it may have no board to land on.
+type ActivityCard = {
+  documentId: string;
+  documentName: string;
+  teamId: string | null;
+  via: 'own' | 'team' | 'shared';
+  shareCode: string | null;
+  board: { tabId: string; tabName: string; elementId: string; title: string } | null;
+  id: string; // the item id
+  key: number; // the #number
+  type: string; // the item type id
+  title: string;
+  status: string | null;
+  updatedAt: number;
+};
 ```
 
 ## 4. The read, and who sees what
@@ -313,6 +404,11 @@ live. Only then is the involvement test applied:
   their `team_members` rows ([Comment mentions](../012-collaboration/comment-mentions.md)). The row carries
   `mentionsYou`, and its hint reads **Mentioned You** (it wins over "Your
   document").
+- a Plan card is theirs when its `assignee.id` is the hash of an id in
+  me (§2.4). On a document shared with them through a **tab-scoped**
+  link ([Tab-scoped share links](tab-scoped-share-links.md)) they see only the cards that tab's boards
+  show: the card's board must be on the scoped tab and hold its status
+  (or be an All Cards board).
 
 That order is the security boundary: a name can never leak a row from
 a document the reader has lost access to, and it is what keeps the
@@ -343,7 +439,7 @@ and the badge cannot disagree with the list.
 A new `Activity` category in `TELEMETRY_CATEGORIES` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
 
 - `Activity` / `Opened` when the section renders (once per visit);
-- `Activity` / `Selected` with type `Action` | `Thread` on a row click;
+- `Activity` / `Selected` with type `Action` | `Thread` | `Card` on a row click;
 - `Activity` / `Loaded` / `Retry` when a failed read is retried.
 
 Never an action name, comment text, document name, or any identity.
@@ -360,7 +456,14 @@ Never an action name, comment text, document name, or any identity.
 - The OpenAPI drift test ([API documentation (OpenAPI)](../015-api/api-documentation.md)) pins the new route + schemas.
 - `routes.test.ts` round-trips the new section.
 - `collab-deep-link.test.ts`: the fragment parser (tab only, tab +
-  element, unknown `open`, junk).
+  element, unknown `open`, junk, a card's `item` with and without a
+  board).
+- `plan-board-rows.test.ts`: the board projection (done column and
+  after, All Cards `'*'`, Archive skipped, junk set-ups).
+- `activity-cards.test.ts` (db, against real SQLite): assigned to me
+  and to an alias, someone else's card, archived, trashed, Done on any
+  board, stray status still open, place preference, scoped share,
+  a document the reader cannot open.
 - `useActivityFeed.test.tsx`: sections split from one read, error vs
   empty, retry.
 - Help: the registry / icon / colour / articleCount tests pick the new

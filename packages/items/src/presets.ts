@@ -105,13 +105,14 @@ export const PLAN_BOARD_PRESETS: Readonly<
         col('went-well', 'Went well', { color: '#16a34a' }),
         col('to-improve', 'To improve', { color: '#dc2626' }),
         col('ideas', 'Ideas', { color: '#0d9488' }),
-        col('actions', 'Actions', { color: '#db2777' }),
       ],
       swimlaneBy: 'none',
       cardFields: ['assignee', 'votes'],
       voting: { on: true, budget: 5 },
       widgets: ['votes', 'top-voted', 'types', 'people'],
-      addTypes: ['note', 'idea', 'action'],
+      // Notes and ideas only: the actions a retro agrees are tracked on a board of their own
+      // (docs/specs/026-plan/plan-templates.md "Team Retro").
+      addTypes: ['note', 'idea'],
       hideWriting: true,
     },
   },

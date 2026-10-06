@@ -117,15 +117,15 @@ describe('TEMPLATES catalogue', () => {
     'pre-mortem',
     'idea-garden',
     'blank-plan',
-    'sprint-board',
+    'project-planner',
     'bug-triage',
     'team-retro',
-    'roadmap-board',
     'weekly-planner',
-    'project-overview',
-    'daily-standup',
     'content-calendar',
     'hiring-pipeline',
+    'okrs',
+    'product-launch',
+    'feedback-board',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing

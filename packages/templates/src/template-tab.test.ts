@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { isValidTab, parseStrokePoints } from '@livediagram/document';
-import { buildTemplateTab, resolveTemplate, validTemplateKinds } from './template-tab';
+import {
+  buildTemplateTab,
+  buildTemplateTabs,
+  resolveTemplate,
+  validTemplateKinds,
+} from './template-tab';
 import { TEMPLATES } from './templates';
 
 // Templates drawn from sketches (the sailboat scene) carry freehand strokes: what the MCP writes
@@ -44,5 +49,34 @@ describe('resolveTemplate', () => {
 
   it('lists every kind for the refusal', () => {
     expect(validTemplateKinds().split(', ')).toEqual(TEMPLATES.map((t) => t.kind));
+  });
+});
+
+// docs/specs/026-plan/plan-templates.md "How a template with tabs is made".
+describe('buildTemplateTabs', () => {
+  it('makes every tab of a Plan template, the first named as given, each valid and opening in Plan', () => {
+    let n = 0;
+    const tabs = buildTemplateTabs({ id: 'first', name: 'Mine' }, 'team-retro', () => `t${++n}`);
+    expect(tabs.map((t) => [t.id, t.name])).toEqual([
+      ['first', 'Mine'],
+      ['t1', 'Actions'],
+      ['t2', 'Archive'],
+    ]);
+    for (const tab of tabs) {
+      expect(isValidTab(tab), tab.name).toBe(true);
+      expect(tab.opensIn).toBe('plan');
+      expect(tab.templateChosen).toBe(true);
+    }
+  });
+
+  it('makes exactly buildTemplateTab’s one tab for any other template', () => {
+    const newId = () => 'never';
+    // Element ids are fresh each build: compare everything else.
+    const shape = (tab: ReturnType<typeof buildTemplateTab>) => ({
+      ...tab,
+      elements: tab.elements.map(({ id: _id, ...rest }) => rest.type),
+    });
+    const tabs = buildTemplateTabs({ id: 's', name: 'SWOT' }, 'swot', newId);
+    expect(tabs.map(shape)).toEqual([shape(buildTemplateTab('s', 'SWOT', 'swot'))]);
   });
 });

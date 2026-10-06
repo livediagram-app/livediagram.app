@@ -107,8 +107,8 @@ export const TELEMETRY_CATEGORIES = [
   // retried). Never a document name or a person.
   'Home',
   // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
-  // actions + comment threads. 'Opened' once per visit; 'Selected' with
-  // `type` 'Action' | 'Thread' on a row click (which kind of row sends
+  // actions, Plan cards + comment threads. 'Opened' once per visit; 'Selected' with
+  // `type` 'Action' | 'Thread' | 'Card' on a row click (which kind of row sends
   // people back into a document); 'Loaded'/'Retry' when a failed read is
   // retried. Never an action name, comment text, or document name.
   'Activity',

@@ -24,6 +24,7 @@ export async function apiListActivity(ownerId: string): Promise<ActivityReadResu
     return {
       actions: Array.isArray(body.actions) ? body.actions : [],
       threads: Array.isArray(body.threads) ? body.threads : [],
+      cards: Array.isArray(body.cards) ? body.cards : [],
     };
   } catch {
     return null;

@@ -38,7 +38,7 @@ import {
   subscribeGuestSelfId,
   markNameConfirmed,
 } from '@/lib/local-identity';
-import { buildTemplatedTab } from '@/lib/template-builders';
+import { buildTemplatedTabs } from '@/lib/template-builders';
 import {
   templateFamilyOf,
   untitledNameForTemplate,
@@ -354,8 +354,10 @@ export default function NewDocumentPage() {
 
     const documentId = crypto.randomUUID();
     const tabId = crypto.randomUUID();
-    const tab = templateKind
-      ? buildTemplatedTab(templateKind, themeId, tabId, 'Tab 1')
+    // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
+    const tabs = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    const tab = tabs
+      ? tabs[0]!
       : {
           // Skipped: fall through to a blank canvas with the chosen
           // theme's backdrop so the editor loads in the user's style
@@ -377,7 +379,7 @@ export default function NewDocumentPage() {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.
         await offlineCreateDocument(
-          { id: documentId, name: documentName, tabs: [tab] },
+          { id: documentId, name: documentName, tabs: tabs ?? [tab] },
           Date.now(),
         );
       } else {
@@ -389,7 +391,7 @@ export default function NewDocumentPage() {
         await apiCreateDocument(who.id, {
           id: documentId,
           name: documentName,
-          tabs: [tab],
+          tabs: tabs ?? [tab],
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

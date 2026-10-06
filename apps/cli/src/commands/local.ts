@@ -8,6 +8,8 @@ import {
   SKILL_DIRECTORIES,
   SKILL_NAME,
 } from '@livediagram/agent-verbs';
+import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
+import type { DebugLog } from '../debug';
 import type { ApiClient } from '@livediagram/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@livediagram/api-schema';
 import { forgetCredential, storeCredential, storedCredential } from '../auth/credentials';
@@ -82,19 +84,8 @@ export async function callApi(
   return { text: await res.text(), status: res.status };
 }
 
-export async function login(
-  io: CliIo,
-  profile: Profile,
-  api: (token: string) => ApiClient,
-  withToken: boolean | undefined,
-): Promise<{ host: string; account: string }> {
-  if (!withToken)
-    throw new CliError({
-      exit: EXIT.usage,
-      code: 'usage',
-      message: 'sign in with a token from stdin: --with-token',
-      hint: 'create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token',
-    });
+// A token from stdin (`--with-token`): never read from a terminal, and only an lvd_ token.
+async function tokenFromStdin(io: CliIo): Promise<string> {
   if (io.stdinIsTTY)
     throw new CliError({
       exit: EXIT.usage,
@@ -109,6 +100,42 @@ export async function login(
       code: 'invalid_value',
       message: 'that is not an API token (lvd_…)',
     });
+  return token;
+}
+
+export type LoginInput = { withToken?: boolean; device?: boolean };
+
+// Sign in (blueprint "Credentials"): a token by the browser (default), the device grant (`--device`) or stdin
+// (`--with-token`); checked with the api, stored, and the token it replaces revoked.
+export async function login(
+  io: CliIo,
+  profile: Profile,
+  api: (token: string) => ApiClient,
+  input: LoginInput,
+  oauthIssuer: string | undefined,
+  log: DebugLog,
+): Promise<{ host: string; account: string }> {
+  if (input.withToken && input.device)
+    throw new CliError({
+      exit: EXIT.usage,
+      code: 'usage',
+      message: 'give --with-token or --device, not both',
+    });
+  let token: string;
+  if (input.withToken) token = await tokenFromStdin(io);
+  else {
+    if (!oauthIssuer)
+      throw new CliError({
+        exit: EXIT.auth,
+        code: 'auth',
+        message: `${profile.host} offers no browser sign-in`,
+        hint: 'create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token',
+      });
+    const server = await discover(io, oauthIssuer, log);
+    token = input.device
+      ? await loginWithDevice(io, server, log)
+      : await loginWithBrowser(io, server, log);
+  }
   const current = await api(token).json<CurrentTokenResponse>('/tokens/current');
   const previous = await storedCredential(io, profile.name);
   await storeCredential(io, profile.name, {
