@@ -563,7 +563,9 @@ document"**; everything else stays put.
   restarting it.
 - **Progress:** the label sits under the animation with a slim indeterminate
   bar below it. After 10 seconds in the editor's load the screen adds
-  "This is taking longer than usual." with a Refresh button.
+  "This is taking longer than usual." with a Refresh button. Past that, the
+  load's watchdog takes over: one self-healing reload, then the load-error
+  screen with its recovery card ([Load recovery](load-recovery.md)).
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),

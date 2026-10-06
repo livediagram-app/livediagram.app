@@ -9,6 +9,7 @@ import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
+import { LoadRecoveryCard } from '@/components/chrome/LoadRecoveryCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { EditorContext } from './EditorContext';
@@ -33,7 +34,7 @@ const SharePasswordGate = dynamic(
 );
 
 const LOAD_ERROR_MESSAGE =
-  'We couldn’t load this document: the server didn’t respond. Check your connection and try again.';
+  'We couldn’t load this document: it didn’t finish loading. Check your connection and try again.';
 
 // `embed` mounts the read-only embed view (docs/specs/013-workspace/embeds.md): same state, same
 // EditorView, with the chrome / identity / edit gates flipped by the
@@ -148,8 +149,18 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   // show the error card (with the Explorer behind it for navigation)
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
+    // The recovery card (docs/specs/007-editor/load-recovery.md) is for the full app only: an embed's
+    // visitor is on someone else's page, where repairing their browser is not the fix.
     const card = (
-      <ApiErrorPage onRetry={() => window.location.reload()} message={LOAD_ERROR_MESSAGE} />
+      <ApiErrorPage onRetry={() => window.location.reload()} message={LOAD_ERROR_MESSAGE}>
+        {embed ? null : (
+          <LoadRecoveryCard
+            ownerId={
+              state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null)
+            }
+          />
+        )}
+      </ApiErrorPage>
     );
     // Embed frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).

@@ -65,6 +65,10 @@ const KEYS = {
   collabKey: `${NS}collab-key`,
 } as const;
 
+// The keys, for the guard that every one a browser repair must keep is on its kept list
+// (docs/specs/007-editor/load-recovery.md "Repairing a browser").
+export const LOCAL_IDENTITY_KEYS = KEYS;
+
 export function getGuestSelfId(): string | null {
   return readLocalStorageSafe(KEYS.selfId);
 }

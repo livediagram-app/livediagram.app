@@ -31,6 +31,9 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
+import { armLoadWatchdog, setLoadStep } from '@/lib/load-progress';
+import { track } from '@/lib/telemetry';
+import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -230,7 +233,17 @@ export function useIdentityBootstrap(opts: {
       window.location.assign(`${window.location.origin}/new`);
       return;
     }
-    void (async () => {
+    // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
+    // the load-error screen (after one self-healing reload per tab), and a load that lands after it
+    // replaces that screen with the editor.
+    const watchdog = armLoadWatchdog(
+      () => {
+        setLoadError(true);
+        setLoadingDocument(false);
+      },
+      { warn: (type) => track('Error', 'Warning', type) },
+    );
+    const load = async () => {
       const id = initialId;
       const shareCodeParam = initialShareCode;
 
@@ -251,6 +264,7 @@ export function useIdentityBootstrap(opts: {
         // migrate can prove possession. Falls back to a local unsigned id
         // offline. See docs/specs/014-identity/auth-and-guest-access.md + lib/guest-identity.ts.
         const selfId = clerkUserId ?? (await ensureSignedGuestIdentity()).id;
+        setLoadStep('participant');
         const storedSelf = await apiLoadSelf(selfId).catch(() => null);
         // Signed-in users always use their Clerk-known name on the
         // participant record. For a brand-new participant (no storedSelf)
@@ -316,6 +330,7 @@ export function useIdentityBootstrap(opts: {
         // their visit into shared_with — without it the server can't
         // identify the visitor and the "Shared with you" list stays
         // empty forever.
+        setLoadStep('share');
         let resolution;
         try {
           resolution = await apiLoadShared(shareCodeParam, self.id);
@@ -388,6 +403,7 @@ export function useIdentityBootstrap(opts: {
           // Scope first: seeding makes the scoped tab active, and the active-tab
           // guard refuses any other (docs/specs/013-workspace/tab-scoped-share-links.md).
           setSessionTabScope(scopeTabId);
+          setLoadStep('first-tab');
           await seedFetchedDocument(self.id, fetched, codeForVisitor, scopeTabId);
           // A share link always opens a server document: it has a room.
           setDocumentServerStored(true);
@@ -450,6 +466,7 @@ export function useIdentityBootstrap(opts: {
           // here counted every refresh and return visit.
         }
       } else if (id) {
+        setLoadStep('document');
         let fetched;
         try {
           fetched = await apiLoadDocument(self.id, id);
@@ -485,6 +502,7 @@ export function useIdentityBootstrap(opts: {
         // Tab seeding + name + owner fields (shared with the visitor
         // branch above) — see seed-fetched-document.ts. The owner's
         // eager first-tab fetch presents no share code.
+        setLoadStep('first-tab');
         await seedFetchedDocument(self.id, fetched, null, null);
         // An offline document (docs/specs/006-document/offline-mode.md) is yours by construction — its
         // ownerId is the local sentinel, never a participant id, so
@@ -527,6 +545,23 @@ export function useIdentityBootstrap(opts: {
       // manual fetch needed here.
       setHydrated(true);
       setLoadingDocument(false);
+      // A load that outlived its watchdog replaces the load-error screen it put up.
+      setLoadStep('done');
+      if (watchdog.finish()) setLoadError(false);
+    };
+    void (async () => {
+      try {
+        await load();
+      } catch (err) {
+        // Anything the load throws outside its handled branches ends on the load-error screen, never
+        // on the opening screen forever.
+        console.error('[load] the document load threw', err);
+        track('Error', 'Client', errorTypeToken('DocumentLoad', errorNameToken(err)));
+        setLoadError(true);
+        setLoadingDocument(false);
+      } finally {
+        watchdog.finish();
+      }
     })();
   });
   useLayoutEffect(() => {

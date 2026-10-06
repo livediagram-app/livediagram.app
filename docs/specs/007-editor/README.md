@@ -3,6 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./live-app.md - when working on Live app: The diagram editor app (clean routes, no `/live` prefix)
+- ./load-recovery.md - when working on a document that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
 - ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
 - ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All, Diagram, Draw, Illustrate), the mode glyph on template cards, the four blanks, or the Draw and Illustrate templates
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
@@ -18,4 +19,4 @@ Follow the references below only as needed; never upfront.
 - ./editor-modes.md - when working on editor modes: Diagram and Draw on a general tab, the mode switch beside the menu button and in the Palette header, kinds versus modes
 - ./illustrate-pages.md - when working on Illustrate pages (infographic and article kinds): page sizes, backgrounds and patterns, the page panel, layouts and their hover preview, page actions and reordering, snapping, re-fitting content, laying content out into pages, page export, page slides and the Slides button
 - ./article-pages.md - when working on article pages in Illustrate mode: the writing and its blocks, flowing across linked pages, the page toolbar, zones (objects and drawings in the text, wrap), margin notes, article style and looks, leaving Illustrate, export and collaboration of the writing (carets included)
-- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, editor modes, Illustrate pages, article pages, power user mode, UI scale)
+- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, editor modes, Illustrate pages, article pages, power user mode, UI scale, load recovery)
