@@ -22,6 +22,12 @@ import {
   readerPersonIds,
   type CardRow,
 } from './plan-board-index';
+import {
+  CARD_THREADS_CTES,
+  CARD_THREADS_SELECT,
+  cardThreadsFromRows,
+  type CardThreadRow,
+} from './plan-card-threads';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
@@ -215,6 +221,9 @@ const ACTIONS_SQL = `${SCOPE_CTES}
 // Exported for the query-plan guard in activity-cards.test.ts.
 export const CARDS_SQL = `${SCOPE_CTES}${CARDS_CTES}${CARDS_SELECT}`;
 
+// A Plan card's comment threads (§2.5), read from the item store like the cards.
+export const CARD_THREADS_SQL = `${SCOPE_CTES}${CARD_THREADS_CTES}${CARD_THREADS_SELECT}`;
+
 const THREADS_SQL = `${SCOPE_CTES}
   SELECT ct.tab_id, ct.element_id, ct.element_label, ct.comment_count,
          ct.latest_text, ct.latest_author_name, ct.latest_author_color, ct.first_at, ct.latest_at,
@@ -283,10 +292,11 @@ export async function readActivity(
   const now = Date.now();
   // Cards are matched on hashed ids (§2.4), which SQL cannot compute: the reader's aliases are read first.
   const personIds = await readerPersonIds(env, ownerId);
-  const [actionsRes, threadsRes, cardsRes] = await env.DB.batch([
+  const [actionsRes, threadsRes, cardsRes, cardThreadsRes] = await env.DB.batch([
     env.DB.prepare(ACTIONS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(THREADS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(CARDS_SQL).bind(ownerId, now, opts.limit, JSON.stringify(personIds)),
+    env.DB.prepare(CARD_THREADS_SQL).bind(ownerId, now, opts.limit),
   ]);
   const actions: ActivityAction[] = dedupePlaces((actionsRes?.results ?? []) as ActionRow[]).map(
     (r) => ({
@@ -319,7 +329,8 @@ export async function readActivity(
     }),
   );
   const cards = cardsFromRows((cardsRes?.results ?? []) as CardRow[]);
-  return { actions, threads, cards };
+  const cardThreads = cardThreadsFromRows((cardThreadsRes?.results ?? []) as CardThreadRow[]);
+  return { actions, threads, cards, cardThreads };
 }
 
 // ---------- Backfill state + aliases ----------------------------------

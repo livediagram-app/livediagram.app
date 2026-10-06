@@ -35,6 +35,7 @@ const thread = (item: Item | undefined) => item?.fields['comments'] as unknown a
 
 function setup() {
   const onError = vi.fn();
+  const onMentioned = vi.fn();
   const hook = renderHook(() =>
     usePlanItems({
       documentId: 'doc',
@@ -46,9 +47,10 @@ function setup() {
       tabScope: null,
       pushUndo: () => {},
       onError,
+      onMentioned,
     }),
   );
-  return { ...hook, onError };
+  return { ...hook, onError, onMentioned };
 }
 
 beforeEach(() => {
@@ -103,6 +105,29 @@ describe('usePlanItems comments', () => {
       { kind: 'add', text: 'Hi' },
       expect.objectContaining({ ownerId: 'owner-me' }),
     );
+  });
+
+  // docs/specs/026-plan/items.md "Comments": a card comment's mentions reach people once it has landed.
+  it('notifies the mentioned once the comment lands, never for a refused one', async () => {
+    const mentions = [{ userId: 'u2', name: 'Priya', handle: 'priya' }];
+    api.writeItemComment.mockResolvedValue({ upserts: [], removed: [], rev: 2 });
+    const { result, onMentioned } = setup();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    await waitFor(() => expect(result.current.self).not.toBeNull());
+    await act(async () => {
+      await result.current.comment('item-one', { kind: 'add', text: 'Hi @priya', mentions });
+    });
+    expect(onMentioned).toHaveBeenCalledWith('Hi @priya', mentions, 'item-one');
+    onMentioned.mockClear();
+    await act(async () => {
+      await result.current.comment('item-one', { kind: 'add', text: 'No one' });
+    });
+    expect(onMentioned).not.toHaveBeenCalled();
+    api.writeItemComment.mockRejectedValue(new Error('nope'));
+    await act(async () => {
+      await result.current.comment('item-one', { kind: 'add', text: 'Hi @priya', mentions });
+    });
+    expect(onMentioned).not.toHaveBeenCalled();
   });
 
   it('keeps our own author id when the room’s copy lands after the answer', async () => {

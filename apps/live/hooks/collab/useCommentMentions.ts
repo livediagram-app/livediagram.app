@@ -66,9 +66,10 @@ export function useCommentMentions({
   const candidates = loaded && loaded.key === key ? loaded.list : NONE;
 
   // After a comment with mentions lands: count it, and ask the api to email
-  // them. Fire-and-forget; the comment has already persisted locally.
+  // them. Fire-and-forget; the comment has already persisted locally. A Plan
+  // card's comment names the card, so the email opens it.
   const notifyMentioned = useCallback(
-    (text: string, mentions: readonly CommentMention[]) => {
+    (text: string, mentions: readonly CommentMention[], itemId?: string) => {
       if (mentions.length === 0) return;
       track('Comment', 'Mentioned');
       if (!ownerId || !team || !documentId) return;
@@ -79,6 +80,7 @@ export function useCommentMentions({
           userId: m.userId,
           ...(m.memberId ? { memberId: m.memberId } : {}),
         })),
+        ...(itemId ? { itemId } : {}),
       }).catch(() => {});
     },
     [ownerId, team, documentId],

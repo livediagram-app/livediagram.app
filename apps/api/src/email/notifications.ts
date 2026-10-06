@@ -86,6 +86,8 @@ export async function notifyMentioned(
     authorName: string | null;
     document: { id: string; name: string };
     commentText: string;
+    // A Plan card's comment: the card the button opens.
+    itemId?: string;
   },
 ): Promise<void> {
   if (!emailEnabled(env)) return;
@@ -105,6 +107,7 @@ export async function notifyMentioned(
       input.document.name,
       input.document.id,
       input.commentText,
+      input.itemId,
     ),
   });
 }

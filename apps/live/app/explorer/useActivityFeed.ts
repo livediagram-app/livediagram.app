@@ -11,7 +11,12 @@
 // count, and the badge can never disagree with the page.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
+import type {
+  ActivityAction,
+  ActivityCard,
+  ActivityCardThread,
+  ActivityThread,
+} from '@livediagram/api-schema';
 import { apiListActivity } from '@/lib/api-client';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
@@ -19,13 +24,17 @@ import { track } from '@/lib/telemetry';
 /** One Assigned to You row: an action or a Plan card, told apart by `kind`. */
 export type AssignedRow = ({ kind: 'action' } & ActivityAction) | ({ kind: 'card' } & ActivityCard);
 
+/** One Open Comment Threads row: an element's thread or a Plan card's (§2.5), told apart by `kind`. */
+export type ThreadRow =
+  ({ kind: 'thread' } & ActivityThread) | ({ kind: 'card' } & ActivityCardThread);
+
 export type ActivityFeed = {
   /** Open actions (self-assignments included) and open Plan cards on the reader, newest first. */
   assignedToMe: AssignedRow[];
   /** Open actions the reader assigned to somebody ELSE. */
   youAssigned: ActivityAction[];
-  /** Unresolved threads the reader is in. */
-  threads: ActivityThread[];
+  /** Unresolved threads the reader is in, on elements and on Plan cards, newest comment first. */
+  threads: ThreadRow[];
   loading: boolean;
   /** The last read FAILED — not the same as nothing outstanding. */
   error: boolean;
@@ -36,6 +45,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
   const [actions, setActions] = useState<ActivityAction[]>([]);
   const [threads, setThreads] = useState<ActivityThread[]>([]);
   const [cards, setCards] = useState<ActivityCard[]>([]);
+  const [cardThreads, setCardThreads] = useState<ActivityCardThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Guards a late response from a previous owner id (a guest signing in
@@ -56,6 +66,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
           setActions([]);
           setThreads([]);
           setCards([]);
+          setCardThreads([]);
         }
         setLoading(false);
         return;
@@ -64,6 +75,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       setActions(result.actions);
       setThreads(result.threads);
       setCards(result.cards);
+      setCardThreads(result.cardThreads ?? []);
       setLoading(false);
     });
   }, []);
@@ -112,5 +124,14 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
     [actions],
   );
 
-  return { assignedToMe, youAssigned, threads, loading, error, retry };
+  const threadRows = useMemo(
+    () =>
+      [
+        ...threads.map((t) => ({ kind: 'thread' as const, ...t })),
+        ...cardThreads.map((t) => ({ kind: 'card' as const, ...t })),
+      ].sort((a, b) => b.latest.at - a.latest.at),
+    [threads, cardThreads],
+  );
+
+  return { assignedToMe, youAssigned, threads: threadRows, loading, error, retry };
 }

@@ -82,6 +82,7 @@ export const ROOT_TYPES = [
   'ActivityAction',
   'ActivityThread',
   'ActivityCard',
+  'ActivityCardThread',
   'HomeResponse',
   'ImageSummary',
   'SharedWithItem',

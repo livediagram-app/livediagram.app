@@ -94,6 +94,27 @@ describe('useActivityFeed', () => {
     expect(result.current.error).toBe(false);
   });
 
+  // docs/specs/013-workspace/activity-page.md §1, §2.5: a Plan card's thread lists with the element threads,
+  // newest comment first.
+  it("merges Plan cards' threads into the threads, newest comment first", async () => {
+    apiListActivity.mockResolvedValue({
+      actions: [],
+      threads: [{ ...thread, latest: { ...thread.latest, at: 5 } }],
+      cards: [],
+      cardThreads: [
+        { id: 'it-new', latest: { text: 'n', authorName: 'A', authorColor: '#000', at: 9 } },
+        { id: 'it-old', latest: { text: 'o', authorName: 'A', authorColor: '#000', at: 1 } },
+      ],
+    });
+    const { result } = renderHook(() => useActivityFeed('me'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.threads.map((t) => [t.kind, t.latest.at])).toEqual([
+      ['card', 9],
+      ['thread', 5],
+      ['card', 1],
+    ]);
+  });
+
   // docs/specs/013-workspace/activity-page.md §1, §2.4: Plan cards on the reader share Assigned to You
   // with actions, newest change first, and count toward the sidebar badge through the same list.
   it('merges Plan cards into assigned-to-you, newest first', async () => {

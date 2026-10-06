@@ -12,6 +12,7 @@ import type { ReactNode } from 'react';
 import type {
   ActivityAction,
   ActivityCard,
+  ActivityCardThread,
   ActivityPlace,
   ActivityThread,
 } from '@livediagram/api-schema';
@@ -87,6 +88,29 @@ export function ActivityActionRow({
   );
 }
 
+// What a thread row says about why it is on the page, an element's or a card's alike: a mention is the most
+// direct reason, so it wins (docs/specs/012-collaboration/comment-mentions.md "The Activity page").
+type ThreadFacts = Pick<
+  ActivityThread,
+  'mentionsYou' | 'onYourDocument' | 'youCommented' | 'commentCount' | 'latest'
+>;
+
+function threadHint(t: ThreadFacts): string | null {
+  if (t.mentionsYou) return 'Mentioned You';
+  return t.onYourDocument && !t.youCommented ? 'Your document' : null;
+}
+
+function threadAvatar(t: ThreadFacts) {
+  return {
+    name: t.latest.authorName,
+    detail:
+      t.commentCount === 1
+        ? '1 comment in this thread'
+        : `${t.commentCount} comments in this thread`,
+    color: t.latest.authorColor,
+  };
+}
+
 export function ActivityThreadRow({
   thread,
   onOpen,
@@ -102,23 +126,8 @@ export function ActivityThreadRow({
       icon={<CommentMenuIcon />}
       title={thread.elementLabel}
       detail={thread.latest.text}
-      // A mention is the most direct reason it is on your page, so it wins
-      // (docs/specs/012-collaboration/comment-mentions.md "The Activity page").
-      hint={
-        thread.mentionsYou
-          ? 'Mentioned You'
-          : thread.onYourDocument && !thread.youCommented
-            ? 'Your document'
-            : null
-      }
-      avatar={{
-        name: thread.latest.authorName,
-        detail:
-          thread.commentCount === 1
-            ? '1 comment in this thread'
-            : `${thread.commentCount} comments in this thread`,
-        color: thread.latest.authorColor,
-      }}
+      hint={threadHint(thread)}
+      avatar={threadAvatar(thread)}
       at={thread.latest.at}
     />
   );
@@ -144,6 +153,33 @@ export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: 
         colorClass: `bg-brand-500 ${SOLID_BRAND_DARK}`,
       }}
       at={card.updatedAt}
+    />
+  );
+}
+
+// A Plan card's comment thread (docs/specs/013-workspace/activity-page.md §1, §2.5): the card's type glyph,
+// number and title, and where it sits, as a card row; the latest comment and its author, and the same hints, as a
+// thread row. It opens the card.
+export function ActivityCardThreadRow({
+  thread,
+  onOpen,
+}: {
+  thread: ActivityCardThread;
+  onOpen: () => void;
+}) {
+  const type = ITEM_TYPES.find((t) => t.id === thread.type);
+  return (
+    <ActivityRowShell
+      href={cardDeepLinkHref(thread)}
+      place={thread}
+      where={thread.board ? `${thread.board.title} · ${thread.board.tabName}` : 'Not on a board'}
+      onOpen={onOpen}
+      icon={<PlanTypeGlyph glyph={type?.glyph} size={16} />}
+      title={`#${thread.key} ${thread.title}`}
+      detail={thread.latest.text}
+      hint={threadHint(thread)}
+      avatar={threadAvatar(thread)}
+      at={thread.latest.at}
     />
   );
 }
@@ -229,7 +265,7 @@ function ActivityRowShell({
 }
 
 // What every row knows of its document: an element's full place, or a card's.
-type DocumentPlace = ActivityPlace | ActivityCard;
+type DocumentPlace = ActivityPlace | ActivityCard | ActivityCardThread;
 
 // Which document the row is from; a team document's chip leads with the
 // team glyph so the source of the work reads at a glance.

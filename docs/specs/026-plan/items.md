@@ -170,8 +170,11 @@ author redaction, and the same thread list, composer and resolve control the com
   Deleting a card deletes its thread with it; undoing that delete restores the thread, keeping the author id only
   on the restorer's own comments.
 - **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
-- **Mentions** show as chips and are kept on the comment. They do not yet reach the Activity page or send email,
-  which the canvas's comments do through the tab's collaboration index.
+- **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does
+  ([Comment mentions](../012-collaboration/comment-mentions.md)): the card's thread lists on the mentioned person's
+  Activity page (with the thread's other readers: whoever commented in it, and the document's owner), and the
+  author's editor asks the api to email them, the email's button opening the card. `Comment · Mentioned` counts
+  each mentioning comment, as on the canvas.
 - **Timeline and email**: a new comment records on the document's timeline and emails the owner (when email is
   on and the commenter is not the owner), exactly as a canvas comment does; resolving records too.
 - **Offline documents** comment locally, the same rules minus the room; the thread syncs with the item.

@@ -19,6 +19,7 @@ import {
   ActivityEmptyState,
   ActivityFailedState,
   ActivitySection,
+  ActivityCardThreadRow,
   ActivityThreadRow,
 } from './activity-pane-parts';
 
@@ -68,13 +69,21 @@ export function ActivityPane({ feed }: { feed: ActivityFeed }) {
       ) : null}
       {feed.threads.length > 0 ? (
         <ActivitySection title="Open Comment Threads" count={feed.threads.length}>
-          {feed.threads.map((t) => (
-            <ActivityThreadRow
-              key={`${t.tabId}:${t.elementId}`}
-              thread={t}
-              onOpen={() => track('Activity', 'Selected', 'Thread')}
-            />
-          ))}
+          {feed.threads.map((t) =>
+            t.kind === 'card' ? (
+              <ActivityCardThreadRow
+                key={`card:${t.documentId}:${t.id}`}
+                thread={t}
+                onOpen={() => track('Activity', 'Selected', 'CardThread')}
+              />
+            ) : (
+              <ActivityThreadRow
+                key={`${t.tabId}:${t.elementId}`}
+                thread={t}
+                onOpen={() => track('Activity', 'Selected', 'Thread')}
+              />
+            ),
+          )}
         </ActivitySection>
       ) : null}
     </div>
