@@ -494,19 +494,19 @@ hardening landed first:
 2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
    Shipped behind the grace switch; the operator arms it by setting
    `GUEST_SIG_ENFORCE_AFTER` ([Self-hosting](../../operations/self-hosting.md)).
-   **Not armed.** It is stated in `apps/api/wrangler.toml` `[vars]` (a
-   dashboard-only value is wiped by every deploy), blank. It was armed in
-   production on 2026-10-06 and un-armed the same day: `/new` mints a local
+   **Armed**, stated in `apps/api/wrangler.toml` `[vars]` (a dashboard-only
+   value is wiped by every deploy). It was first armed in production on
+   2026-10-06 and un-armed the same day: `/new` mints a local
    unsigned id, so a first-time visitor arriving there from the landing page was
    refused (`401 signature_required`) and could not create a document, against
    the rule that the canvas always works without signing in. Every entry path
    now resolves a signed id before its first owner-scoped call
    ([Auth and guest access](../014-identity/auth-and-guest-access.md) "Signed
    guest ids"), and every e2e stack runs with enforcement armed
-   (`scripts/e2e-stack.mjs`), so a regression of that kind fails the suite. **Re-arming
-   production is Tom's or Webber's call**, made by setting
-   `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
-   holds from then. Production only
+   (`scripts/e2e-stack.mjs`), so a regression of that kind fails the suite. It was re-armed
+   once those had shipped and the entry flows were checked in a fresh browser
+   on staging. To un-arm it again, blank `GUEST_SIG_ENFORCE_AFTER` in both
+   `[vars]` blocks. Production only
    started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
    were still unsigned when it was armed: about 219, holding 274 documents. An
    id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy

@@ -50,16 +50,16 @@ AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 # whose participant row is older may still run its one-time upgrade unsigned.
 #
 # GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
-# owner leg and the legacy upgrade require a valid guest signature. Blank: not
-# armed. Every entry path now resolves a signed id before its first api call,
-# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
-# regression fails the suite; re-arming production is Tom's or Webber's call
-# (docs/specs/015-api/public-api-and-tokens.md §6).
+# owner leg and the legacy upgrade require a valid guest signature. Armed
+# (2026-10-06 00:00 UTC, so it applies from the first deploy that carries it).
+# Every entry path resolves a signed id before its first api call, and every
+# e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a regression
+# fails the suite (docs/specs/015-api/public-api-and-tokens.md §6). Blank = not armed.
 # `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
 # can predate their local signing secret and would be locked out of their own
 # test data.
 GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
+GUEST_SIG_ENFORCE_AFTER = "1791244800000"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -390,7 +390,7 @@ AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 # Staging's own database dates from 2026-09-17 and signs with its own secret;
 # its test guests take the same dates rather than drift from production.
 GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
+GUEST_SIG_ENFORCE_AFTER = "1791244800000"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
