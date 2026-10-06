@@ -48,6 +48,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'Watch', command: 'watch', what: 'streaming comments and changes' },
   { type: 'Pull', command: 'pull', what: 'writing a document to a file' },
   { type: 'Push', command: 'push', what: 'sending a pulled file’s changes back' },
+  { type: 'Export', command: 'export --all', what: 'exporting every document to files' },
   { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
   { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },
