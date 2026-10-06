@@ -16,6 +16,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   },
   { type: 'TabLs', command: 'tab ls', what: 'listing a document’s tabs' },
   { type: 'TabView', command: 'tab view', what: 'reading a view of a tab' },
+  { type: 'TabRender', command: 'tab render', what: 'drawing a tab as a picture' },
   { type: 'TabLint', command: 'tab lint', what: 'checking how a tab is drawn' },
   { type: 'TabDiff', command: 'tab diff', what: 'comparing a tab with an earlier read' },
   { type: 'TabAdd', command: 'tab add', what: 'adding a tab' },

@@ -287,14 +287,14 @@ export const push = defineVerb({
 });
 
 // Every document to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
-export const EXPORT_FORMATS = ['json', 'svg', 'mermaid', 'md'] as const;
+export const EXPORT_FORMATS = ['json', 'svg', 'png', 'mermaid', 'md'] as const;
 
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
   summary: 'Every document to files, for backups and docs',
   description:
-    'Writes every document the token can read: <slug>.livediagram.json (json, the default), and per tab <slug>/<tab-slug>.svg, .mmd or .md. Prints the paths written, then the totals.',
+    'Writes every document the token can read: <slug>.livediagram.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -319,5 +319,60 @@ export const exportAll = defineVerb({
       'livediagram export --all --to docs --format svg,md',
     ],
     prints: 'the paths written, then <n> documents · <m> files',
+  },
+});
+
+// A picture of a tab or a graph file (blueprint "Previews"): the CLI rasterises, so it runs them.
+const pictureFlags = {
+  png: z.string().optional().describe('Write a PNG here'),
+  svg: z.string().optional().describe('Write an SVG here'),
+};
+const pictureOutput = z.object({ lines: z.array(z.string()) });
+
+export const tabRender = defineVerb({
+  id: 'tab.render',
+  summary: 'A picture of a tab, as PNG or SVG',
+  description:
+    'Writes a tab as the shared renderer draws it, to --png or --svg (one of them), at scale 1. Prints the path, its size in pixels and in KB.',
+  behaviour: 'read',
+  local: true,
+  input: z.object({
+    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    tab: z.string().optional().describe('A tab name or id prefix; the first tab when omitted'),
+    ...pictureFlags,
+  }),
+  output: pictureOutput,
+  text: ({ lines }) => lines,
+  cli: {
+    positionals: ['doc'],
+    examples: [
+      'livediagram tab render "Shop" --png shop.png',
+      'livediagram tab render 3f9c --tab Flow --svg flow.svg',
+    ],
+    prints: '<path>  <width>×<height> · <n> KB',
+  },
+});
+
+export const graphRender = defineVerb({
+  id: 'graph.render',
+  summary: 'A picture of a graph or Mermaid file, before writing it',
+  description:
+    'Lays a graph or Mermaid file out as the api would and writes it to --png or --svg (one of them), at scale 1. Nothing is sent.',
+  behaviour: 'read',
+  local: true,
+  offline: true,
+  input: z.object({
+    file: z.string().describe('The graph or Mermaid file, or - for stdin'),
+    ...pictureFlags,
+  }),
+  output: pictureOutput,
+  text: ({ lines }) => lines,
+  cli: {
+    positionals: ['file'],
+    examples: [
+      'livediagram graph render arch.json --png arch.png',
+      'livediagram graph render flow.mmd --svg flow.svg',
+    ],
+    prints: '<path>  <width>×<height> · <n> KB',
   },
 });

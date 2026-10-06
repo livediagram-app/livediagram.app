@@ -153,13 +153,13 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: /(^|-)index_bg\.wasm$/ },
     texts: text('tiny-skia-0.10.0-LICENSE.txt'),
   },
-  // The typeface the mcp worker renders previews with (apps/mcp/fonts).
+  // The typeface the MCP server and the CLI render PNG previews with (packages/render-png/fonts).
   {
     id: 'inter',
     name: 'Inter',
     version: '3.19',
     licence: 'OFL-1.1',
-    carrier: 'the MCP server (font)',
+    carrier: 'the MCP server and the CLI (font)',
     homepage: 'https://github.com/rsms/inter',
     trigger: { assets: /(^|-)Inter-Regular\.ttf$/ },
     texts: text('inter-3.19-LICENSE.txt'),

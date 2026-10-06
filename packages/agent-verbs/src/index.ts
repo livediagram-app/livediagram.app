@@ -54,6 +54,7 @@ export {
   documentOf,
   LIST_DEFAULT_LIMIT,
   LIST_MAX_LIMIT,
+  tabOf,
   tabPath,
   type DocumentWithTabs,
 } from './verbs/shared';

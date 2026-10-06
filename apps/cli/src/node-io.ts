@@ -2,7 +2,8 @@
 
 import { chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { CliIo, RoomSocket } from './io';
 
 // The runtime's WebSocket (Node 22 and later), as the room stream uses it.
@@ -48,6 +49,9 @@ export function nodeIo(): CliIo {
     cwd: process.cwd(),
     runtime: `node/${process.versions.node} ${process.platform}`,
     openSocket,
+    // Beside the bundle: dist/ holds livediagram.mjs, resvg.wasm and Inter-Regular.ttf.
+    readAsset: async (name) =>
+      new Uint8Array(await readFile(join(dirname(fileURLToPath(import.meta.url)), name))),
     timer: (ms, handler) => {
       const id = setTimeout(handler, ms);
       return () => clearTimeout(id);
@@ -62,6 +66,12 @@ export function nodeIo(): CliIo {
         await mkdir(dirname(path), { recursive: true });
         const temporary = `${path}.${process.pid}.tmp`;
         await writeFile(temporary, data, { mode: mode ?? 0o644 });
+        await rename(temporary, path);
+      },
+      writeBytes: async (path, data) => {
+        await mkdir(dirname(path), { recursive: true });
+        const temporary = `${path}.${process.pid}.tmp`;
+        await writeFile(temporary, data);
         await rename(temporary, path);
       },
       mkdir: async (path, mode) =>

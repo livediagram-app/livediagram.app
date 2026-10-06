@@ -1,7 +1,16 @@
 // An in-memory CliIo for the suites (docs/specs/015-api/blueprints/cli.md "Testing"): captured streams, a map
 // of files with their modes, a scripted fetch and a fixed clock.
 
-import type { CliIo, RoomSocket } from '../io';
+import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import type { CliAsset, CliIo, RoomSocket } from '../io';
+
+// The real assets, from the packages that ship them, so a suite renders real PNGs.
+const requireHere = createRequire(import.meta.url);
+const ASSET_PATHS: Record<CliAsset, string> = {
+  'resvg.wasm': requireHere.resolve('@resvg/resvg-wasm/index_bg.wasm'),
+  'Inter-Regular.ttf': requireHere.resolve('@livediagram/render-png/fonts/Inter-Regular.ttf'),
+};
 
 // A room socket the suite drives: it opens, delivers frames and closes when told to.
 export type FakeSocket = RoomSocket & {
@@ -48,6 +57,8 @@ export type FakeIo = CliIo & {
   out: () => string;
   err: () => string;
   fileMap: Map<string, { data: string; mode: number }>;
+  // Files written as bytes.
+  byteMap: Map<string, Uint8Array>;
   requests: Request[];
   slept: number[];
   sockets: FakeSocket[];
@@ -72,6 +83,7 @@ export function fakeIo(
   const fileMap = new Map(
     Object.entries(options.files ?? {}).map(([k, v]) => [k, { data: v, mode: 0o600 }]),
   );
+  const byteMap = new Map<string, Uint8Array>();
   const requests: Request[] = [];
   const slept: number[] = [];
   let clock = NOW;
@@ -106,6 +118,7 @@ export function fakeIo(
     files: {
       read: async (path) => fileMap.get(path)?.data ?? null,
       write: async (path, data, mode) => void fileMap.set(path, { data, mode: mode ?? 0o644 }),
+      writeBytes: async (path, data) => void byteMap.set(path, data),
       mkdir: async () => {},
       mode: async (path) => fileMap.get(path)?.mode ?? null,
       chmod: async (path, mode) => {
@@ -114,6 +127,7 @@ export function fakeIo(
       },
       remove: async (path) => void fileMap.delete(path),
     },
+    readAsset: async (name) => new Uint8Array(await readFile(ASSET_PATHS[name])),
     openSocket: (url) => {
       const socket = fakeSocket(url);
       sockets.push(socket);
@@ -147,6 +161,7 @@ export function fakeIo(
     out: () => out,
     err: () => err,
     fileMap,
+    byteMap,
     requests,
     slept,
     sockets,
