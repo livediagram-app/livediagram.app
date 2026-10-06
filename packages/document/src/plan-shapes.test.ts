@@ -5,6 +5,7 @@ import { elementKindLabel } from './element-kind-label';
 import { isPlanShape, isSelfDrawingShape } from './data-shapes';
 import { SELF_PAINTING_SHAPES } from './colors';
 import { elementValidationIssue } from './validate';
+import { takesTypedLabel } from './element-types';
 import { svgBoxed, renderElementsToSvg } from './svg-render';
 import type { BoxedElement, Tab } from './index';
 
@@ -42,6 +43,13 @@ describe('plan shapes', () => {
       expect(SELF_PAINTING_SHAPES.has(k)).toBe(true);
     }
     expect(isPlanShape('square')).toBe(false);
+  });
+
+  it('never open for typing when placed, so a new board moves at once', () => {
+    for (const k of ['plan-board', 'plan-card', 'plan-view'] as const) {
+      expect(takesTypedLabel(createShape(k, 0, 0))).toBe(false);
+    }
+    expect(takesTypedLabel(createShape('square', 0, 0))).toBe(true);
   });
 
   it('validate their set-up and reference', () => {

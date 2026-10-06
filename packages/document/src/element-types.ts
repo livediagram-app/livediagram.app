@@ -1326,6 +1326,11 @@ const UNTYPED_SHAPES = new Set<string>([
   'reaction-pad',
   'mode-button',
   'estimate',
+  // Plan boards, cards and views draw their own faces from the item store; a caret on one left a
+  // newly placed board stuck in label editing, unable to move until reselected.
+  'plan-board',
+  'plan-card',
+  'plan-view',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
