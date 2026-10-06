@@ -66,18 +66,19 @@ export interface ItemTypeDef {
   tabs?: readonly ItemTypeTab[];
 }
 
+// Parent right under Status and Assignee: what a piece of work belongs to is read with who has it.
+// No Start: only a Project, a bar on the Gantt chart, starts by default.
 const WORK: readonly ItemFieldId[] = [
   'title',
   'description',
   'status',
   'assignee',
+  'parent',
   'priority',
   'estimate',
-  'start',
   'due',
   'checklist',
   'labels',
-  'parent',
 ];
 
 export const ITEM_TYPES = [

@@ -54,13 +54,13 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'description',
   'status',
   'assignee',
+  'parent',
   'priority',
   'labels',
   'estimate',
   'start',
   'due',
   'checklist',
-  'parent',
   'votes',
 ];
 

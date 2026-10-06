@@ -25,12 +25,11 @@ describe('item type tabs', () => {
     expect(detailFieldsOf(withLong)).toEqual([
       'status',
       'assignee',
+      'parent',
       'priority',
       'estimate',
-      'start',
       'due',
       'labels',
-      'parent',
     ]);
   });
 

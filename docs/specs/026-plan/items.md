@@ -60,18 +60,21 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 
 Five built-in types, each with a glyph, an accent colour and the fields it offers in the item panel:
 
-| Type    | Accent | For                                    | Offers                                                                                          |
-| ------- | ------ | -------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, start, due, labels                              |
-| Task    | Gray   | A piece of work                        | title, description, status, assignee, priority, estimate, start, due, checklist, labels, parent |
-| Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                               |
-| Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                       |
-| Action  | Red    | Something agreed to do                 | title, description, status, assignee, due, checklist                                            |
+| Type    | Accent | For                                    | Offers                                                                                   |
+| ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, start, due, labels                       |
+| Task    | Gray   | A piece of work                        | title, description, status, assignee, parent, priority, estimate, due, checklist, labels |
+| Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                        |
+| Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
+| Action  | Red    | Something agreed to do                 | title, description, status, assignee, due, checklist                                     |
 
-- **Start** sits right before Due, on Projects (so they map onto the [Gantt chart](plan-views.md#project-gantt-chart))
-  and Tasks, edited with the same date picker as Due. A start after the due date is kept, and the item panel
+- **Start** sits right before Due, on Projects only by default (so they map onto the
+  [Gantt chart](plan-views.md#project-gantt-chart)); any other type can add it in the type editor. It is edited
+  with the same date picker as Due. A start after the due date is kept, and the item panel
   says **Starts after it is due** under it, gently. Start is a card field like Due; the Roadmap board and the
   Project Planner's Roadmap tab show it on their cards.
+- **Parent** sits right under Status and Assignee on a Task, and in that place in the type editor's list of
+  built-in fields: what a piece of work belongs to is read alongside who has it.
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
