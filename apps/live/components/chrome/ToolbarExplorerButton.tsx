@@ -5,6 +5,7 @@ import { HoverCard, Glyph } from '@livediagram/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -20,8 +21,8 @@ import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 // own card at the far left, beside the strip, which is where a phone puts it.
 //
 // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides beside the
-// button, in the corner card or inline, so it goes wherever the menu goes; it renders nothing where
-// no switch is offered.
+// button in the corner card, so it goes wherever the menu goes; it renders nothing where no switch
+// is offered. Not on a phone: the row is the strip's, and the tab menu's Opens in switches there.
 export function ToolbarExplorerButton({
   open,
   onToggle,
@@ -36,6 +37,7 @@ export function ToolbarExplorerButton({
   // the corner. Inline it sits in the strip, which is scaled already.
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
+  const phone = useIsMobileViewport();
   const button = (
     <button
       type="button"
@@ -89,7 +91,7 @@ export function ToolbarExplorerButton({
           {button}
         </HoverCard>
       )}
-      <EditorModeSwitch />
+      {phone ? null : <EditorModeSwitch />}
     </div>
   );
 }

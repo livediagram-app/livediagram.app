@@ -7,6 +7,7 @@ import type { Tab } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useShapeDrawing } from './useShapeDrawing';
 import { createSelectionStore } from '@/lib/selection-store';
+import { DEFAULT_WHITEBOARD_PREFS, saveWhiteboardPrefs } from '@/lib/whiteboard-prefs';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
@@ -88,5 +89,40 @@ describe('useShapeDrawing highlighter', () => {
     rerender({ tool: 'pan' });
     expect(result.current.selectedId).toBe('el-1');
     expect(result.current.drawing.pendingDraw).toBeNull();
+  });
+});
+
+// docs/specs/007-editor/toolbar-layout.md "Search: every element type": a marker picked from the
+// strip's Search outside Draw mode is the dock's own pen, as this browser last set it.
+describe('useShapeDrawing marker', () => {
+  it("picks up the pen in its saved colour and width, with the pen's recognition", () => {
+    saveWhiteboardPrefs({
+      ...DEFAULT_WHITEBOARD_PREFS,
+      recognise: true,
+      pens: DEFAULT_WHITEBOARD_PREFS.pens.map((p) =>
+        p.id === 'second' ? { ...p, colour: 'green', width: 2.5 } : p,
+      ),
+    });
+    const { result } = setup();
+    act(() => result.current.drawing.beginMarker('second'));
+    expect(result.current.drawing.pendingDraw).toEqual({
+      type: 'freehand',
+      variant: 'whiteboard',
+      colour: 'green',
+      width: 2.5,
+      recognise: true,
+    });
+    expect(result.current.selectedId).toBeNull();
+    localStorage.clear();
+  });
+
+  it('picks up Marker 1 in the ink, which records no colour', () => {
+    localStorage.clear();
+    const { result } = setup();
+    act(() => result.current.drawing.beginMarker('main'));
+    expect(result.current.drawing.pendingDraw).toMatchObject({
+      variant: 'whiteboard',
+      colour: null,
+    });
   });
 });

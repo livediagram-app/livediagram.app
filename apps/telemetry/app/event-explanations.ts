@@ -904,6 +904,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'In the Toolbar panel layout, someone clicked the top-left menu button to open the Explorer as a popover.',
   'UI|Opened|ToolbarMore':
     'In the Toolbar panel layout, someone clicked "More" to see every tile in the current palette category.',
+  'UI|Opened|ToolbarSearch':
+    'In the Toolbar panel layout, someone opened the Search at the far right of the palette strip to find an element by name.',
+  'UI|Opened|ToolbarSearchOtherModes':
+    "In the Toolbar strip's Search, someone expanded the elements that other editor modes offer.",
   'UI|Opened|PowerUserOffer':
     'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',

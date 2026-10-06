@@ -366,6 +366,8 @@ export type CanvasProps = {
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginHighlighter: () => void;
+  // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
+  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
   // Draw-to-size mode. Picking any palette element except the annotation

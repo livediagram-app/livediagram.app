@@ -12,6 +12,7 @@ import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -52,6 +53,8 @@ export type PaletteTileActions = {
   // Technology catalogue icon, same handlers the Icons / Technology tabs use.
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
+  // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
+  beginMarker: (penId: WhiteboardPenId) => void;
   // Whether image uploads are available (the editor supplied onAddImage);
   // gates the `needsImage` tiles exactly as the Tools / Components tabs
   // always have.
@@ -109,6 +112,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return () => actions.addTechIcon(a.iconId);
     case 'plan-widget':
       return () => addPlanWidgetToBoard(a.widget);
+    case 'marker':
+      return () => actions.beginMarker(a.penId);
   }
 }
 
@@ -168,6 +173,14 @@ export function tileActive(
     case 'tech-icon':
     case 'plan-widget':
       return false;
+    // A marker in hand: the whiteboard pen intent in this pen's colour and width.
+    case 'marker':
+      return (
+        pendingDraw.type === 'freehand' &&
+        pendingDraw.variant === 'whiteboard' &&
+        pendingDraw.colour === a.colour &&
+        pendingDraw.width === a.width
+      );
     default:
       return pendingDraw.type === a.type;
   }

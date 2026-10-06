@@ -1,4 +1,6 @@
 import type { BoardWidgetKind } from '@livediagram/items';
+import type { PenColour } from '@livediagram/document';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
 
@@ -169,7 +171,12 @@ type PaletteTileAction =
   | { type: 'tech-icon'; iconId: string }
   // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
   // never on the canvas.
-  | { type: 'plan-widget'; widget: BoardWidgetKind };
+  | { type: 'plan-widget'; widget: BoardWidgetKind }
+  // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
+  // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
+  // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
+  // the person's own, read when the Search opens.
+  | { type: 'marker'; penId: WhiteboardPenId; colour: PenColour | null; width: number };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat

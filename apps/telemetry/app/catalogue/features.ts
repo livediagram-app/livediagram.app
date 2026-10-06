@@ -689,10 +689,14 @@ export const PALETTE_GROUPS_OPENED = chart(
   'UI',
   'Opened',
   'Palette Groups Opened',
-  'A palette group or toolbar overflow opened.',
+  'A palette group, toolbar overflow or toolbar search opened.',
   {
     typeIn: (type) =>
-      (type ?? '').endsWith('Group') || type === 'ToolbarMore' || type === 'ToolbarExplorer',
+      (type ?? '').endsWith('Group') ||
+      type === 'ToolbarMore' ||
+      type === 'ToolbarExplorer' ||
+      type === 'ToolbarSearch' ||
+      type === 'ToolbarSearchOtherModes',
   },
 );
 

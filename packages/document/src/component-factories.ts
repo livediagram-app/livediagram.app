@@ -35,6 +35,11 @@ const COMPONENT_SHAPE: Partial<Record<ComponentKind, ShapeKind>> = {
   process: 'process',
 };
 
+/** The shape kind a single-shape component is placed as; undefined for the composites (hero, avatar). */
+export function componentShapeKind(kind: ComponentKind): ShapeKind | undefined {
+  return COMPONENT_SHAPE[kind];
+}
+
 const AVATAR_SIZE = 96;
 const HERO_WIDTH = 520;
 const HERO_HEIGHT = 300;

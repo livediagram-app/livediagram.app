@@ -41,8 +41,10 @@ where it is and changes only how the next mark is made.
 
 - **Placement:**
   - **Toolbar layout:** directly beside the menu (hamburger) button, in its
-    card at the top left, or inline at the strip's left end where a phone
-    puts the button ([Toolbar layout](toolbar-layout.md)).
+    card at the top left ([Toolbar layout](toolbar-layout.md)).
+  - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
+    button alone. A phone switches mode from the tab menu's **Opens in** (below), which switches
+    the chooser too; Shift+D needs a keyboard. The tour's Diagram & Draw step is skipped there.
   - **Floating layout:** in the **Palette** panel's title row, beside its help
     and minimise buttons, **labelled** (the mode's name beside its icon,
     the header has the room). The Palette stays in Draw mode, showing Draw's
@@ -194,7 +196,10 @@ element in the same colour.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
-  the eraser or an armed shape never carries over into the other mode.
+  the eraser or an armed shape never carries over into the other mode. A mode's tool can still
+  be **picked up** in another on purpose: the Toolbar strip's Search offers Draw mode's markers
+  in Diagram, Illustrate and Plan ([Toolbar layout](toolbar-layout.md#search-every-element-type)),
+  and one picked there is put down by a switch like any other.
 
 ## The tool a mode starts with
 

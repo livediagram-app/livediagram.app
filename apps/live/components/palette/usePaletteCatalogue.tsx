@@ -17,6 +17,7 @@ import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { paletteCategoriesFor } from './palette-layouts';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
@@ -71,6 +72,7 @@ export function usePaletteCatalogue({
   onAddArrow,
   onBeginFreehand,
   onBeginHighlighter,
+  onBeginMarker,
   onBeginShapePen,
   onBeginPolygon,
   pendingDraw,
@@ -135,6 +137,7 @@ export function usePaletteCatalogue({
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
+  const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
   const addImage = armed(() => onAddImage?.());
@@ -165,6 +168,7 @@ export function usePaletteCatalogue({
       addText,
       beginFreehand,
       beginHighlighter,
+      beginMarker,
       beginShapePen,
       beginPolygon,
       addArrow,

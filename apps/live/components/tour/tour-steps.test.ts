@@ -40,7 +40,8 @@ describe('tourStepsFor', () => {
     expect(desktop.indexOf('editor-mode')).toBe(desktop.indexOf('categories') + 1);
     const step = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
     expect(step).toMatchObject({ target: 'editor-mode-menu', alsoHighlight: 'editor-mode' });
-    expect(ids({ mobile: true, esBoard: false })).toContain('editor-mode');
+    // A phone shows no switch (docs/specs/007-editor/editor-modes.md "The mode switch").
+    expect(ids({ mobile: true, esBoard: false })).not.toContain('editor-mode');
   });
 
   it('drops the desktop-only step on mobile', () => {
