@@ -202,7 +202,13 @@ function Consent() {
       // mints a token. `type` is the fixed source, never the client name.
       track('Token', 'Created', 'MCP');
       const { redirectTo } = (await res.json()) as { redirectTo: string };
-      window.location.href = redirectTo;
+      // Only ever navigate to an http(s) URL: a `javascript:` target would run
+      // as script on this origin with the signed-in session.
+      const target = new URL(redirectTo);
+      if (target.protocol !== 'https:' && target.protocol !== 'http:') {
+        throw new Error('unsafe redirect');
+      }
+      window.location.href = target.toString();
     } catch {
       setStatus('error');
     }

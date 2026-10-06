@@ -393,6 +393,18 @@ describe('the Trash tools', () => {
     });
   });
 
+  // A document id can be steered by injected content the model has read, so
+  // it must stay one path segment: no query string, no `..` to another route.
+  it('delete_document keeps a hostile id inside its own path segment', async () => {
+    const { calls, tool } = trashHarness();
+    await tool('delete_document').handler({ documentId: 'd_1?permanent=true' }, AUTHED);
+    await tool('delete_document').handler({ documentId: '../folders/f_1' }, AUTHED);
+    expect(calls).toEqual([
+      'DELETE /api/documents/d_1%3Fpermanent%3Dtrue',
+      'DELETE /api/documents/..%2Ffolders%2Ff_1',
+    ]);
+  });
+
   it('delete_document has no permanent option, and ignores one sent anyway', async () => {
     const { calls, tool } = trashHarness();
     expect(Object.keys(deleteDocumentShape)).toEqual(['documentId', 'tabId']);

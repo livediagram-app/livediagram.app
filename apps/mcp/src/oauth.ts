@@ -40,10 +40,15 @@ async function sha256base64url(s: string): Promise<string> {
   return bytesToBase64Url(buf);
 }
 
-function isHttpsOrLocalhost(uri: string): boolean {
+// A redirect target is https anywhere, or plain http on a loopback host (a
+// local CLI client). The scheme is checked on its own: a loopback host must
+// never let another scheme through, or `javascript://localhost/...` would
+// register and run as script on the consent page when it navigates there.
+export function isAllowedRedirectUri(uri: string): boolean {
   try {
     const u = new URL(uri);
-    return u.protocol === 'https:' || isLoopbackHostname(u.hostname);
+    if (u.protocol === 'https:') return true;
+    return u.protocol === 'http:' && isLoopbackHostname(u.hostname);
   } catch {
     return false;
   }
@@ -96,7 +101,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     const uris = Array.isArray(body.redirect_uris)
       ? body.redirect_uris.filter((u) => typeof u === 'string')
       : [];
-    if (uris.length === 0 || !uris.every(isHttpsOrLocalhost)) {
+    if (uris.length === 0 || !uris.every(isAllowedRedirectUri)) {
       return c.json(
         {
           error: 'invalid_redirect_uri',
@@ -146,7 +151,9 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
       return c.text('only response_type=code is supported', 400);
     }
     const reg = await c.env.OAUTH_KV.get<ClientReg>(`client:${clientId}`, 'json');
-    if (!reg || !reg.redirectUris.includes(redirectUri)) {
+    // Re-check the scheme: a client registered before the scheme check was
+    // tightened can still hold an unsafe redirect_uri until its record expires.
+    if (!reg || !reg.redirectUris.includes(redirectUri) || !isAllowedRedirectUri(redirectUri)) {
       return c.text('unknown client or unregistered redirect_uri', 400);
     }
     const session = randomId();
@@ -245,6 +252,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     const code = String(form.code ?? '');
     const verifier = String(form.code_verifier ?? '');
     const redirectUri = String(form.redirect_uri ?? '');
+    const clientId = String(form.client_id ?? '');
     if (grantType !== 'authorization_code' || !code || !verifier) {
       return c.json({ error: 'invalid_request' }, 400);
     }
@@ -257,6 +265,10 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (!record) return c.json({ error: 'invalid_grant' }, 400);
     // One-time: burn the code regardless of outcome.
     await c.env.OAUTH_KV.delete(`code:${code}`);
+    // RFC 6749 §4.1.3: a code is redeemable only by the client it was issued to.
+    if (clientId && clientId !== record.clientId) {
+      return c.json({ error: 'invalid_grant', error_description: 'client_id mismatch' }, 400);
+    }
     if (redirectUri && redirectUri !== record.redirectUri) {
       return c.json({ error: 'invalid_grant', error_description: 'redirect_uri mismatch' }, 400);
     }
@@ -275,4 +287,4 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 }
 
 // Exported for unit tests.
-export const __test = { sha256base64url, isHttpsOrLocalhost };
+export const __test = { sha256base64url };

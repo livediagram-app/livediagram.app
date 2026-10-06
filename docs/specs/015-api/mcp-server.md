@@ -90,8 +90,12 @@ This implements the OAuth flow Manager Toolkit uses:
    metadata): `authorization_endpoint`, `token_endpoint`, `registration_endpoint`,
    `code_challenge_methods_supported: ["S256"]`, `token_endpoint_auth_methods_supported: ["none"]`.
 2. **Dynamic client registration** — `POST /oauth/register` issues a `client_id`
-   (validates HTTPS redirect URIs, or `http://localhost` for dev), stored in KV
-   with a TTL. Rate-limited per IP.
+   (validates redirect URIs: `https:` anywhere, or `http:` on a loopback host for
+   local clients; the scheme is checked on its own, so a loopback host never
+   admits another scheme such as `javascript:`), stored in KV with a TTL.
+   Rate-limited per IP. Authorize re-checks the scheme of the requested
+   redirect URI, and the consent page only ever navigates to an http(s) URL.
+   The token endpoint refuses a code presented with another `client_id`.
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and
    redirects to a **consent page in `apps/live`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is

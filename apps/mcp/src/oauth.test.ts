@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Env } from './env';
-import { __test, registerOauthRoutes } from './oauth';
+import { __test, isAllowedRedirectUri, registerOauthRoutes } from './oauth';
 
 function mockKV(): KVNamespace {
   const m = new Map<string, string>();
@@ -79,6 +79,38 @@ describe('dynamic client registration', () => {
       env,
     );
     expect(res.status).toBe(201);
+  });
+
+  it.each([
+    'javascript://localhost/%0Aalert(document.domain)//',
+    'javascript://127.0.0.1/%0Aalert(1)//',
+    'data://localhost/text/html,<script>alert(1)</script>',
+    'file://localhost/etc/passwd',
+    'ftp://localhost/cb',
+  ])('rejects a non-http(s) scheme on a loopback host: %s', async (uri) => {
+    const res = await app.request(
+      '/oauth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({ redirect_uris: [uri] }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses to authorize a stored registration whose redirect_uri is unsafe', async () => {
+    // A client registered before the scheme check was tightened.
+    const evil = 'javascript://localhost/%0Aalert(1)//';
+    await env.OAUTH_KV.put('client:old', JSON.stringify({ redirectUris: [evil], clientName: 'x' }));
+    const res = await app.request(
+      `/oauth/authorize?client_id=old&redirect_uri=${encodeURIComponent(evil)}` +
+        `&code_challenge=${await __test.sha256base64url('x'.repeat(64))}&response_type=code`,
+      {},
+      env,
+    );
+    expect(res.status).toBe(400);
   });
 
   it('rate-limits registration per IP', async () => {
@@ -291,6 +323,45 @@ describe('full authorize -> complete -> token flow', () => {
     expect(((await retry.json()) as { error: string }).error).toBe('invalid_grant');
   });
 
+  it('refuses to redeem a code for a different client_id', async () => {
+    const clientId = await register();
+    const verifier = 'v'.repeat(64);
+    const challenge = await __test.sha256base64url(verifier);
+    const auth = await app.request(
+      `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${challenge}&code_challenge_method=S256`,
+      {},
+      env,
+    );
+    const session = new URL(auth.headers.get('location')!).searchParams.get('session')!;
+    const comp = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session, token: 'lvd_secret' }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    const code = new URL(
+      ((await comp.json()) as { redirectTo: string }).redirectTo,
+    ).searchParams.get('code')!;
+    const res = await app.request(
+      '/oauth/token',
+      {
+        method: 'POST',
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          code_verifier: verifier,
+          client_id: 'someone-else',
+        }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
+      env,
+    );
+    expect(((await res.json()) as { error: string }).error).toBe('invalid_grant');
+  });
+
   it('rejects authorize for an unregistered redirect uri', async () => {
     const clientId = await register();
     const res = await app.request(
@@ -346,5 +417,16 @@ describe('full authorize -> complete -> token flow', () => {
       env,
     );
     expect(((await tok.json()) as { error: string }).error).toBe('invalid_request');
+  });
+});
+
+describe('isAllowedRedirectUri', () => {
+  it('accepts https anywhere and http only on loopback', () => {
+    expect(isAllowedRedirectUri('https://claude.ai/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://localhost:3000/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://127.0.0.1:3000/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://example.com/cb')).toBe(false);
+    expect(isAllowedRedirectUri('javascript://localhost/%0Aalert(1)//')).toBe(false);
+    expect(isAllowedRedirectUri('not a url')).toBe(false);
   });
 });
