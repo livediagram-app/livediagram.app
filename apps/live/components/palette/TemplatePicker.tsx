@@ -6,7 +6,7 @@ import {
   TEMPLATE_CATEGORIES,
   TEMPLATES,
   BLANK_TEMPLATE_FOR_MODE,
-  POPULAR_TEMPLATE_KINDS,
+  popularKindsFor,
   templateCategory,
   untitledNameForTemplate,
 } from '@livediagram/templates';
@@ -271,11 +271,12 @@ export function TemplatePicker({
     templateFilter && filteredTemplates.length === 0 && modeFilter.choice !== 'all'
       ? LISTED_TEMPLATES.filter((t) => modeFilter.offered(t) && matchesQuery(t)).length
       : 0;
-  // The Popular shelf, in its curated order (the three blanks first, so a blank
+  // The Popular shelf, in its curated order (the four blanks first, so a blank
   // needs no card of its own); `categoryTemplates` returns a category's
   // templates with Blank excluded (it keeps the shuffled order so the
   // preview fans rotate on each open).
-  const popularTemplates = POPULAR_TEMPLATE_KINDS.flatMap((kind) =>
+  // Under a mode, topped up from the mode's best (popularKindsFor, as the marketing gallery does).
+  const popularTemplates = popularKindsFor(modeFilter.choice).flatMap((kind) =>
     TEMPLATES.filter((t) => t.kind === kind && modeFilter.shows(t)),
   );
   const categoryTemplates = (category: TemplateCategory) =>

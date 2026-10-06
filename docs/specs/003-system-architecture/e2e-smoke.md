@@ -39,13 +39,13 @@ pull request never queues two runs of the suite.
 It runs **every** spec file in `apps/live/e2e/` (bar the opt-in Drive, perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                       | Runs                                                                      |
-| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live                                         | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests   |
-| **Sites audit**     | live, help, telemetry, then marketing        | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
-| **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`) | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
+| Job                 | Builds                                           | Runs                                                                      |
+| ------------------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
+| **Smoke shard i/6** | live                                             | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests   |
+| **Sites audit**     | live, help, telemetry, community, then marketing | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
+| **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`)     | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
 
-Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds. Marketing builds after the
+Only the sites audit opens help, telemetry, the Community and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
 app's Turbopack cache, and beside the app's own build the two corrupt it.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
@@ -75,7 +75,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
 - **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
-  own type check (`typescriptConfig()` in `@livediagram/next-config`, shared by the four Next
+  own type check (`typescriptConfig()` in `@livediagram/next-config`, shared by the five Next
   apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
@@ -135,8 +135,8 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
-   - serve `apps/help/out` under `/help/*` and `apps/telemetry/out` under `/telemetry/*`, their
-     basePaths, as the router mounts them; a missing build answers a logged 404;
+   - serve `apps/help/out` under `/help/*`, `apps/telemetry/out` under `/telemetry/*` and `apps/community/out` under
+     `/community/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own
@@ -236,7 +236,7 @@ One spec file per feature, each linking the spec it proves:
 | `motion-budget.spec.ts`        | every chrome animation (menus, dropdowns, context menu, Settings, Search) settles within 250ms, delay included; under reduced motion each is instant                                                                                                                                                                                                                                          | [Motion](../004-interface-design/motion.md)                                                                                                            |
 | `contrast-audit.spec.ts`       | dark mode, on the wizard, the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                                                                                 |
 | `optical-audit.spec.ts`        | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
-| `optical-audit-sites.spec.ts`  | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
+| `optical-audit-sites.spec.ts`  | the same audit on the help centre, the telemetry dashboard, the Community and the marketing site                                                                                                                                                                                                                                                                                              | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
 | `optical-clip.spec.ts`         | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                                     | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                                                                 |
 | `shape-stroke-inside.spec.ts`  | every shape drawn to its box edge paints no stroke outside it, in pixels                                                                                                                                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                                                              |
 
@@ -255,7 +255,7 @@ tests where it's cheap.
   wizard's category step and so never exercises template creation.
 - `apps/live/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
+- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
 - `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`

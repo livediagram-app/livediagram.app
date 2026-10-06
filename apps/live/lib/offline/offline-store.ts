@@ -15,6 +15,7 @@ import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@live
 import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
+import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
 import { DocumentTrashedError } from '../document-trashed';
 
 // Sentinel owner id stamped on offline documents. They have no server owner;
@@ -52,6 +53,13 @@ export type OfflineDocumentRecord = {
   // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
+  // The document's item store (docs/specs/026-plan/items.md "Offline documents"): its items, the
+  // store's revision and the next item key. Optional: a record without them has an empty store.
+  items?: Item[];
+  itemsRev?: number;
+  itemsNextKey?: number;
+  // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the built-in types.
+  itemTypes?: ItemTypeCatalogue | null;
 };
 
 // A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
@@ -99,6 +107,7 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
     presentation: rec.presentation ?? null,
+    itemTypes: readItemTypeCatalogue(rec.itemTypes ?? null),
     shareable: false,
     shareCode: null,
     folderId: rec.folderId,
@@ -391,6 +400,20 @@ export async function offlineSaveDocumentMeta(
     const rec = await backend.get(id);
     if (!writable(rec)) return;
     await backend.put(applyMeta(rec, patch, now));
+  });
+}
+
+// An offline document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"), already
+// validated by the caller; null goes back to the built-in types.
+export async function offlineSaveItemTypes(
+  id: string,
+  itemTypes: ItemTypeCatalogue | null,
+  now: number,
+): Promise<void> {
+  await serializeOfflineWrite(async () => {
+    const rec = await backend.get(id);
+    if (!writable(rec)) return;
+    await backend.put({ ...rec, itemTypes, savedAt: now });
   });
 }
 

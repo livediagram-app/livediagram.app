@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/document';
 import {
+  type ArrowElement,
+  type FreehandElement,
+  type ShapeElement,
+  type Tab,
   TAB_SCHEMA_VERSION,
-  exportTabAsSvg,
-  renderTabToSvg,
   tabToJsonText,
   tabToMarkdownText,
   type ExportedTabEnvelope,
-} from './export-tab';
+} from '@livediagram/document';
+import { exportTabAsSvg, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
 import { encodeStrokePoints, layOutIllustratePages } from '@livediagram/document';
 

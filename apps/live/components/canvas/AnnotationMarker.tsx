@@ -1,9 +1,9 @@
 'use client';
 
 import { useLayoutEffect, useState } from 'react';
+import { Portal } from '@livediagram/ui';
 import type { TextRun } from '@livediagram/document';
 import { NoteRichText } from '@/components/notes/NoteRichText';
-import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 // The fixed note glyph inside an annotation marker (docs/specs/009-elements/annotations.md). A small

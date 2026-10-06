@@ -9,8 +9,11 @@ import {
 import type { QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
+  type AgentPresence,
   type AvatarPresence,
   type ChangesetRoomOp,
+  type ItemsRoomOp,
+  type ItemTypesRoomOp,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
@@ -57,6 +60,9 @@ export function useRoomConnection(opts: {
   // Saved on the server, so it has a room: every such document, personal ones included, since an
   // agent writing through the api is a second writer even where nobody else can open it.
   documentServerStored: boolean;
+  // False keeps the room closed whatever else holds: a Community viewer never joins the author's room
+  // (docs/specs/025-community/community.md "Viewing a post's document"). Defaults to true.
+  enabled?: boolean;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -80,6 +86,7 @@ export function useRoomConnection(opts: {
   // history on each would wipe undo continuously during a shared session).
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
   setLivePresence: Dispatch<SetStateAction<Participant[]>>;
+  setLiveAgents: Dispatch<SetStateAction<AgentPresence[]>>;
   setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
@@ -141,6 +148,15 @@ export function useRoomConnection(opts: {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). System-only.
+  receiveItems: (op: ItemsRoomOp) => void;
+  // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
+  receiveItemTypes: (op: ItemTypesRoomOp) => void;
+  // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
+  receivePlanPresence: (
+    from: string,
+    op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' },
+  ) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -149,6 +165,7 @@ export function useRoomConnection(opts: {
     hydrated,
     documentId,
     documentServerStored,
+    enabled = true,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -161,6 +178,7 @@ export function useRoomConnection(opts: {
     roomRef,
     applyRemoteTabs,
     setLivePresence,
+    setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
@@ -182,6 +200,9 @@ export function useRoomConnection(opts: {
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
+    receiveItems,
+    receiveItemTypes,
+    receivePlanPresence,
     onRoomJoined,
   } = opts;
 
@@ -222,8 +243,12 @@ export function useRoomConnection(opts: {
   // The room's handlers, as effect events: the socket opens once per document (the effect below), and each
   // message still runs against the current props, which is what a handler must see.
   const roomPresence = useEffectEvent(
-    (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
+    (
+      participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0],
+      agents: AgentPresence[],
+    ) => {
       const now = Date.now();
+      setLiveAgents(agents);
       if (!joinedRef.current) {
         joinedRef.current = true;
         roomJoined();
@@ -464,6 +489,16 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
+      } else if (op.kind === 'plan-presence') {
+        receivePlanPresence(from, op);
+      } else if (op.kind === 'items') {
+        // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
+        // and the room refuses this op from a client socket.
+        if (from === 'system') receiveItems(op);
+      } else if (op.kind === 'item-types') {
+        // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
+        // the api.
+        if (from === 'system') receiveItemTypes(op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.
@@ -515,10 +550,11 @@ export function useRoomConnection(opts: {
     // Open the realtime room for every server-stored document: shared and team documents for their
     // people (docs/specs/013-workspace/team-shared-documents.md), and personal ones too, so an agent's
     // changeset reaches the person working on it (docs/specs/024-agents/agent-changesets.md).
-    if (!hydrated || !documentId || !documentServerStored) {
+    if (!enabled || !hydrated || !documentId || !documentServerStored) {
       // Make sure any state from a previous shared session is cleared
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
+      setLiveAgents([]);
       setRemoteSelections(new Map());
       prunePeerDragPreviews(new Set());
       resetArticlePeers();
@@ -535,7 +571,7 @@ export function useRoomConnection(opts: {
     });
 
     const handlers: RoomHandlers = {
-      onPresence: (participants) => roomPresence(participants),
+      onPresence: (participants, agents) => roomPresence(participants, agents),
       // Elements in a former stored shape from a peer loaded before a deploy are migrated
       // before anything applies them (docs/specs/006-document/stroke-points.md).
       onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
@@ -592,12 +628,14 @@ export function useRoomConnection(opts: {
       roomRef.current = null;
     };
   }, [
+    enabled,
     hydrated,
     documentId,
     documentServerStored,
     documentTeamId,
     roomRef,
     setLivePresence,
+    setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteLaserTrails,

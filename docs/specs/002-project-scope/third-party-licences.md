@@ -13,7 +13,7 @@ inside a package, or a work compiled into a binary asset. The page lists exactly
 reach a deployed artefact, and nothing else.
 
 - **Bundle truth.** What ships is read from the bundler, not inferred from `package.json`. The
-  static apps (live, marketing, help, telemetry) are analysed with Next's `experimental-analyze`
+  static apps (live, marketing, help, telemetry, community) are analysed with Next's `experimental-analyze`
   (Turbopack), and only the modules it places in client output count: a static export has no server
   at runtime, so server chunks never leave the build. The workers (api, mcp, router) are bundled
   with `wrangler deploy --dry-run --metafile`, and every module in the metafile counts.
@@ -68,7 +68,7 @@ reach a deployed artefact, and nothing else.
   all under one origin, and a visitor looking for "what is in livediagram" should not need to know
   the app boundaries. Each entry names the apps that ship it.
 - **Two sections.** "In your browser" lists the works sent to people's browsers by the editor, the
-  website, the help centre and the telemetry dashboard. "On our servers" lists the works bundled
+  website, the help centre, the Community and the telemetry dashboard. "On our servers" lists the works bundled
   into the api, MCP and router workers; they run on Cloudflare, not on anyone's device, and are
   listed in full all the same. A work shipped on both sides appears in both, with each side's apps.
 - **Entries are collapsed.** Each is a native disclosure showing the name, version, licence id and
@@ -85,7 +85,7 @@ reach a deployed artefact, and nothing else.
   never moves when an entry opens.
 - **Accessible.** WCAG 2.2 AA: native `details`/`summary` for keyboard and screen readers, a visible
   focus ring, each scrollable text box focusable and labelled, AA contrast in light and dark.
-- **Links.** The shared site footer (marketing, help centre, telemetry) links "Licences". In the
+- **Links.** The shared site footer (marketing, help centre, telemetry, Community) links "Licences". In the
   editor, the Explorer panel's ⋯ menu has a "Licences" row beside GitHub, opening the page in a new
   tab like GitHub does.
 

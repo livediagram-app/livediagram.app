@@ -1,7 +1,7 @@
 import { contrastRatio } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { PARTICIPANT_COLORS } from './identity';
-import { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
+import { IDENTITY_FILL, identityDeep, identityVars } from '@livediagram/ui';
 
 // White text on an identity colour in dark mode (docs/specs/004-interface-design/color-scheme.md, Dark
 // palette rules): white fails AA on every participant colour, so dark mode paints the disc a deeper

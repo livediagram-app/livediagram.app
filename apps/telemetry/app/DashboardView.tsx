@@ -8,9 +8,14 @@ import {
   ALL_VISITORS,
   API_TOKEN_ACTIVITY,
   CALLS_TO_ACTION,
+  COMMUNITY_DISCOVERY,
+  COMMUNITY_ENGAGEMENT,
+  COMMUNITY_MODERATION,
+  COMMUNITY_PUBLISHING,
   COUNTDOWNS,
   DOCUMENT_ACTIONS,
   TRASH,
+  PLAN_BOARDS,
   DISCUSSION,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -47,6 +52,7 @@ import {
   UNDO_AND_REDO,
   VOTING,
   WELCOME_TOUR,
+  PLAN_TOUR,
   POWER_USER_OFFER,
   NEW_VERSION_PROMPT,
 } from './metric-catalogue';
@@ -61,9 +67,9 @@ import { windowLabel } from './windows';
 // (metric-emitters.test), so nothing is visible only in Search.
 //
 // Groups run as a funnel: who arrives, what they make, which features carry
-// the work, how they work together, how machines connect, then health and
-// the email behind it all. A stack that goes deeper than it can links to its
-// Detail tab.
+// the work, how they work together, what they share with everyone, how
+// machines connect, then health and the email behind it all. A stack that
+// goes deeper than it can links to its Detail tab.
 //
 // Deliberately a FIXED list, not "top by volume": a first-time visitor
 // (`Participant·Created`) is low volume but high signal, so it must always be
@@ -80,6 +86,7 @@ export const GROUPS: MetricGroup[] = [
       CALLS_TO_ACTION,
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
+      PLAN_TOUR,
       POWER_USER_OFFER,
       NEW_VERSION_PROMPT,
     ],
@@ -89,6 +96,7 @@ export const GROUPS: MetricGroup[] = [
     metrics: [
       DOCUMENT_ACTIONS,
       TRASH,
+      PLAN_BOARDS,
       TAB_ACTIONS,
       ELEMENTS_ADDED,
       ELEMENT_EDITING,
@@ -124,6 +132,18 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Teams & facilitation',
     metrics: [TEAM_ACTIVITY, VOTING, POLLS, COUNTDOWNS, STOPWATCHES, PRESENTATIONS],
+  },
+  // The public gallery (docs/specs/025-community/community.md): boards shared into it from the
+  // editor, then read, liked, copied and reported in the Community app. Each stack links to the
+  // Community tab, which ranks the categories, report reasons and filters.
+  {
+    title: 'Community',
+    metrics: [
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    ],
   },
   {
     title: 'Connections',

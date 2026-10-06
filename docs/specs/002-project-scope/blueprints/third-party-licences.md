@@ -41,7 +41,7 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 | Term          | Identifier                                           | Meaning                                                                                                       |
 | ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `api`, `mcp`, `router`                            |
+| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `community`, `api`, `mcp`, `router`               |
 | Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                                    |
 | Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)                       |
 | Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                                     |
@@ -61,7 +61,7 @@ British `licence` everywhere except the npm `license` field and file names.
 
 The generator is a pure pipeline around two IO edges:
 
-1. **Bundle** (IO, `generate.ts`). Turbo runs the marketing build after all six other apps' builds
+1. **Bundle** (IO, `generate.ts`). Turbo runs the marketing build after all seven other apps' builds
    (`turbo.json`): the analyzer reads and writes `<app>/.next/cache/turbopack` and
    `<app>/.next/diagnostics` whatever `NEXT_DISTDIR` says, and beside that app's `next build` the
    Turbopack persistent cache panics. For each app in `LICENCE_APPS` order, sequentially (D11):
@@ -106,7 +106,8 @@ every app appears in exactly one section; output is byte-identical for identical
 
 ```ts
 export type Side = 'browser' | 'server';
-export type AppId = 'live' | 'marketing' | 'help' | 'telemetry' | 'api' | 'mcp' | 'router';
+export type AppId =
+  'live' | 'marketing' | 'help' | 'telemetry' | 'community' | 'api' | 'mcp' | 'router';
 export type LicenceApp = { id: AppId; label: string; side: Side; bundler: 'next' | 'worker' };
 
 export type AppBundle = { app: AppId; sources: string[]; assets: string[] };
@@ -246,11 +247,11 @@ content column `max-w-3xl`.
   the ones our apps ship, generated from what each app actually bundles every time the site is
   built."
 - Section h2 "In your browser", intro: "Sent to your browser by the editor, this website, the help
-  centre and the telemetry dashboard." Section h2 "On our servers", intro: "Bundled into the API,
+  centre, the Community and the telemetry dashboard." Section h2 "On our servers", intro: "Bundled into the API,
   MCP server and router, which run on Cloudflare rather than on your device."
 - Each section shows its work count: "{n} works".
 - Entry summary: the native disclosure marker (D16), name (medium weight), version, then a row of
-  licence id (monospace) and app chips ("Editor", "Website", "Help centre", "Telemetry", "API",
+  licence id (monospace) and app chips ("Editor", "Website", "Help centre", "Telemetry", "Community", "API",
   "MCP server", "Router") after a visually hidden "Ships in". A hanging indent keeps a wrapped name,
   version or chip row aligned past the marker.
 - Entry body: for a vendored or embedded work "Inside {carrier}."; for a homepage, a "Source" link;

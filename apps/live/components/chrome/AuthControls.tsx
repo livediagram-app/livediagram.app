@@ -23,11 +23,17 @@
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useId, useRef, type ReactNode } from 'react';
-import { useClickOutside, SOLID_BRAND_DARK, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
+import {
+  useClickOutside,
+  SOLID_BRAND_DARK,
+  Glyph,
+  useMenu,
+  useMenuButton,
+  PictureDisc,
+} from '@livediagram/ui';
 import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { PictureDisc } from '@/components/primitives/PictureDisc';
 import { accountInitial } from '@/lib/account-avatar';
 import {
   HEADER_ACTION_BTN,

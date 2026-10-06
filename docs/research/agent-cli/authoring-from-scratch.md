@@ -533,7 +533,7 @@ These are product decisions, not research conclusions:
 - MermaidSeqBench, arXiv 2511.14967: <https://arxiv.org/abs/2511.14967>
 - GenAI-DrawIO-Creator, arXiv 2601.05162: <https://arxiv.org/abs/2601.05162>
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
-- In-repo: `packages/document/src/graph-input.ts`, `apps/mcp/src/render.ts`, `apps/mcp/src/schema.ts`,
+- In-repo: `packages/document/src/graph-input.ts`, `apps/mcp/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
   `apps/mcp/src/prompts.ts`, `packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
   `arrow-path-hits.ts`, `mermaid-serialise.ts`, `packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`

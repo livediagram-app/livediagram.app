@@ -1,4 +1,6 @@
-import type { Participant, ParticipantStatus } from '@/lib/identity';
+import { statusLabel, type Participant, type ParticipantStatus } from '@/lib/identity';
+import { relativeSince } from '@/lib/relative-time';
+import { withoutAgentRows } from '@/lib/agent-presence-rows';
 
 // The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document,
 // grouped by the tab they are on. Built from the same `participantsByTab`
@@ -18,7 +20,10 @@ export type RosterGroup<T extends RosterTab = RosterTab> = {
 
 export type CollaboratorRoster<T extends RosterTab = RosterTab> = {
   groups: RosterGroup<T>[];
+  // People only: an agent's row is listed but never counted (docs/specs/024-agents/agent-presence.md).
   peopleCount: number;
+  // The tabs those people are on.
+  peopleTabCount: number;
 };
 
 const STATUS_ORDER: Record<ParticipantStatus, number> = { online: 0, away: 1, offline: 2 };
@@ -54,8 +59,10 @@ export function buildCollaboratorRoster<T extends RosterTab>(input: {
   if (strays.length > 0) {
     groups.push({ tab: null, isActive: false, participants: strays.sort(order) });
   }
-  const peopleCount = groups.reduce((n, g) => n + g.participants.length, 0);
-  return { groups, peopleCount };
+  const people = groups.map((g) => withoutAgentRows(g.participants).length);
+  const peopleCount = people.reduce((n, count) => n + count, 0);
+  const peopleTabCount = people.filter((count) => count > 0).length;
+  return { groups, peopleCount, peopleTabCount };
 }
 
 // The chips beside a participant's name wherever they are listed (the
@@ -80,11 +87,22 @@ export function participantBadges(
   return badges;
 }
 
+// A Collaborators row's second line: an agent row says what it is doing (or that it is online); a person's row
+// says their agent's status line first, then their status and, for anyone but you, how long ago they were active
+// (docs/specs/024-agents/blueprints/agent-presence.md "Presentation and UX").
+export function collaboratorRowDetail(p: Participant, isSelf: boolean, now: number): string {
+  if (p.agent) return p.statusLine ?? statusLabel(p.status);
+  const active =
+    p.lastActiveAt !== undefined && !isSelf
+      ? ` · Active ${relativeSince(p.lastActiveAt, now)}`
+      : '';
+  return `${p.statusLine ? `${p.statusLine} · ` : ''}${statusLabel(p.status)}${active}`;
+}
+
 // "3 people across 2 tabs" / "Just you". The stray group counts as a tab:
 // those people are somewhere, just not anywhere we can name.
 export function rosterSummary(roster: CollaboratorRoster): string {
-  const { peopleCount, groups } = roster;
+  const { peopleCount, peopleTabCount: tabs } = roster;
   if (peopleCount <= 1) return 'Just you so far';
-  const tabs = groups.length;
   return `${peopleCount} people across ${tabs} ${tabs === 1 ? 'tab' : 'tabs'}`;
 }

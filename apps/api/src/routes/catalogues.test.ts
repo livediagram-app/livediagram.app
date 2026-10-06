@@ -23,9 +23,9 @@ describe('GET /api/templates', () => {
   });
 
   it('shows one template as an outline, or its JSON', async () => {
-    const text = await (await get('/api/templates/kanban')).text();
-    expect(text).toMatch(/^tab kanban "Kanban[^"]*" · \d+ elements/);
-    const json = (await (await get('/api/templates/kanban?json=1')).json()) as {
+    const text = await (await get('/api/templates/swot')).text();
+    expect(text).toMatch(/^tab swot "SWOT[^"]*" · \d+ elements/);
+    const json = (await (await get('/api/templates/swot?json=1')).json()) as {
       elements?: unknown[];
     };
     expect(json).toBeTypeOf('object');

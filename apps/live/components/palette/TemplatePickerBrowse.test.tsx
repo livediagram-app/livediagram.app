@@ -30,7 +30,7 @@ const ALL_MODES: TemplateModeFilter = {
   choose: () => {},
   shows: () => true,
   offered: () => true,
-  counts: { all: 0, diagram: 0, draw: 0, illustrate: 0 },
+  counts: { all: 0, diagram: 0, draw: 0, illustrate: 0, plan: 0 },
 };
 const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>

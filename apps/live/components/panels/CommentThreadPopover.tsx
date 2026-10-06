@@ -1,8 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import {
+  Button,
+  CloseIcon,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+  Portal,
+  IDENTITY_FILL,
+  identityVars,
+} from '@livediagram/ui';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
@@ -14,7 +22,6 @@ import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -150,30 +157,20 @@ export function CommentThreadPopover({
           </h3>
           <div className="flex items-center gap-1">
             {comments.length > 0 ? (
-              readOnly ? (
-                // View-role can see WHETHER the thread is resolved
-                // but can't flip the state. Unresolved threads show
-                // nothing here (no toggleable affordance to suggest
-                // they could act on it).
-                resolved ? (
-                  <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
-                    Resolved
-                  </span>
-                ) : null
-              ) : (
-                <button
-                  type="button"
-                  onClick={resolved ? onUnresolve : onResolve}
-                  className={
-                    resolved
-                      ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25'
-                      : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                  }
-                  aria-pressed={resolved}
-                >
-                  {resolved ? 'Resolved' : 'Resolve'}
-                </button>
-              )
+              // Anyone who may comment may resolve and reopen (docs/specs/024-agents/agent-presence.md "Comments"):
+              // a read-only session through the comment endpoints, an editor through the room.
+              <button
+                type="button"
+                onClick={resolved ? onUnresolve : onResolve}
+                className={
+                  resolved
+                    ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25'
+                    : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                }
+                aria-pressed={resolved}
+              >
+                {resolved ? 'Resolved' : 'Resolve'}
+              </button>
             ) : null}
             <button
               type="button"

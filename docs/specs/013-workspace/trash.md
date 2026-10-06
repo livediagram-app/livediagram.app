@@ -27,7 +27,9 @@ Explorer, the editor, the Explorer panel's popover, the team library;
   undo toast and no "moved to Trash" message.
 
 Every delete of a whole document goes to the Trash: the Explorer, the editor,
-the team library, the public API with a token, and the MCP server. The rule is
+the team library, the public API with a token, and the MCP server. So does a
+document left empty for 30 days, moved there by the daily
+[empty document clean-up](empty-document-cleanup.md). The rule is
 the same for guests and signed-in users. Tabs are not trashed; deleting a tab
 is unchanged.
 
@@ -64,7 +66,8 @@ One view lists everything the person can restore, grouped:
 - **This browser only**: the local Trash of offline documents, labelled as such.
 
 Each row shows the document's name, when it was deleted, and how many days are
-left before it is purged. Each row offers **Restore** and **Delete
+left before it is purged. A document the clean-up moved says so instead: "Moved
+here {d MMM} because it was empty". Each row offers **Restore** and **Delete
 permanently**; each group offers **Empty Trash**. Delete permanently and Empty
 Trash are always confirmed. Restore is not: it destroys nothing.
 
@@ -182,7 +185,7 @@ delete authority they have today.
 The Trash has its own resource:
 
 - `GET /api/trash`: what the caller may restore, personal and every joined
-  team's, each row naming its team.
+  team's, each row naming its team and its `reason` (`deleted` or `empty`).
 - `POST /api/trash/:id/restore`: restore one.
 - `DELETE /api/trash/:id`: purge one.
 - `DELETE /api/trash`: empty the personal Trash; `?team=<id>` empties that
@@ -228,7 +231,8 @@ back for a deleted document is the question these answer; no names are sent.
   document. Only the doors that owe a person the deleted state look further.
 - **No "deleted by".** The Trash does not record who binned a document. It would
   be one more owner id to erase on account deletion, and nothing in the view
-  needs it.
+  needs it. It records only why, `documents.trash_reason`: unset for a delete,
+  `empty` for the [clean-up](empty-document-cleanup.md).
 - **Timeline history is hidden, not swept.** A hard delete sweeps a document's
   Timeline events; trashing hides them, so a restored document comes back with
   its history. The purge sweeps them.

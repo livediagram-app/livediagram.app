@@ -20,6 +20,7 @@ describe('CTA_SOURCES', () => {
       'Home.HeaderDraw',
       'Home.HeaderWhiteboard',
       'Home.HeaderIllustration',
+      'Home.HeaderPlan',
       'Home.Hero',
       'Home.HeroDraw',
       'Home.HeroBrainstorm',
@@ -32,27 +33,36 @@ describe('CTA_SOURCES', () => {
       'Feature.HeaderDraw',
       'Feature.HeaderWhiteboard',
       'Feature.HeaderIllustration',
+      'Feature.HeaderPlan',
       'Feature.Hero',
       'Feature.Closing',
       'Compare.Header',
       'Compare.HeaderDraw',
       'Compare.HeaderWhiteboard',
       'Compare.HeaderIllustration',
+      'Compare.HeaderPlan',
       'Compare.Card',
       'Faq.Header',
       'Faq.HeaderDraw',
       'Faq.HeaderWhiteboard',
       'Faq.HeaderIllustration',
+      'Faq.HeaderPlan',
       'Faq.Card',
       'Status.Header',
       'Status.HeaderDraw',
       'Status.HeaderWhiteboard',
       'Status.HeaderIllustration',
+      'Status.HeaderPlan',
       'Dashboard.Header',
       'Dashboard.HeaderDraw',
       'Dashboard.HeaderWhiteboard',
       'Dashboard.HeaderIllustration',
+      'Dashboard.HeaderPlan',
       'Help.Header',
+      'Community.Header',
+      'Community.HeaderDraw',
+      'Community.HeaderWhiteboard',
+      'Community.HeaderIllustration',
     ]);
   });
 
@@ -131,6 +141,7 @@ describe('ctaSurfaceOfPath', () => {
     expect(ctaSurfaceOfPath('/faq')).toBe('Faq');
     expect(ctaSurfaceOfPath('/status')).toBe('Status');
     expect(ctaSurfaceOfPath('/telemetry')).toBe('Dashboard');
+    expect(ctaSurfaceOfPath('/community/post')).toBe('Community');
     expect(ctaSurfaceOfPath('/help')).toBe('Help');
     expect(ctaSurfaceOfPath('/help/canvas/the-canvas')).toBe('Help');
   });

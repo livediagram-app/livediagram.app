@@ -6,23 +6,38 @@
 import { useSyncExternalStore } from 'react';
 import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
 
-// The modes behind a Settings switch (on by default; switching it off hides the mode).
-export const EXPERIMENTAL_EDITOR_MODES: readonly EditorMode[] = ['illustrate'];
+// The modes behind a Settings switch each (on by default; switching one off hides that mode).
+export const EXPERIMENTAL_EDITOR_MODES = [
+  'illustrate',
+  'plan',
+] as const satisfies readonly EditorMode[];
+export type ExperimentalEditorMode = (typeof EXPERIMENTAL_EDITOR_MODES)[number];
 
-export function offeredModesFor(illustrateEnabled: boolean): readonly EditorMode[] {
-  return illustrateEnabled
-    ? EDITOR_MODES
-    : EDITOR_MODES.filter((m) => !EXPERIMENTAL_EDITOR_MODES.includes(m));
+// Which experimental modes are switched on; a mode not named is on.
+export type ExperimentalModeFlags = Partial<Record<ExperimentalEditorMode, boolean>>;
+
+export function offeredModesFor(flags: ExperimentalModeFlags): readonly EditorMode[] {
+  return EDITOR_MODES.filter((m) => flags[m as ExperimentalEditorMode] !== false);
 }
 
-let offered = offeredModesFor(true);
+let flags: ExperimentalModeFlags = {};
+let offered = offeredModesFor(flags);
 const listeners = new Set<() => void>();
 
-export function setIllustrateModeEnabled(enabled: boolean): void {
-  const next = offeredModesFor(enabled);
-  if (next.length === offered.length) return;
-  offered = next;
+export function setExperimentalModeEnabled(mode: ExperimentalEditorMode, enabled: boolean): void {
+  if ((flags[mode] !== false) === enabled) return;
+  flags = { ...flags, [mode]: enabled };
+  offered = offeredModesFor(flags);
   for (const l of listeners) l();
+}
+
+export function setIllustrateModeEnabled(enabled: boolean): void {
+  setExperimentalModeEnabled('illustrate', enabled);
+}
+
+// Plan mode (docs/specs/026-plan/plan-mode.md "Offering the mode"): its own switch, apart from Illustrate's.
+export function setPlanModeEnabled(enabled: boolean): void {
+  setExperimentalModeEnabled('plan', enabled);
 }
 
 /** The offered modes right now, for a handler that runs outside render (Shift+D). */

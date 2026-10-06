@@ -1,5 +1,6 @@
 'use client';
 
+import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import type { PageKind } from '@livediagram/document';
 import { AddPageStripButton } from './AddPageStripButton';
 import {
@@ -11,18 +12,20 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
+import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
-import { safeInlinePadding } from '@/lib/safe-area';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
 import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { PaletteTile } from './PaletteTileGrid';
+import { usePlan } from '@/components/plan/PlanContext';
+import { planCardTile } from './palette-plan-tiles';
+import { EditCardsStripButton } from './EditCardsStripButton';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
@@ -137,6 +140,14 @@ export function ToolbarPalette(props: Props) {
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, as the Palette keys PaletteTabBar.
   const [categoryId, setCategoryId] = useState(defaultId);
+  // Another surface asking for a category (a board's + asks for Widgets).
+  useEffect(
+    () =>
+      onPaletteCategoryRequest((id) => {
+        if (tabs.some((t) => t.id === id)) setCategoryId(id);
+      }),
+    [tabs],
+  );
   const category = tabs.find((t) => t.id === categoryId) ?? tabs[0];
 
   // The strip holds as many tiles as the window fits, up to twelve; the rest
@@ -163,17 +174,21 @@ export function ToolbarPalette(props: Props) {
   // still decides whether More is needed for what is out of view.
   const swipe = leading != null;
   const tileLimit = swipe ? Infinity : stripLimit;
+  // Plan mode's Cards follow the document's item types (docs/specs/026-plan/item-types.md).
+  const plan = usePlan();
+  const categoryTiles =
+    category?.id === 'plan-cards' && plan ? plan.types.map(planCardTile) : category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
     hasImage: tileActions.hasImage,
     limit: stripLimit,
     // The category's tiles in this mode's layout (palette-layouts).
-    tiles: category?.tiles,
+    tiles: categoryTiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
         hasImage: tileActions.hasImage,
         limit: tileLimit,
-        tiles: category?.tiles,
+        tiles: categoryTiles,
       })
     : fitted;
   const { hasMore } = fitted;
@@ -455,6 +470,12 @@ export function ToolbarPalette(props: Props) {
                 ) : null}
                 {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
                     last page) adds one there. */}
+                {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
+                  <>
+                    <Divider />
+                    <EditCardsStripButton />
+                  </>
+                ) : null}
                 {props.onAddPage && !isMobile ? (
                   <>
                     <Divider />

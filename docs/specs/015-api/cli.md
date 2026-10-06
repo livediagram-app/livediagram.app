@@ -1,11 +1,10 @@
 # CLI
 
 **Status: in progress.** Built and run from source (`apps/cli`): routing, help, exit codes and output rules;
-profiles, `LIVEDIAGRAM_TOKEN` and `auth login --with-token`, `status`, `logout`; the reads `document ls|view`,
+profiles, `LIVEDIAGRAM_TOKEN`, `auth login` through the browser, `--device` and `--with-token`, `status`, `logout`; the reads `document ls|view`,
 `tab ls|view|lint|diff`, `changeset ls|show`; the edits `edit` (`changeset apply`), `element add|set|rm|move|connect|insert|wrap`
 and `changeset revert`, based on read copies; `document create|rename|share|rm|restore`, `tab add|rename|rm`; the catalogues `template ls|view`, `icon search`,
-`schema`; `graph lint` (`--compare`), offline; `guide`, `skill` and `api`; the usage count and `telemetry on|off`. Not yet published to npm. Browser and
-device sign-in, pull and push, the room and the update check are ahead.
+`schema`; `graph lint` (`--compare`), offline; `comment ls|add|reply|resolve|reopen` and `presence set|clear`; `wait` and `watch` on the room; `pull`, `push`, `export --all` and a pull file's views offline; `tab render`, `graph render` and PNG export; `guide`, `skill` and `api`; the usage count and `telemetry on|off`. Not yet published to npm. The OS keychain store and the update check are ahead.
 
 `livediagram` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).
@@ -43,6 +42,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `tab render <doc> [--tab <t>] --png <file>\|--svg <file>`              | A preview image; prints the path and its size, never image bytes                     |
 | `tab lint <doc> [--tab <t>]`                                           | The [diagram lint](../024-agents/diagram-lint.md), served as a view                  |
 | `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> ...`          | One [edit operation](../024-agents/edit-operations.md) as a changeset                |
+| `item ls\|add\|set\|move\|rm <doc> ...`                                | [Items](../026-plan/items.md) by number (`#12`) or id prefix; fields as `key=value`  |
 | `changeset apply <doc> [--tab <t>] -f <file>\|-` (`edit`)              | Many edit operations, or a `replace`, as one changeset                               |
 | `changeset ls\|show\|revert <doc> [<changeset>]`                       | Recent changesets and their revert                                                   |
 | `comment ls\|add\|reply\|resolve\|reopen <doc> ...`                    | Threads ([Agent presence](../024-agents/agent-presence.md#comments)), by element ref |
@@ -128,7 +128,11 @@ In order of precedence:
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
   do not run the MCP worker. The token is named "livediagram CLI"; its work shows as its owner's. A new login on a
   profile that holds a token revokes the old one once the new one works.
-- Credentials go in the OS keychain when available, else `~/.config/livediagram/credentials.json` at mode 0600.
+- The token goes in the operating system's own store, through the system's own tool and never native code: the
+  macOS Keychain (`security`), the Secret Service on Linux (`secret-tool`), and on Windows a token sealed for the user
+  with DPAPI (PowerShell). The token reaches the tool on stdin, never on a command line another process can read.
+  Where the tool is missing or refuses, the token goes in `~/.config/livediagram/credentials.json` at mode 0600, with
+  a one-line notice. The file keeps each profile's account, role and expiry either way.
 - `auth status` prints the host, account, token name, its role and expiry, never the secret, and warns inside
   14 days of expiry. `auth logout` revokes the token and forgets it.
 - A host without sign-in has no tokens, so the CLI cannot act there and says so in one line, as the MCP is absent

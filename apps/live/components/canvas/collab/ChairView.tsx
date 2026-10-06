@@ -1,5 +1,6 @@
 'use client';
 
+import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import {
   CHAIR_FACING_ROTATION,
   CHAIR_GEOMETRY,
@@ -7,7 +8,6 @@ import {
   DEFAULT_CHAIR_FACING,
   type ShapeElement,
 } from '@livediagram/document';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // A chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in.
 //

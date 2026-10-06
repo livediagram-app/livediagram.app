@@ -170,7 +170,7 @@ export type TemplateKind =
   // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
   // article page, written as a short project brief.
   | 'article'
-  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Three blanks"): a tab that opens
+  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Four blanks"): a tab that opens
   // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
@@ -193,7 +193,20 @@ export type TemplateKind =
   | 'data-story'
   | 'how-it-works'
   | 'versus'
-  | 'social-carousel';
+  | 'social-carousel'
+  // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
+  // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
+  // Blank Plan is the mode's blank.
+  | 'blank-plan'
+  | 'project-planner'
+  | 'bug-triage'
+  | 'team-retro'
+  | 'weekly-planner'
+  | 'content-calendar'
+  | 'hiring-pipeline'
+  | 'okrs'
+  | 'product-launch'
+  | 'feedback-board';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -231,6 +244,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-illustration',
     title: 'Blank Illustration',
     description: 'An empty page for an infographic or an article, sized for print or social.',
+    extra: true,
+  },
+  {
+    kind: 'blank-plan',
+    title: 'Blank Plan',
+    description: 'One empty board: name its first column and build it the way your team works.',
     extra: true,
   },
   {
@@ -293,8 +312,72 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'kanban',
-    title: 'Kanban',
-    description: 'Five lanes with WIP limits, tagged and owned tickets, and a blocked card.',
+    title: 'Kanban Board',
+    description:
+      'Continuous flow in three tabs: Board, with WIP limits from Backlog to Done; Requests, where new asks are accepted onto it; and Flow, a dashboard of where the work stands.',
+  },
+  {
+    kind: 'project-planner',
+    title: 'Project Planner',
+    description:
+      'Four tabs: a Now, Next, Later Roadmap with a Gantt chart of your projects, a Backlog of tasks by project, the Sprint board and a Daily Standup.',
+    extra: true,
+  },
+  {
+    kind: 'bug-triage',
+    title: 'Bug Tracker',
+    description:
+      'Three tabs: Triage new bugs by priority, follow them through Fixing to released, and watch Health on a dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'team-retro',
+    title: 'Team Retro',
+    description:
+      'Three tabs: a Retro where notes stay hidden until you reveal and vote, the Actions you agree, and an Archive of past retros.',
+    extra: true,
+  },
+  {
+    kind: 'weekly-planner',
+    title: 'Weekly Planner',
+    description:
+      'Three tabs: This Week, a column a day; an Inbox to capture into; and a Calendar of what is due.',
+    extra: true,
+  },
+  {
+    kind: 'content-calendar',
+    title: 'Content Calendar',
+    description:
+      'Three tabs: Ideas to vote on and approve, Production from drafting to published, and a Calendar of publish dates.',
+    extra: true,
+  },
+  {
+    kind: 'hiring-pipeline',
+    title: 'Hiring Pipeline',
+    description:
+      'Three tabs: open Roles on a timeline, the candidate Pipeline a row per role, and Onboarding for each new starter.',
+    extra: true,
+  },
+  {
+    kind: 'okrs',
+    title: 'OKRs',
+    description:
+      'Two tabs: Objectives on a timeline, and their Key Results by objective, on track, at risk or off track.',
+    extra: true,
+  },
+  {
+    kind: 'product-launch',
+    title: 'Product Launch',
+    description:
+      'Three tabs: workstreams on a Timeline, a Checklist per workstream, and the Launch Day go / no-go.',
+    extra: true,
+  },
+  {
+    kind: 'feedback-board',
+    title: 'Feedback Board',
+    description:
+      'Two tabs: Feedback from users, voted on and reviewed, and Delivery for what you plan, through to shipped.',
+    extra: true,
   },
   {
     kind: 'swot',
@@ -844,6 +927,17 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   sitemap: 'hierarchies',
   // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
+  // Plan templates (docs/specs/026-plan/plan-templates.md). Blank Plan is a quick-pick; its category is nominal.
+  'blank-plan': 'planning',
+  'project-planner': 'project-management',
+  'bug-triage': 'planning',
+  'team-retro': 'planning',
+  'weekly-planner': 'project-management',
+  'content-calendar': 'project-management',
+  'hiring-pipeline': 'project-management',
+  okrs: 'project-management',
+  'product-launch': 'project-management',
+  'feedback-board': 'planning',
   retrospective: 'planning',
   'start-stop-continue': 'planning',
   'mad-sad-glad': 'planning',
@@ -925,13 +1019,14 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
 
 // The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
 // most people start, open by default above the categories. Not a category of
-// its own (every kind here still lives in its real one); the three blanks lead it, one per editor
-// mode (docs/specs/007-editor/templates-by-mode.md "Three blanks"), so the picker needs no separate
+// its own (every kind here still lives in its real one); the four blanks lead it, one per editor
+// mode (docs/specs/007-editor/templates-by-mode.md "Four blanks"), so the picker needs no separate
 // blank card.
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'blank',
   'whiteboard',
   'blank-illustration',
+  'blank-plan',
   'mindmap',
   'sketchnote',
   'sailboat',
@@ -997,7 +1092,18 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   orgchart: 'graph',
   swot: 'graph',
   gantt: 'graph',
-  kanban: 'graph',
+  // Plan boards (docs/specs/026-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
+  kanban: 'grid',
+  'blank-plan': 'grid',
+  'project-planner': 'grid',
+  'bug-triage': 'grid',
+  'team-retro': 'grid',
+  'weekly-planner': 'grid',
+  'content-calendar': 'grid',
+  'hiring-pipeline': 'grid',
+  okrs: 'grid',
+  'product-launch': 'grid',
+  'feedback-board': 'grid',
   'mobile-wireframe': 'graph',
   'laptop-wireframe': 'graph',
   venn: 'blank',

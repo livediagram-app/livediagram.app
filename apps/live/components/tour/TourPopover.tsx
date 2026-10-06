@@ -6,7 +6,29 @@ import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
 import { TourHelpArt } from './TourHelpArt';
 import { TourWelcomeArt } from './TourWelcomeArt';
-import type { TourTargetRect } from './TourHost';
+import type { TourTargetRect } from './useTourEngine';
+
+// The bookend cards' words, so a second tour (the Plan tour, docs/specs/026-plan/plan-tour.md) wears the
+// same card with its own eyebrow, finish button and help link. The defaults are the welcome tour's.
+export type TourCardCopy = {
+  welcomeEyebrow: string;
+  accept: string;
+  decline: string;
+  outroEyebrow: string;
+  helpHref: string;
+  helpLabel: string;
+  finish: string;
+};
+
+export const WELCOME_TOUR_COPY: TourCardCopy = {
+  welcomeEyebrow: 'Quick tour',
+  accept: 'Show me around',
+  decline: 'No thanks',
+  outroEyebrow: 'Tour complete',
+  helpHref: '/help',
+  helpLabel: 'Visit Help Centre',
+  finish: 'Start creating',
+};
 
 // The tour's step card (docs/specs/007-editor/editor-tour.md). Two faces:
 // - welcome: the centred offer card ("Show me around" / "No thanks"),
@@ -31,6 +53,9 @@ export function TourPopover({
   title,
   body,
   targetRect,
+  ariaPrefix = 'Tour',
+  copy: copyOverrides,
+  welcomeArt,
   layoutPicker,
   onBack,
   onNext,
@@ -51,6 +76,11 @@ export function TourPopover({
   // Viewport rect of the highlighted target; null while the step is still
   // preparing (the card then centres itself).
   targetRect: TourTargetRect | null;
+  // The dialog label's lead ("Tour step 2 of 7: ...").
+  ariaPrefix?: string;
+  copy?: Partial<TourCardCopy>;
+  // The welcome card's illustration; the welcome tour's own by default.
+  welcomeArt?: ReactNode;
   // The welcome card's panel-layout choice (TourLayoutPicker), shown under
   // the copy so it is answered whether the tour is taken or declined.
   layoutPicker?: ReactNode;
@@ -58,6 +88,7 @@ export function TourPopover({
   onNext: () => void;
   onSkip: () => void;
 }) {
+  const copy = { ...WELCOME_TOUR_COPY, ...copyOverrides };
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{
     left: number;
@@ -115,7 +146,7 @@ export function TourPopover({
       ref={ref}
       data-tour-popover=""
       role="dialog"
-      aria-label={card ? title : `Tour step ${stepNumber} of ${stepCount}: ${title}`}
+      aria-label={card ? title : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
       onPointerDown={(e) => e.stopPropagation()}
       className={`pointer-events-auto fixed z-[var(--z-toast)] flex max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 ${
         card ? 'w-[21rem]' : 'w-80'
@@ -159,9 +190,9 @@ export function TourPopover({
       >
         {card ? (
           <>
-            {card === 'welcome' ? <TourWelcomeArt /> : <TourHelpArt />}
+            {card === 'welcome' ? (welcomeArt ?? <TourWelcomeArt />) : <TourHelpArt />}
             <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
-              {card === 'welcome' ? 'Quick tour' : 'Tour complete'}
+              {card === 'welcome' ? copy.welcomeEyebrow : copy.outroEyebrow}
             </span>
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
             <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
@@ -175,24 +206,24 @@ export function TourPopover({
                   onClick={onSkip}
                   className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
-                  No thanks
+                  {copy.decline}
                 </button>
                 <Button size="xs" onClick={onNext}>
-                  Show me around
+                  {copy.accept}
                 </Button>
               </div>
             ) : (
               <div className="mt-2 flex items-center justify-between gap-2">
                 <a
-                  href="/help"
+                  href={copy.helpHref}
                   target="_blank"
                   rel="noreferrer"
                   className="text-xs font-medium text-brand-600 underline-offset-2 transition hover:underline dark:text-brand-300"
                 >
-                  Visit Help Centre
+                  {copy.helpLabel}
                 </a>
                 <Button size="xs" onClick={onNext}>
-                  Start creating
+                  {copy.finish}
                 </Button>
               </div>
             )}

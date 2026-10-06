@@ -65,6 +65,34 @@ function threadLines(thread: Thread): ViewLine[] {
   ];
 }
 
+// A thread as a listing across tabs prints it (the CLI's `comment ls`, `wait --for comment`): the comments view's
+// thread line without the kind, which a listing does not carry, and with the tab it is on (CLI81).
+export function threadListingLines(thread: {
+  ref: string;
+  label: string | null;
+  resolved: boolean;
+  tabName: string;
+  comments: readonly ThreadComment[];
+}): string[] {
+  const label = thread.label === null ? '' : ` ${jsonString(thread.label, LABEL_CUT_CHARS)}`;
+  const state = thread.resolved ? 'resolved' : 'open';
+  return [
+    `${thread.ref}${label} · ${state} · ${thread.comments.length} · tab ${jsonString(thread.tabName)}`,
+    ...thread.comments.map((c) => `  ${commentText(c)}`),
+  ];
+}
+
+// The elements holding a comment thread, in the outline's order, with their ref and label: what the comments view
+// lists, for a reader that needs the element ids too (the api's thread listing, agent-presence blueprint).
+export function commentHosts(
+  model: ViewModel,
+): { el: Element; ref: string; label: string | null }[] {
+  return depthFirst(model.tree.roots)
+    .map((n) => n.el)
+    .filter((el) => threadOf(el) !== null)
+    .map((el) => ({ el, ref: model.refs.refOf(el.id), label: textField(el, 'label') }));
+}
+
 export function commentsView(
   model: ViewModel,
   options: CommentsOptions = {},

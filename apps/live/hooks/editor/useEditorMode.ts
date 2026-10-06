@@ -40,6 +40,7 @@ const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
   draw: 'ModeDraw',
   illustrate: 'ModeIllustrate',
+  plan: 'ModePlan',
 };
 
 const modeOrNull = (v: string | undefined): EditorMode | null => parseEditorMode(v) ?? null;

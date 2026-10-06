@@ -37,6 +37,9 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
   }, [preview]);
 
   if (!preview || !cursor || !cursor.over) return null;
+  // A Plan card never lands on the canvas: the board column it would join opens a gap instead
+  // (docs/specs/026-plan/plan-mode.md "The palette"), so no ghost suggests otherwise.
+  if (preview.kind === 'plan-card') return null;
 
   const w = preview.width * zoom;
   const h = preview.height * zoom;

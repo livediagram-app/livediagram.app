@@ -55,6 +55,7 @@ export const EDITOR_SETTINGS = settingsStack(
       'Quick-Add on Hover',
       'Hover handles that add a connected shape.',
     ),
+    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
     toggle(
       'UI',
       'AlignmentGuidesOn',
@@ -250,7 +251,7 @@ export const NOTIFICATION_SETTINGS = settingsStack(
 
 export const ACCESSIBILITY_SETTINGS = settingsStack(
   'Accessibility Settings',
-  'Motion and the welcome tour.',
+  'Motion and the welcome and Plan tours.',
   [
     toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
     toggle(
@@ -259,6 +260,13 @@ export const ACCESSIBILITY_SETTINGS = settingsStack(
       'TourSeenOn',
       'Show Welcome Tour',
       'The welcome tour switched back on or off.',
+    ),
+    toggle(
+      'UI',
+      'PlanTourSeenOff',
+      'PlanTourSeenOn',
+      'Show Plan Tour',
+      'The Plan tour switched back on or off.',
     ),
   ],
 );
@@ -294,6 +302,13 @@ export const EXPERIMENTAL_SETTINGS = settingsStack(
       'IllustrateModeOff',
       'Illustrate Mode',
       'The Illustrate editor mode, switched on or off.',
+    ),
+    toggle(
+      'UI',
+      'PlanModeOn',
+      'PlanModeOff',
+      'Plan Mode',
+      'The Plan editor mode, switched on or off.',
     ),
   ],
 );

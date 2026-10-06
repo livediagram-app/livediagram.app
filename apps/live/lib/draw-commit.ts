@@ -1,4 +1,11 @@
 import {
+  freshBoardSetup,
+  isPlanViewId,
+  newItemId,
+  planBoardWidthFor,
+  planViewSize,
+} from '@livediagram/items';
+import {
   defaultSessionConfig,
   eventStormingNote,
   eventStormingNoteSize,
@@ -384,6 +391,25 @@ export function buildDrawnBoxed(
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
       ? { estimateScale: intent.estimateScale }
+      : {}),
+    // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
+    // the item store as the card lands (docs/specs/026-plan/plan-mode.md "The palette").
+    ...(intent.type === 'shape' && intent.kind === 'plan-board'
+      ? { planBoard: freshBoardSetup(intent.plan) }
+      : {}),
+    // A tapped-in board starts wide enough for its columns; a board drawn to size keeps its size.
+    ...(intent.type === 'shape' && intent.kind === 'plan-board' && isTap
+      ? { width: planBoardWidthFor(freshBoardSetup(intent.plan)) }
+      : {}),
+    ...(intent.type === 'shape' && intent.kind === 'plan-card'
+      ? { planCard: { itemId: newItemId() } }
+      : {}),
+    // A plan view takes its tile's view (docs/specs/026-plan/plan-views.md), tapped in at that view's size.
+    ...(intent.type === 'shape' && intent.kind === 'plan-view' && isPlanViewId(intent.plan)
+      ? { planView: { view: intent.plan } }
+      : {}),
+    ...(intent.type === 'shape' && intent.kind === 'plan-view' && isTap
+      ? planViewSize(intent.plan)
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
       ? { mode: intent.mode }

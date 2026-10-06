@@ -49,11 +49,15 @@ type EditorCommentsDeps = {
   // A comment with @-mentions just landed (docs/specs/012-collaboration/comment-mentions.md): count it and
   // ask the api to email the people named. Absent where nobody can be named.
   onMentioned?: (text: string, mentions: CommentMention[]) => void;
+  // No comments at all (a Community visitor, docs/specs/025-community/community.md "Viewing a post's document"):
+  // opening a thread and adding to one do nothing, since the api refuses a community link every comment door.
+  commentsOff?: boolean;
 };
 
 // A view-role write through the dedicated comment endpoints (docs/specs/015-api/api.md). The
 // add resolves to the server's comment (its id replaces the local one).
 type PersistAdd = (localId: string) => Promise<{ id?: string } | null | undefined>;
+// A delete, resolve or reopen through the comment endpoints.
 type PersistDelete = () => Promise<unknown>;
 
 type EditorCommentsApi = {
@@ -77,14 +81,17 @@ type EditorCommentsApi = {
   // comment resurrects on refresh).
   replaceCommentId: (elementId: string, oldId: string, newId: string) => void;
   deleteComment: (elementId: string, commentId: string, persist?: PersistDelete) => void;
-  resolveThread: (elementId: string) => void;
-  unresolveThread: (elementId: string) => void;
+  // With `persist` (a session that may comment but not edit), the hook runs it and counts the change once the
+  // server took it, as for an add.
+  resolveThread: (elementId: string, persist?: PersistDelete) => void;
+  unresolveThread: (elementId: string, persist?: PersistDelete) => void;
 };
 
 export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   const [commentThreadOpenId, setCommentThreadOpenId] = useState<string | null>(null);
 
   const openComments = (elementId: string) => {
+    if (deps.commentsOff) return;
     // Closure read before the toggle so we emit only on the open
     // transition, never on close, and never double-fire under React
     // strict mode (which would re-run an updater-internal side
@@ -101,6 +108,7 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     persist?: PersistAdd,
     mentions?: CommentMention[],
   ): string => {
+    if (deps.commentsOff) return '';
     // Mint OUTSIDE the updater: state updaters must stay pure (strict
     // mode re-invokes them), and the caller needs the id.
     const comment = createComment(
@@ -147,14 +155,22 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     }
   };
 
-  const resolveThread = (elementId: string) => {
-    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: true });
-    track('Comment', 'Resolved');
+  const setResolved = (elementId: string, resolved: boolean, persist?: PersistDelete) => {
+    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved });
+    const count = () => track('Comment', resolved ? 'Resolved' : 'Unresolved');
+    if (!persist) return count();
+    // A change the server refused goes back, so the thread never shows a state nobody else sees.
+    void persist()
+      .then(count)
+      .catch((err: unknown) => {
+        console.warn('[comments] thread state not saved', { resolved, error: String(err) });
+        deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: !resolved });
+      });
   };
-  const unresolveThread = (elementId: string) => {
-    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: false });
-    track('Comment', 'Unresolved');
-  };
+  const resolveThread = (elementId: string, persist?: PersistDelete) =>
+    setResolved(elementId, true, persist);
+  const unresolveThread = (elementId: string, persist?: PersistDelete) =>
+    setResolved(elementId, false, persist);
 
   return {
     commentThreadOpenId,

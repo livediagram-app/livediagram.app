@@ -21,6 +21,13 @@ import {
   skillPrint,
   apiCall,
   telemetryOn,
+  exportAll,
+  graphRender,
+  pull,
+  push,
+  tabRender,
+  waitFor,
+  watch,
 } from './verbs/local';
 
 // The command a `livediagram …` line names: a top-level verb, or a resource (or alias) and a verb.
@@ -53,6 +60,27 @@ describe('the catalogue', () => {
     }
   });
 
+  // The CLI hands a verb its words and flag values as strings, and a trailing `...name` positional as a list of
+  // words: a field that takes a number must take its digits as text, and a rest field must take the list.
+  it('takes every value as the CLI hands it over', () => {
+    const wrong: string[] = [];
+    for (const verb of VERBS) {
+      const shape = verb.input.shape as Record<
+        string,
+        { safeParse: (v: unknown) => { success: boolean } }
+      >;
+      const rest = verb.cli?.positionals.find((p) => p.startsWith('...'))?.slice(3);
+      for (const [key, field] of Object.entries(shape)) {
+        if (key === rest) {
+          if (!field.safeParse(['two', 'words']).success) wrong.push(`${verb.id} ${key} as words`);
+        } else if (field.safeParse(5).success && !field.safeParse('5').success) {
+          wrong.push(`${verb.id} ${key} as digits`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
   it('describes each verb as facts, never as instructions to the caller (MCP §4.15)', () => {
     const directive = /\b(you must|you should|do not|don't|never use|always use|make sure)\b/i;
     expect(
@@ -67,6 +95,7 @@ describe('the catalogue', () => {
     expect(counted).toContain('tab.view');
     expect(VERBS.filter((v) => v.offline).map((v) => v.id)).toEqual([
       'graph.lint',
+      'graph.render',
       'guide',
       'skill.print',
       'skill.install',
@@ -78,6 +107,7 @@ describe('the catalogue', () => {
       'tab.ls',
       'tab.view',
       'tab.lint',
+      'tab.render',
       'tab.diff',
       'tab.add',
       'tab.rename',
@@ -127,6 +157,41 @@ describe('the verbs the CLI handles', () => {
     ]);
     expect(authLogout.text!({ host: 'https://h' })).toEqual(['signed out of https://h']);
     expect(telemetryOn.text!({ telemetry: 'on' })).toEqual(['telemetry on']);
+    // The room stream: wait prints its lines (JSON keeps them) and exits as it ended; watch printed as it went.
+    const ended = { lines: ['nothing new in 5 s'], exit: 1 };
+    expect([waitFor.text!(ended), waitFor.json!(ended), waitFor.exitCode!(ended)]).toEqual([
+      ended.lines,
+      { lines: ended.lines },
+      1,
+    ]);
+    expect([watch.text!(ended), watch.json!(ended), watch.exitCode!(ended)]).toEqual([
+      ended.lines,
+      undefined,
+      1,
+    ]);
+    expect([push.text!(ended), push.json!(ended), push.exitCode!(ended)]).toEqual([
+      ended.lines,
+      { lines: ended.lines },
+      1,
+    ]);
+    expect([pull.text!({ paths: ['a'] }), pull.quiet!({ paths: ['a'] })]).toEqual([['a'], ['a']]);
+    expect([tabRender.text!({ lines: ['p'] }), graphRender.text!({ lines: ['q'] })]).toEqual([
+      ['p'],
+      ['q'],
+    ]);
+    expect(exportAll.text!({ paths: ['a'], documents: 1, exit: 0 })).toEqual([
+      'a',
+      '1 document · 1 file',
+    ]);
+    expect(exportAll.text!({ paths: ['a', 'b'], documents: 2, exit: 0 })).toEqual([
+      'a',
+      'b',
+      '2 documents · 2 files',
+    ]);
+    expect([
+      exportAll.quiet!({ paths: ['a'], documents: 1, exit: 0 }),
+      exportAll.exitCode!({ paths: [], documents: 0, exit: 6 }),
+    ]).toEqual([['a'], 6]);
     expect(
       authStatus.text!({
         host: 'https://h',

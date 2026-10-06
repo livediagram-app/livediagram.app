@@ -31,6 +31,7 @@ export function EllipsisMenuButton({
   onToggleLock,
   onDelete,
   opensIn,
+  planTab,
   selfId,
   facilitatedBy,
   facilitating,
@@ -79,6 +80,7 @@ export function EllipsisMenuButton({
   onToggleLock: () => void;
   onDelete: () => void;
   opensIn?: OpensInChoice;
+  planTab?: boolean;
 } & SessionToolsProps) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -111,6 +113,7 @@ export function EllipsisMenuButton({
             onToggleLock={onToggleLock}
             locked={locked}
             opensIn={opensIn}
+            planTab={planTab}
             selfId={selfId}
             otherDocuments={otherDocuments}
             folderNames={folderNames}

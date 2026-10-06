@@ -3,12 +3,9 @@
 // upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
-import { applyElementDelta, sanitizeMentions } from '@livediagram/document';
-import { broadcastShareOp, relayElementDelta } from '../room-client';
-import { storeTab } from '../limits';
-import { findCommentHost, redactCommentAuthorIds, removeComment } from '../comments';
-import { emailEnabled } from '../email/client';
-import { notifyNewComment } from '../email/notifications';
+import { broadcastShareOp } from '../room-client';
+import { redactCommentAuthorIds } from '../comments';
+import { redactTabForCommunity } from '../community-redact';
 import {
   deleteShareLinksForTab,
   deleteTabRow,
@@ -18,10 +15,9 @@ import {
   getTab,
   linkTabToDocument,
   tabLinkedToOwnedDocument,
-  upsertTab,
 } from '../db';
-import { badRequest, forbidden, json, noContent, notFound, payloadTooLarge } from '../responses';
-import { recordCommentAdded, recordVisitorOpened } from '../timeline';
+import { forbidden, json, noContent, notFound } from '../responses';
+import { recordVisitorOpened } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
@@ -30,14 +26,20 @@ import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes } from './changesets';
+import { handleCommentRoutes } from './comment-routes';
+import { handleAgentPresenceRoute } from './agent-presence-routes';
+import { handleTabRender } from './tab-render-route';
+import { handleItemRoutes } from './item-routes';
+import { handleItemTypeRoutes } from './item-type-routes';
 import {
+  deniedOnTab,
   gateEdit,
   gateGrant,
-  gateRead,
   missingDocument,
   ownsDocument,
   requireOwner,
   shareCodeOf,
+  COMMUNITY_CONTENT,
   type RouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
@@ -96,8 +98,12 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // Naming the tab confines a tab-scoped link to its own tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
       // existence leak.
-      const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
-      if (!allowed) return deniedOnTab(ctx, existing);
+      // The grant itself, not a yes/no: it already says whether the visitor came through a Community
+      // link, so that is not looked up a second time below.
+      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId, COMMUNITY_CONTENT);
+      if (!grant || (grant.tabScope !== null && grant.tabScope !== tabId)) {
+        return deniedOnTab(ctx, existing);
+      }
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
       // Blank other people's comment author ids before handing the tab
@@ -105,10 +111,16 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // id (so they can delete-own), never another participant's owner
       // id. The document owner sees everything (viewerId === ownerId is a
       // no-op). Same anti-claim posture as redactOwner on the document.
+      //
+      // A Community visitor gets the board without its conversation or its people
+      // (docs/specs/025-community/community.md, community-redact.ts).
+      const communityVisit = owner !== existing.ownerId && grant.community;
       const safe =
         owner === existing.ownerId
           ? tab
-          : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+          : communityVisit
+            ? redactTabForCommunity(tab)
+            : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe);
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the document GET is hit
@@ -124,7 +136,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // "opened by a visitor · Someone with the share link" and files under the
       // sharing filter, so an owner saw that for a document they had never
       // shared a link for, once per teammate per day.
-      if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
+      //
+      // Not for a Community visit (docs/specs/025-community/community.md): a public post is opened by
+      // strangers, whose names do not belong in the author's feed.
+      if (owner !== existing.ownerId && shareCodeOf(request) !== null && !communityVisit) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
             recordVisitorOpened(env, existing, owner, p?.name ?? null),
@@ -164,160 +179,22 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     }
   }
 
-  // /api/documents/<id>/tabs/<tabId>/comments — append a comment
-  // to an element's thread. Read-role visitors are allowed here
-  // (the only write path open to view-role) so view-only
-  // collaborators can chime in on a thread without being
-  // promoted to edit. Owner / edit-role roles already get this
-  // via the normal tab autosave; this endpoint short-circuits
-  // that path so a view-role visitor's autosave (blocked) isn't
-  // their only way to persist.
-  if (
-    segments.length === 6 &&
-    segments[3] === 'tabs' &&
-    segments[5] === 'comments' &&
-    request.method === 'POST'
-  ) {
-    const id = segments[2]!;
-    const tabId = segments[4]!;
-    const owner = requireOwner(ctx);
-    if (owner instanceof Response) return owner;
-    const existing = await getDocument(env, id);
-    if (!existing) return missingDocument(ctx, id);
-    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
-    if (!allowed) return deniedOnTab(ctx, existing);
-    let body: { elementId?: unknown; text?: unknown; mentions?: unknown };
-    try {
-      body = (await request.json()) as { elementId?: unknown; text?: unknown; mentions?: unknown };
-    } catch {
-      return badRequest('invalid json');
-    }
-    const elementId = typeof body.elementId === 'string' ? body.elementId : null;
-    const text = typeof body.text === 'string' ? body.text.trim() : '';
-    if (!elementId) return badRequest('missing elementId');
-    if (!text) return badRequest('missing text');
-    if (text.length > 2000) return badRequest('text too long');
-    const tab = await getTab(env, id, tabId);
-    if (!tab) return notFound();
-    const target = tab.elements.find((el) => el.id === elementId);
-    if (!target || target.type === 'arrow') return notFound();
-    const mentions = sanitizeMentions(body.mentions);
-    const writer = await getParticipant(env, owner);
-    const authorName = writer?.name ?? 'Anonymous';
-    const authorColor = writer?.color ?? '#94a3b8';
-    const comment = {
-      id: crypto.randomUUID(),
-      text,
-      createdAt: Date.now(),
-      authorName,
-      authorColor,
-      // Stamp the writer's stable id so they (and only they) can later
-      // delete this comment via the DELETE endpoint below. Server-set,
-      // never read from the client.
-      authorId: owner,
-      // Cleaned, never trusted (docs/specs/012-collaboration/comment-mentions.md "Trust").
-      ...(mentions ? { mentions } : {}),
-    };
-    // The same append the editor makes (it unresolves a resolved thread),
-    // through the one shared definition of it.
-    const updatedElements = tab.elements.map((el) =>
-      el.id === elementId ? applyElementDelta(el, { kind: 'comment-add', comment }) : el,
-    );
-    if (
-      !(await storeTab(() =>
-        upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex),
-      ))
-    ) {
-      return payloadTooLarge();
-    }
-    // Tell the room, so editors see it now and their next save keeps it
-    // (docs/specs/012-collaboration/collab-race-hardening.md). Off the response path. WITHOUT the author id: it is the
-    // visitor's owner id, which a GET redacts for everyone but its author
-    // (redactCommentAuthors), and the room would hand it to every socket.
-    // Nothing is lost by leaving it out: a save restores a stored comment's
-    // author fields from D1 (rewriteCommentAuthors).
-    const { authorId: _authorId, ...publicComment } = comment;
-    ctx.waitUntil?.(
-      relayElementDelta(env, id, tabId, elementId, {
-        kind: 'comment-add',
-        comment: publicComment,
-      }),
-    );
-    // docs/specs/013-workspace/timeline.md §4.3: the OTHER comment write path. A view-role visitor
-    // can't autosave, so this endpoint is their only way to persist a
-    // comment — and without an emit here their comments would be the
-    // one kind missing from the feed.
-    // A reply when the thread already held a comment (Explorer Home's "replied").
-    const reply =
-      ((target as { commentThread?: { comments?: unknown[] } }).commentThread?.comments?.length ??
-        0) > 0;
-    ctx.waitUntil?.(
-      recordCommentAdded(
-        env,
-        existing,
-        { id: comment.id, text, authorName, authorColor, reply },
-        owner,
-      ),
-    );
-    // docs/specs/014-identity/transactional-email.md (#1): a view-role visitor's comment notifies the owner immediately.
-    if (emailEnabled(env) && owner !== existing.ownerId) {
-      ctx.waitUntil?.(
-        notifyNewComment(env, { id, ownerId: existing.ownerId, name: existing.name }, authorName),
-      );
-    }
-    return json({ comment });
-  }
+  // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
+  const comments = await handleCommentRoutes(ctx);
+  if (comments) return comments;
+  // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
+  const presence = await handleAgentPresenceRoute(ctx);
+  if (presence) return presence;
+  // One tab drawn by the shared renderer (docs/specs/015-api/api.md).
+  const rendered = await handleTabRender(ctx);
+  if (rendered) return rendered;
 
-  // DELETE /api/documents/<id>/tabs/<tabId>/comments/<commentId> —
-  // delete a SINGLE comment you authored. Read-role visitors are
-  // allowed (gateRead, like the POST above) so a view-only collaborator
-  // can remove their own comment without edit rights — but only their
-  // own: the comment's server-stamped authorId must equal the caller.
-  // Owners / edit-role visitors also use this for delete-own; deleting
-  // SOMEONE ELSE'S comment still goes through the edit-gated tab PUT.
-  if (
-    segments.length === 7 &&
-    segments[3] === 'tabs' &&
-    segments[5] === 'comments' &&
-    request.method === 'DELETE'
-  ) {
-    const id = segments[2]!;
-    const tabId = segments[4]!;
-    const commentId = segments[6]!;
-    const owner = requireOwner(ctx);
-    if (owner instanceof Response) return owner;
-    const existing = await getDocument(env, id);
-    if (!existing) return missingDocument(ctx, id);
-    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
-    if (!allowed) return deniedOnTab(ctx, existing);
-    const tab = await getTab(env, id, tabId);
-    if (!tab) return notFound();
-    // Locate the comment + confirm authorship before mutating anything.
-    const host = findCommentHost(tab.elements, commentId);
-    if (!host) return notFound();
-    const found = host.comment;
-    // Delete-own only. The document owner may also delete their own
-    // comments here; removing other people's requires the edit-gated
-    // tab PUT. Mismatched author is forbidden (not 404) — the caller
-    // can see the comment exists, they just can't delete it.
-    if (found.authorId !== owner) return forbidden();
-    const updatedElements = removeComment(tab.elements, commentId);
-    if (
-      !(await storeTab(() =>
-        upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex),
-      ))
-    ) {
-      return payloadTooLarge();
-    }
-    // Same as the add: without it, an editor's next save put it back.
-    ctx.waitUntil?.(
-      relayElementDelta(env, id, tabId, host.elementId, {
-        kind: 'comment-remove',
-        commentId,
-      }),
-    );
-    return noContent();
-  }
+  // The item store (docs/specs/026-plan/items.md).
+  const items = await handleItemRoutes(ctx);
+  if (items) return items;
+  // The document's type catalogue (docs/specs/026-plan/item-types.md).
+  const itemTypes = await handleItemTypeRoutes(ctx);
+  if (itemTypes) return itemTypes;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).
@@ -378,10 +255,3 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
 // refused this tab because their link is scoped to another one
 // (docs/specs/013-workspace/tab-scoped-share-links.md): the tab reads as missing, 404, so its existence
 // doesn't leak. Anyone else gets the usual 403.
-async function deniedOnTab(
-  ctx: RouteContext,
-  liveDoc: { id: string; ownerId: string; teamId: string | null },
-): Promise<Response> {
-  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
-  return grant ? notFound() : forbidden();
-}

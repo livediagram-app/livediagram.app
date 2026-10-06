@@ -9,8 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { buttonClassName, CloseIcon, Glyph, ButtonContent } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { buttonClassName, CloseIcon, Glyph, ButtonContent, Portal } from '@livediagram/ui';
 import { readUserPreferences } from '@/lib/user-preferences';
 
 // Lightweight toast surface. Two jobs: (1) make previously-silent async

@@ -60,7 +60,7 @@ serve all of them cheaply:
 
 Two things inside this repo are prior art too:
 
-- `apps/live/lib/export-tab-text.ts` (`tabToMarkdownText`) already writes a tab as Markdown, but it drops every
+- `packages/document/src/export-tab-text.ts` (`tabToMarkdownText`) already writes a tab as Markdown, but it drops every
   unlabelled arrow (7 of 11 in the test tab), every id, notes, comments, containment and table content.
 - `packages/document/src/mermaid-serialise.ts` (`mermaidFromTab`) derives containment geometrically ("the smallest
   frame containing its centre"), the same rule the outline uses below.

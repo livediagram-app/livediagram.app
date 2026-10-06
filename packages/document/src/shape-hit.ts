@@ -77,8 +77,15 @@ function strokePx(el: ShapeElement): number {
   return BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE];
 }
 
-// A rectangle with elliptical corners, clockwise from the top edge.
-function roundedRect(x: number, y: number, w: number, h: number, rxIn: number, ryIn: number) {
+/** A rectangle with elliptical corners as a closed ring, clockwise from the top edge. */
+export function roundedRectRing(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  rxIn: number,
+  ryIn: number,
+): Point[] {
   const rx = Math.max(0, Math.min(rxIn, w / 2));
   const ry = Math.max(0, Math.min(ryIn, h / 2));
   if (rx === 0 || ry === 0) {
@@ -134,7 +141,7 @@ function partLines(part: ShapePart): HitLine[] {
       return [
         {
           closed: true,
-          points: roundedRect(
+          points: roundedRectRing(
             part.x,
             part.y,
             part.width,
@@ -186,7 +193,7 @@ function cssOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'h
         ? Infinity
         : cornerRadiusPx(el.borderRadius, el.width, el.height, CSS_DEFAULT_RADIUS_PX);
     const r = Math.max(0, Math.min(outer, el.width / 2, el.height / 2) - inset);
-    ring = roundedRect(inset, inset, w, h, r, r);
+    ring = roundedRectRing(inset, inset, w, h, r, r);
   }
   const lines: HitLine[] = [{ closed: true, points: ring }];
   // The browser's chrome strip ends in a 1px rule (boxed-element-overlays.tsx BrowserChrome).
@@ -211,7 +218,7 @@ export function shapeHitOutline(el: ShapeElement): ShapeHitOutline {
   if (known) return known;
   let outline: ShapeHitOutline;
   if (!pickedByOutline(el) || el.width <= 0 || el.height <= 0) {
-    const box = roundedRect(0, 0, Math.max(el.width, 0), Math.max(el.height, 0), 0, 0);
+    const box = roundedRectRing(0, 0, Math.max(el.width, 0), Math.max(el.height, 0), 0, 0);
     outline = { lines: [{ closed: true, points: box }], fills: [box], halfWidth: 0 };
   } else {
     const filled = hasVisibleFill(el);

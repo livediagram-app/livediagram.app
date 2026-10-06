@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from './identity';
-import { buildCollaboratorRoster, participantBadges, rosterSummary } from './collaborator-roster';
+import {
+  buildCollaboratorRoster,
+  collaboratorRowDetail,
+  participantBadges,
+  rosterSummary,
+} from './collaborator-roster';
 
 const p = (id: string, over: Partial<Participant> = {}): Participant => ({
   id,
@@ -100,6 +105,21 @@ describe('rosterSummary', () => {
     expect(rosterSummary(roster)).toBe('3 people across 2 tabs');
   });
 
+  it('lists agents but counts only people and the tabs they are on', () => {
+    const roster = buildCollaboratorRoster({
+      participantsByTab: new Map([
+        ['t1', [p('me'), p('a'), p('agent-1', { agent: true })]],
+        ['t2', [p('agent-2', { agent: true })]],
+      ]),
+      tabs,
+      activeId: 't1',
+      selfId: 'me',
+    });
+    expect(roster.groups.map((g) => g.participants.length)).toEqual([3, 1]);
+    expect(roster).toMatchObject({ peopleCount: 2, peopleTabCount: 1 });
+    expect(rosterSummary(roster)).toBe('2 people across 1 tab');
+  });
+
   it('says so when you are alone', () => {
     const roster = buildCollaboratorRoster({
       participantsByTab: new Map([['t1', [p('me')]]]),
@@ -123,5 +143,28 @@ describe('participantBadges', () => {
   });
   it('is empty for a peer with no role we are not following', () => {
     expect(participantBadges(p('a'), 'me', 'edit', 'b')).toEqual([]);
+  });
+});
+
+describe('collaboratorRowDetail', () => {
+  const now = 10 * 60_000;
+  it('leads a person’s row with their agent’s status line', () => {
+    expect(
+      collaboratorRowDetail(
+        p('a', { lastActiveAt: now, statusLine: 'adding payment' }),
+        false,
+        now,
+      ),
+    ).toBe('adding payment · Online · Active just now');
+    expect(collaboratorRowDetail(p('me', { lastActiveAt: now }), true, now)).toBe('Online');
+  });
+
+  it('says only what an agent row is doing, or that it is online', () => {
+    expect(
+      collaboratorRowDetail(p('x', { agent: true, statusLine: 'reviewing' }), false, now),
+    ).toBe('reviewing');
+    expect(collaboratorRowDetail(p('x', { agent: true, lastActiveAt: 0 }), false, now)).toBe(
+      'Online',
+    );
   });
 });

@@ -1,7 +1,7 @@
 # Editor modes
 
-A general tab is drawn on in one of three **editor modes**: **Diagram**,
-**Draw** and **Illustrate** (Illustrate is an experiment under review). A mode decides which tools and rules are in focus; it never decides
+A general tab is drawn on in one of four **editor modes**: **Diagram**,
+**Draw**, **Illustrate** and **Plan** (Illustrate and Plan are experiments under review). A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
@@ -11,10 +11,11 @@ where it is and changes only how the next mark is made.
 | Term                | Means                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                              |
-| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw` or `illustrate` (`EditorMode`).                                       |
+| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw`, `illustrate` or `plan` (`EditorMode`).                               |
 | **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                               |
 | **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                |
 | **Illustrate mode** | Pages on the canvas, of two kinds: infographic pages to lay out and article pages to write ([Illustrate pages](illustrate-pages.md)). |
+| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                          |
 | **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                    |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
@@ -62,7 +63,7 @@ where it is and changes only how the next mark is made.
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
-- **One mode chosen:** Diagram, Draw or Illustrate (while it is offered, "Experimental modes").
+- **One mode chosen:** Diagram, Draw, Illustrate or Plan (the last two while offered, "Experimental modes").
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
@@ -184,13 +185,26 @@ element in the same colour.
   pen in hand on an empty tab and Select on a tab with content.
 - **Illustrate mode** is Diagram mode drawn as pages, with the palette
   narrowed (both below); every other rule, tool and shortcut is Diagram mode's.
+- **Plan mode** is Diagram mode with the palette narrowed to boards and
+  cards, and Plan boards taking input as a planning tool
+  ([Plan mode](../026-plan/plan-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
   Illustrate a page with a little chart above two lines of writing (its two
-  page kinds); the same glyph on the switch, Opens in and the tab pill.
+  page kinds), Plan a board of three columns with a raised card; the same glyph on the switch, Opens in and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode.
+
+## The tool a mode starts with
+
+- Every mode starts on **Select**, except **Plan**, which starts on **Hand** (a board's cards take the pointer
+  themselves). On a phone every mode starts on **Hand**, so a drag moves the canvas.
+- The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
+  after. An embedded viewer always starts on Hand.
+- Plan leaves **Eraser** and **Format** out ([Plan mode](../026-plan/plan-mode.md#tools)).
+- Any tab switches into and out of Plan with everything on it kept: a board outside Plan is an element like any
+  other ([Plan mode](../026-plan/plan-mode.md#switching-modes-keeps-the-tab)).
 
 ## The palette per mode
 
@@ -229,29 +243,33 @@ out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
 Docs, Website), keeping Image and Avatar.
 
-| Category       | Diagram | Illustrate |
-| -------------- | ------- | ---------- |
-| Popular        | yes     | yes        |
-| Shapes         | yes     | yes        |
-| My shapes      | yes     | yes        |
-| Write          | yes     | yes        |
-| Draw           | yes     | no         |
-| Build          | yes     | yes        |
-| Components     | no      | yes        |
-| Devices        | no      | yes        |
-| Event Storming | board   | no         |
-| Icons          | yes     | yes        |
-| Stickers       | yes     | yes        |
-| Tech           | yes     | no         |
-| Media          | yes     | yes        |
-| Data           | no      | yes        |
-| Behaviours     | yes     | no         |
+| Category       | Diagram | Illustrate | Plan |
+| -------------- | ------- | ---------- | ---- |
+| Popular        | yes     | yes        | no   |
+| Boards, Cards  | no      | no         | yes  |
+| Shapes         | yes     | yes        | no   |
+| My shapes      | yes     | yes        | no   |
+| Write          | yes     | yes        | no   |
+| Draw           | yes     | no         | no   |
+| Build          | yes     | yes        | no   |
+| Components     | no      | yes        | no   |
+| Devices        | no      | yes        | no   |
+| Event Storming | board   | no         | no   |
+| Icons          | yes     | yes        | no   |
+| Stickers       | yes     | yes        | no   |
+| Tech           | yes     | no         | no   |
+| Media          | yes     | yes        | no   |
+| Data           | no      | yes        | no   |
+| Behaviours     | yes     | no         | no   |
 
-- **The landing category** is the mode's **Popular**, and the notation on an
+Plan offers only Boards and Cards and opens on Cards
+([Plan mode](../026-plan/plan-mode.md#the-palette)).
+
+- **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an
   event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is every mode's landing category: twelve tiles that mode is most
+- **Popular** is the landing category of every mode but Plan: twelve tiles that mode is most
   often built from, listed in its layout entry, fixed (not edited or
   reordered). It replaced the per-browser **Favourites**
   ([Palette Favourites](../010-palette/palette-favourites.md), removed).
@@ -363,6 +381,11 @@ The **Experimental** category is listed after **AI Tools**.
   for a person who has it off. Nothing stored changes.
 - Turning it on fires `UI` · `Toggled` · `IllustrateModeOn` (and `…Off`).
 
+Plan mode has a switch of its own, **Settings › Experimental › Plan Mode**,
+on by default (`planModeEnabled`), with the same rules: off, Plan is offered
+nowhere and a tab opening in Plan opens in Diagram. It fires `PlanModeOn` /
+`PlanModeOff`. Each experimental mode is gated by its own preference.
+
 ## Existing whiteboards
 
 - A stored tab with `kind: 'whiteboard'` reads as a general tab that opens in
@@ -375,9 +398,9 @@ The **Experimental** category is listed after **AI Tools**.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeIllustrate`, fired by
+- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeIllustrate` / `ModePlan`, fired by
   the switch before the mode applies.
-- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInIllustrate`, fired
+- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInIllustrate` / `OpensInPlan`, fired
   by Opens in.
 - `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by a page's
   orientation in Illustrate mode, and `PageAdded` / `PageRemoved` by its add
@@ -398,7 +421,7 @@ The **Experimental** category is listed after **AI Tools**.
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
-- The template and Quick Start card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
+- The template and Quick Start card is **Blank Whiteboard**, one of four blanks (Blank Diagram,
   Blank Whiteboard, Blank Illustration), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.

@@ -305,6 +305,10 @@ Measured 2026-10-05, reference board, calibrated 4x, interleaved builds.
   ms (its render became one non-yielding task); reading the canvas zoom from the viewport store
   instead of a context made zoom script 29-34 to 44-51 ms and pan 7-10 to 12-13 ms (a thousand store
   subscriptions cost more than one context walk).
+- Also set aside: keeping the Quick Style panel mounted (hidden) after a deselect, so a select
+  updates it instead of mounting it: no gain once the calibrated rates are allowed for; and placing
+  the selection toolbar in the next frame instead of its layout effect: a diagram stroke's longest
+  task 118 to 183 ms (it lays out twice).
 
 ## Not tried
 

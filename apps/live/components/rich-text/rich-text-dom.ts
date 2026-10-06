@@ -223,6 +223,29 @@ export function offsetsToDomRange(editorEl: HTMLElement, start: number, end: num
   return range;
 }
 
+// The editor's offset of the end of the caret's paragraph (the next '\n', or the end of the text), or
+// null with no caret in it. Paragraphs, not drawn lines: a wrapped item ends where its text does.
+export function paragraphEndOffset(root: HTMLElement): number | null {
+  const at = domSelectionToOffsets(root);
+  if (!at) return null;
+  const text = root.textContent ?? '';
+  const next = text.indexOf('\n', at.end);
+  return next < 0 ? text.length : next;
+}
+
+// The editor's text on the caret's line, up to the caret ('' with no caret in it).
+export function lineBeforeCaret(root: HTMLElement | null): string {
+  const sel = window.getSelection();
+  if (!root || !sel || sel.rangeCount === 0) return '';
+  const caret = sel.getRangeAt(0);
+  if (!root.contains(caret.startContainer)) return '';
+  const before = document.createRange();
+  before.setStart(root, 0);
+  before.setEnd(caret.startContainer, caret.startOffset);
+  const text = before.toString();
+  return text.slice(text.lastIndexOf('\n') + 1);
+}
+
 /**
  * Insert plain text at the caret as a real text node (splitting the current
  * text node in place), instead of `execCommand('insertText')` which inserts

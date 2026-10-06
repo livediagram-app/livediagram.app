@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Tooltip } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { Tooltip, Portal } from '@livediagram/ui';
 
 const VIEWPORT_MARGIN_PX = 12;
 // The gap between the Palette panel's content and a flyout opened beside it: the panel's own

@@ -1,3 +1,4 @@
+import type { BoardWidgetKind } from '@livediagram/items';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
 
@@ -32,6 +33,7 @@ import {
   RevealIcon,
   RollCallIcon,
   TemperatureIcon,
+  StopwatchIcon,
   TimerIcon,
 } from '@/components/palette/palette-icons';
 import {
@@ -48,6 +50,7 @@ import {
   lucideType,
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
+import { PLAN_TILES } from './palette-plan-tiles';
 
 import {
   CodeBlockTileArt,
@@ -93,6 +96,14 @@ export type PaletteTileSection =
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
+  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): boards by preset,
+  // cards by item type.
+  | 'plan-boards'
+  | 'plan-cards'
+  | 'plan-widgets'
+  // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
+  | 'plan-metrics'
+  | 'plan-visualisations'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -125,6 +136,8 @@ type PaletteTileAction =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
+      // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
+      plan?: string;
     }
   | { type: 'text' }
   | { type: 'freehand' }
@@ -153,7 +166,10 @@ type PaletteTileAction =
   // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
   // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
-  | { type: 'tech-icon'; iconId: string };
+  | { type: 'tech-icon'; iconId: string }
+  // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
+  // never on the canvas.
+  | { type: 'plan-widget'; widget: BoardWidgetKind };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
@@ -812,7 +828,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
-    icon: <TimerIcon size={TILE_GLYPH_PX} />,
+    icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:session-vote',
@@ -1802,6 +1818,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // the actor — so the row's picture says the shape before the blurb does.
     icon: <NoteTileArt size={note.size} fill={note.fill} />,
   })),
+  // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
+  ...PLAN_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

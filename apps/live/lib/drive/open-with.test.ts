@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { FakeGoogle } from '@livediagram/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
-import { createFreehand, type FreehandElement } from '@livediagram/document';
-import { documentToEnvelopeText } from '../export-document-text';
+import {
+  createFreehand,
+  type FreehandElement,
+  documentToEnvelopeText,
+} from '@livediagram/document';
 import { createDriveRestClient } from './drive-rest-client';
 import {
   importOpenWithCopy,

@@ -1,11 +1,13 @@
 // The CLI as a publishable package (docs/specs/015-api/blueprints/cli.md CLI1, CLI2): dist/livediagram.mjs, every
 // workspace package and dependency bundled for Node 22 and later, beside the package.json npm publishes (named
 // `livediagram`, so turbo never sees two packages of one name), the licence, the user README and the notices of every
-// bundled package, read from esbuild's metafile. A bundled package without a licence fails the build.
+// bundled package, read from esbuild's metafile; beside the bundle the PNG renderer's wasm and font (CLI31), which only a
+// render reads, and the font's licence. A bundled package without a licence fails the build.
 
 import { build } from 'esbuild';
 import { chmod, copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { EMBEDDED_WORKS } from '../../../packages/licences/src/embedded-works.ts';
 
@@ -29,6 +31,18 @@ const result = await build({
   logLevel: 'info',
 });
 await chmod(outfile, 0o755);
+
+// The PNG renderer's files, under the names the CLI reads them by (CLI31); `from` is the name the licences table
+// knows each by.
+const requireHere = createRequire(import.meta.url);
+const fonts = join(repo, 'packages/render-png/fonts');
+const ASSETS = [
+  { from: requireHere.resolve('@resvg/resvg-wasm/index_bg.wasm'), to: 'resvg.wasm' },
+  { from: join(fonts, 'Inter-Regular.ttf'), to: 'Inter-Regular.ttf' },
+  { from: join(fonts, 'Inter-OFL.txt'), to: 'Inter-OFL.txt' },
+];
+for (const { from, to } of ASSETS) await copyFile(from, join(dist, to));
+const assetNames = ASSETS.map(({ from }) => from.split('/').at(-1));
 
 // The package directory holding a bundled file: the nearest node_modules/<name> or node_modules/@scope/<name>.
 function packageDirOf(input) {
@@ -64,8 +78,10 @@ const inputs = new Set(
 );
 const licences = join(repo, 'packages/licences');
 const embedded = await Promise.all(
-  EMBEDDED_WORKS.filter(
-    (w) => 'sources' in w.trigger && w.trigger.sources.some((s) => inputs.has(s)),
+  EMBEDDED_WORKS.filter((w) =>
+    'sources' in w.trigger
+      ? w.trigger.sources.some((s) => inputs.has(s))
+      : assetNames.some((name) => w.trigger.assets.test(name)),
   ).map(async (w) => ({
     name: `${w.name} (${w.carrier})`,
     version: w.version,
@@ -99,7 +115,13 @@ await writeFile(
       license: 'MIT',
       type: 'module',
       bin: { livediagram: 'livediagram.mjs' },
-      files: ['livediagram.mjs', 'README.md', 'LICENSE', 'THIRD_PARTY_LICENSES'],
+      files: [
+        'livediagram.mjs',
+        ...ASSETS.map(({ to }) => to),
+        'README.md',
+        'LICENSE',
+        'THIRD_PARTY_LICENSES',
+      ],
       engines: { node: '>=22' },
       homepage: 'https://livediagram.app',
       repository: {

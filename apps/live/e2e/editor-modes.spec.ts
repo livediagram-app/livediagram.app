@@ -10,7 +10,8 @@ import {
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip in the
 // Palette header switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
 // Diagram, Shift+D toggles, the choice survives a reload, a new tab opens in Diagram,
-// and Opens in changes the tab's opening mode, switching only the chooser. Synthesised content only.
+// a Plan board survives every switch, and Opens in changes the tab's opening mode, switching only
+// the chooser. Synthesised content only.
 
 const CANVAS = '[data-canvas-a11y-root]';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -33,6 +34,7 @@ async function savedOpensIn(page: Page): Promise<unknown> {
 
 const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 const chip = (page: Page) => page.getByRole('button', { name: /^Editor mode: / });
+const boards = (page: Page) => page.locator('[data-plan-board]');
 const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /^Sketch/ });
 
 async function openBlank(page: Page) {
@@ -43,7 +45,7 @@ async function openBlank(page: Page) {
   await dismissQuickTour(page);
 }
 
-async function chooseMode(page: Page, name: 'Diagram' | 'Draw') {
+async function chooseMode(page: Page, name: 'Diagram' | 'Draw' | 'Plan') {
   await chip(page).click();
   await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
@@ -107,7 +109,37 @@ test.describe('editor modes', () => {
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
     await page.keyboard.press('Shift+D');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
+    // Plan moves on like any mode (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
+    await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+    expectNoPageErrors(pageErrors);
+  });
+
+  // A board placed in Plan stays through Diagram and Draw, and works again back in Plan
+  // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
+  test('a board placed in Plan stays on the tab in every mode', async ({ page, pageErrors }) => {
+    await openBlank(page);
+    await chooseMode(page, 'Plan');
+    await page.getByRole('button', { name: /^Kanban/ }).click();
+    await expect(boards(page)).toHaveCount(1);
+
+    // The new board is selected, and a key on a selection types into it: a press on empty canvas,
+    // right of the board, lets it go and gives the canvas the keys.
+    await page.locator(CANVAS).click({ position: { x: 1500, y: 600 } });
+    await page.keyboard.press('Shift+D');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(boards(page)).toHaveCount(1);
+
+    await chooseMode(page, 'Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(boards(page)).toHaveCount(1);
+
+    await chooseMode(page, 'Plan');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
+    await expect(boards(page)).toHaveCount(1);
+    await expect(page.getByRole('heading', { name: 'Start with a Board' })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 

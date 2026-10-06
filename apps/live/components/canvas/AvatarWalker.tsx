@@ -7,11 +7,11 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
+import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarFacing } from '@/lib/avatar-walk';
 import { AVATAR_HEIGHT, avatarBox } from '@/lib/avatar-walk';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 export function AvatarWalker({
   pos,

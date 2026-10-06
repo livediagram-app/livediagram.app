@@ -172,4 +172,13 @@ export type ShapeKind =
   // `iconId`). Deliberately NOT an icon: it paints its own plate + shadow,
   // is never tinted by the theme, carries no caption, and never folds into
   // another shape as an inline glyph.
-  | 'sticker';
+  | 'sticker'
+  // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's item
+  // store. Carries its set-up in `planBoard` (below); the cards are items, not elements.
+  | 'plan-board'
+  // Plan card (docs/specs/026-plan/plan-board.md "The Plan card"): one item placed on the canvas,
+  // named by `planCard.itemId`.
+  | 'plan-card'
+  // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card,
+  // named by `planView.view`.
+  | 'plan-view';

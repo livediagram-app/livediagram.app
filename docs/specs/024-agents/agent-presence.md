@@ -1,6 +1,7 @@
 # Agent presence
 
-**Status: specified, not built.**
+**Status: built.** The comment endpoints and their listing, comment token ids, agent presence in the api, the room
+and the editor, and the CLI's `comment`, `presence`, `wait` and `watch`.
 
 An agent acts as the person whose token it holds. People see its work, its presence and its comments as that
 person's, and comments are how people and agents talk on the canvas when nobody is chatting.
@@ -53,6 +54,10 @@ What an agent may do follows its token's [level](../013-workspace/share-roles.md
 as a share link: reading needs read access; comments, session answers and presence need the participation gate
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.
+
+Until [share roles](../013-workspace/share-roles.md) are built, `gateParticipate` names today's rule: read access to
+the document or tab, as a view link may already comment, with a read-only token refused every write at the choke
+point. It becomes the Participant check when share roles land, and no route changes then.
 
 ## Limits
 

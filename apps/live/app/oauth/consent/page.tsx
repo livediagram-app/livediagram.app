@@ -8,8 +8,9 @@
 // absent end-to-end without Clerk.
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Brand, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
-import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
+import { CLI_CLIENT_ID } from '@livediagram/api-schema';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { OauthHelpLink, OauthShell } from '../oauth-shell';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
@@ -17,42 +18,6 @@ import { MCP_ORIGIN } from '@/lib/mcp-config';
 import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 dark:bg-slate-950">
-      {/* Same animated lines backdrop as the new-document page; decorative,
-          reduced-motion aware, hidden below sm. */}
-      <AnimatedLinesBackdrop />
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-xl backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
-        <div className="mb-5">
-          <Brand href="/" size="md" />
-        </div>
-        {children}
-      </div>
-    </main>
-  );
-}
-
-// Help link to the connect-an-AI-tool article. Opens in a new tab so it never
-// abandons the in-progress OAuth session on this screen.
-function HelpLink() {
-  return (
-    <a
-      href="/help/account-and-data/connect-ai-mcp/"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-600 dark:hover:text-brand-400"
-    >
-      <Glyph size={13} units={16} strokeLinecap="butt" strokeLinejoin="miter">
-        <circle cx="8" cy="8" r="6.5" />
-        <path d="M6.2 6.3a1.8 1.8 0 1 1 2.3 1.8c-.5.2-.7.5-.7 1.1" strokeLinecap="round" />
-        <circle cx="8" cy="11.4" r="0.5" fill="currentColor" stroke="none" />
-      </Glyph>
-      Learn about connecting AI tools
-    </a>
-  );
-}
 
 function Consent() {
   const params = useSearchParams();
@@ -93,34 +58,34 @@ function Consent() {
   // which otherwise returns before the later checks).
   if (status === 'cancelled') {
     return (
-      <Shell>
+      <OauthShell>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Connection cancelled
         </h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           You can close this window.
         </p>
-      </Shell>
+      </OauthShell>
     );
   }
 
   if (!clerkEnabled) {
     return (
-      <Shell>
+      <OauthShell>
         <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           Connecting apps isn’t available
         </h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           This deployment doesn’t have accounts enabled, so there’s nothing to connect to.
         </p>
-      </Shell>
+      </OauthShell>
     );
   }
   if (!authLoaded) {
     return (
-      <Shell>
+      <OauthShell>
         <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
-      </Shell>
+      </OauthShell>
     );
   }
   if (!isSignedIn || !clerkUserId) {
@@ -130,7 +95,7 @@ function Consent() {
     const back =
       typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
     return (
-      <Shell>
+      <OauthShell>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Sign in to connect {client}
         </h1>
@@ -153,9 +118,9 @@ function Consent() {
           </button>
         </div>
         <div>
-          <HelpLink />
+          <OauthHelpLink />
         </div>
-      </Shell>
+      </OauthShell>
     );
   }
   // The lookup is still in flight. Deliberately a blocking state rather than
@@ -163,9 +128,9 @@ function Consent() {
   // destination is known is exactly the screen this lookup exists to prevent.
   if (resolved === undefined) {
     return (
-      <Shell>
+      <OauthShell>
         <p className="text-sm text-slate-500 dark:text-slate-400">Checking this request…</p>
-      </Shell>
+      </OauthShell>
     );
   }
   // No session in the URL, or the server doesn't recognise it (expired — they
@@ -173,7 +138,7 @@ function Consent() {
   // the same, and naming which one would confirm session ids to a prober.
   if (resolved === null) {
     return (
-      <Shell>
+      <OauthShell>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           This link has expired
         </h1>
@@ -182,9 +147,9 @@ function Consent() {
           from your app.
         </p>
         <div>
-          <HelpLink />
+          <OauthHelpLink />
         </div>
-      </Shell>
+      </OauthShell>
     );
   }
 
@@ -198,9 +163,10 @@ function Consent() {
         body: JSON.stringify({ session, token, expiresAt }),
       });
       if (!res.ok) throw new Error('complete failed');
-      // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): an AI tool was connected via MCP, which
-      // mints a token. `type` is the fixed source, never the client name.
-      track('Token', 'Created', 'MCP');
+      // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): an app was connected, which mints a token.
+      // `type` is the fixed source, never the client name: the CLI by its public client id (CLI77), else an MCP
+      // client.
+      track('Token', 'Created', resolved.clientId === CLI_CLIENT_ID ? 'Cli' : 'MCP');
       const { redirectTo } = (await res.json()) as { redirectTo: string };
       window.location.href = redirectTo;
     } catch {
@@ -209,7 +175,7 @@ function Consent() {
   };
 
   return (
-    <Shell>
+    <OauthShell>
       <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
@@ -269,9 +235,9 @@ function Consent() {
         </button>
       </div>
       <div>
-        <HelpLink />
+        <OauthHelpLink />
       </div>
-    </Shell>
+    </OauthShell>
   );
 }
 
@@ -279,9 +245,9 @@ export default function OauthConsentPage() {
   return (
     <Suspense
       fallback={
-        <Shell>
+        <OauthShell>
           <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
-        </Shell>
+        </OauthShell>
       }
     >
       <Consent />

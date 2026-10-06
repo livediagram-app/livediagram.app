@@ -223,3 +223,63 @@ describe('the tab read', () => {
     expect(((await res.json()) as { tab: { rev: number } }).tab.rev).toBe(2);
   });
 });
+
+// A save upserts by tab id: an id that names another document's tab is refused, never overwritten or adopted.
+// Community makes tab ids public (a post's document lists them), so this is what keeps a published board safe.
+describe("someone else's tab id", () => {
+  it('is refused, leaving the tab and its document as they were', async () => {
+    const db = await documentWith([box('a', 'Original')]);
+    // A tab from before revisions (migration 0067), at rev 0 as most stored tabs are: the revision trigger alone
+    // would let an overwrite through.
+    db.sql
+      .prepare("INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('old', 'Old', ?, 1, 0)")
+      .run(JSON.stringify({ elements: [box('v', 'Original')] }));
+    db.sql
+      .prepare(
+        "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('D', 'old', 1, 1)",
+      )
+      .run();
+    const attacker = (method: string, path: string, body?: unknown) =>
+      handleDocuments(
+        makeTestRouteContext(method, path, {
+          env: db.env,
+          owner: 'user_attacker',
+          clerkUserId: 'user_attacker',
+          verifiedUserId: 'user_attacker',
+          body,
+        }),
+      );
+    const own = await attacker('POST', '/api/documents', {
+      id: 'E',
+      name: 'Mine',
+      tabs: [{ id: 'e1', name: 'Mine', elements: [] }],
+    });
+    expect(own.status).toBe(201);
+    const res = await attacker('PUT', '/api/documents/E/tabs/old', {
+      id: 'old',
+      name: 'Taken',
+      elements: [box('x', 'Overwritten')],
+    });
+    expect(res!.status).toBe(409);
+    expect(await res!.json()).toEqual({ error: 'tab_id_taken' });
+    const oldData = JSON.parse(
+      db.sql.prepare("SELECT data FROM tabs WHERE id = 'old'").get()!.data as string,
+    ) as { elements: { label?: string }[] };
+    expect(oldData.elements.map((e) => e.label)).toEqual(['Original']);
+    expect(
+      db.sql.prepare("SELECT document_id FROM document_tabs WHERE tab_id = 'old'").all(),
+    ).toEqual([{ document_id: 'D' }]);
+  });
+
+  it('still saves a brand new tab, and the owner keeps saving their own', async () => {
+    const db = await documentWith([box('a')]);
+    const fresh = await call(db, 'PUT', '/api/documents/D/tabs/t2', {
+      body: { id: 't2', name: 'Second', elements: [box('b')] },
+    });
+    expect(fresh!.status).toBeLessThan(300);
+    const again = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
+      body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
+    });
+    expect(again!.status).toBeLessThan(300);
+  });
+});

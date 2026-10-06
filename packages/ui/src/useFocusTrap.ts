@@ -9,7 +9,8 @@ import { useEffect, type RefObject } from 'react';
 //   useFocusTrap(ref);
 //   <div ref={ref} role="dialog" tabIndex={-1}> ... </div>
 //
-// On mount it focuses the first focusable control (or the container), wraps
+// On mount it focuses the first focusable control (or the container; always
+// the container on a touch screen), wraps
 // Tab / Shift+Tab at the ends so focus can't escape behind the modal, and on
 // unmount restores focus to whatever was focused before it opened (the
 // trigger button). Escape / click-outside close are left to the caller.
@@ -28,6 +29,11 @@ const FOCUSABLE = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+// Whether the primary pointer is a finger (phones, tablets). Read once per open, not subscribed: an open dialog
+// never re-places its initial focus.
+const coarsePointer = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+
 export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true): void {
   useEffect(() => {
     if (!active) return;
@@ -42,7 +48,12 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
         (el) => el.offsetParent !== null,
       );
 
-    (focusables()[0] ?? node).focus({ preventScroll: true });
+    // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.
+    // On a touch screen the container takes it instead: focusing the first control there highlights it and can
+    // raise the on-screen keyboard for a field nobody tapped (docs/specs/007-editor/live-app.md).
+    if (!node.contains(document.activeElement)) {
+      (coarsePointer() ? node : (focusables()[0] ?? node)).focus({ preventScroll: true });
+    }
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
@@ -69,10 +80,14 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
     node.addEventListener('keydown', onKey);
     return () => {
       node.removeEventListener('keydown', onKey);
-      // Only restore if focus is still inside the (closing) modal, so we don't
-      // yank focus away from wherever the user has since clicked.
-      if (node.contains(document.activeElement)) {
-        previouslyFocused?.focus?.({ preventScroll: true });
+      // Restore when focus is still inside the (closing) modal, or has been lost
+      // to the page: React runs this cleanup after an unmounting modal has left
+      // the DOM, by when its focused control is gone and focus sits on <body>.
+      // Never yank focus away from somewhere the user has since clicked.
+      const now = document.activeElement;
+      const lost = now === null || now === document.body;
+      if ((lost || node.contains(now)) && previouslyFocused?.isConnected) {
+        previouslyFocused.focus?.({ preventScroll: true });
       }
     };
   }, [ref, active]);

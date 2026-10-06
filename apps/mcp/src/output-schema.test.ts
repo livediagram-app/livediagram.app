@@ -10,7 +10,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { connectTestClient } from './mcp-test-client';
-import * as outputs from './output-schema';
+import * as outputs from '@livediagram/agent-verbs/mcp';
 
 // Structured output and described parameters (docs/specs/015-api/mcp-server.md §4.17), end to end
 // through a real SDK client and server: the server validates each success's
@@ -27,6 +27,18 @@ const CHANGESET = {
   text: 'rev 3→4 · cs_0000000001',
   warnings: [],
   lint: null,
+};
+const ITEM = {
+  id: 'item123abc',
+  type: 'bug',
+  key: 12,
+  rank: 'i',
+  fields: { title: 'Fix login', status: 'todo' },
+  rev: 1,
+  createdAt: 1,
+  updatedAt: 1,
+  createdBy: { id: 'p', name: 'P', color: '#000000' },
+  updatedBy: { id: 'p', name: 'P', color: '#000000' },
 };
 const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
 
@@ -46,9 +58,11 @@ async function api(request: Request): Promise<Response> {
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') {
     return json({
-      trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2 }],
+      trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
+  if (path.endsWith('/items') && request.method === 'GET') return json({ items: [ITEM], rev: 1 });
+  if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
@@ -102,6 +116,20 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
   { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
+  { tool: 'list_items', output: 'listItemsOutput', args: { documentId: 'd1' } },
+  {
+    tool: 'change_items',
+    output: 'changeItemsOutput',
+    args: {
+      documentId: 'd1',
+      changes: [
+        { op: 'add', title: 'New' },
+        { op: 'move', item: '#12', status: 'done' },
+        { op: 'set', item: '12', fields: { priority: 'high' } },
+        { op: 'delete', item: 'item123' },
+      ],
+    },
+  },
 ];
 
 describe('tool output schemas', () => {
@@ -121,7 +149,7 @@ describe('tool output schemas', () => {
     expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(current.map((t) => t.name)));
   });
 
-  for (const { tool, output, args } of CALLS) {
+  for (const { tool, args } of CALLS) {
     it(`${tool} ${JSON.stringify(args)} returns structured content matching its schema`, async () => {
       const client = await connectTestClient(api);
       // listTools primes the client's own outputSchema validation of callTool.
@@ -129,7 +157,10 @@ describe('tool output schemas', () => {
       const result = await client.callTool({ name: tool, arguments: args });
       expect(result.isError, JSON.stringify(result.content)).toBeFalsy();
       const structured = result.structuredContent;
-      z.object(outputs[output]).strict().parse(structured);
+      // The output schema the tool's verb declares, which the server registered.
+      z.object(outputs.MCP_TOOL_VERBS.find((v) => v.mcp.tool === tool)!.mcpShapes.output)
+        .strict()
+        .parse(structured);
       // The text block carries the same object for clients that ignore structuredContent; a view
       // carries its text, then one line naming the document, the tab and its revision (VW55).
       const [first] = result.content as { type: string; text: string }[];

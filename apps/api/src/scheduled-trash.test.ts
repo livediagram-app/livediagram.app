@@ -1,10 +1,34 @@
-import { describe, expect, it, vi } from 'vitest';
-import { CHANGESET_RETENTION_MS, TRASH_RETENTION_MS } from '@livediagram/api-schema';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  CHANGESET_RETENTION_MS,
+  EMPTY_DOCUMENT_STALE_MS,
+  TRASH_RETENTION_MS,
+} from '@livediagram/api-schema';
 import { sqliteD1 } from './test-sqlite-d1';
 import worker from './index';
 
 // The daily cron purges the Trash (docs/specs/013-workspace/trash.md, "The
-// purge"): what has waited 30 days goes, and the run says how many.
+// purge"): what has waited 30 days goes, and the run says how many. It also
+// moves documents empty for 30 days into the Trash
+// (docs/specs/013-workspace/empty-document-cleanup.md), where they wait their
+// own 30 days.
+
+// The handler reads the wall clock, so the run's `now` is set as the system time.
+async function runCron(env: Parameters<typeof worker.scheduled>[1], now: number) {
+  vi.useFakeTimers({ toFake: ['Date'], now });
+  const pending: Promise<unknown>[] = [];
+  await worker.scheduled(
+    { cron: '0 3 * * *', scheduledTime: now, noRetry() {} } as ScheduledController,
+    env,
+    { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,
+  );
+  await Promise.all(pending);
+}
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 describe('the 03:00 cron', () => {
   it('purges documents 30 days in the Trash and logs the count', async () => {
@@ -22,16 +46,10 @@ describe('the 03:00 cron', () => {
         )
         .run(id, id, trashedAt);
     }
-    const pending: Promise<unknown>[] = [];
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await worker.scheduled(
-      { cron: '0 3 * * *', scheduledTime: now, noRetry() {} } as ScheduledController,
-      env,
-      { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,
-    );
-    await Promise.all(pending);
+    await runCron(env, now);
 
     expect(
       sql
@@ -41,8 +59,35 @@ describe('the 03:00 cron', () => {
     ).toEqual(['live', 'waiting']);
     expect(log).toHaveBeenCalledWith('trash sweep: purged 1 documents');
     expect(error).not.toHaveBeenCalledWith('trash sweep failed', expect.anything());
-    log.mockRestore();
-    error.mockRestore();
+  });
+
+  it('moves an empty document to the Trash and never purges it in the same run', async () => {
+    const { env, sql } = sqliteD1();
+    const now = Date.now();
+    // Created and last saved long enough ago that a clock counting from either
+    // would already be past both 30-day windows.
+    const longAgo = now - EMPTY_DOCUMENT_STALE_MS - TRASH_RETENTION_MS - 1000;
+    sql
+      .prepare(
+        `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+         VALUES ('empty', 'owner', 'empty', 0, ?, ?)`,
+      )
+      .run(longAgo, longAgo);
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await runCron(env, now);
+
+    expect(sql.prepare(`SELECT trash_reason FROM documents WHERE id = 'empty'`).get()).toEqual({
+      trash_reason: 'empty',
+    });
+    expect(log).toHaveBeenCalledWith('empty sweep: moved 1 documents to the Trash');
+    expect(log).toHaveBeenCalledWith('trash sweep: purged 0 documents');
+
+    // A day later it is still in the Trash; only 30 days after the move does it go.
+    await runCron(env, now + 24 * 60 * 60 * 1000);
+    expect(sql.prepare(`SELECT COUNT(*) AS n FROM documents`).get()).toEqual({ n: 1 });
+    await runCron(env, now + TRASH_RETENTION_MS);
+    expect(sql.prepare(`SELECT COUNT(*) AS n FROM documents`).get()).toEqual({ n: 0 });
   });
 });
 

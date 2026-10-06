@@ -38,6 +38,13 @@ describe('cacheRule', () => {
 
   it('leaves everything else as it came', () => {
     expect(cacheRule('/icon.svg', 200, 'image/svg+xml')).toBe('unchanged');
+    // Unhashed dev chunks (next dev, locally) keep their own caching.
+    expect(
+      cacheRule('/live/_next/static/chunks/a.js', 200, 'text/javascript', { hashedAssets: false }),
+    ).toBe('unchanged');
+    expect(
+      cacheRule('/live/_next/static/css/a.css', 404, 'text/html', { hashedAssets: false }),
+    ).toBe('missing-asset');
     expect(cacheRule('/live/_next/static/chunks/a.js', 500, 'text/plain')).toBe('unchanged');
   });
 

@@ -25,7 +25,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Resolved',
   'Action·Unresolved',
   // Activity (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox. 'Opened'
-  // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
+  // once per visit, 'Selected' with type 'Action' | 'Thread' | 'Card' on a row
   // click, 'Loaded'/'Retry' after a failed read.
   'Activity·Loaded',
   'Activity·Opened',
@@ -40,6 +40,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Opened',
   'Comment·Resolved',
   'Comment·Unresolved',
+  // Community (docs/specs/025-community/community.md "Telemetry"): publish, Edit Listing and Remove
+  // From Community in the Share dialog.
+  'Community·Changed',
+  'Community·Removed',
+  'Community·Shared',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
   // ('Opened'), and that visit created a document ('Created'). `type` is the
   // CTA's source from the closed CTA_SOURCES table.
@@ -128,6 +133,14 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Note·Deleted',
   'Note·Opened',
   'Note·Used',
+  'Plan·Added',
+  'Plan·Changed',
+  'Plan·Deleted',
+  'Plan·Moved',
+  'Plan·Opened',
+  'Plan·Restored',
+  'Plan·Revealed',
+  'Plan·Voted',
   'Participant·Created',
   'Participant·Returned',
   'Search·Opened',

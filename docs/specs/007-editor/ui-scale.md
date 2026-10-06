@@ -59,12 +59,20 @@ design size too.
   chrome smaller to give the canvas room is wanted as much as making it
   bigger. 80% is the floor below which the chrome's small labels stop being
   readable.
+- **The toolbar runs further and starts bigger.** Its own slider (Toolbar
+  Scale) goes up to 140%, and its 100% draws the strip at what was 115%: at
+  its design size the strip read small, and it is the chrome people most
+  want bigger. The base applies when drawing, after the master or the part
+  value is resolved, so the sliders and the stored numbers still read 100%;
+  every percentage on the toolbar is 1.15 times its old size, including a
+  value saved before the change (kept as stored, not converted). The master
+  slider stays 80% to 120% and still sets the toolbar with everything else.
 - **Desktop only.** On a phone-sized viewport (below the `sm:` breakpoint)
   the chrome always draws at 100%: the phone layout is already sized to the
   screen, and a scaled panel would run off it. The stored value is left
   alone for the desktop.
-- A stored value that is not a finite number reads as 100%; one outside the
-  range is clamped into it; one between steps snaps to the nearest step. A
+- A stored value that is not a finite number reads as 100%; one outside its
+  slider's range is clamped into it; one between steps snaps to the nearest step. A
   part key holding junk reads as 100%, not as the master.
 
 ## In Settings

@@ -25,11 +25,23 @@ export function buildCanvasToolOptions({
   canvasEmpty,
   isMobile,
   includeZen,
+  planMode,
 }: {
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
+  // Plan mode leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md).
+  planMode?: boolean;
 }): PaletteDropdownOption[] {
+  const options = buildAll(canvasEmpty, isMobile, includeZen);
+  return planMode ? options.filter((o) => o.id !== 'eraser' && o.id !== 'format') : options;
+}
+
+function buildAll(
+  canvasEmpty: boolean | undefined,
+  isMobile: boolean,
+  includeZen: boolean | undefined,
+): PaletteDropdownOption[] {
   return [
     { id: 'select', label: 'Select', shortcut: 'V', icon: <SelectIcon />, group: 0 },
     { id: 'pan', label: 'Hand', shortcut: 'H', icon: <PanIcon />, group: 0 },

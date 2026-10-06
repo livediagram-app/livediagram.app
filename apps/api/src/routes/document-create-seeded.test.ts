@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { getDocument, getTab, listDocumentsByOwner } from '../db';
+import { getDocument, getTab, listDocumentsByOwner, listItems } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { asUser } from './placement-test-support';
@@ -67,6 +67,32 @@ describe('seeded tabs compiled on create', () => {
       tabKind: 'diagram',
       templateFamily: 'retrospective',
     });
+  });
+
+  it('makes a Plan template tab with no cards, opening in Plan', async () => {
+    expect((await create([{ id: 't1', name: 'Board', template: 'kanban' }])).status).toBe(201);
+    expect(await listItems(db.env, 'd1')).toEqual([]);
+    const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
+    expect(summary).toMatchObject({ opensIn: 'plan', templateFamily: 'kanban' });
+  });
+
+  it('adds every tab of a Plan template with several after the one named, each opening in Plan', async () => {
+    expect(
+      (
+        await create([
+          { id: 't1', name: 'Retro', template: 'team-retro' },
+          { id: 't2', name: 'Notes', elements: [] },
+        ])
+      ).status,
+    ).toBe(201);
+    const doc = await getDocument(db.env, 'd1');
+    expect(doc?.tabs.map((t) => t.name)).toEqual(['Retro', 'Actions', 'Archive', 'Notes']);
+    const actions = await getTab(db.env, 'd1', doc!.tabs[1]!.id);
+    expect(actions?.opensIn).toBe('plan');
+    expect(actions?.elements.some((e) => e.type === 'shape' && e.shape === 'plan-board')).toBe(
+      true,
+    );
+    expect(await listItems(db.env, 'd1')).toEqual([]);
   });
 
   it('keeps an intent the create gives', async () => {

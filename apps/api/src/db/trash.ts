@@ -8,7 +8,7 @@
 import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { documentRemovalStatements } from './document-removal';
-import { thumbnailKey } from './documents';
+import { snapshotKeys } from './documents';
 import { documentsTimelineSweepStatement } from './timeline';
 
 // Ids per purge batch: one json_each list bound into three statements, so the
@@ -41,10 +41,17 @@ export async function trashDocument(env: Env, id: string, now: number): Promise<
 // Bring a trashed document back. It returns to its folder when that folder
 // still exists in the document's scope (its owner's personal tree, or its
 // team's), else to Unsorted. False when it isn't in the Trash.
-export async function restoreDocument(env: Env, id: string): Promise<boolean> {
+//
+// One the empty clean-up moved counts the restore as a save, so its 30 stale
+// days start again and the next sweep does not move it straight back
+// (docs/specs/013-workspace/empty-document-cleanup.md). One a person deleted
+// keeps its last-saved time.
+export async function restoreDocument(env: Env, id: string, now: number): Promise<boolean> {
   const res = await env.DB.prepare(
     `UPDATE documents
         SET trashed_at = NULL,
+            trash_reason = NULL,
+            saved_at = CASE WHEN trash_reason = 'empty' THEN ?2 ELSE saved_at END,
             folder_id = CASE
               WHEN EXISTS (SELECT 1 FROM folders f
                             WHERE f.id = documents.folder_id
@@ -52,9 +59,9 @@ export async function restoreDocument(env: Env, id: string): Promise<boolean> {
                                     AND f.owner_id = documents.owner_id)
                                    OR f.team_id = documents.team_id))
               THEN folder_id ELSE NULL END
-      WHERE id = ? AND trashed_at IS NOT NULL`,
+      WHERE id = ?1 AND trashed_at IS NOT NULL`,
   )
-    .bind(id)
+    .bind(id, now)
     .run();
   return res.meta.changes === 1;
 }
@@ -110,7 +117,7 @@ export async function listTrash(
   caller: { owner: string; verifiedUserId: string | null },
 ): Promise<TrashedDocument[]> {
   const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.team_id, t.name AS team_name, d.trashed_at
+    `SELECT d.id, d.name, d.team_id, t.name AS team_name, d.trashed_at, d.trash_reason
        FROM documents d
        LEFT JOIN teams t ON t.id = d.team_id
       WHERE d.trashed_at IS NOT NULL
@@ -126,6 +133,7 @@ export async function listTrash(
       team_id: string | null;
       team_name: string | null;
       trashed_at: number;
+      trash_reason: string | null;
     }>();
   return (res.results ?? []).map((r) => ({
     id: r.id,
@@ -134,6 +142,7 @@ export async function listTrash(
     teamName: r.team_id ? (r.team_name ?? null) : null,
     trashedAt: r.trashed_at,
     purgeAt: trashPurgeDueAt(r.trashed_at),
+    reason: r.trash_reason === 'empty' ? 'empty' : 'deleted',
   }));
 }
 
@@ -171,7 +180,7 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
     // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
     if (env.IMAGES) {
-      await env.IMAGES.delete(doomed.map(thumbnailKey)).catch((err: unknown) => {
+      await env.IMAGES.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
         console.warn('[trash] snapshot delete failed', doomed.length, err);
       });
     }

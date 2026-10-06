@@ -22,7 +22,16 @@ export type History = {
   past: Tab[][];
   present: Tab[];
   future: Tab[][];
+  // How many steps lie behind the present, uncapped (the cap drops the oldest snapshots, never
+  // this count), and which branch of edits the present is on (raised by every new step, which
+  // clears redo). Item undo steps sit between snapshots by these two counters
+  // (docs/specs/026-plan/items.md "Undo"; useItemUndo). Absent = 0.
+  depth?: number;
+  branch?: number;
 };
+
+const depthOf = (h: History) => h.depth ?? 0;
+const branchOf = (h: History) => h.branch ?? 0;
 
 // Pure transitions on a History value — exported for unit tests.
 // The hook wraps them with `setHistory((h) => transition(h, ...))`.
@@ -32,6 +41,8 @@ export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): Hist
     past: [...h.past, h.present].slice(-HISTORY_LIMIT),
     present: mapTabs(h.present),
     future: [],
+    depth: depthOf(h) + 1,
+    branch: branchOf(h) + 1,
   };
 }
 
@@ -44,7 +55,14 @@ export function historyMarkCheckpoint(h: History): History {
     past: [...h.past, h.present].slice(-HISTORY_LIMIT),
     present: h.present,
     future: [],
+    depth: depthOf(h) + 1,
+    branch: branchOf(h) + 1,
   };
+}
+
+// A new step that is not a snapshot (an item change, useItemUndo): the redo side is gone.
+export function historyClearRedo(h: History): History {
+  return { ...h, future: [], branch: branchOf(h) + 1 };
 }
 
 // Undo / redo re-graft the LIVE non-undoable state onto the restored
@@ -61,6 +79,8 @@ export function historyUndo(h: History): History {
     past: h.past.slice(0, -1),
     present: graftLiveTabState(h.present, prev),
     future: [h.present, ...h.future].slice(0, HISTORY_LIMIT),
+    depth: depthOf(h) - 1,
+    branch: branchOf(h),
   };
 }
 
@@ -76,6 +96,8 @@ export function historyCancel(h: History): History {
     past: h.past.slice(0, -1),
     present: graftLiveTabState(h.present, prev),
     future: h.future,
+    depth: depthOf(h) - 1,
+    branch: branchOf(h),
   };
 }
 
@@ -86,12 +108,14 @@ export function historyRedo(h: History): History {
     past: [...h.past, h.present].slice(-HISTORY_LIMIT),
     present: graftLiveTabState(h.present, next),
     future: h.future.slice(1),
+    depth: depthOf(h) + 1,
+    branch: branchOf(h),
   };
 }
 
 export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
   const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
-  return { past: [], present: next, future: [] };
+  return { past: [], present: next, future: [], depth: 0, branch: branchOf(h) + 1 };
 }
 
 // Merge a remote peer's change into the present WITHOUT touching the
@@ -119,6 +143,11 @@ type DocumentHistory = {
   applyRemote: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
   undo: () => void;
   redo: () => void;
+  // The counters item undo steps are placed by (useItemUndo).
+  depth: number;
+  branch: number;
+  futureLength: number;
+  clearRedo: () => void;
 };
 
 export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
@@ -171,7 +200,16 @@ export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
     setHistory((h) => historyApplyRemote(h, tabs));
   };
 
+  // Stable: useItemUndo calls it from item writes.
+  const clearRedo = useCallback(() => {
+    setHistory(historyClearRedo);
+  }, []);
+
   return {
+    depth: depthOf(history),
+    branch: branchOf(history),
+    futureLength: history.future.length,
+    clearRedo,
     tabs: history.present,
     canUndo: history.past.length > 0,
     canRedo: history.future.length > 0,

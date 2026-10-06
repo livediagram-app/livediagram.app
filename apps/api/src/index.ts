@@ -17,6 +17,7 @@ import {
   deleteOldTimelineEvents,
   purgeExpiredTrash,
   resolveApiToken,
+  trashEmptyDocuments,
 } from './db';
 import {
   apiRouteLabel,
@@ -36,11 +37,13 @@ import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited }
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp } from './client-ip';
+import { communityNetwork } from './community-network';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
+import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
@@ -264,7 +267,17 @@ async function routeApiRequest(
   // Mint volume is one row per room join and the route does no
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
-  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
+  // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
+  // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
+  const isCommunityWrite = isWrite && segments[1] === 'community';
+  if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
+    // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
+    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
+      key: `community:${communityNetwork(clientIp(request))}`,
+    });
+    if (!ok.success) return rateLimited();
+  }
+  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isCommunityWrite) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
@@ -330,6 +343,8 @@ async function routeApiRequest(
         return await handleTelemetry(ctx);
       case 'share':
         return await handleShare(ctx);
+      case 'community':
+        return await handleCommunity(ctx);
       case 'shared':
         return await handleShared(ctx);
       case 'images':
@@ -414,6 +429,8 @@ const worker = {
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
+  //   - empty,      documents empty and unsaved for 30 days move to the Trash
+  //                 (docs/specs/013-workspace/empty-document-cleanup.md).
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -479,6 +496,14 @@ const worker = {
         purgeExpiredTrash(env, now)
           .then((count) => console.log(`trash sweep: purged ${count} documents`))
           .catch((err) => console.error('trash sweep failed', err)),
+      );
+      // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
+      // unsaved for 30 days to the Trash, stamped `now`, so the purge above
+      // never takes one this run: it waits its full 30 days there.
+      ctx.waitUntil(
+        trashEmptyDocuments(env, now)
+          .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
+          .catch((err) => console.error('empty sweep failed', err)),
       );
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
       // then reap unused images. runImageRetention logs its own outcome.

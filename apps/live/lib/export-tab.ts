@@ -9,6 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
+import type { Item, ItemTypeDef } from '@livediagram/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -87,6 +88,11 @@ export type ImageExportOpts = {
   // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
   // backdrop do not apply.
   page?: LaidOutPage;
+  // The document's items, so Plan boards and cards export with their cards
+  // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
+  items?: ReadonlyMap<string, Item>;
+  // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
+  itemTypes?: readonly ItemTypeDef[];
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -171,17 +177,6 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   });
 }
-
-// JSON snapshot + Markdown outline — the non-visual export formats.
-// They share nothing with the rasteriser below beyond the Tab data
-// model, so they live in their own module; re-exported here so the
-// existing `@/lib/export-tab` import paths keep resolving unchanged.
-export {
-  TAB_SCHEMA_VERSION,
-  tabToJsonText,
-  tabToMarkdownText,
-  type ExportedTabEnvelope,
-} from './export-tab-text';
 
 // ---------------------------------------------------------------------
 // PNG / PDF helpers — shared canvas rendering
@@ -331,6 +326,8 @@ export async function renderTabToCanvas(
         resolveStickerArt: resolveStickerArtLoaded,
         tabFont,
         surface,
+        items: opts.items,
+        itemTypes: opts.itemTypes,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -564,6 +561,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               resolveStickerArt: resolveStickerArtLoaded,
               tabFont: tab.font,
               surface,
+              items: opts.items,
+              itemTypes: opts.itemTypes,
             }),
             clips,
           ),

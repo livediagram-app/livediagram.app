@@ -1,15 +1,21 @@
 'use client';
 
 // The Activity page's building blocks (docs/specs/013-workspace/activity-page.md §1): a titled section
-// of rows, the two row kinds, and the page's empty + failed states.
+// of rows, the three row kinds, and the page's empty + failed states.
 // Lifted out of ActivityPane so the pane file keeps the data split and
 // the section order, and each piece here is one cohesive slice.
 
 import { ActivityIcon, TeamIcon } from '@/components/primitives/explorer-icons';
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
+import type {
+  ActivityAction,
+  ActivityCard,
+  ActivityPlace,
+  ActivityThread,
+} from '@livediagram/api-schema';
+import { ITEM_TYPES } from '@livediagram/items';
 import {
   EmptyState,
   HoverCard,
@@ -17,9 +23,9 @@ import {
   SOLID_BRAND_DARK_CONTROL,
   GlyphDisc,
 } from '@livediagram/ui';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
-import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
+import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
+import { cardDeepLinkHref, collabDeepLinkHref } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
@@ -61,8 +67,8 @@ export function ActivityActionRow({
   const assignee = action.assignedToMe ? 'You' : action.assignee.name?.trim() || 'Teammate';
   return (
     <ActivityRowShell
+      href={collabDeepLinkHref(action, 'action')}
       place={action}
-      open="action"
       onOpen={onOpen}
       icon={<ActionMenuIcon />}
       title={action.name}
@@ -90,8 +96,8 @@ export function ActivityThreadRow({
 }) {
   return (
     <ActivityRowShell
+      href={collabDeepLinkHref(thread, 'comments')}
       place={thread}
-      open="comments"
       onOpen={onOpen}
       icon={<CommentMenuIcon />}
       title={thread.elementLabel}
@@ -118,12 +124,37 @@ export function ActivityThreadRow({
   );
 }
 
+// A Plan card on the reader (docs/specs/013-workspace/activity-page.md §1, §2.4): its type's glyph, its
+// number and title, where it sits, and the reader as its assignee. A custom type, whose name lives in its
+// document's catalogue, reads as a plain card.
+export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: () => void }) {
+  const type = ITEM_TYPES.find((t) => t.id === card.type);
+  return (
+    <ActivityRowShell
+      href={cardDeepLinkHref(card)}
+      place={card}
+      where={card.board ? `${card.board.title} · ${card.board.tabName}` : 'Not on a board'}
+      onOpen={onOpen}
+      icon={<PlanTypeGlyph glyph={type?.glyph} size={16} />}
+      title={`#${card.key} ${card.title}`}
+      detail={type?.label ?? 'Card'}
+      avatar={{
+        name: 'You',
+        detail: 'Assigned to you',
+        colorClass: `bg-brand-500 ${SOLID_BRAND_DARK}`,
+      }}
+      at={card.updatedAt}
+    />
+  );
+}
+
 // The shared row: kind glyph far left, title + detail in the middle
 // with the "where" line under them, avatar-over-time far right. The
 // whole row is one link into the editor (docs/specs/013-workspace/activity-page.md §1).
 function ActivityRowShell({
+  href,
   place,
-  open,
+  where,
   onOpen,
   icon,
   title,
@@ -132,8 +163,10 @@ function ActivityRowShell({
   avatar,
   at,
 }: {
-  place: ActivityPlace;
-  open: CollabPopover;
+  href: string;
+  place: DocumentPlace;
+  // The line under the title; an element's row defaults to "element label · tab name".
+  where?: string;
   onOpen: () => void;
   icon: ReactNode;
   title: string;
@@ -146,7 +179,7 @@ function ActivityRowShell({
   return (
     <li>
       <Link
-        href={collabDeepLinkHref(place, open)}
+        href={href}
         onClick={onOpen}
         className="group flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-700"
       >
@@ -172,7 +205,7 @@ function ActivityRowShell({
           <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400">
             <PlaceChip place={place} />
             <span className="truncate">
-              {place.elementLabel} · {place.tabName}
+              {where ?? ('elementLabel' in place ? `${place.elementLabel} · ${place.tabName}` : '')}
             </span>
           </span>
         </span>
@@ -195,9 +228,12 @@ function ActivityRowShell({
   );
 }
 
+// What every row knows of its document: an element's full place, or a card's.
+type DocumentPlace = ActivityPlace | ActivityCard;
+
 // Which document the row is from; a team document's chip leads with the
 // team glyph so the source of the work reads at a glance.
-function PlaceChip({ place }: { place: ActivityPlace }) {
+function PlaceChip({ place }: { place: DocumentPlace }) {
   return (
     <span className="inline-flex max-w-[14rem] shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
       {place.via === 'team' ? (
@@ -217,7 +253,7 @@ export function ActivityEmptyState() {
     <EmptyState
       icon={<ActivityIcon />}
       title="Nothing waiting on you"
-      description="Open actions assigned to you or by you, and comment threads you're in, collect here across every document."
+      description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
     >
       <a
         href={helpArticleHref('assignedActions')}

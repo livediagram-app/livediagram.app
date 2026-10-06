@@ -241,6 +241,10 @@ type UserPreferences = {
   // in Settings as "Welcome Tour Completed"; unchecking it and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome
+  // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
+  // Settings reruns the tour in Plan. Missing / undefined === not seen.
+  planTourSeen?: boolean;
   // Colours you have used that the active theme did not already offer
   // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it;
   // right-clicking a swatch removes it. Newest first, capped at 12, synced
@@ -274,6 +278,11 @@ type UserPreferences = {
   // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
   // top (lib/whiteboard-dock-prefs).
   whiteboardDockPosition?: 'top' | 'bottom';
+  // How an element shows its link, note, action and comments
+  // (../008-canvas/element-indicators.md): glyphs inside its top-right corner
+  // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
+  // else, is Top (lib/element-indicator-style).
+  elementIndicatorStyle?: 'top' | 'footer' | 'off';
   // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
@@ -344,6 +353,12 @@ Missing key === undefined === default behaviour. Concretely:
   `PanelLayoutFloating` or `PanelLayoutToolbar`.
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
+- `elementIndicatorStyle` undefined → Top: an element's link, note, action
+  and comment glyphs sit inside it along its top, top-right on a box and centred
+  on a round or pointed shape (the default). `'footer'` moves them to a labelled
+  row along its bottom edge; `'off'` hides them
+  ([Element indicators](../008-canvas/element-indicators.md)). Emits `UI`/`Changed`/
+  `ElementIndicatorsTop`, `ElementIndicatorsFooter` or `ElementIndicatorsOff`.
 - `skipLocationStep` undefined / `null` → the New Document wizard has its
   Location step (the default). Set from that step's "Always save new documents
   in <place> and skip this step" checkbox (`UI`/`Toggled`/`SkipLocationStepOn`),
@@ -688,7 +703,10 @@ and the dialog stays as the one complete, browsable index of them.
   dialog with the row on **marks that flag**, so the row's promise is true
   for a reader who had simply never taken the tour. Turning it on from off
   additionally relaunches in place. Its telemetry tokens still describe the
-  PREFERENCE, so the dashboard series keeps its meaning.
+  PREFERENCE, so the dashboard series keeps its meaning. **Show Plan Tour**, beneath it, is inverted
+  against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
+  entering Plan), so closing the dialog only reruns it, when it was turned on from off
+  ([Plan tour](../026-plan/plan-tour.md)).
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the
   categories and, per row, its label, description, help article, section,

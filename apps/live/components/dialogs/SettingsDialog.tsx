@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { DialogCloseButton } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import {
   SettingsCategoryList,
   SettingsSubcategoryLinks,
@@ -18,6 +18,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
+import { requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -176,11 +177,16 @@ export function SettingsDialog({
   // in place, which is the "run it again" case the row's copy describes.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
+  // "Show Plan Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
+  // itself on entering Plan; turning the row on from off reruns it in place.
+  const planTourSeen = settings.planTourSeen === true;
+  const planTourSeenAtOpen = useRef(planTourSeen);
   const close = () => {
     if (!tourSeen) {
       markTourPending();
       if (tourSeenAtOpen.current) requestTourRelaunch();
     }
+    if (!planTourSeen && planTourSeenAtOpen.current) requestPlanTourRelaunch();
     onClose();
   };
 

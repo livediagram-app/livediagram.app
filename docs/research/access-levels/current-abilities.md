@@ -163,7 +163,7 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | Set or clear the share password         | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | PUT `/share-password`                                           |
 | Change an existing link's role          | nobody: there is no route; revoke and reissue |     |     |     |     |     |      |      |     |     |     |     | n/a                                                             |
 
-³ View or edit, with expiry; no tab scope, default `view` (`apps/mcp/src/schema.ts` `shareDocumentShape`).
+³ View or edit, with expiry; no tab scope, default `view` (`packages/agent-verbs/src/mcp/schema.ts` `shareDocumentShape`).
 The editor hides Share for anyone with `isOwner` false (`EditorView.tsx` `showShare={isOwner && ...}`), which
 matches the server for members who are not the row owner.
 

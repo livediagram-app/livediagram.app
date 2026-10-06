@@ -270,10 +270,6 @@ export type BoxedElementViewProps = {
   // menu under it. The caller is also responsible for selecting the
   // element (the menu's actions assume it is the current selection).
   onContextSelect: (id: string, screenX: number, screenY: number) => void;
-  // The colour for the link/comment badges. Comes from the active
-  // tab's theme so the icons read as part of the canvas rather than
-  // floating brand-blue dots on a coloured palette.
-  badgeColor: string;
   // True when the tab as a whole is locked. Shows the LockBadge on
   // every element regardless of its own per-element lock state.
   tabLocked: boolean;

@@ -21,6 +21,8 @@ import { MCP_ORIGIN } from './mcp-config';
 export type McpConsentSession = {
   clientName: string;
   redirectHost: string;
+  // Public; read only to tell the CLI apart for telemetry (docs/specs/015-api/blueprints/cli.md CLI77).
+  clientId: string | null;
 };
 
 // Narrow an untrusted JSON body to the shape above. The response comes from a
@@ -29,13 +31,13 @@ export type McpConsentSession = {
 // `undefined` in a sentence about where access is going.
 export function parseConsentSession(body: unknown): McpConsentSession | null {
   if (typeof body !== 'object' || body === null) return null;
-  const { clientName, redirectHost } = body as Record<string, unknown>;
+  const { clientName, redirectHost, clientId } = body as Record<string, unknown>;
   if (typeof clientName !== 'string' || typeof redirectHost !== 'string') return null;
   // A blank name is the server's own fallback ('MCP client'), so an empty one
   // means something is wrong upstream; a blank HOST is tolerated because
   // /oauth/session reports it blank for an unparseable redirect URI.
   if (clientName.length === 0) return null;
-  return { clientName, redirectHost };
+  return { clientName, redirectHost, clientId: typeof clientId === 'string' ? clientId : null };
 }
 
 // Fetch the session, or null when it's expired / unknown / unreachable. One

@@ -246,7 +246,7 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Changed',
   'Editor Mode Switches',
   'A tab switched to Diagram, Draw or Illustrate mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate'] },
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -255,7 +255,7 @@ export const TAB_OPENS_IN = chart(
   'Changed',
   'Opening Modes Set',
   'A tab set to open in Diagram, Draw or Illustrate mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate'] },
+  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate', 'OpensInPlan'] },
 );
 
 // Illustrate mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
@@ -835,6 +835,13 @@ export const TOUR_OFFERED = opened(
   'Tour Offered',
   'The welcome tour offered.',
   (t) => t === 'TourOffer',
+);
+
+// The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
+export const PLAN_TOUR_OFFERED = opened(
+  'Plan Tour Offered',
+  'The Plan tour offered, the first time someone works in Plan mode.',
+  (t) => t === 'PlanTourOffer',
 );
 
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on

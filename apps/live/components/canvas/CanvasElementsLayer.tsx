@@ -33,6 +33,7 @@ import {
   type SelectionGripHosts,
 } from '@/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
+import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import {
   FreeArrowFrame,
@@ -63,7 +64,6 @@ type ElementsExtras = {
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
-  badgeColor: string;
   // What the selection chrome derives the selection from (it reads the selection from the store).
   selectionInput: CanvasSelectionInput;
   isPaintMode: boolean;
@@ -86,7 +86,6 @@ type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 // viewport-transformed wrapper.
 export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const {
-    badgeColor,
     editCursorAtEnd,
     editingId,
     elements,
@@ -564,7 +563,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               isEditing={element.id === editingId}
               editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
               isPaintMode={isPaintMode}
-              badgeColor={badgeColor}
               tabLocked={tabLocked}
               tabSummaries={tabSummaries}
               readOnly={readOnly}
@@ -657,6 +655,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           withDefs={!hasArrows}
         />
       ) : null}
+
+      {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+          above the elements, beneath the remote cursors. */}
+      <AgentFocusOverlay elements={elements} />
 
       {remoteCursors.map((c) => (
         <ZoomedRemoteCursor key={c.id} cursor={c} />

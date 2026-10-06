@@ -1,14 +1,7 @@
 // The three help levels (docs/specs/015-api/cli.md "Help"): top, resource and verb, from the catalogue, each
 // within its token budget.
 
-import {
-  COMMAND_ALIASES,
-  RESOURCES,
-  TOP_LEVEL,
-  verbById,
-  verbsOf,
-  type Verb,
-} from '@livediagram/agent-verbs';
+import { COMMAND_ALIASES, RESOURCES, verbsOf, type Verb } from '@livediagram/agent-verbs';
 import { fieldsOf, flagOf, keyOf, restName } from '../dispatch/fields';
 
 export const HELP_TOP_MAX_TOKENS = 500;
@@ -17,26 +10,59 @@ export const HELP_VERB_MAX_TOKENS = 400;
 
 const verbWord = (v: Verb) => v.id.slice(v.id.indexOf('.') + 1);
 
+// The rows the top level groups (blueprint "Help", final copy, CLI82): top-level verbs that belong together share a
+// line after the resource row they follow, and the commands a first read needs least are only named, on one line.
+const GROUPED_ROWS = [
+  {
+    words: ['wait', 'watch'],
+    after: 'presence',
+    summary: 'block until, or stream, comments and changes',
+  },
+  {
+    words: ['pull', 'push'],
+    after: 'graph',
+    summary: 'one document to a file and back; export --all',
+  },
+] as const;
+export const NAMED_ONLY = [
+  'template',
+  'icon',
+  'schema',
+  'guide',
+  'skill',
+  'api',
+  'auth',
+  'telemetry',
+] as const;
+
+const isNamedOnly = (word: string) => NAMED_ONLY.some((n) => n === word);
+
+// A verb's word, with the command word that names it directly: `apply (edit)`.
+const verbWithAlias = (v: Verb) => {
+  const alias = Object.entries(COMMAND_ALIASES).find(([, id]) => id === v.id)?.[0];
+  return alias ? `${verbWord(v)} (${alias})` : verbWord(v);
+};
+
 export function topHelp(): string {
+  const label = (r: (typeof RESOURCES)[number]) => `${r.name}${r.alias ? ` (${r.alias})` : ''}`;
+  const rows = RESOURCES.filter((r) => !isNamedOnly(r.name));
+  const groupLabel = (g: (typeof GROUPED_ROWS)[number]) => g.words.join(', ');
   const width = Math.max(
-    ...RESOURCES.map((r) => `${r.name}${r.alias ? ` (${r.alias})` : ''}`.length),
-    ...TOP_LEVEL.map((t) => t.length),
+    ...rows.map((r) => label(r).length),
+    ...GROUPED_ROWS.map((g) => groupLabel(g).length),
   );
   const pad = (s: string) => s.padEnd(width + 2);
-  const summary = (id: string) => {
-    const text = verbById(id)!.summary;
-    return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
-  };
   return [
-    'livediagram: read, build, edit and discuss livediagram documents.',
+    'livediagram: read, build, edit and discuss documents.',
     'Usage: livediagram <resource> <verb> [args] [flags]',
     '',
-    ...RESOURCES.map(
-      (r) =>
-        `  ${pad(`${r.name}${r.alias ? ` (${r.alias})` : ''}`)}${verbsOf(r.name).map(verbWord).join(', ')}`,
-    ),
-    ...TOP_LEVEL.map((t) => `  ${pad(t)}${summary(t)}`),
-    ...Object.entries(COMMAND_ALIASES).map(([word, id]) => `  ${pad(word)}${summary(id)}`),
+    ...rows.flatMap((r) => [
+      `  ${pad(label(r))}${verbsOf(r.name).map(verbWithAlias).join(', ')}`,
+      ...GROUPED_ROWS.filter((g) => g.after === r.name).map(
+        (g) => `  ${pad(groupLabel(g))}${g.summary}`,
+      ),
+    ]),
+    `  ${NAMED_ONLY.join(', ')}`,
     '',
     '<doc> is a name, id prefix or link; --tab a tab name or id prefix (the first by default).',
     'stdout is data, hints stderr; --json (=a,b picks fields), -q refs only.',

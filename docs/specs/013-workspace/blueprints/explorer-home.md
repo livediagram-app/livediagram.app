@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/api/src/responses.ts`                                                    | CORS allows `X-Document-Open`                                                                  |
 | `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
-| `apps/mcp/src/schema.ts`, `apps/mcp/src/tools.ts`                              | `create_document`'s optional `markUsed`, passed through to the create                          |
+| `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                          |
 | `apps/live/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
 | `apps/live/lib/board-scene-import.ts`                                          | `importDocuments` marks by the number of documents it sets out to make                         |
 | `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |

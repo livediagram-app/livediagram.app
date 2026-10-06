@@ -72,6 +72,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -124,19 +127,34 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/diagram-lint':
+        specifier: workspace:*
+        version: link:../../packages/diagram-lint
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livediagram/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
+      '@livediagram/render-png':
+        specifier: workspace:*
+        version: link:../../packages/render-png
       zod:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@livediagram/document-views':
-        specifier: workspace:*
-        version: link:../../packages/document-views
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@resvg/resvg-wasm':
+        specifier: ^2.6.2
+        version: 2.6.2
       '@types/node':
         specifier: ^26.6.3
         version: 26.6.3
@@ -152,6 +170,82 @@ importers:
       eslint:
         specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
+
+  apps/community:
+    dependencies:
+      '@clerk/react':
+        specifier: ^6.17.4
+        version: 6.17.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
+      '@livediagram/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
+      '@livediagram/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: ^16.3.8
+        version: 16.3.8(@playwright/test@1.63.0)(@types/node@26.6.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: ^19.3.0
+        version: 19.3.0
+      react-dom:
+        specifier: ^19.3.0
+        version: 19.3.0(react@19.3.0)
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@livediagram/next-config':
+        specifier: workspace:*
+        version: link:../../packages/next-config
+      '@livediagram/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../../packages/vitest-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@types/node':
+        specifier: ^26.6.3
+        version: 26.6.3
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
+      eslint:
+        specifier: ^10.11.0
+        version: 10.11.0(jiti@2.7.0)
+      jsdom:
+        specifier: ^30.1.1
+        version: 30.1.1
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
@@ -273,6 +367,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/sticky-model':
         specifier: workspace:*
         version: link:../../packages/sticky-model
@@ -400,6 +497,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -500,6 +600,12 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
+      '@livediagram/render-png':
+        specifier: workspace:*
+        version: link:../../packages/render-png
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -667,6 +773,9 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -726,6 +835,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -791,6 +903,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       perfect-freehand:
         specifier: ^1.2.3
         version: 1.2.3
@@ -1026,6 +1141,30 @@ importers:
         specifier: ^5.0.1
         version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
 
+  packages/items:
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      eslint:
+        specifier: ^10.11.0
+        version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
+
   packages/licences:
     devDependencies:
       '@livediagram/eslint-config':
@@ -1063,6 +1202,37 @@ importers:
         version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
 
   packages/prettier-config: {}
+
+  packages/render-png:
+    dependencies:
+      '@resvg/resvg-wasm':
+        specifier: ^2.6.2
+        version: 2.6.2
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.3
+        version: 26.6.3
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      eslint:
+        specifier: ^10.11.0
+        version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
 
   packages/sticky-model:
     dependencies:
@@ -1226,6 +1396,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -1251,6 +1424,12 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../help-registry
       '@livediagram/icons':
         specifier: workspace:^
         version: link:../icons

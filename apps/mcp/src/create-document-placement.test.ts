@@ -80,7 +80,7 @@ describe('create_document intent', () => {
   it.each([
     ['retrospective', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['four-ls', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['kanban', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' }],
+    ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'diagram', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'diagram', tabKind: 'diagram' }],
@@ -90,6 +90,15 @@ describe('create_document intent', () => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
     expect(posted[0]!.intent).toEqual(intent);
+  });
+
+  it('adds every tab of a Plan template with several, the first named as given', async () => {
+    const { run, posted } = harness(undefined);
+    await run([{ name: 'Plan', template: 'project-planner' }]);
+    const tabs = posted[0]!.tabs as { id: string; name: string; opensIn?: string }[];
+    expect(tabs.map((t) => t.name)).toEqual(['Plan', 'Backlog', 'Sprint', 'Daily Standup']);
+    expect(new Set(tabs.map((t) => t.id)).size).toBe(4);
+    expect(tabs.every((t) => t.opensIn === 'plan')).toBe(true);
   });
 
   it('reads the intent from the first tab only', async () => {

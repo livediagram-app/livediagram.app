@@ -63,7 +63,11 @@ function newRoom() {
     storage: {
       get: (k: string) => Promise.resolve(kv.get(k)),
       put: (k: string, v: unknown) => Promise.resolve(void kv.set(k, v)),
+      delete: (k: string) => Promise.resolve(kv.delete(k)),
+      list: ({ prefix }: { prefix: string }) =>
+        Promise.resolve(new Map([...kv].filter(([k]) => k.startsWith(prefix)))),
       setAlarm: () => Promise.resolve(),
+      deleteAlarm: () => Promise.resolve(),
     },
     blockConcurrencyWhile: (fn: () => Promise<void>) => fn(),
     waitUntil: () => {},

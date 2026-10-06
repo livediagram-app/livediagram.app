@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -8,9 +7,8 @@ import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
-import { DialogHeader } from './DialogHeader';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
-import { Glyph } from '@livediagram/ui';
+import { Glyph, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which

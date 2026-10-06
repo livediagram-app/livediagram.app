@@ -144,7 +144,7 @@ export const iconSearch = defineVerb({
 
 export const schemaView = defineVerb({
   id: 'schema.view',
-  summary: 'The element format: the kinds, or one kind\u2019s fields',
+  summary: 'The element format, by kind',
   description:
     'Prints the element kinds edit operations make, or for one kind its first size, the aliases set takes with their values, and its stored fields.',
   behaviour: 'read',

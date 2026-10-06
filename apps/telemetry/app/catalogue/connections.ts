@@ -22,6 +22,14 @@ export const AI_TOOLS_CONNECTED: Metric = {
   blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
 };
 
+export const CLI_SIGN_INS: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'Cli',
+  title: 'CLI Sign-ins',
+  blurb: 'The livediagram CLI signed in, through the browser or with a code on another device.',
+};
+
 export const TOKENS_REVOKED: Metric = {
   rising: 'neutral',
   category: 'Token',
@@ -36,8 +44,8 @@ export const API_TOKEN_ACTIVITY: MetricStack = {
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event: created by hand, created by an AI tool connecting over MCP, and revoked.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED],
+    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, and revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, TOKENS_REVOKED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp
@@ -68,6 +76,12 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   ),
   mcpTool('ListTrash', 'List Trash', 'Listing the documents in the Trash.'),
   mcpTool('RestoreDocument', 'Restore Document', 'Bringing a document back from the Trash.'),
+  mcpTool(
+    'ListItems',
+    'List Items',
+    'Reading a document’s Plan items: cards, tasks and their fields.',
+  ),
+  mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {
@@ -150,6 +164,14 @@ export const AGENT_HELD = chart(
   { rising: 'neutral' },
 );
 
+export const AGENT_PRESENT = chart(
+  'Agent',
+  'Present',
+  'Agents Present',
+  'An agent showed itself on a tab, with a status line, for the people there to see.',
+  { rising: 'neutral' },
+);
+
 export const AGENT_REVERTED = chart(
   'Agent',
   'Reverted',
@@ -179,7 +201,14 @@ export const AGENT_CHANGESETS: MetricStack = {
   title: 'Agent changes',
   blurb: 'Agents changing documents, meeting people’s work, and being undone.',
   headline: AGENT_APPLIED,
-  members: [AGENT_APPLIED, AGENT_CONFLICTED, AGENT_HELD, AGENT_REVERTED, AGENT_TOAST_SHOW],
+  members: [
+    AGENT_APPLIED,
+    AGENT_CONFLICTED,
+    AGENT_HELD,
+    AGENT_REVERTED,
+    AGENT_TOAST_SHOW,
+    AGENT_PRESENT,
+  ],
 };
 
 export const DRIVE_MIRROR: MetricStack = {

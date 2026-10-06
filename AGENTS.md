@@ -197,6 +197,7 @@ apps/
   live/         # the diagram editor app (Next.js, clean routes)
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
+  community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -208,6 +209,7 @@ packages/
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
+  items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import

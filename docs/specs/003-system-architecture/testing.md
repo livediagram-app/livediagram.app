@@ -179,13 +179,19 @@ GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull req
 uploads tokenless. A failed upload logs its error and leaves the job green, so a Codecov outage never
 holds back a merge.
 
-The pull request's coverage comment is ours, not Codecov's (`comment: false`): the organisation's
+The pull request's coverage report is ours, not Codecov's (`comment: false`): the organisation's
 free Developer plan is Codecov's team tier, which writes a fixed, patch-only comment whatever
-`codecov.yml` asks for. After CI succeeds, `coverage-comment.yml` runs
-`scripts/coverage-comment.mjs`, which waits until Codecov has processed all four uploads of the
+`codecov.yml` asks for. After CI succeeds, `coverage-report.yml` runs
+`scripts/coverage-report.mjs`, which waits until Codecov has processed all four uploads of the
 head commit (riding out up to three dropped connections; every failure names the URL and the network
-cause), reads its numbers from Codecov's public API and writes one comment, edited in place on
-each later run:
+cause), reads its numbers from Codecov's public API and writes the report into the pull request's
+description, never a comment: a comment emails every watcher, a description edit notifies no one.
+
+The report sits at the bottom of the description, below a `---` separator, between two hidden
+markers (`<!-- livediagram:coverage-report:start -->` and `…:end -->`). Each run reads the
+description just before writing and replaces only that section, so the author's text around it is
+kept; an unchanged report writes nothing. A description without the section gets it appended; one
+whose closing marker was edited away has everything from the opening marker replaced. The report holds:
 
 - the patch coverage (the changed lines), and the project coverage with its change;
 - Codecov's impacted file tree graph, linked to the pull request's file tree on Codecov (its
@@ -196,8 +202,8 @@ each later run:
   better and `-` what got worse.
 
 It runs from `main`'s copy of the workflow and script and never checks out the pull request's code,
-so it comments on a pull request from a fork too. `workflow_dispatch` with a pull request number runs
-it by hand; `COVERAGE_COMMENT_DRY_RUN=1` prints the comment instead of posting it.
+so it writes to a pull request from a fork too. `workflow_dispatch` with a pull request number runs
+it by hand; `COVERAGE_REPORT_DRY_RUN=1` prints the report instead of writing it.
 
 ## Before a push
 
@@ -264,6 +270,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
     shapes, error telemetry and page views.
   - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
+  - `packages/items`: items and the Plan board projection, at 95 % lines
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
     view-model copy, `?q=` and carry-over, the telemetry facets.
@@ -311,6 +318,11 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
     `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
     index entry is unique, so a merge that keeps both sides of one fails a test.
+  - `apps/community`: component tests for the gallery (search words, the
+    controls, My Shares, Load More), the post page and the like button's
+    optimistic rollback, the switched-off gate and the lazy Clerk session; the
+    pure helpers (query state, the community key, telemetry); and the app's
+    optical-guard and motion-budget tests.
 
 - **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test

@@ -6,7 +6,7 @@ import { elementActions, isBoxed } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
-import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
+import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 const CommentThreadPopover = dynamic(
@@ -69,6 +69,24 @@ export function EditorAnchoredPopovers() {
   // account, or the guest participant identity — guests can self-assign.
   const actionSelfId = clerkUserId ?? selfParticipant.id;
   const actionSelfName = clerkDisplayName ?? selfParticipant.name;
+  // A read-only session has no autosave, so its resolve or reopen goes through the comment endpoints; an editor's
+  // rides the room and its save.
+  const persistThreadState = (
+    target: { commentThread?: { comments: { id: string }[] } },
+    resolved: boolean,
+  ) => {
+    const first = target.commentThread?.comments[0]?.id;
+    if (!isReadOnly || !documentId || !first) return undefined;
+    return () =>
+      apiSetThreadResolved(
+        selfParticipant.id,
+        documentId,
+        activeTab.id,
+        first,
+        resolved,
+        sessionShareCode,
+      );
+  };
 
   return (
     <>
@@ -133,8 +151,10 @@ export function EditorAnchoredPopovers() {
                       : undefined,
                   );
                 }}
-                onResolve={() => resolveThread(target.id)}
-                onUnresolve={() => unresolveThread(target.id)}
+                // A session that may comment but not edit resolves and reopens through the comment endpoints, as it
+                // adds (docs/specs/024-agents/agent-presence.md "Comments"); the thread is named by its first comment.
+                onResolve={() => resolveThread(target.id, persistThreadState(target, true))}
+                onUnresolve={() => unresolveThread(target.id, persistThreadState(target, false))}
                 onClose={closeComments}
                 readOnly={isReadOnly}
                 selfId={selfParticipant.id}

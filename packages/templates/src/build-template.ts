@@ -13,6 +13,7 @@ import {
   buildMobileWireframe,
 } from './template-builders-wireframes';
 import { buildSlideDeck } from './template-builders-slides';
+import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
 import {
   buildComicStrip,
   buildDoodleWarmup,
@@ -33,7 +34,6 @@ import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
 import { buildStoryboard } from './template-builders-storyboard';
 import {
-  buildKanban,
   buildPrioritizationMatrix,
   buildRetrospective,
   buildSwot,
@@ -116,8 +116,20 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildApprovalWorkflow(cx, cy);
     case 'data-flow':
       return buildDataFlow(cx, cy);
+    // Plan templates (docs/specs/026-plan/plan-templates.md): the first of their tabs; templateTabs
+    // gives them all.
     case 'kanban':
-      return buildKanban(cx, cy);
+    case 'blank-plan':
+    case 'project-planner':
+    case 'bug-triage':
+    case 'team-retro':
+    case 'weekly-planner':
+    case 'content-calendar':
+    case 'hiring-pipeline':
+    case 'okrs':
+    case 'product-launch':
+    case 'feedback-board':
+      return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);
     case 'timeline':
@@ -266,3 +278,16 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 // The "Blank Diagram" template is truly blank: no seeded element. The user
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.
+
+// A template's tabs (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): every Plan
+// template but Blank Plan makes several, named; every other template makes one, named null so it keeps
+// the name the caller gives a new tab. The first tab's elements are always buildTemplate's.
+export type TemplateTabDef = {
+  name: string | null;
+  build: (cx: number, cy: number) => Element[];
+};
+
+export function templateTabs(kind: TemplateKind): TemplateTabDef[] {
+  if (isPlanTemplateKind(kind)) return planTemplateTabs(kind);
+  return [{ name: null, build: (cx, cy) => buildTemplate(kind, cx, cy) }];
+}

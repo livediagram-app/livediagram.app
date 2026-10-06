@@ -62,6 +62,7 @@ export type CommandPaletteProps = {
       reaction?: import('@livediagram/document').Reaction;
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
+      plan?: string;
     },
   ) => void;
   // Drops a curated icon glyph (shape kind 'icon') carrying the chosen

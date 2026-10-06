@@ -147,6 +147,18 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   behaviour: 34,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
+  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
+  // card per item type.
+  'plan-boards': 9,
+  'plan-cards': 5,
+  // A board header's widgets (docs/specs/026-plan/board-widgets.md): one tile per widget kind.
+  'plan-widgets': 15,
+  // Plan views (docs/specs/026-plan/plan-views.md): ten metrics, five visualisations.
+  'plan-metrics': 10,
+  'plan-visualisations': 5,
+  // Borrowed tiles, listed by the Plan layout (palette-layouts.ts), so no tile of their own.
+  'plan-content': 0,
+  'plan-tools': 0,
 };
 
 describe('PALETTE_CATEGORIES', () => {
@@ -275,5 +287,15 @@ describe('palette tile glyph size', () => {
 
   it.each(glyphTiles)('%s renders at the tile step', (_id, svg) => {
     expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(TILE_GLYPH_PX);
+  });
+});
+
+// docs/specs/012-collaboration/session-button.md: the Timer and Stopwatch tiles sit side by side and must not
+// wear the same glyph.
+describe('session clock tiles', () => {
+  it('draw the timer and the stopwatch differently', () => {
+    const glyph = (id: string) =>
+      renderToStaticMarkup(<>{PALETTE_TILES.find((t) => t.id === id)!.icon}</>);
+    expect(glyph('tools:session-timer')).not.toBe(glyph('tools:session-stopwatch'));
   });
 });

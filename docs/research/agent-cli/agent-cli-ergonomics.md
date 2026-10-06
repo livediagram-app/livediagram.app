@@ -26,7 +26,7 @@ It records evidence and recommendations; the spec, once written, decides.
 - **Never prompt when not attached to a terminal.** Support `--dry-run` on every write. Make destructive verbs
   reversible rather than confirm-gated, and add a local undo journal, because the API has no tab history.
 - **Use one registry as the source.** Help, `guide`, `schema` and a shipped `SKILL.md` all come from the same
-  command registry and from `packages/document` vocabularies, as `apps/mcp/src/schema.ts` already does.
+  command registry and from `packages/document` vocabularies, as `packages/agent-verbs/src/mcp/schema.ts` already does.
   CI tests enforce the token budgets.
 - **Keep the CLI and the MCP side by side.** A chat agent with no shell still needs the MCP. Put the editing
   core (refs, ops, views, deltas, normalisation) in a shared package so neither interface drifts from the other.
@@ -453,7 +453,7 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 
 - One **command registry** (`name`, `summary`, `args`, `flags`, `examples`, `prints`) generates the help
   screens, `guide` cross-links, `SKILL.md`, the docs page and shell completions.
-- Vocabularies come from `packages/document`, like `apps/mcp/src/schema.ts`. The editing core (ref resolution,
+- Vocabularies come from `packages/document`, like `packages/agent-verbs/src/mcp/schema.ts`. The editing core (ref resolution,
   ops, normalisation, views, deltas, lint) lives in a **shared package** consumed by the CLI and the MCP.
 - **Evals before polish** (Anthropic's loop):
   - Write about 20 realistic tasks: "add a Redis cache between the gateway and Orders DB", "summarise the open

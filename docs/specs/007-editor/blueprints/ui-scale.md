@@ -29,24 +29,30 @@ report surface px.
 
 In `apps/live/lib/ui-scale.ts`:
 
-| Constant           | Value  | Provenance                                  |
-| ------------------ | ------ | ------------------------------------------- |
-| `UI_SCALE_MIN`     | `0.8`  | Spec: the floor for readable labels         |
-| `UI_SCALE_MAX`     | `1.2`  | Spec: symmetric about 100% with the minimum |
-| `UI_SCALE_STEP`    | `0.05` | Spec: 5% steps                              |
-| `UI_SCALE_DEFAULT` | `1`    | Spec: missing key = 100%                    |
+| Constant                | Value  | Provenance                                  |
+| ----------------------- | ------ | ------------------------------------------- |
+| `UI_SCALE_MIN`          | `0.8`  | Spec: the floor for readable labels         |
+| `UI_SCALE_MAX`          | `1.2`  | Spec: symmetric about 100% with the minimum |
+| `UI_SCALE_STEP`         | `0.05` | Spec: 5% steps                              |
+| `UI_SCALE_DEFAULT`      | `1`    | Spec: missing key = 100%                    |
+| `UI_SCALE_TOOLBAR_MAX`  | `1.4`  | Spec: the toolbar runs to 140%              |
+| `UI_SCALE_TOOLBAR_BASE` | `1.15` | Spec: the toolbar's 100% is the old 115%    |
 
 ## Behaviour and state
 
 Resolving one stored value: not a finite number → `UI_SCALE_DEFAULT`; else
-clamp to `[UI_SCALE_MIN, UI_SCALE_MAX]`, snap to the nearest `UI_SCALE_STEP`,
-round to 2 decimals (no `1.1500000000000001`).
+clamp to `[UI_SCALE_MIN, uiScaleMax(part)]` (`UI_SCALE_TOOLBAR_MAX` for the
+toolbar's own key, `UI_SCALE_MAX` for the master and every other part), snap to
+the nearest `UI_SCALE_STEP`, round to 2 decimals (no `1.1500000000000001`).
 
 `resolveUiScales(prefs, { mobile })`:
 
 1. `mobile` true → every part `1` (`UNSCALED`).
 2. Each part: its own key when present (resolved as above, so junk is 1, not
    the master), else the resolved master.
+3. The toolbar's value is multiplied by `UI_SCALE_TOOLBAR_BASE` and rounded to
+   2 decimals: `resolveUiScales` returns drawn factors, `resolveUiScalePart`
+   the slider's value.
 
 Writes go through a patch so the live preview can reuse it:
 
@@ -149,7 +155,7 @@ What makes room for a scaled surface:
   - The master: `key: 'uiScale'`, `read: resolveUiScale`,
     `write: withUiScalePatch(p, uiScalePatch(v))`.
   - Each part, from `uiScalePartRow(part, copy)`: `key: 'uiScale-<part>'`,
-    `parent: 'uiScale'`, `read: resolveUiScalePart(p, part)`,
+    `parent: 'uiScale'`, `max: uiScaleMax(part)`, `read: resolveUiScalePart(p, part)`,
     `write: withUiScalePatch(p, uiScalePartPatch(part, v))`.
   - The default `1` is written as `1`, not a delete, matching `panelOpacity`.
 - `SettingsSliderRow` gains `disabled` and `notice`, honoured from the row's

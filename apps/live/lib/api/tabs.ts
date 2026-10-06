@@ -318,6 +318,24 @@ export async function apiDeleteComment(
   await expectOkVoid(res, 'delete comment');
 }
 
+// Resolve or reopen a thread through the comment endpoints (docs/specs/024-agents/agent-presence.md "Comments"): the
+// path of a session that may comment but not edit, which has no autosave. The thread is named by any of its comments.
+export async function apiSetThreadResolved(
+  ownerId: string,
+  documentId: string,
+  tabId: string,
+  commentId: string,
+  resolved: boolean,
+  shareCode: string | null = null,
+): Promise<void> {
+  const verb = resolved ? 'resolve' : 'reopen';
+  const res = await apiFetch(
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}/${verb}`,
+    { method: 'POST', headers: await apiHeaders(ownerId, { share: shareCode }) },
+  );
+  await expectOkVoid(res, `${verb} thread`);
+}
+
 // Link an existing tab into another of the caller's documents
 // (docs/specs/006-document/tab-document-many-to-many.md). After this returns, the tab body is shared: edits
 // from either document write to the same `tabs.data` row. Returns

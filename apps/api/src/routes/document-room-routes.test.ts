@@ -228,6 +228,44 @@ describe('POST room-ticket', () => {
     });
   });
 
+  // docs/specs/025-community/community.md: a Community visitor never joins the author's room.
+  it('mints no ticket for a Community post link', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
+    gates.resolveDocumentGrant.mockResolvedValue({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'POSTLINK',
+      community: true,
+    });
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'visitor' }),
+    );
+    expect(res!.status).toBe(403);
+    expect(await res!.json()).toEqual({ error: 'community_link' });
+    expect(db.createWsTicket).not.toHaveBeenCalled();
+  });
+
+  it('refuses a Community post link on the share-code upgrade', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.getShareLink.mockResolvedValue({
+      documentId: 'd1',
+      role: 'view',
+      tabId: null,
+      code: 'POSTLINK',
+      purpose: 'community',
+    });
+    const { env, seen } = roomEnv();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=POSTLINK', {
+        owner: null,
+        headers: { Upgrade: 'websocket' },
+        env,
+      }),
+    );
+    expect(res!.status).toBe(403);
+    expect(seen).toHaveLength(0);
+  });
+
   it('404s (no existence leak) and mints nothing without a grant', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue(null);

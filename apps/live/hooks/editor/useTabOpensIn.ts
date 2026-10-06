@@ -20,6 +20,7 @@ const OPENS_IN_EVENT: Record<EditorMode, string> = {
   diagram: 'OpensInDiagram',
   draw: 'OpensInDraw',
   illustrate: 'OpensInIllustrate',
+  plan: 'OpensInPlan',
 };
 
 export function useTabOpensIn(deps: {

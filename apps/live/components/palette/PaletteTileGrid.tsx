@@ -11,6 +11,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
+import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -27,6 +28,7 @@ export type PaletteTileActions = {
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
+      plan?: string;
     },
   ) => void;
   addText: () => void;
@@ -68,6 +70,7 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
           reaction: a.reaction,
           mode: a.mode,
           estimateScale: a.estimateScale,
+          plan: a.plan,
         });
     case 'text':
       return actions.addText;
@@ -104,6 +107,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return () => actions.addIcon(a.iconId);
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
+    case 'plan-widget':
+      return () => addPlanWidgetToBoard(a.widget);
   }
 }
 
@@ -126,7 +131,8 @@ export function tileActive(
         pendingDraw.session === a.session &&
         pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
-        pendingDraw.estimateScale === a.estimateScale
+        pendingDraw.estimateScale === a.estimateScale &&
+        pendingDraw.plan === a.plan
       );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
@@ -160,6 +166,7 @@ export function tileActive(
     case 'sticker':
     case 'icon':
     case 'tech-icon':
+    case 'plan-widget':
       return false;
     default:
       return pendingDraw.type === a.type;
@@ -198,7 +205,9 @@ export function PaletteTile({
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
-        a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
+        a.type === 'shape'
+          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan)
+          : undefined
       }
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}

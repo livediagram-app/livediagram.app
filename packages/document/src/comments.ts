@@ -33,6 +33,9 @@ export type Comment = {
   // Teammates this comment @-tags (docs/specs/012-collaboration/comment-mentions.md). The handles also sit in
   // `text` as typed; this is who they resolve to. Absent when none.
   mentions?: CommentMention[];
+  // The API token a comment was posted with, for the audit trail (docs/specs/024-agents/agent-presence.md
+  // "Attribution"). Server-stamped, kept by every later save, seen only by its author; never sent to a room.
+  tokenId?: string;
 };
 
 // Threads live on elements (currently boxed only). `resolved` is sticky:
@@ -72,14 +75,15 @@ export function activeCommentCount(thread: CommentThread | undefined): number {
 // op out to every socket. Everything the editor sends the room goes through
 // this first (docs/specs/012-collaboration/collab-race-hardening.md); the author's own local copy keeps it.
 export function withoutCommentAuthorId(comment: Comment): Comment {
-  if (comment.authorId === undefined) return comment;
-  const { authorId: _drop, ...rest } = comment;
+  if (comment.authorId === undefined && comment.tokenId === undefined) return comment;
+  const { authorId: _drop, tokenId: _token, ...rest } = comment;
   return rest;
 }
 
 export function withoutCommentAuthorIds<E extends Element>(el: E): E {
   const thread = (el as { commentThread?: CommentThread }).commentThread;
-  if (!thread || !thread.comments.some((c) => c.authorId !== undefined)) return el;
+  if (!thread || !thread.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined))
+    return el;
   return {
     ...el,
     commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },

@@ -5,18 +5,18 @@ import { ActivityList } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'Activity',
   description:
-    'The Explorer’s Activity page lists everything outstanding for you across every document: open actions assigned to you or by you, and the comment threads you are in.',
+    'The Explorer’s Activity page lists everything outstanding for you across every document: open actions assigned to you or by you, Plan cards assigned to you, and the comment threads you are in.',
   path: '/help/explorer/activity/',
 });
 
 <ArticleLayout
   title="Activity"
-  description="What is waiting on you right now, across every document: open actions, and the comment threads you are part of."
+  description="What is waiting on you right now, across every document: open actions, Plan cards, and the comment threads you are part of."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Activity** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group. Where Home tells you what _happened_, Activity tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
+**Activity** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group. Where Home tells you what _happened_, Activity tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) and [Plan cards](/help/canvas/plan-mode/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
 
 <Figure caption="Three sections, each a list of rows that open the document at the element in question.">
   <ActivityList />
@@ -24,13 +24,13 @@ export const metadata = helpMetadata({
 
 ## What lands here
 
-Everything on the page comes from an element on one of your documents, so the row always knows where it is from.
+Everything on the page comes from one of your documents, so the row always knows where it is from.
 
-- **Assigned to You** — every open action whose assignee is you, on any document you can open. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list across documents.
+- **Assigned to You** — every open action whose assignee is you, on any document you can open. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list across documents. Plan cards whose **Assignee** is you are listed here too, mixed in with the actions, until the card is finished: moved to a board's done column or past it, archived, or put in the Trash.
 - **You Assigned** — open actions you assigned to somebody else. They are here so you can see what you are waiting _on_, not just what is waiting on you.
 - **Open Comment Threads** — unresolved threads you are in. That means threads you wrote a comment in, threads where a teammate [mentioned you](/help/collaboration/comments/#mentioning-a-teammate), and threads on documents you own. A thread you were mentioned in carries a **Mentioned You** hint, and a row on your own document that you have not replied to yet carries a small **Your document** hint, so you can tell them apart.
 
-Done actions and resolved threads are not listed. Activity is an inbox, not a history; the Timeline and each document's own **Collaborate** panel keep the past.
+Done actions, finished cards and resolved threads are not listed. Activity is an inbox, not a history; the Timeline and each document's own **Collaborate** panel keep the past.
 
 ## Reading a row
 
@@ -38,17 +38,21 @@ A row leads with a glyph for its kind (the action clipboard or the comment bubbl
 
 On the right is the person: the assignee for an action (brand-tinted and labelled **You** when that is you), or the latest commenter for a thread, with the time of the most recent change beneath. Hovering the avatar names them and, for a thread, says how many comments it holds.
 
+A Plan card's row shows its card type's glyph, its number and title, and the type. Its last line names the board it is on and that board's tab, or says **Not on a board** when no board in the document shows it.
+
 Rows are ordered by their most recent change, newest first, within each section.
 
 ## Opening a row
 
 Click a row and the document opens on the right tab with the element selected, scrolled into view, and its action or comment popover already open, the same place a **Collaborate** panel row takes you inside the editor. From there you complete the action, reassign it, resolve the thread, or reply, with the editor's usual rules about who can edit what.
 
+A Plan card's row opens the document on the tab with the card's board, selects the board, and opens the card, the same as clicking it on the board. A card that is not on any board opens on the document's usual tab.
+
 If the element has been deleted since the page loaded, the document still opens on that tab; there is simply nothing left to select.
 
 ## The badge
 
-The Activity row in the sidebar shows a count of the open actions **assigned to you**. It counts only work waiting on you, not work you handed out and not comment threads, and it disappears at zero. You can see from any other Explorer section whether something needs you.
+The Activity row in the sidebar shows a count of the open actions and Plan cards **assigned to you**. It counts only work waiting on you, not work you handed out and not comment threads, and it disappears at zero. You can see from any other Explorer section whether something needs you.
 
 ## Guests and signing in
 

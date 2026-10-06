@@ -13,15 +13,27 @@ export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 export type CacheRule = 'no-store' | 'immutable' | 'missing-asset' | 'unchanged';
 
-/** A hashed build asset of any of the four sites (`/_next/static/…`, under its prefix or not). */
+/** A hashed build asset of any of the five sites (`/_next/static/…`, under its prefix or not). */
 export function isBuildAsset(pathname: string): boolean {
   return /^(\/[a-z-]+)?\/_next\/static\//.test(pathname);
 }
 
+// Whether build assets are content-hashed. Not under `next dev` (local development), whose chunks keep
+// their names while their content changes with every edit and come marked `no-cache` for it: marked
+// immutable, a reload would run the code from before the edit until the browser cache was cleared.
+export type CacheOptions = { hashedAssets: boolean };
+const PRODUCTION: CacheOptions = { hashedAssets: true };
+
 /** Which rule a response falls under. */
-export function cacheRule(pathname: string, status: number, contentType: string | null): CacheRule {
+export function cacheRule(
+  pathname: string,
+  status: number,
+  contentType: string | null,
+  options: CacheOptions = PRODUCTION,
+): CacheRule {
   if (isBuildAsset(pathname)) {
-    if ((status >= 200 && status < 300) || status === 304) return 'immutable';
+    if ((status >= 200 && status < 300) || status === 304)
+      return options.hashedAssets ? 'immutable' : 'unchanged';
     if (status === 404) return 'missing-asset';
     return 'unchanged';
   }
@@ -40,10 +52,14 @@ function withCacheControl(response: Response, value: string): Response {
 }
 
 /** The response with the caching rules applied; untouched when none applies. */
-export function applyCachePolicy(response: Response, pathname: string): Response {
+export function applyCachePolicy(
+  response: Response,
+  pathname: string,
+  options: CacheOptions = PRODUCTION,
+): Response {
   // A WebSocket upgrade carries its socket; rebuilding it would drop the socket.
   if (response.status === 101) return response;
-  const rule = cacheRule(pathname, response.status, response.headers.get('Content-Type'));
+  const rule = cacheRule(pathname, response.status, response.headers.get('Content-Type'), options);
   if (rule === 'no-store') return withCacheControl(response, HTML_CACHE_CONTROL);
   if (rule === 'immutable') return withCacheControl(response, IMMUTABLE_CACHE_CONTROL);
   if (rule === 'missing-asset') {

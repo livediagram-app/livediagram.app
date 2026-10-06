@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+@import '@livediagram/tailwind-config';
+
+/* Scan the shared UI package so utility classes used only inside its components (the <Brand> mark,
+ * the site header and footer) are generated here too. Tailwind v4 skips node_modules, where the
+ * workspace package is symlinked. */
+@source '../../../packages/ui/src';
+
+html,
+body {
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a; /* slate-900 */
+  overflow-x: hidden;
+}
+.dark,
+.dark body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-200);
+}
+
+/* The hero's soft brand wash, quietly. */
+.community-hero {
+  background:
+    radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.14), transparent 70%),
+    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.08), transparent 70%);
+}
+.dark .community-hero {
+  background:
+    radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.16), transparent 70%),
+    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.07), transparent 70%);
+}
+
+/* The heart's pop on liking. */
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.heart-pop {
+  animation: heart-pop var(--transition-duration-long) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heart-pop {
+    animation: none;
+  }
+}

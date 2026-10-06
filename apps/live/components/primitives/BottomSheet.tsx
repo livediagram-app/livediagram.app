@@ -1,9 +1,7 @@
 'use client';
 
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { Portal } from '@/components/primitives/Portal';
-import { useSwipeDownDismiss } from '@/hooks/ui/useSwipeDownDismiss';
-import { safeInset } from '@/lib/safe-area';
+import { Portal, useSwipeDownDismiss, safeInset } from '@livediagram/ui';
 
 // A menu as a bottom sheet on a phone (docs/specs/007-editor/live-app.md "Menus are bottom sheets on
 // a phone"): the width of the screen (up to 32rem), docked to the bottom edge, at most 60% of its

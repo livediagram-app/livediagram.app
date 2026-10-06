@@ -42,7 +42,14 @@ import type { DocumentDTO } from './types';
 export function redactDocumentForReader(liveDoc: DocumentDTO, caller: string | null): DocumentDTO {
   return caller && caller === liveDoc.ownerId
     ? liveDoc
-    : { ...liveDoc, ownerId: '', shareCode: null };
+    : { ...liveDoc, ownerId: '', shareCode: null, communityState: null };
+}
+
+// A Community visitor's copy (docs/specs/025-community/community.md "Viewing a post's document"), on top of the
+// reader redaction: the post names its author (or "Anonymous") itself, so the document carries nobody's name or
+// colour, and nothing about where it sits in its owner's library or came from.
+export function redactDocumentForCommunity(liveDoc: DocumentDTO): DocumentDTO {
+  return { ...liveDoc, ownerName: null, ownerColor: null, folderId: null, source: null };
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

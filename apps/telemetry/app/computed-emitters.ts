@@ -17,11 +17,14 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   ALL_CTA_SOURCES,
+  COMMUNITY_CATEGORIES,
+  COMMUNITY_REPORT_REASONS,
   PLACEMENT_DEFAULT_KEYS,
   pascalToken,
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs } from '@livediagram/agent-verbs';
+import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -56,13 +59,11 @@ const DRIVE_OPEN_WITH_TYPES = tokensAfter(
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
-// Each tool the MCP server registers, as pascalToken(name).
 // The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
 const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
 
-const MCP_TOOLS = [
-  ...read('mcp/src/tools.ts').matchAll(/registerTool\(\s*server,\s*env,\s*'([a-z_]+)'/g),
-].map((m) => pascalToken(m[1]!));
+// Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
+const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
 
 // The Appearance settings' labels (packages/ui appearance-cycle.ts), the
 // editor's `UI·Toggled` type on an explicit pick.
@@ -143,6 +144,44 @@ export const TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
+// docs/specs/026-plan/plan-tour.md). The welcome card sends no step view.
+export const PLAN_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `PlanTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
+const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
+const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
+const PLAN_SETUP_PARTS = [
+  'Title',
+  'ColumnAdded',
+  'ColumnRenamed',
+  'ColumnReordered',
+  'ColumnRemoved',
+  'ColumnColour',
+  'WipLimit',
+  'ColumnWidth',
+  'DoneColumn',
+  'Swimlanes',
+  'Scope',
+  'CardFields',
+  'CardSize',
+  'AddTypes',
+  'Widgets',
+  'Voting',
+  'VoteBudget',
+  'HideWriting',
+];
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Custom'];
@@ -159,6 +198,17 @@ const API_ERRORS = [
   'SaveFailed.TypeError',
 ];
 const API_ERROR_WHY = 'a status or kind plus the request that failed, and the worker error token';
+
+// The Community (docs/specs/025-community/community.md "Telemetry"): a post's category and a
+// report's reason as their closed `type` tokens, and the gallery filter kinds the Community app's
+// CommunitySelection union names.
+const COMMUNITY_CATEGORY_TYPES = COMMUNITY_CATEGORIES.map((c) => c.type);
+const COMMUNITY_REASON_TYPES = COMMUNITY_REPORT_REASONS.map((r) => r.type);
+const COMMUNITY_SELECTIONS = tokensAfter(
+  read('community/lib/telemetry.ts'),
+  'export type CommunitySelection',
+  ';',
+);
 
 // Where a changeset came from, read off the front door's own type so the list cannot drift.
 const AGENT_FRONT_DOORS = tokensAfter(
@@ -182,6 +232,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       { values: AGENT_FRONT_DOORS },
     ]),
   ),
+  // Agent presence (docs/specs/024-agents/agent-presence.md), typed by the same front door.
+  'apps/api/src/routes/agent-presence-routes.ts Agent·Present': { values: AGENT_FRONT_DOORS },
   'apps/api/src/index.ts Error·Api': {
     values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
@@ -206,10 +258,19 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/help/components/useArticleVote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'apps/help/components/useArticleVote.ts Help·Unhelpful': { values: SLUGS, open: SLUG_WHY },
 
+  // The Community app.
+  'apps/community/lib/telemetry.ts Community·Reported': { values: COMMUNITY_REASON_TYPES },
+  'apps/community/lib/telemetry.ts Community·Selected': { values: COMMUNITY_SELECTIONS },
+
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
+  },
+  // The Community's help deep links (docs/specs/018-help/contextual-help-links.md): COMMUNITY_HELP's two ids.
+  'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
+    values: ['community', 'finding-community-documents'],
+    open: SLUG_WHY,
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
     values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
@@ -252,6 +313,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
+  'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {
+    values: PLAN_ITEM_TYPES,
+    open: PLAN_TYPE_WHY,
+  },
+  'apps/live/hooks/plan/usePlanSlice.ts Plan·Deleted': {
+    values: PLAN_ITEM_TYPES,
+    open: PLAN_TYPE_WHY,
+  },
+  'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
   'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,
@@ -266,6 +337,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/drive/DriveOpen.tsx Drive·Opened': { values: DRIVE_OPEN_WITH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
+  // Publishing to the Community: the post's category, as communityCategoryType.
+  'apps/live/components/dialogs/community/CommunityPublishDialog.tsx Community·Shared': {
+    values: COMMUNITY_CATEGORY_TYPES,
+  },
+  'apps/live/components/dialogs/community/CommunityPublishDialog.tsx Community·Changed': {
+    values: COMMUNITY_CATEGORY_TYPES,
+  },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/live/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
@@ -308,6 +386,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
+  'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],

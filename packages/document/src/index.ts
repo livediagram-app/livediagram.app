@@ -69,6 +69,8 @@ export type {
   LinkCardMeta,
   LinkCardElement,
   VideoElement,
+  PlanCardRef,
+  PlanViewRef,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The
@@ -463,6 +465,10 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+// The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the
+// Drive mirror and the CLI's pull files).
+export * from './document-envelope';
+export * from './export-tab-text';
 export * from './comment-mentions';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
@@ -571,6 +577,7 @@ export * from './anchor-layouts';
 export * from './shape-outline';
 export * from './svg-path-outline';
 export * from './shape-hit';
+export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-path-hits';
@@ -648,3 +655,4 @@ export * from './lane-seam-snapping';
 export * from './element-refs';
 export * from './containment';
 export * from './style-keys';
+export * from './plan-palette';

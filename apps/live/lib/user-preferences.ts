@@ -114,6 +114,11 @@ export type UserPreferences = {
   // undefined / false === click to open, the default (hover-open can feel
   // twitchy, so it's opt-in).
   quickAddOnHover?: boolean;
+  // How an element shows its link, note, action and comments
+  // (docs/specs/008-canvas/element-indicators.md): glyphs inside its top, at the top-right of a box
+  // ('top', the default), a labelled row along its bottom edge ('footer'), or none ('off').
+  // Read through `readElementIndicatorStyle`, which maps anything else to the default.
+  elementIndicatorStyle?: 'top' | 'footer' | 'off';
   // Alignment guides (docs/specs/008-canvas/canvas-and-palette.md). When `false`, the editor skips the
   // faint guide lines drawn along the edges / centres a dragged or
   // resized element shares with its neighbours (the snap itself is
@@ -131,6 +136,9 @@ export type UserPreferences = {
   // Illustrate mode (Settings › Experimental, docs/specs/007-editor/editor-modes.md "Experimental
   // modes"). Missing / undefined / true === offered, the default; `false` hides Illustrate mode.
   illustrateModeEnabled?: boolean;
+  // Plan mode (Settings › Experimental, docs/specs/026-plan/plan-mode.md "Offering the mode"), gated
+  // apart from Illustrate. Missing / undefined / true === offered, the default; `false` hides it.
+  planModeEnabled?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
   // for consequential, otherwise-silent actions (a document moved to a
@@ -184,6 +192,10 @@ export type UserPreferences = {
   // Settings as "I've seen the editor tour"; unchecking it there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome tour's:
+  // true once its offer has been answered, so it never offers itself again on any device. Surfaced in
+  // Settings as "Show Plan Tour" (inverted). Missing / undefined === not seen.
+  planTourSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one

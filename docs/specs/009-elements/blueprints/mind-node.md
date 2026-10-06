@@ -30,8 +30,8 @@ Scope, by file:
 | `apps/live/components/dialogs/MindOutlineToolButton.tsx`     | A toolbar button with its key in a hover card                                                                                      |
 | `apps/live/components/dialogs/outline-levels.ts`             | `levelLook`: the colour ring per level                                                                                             |
 | `apps/live/lib/outline-rows.ts`                              | The row model: `rowsFromText`, `textFromRows`, split, join, indent, outdent, move, paste                                           |
-| `apps/live/components/canvas/MindOutlineContext.tsx`         | `useMindOutlineBadges`, `useMindOutlineBadge`: the root's Edit Outline and Tidy Map badges                                         |
-| `apps/live/components/canvas/element-badges.tsx`             | `BadgeStrip`: the outline and tidy segments                                                                                        |
+| `apps/live/components/canvas/MindOutlineContext.tsx`         | `useMindOutlineBadges`, `useMindOutlineBadge`: the root's Edit Outline and Tidy Map commands                                       |
+| `apps/live/components/canvas/indicator-items.ts`             | `buildIndicatorItems`: the outline and tidy commands                                                                               |
 | `apps/live/lib/mind-handoff.ts`                              | Typing ahead: `beginMindHandoff`, `claimMindHandoff`, `applyHandoffKey`                                                            |
 | `apps/live/lib/format-painter.ts`                            | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies                                                         |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                                                                                     |
@@ -487,7 +487,7 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 | Row model: split, join, indent, outdent, move, paste  | outline-rows                                                                                             | `apps/live/lib/outline-rows.test.ts`                          |
 | Bold / italic / underline in an outline               | mind-outline-marks                                                                                       | `packages/document/src/mind-outline-marks.test.ts`            |
 | Tidy Map says what it did                             | Tidy Map (two cases)                                                                                     | `apps/live/hooks/canvas/useMindMapSetters.test.ts`            |
-| The badge chip sits on the outline                    | badgeCornerInset                                                                                         | `apps/live/lib/badge-anchor.test.ts`                          |
+| Commands hidden at rest, shown when selected          | ElementIndicators                                                                                        | `apps/live/components/canvas/ElementIndicators.test.tsx`      |
 | Typing ahead                                          | applyHandoffKey; beginMindHandoff / claimMindHandoff                                                     | `apps/live/lib/mind-handoff.test.ts`                          |
 | Toolbar buttons on a mind node only                   | SelectionPopover mind-node growth (two cases)                                                            | `apps/live/components/canvas/SelectionPopover.test.tsx`       |
 | Traversal stands aside for plain Tab only             | useCanvasA11y Tab ownership                                                                              | `apps/live/hooks/canvas/useCanvasA11y.tab-ownership.test.tsx` |

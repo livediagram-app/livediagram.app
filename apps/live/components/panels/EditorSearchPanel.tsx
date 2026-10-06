@@ -115,6 +115,7 @@ export function EditorSearchPanel() {
                   reaction: add.reaction,
                   mode: add.mode,
                   estimateScale: add.estimateScale,
+                  plan: add.plan,
                 });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);

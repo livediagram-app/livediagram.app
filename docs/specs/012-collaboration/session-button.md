@@ -47,6 +47,11 @@ own label then contradicted. So a stopwatch is its own palette tile and its own
 element, and it has nothing to configure, which is precisely the difference: a
 countdown is placed WITH a length, a stopwatch has none.
 
+The two wear different glyphs, on the palette tile and on the placed button
+alike: the timer an hourglass (it runs down), the stopwatch a stopwatch (it
+counts up). Side by side in the palette, one clock face for both made the two
+tiles read as the same tool.
+
 Pressing either is the same three-way control as before (start, then pause,
 then continue), because a tab runs one clock and pressing mid-run means "hold
 on", never a silent restart.

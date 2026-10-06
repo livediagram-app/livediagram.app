@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/live/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
 | `apps/live/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
-| `apps/live/lib/export-tab-text.ts`                   | Markdown outline [QD13]                                             |
+| `packages/document/src/export-tab-text.ts`           | Markdown outline [QD13]                                             |
 
 ## Domain and naming
 

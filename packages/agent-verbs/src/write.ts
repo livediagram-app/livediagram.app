@@ -45,7 +45,8 @@ export const writeFlags = {
 export type WriteFlags = {
   dryRun?: boolean;
   summary?: string;
-  base?: number;
+  // The revision read; null sends no base at all (a tab `push` creates).
+  base?: number | null;
   strict?: boolean;
   waitHeld?: number;
 };
@@ -117,7 +118,7 @@ export async function submitChangeset(
   body: Pick<ChangesetRequest, 'operations' | 'replace'>,
   flags: WriteFlags,
 ): Promise<ChangesetResponse> {
-  const base = await baseFor(ctx, target, flags.base);
+  const base = flags.base === null ? undefined : await baseFor(ctx, target, flags.base);
   const request: ChangesetRequest = {
     ...body,
     ...(base ? { base } : {}),

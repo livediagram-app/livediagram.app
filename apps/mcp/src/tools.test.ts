@@ -11,7 +11,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDocumentShape } from './schema';
+import { deleteDocumentShape } from '@livediagram/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
@@ -86,6 +86,7 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A diagram', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
+  if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
   return json({});
 }
 
@@ -146,6 +147,7 @@ const ARGS = {
   mode: 'ops',
   ops: [],
   limit: 5,
+  changes: [],
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -158,14 +160,16 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the eleven documented tools, each with a description', () => {
+  it('registers the thirteen documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
       'add_tab',
+      'change_items',
       'create_document',
       'delete_document',
       'find_documents',
+      'list_items',
       'list_templates',
       'list_trash',
       'read_document',
@@ -273,6 +277,9 @@ describe('tool annotations', () => {
     restore_document: 'write',
     update_document: 'destructive',
     delete_document: 'destructive',
+    // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
+    list_items: 'read',
+    change_items: 'destructive',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -312,7 +319,13 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.readOnlyHint === true)
       .map((r) => r.name)
       .sort();
-    expect(readOnly).toEqual(['find_documents', 'list_templates', 'list_trash', 'read_document']);
+    expect(readOnly).toEqual([
+      'find_documents',
+      'list_items',
+      'list_templates',
+      'list_trash',
+      'read_document',
+    ]);
 
     // Destructive is only meaningful on a writer, and MCP defaults it to TRUE
     // when unset, so every writer has to state it, including the additive ones.
@@ -329,7 +342,7 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual(['delete_document', 'update_document']);
+    expect(destructive).toEqual(['change_items', 'delete_document', 'update_document']);
   });
 });
 
@@ -406,6 +419,7 @@ describe('the Trash tools', () => {
             teamName: null,
             trashedAt: T,
             purgeAt: T + 30 * 86_400_000,
+            reason: 'deleted',
           },
           {
             id: 'd_2',
@@ -414,6 +428,7 @@ describe('the Trash tools', () => {
             teamName: 'Crew',
             trashedAt: T,
             purgeAt: T + 30 * 86_400_000,
+            reason: 'empty',
           },
         ],
       }),
@@ -426,6 +441,7 @@ describe('the Trash tools', () => {
           id: 'd_1',
           name: 'Plan',
           library: 'personal',
+          reason: 'deleted',
           deletedAt: '2026-01-10T00:00:00.000Z',
           purgeAt: '2026-02-09T00:00:00.000Z',
         },
@@ -433,6 +449,7 @@ describe('the Trash tools', () => {
           id: 'd_2',
           name: 'Ops',
           library: 'Crew',
+          reason: 'empty',
           deletedAt: '2026-01-10T00:00:00.000Z',
           purgeAt: '2026-02-09T00:00:00.000Z',
         },

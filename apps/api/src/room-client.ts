@@ -6,11 +6,14 @@ import {
   type TabLedger,
 } from '@livediagram/document';
 import {
+  AGENT_PRESENCE_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
   type RoomOp,
 } from '@livediagram/api-schema';
+import type { AgentPresenceWrite } from './room-agent-presence';
+import type { ItemsRoomOp, ItemTypesRoomOp } from '@livediagram/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -123,22 +126,36 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // receivers need nothing new.
 //
 // Best-effort, like the share-revoked broadcast: the D1 write is the record,
-// this is the live copy.
+// this is the live copy; a relay the room refused or never received is logged.
 export async function relayElementDelta(
   env: Env,
   documentId: string,
   tabId: string,
   elementId: string,
   delta: ElementDelta,
-): Promise<void> {
+): Promise<boolean> {
+  // The comment is saved either way; a room that did not hear about it is logged (PR26).
+  const fields = { documentId, tabId, delta: delta.kind };
   try {
-    await roomStubFor(env, documentId).fetch(
-      'https://room/mutation',
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
       mutationInit({ kind: 'el-delta', tabId, elementId, delta }),
+      ROOM_RELAY_TIMEOUT_MS,
     );
-  } catch {
-    // The comment is saved; the room just didn't hear about it.
+    if (res.ok) return true;
+    console.warn('[room-mutation] el-delta did not reach the room', {
+      ...fields,
+      error: `status ${res.status}`,
+    });
+  } catch (err) {
+    console.warn('[room-mutation] el-delta did not reach the room', {
+      ...fields,
+      error: String(err),
+    });
   }
+  return false;
 }
 
 // One changeset into the room's ordered stream (docs/specs/024-agents/agent-changesets.md "The
@@ -163,6 +180,47 @@ export async function relayChangeset(
     console.warn('[changeset] relay-failed', { ...fields, error: `status ${res.status}` });
   } catch (err) {
     console.warn('[changeset] relay-failed', { ...fields, error: String(err) });
+  }
+  return false;
+}
+
+// A document an agent renamed, as the document-meta op an editor's own rename sends: open editors show the new name
+// at once, and their next tab reorder carries it instead of writing the old one back. Best-effort and logged, like
+// the tab rename relay.
+export async function relayDocumentRename(
+  env: Env,
+  documentId: string,
+  name: string,
+  tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
+): Promise<boolean> {
+  const op: RoomOp = {
+    kind: 'document-meta',
+    name,
+    tabs: tabs.map((t) => ({
+      id: t.id,
+      name: t.name,
+      orderIndex: t.orderIndex,
+      ...(t.folder ? { folder: t.folder } : {}),
+    })),
+  };
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
+      mutationInit(op),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[room-mutation] document-meta did not reach the room', {
+      documentId,
+      error: `status ${res.status}`,
+    });
+  } catch (err) {
+    console.warn('[room-mutation] document-meta did not reach the room', {
+      documentId,
+      error: String(err),
+    });
   }
   return false;
 }
@@ -261,5 +319,128 @@ export async function broadcastDocumentTrashed(env: Env, documentId: string): Pr
     );
   } catch (err) {
     console.warn('[room-broadcast] document-trashed did not reach the room', documentId, err);
+  }
+}
+
+// Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
+// so a set or clear that cannot reach it throws `RoomUnavailableError` (the route answers 503, PR11).
+export const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;
+
+export class RoomUnavailableError extends Error {
+  constructor(cause: unknown) {
+    super(`room unavailable: ${String(cause)}`);
+    this.name = 'RoomUnavailableError';
+  }
+}
+
+export type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
+
+export async function putAgentPresence(
+  env: Env,
+  write: AgentPresenceRoomWrite,
+): Promise<
+  { ok: true; expiresAt: number; created: boolean } | { ok: false; error: 'agent_presence_full' }
+> {
+  const { documentId, ...body } = write;
+  let res: Response;
+  try {
+    res = await roomFetch(
+      env,
+      documentId,
+      '/presence',
+      { method: 'PUT', body: JSON.stringify(body) },
+      ROOM_AGENT_PRESENCE_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw new RoomUnavailableError(err);
+  }
+  if (res.status === 409) return { ok: false, error: 'agent_presence_full' };
+  if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
+  const answer = (await res.json()) as { expiresAt: number; created: boolean };
+  return { ok: true, expiresAt: answer.expiresAt, created: answer.created };
+}
+
+export async function deleteAgentPresence(
+  env: Env,
+  documentId: string,
+  tokenId: string,
+  tabId: string,
+): Promise<boolean> {
+  const query = `token=${encodeURIComponent(tokenId)}&tab=${encodeURIComponent(tabId)}`;
+  let res: Response;
+  try {
+    res = await roomFetch(
+      env,
+      documentId,
+      `/presence?${query}`,
+      { method: 'DELETE' },
+      ROOM_AGENT_PRESENCE_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw new RoomUnavailableError(err);
+  }
+  if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
+  return ((await res.json()) as { cleared: boolean }).cleared;
+}
+
+// A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the
+// changeset stands (E7).
+export async function refreshAgentPresence(
+  env: Env,
+  write: Omit<AgentPresenceRoomWrite, 'mode' | 'status' | 'focus' | 'ttlMs'>,
+): Promise<void> {
+  try {
+    const answer = await putAgentPresence(env, {
+      ...write,
+      status: null,
+      focus: [],
+      ttlMs: AGENT_PRESENCE_TTL_MS,
+      mode: 'refresh',
+    });
+    if (!answer.ok)
+      console.warn('[agent-presence] refresh refused', {
+        documentId: write.documentId,
+        tabId: write.tabId,
+        error: answer.error,
+      });
+  } catch (err) {
+    console.warn('[agent-presence] refresh failed', {
+      documentId: write.documentId,
+      tabId: write.tabId,
+      error: String(err),
+    });
+  }
+}
+
+// A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"): ordered like items,
+// to every session, a tab-scoped one too (a catalogue holds no content).
+export async function relayItemTypes(
+  env: Env,
+  documentId: string,
+  op: ItemTypesRoomOp,
+): Promise<void> {
+  try {
+    await roomStubFor(env, documentId).fetch('https://room/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ op, ordered: true }),
+    });
+  } catch (err) {
+    console.warn('[room-broadcast] item types did not reach the room', documentId, err);
+  }
+}
+
+// Tell a document's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an
+// ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
+// broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
+export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
+  try {
+    await roomStubFor(env, documentId).fetch('https://room/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ op, ordered: true }),
+    });
+  } catch (err) {
+    console.warn('[room-broadcast] items did not reach the room', documentId, err);
   }
 }

@@ -14,11 +14,17 @@ import {
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import {
+  readElementIndicatorStyle,
+  withElementIndicatorStyle,
+  type ElementIndicatorStyle,
+} from '@/lib/element-indicator-style';
+import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
   UI_SCALE_STEP,
   resolveUiScale,
   resolveUiScalePart,
+  uiScaleMax,
   uiScalePartPatch,
   uiScalePatch,
   withUiScalePatch,
@@ -290,6 +296,7 @@ function uiScalePartRow(
 ): SettingsSliderRowSpec {
   return {
     ...UI_SCALE_SLIDER,
+    max: uiScaleMax(part),
     key: `uiScale-${part}`,
     parent: 'uiScale',
     label: copy.label,
@@ -340,6 +347,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
       },
       {
+        // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
+        // action and comments.
+        kind: 'choice',
+        key: 'elementIndicatorStyle',
+        keywords:
+          'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
+        label: 'Element Indicators',
+        description:
+          'How an element shows that it has a link, a note, an action or comments. Top puts quiet icons near its top (top-right on boxes, centred on round or pointed shapes); Footer puts a labelled row along its bottom edge; Off hides them. On an element too small for either, they sit in a small chip on its edge.',
+        options: [
+          { id: 'top', label: 'Top' },
+          { id: 'footer', label: 'Footer' },
+          { id: 'off', label: 'Off' },
+        ],
+        read: readElementIndicatorStyle,
+        write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),
+        event: { category: 'UI', changed: 'ElementIndicators' },
+      },
+      {
         kind: 'toggle',
         key: 'alignmentGuides',
         keywords: 'snap lines smart guides align',
@@ -386,7 +412,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome tour marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -732,6 +758,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // the row ON sets tourSeen=false, which is 'TourSeenOff'.
         event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
       },
+      {
+        kind: 'toggle',
+        key: 'planTourSeen',
+        keywords:
+          'walkthrough onboarding intro show me around plan board kanban cards getting started',
+        label: 'Show Plan Tour',
+        description:
+          'Offers a short tour of Plan mode the next time you work in Plan. It switches itself off once you have taken or dismissed the tour. Turn it back on and close Settings to run it again: straight away if you are in Plan, otherwise the next time you are.',
+        helpArticle: 'planTour',
+        // Inverted like Show Welcome Tour: the row asks "show me the tour?", `planTourSeen` records
+        // "already seen" (docs/specs/026-plan/plan-tour.md).
+        read: (p) => p.planTourSeen !== true,
+        write: (p, v) => ({ ...p, planTourSeen: !v }),
+        event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
+      },
     ],
   },
   {
@@ -795,6 +836,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.illustrateModeEnabled !== false,
         write: (p, v) => ({ ...p, illustrateModeEnabled: v }),
         event: { category: 'UI', on: 'IllustrateModeOn', off: 'IllustrateModeOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'planModeEnabled',
+        keywords:
+          'plan board boards kanban scrum sprint retro retrospective roadmap tickets items cards columns backlog jira editor mode experiment labs beta',
+        label: 'Plan Mode',
+        description:
+          'Plan mode in the editor mode switch: boards of items to drag through columns, for Kanban, sprints, retros and roadmaps. Still new, so it may change. On by default.',
+        read: (p) => p.planModeEnabled !== false,
+        write: (p, v) => ({ ...p, planModeEnabled: v }),
+        event: { category: 'UI', on: 'PlanModeOn', off: 'PlanModeOff' },
       },
     ],
   },

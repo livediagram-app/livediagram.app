@@ -84,6 +84,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
             (SELECT code
                FROM share_links
               WHERE share_links.document_id = d.id
+                AND share_links.purpose = 'share'
                 AND share_links.role = s.role
                 AND share_links.tab_id IS s.tab_id
                 AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)

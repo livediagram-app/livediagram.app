@@ -13,6 +13,21 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livediagram/api-schema';
+
+// One sentence per Community category or report reason, read off the closed lists so a new one
+// reads by its own label the day it ships.
+const perCommunityCategory = (action: string, sentence: (label: string) => string) =>
+  Object.fromEntries(
+    COMMUNITY_CATEGORIES.map((c) => [`Community|${action}|${c.type}`, sentence(c.label)]),
+  );
+const perReportReason = Object.fromEntries(
+  COMMUNITY_REPORT_REASONS.map((r) => [
+    `Community|Reported|${r.type}`,
+    `Someone reported a post in the Community, giving ${r.label} as the reason.`,
+  ]),
+);
+
 export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|LeaveIllustrateConfirmed':
     'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
@@ -21,6 +36,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
   'Editor|Changed|ModeIllustrate':
     'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
+  'Editor|Changed|ModePlan':
+    'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -92,9 +109,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Activity|Loaded|Retry':
     'Someone clicked "Try again" after the Explorer\'s Activity section failed to load, retrying the read.',
   'Activity|Opened|':
-    "Someone opened the Explorer's Activity section, which lists open actions assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
+    "Someone opened the Explorer's Activity section, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
   'Activity|Selected|Action':
     "Someone clicked an action row in the Explorer's Activity section, jumping to the element it's assigned on.",
+  'Activity|Selected|Card':
+    "Someone clicked a Plan card row in the Explorer's Activity section, jumping to the card on its board.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Activity section, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
@@ -465,6 +484,30 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
+  ...perCommunityCategory(
+    'Shared',
+    (label) => `Someone shared a document to the Community, under ${label}.`,
+  ),
+  ...perCommunityCategory(
+    'Changed',
+    (label) => `Someone saved changes to their Community post, now listed under ${label}.`,
+  ),
+  'Community|Removed|Post':
+    'Someone took their own post down from the Community, with Remove From Community in the Share dialog.',
+  'Community|Opened|Post': "Someone opened a post's own page in the Community.",
+  'Community|Liked|Post': 'Someone liked a post in the Community.',
+  'Community|Unliked|Post': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied|Post':
+    'Someone pressed Make a Copy on a Community post, to start their own document from it.',
+  ...perReportReason,
+  'Community|Searched|Query':
+    'Someone searched the Community gallery. Counted once per search, never what they typed.',
+  'Community|Selected|Category': 'Someone filtered the Community gallery to one category.',
+  'Community|Selected|Tag': 'Someone filtered the Community gallery to one tag. Never which tag.',
+  'Community|Selected|Sort':
+    'Someone changed how the Community gallery is sorted: newest, most loved or most copied.',
+  'Community|Selected|Mine':
+    'Someone turned on My Shares, to see the documents they shared to the Community and how they are doing.',
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
   'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
   'Mcp|Used|FindDocuments':
@@ -585,6 +628,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
   'Tab|Changed|OpensInIllustrate':
     'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
+  'Tab|Changed|OpensInPlan':
+    'Someone set a tab to open in Plan mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -728,6 +773,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|LaserTrail':
     "Someone changed how long the laser pointer's trail lingers, in the Laser panel.",
   'UI|Changed|LaserWidth': "Someone changed the laser pointer's width, in the Laser panel.",
+  'UI|Changed|ElementIndicatorsTop':
+    'Someone set element indicators (link, note, action, comments) to quiet icons along the top of each element, in Settings > Editor.',
+  'UI|Changed|ElementIndicatorsOff':
+    'Someone turned element indicators (link, note, action, comments) off, in Settings > Editor.',
+  'UI|Changed|ElementIndicatorsFooter':
+    'Someone set element indicators (link, note, action, comments) to a labelled row along the bottom of each element, in Settings > Editor.',
   'UI|Changed|MapSize':
     'Someone resized the minimap, in Settings > Editor. An earlier version of this event, before it recorded which size was chosen. No longer recorded.',
   'UI|Changed|MapSizeMedium': 'Someone set the minimap to its medium size, in Settings > Editor.',
@@ -782,6 +833,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
+  'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Copied|EmbedCode':
     "Someone copied an embed URL or an iframe snippet from the Share dialog's Embed menu.",
@@ -795,6 +847,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'This exact combination is never actually sent: declining the welcome tour on its very first card is recorded as the tour offer closing, not as an ended tour.',
   'UI|Ended|TourSkipped':
     'Someone skipped out of the welcome tour after it had already started (not on the very first card).',
+  'UI|Ended|PlanTourCompleted':
+    "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|PlanTourSkipped':
+    'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights.',
   'UI|Moved|PanelDock':
     'Someone dragged a floating panel, such as the Palette or the Explorer, to a different corner of the screen, or let it go free.',
   'UI|Moved|Slide':
@@ -859,6 +915,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
+  'UI|Opened|PlanTourOffer':
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Activity section, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -902,6 +960,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
   'UI|Started|Tour':
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
+  'UI|Started|PlanTour':
+    "Someone clicked past the Plan tour's first card, beginning its walkthrough on an example board.",
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -994,6 +1054,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
   'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
+  'UI|Toggled|PlanModeOff': 'Someone turned off Plan mode, in Settings > Experimental.',
+  'UI|Toggled|PlanModeOn': 'Someone turned on Plan mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
@@ -1015,6 +1077,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Draw mode.',
   'UI|Toggled|TemplateModeIllustrate':
     'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
+  'UI|Toggled|TemplateModePlan':
+    'Someone narrowed the New Document templates to the ones that open in Plan mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':
@@ -1027,6 +1091,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on "Show Welcome Tour" in Settings, marking the tour as not yet seen and relaunching it immediately.',
   'UI|Toggled|TourSeenOn':
     'Someone switched off "Show Welcome Tour" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+  'UI|Toggled|PlanTourSeenOff':
+    'Someone switched on "Show Plan Tour" in Settings, marking the Plan tour as not yet seen.',
+  'UI|Toggled|PlanTourSeenOn':
+    'Someone switched off "Show Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -1034,6 +1102,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+  'UI|View|PlanTourStepBoard':
+    'The Plan tour reached its "Your board" step, placing its example board.',
+  'UI|View|PlanTourStepAddCards':
+    'The Plan tour reached its "Add cards" step, adding its example cards.',
+  'UI|View|PlanTourStepMoveCard':
+    'The Plan tour reached its "Move work along" step, moving a card to the next column.',
+  'UI|View|PlanTourStepCardPanel':
+    'The Plan tour reached its "The card panel" step, opening a card.',
+  'UI|View|PlanTourStepBoardHeader': 'The Plan tour reached its "The board header" step.',
+  'UI|View|PlanTourStepCardTypes': 'The Plan tour reached its "Card types" step.',
+  'UI|View|PlanTourStepPalette':
+    'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
+  'UI|View|PlanTourStepOutro':
+    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board taken away.',
   'UI|View|TourStepCategories':
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
@@ -1173,8 +1255,22 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "An agent's changeset was refused because something it touched changed since the agent read it.",
   'Agent|Held':
     "An agent's changeset was refused because a person had one of its elements selected.",
+  'Agent|Present':
+    'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
+  'Community|Shared':
+    'Someone shared a document to the Community, the public gallery of documents.',
+  'Community|Changed': 'A Community post changed: its owner edited the listing.',
+  'Community|Removed': 'Someone took their own post down from the Community.',
+  'Community|Opened': "Someone opened a post's own page in the Community.",
+  'Community|Liked': 'Someone liked a post in the Community.',
+  'Community|Unliked': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied': 'Someone made their own copy of a Community post.',
+  'Community|Reported': 'Someone reported a post in the Community.',
+  'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
+  'Community|Selected':
+    'Someone picked a filter in the Community gallery: a category, a tag, a sort order or My Shares.',
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Cli|Used': 'Someone ran a livediagram command from the command line, and it succeeded.',
@@ -1264,6 +1360,18 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
+  'Plan|Added':
+    'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',
+  'Plan|Moved':
+    'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
+  'Plan|Restored': 'Someone brought an archived card back onto the boards.',
+  'Plan|Opened':
+    'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',
+  'Plan|Voted': 'Someone voted for a card on a voting Plan board (Up), or took a vote back (Down).',
+  'Plan|Deleted': 'Someone deleted an item (its type is the value).',
+  'Plan|Changed':
+    "Someone changed a Plan board's set-up: the value names the part (columns, WIP limits, rows, scope, card fields, voting or hide writing).",
+  'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',

@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, useCopiedFlash } from '@livediagram/ui';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
+import { Button, useCopiedFlash, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { CountBadge } from '@livediagram/ui';
@@ -12,7 +11,6 @@ import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { ActiveSharePass } from './ActiveSharePass';
-import { DialogHeader } from './DialogHeader';
 import { ExpiredSharePass } from './ExpiredSharePass';
 import { ShareComposer } from './ShareComposer';
 import type { ShareDialogProps } from './ShareDialog.types';
@@ -47,6 +45,9 @@ export function ShareDialog({
   onSetPassword,
   offline,
   onSyncToCloud,
+  community,
+  communityListed = false,
+  passwordLockedReason,
   onClose,
 }: ShareDialogProps) {
   // When a Clerk display name is supplied, the name is the account's and the
@@ -157,7 +158,13 @@ export function ShareDialog({
     >
       <DialogHeader
         title="Share this document"
-        subtitle={<ShareStatus passes={activeLinks.length} password={sharePassword !== null} />}
+        subtitle={
+          <ShareStatus
+            passes={activeLinks.length}
+            password={sharePassword !== null}
+            community={communityListed}
+          />
+        }
       >
         <HelpArticleLink article="sharing" size="md" />
         <DialogCloseButton onClick={close} />
@@ -238,7 +245,10 @@ export function ShareDialog({
           onSetPassword={onSetPassword}
           busy={busy}
           setBusy={setBusy}
+          lockedReason={passwordLockedReason ?? null}
         />
+
+        {community}
       </div>
 
       <DialogFooter>

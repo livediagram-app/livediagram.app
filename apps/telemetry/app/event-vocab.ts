@@ -48,7 +48,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Timeline:
     "The Explorer's activity feed, All activity: opening it (split by whether the page load started on it or it was reached from Home), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
-    "The Explorer's Activity page (open actions and comment threads across every document): opening it, clicking a row through to the document (split by action vs thread), and retrying a failed read.",
+    "The Explorer's Activity page (open actions, Plan cards and comment threads across every document): opening it, clicking a row through to the document (split by action, card and thread), and retrying a failed read.",
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
   Trash:
     'The Trash deleted documents wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
@@ -56,8 +56,11 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
     'The Google Drive mirror: connected, disconnected, needing reconnection, finishing its first copy, changes coming back from Drive, and files opened from Drive.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Cli: 'Commands agents and scripts ran with the livediagram command line, by command.',
+  Plan: 'Plan boards: items made, moved, opened, voted on and deleted, and board set-up and reveal.',
   Agent:
     "Agents changing documents through changesets: applied, refused because something changed since the agent read it or a person had it selected, and reverted, by where they came from (MCP, CLI, API, or the editor's Undo). Never what changed.",
+  Community:
+    'The public gallery of shared boards: publishing, editing and removing a post, and people opening, liking, copying, reporting and filtering them. Never a title, tag or who.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
   Editor:
@@ -119,6 +122,9 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
+  Plan: '#2563eb',
+  // Pink, the heart on a Community card.
+  Community: '#db2777',
   Email: '#0d9488',
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.

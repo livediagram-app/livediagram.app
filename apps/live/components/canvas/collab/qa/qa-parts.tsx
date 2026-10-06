@@ -6,8 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { QaNote } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { HoverCard, Glyph, GlyphDisc } from '@livediagram/ui';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { HoverCard, Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
 // theme's colour, not the board's own: QaBoardFace sets `--qa-accent` from the

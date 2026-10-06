@@ -88,12 +88,21 @@ export function sharePasswordOf(request: Request): string | null {
 // `tabId` names the tab the request touches. Leave it off for a
 // document-level door: a tab-scoped link is then refused (fail closed,
 // docs/specs/013-workspace/tab-scoped-share-links.md).
+//
+// A Community post's link is refused too unless the door passes `COMMUNITY_CONTENT`
+// (docs/specs/025-community/community.md "Viewing a post's document"): the link is a content-only pass,
+// so the document, its tabs, images and copy serve it, and comments, history, the timeline and any door
+// added later do not. Fail closed, like the tab scope.
+export const COMMUNITY_CONTENT = { community: true } as const;
+type GateOptions = { community?: boolean };
+
 export function gateRead(
   ctx: RouteContext,
   documentId: string,
   documentOwnerId: string,
   documentTeamId: string | null = null,
   tabId?: string,
+  opts: GateOptions = {},
 ): Promise<boolean> {
   return canReadDocument(
     ctx.env,
@@ -108,7 +117,21 @@ export function gateRead(
     // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
     ctx.verifiedUserId,
     tabId,
+    opts.community ?? false,
   );
+}
+
+// The participation gate (docs/specs/024-agents/agent-presence.md "Token levels"): comments, session answers and
+// agent presence. Until share roles are built it names today's rule, read access to the document or tab; a
+// read-only token is refused every write at the choke point. It becomes the Participant check when share roles land.
+export function gateParticipate(
+  ctx: RouteContext,
+  documentId: string,
+  documentOwnerId: string,
+  documentTeamId: string | null = null,
+  tabId?: string,
+): Promise<boolean> {
+  return gateRead(ctx, documentId, documentOwnerId, documentTeamId, tabId);
 }
 
 export function gateEdit(
@@ -137,13 +160,16 @@ export function gateEdit(
 // The caller's grant on a document, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
 // (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
-export function gateGrant(
+//
+// A Community post's link answers null unless the door passes `COMMUNITY_CONTENT` (see gateRead).
+export async function gateGrant(
   ctx: RouteContext,
   documentId: string,
   documentOwnerId: string,
   documentTeamId: string | null = null,
+  opts: GateOptions = {},
 ): Promise<DocumentGrant | null> {
-  return resolveDocumentGrant(
+  const grant = await resolveDocumentGrant(
     ctx.env,
     documentId,
     ctx.resolveOwner(),
@@ -153,6 +179,7 @@ export function gateGrant(
     documentTeamId,
     ctx.verifiedUserId,
   );
+  return grant?.community && !opts.community ? null : grant;
 }
 
 // Route-entry guards. Each resolves the caller / loads + authorises the
@@ -232,7 +259,13 @@ export async function mayDeleteDocument(
 export async function missingDocument(ctx: RouteContext, documentId: string): Promise<Response> {
   const trashed = await getTrashedDocumentMeta(ctx.env, documentId);
   if (!trashed) return notFound();
-  const grant = await gateGrant(ctx, documentId, trashed.ownerId, trashed.teamId);
+  const grant = await gateGrant(
+    ctx,
+    documentId,
+    trashed.ownerId,
+    trashed.teamId,
+    COMMUNITY_CONTENT,
+  );
   return grant ? documentTrashed() : notFound();
 }
 
@@ -253,4 +286,13 @@ export async function requireOwnedDocument(
   if (!existing) return missingDocument(ctx, documentId);
   if (!(await ownsDocument(ctx, existing))) return forbidden();
   return existing;
+}
+
+// A refused request on a tab: 404 when the caller's grant is confined to another tab, 403 otherwise.
+export async function deniedOnTab(
+  ctx: RouteContext,
+  liveDoc: { id: string; ownerId: string; teamId: string | null },
+): Promise<Response> {
+  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  return grant ? notFound() : forbidden();
 }

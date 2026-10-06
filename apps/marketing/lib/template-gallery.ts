@@ -1,6 +1,8 @@
 import type { EditorMode } from '@livediagram/document';
 import {
+  POPULAR_PER_MODE,
   POPULAR_TEMPLATE_KINDS,
+  popularKindsFor,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
@@ -8,13 +10,12 @@ import {
   templateEditorMode,
   type TemplateCategory,
   type TemplateDescriptor,
-  type TemplateKind,
 } from '@livediagram/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Popular first (the three blanks,
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Popular first (the four blanks,
 // then the starters most people reach for), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
@@ -49,13 +50,13 @@ function toGallery(t: TemplateDescriptor): GalleryTemplate {
 }
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
-// three blanks are only ever on Popular, never on a category shelf
-// (docs/specs/007-editor/templates-by-mode.md "Three blanks").
+// four blanks are only ever on Popular, never on a category shelf
+// (docs/specs/007-editor/templates-by-mode.md "Four blanks").
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Popular, in its fixed order, the three blanks first.
+// Popular, in its fixed order, the four blanks first.
 export function popularTemplates(): GalleryTemplate[] {
   return POPULAR_TEMPLATE_KINDS.flatMap((kind) => {
     const t = BY_KIND.get(kind);
@@ -82,7 +83,13 @@ export function byMode(items: GalleryTemplate[], choice: ModeChoice): GalleryTem
 
 // How many templates each choice holds, across Popular and every category (each counted once).
 export function modeCounts(): Record<ModeChoice, number> {
-  const out: Record<ModeChoice, number> = { all: 0, diagram: 0, draw: 0, illustrate: 0 };
+  const out: Record<ModeChoice, number> = {
+    all: 0,
+    diagram: 0,
+    draw: 0,
+    illustrate: 0,
+    plan: 0,
+  };
   const seen = new Set<string>();
   for (const t of [...popularTemplates(), ...galleryTemplates()]) {
     if (seen.has(t.kind)) continue;
@@ -134,27 +141,15 @@ export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   })).filter((g) => g.templates.length > 0);
 }
 
-// Popular under a mode filter: Popular's own templates of that mode (its blank first), topped up
-// from the mode's best so it never shows fewer than POPULAR_PER_MODE. Everything keeps Popular as
-// the catalogue lists it.
-export const POPULAR_PER_MODE = 5;
-const MODE_BEST: Readonly<Record<EditorMode, readonly TemplateKind[]>> = {
-  diagram: ['kanban', 'swot', 'timeline'],
-  draw: ['journey-doodle', 'comic-strip', 'idea-garden', 'rich-picture'],
-  illustrate: ['event-poster', 'year-in-review', 'social-carousel', 'data-story'],
-};
+// Popular under a mode filter, topped up from the mode's best (popularKindsFor, shared with the editor's
+// template step).
+export { POPULAR_PER_MODE };
 
 export function popularFor(choice: ModeChoice): GalleryTemplate[] {
-  const popular = byMode(popularTemplates(), choice);
-  if (choice === 'all' || popular.length >= POPULAR_PER_MODE) return popular;
-  const have = new Set(popular.map((t) => t.kind));
-  const extra = MODE_BEST[choice].flatMap((kind) => {
+  return popularKindsFor(choice).flatMap((kind) => {
     const t = BY_KIND.get(kind);
-    return t && !t.hidden && !have.has(kind) && templateEditorMode(kind) === choice
-      ? [toGallery(t)]
-      : [];
+    return t ? [toGallery(t)] : [];
   });
-  return [...popular, ...extra].slice(0, Math.max(POPULAR_PER_MODE, popular.length));
 }
 
 // Popular and every category, under the mode filter, emptied shelves dropped.

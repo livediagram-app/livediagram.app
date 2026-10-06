@@ -307,7 +307,9 @@ Quick Start picker ships ([Canvas and palette](../008-canvas/canvas-and-palette.
 `@livediagram/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
-`kind` and pass it as `template` on `create_document` / `add_tab`. Deliberately
+`kind` and pass it as `template` on `create_document` / `add_tab` (a template of several tabs, such as the
+Plan templates, adds them all on `create_document`, the first named as given; `add_tab` takes its first;
+[Plan templates](../026-plan/plan-templates.md)). Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
@@ -531,12 +533,25 @@ The way back from `delete_document`, with exactly the REST Trash's authority
 and every team Trash they have joined.
 
 - **`list_trash`** — `{}`. Read-only. Each document the user may restore:
-  `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
-  the team's name, the two times ISO 8601.
+  `{ id, name, library, reason, deletedAt, purgeAt }`, `library` being
+  `personal` or the team's name, `reason` being `deleted` or `empty` (moved by
+  the [empty document clean-up](../013-workspace/empty-document-cleanup.md)),
+  the two times ISO 8601.
 - **`restore_document`** — `{ documentId }`. Restores it to its folder, or
   the root of its space when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
+
+### 4.9b `list_items` and `change_items`
+
+The items Plan boards show ([Items](../026-plan/items.md), [Plan mode](../026-plan/plan-mode.md#agents)):
+
+- **`list_items`** (read): a document's items, by number, narrowed by `type` and `status`. Titles and fields are
+  people's writing, read as data.
+- **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
+status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
+  `{ item }`. Items are named by number (`#12`) or id prefix, as the CLI's `item` verbs name them
+  (`resolveItemRef`). A refusal answers what was applied before it. Each change reaches open boards at once.
 
 ### 4.10 Prompts (discoverability)
 
@@ -625,9 +640,9 @@ Three behaviours cover the eleven tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                 |
 | --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`                     |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`       |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`                                                  |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`                                  |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -720,13 +735,17 @@ and no `structuredContent`; MCP exempts errors from the output schema.
 | `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
 | `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
 | `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
+| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
 | `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| `list_items`       | `count`, `items[]` of `{ ref, id, type, status, title, fields }`, `url`                                   |
+| `change_items`     | `applied[]` (one line per change), `url`                                                                  |
 
-**The schema and the result can't drift.** The schemas live in
-`apps/mcp/src/output-schema.ts`, one per tool, and the `registerTool` wrapper
-(§4.14) makes `outputSchema` a **required** field beside `behaviour`, so a new
-tool without one is a type error. The MCP SDK validates every successful
+**The schema and the result can't drift.** Each tool is a verb in the shared catalogue
+(`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its
+name, title, description, behaviour and both schemas (`packages/agent-verbs/src/mcp/output-schema.ts`, one per
+tool); the `registerTool` wrapper (§4.14) registers a tool only from its verb, so a tool without an output schema
+or a behaviour cannot be written, and a parity test (`apps/mcp/src/verb-parity.test.ts`) fails when a registered
+tool and its verb disagree. The MCP SDK validates every successful
 result against its tool's schema on the way out, so a result that stopped
 matching fails the call loudly rather than shipping a wrong contract. A test
 drives every tool through a real SDK client and server, which validates
@@ -781,7 +800,7 @@ Worker (no DOM, no React).
   runtime), return it as base64 MCP image content (`image/png`) — broadest client
   support vs. raw SVG.
 - **Embedded font.** Workers have no system fonts, so the worker bundles one
-  (Inter, OFL — `apps/mcp/fonts/`, wired as a `Data` module + passed to resvg as
+  (Inter, OFL — `packages/render-png/fonts/`, wired as a `Data` module + passed to resvg as
   a `fontBuffer`) and renders every label in it. Without an embedded font resvg
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to

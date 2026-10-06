@@ -45,6 +45,10 @@ vi.mock('@/lib/api/core', () => ({
   }),
 }));
 
+vi.mock('../api/items', () => ({
+  fetchItems: vi.fn(async () => ({ items: [], rev: 0, nextKey: 1 })),
+}));
+
 vi.mock('./offline-images', () => ({
   embedTabImages: vi.fn(async (tabs: unknown) => tabs),
   uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => tabs),

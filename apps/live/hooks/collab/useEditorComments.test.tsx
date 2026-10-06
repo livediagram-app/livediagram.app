@@ -91,4 +91,51 @@ describe('useEditorComments telemetry', () => {
     });
     expect(trackMock).not.toHaveBeenCalled();
   });
+
+  // docs/specs/024-agents/agent-presence.md "Comments": a session that may comment but not edit resolves and
+  // reopens through the comment endpoints.
+  it('counts a persisted resolve once the server took it, and puts a refused one back', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = setup();
+    act(() => {
+      result.current.resolveThread('el', () => Promise.resolve());
+      result.current.unresolveThread('el', () => Promise.reject(new Error('403')));
+    });
+    expect(trackMock).not.toHaveBeenCalled();
+    await act(flush);
+    expect(trackMock.mock.calls).toEqual([['Comment', 'Resolved']]);
+    expect(applyElementDelta.mock.calls.map((c) => c[1].resolved)).toEqual([true, false, true]);
+    expect(warn).toHaveBeenCalledWith('[comments] thread state not saved', {
+      resolved: false,
+      error: 'Error: 403',
+    });
+    warn.mockRestore();
+  });
+});
+
+// docs/specs/025-community/community.md "Viewing a post's document": a Community visitor has no comments.
+describe('useEditorComments with comments off', () => {
+  it('opens no thread and adds nothing', async () => {
+    trackMock.mockReset();
+    applyElementDelta.mockReset();
+    const persist = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorComments({
+        applyElementDelta,
+        selfParticipant: { id: 'me', name: 'Me', color: '#000' },
+        commentsOff: true,
+      }),
+    );
+    act(() => result.current.openComments('e1'));
+    expect(result.current.commentThreadOpenId).toBeNull();
+    let id = 'unset';
+    act(() => {
+      id = result.current.addComment('e1', 'Hello', persist);
+    });
+    await flush();
+    expect(id).toBe('');
+    expect(applyElementDelta).not.toHaveBeenCalled();
+    expect(persist).not.toHaveBeenCalled();
+    expect(trackMock).not.toHaveBeenCalled();
+  });
 });

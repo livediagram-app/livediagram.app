@@ -1,5 +1,19 @@
 'use client';
 
+import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
+import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
+import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
+import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
+import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
+import { debugLog } from '@/lib/debug-log';
+import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
+import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
+import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
+import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
+import { useItemTypes } from '@/hooks/plan/useItemTypes';
+import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
+import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
@@ -47,7 +61,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, opensInOf } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
@@ -91,6 +105,7 @@ import {
   writeUserPreferences,
 } from '@/lib/user-preferences';
 import type { PollCandidate } from '@/lib/poll-collaborators';
+import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
@@ -173,6 +188,9 @@ import { useChangesetFeed } from './useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
+// The open tab's elements before the tabs load.
+const NO_ELEMENTS: readonly Element[] = [];
+
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
   // regardless of the share role, suppresses the visitor identity
@@ -195,17 +213,33 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   const {
     tabs,
-    canUndo,
-    canRedo,
+    canUndo: canTabUndo,
+    canRedo: canTabRedo,
     commit: rawCommitTabs,
     tick: tickTabs,
     markCheckpoint: rawMarkCheckpoint,
     cancelToCheckpoint: rawCancelToCheckpoint,
     reset: rawResetTabs,
     applyRemote: applyRemoteTabs,
-    undo: undoHistory,
-    redo: redoHistory,
+    undo: tabUndo,
+    redo: tabRedo,
+    depth: historyDepth,
+    branch: historyBranch,
+    futureLength: historyFutureLength,
+    clearRedo: clearHistoryRedo,
   } = useDocumentHistory(initialTabs);
+  // Item changes take their turn in the same undo timeline (docs/specs/026-plan/items.md "Undo").
+  const itemUndo = useItemUndo({
+    depth: historyDepth,
+    branch: historyBranch,
+    futureLength: historyFutureLength,
+    canUndo: canTabUndo,
+    canRedo: canTabRedo,
+    undo: tabUndo,
+    redo: tabRedo,
+    clearRedo: clearHistoryRedo,
+  });
+  const { canUndo, canRedo, undo: undoHistory, redo: redoHistory } = itemUndo;
 
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
   // take in what was just added to a page (useArticleIntake) without taking a peer's.
@@ -388,7 +422,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // on exit. Wraps the tracked selectCanvasTool so every entry point (palette
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
+  // Plan mode leaves Eraser and Format out (useModeDefaultTool); set once the mode is known, below.
+  const planModeRef = useRef(false);
   const pickCanvasTool = (tool: CanvasTool) => {
+    if (planModeRef.current && PLAN_LEFT_OUT_TOOLS.has(tool)) return;
     // Eraser / Format / Laser / Spotlight / Isometric all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
     // them out, and this guards the keyboard-shortcut path to match. Select +
@@ -512,6 +549,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useEditorComments({
     applyElementDelta,
     selfParticipant,
+    // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
   });
@@ -589,6 +628,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setDocumentName,
     documentPresentation,
     setDocumentPresentation,
+    documentItemTypes,
+    setDocumentItemTypes,
     documentList,
     setDocumentList,
     sharedDocuments,
@@ -603,6 +644,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     livePresence,
     setLivePresence,
+    liveAgents,
+    setLiveAgents,
     lastSeenRef,
     presenceClock,
     markSeen,
@@ -821,6 +864,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setDocumentId,
       setDocumentName,
       setDocumentPresentation,
+      setDocumentItemTypes,
       setDocumentNotFound,
       setLoadError,
       setDocumentTrashed: documentTrashed.setDocumentTrashed,
@@ -840,6 +884,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharedDocuments,
       setShareLinks,
@@ -981,10 +1026,50 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onError: (message) => toast.error(message),
   });
 
+  // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw.
+  // Items load only for a document with Plan content (docs/specs/026-plan/plan-mode.md "Cost").
+  const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
+  const planNeeded = usePlanNeeded(
+    planOpenTab?.elements ?? NO_ELEMENTS,
+    documentPresentation,
+    opensInOf(planOpenTab) === 'plan',
+  );
+  const planItems = usePlanItems({
+    documentId,
+    ready: hydrated && planNeeded,
+    ownerId: selfParticipant.id,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    shareCode: sessionShareCode,
+    tabScope: sessionTabScope,
+    pushUndo: itemUndo.push,
+    onError: (message) => toast.error(message),
+  });
+
+  // The document's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
+  // Cards category draw from, and the Card Types panel changes.
+  const itemTypes = useItemTypes({
+    documentId,
+    ownerId: selfParticipant.id,
+    shareCode: sessionShareCode,
+    catalogue: documentItemTypes,
+    setCatalogue: setDocumentItemTypes,
+    pushUndo: itemUndo.push,
+    onError: (message) => toast.error(message),
+  });
+
+  // Whose hands are on which Plan card (docs/specs/026-plan/plan-board.md): sent and heard through the room.
+  const planPresence = usePlanPresence({
+    activeTabId: activeId,
+    peers: livePresence,
+    send: (op) => roomRef.current?.send({ kind: 'op', op }),
+  });
+
   useRoomConnection({
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
+    enabled: realtime.sessionCommunity === null,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -997,6 +1082,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     applyRemoteTabs,
     setLivePresence,
+    setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
@@ -1019,9 +1105,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receivePollEnd: livePoll.receivePollEnd,
     receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
-    resyncFromServer,
+    resyncFromServer: async () => {
+      planItems.refetch();
+      await resyncFromServer();
+    },
     receiveChangeset: changesetFeed.receiveChangeset,
-    onRoomJoined: () => void changesetFeed.checkSinceLoad(),
+    receiveItems: planItems.receive,
+    receiveItemTypes: itemTypes.receive,
+    receivePlanPresence: planPresence.receive,
+    onRoomJoined: () => {
+      void changesetFeed.checkSinceLoad();
+      planItems.refetch();
+    },
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
@@ -1053,6 +1148,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resetTabs,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
+  // A Plan document's statuses are read from every tab: load the rest once (usePlanTabSweep).
+  usePlanTabSweep(hydrated && planNeeded, tabs.length, loadAllTabs);
 
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
   // search panel. Fetched lazily the first time search opens so
@@ -1093,12 +1190,39 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // An editor's switch also moves the tab's Opens in, so the two never disagree.
   const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
+  // Plan asks nothing: a board outside Plan is an element like any other
+  // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
   const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(switchedMode, {
     tab: activeTab,
     canEdit,
     commitTabs,
   });
   const drawMode = editorMode.mode === 'draw';
+  // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Eraser and Format
+  // out (docs/specs/007-editor/editor-modes.md).
+  useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
+  useAssignRef(planModeRef, editorMode.mode === 'plan');
+  // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
+  // "The palette"): never a card on the canvas. A miss or a refusal is said.
+  const placePaletteCard = (itemType: string | undefined, canvasX: number, canvasY: number) => {
+    const point = boardClientPoint(activeTab.elements, canvasX, canvasY);
+    const result = point
+      ? dropPlanCardAt(itemType ?? 'task', point.x, point.y)
+      : { outcome: 'missed' as const, message: PLAN_CARD_MISSED };
+    if (result.outcome === 'added') return;
+    debugLog('[plan] palette card not placed', { outcome: result.outcome });
+    toast.info(result.message);
+  };
+  // A widget tile dropped off a board's header says so, and a tapped one finds the selected board
+  // (docs/specs/026-plan/board-widgets.md).
+  useEffect(
+    () =>
+      setPlanWidgetEditor({
+        notice: (m) => toast.info(m),
+        selectedId: () => selectionStore.get().selectedId,
+      }),
+    [toast, selectionStore],
+  );
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
@@ -1240,8 +1364,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
+  const slideThumbnailPlan = useMemo(
+    () => ({ items: planItems.items, types: itemTypes.types }),
+    [planItems.items, itemTypes.types],
+  );
   const slideDeck = useSlideDeck({
     tabs,
+    plan: slideThumbnailPlan,
     activeTabId: activeId,
     setActiveId,
     readSelection,
@@ -1472,6 +1601,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
+    agentFocusByElement,
     lockedByOther,
   } = usePresenceRows({
     documentShareable,
@@ -1480,6 +1610,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfParticipant,
     tabs,
     livePresence,
+    liveAgents,
     presenceClock,
     remoteTabFocus,
     remoteCursors,
@@ -1499,7 +1630,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const pollCollaborators = useMemo<readonly PollCandidate[]>(
     () => [
       { id: selfParticipant.id, name: selfParticipant.name },
-      ...[...participantsByTab.values()].flat().map((p) => ({ id: p.id, name: p.name })),
+      ...withoutAgentRows([...participantsByTab.values()].flat()).map((p) => ({
+        id: p.id,
+        name: p.name,
+      })),
     ],
     [participantsByTab, selfParticipant],
   );
@@ -1700,7 +1834,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // An Activity-page row opened this document at one element (docs/specs/013-workspace/activity-page.md
   // §1): once the pinned tab is ready, select it, bring it into view and
-  // open its popover. See useCollabDeepLink.
+  // open its popover (or a Plan card's item panel). See useCollabDeepLink.
   useCollabDeepLink({
     link: collabDeepLink,
     hydrated,
@@ -1715,6 +1849,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
     openActionPopover,
     openComments,
+    // Read when the link lands, after this render has made the Plan slice below.
+    openItem: (itemId) => plan.context.openItem(itemId),
   });
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {
@@ -1837,6 +1973,43 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const applyAiElements = (elements: Element[], mode: 'generate' | 'clean') => {
     commit((existingEls) => mergeAiElements(existingEls, elements, mode));
   };
+
+  // Plan boards and cards (docs/specs/026-plan/): the item panel, board set-up and every action a board
+  // takes, handed to the canvas through PlanContext. See usePlanSlice.
+  // The tab's status names, read only where Plan is in play (docs/specs/026-plan/plan-mode.md "Cost").
+  const { names: planStatusNames, phases: planStatusPhases } = usePlanStatuses(
+    tabs,
+    activeId,
+    planNeeded,
+  );
+  // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
+  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
+  const plan = usePlanSlice({
+    planItems,
+    itemTypes,
+    editorMode: editorMode.mode,
+    canEdit: !isReadOnly,
+    canVote: hydrated,
+    teamPeople,
+    presence: planPresence.presence,
+    publishPresence: planPresence.publish,
+    commit,
+    select: setSelectedId,
+    announce,
+    addItemSlide: slideDeck.newItemSlide,
+    addBoardSlide: slideDeck.newBoardSlide,
+    statusNames: planStatusNames,
+    statusPhases: planStatusPhases,
+  });
+  // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
+  const planTour = usePlanTourContent({
+    documentId,
+    hydrated,
+    editsBlocked,
+    activeId,
+    tickTabs,
+    planItems,
+  });
 
   // Undo / redo handlers. See useEditorHistory.
   const { tick, undo, redo } = useEditorHistory({
@@ -2130,6 +2303,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelfParticipant,
     setTemplatePickerMode,
     requestFit,
+    markTabLoaded,
   });
 
   // One undo step per burst of a continuous control: the background
@@ -2339,6 +2513,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openImagePickerFor,
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
+    onPlanCardPlace: placePaletteCard,
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
@@ -2407,6 +2582,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addBoxedAt,
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
+    onPlanCardPlace: placePaletteCard,
   });
   useAssignRef(placeIntentAtRef, placeIntentAt);
 
@@ -2895,6 +3071,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     markCheckpoint,
     cancelToCheckpoint,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
+    onPlanCardDroppedOnBoard: editsBlocked ? undefined : plan.dropPlanCardOnBoard,
     // Click (not drag) on an annotation marker opens its note editor
     // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
     onAnnotationClicked: editsBlocked ? undefined : openNote,
@@ -3075,6 +3252,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
     changesetReveals: changesetFeed.reveals,
+    // What the agents present name in focus on the active tab, for the focus rings.
+    agentFocusByElement,
+    plan,
+    planTour,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,
@@ -3195,6 +3376,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addProcess,
     addAvatar,
     dropPaletteItem,
+    // The empty Plan tab's board picker places its board in the middle of the view.
+    getViewportCenter,
     addTab,
     addText,
     aiCapable,

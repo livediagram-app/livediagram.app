@@ -8,6 +8,7 @@
 import {
   DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
+  type AgentPresence,
   type ParticipantPresence,
   type FacilitatorReason,
   type RoomIncoming,
@@ -15,11 +16,13 @@ import {
   type RoomOutgoing,
 } from '@livediagram/api-schema';
 import { opForTheWire } from '@livediagram/document';
+import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
-  onPresence: (participants: ParticipantPresence[]) => void;
+  // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
+  onPresence: (participants: ParticipantPresence[], agents: AgentPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
   // Who holds the facilitator baton (docs/specs/012-collaboration/facilitator.md), and the token when it is
   // ours. Arrives on every change and once on connect with reason 'state'.
@@ -188,8 +191,10 @@ export function connectRoom(
     ws.addEventListener('message', (e) => {
       try {
         const msg = JSON.parse(e.data) as RoomIncoming;
-        if (msg.kind === 'presence') handlers.onPresence(msg.participants);
-        else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
+        if (msg.kind === 'presence') {
+          const frame = splitPresenceFrame(msg);
+          handlers.onPresence(frame.participants, frame.agents);
+        } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { defineVerb, RESOURCES, VERBS } from '@livediagram/agent-verbs';
+import { COMMAND_ALIASES, defineVerb, RESOURCES, TOP_LEVEL, VERBS } from '@livediagram/agent-verbs';
 import { estimateTokens } from '@livediagram/document-views';
 import {
   HELP_RESOURCE_MAX_TOKENS,
@@ -15,8 +15,17 @@ describe('help', () => {
   it('keeps the top level within its budget and names every resource', () => {
     const text = topHelp();
     expect(estimateTokens(text)).toBeLessThanOrEqual(HELP_TOP_MAX_TOKENS);
-    for (const r of RESOURCES) expect(text).toContain(`  ${r.name}`);
+    const named = (word: string) => new RegExp(`(^|[ ,])${word}([ ,(]|$)`, 'm').test(text);
+    for (const word of [
+      ...RESOURCES.map((r) => r.name),
+      ...TOP_LEVEL,
+      ...Object.keys(COMMAND_ALIASES),
+    ])
+      expect(named(word), word).toBe(true);
     expect(text).toContain('document (doc)');
+    expect(text).toMatch(
+      /\n {2}presence +set, clear\n {2}wait, watch +block until, or stream, comments and changes\n/,
+    );
   });
 
   it('keeps every resource and every verb within its budget', () => {
@@ -66,8 +75,6 @@ describe('help for writes', () => {
     expect(verbHelp(VERBS.find((v) => v.id === 'changeset.apply')!)).toContain(
       '  -f, --file <text>  The file to send, or - for stdin',
     );
-    expect(topHelp()).toMatch(
-      /\n {2}edit +apply edit operations, a graph, Mermaid or elements from a file\n/,
-    );
+    expect(topHelp()).toMatch(/\n {2}changeset +apply \(edit\), ls, show, revert\n/);
   });
 });

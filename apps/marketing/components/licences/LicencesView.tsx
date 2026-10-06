@@ -10,7 +10,7 @@ const SECTION_COPY: Record<LicencesSection['side'], { title: string; intro: stri
   browser: {
     title: 'In your browser',
     intro:
-      'Sent to your browser by the editor, this website, the help centre and the telemetry dashboard.',
+      'Sent to your browser by the editor, this website, the help centre, the Community and the telemetry dashboard.',
   },
   server: {
     title: 'On our servers',

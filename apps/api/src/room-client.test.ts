@@ -3,6 +3,11 @@ import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
 import type { Env } from './types';
 import {
   broadcastShareOp,
+  relayElementDelta,
+  deleteAgentPresence,
+  putAgentPresence,
+  refreshAgentPresence,
+  RoomUnavailableError,
   mergeRoomLedger,
   parseRoomCursor,
   readRoomSelections,
@@ -26,7 +31,7 @@ const ledger: TabLedger = {
   elements: { card: { responses: { b: { value: 'done', at: 1, seq: 5 } } } },
 };
 
-function envWith(fetch: (url: string) => Promise<Response>) {
+function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
   const stubFetch = vi.fn(fetch);
   const env = {
     DOCUMENT_ROOM: {
@@ -176,6 +181,125 @@ describe('readRoomSelections', () => {
       '[changeset] selections-unreachable',
       expect.objectContaining({ documentId: 'd1', tabId: 't1' }),
     );
+    warn.mockRestore();
+  });
+});
+
+describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room")', () => {
+  const write = {
+    documentId: 'd1',
+    tokenId: 'tok_1',
+    tabId: 't1',
+    personTag: 'p',
+    shareCode: null,
+    name: 'Webber',
+    color: '#000',
+    role: 'edit' as const,
+    status: null,
+    focus: [],
+    ttlMs: 30_000,
+    mode: 'set' as const,
+  };
+
+  it('puts an entry, reads a full room, and throws when the room is unreachable', async () => {
+    const answers = [
+      Response.json({ expiresAt: 5, created: true }),
+      Response.json({ error: 'agent_presence_full' }, { status: 409 }),
+      new Response('x', { status: 500 }),
+    ];
+    const { env, stubFetch } = envWith(async () => answers.shift()!);
+    expect(await putAgentPresence(env, write)).toEqual({ ok: true, expiresAt: 5, created: true });
+    expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).not.toHaveProperty(
+      'documentId',
+    );
+    expect(await putAgentPresence(env, write)).toEqual({ ok: false, error: 'agent_presence_full' });
+    await expect(putAgentPresence(env, write)).rejects.toBeInstanceOf(RoomUnavailableError);
+    const down = envWith(async () => {
+      throw new Error('gone');
+    });
+    await expect(putAgentPresence(down.env, write)).rejects.toThrow('room unavailable');
+  });
+
+  it('clears an entry by token and tab, throwing when the room cannot answer', async () => {
+    const { env, stubFetch } = envWith(async () => Response.json({ cleared: true }));
+    expect(await deleteAgentPresence(env, 'd1', 'tok 1', 't1')).toBe(true);
+    expect(stubFetch.mock.calls[0]![0]).toBe('https://room/presence?token=tok%201&tab=t1');
+    await expect(
+      deleteAgentPresence(
+        envWith(async () => new Response('', { status: 500 })).env,
+        'd1',
+        't',
+        't',
+      ),
+    ).rejects.toBeInstanceOf(RoomUnavailableError);
+    await expect(
+      deleteAgentPresence(
+        envWith(async () => {
+          throw new Error('x');
+        }).env,
+        'd1',
+        't',
+        't',
+      ),
+    ).rejects.toBeInstanceOf(RoomUnavailableError);
+  });
+
+  it('refreshes for a changeset, swallowing a full or unreachable room', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { env, stubFetch } = envWith(async () => Response.json({ expiresAt: 5, created: false }));
+    const { mode: _m, status: _s, focus: _f, ttlMs: _t, ...refresh } = write;
+    await refreshAgentPresence(env, refresh);
+    expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).toMatchObject({
+      mode: 'refresh',
+      ttlMs: 30_000,
+      status: null,
+      focus: [],
+    });
+    await refreshAgentPresence(
+      envWith(async () => Response.json({}, { status: 409 })).env,
+      refresh,
+    );
+    await refreshAgentPresence(envWith(async () => new Response('', { status: 500 })).env, refresh);
+    expect(warn.mock.calls.map((c) => c[0])).toEqual([
+      '[agent-presence] refresh refused',
+      '[agent-presence] refresh failed',
+    ]);
+    warn.mockRestore();
+  });
+});
+
+describe('relayElementDelta (agent-presence PR26)', () => {
+  it('relays the delta, and logs a room that refused it or could not be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const delta = { kind: 'comment-resolve', resolved: true } as const;
+    const ok = envWith(async () => new Response(null, { status: 204 }));
+    expect(await relayElementDelta(ok.env, 'd1', 't1', 'a', delta)).toBe(true);
+    expect(JSON.parse(ok.stubFetch.mock.calls[0]![1]!.body as string)).toEqual({
+      op: { kind: 'el-delta', tabId: 't1', elementId: 'a', delta },
+    });
+    expect(
+      await relayElementDelta(
+        envWith(async () => new Response('bad op', { status: 400 })).env,
+        'd1',
+        't1',
+        'a',
+        delta,
+      ),
+    ).toBe(false);
+    const down = envWith(async () => {
+      throw new Error('gone');
+    });
+    expect(await relayElementDelta(down.env, 'd1', 't1', 'a', delta)).toBe(false);
+    expect(warn.mock.calls).toEqual([
+      [
+        '[room-mutation] el-delta did not reach the room',
+        { documentId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'status 400' },
+      ],
+      [
+        '[room-mutation] el-delta did not reach the room',
+        { documentId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'Error: gone' },
+      ],
+    ]);
     warn.mockRestore();
   });
 });

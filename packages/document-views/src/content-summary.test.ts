@@ -57,6 +57,21 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(shape('checklist', { checklistItems: items }))).toBe('done=1/2');
   });
 
+  it("names a Plan board's columns and a Plan card's item (docs/specs/026-plan/plan-board.md)", () => {
+    const columns = [{ name: 'To do' }, { status: 'doing' }, 'junk'];
+    expect(contentSummaryOf(shape('plan-board', { planBoard: { columns } }))).toBe(
+      'columns=To do|?',
+    );
+    expect(contentSummaryOf(shape('plan-board', { planBoard: undefined }))).toBe('columns=');
+    expect(contentSummaryOf(shape('plan-card', { planCard: { itemId: 'i1' } }))).toBe('item=i1');
+    expect(contentSummaryOf(shape('plan-card', { planCard: { itemId: '' } }))).toBe('item=none');
+    expect(contentSummaryOf(shape('plan-card', { planCard: undefined }))).toBe('item=none');
+    expect(contentSummaryOf(shape('plan-view', { planView: { view: 'gantt' } }))).toBe(
+      'view=gantt',
+    );
+    expect(contentSummaryOf(shape('plan-view', { planView: undefined }))).toBe('view=none');
+  });
+
   it('has nothing to say about other kinds', () => {
     expect(contentSummaryOf(shapeAt('square', 'x', 0, 0))).toBeNull();
     expect(contentSummaryOf(createText(0, 0))).toBeNull();

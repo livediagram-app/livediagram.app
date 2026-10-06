@@ -10,7 +10,7 @@ import {
 import { ApiError, apiJson, apiText } from './api';
 import type { Env } from './env';
 import { tabPreview } from './image-result';
-import { READ_DOCUMENT_DEFAULT_BUDGET } from './schema';
+import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 export type ReadDocumentArgs = {
@@ -88,7 +88,7 @@ export async function readDocument(
   const tabId = args.tabId ?? summary?.id;
   if (tabId === undefined) return errorResult('That document has no tabs.');
   const tabPath = `/documents/${document.id}/tabs/${tabId}`;
-  const auth = { env, token };
+  const auth = { env, token, documentId: document.id };
 
   if (asJson) {
     const { tab } = await apiJson<TabResponse>(env, token, tabPath);

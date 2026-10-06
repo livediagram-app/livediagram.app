@@ -20,8 +20,8 @@ a **pre-boot guard** in the page's head for whatever stale HTML still slips thro
 
 ## Caching rules
 
-One policy, applied by the router to every response it passes on, so all four sites (marketing,
-editor, help, telemetry) follow it from one place; the api's own responses are left as the api
+One policy, applied by the router to every response it passes on, so all five sites (marketing,
+editor, help, telemetry, community) follow it from one place; the api's own responses are left as the api
 sets them.
 
 | Response                                                       | `Cache-Control`                       |
@@ -31,6 +31,13 @@ sets them.
 | A hashed build asset that is missing                           | `no-store`, and the body below        |
 | Anything else (icons, fonts at fixed names, the api)           | unchanged                             |
 
+- **Local development keeps the dev servers' own asset caching.** Under `wrangler dev --env local`
+  (`DEPLOY_ENV = "local"`) the router fronts `next dev`, whose `/_next/static/` chunks keep their
+  names while their content changes with every edit, and which marks them
+  `no-cache, must-revalidate` for that reason. Marking them immutable there would make every reload
+  run the code from before the edit until the browser cache was cleared, so locally a `2xx` build
+  asset passes with the dev server's own `Cache-Control`. Pages and missing assets follow the table
+  as everywhere else. The e2e stack serves production builds, so it keeps immutable assets.
 - **A missing asset is an honest 404:** status 404, `Content-Type: text/plain`, body `Not found`,
   never the site's HTML 404 page, so a browser never tries a page as a script or a stylesheet.
 - **Why `no-store`, and what it costs.** It is the only directive that keeps an HTML page out of

@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 25,
+    articleCount: 26,
     kind: 'feature',
   },
   {
@@ -529,7 +529,7 @@ export const articles: Article[] = [
     title: 'Trash',
     description: 'Deleted documents wait 30 days: restore one, or delete it for good.',
     keywords:
-      'trash bin recycle deleted undo undelete restore recover get back permanently empty thirty days',
+      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1210,7 +1210,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1233,6 +1233,70 @@ export const articles: Article[] = [
       'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'plan-mode',
+    title: 'Plan mode',
+    description:
+      'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
+    keywords:
+      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card quick add @ mention assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board hiring onboarding tabs dashboard',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'items',
+    title: 'Items',
+    description:
+      'The tasks, bugs, notes and ideas boards show: numbered, typed, live, kept offline and in copies.',
+    keywords:
+      'item items ticket tickets task story bug epic note idea action risk issue record records field fields custom field status assignee owner priority label labels tag tags estimate points due date deadline checklist subtasks parent epic votes number key id #12 database store offline sync duplicate copy export drive api mcp agent automation script limit 2000',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'boards',
+    title: 'Boards',
+    description:
+      'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
+    keywords:
+      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'cards',
+    title: 'Cards',
+    description:
+      'Plan cards: add, open and fill one in, archive or trash it, and present it as a slide.',
+    keywords:
+      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members trash restore empty trash archive duplicate slide slides present presentation card size',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'card-types',
+    title: 'Card types',
+    description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',
+    keywords:
+      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'plan-tour',
+    title: 'The Plan Tour',
+    description:
+      'A guided walkthrough of Plan mode on an example board, offered once and replayable from Settings.',
+    keywords:
+      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards first time learn plan mode kanban board cards replay rerun settings accessibility',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
   },
   {
     slug: 'illustrate',
@@ -1373,7 +1437,7 @@ export const articles: Article[] = [
     title: 'Live Presence',
     description: 'Live cursors, names, selections, and who is on which tab, in real time.',
     keywords:
-      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room',
+      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2203,6 +2267,27 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Sharing ----
+  {
+    slug: 'finding-community-documents',
+    title: 'Finding Documents in the Community',
+    description:
+      'Search the Community by words, #tags, category and sort, then make a document your own.',
+    keywords:
+      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
+    slug: 'community',
+    title: 'Sharing to the Community',
+    description: 'Publish a document to the public gallery for others to view and copy.',
+    keywords:
+      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
   {
     slug: 'share-passwords',
     title: 'Share Passwords',

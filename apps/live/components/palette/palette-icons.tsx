@@ -270,7 +270,22 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
 // The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
 // house style as the mode icons above so a row of Behaviour tiles matches.
 
+// The Timer counts down, so it wears an hourglass; the Stopwatch counts up, so it wears the stopwatch. One
+// clock face for both left the two tiles side by side in the palette looking identical.
 export function TimerIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={16}>
+      {/* an hourglass: two caps, the glass pinched at the waist, sand settled at the bottom */}
+      <path d="M4 1.6h8" />
+      <path d="M4 14.4h8" />
+      <path d="M5.2 1.6c0 3.2 2.8 4.4 2.8 6.4s-2.8 3.2-2.8 6.4" />
+      <path d="M10.8 1.6c0 3.2-2.8 4.4-2.8 6.4s2.8 3.2 2.8 6.4" />
+      <path d="M6.4 13.6h3.2L8 11.6z" fill="currentColor" stroke="none" />
+    </Glyph>
+  );
+}
+
+export function StopwatchIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={16}>
       {/* a stopwatch: crown, dial, and a hand at ten past */}

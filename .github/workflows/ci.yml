@@ -193,7 +193,7 @@ jobs:
       # lost its `-staging` suffix points the staging router at PRODUCTION.
       # Neither is a type error and neither shows up in a test — without this
       # step the first sign of either is a deploy. Covers the three workers
-      # that carry bindings; the four static apps have nothing in their
+      # that carry bindings; the five static apps have nothing in their
       # staging block but an assets directory.
       - name: Staging config check
         run: pnpm staging:check

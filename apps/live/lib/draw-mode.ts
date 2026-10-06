@@ -46,6 +46,8 @@ export type PendingDraw =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
+      // A Plan board's preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md).
+      plan?: string;
       // A whiteboard shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"): drawn in the board's ink,
       // unfilled, at the default width. Pens never colour it.
       board?: true;

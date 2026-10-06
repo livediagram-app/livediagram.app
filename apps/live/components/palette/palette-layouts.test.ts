@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isPlanViewId } from '@livediagram/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
@@ -10,9 +11,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'illustrate', esBoard = false) =>
+const ids = (mode: 'diagram' | 'illustrate' | 'plan', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'illustrate', category: string) =>
+const tileIds = (mode: 'diagram' | 'illustrate' | 'plan', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -134,5 +135,66 @@ describe('palette layouts', () => {
         .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
     );
     for (const id of popular) expect(reachable.has(id), id).toBe(true);
+  });
+
+  // docs/specs/026-plan/plan-mode.md "The palette".
+  it('narrows Plan to its own categories, and borrows the notes and team tools', () => {
+    expect(ids('plan')).toEqual([
+      'plan-cards',
+      'plan-boards',
+      'plan-widgets',
+      'plan-metrics',
+      'plan-visualisations',
+      'plan-content',
+      'plan-tools',
+    ]);
+    expect(tileIds('plan', 'plan-content')).toEqual([
+      'tools:sticky',
+      'tools:text',
+      'tools:image',
+      'tools:page',
+    ]);
+    expect(tileIds('plan', 'plan-tools')).toEqual([
+      'collab:temperature',
+      'collab:estimate',
+      'collab:idea-box',
+      'tools:picker',
+      'tools:session-timer',
+      'tools:session-stopwatch',
+    ]);
+    expect(paletteLandingCategory('plan', false)).toBe('plan-cards');
+    for (const mode of ['diagram', 'illustrate'] as const) {
+      expect(ids(mode)).not.toContain('plan-boards');
+      expect(ids(mode)).not.toContain('plan-cards');
+      expect(ids(mode)).not.toContain('plan-widgets');
+      expect(ids(mode)).not.toContain('plan-visualisations');
+    }
+  });
+
+  it('offers a board per preset and a card per item type', () => {
+    const boards = tileIds('plan', 'plan-boards');
+    const cards = tileIds('plan', 'plan-cards');
+    expect(boards).toHaveLength(9);
+    expect(boards.every((id) => id.startsWith('plan:board-'))).toBe(true);
+    expect(cards).toHaveLength(5);
+    expect(cards.every((id) => id.startsWith('plan:card-'))).toBe(true);
+  });
+
+  // docs/specs/026-plan/plan-views.md: every tile places a plan view naming its view.
+  it('offers a metric per read-out kind and a tile per visualisation', () => {
+    const widgets = paletteCategoriesFor('plan').find((c) => c.id === 'plan-metrics')!;
+    const charts = paletteCategoriesFor('plan').find((c) => c.id === 'plan-visualisations')!;
+    expect(widgets.tiles).toHaveLength(10);
+    expect(charts.tiles!.map((t) => t.caption)).toEqual([
+      'Gantt Chart',
+      'Due Calendar',
+      'Workload',
+      'Status Breakdown',
+      'Priority Matrix',
+    ]);
+    for (const t of [...widgets.tiles!, ...charts.tiles!]) {
+      expect(t.action).toMatchObject({ type: 'shape', kind: 'plan-view' });
+      expect(isPlanViewId((t.action as { plan?: string }).plan)).toBe(true);
+    }
   });
 });

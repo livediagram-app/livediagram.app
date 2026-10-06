@@ -6,6 +6,7 @@ import {
   isChartShape,
   isChecklistShape,
   isLegendShape,
+  isPlanShape,
   isCodeBlockShape,
   isLineShape,
   isPieShape,
@@ -42,6 +43,7 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'code block', guard: isCodeBlockShape },
   { name: 'checklist', guard: isChecklistShape },
   { name: 'legend', guard: isLegendShape },
+  { name: 'plan', guard: isPlanShape },
 ];
 
 const kindsMatching = (guard: (k: ShapeKind) => boolean) => ALL.filter(guard).sort();

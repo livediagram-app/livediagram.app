@@ -11,8 +11,8 @@ import {
   type MenuInitialFocus,
   type MenuKind,
   type MenuTree,
+  Portal,
 } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
 import { useMenuItemProps } from './menu-item-props';
 import {
   PLACEMENT_TRANSFORM,

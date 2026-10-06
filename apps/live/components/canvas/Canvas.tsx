@@ -1,4 +1,5 @@
 import type { View } from '@/lib/viewport-store';
+import { Portal } from '@livediagram/ui';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useByValue } from '@/hooks/ui/useByValue';
 import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
@@ -24,7 +25,6 @@ import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { isDrawingElement, isEventStormingTab, zoneAnchorOf } from '@livediagram/document';
 import type { Element } from '@livediagram/document';
-import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
@@ -53,6 +53,8 @@ import type { Selection } from '@/lib/selection-store';
 import { withStableEventProps } from '@/components/primitives/withStableEventProps';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
+import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
+import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
@@ -80,7 +82,6 @@ import { reactionPose } from '@/lib/avatar-reactions';
 import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
-import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -140,7 +141,6 @@ function CanvasView(props: CanvasProps) {
     onElementContextMenu,
     onMultiContextMenu,
     onShiftSelect,
-    tabThemeId,
     onCanvasDoubleClick,
     tabLoadState,
     onRetryTabLoad,
@@ -479,12 +479,6 @@ function CanvasView(props: CanvasProps) {
     isPaintMode,
   });
 
-  // Colour for the link / comment badges. The active theme's
-  // elementStroke is the obvious "this theme's accent" — it's what
-  // arrows and new shape outlines use. The Brand theme has no stroke
-  // override, so fall back to brand-500 (the hex behind bg-brand-500).
-  const badgeColor = getTheme(tabThemeId).elementStroke ?? '#0ea5e9';
-
   // Broadcast the local pointer position to peers (canvas-coords).
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
   const handlePointerMoveCanvas = (e: React.PointerEvent) => {
@@ -810,36 +804,37 @@ function CanvasView(props: CanvasProps) {
           <CanvasZoomProvider zoom={viewportZoom}>
             <MindGrowProvider value={mindGrow}>
               <MindOutlineProvider value={mindOutlineBadges}>
-                <CanvasElementsLayer
-                  {...props}
-                  elements={pathTool.elements}
-                  // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                  // so the prop from the host is overridden with the local resolver.
-                  onEnterPortal={resolvePortal}
-                  onFireReaction={props.onFireReaction}
-                  reactionBursts={props.reactionBursts}
-                  onReactionBurstDone={props.onReactionBurstDone}
-                  // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                  // lives, rather than threaded from the page.
-                  chairSitters={sittersOf}
-                  // Pressing a Selection Mode button that hands out Avatar mode drops
-                  // the character at THAT button (see avatarSpawn), not the viewport
-                  // centre: you pressed a thing on the canvas, so the character should
-                  // appear where you pressed it.
-                  onPressModeButton={pressModeButton}
-                  onPressFocusButton={props.onPressFocusButton}
-                  hasArrows={hasArrows}
-                  arrowLabels={arrowLabels}
-                  badgeColor={badgeColor}
-                  selectionInput={selectionInput}
-                  isPaintMode={isPaintMode}
-                  handleArrowSelect={handleArrowSelect}
-                  handleElementClick={handleElementClick}
-                  handleElementContextSelect={handleElementContextSelect}
-                  quickRingOpen={quickRingOpen}
-                  setQuickRingOpen={setQuickRingOpen}
-                  drawDrag={drawDrag}
-                />
+                <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                  <CanvasElementsLayer
+                    {...props}
+                    elements={pathTool.elements}
+                    // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                    // so the prop from the host is overridden with the local resolver.
+                    onEnterPortal={resolvePortal}
+                    onFireReaction={props.onFireReaction}
+                    reactionBursts={props.reactionBursts}
+                    onReactionBurstDone={props.onReactionBurstDone}
+                    // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                    // lives, rather than threaded from the page.
+                    chairSitters={sittersOf}
+                    // Pressing a Selection Mode button that hands out Avatar mode drops
+                    // the character at THAT button (see avatarSpawn), not the viewport
+                    // centre: you pressed a thing on the canvas, so the character should
+                    // appear where you pressed it.
+                    onPressModeButton={pressModeButton}
+                    onPressFocusButton={props.onPressFocusButton}
+                    hasArrows={hasArrows}
+                    arrowLabels={arrowLabels}
+                    selectionInput={selectionInput}
+                    isPaintMode={isPaintMode}
+                    handleArrowSelect={handleArrowSelect}
+                    handleElementClick={handleElementClick}
+                    handleElementContextSelect={handleElementContextSelect}
+                    quickRingOpen={quickRingOpen}
+                    setQuickRingOpen={setQuickRingOpen}
+                    drawDrag={drawDrag}
+                  />
+                </ElementIndicatorStyleProvider>
               </MindOutlineProvider>
             </MindGrowProvider>
           </CanvasZoomProvider>

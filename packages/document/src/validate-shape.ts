@@ -2,6 +2,7 @@
 // rails, and the closed sets and bounded rows of the content-carrying and collaborative kinds. Each
 // check names its field and rule, so a refusal says which value to fix.
 
+import { isPlanViewId, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -240,6 +241,26 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'checklistItems',
     valid: rowsOf(CHECKLIST_MAX_ITEMS, isChecklistItem),
     rule: arrayRule(CHECKLIST_MAX_ITEMS, '{ text, done } rows'),
+  },
+  {
+    field: 'planBoard',
+    valid: (v: unknown) => normaliseBoardSetup(v) !== null,
+    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status',
+  },
+  {
+    field: 'planCard',
+    valid: (v: unknown) =>
+      typeof v === 'object' &&
+      v !== null &&
+      typeof (v as { itemId?: unknown }).itemId === 'string' &&
+      ((v as { itemId: string }).itemId === '' || isValidItemId((v as { itemId: string }).itemId)),
+    rule: 'an object { itemId } naming an item',
+  },
+  {
+    field: 'planView',
+    valid: (v: unknown) =>
+      typeof v === 'object' && v !== null && isPlanViewId((v as { view?: unknown }).view),
+    rule: 'an object { view } naming a plan view',
   },
   {
     field: 'legendItems',

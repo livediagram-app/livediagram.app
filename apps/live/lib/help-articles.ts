@@ -14,6 +14,7 @@
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @livediagram/help-registry.
 
+import { COMMUNITY_HELP } from '@livediagram/help-registry/community';
 import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
 
 export const HELP_ARTICLES = {
@@ -21,6 +22,8 @@ export const HELP_ARTICLES = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
+  // The Community's own help map holds the path (the public sites link it too).
+  community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
@@ -67,6 +70,11 @@ export const HELP_ARTICLES = {
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
+  // Plan mode's card types (docs/specs/026-plan/item-types.md).
+  planCardTypes: 'canvas/plan-mode/card-types',
+  planBoards: 'canvas/plan-mode/boards',
+  planCards: 'canvas/plan-mode/cards',
+  planTour: 'canvas/plan-mode/plan-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -111,6 +119,22 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
+  planCardTypes: {
+    title: 'Learn about card types',
+    description: 'Add your own kinds of card, with the fields each one holds.',
+  },
+  planBoards: {
+    title: 'Learn about boards',
+    description: 'Columns, swimlanes, widgets, and the cards each board takes.',
+  },
+  planCards: {
+    title: 'Learn about cards',
+    description: 'Open a card, fill it in, and archive, trash or present it.',
+  },
+  planTour: {
+    title: 'Learn about the Plan Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
   sharing: {
     title: 'Learn about sharing',
     description: 'Roles, live collaboration, and how share links work.',
@@ -122,6 +146,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
+  },
+  community: {
+    title: 'Learn about the Community',
+    description: 'Sharing a document publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',

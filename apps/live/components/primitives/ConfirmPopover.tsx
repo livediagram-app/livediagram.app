@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Button, clampIntoRange } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { Button, clampIntoRange, Portal } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 // A small confirmation popover anchored beside a trigger element, with an

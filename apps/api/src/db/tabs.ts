@@ -24,6 +24,24 @@ import {
   imageRefReplaceStatements,
 } from './image-refs';
 
+// Whether `tabId` is a tab that exists but is not one of `documentId`'s: a save must never adopt it. A save
+// upserts by tab id, so without this a tab id seen elsewhere (a share link, a Community post's document) could
+// overwrite that tab and link it into the caller's own document. Linking an existing tab has its own route.
+export async function tabBelongsElsewhere(
+  env: Env,
+  tabId: string,
+  documentId: string,
+): Promise<boolean> {
+  const row = await env.DB.prepare(
+    `SELECT 1 AS found FROM tabs t
+      WHERE t.id = ?
+        AND NOT EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.tab_id = t.id AND dt.document_id = ?)`,
+  )
+    .bind(tabId, documentId)
+    .first<{ found: number }>();
+  return row !== null;
+}
+
 export async function getTab(env: Env, documentId: string, tabId: string): Promise<TabDTO | null> {
   // Resolve via the document_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
   // linked tab surfaces from every document that contains it. The link
@@ -38,6 +56,19 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
     .bind(tabId, documentId)
     .first<TabRow>();
   return row ? rowToTab(row) : null;
+}
+
+// The document's tabs that hold a comment thread, in tab order (agent-presence PR21): the thread listing reads them
+// one at a time rather than every body at once.
+export async function tabIdsWithComments(env: Env, documentId: string): Promise<string[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.document_id = ? AND instr(t.data, '"commentThread"') > 0
+      ORDER BY dt.order_index, dt.tab_id`,
+  )
+    .bind(documentId)
+    .all<{ tab_id: string }>();
+  return results.map((r) => r.tab_id);
 }
 
 // A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
@@ -104,6 +135,20 @@ export async function getTabBody(
     .bind(...(tabId === null ? [documentId] : [documentId, tabId]))
     .first<{ id: string; data: string; element_count: number | null }>();
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
+}
+
+// How many elements the document's first tab holds: its stored count, or a parse of its body while the count is
+// not yet known (migration 0059). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
+export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
+  const body = await getTabBody(env, documentId);
+  if (!body) return 0;
+  if (body.elementCount !== null) return body.elementCount;
+  try {
+    const parsed = JSON.parse(body.data) as { elements?: unknown };
+    return Array.isArray(parsed.elements) ? parsed.elements.length : 0;
+  } catch {
+    return 0;
+  }
 }
 
 // The lazy backfill (migration 0059): a reader that has parsed a body whose count is still unknown

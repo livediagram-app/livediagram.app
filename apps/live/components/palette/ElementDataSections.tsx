@@ -13,6 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
+import dynamic from 'next/dynamic';
 import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
@@ -100,6 +101,20 @@ import {
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
+
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanCardsMenuSection = dynamic(
+  () => import('./PlanBoardMenuSection').then((m) => m.PlanCardsMenuSection),
+  { ssr: false },
+);
+
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanBoardMenuSection = dynamic(
+  () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSection),
+  { ssr: false },
+);
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -221,6 +236,14 @@ export function ElementDataSections({
     isChair;
   return (
     <>
+      {/* A Plan board's own settings (docs/specs/026-plan/plan-board.md "The board set-up"): its own
+          flyout, ahead of Tools, as every board-wide choice lives here. */}
+      {shapeTarget?.shape === 'plan-board' ? (
+        <>
+          <PlanBoardMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-board')} />
+          <PlanCardsMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-cards')} />
+        </>
+      ) : null}
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
           {/* Progress (docs/specs/009-elements/progress.md) — the percentage + how the fill animates. Only

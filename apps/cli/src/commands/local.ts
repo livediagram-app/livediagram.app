@@ -8,9 +8,17 @@ import {
   SKILL_DIRECTORIES,
   SKILL_NAME,
 } from '@livediagram/agent-verbs';
+import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
+import type { DebugLog } from '../debug';
 import type { ApiClient } from '@livediagram/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@livediagram/api-schema';
-import { forgetCredential, storeCredential, storedCredential } from '../auth/credentials';
+import {
+  forgetCredential,
+  storeCredential,
+  storedCredential,
+  tokenOf,
+  type CredentialSource,
+} from '../auth/credentials';
 import type { Profile } from '../config/profiles';
 import { inputReader } from '../input';
 import type { CliIo } from '../io';
@@ -82,19 +90,8 @@ export async function callApi(
   return { text: await res.text(), status: res.status };
 }
 
-export async function login(
-  io: CliIo,
-  profile: Profile,
-  api: (token: string) => ApiClient,
-  withToken: boolean | undefined,
-): Promise<{ host: string; account: string }> {
-  if (!withToken)
-    throw new CliError({
-      exit: EXIT.usage,
-      code: 'usage',
-      message: 'sign in with a token from stdin: --with-token',
-      hint: 'create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token',
-    });
+// A token from stdin (`--with-token`): never read from a terminal, and only an lvd_ token.
+async function tokenFromStdin(io: CliIo): Promise<string> {
   if (io.stdinIsTTY)
     throw new CliError({
       exit: EXIT.usage,
@@ -109,20 +106,68 @@ export async function login(
       code: 'invalid_value',
       message: 'that is not an API token (lvd_…)',
     });
+  return token;
+}
+
+export type LoginInput = { withToken?: boolean; device?: boolean };
+
+// Sign in (blueprint "Credentials"): a token by the browser (default), the device grant (`--device`) or stdin
+// (`--with-token`); checked with the api, stored, and the token it replaces revoked.
+export async function login(
+  io: CliIo,
+  profile: Profile,
+  api: (token: string) => ApiClient,
+  input: LoginInput,
+  oauthIssuer: string | undefined,
+  log: DebugLog,
+): Promise<{ host: string; account: string }> {
+  if (input.withToken && input.device)
+    throw new CliError({
+      exit: EXIT.usage,
+      code: 'usage',
+      message: 'give --with-token or --device, not both',
+    });
+  let token: string;
+  if (input.withToken) token = await tokenFromStdin(io);
+  else {
+    if (!oauthIssuer)
+      throw new CliError({
+        exit: EXIT.auth,
+        code: 'auth',
+        message: `${profile.host} offers no browser sign-in`,
+        hint: 'create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token',
+      });
+    const server = await discover(io, oauthIssuer, log);
+    token = input.device
+      ? await loginWithDevice(io, server, log)
+      : await loginWithBrowser(io, server, log);
+  }
   const current = await api(token).json<CurrentTokenResponse>('/tokens/current');
-  const previous = await storedCredential(io, profile.name);
-  await storeCredential(io, profile.name, {
-    host: profile.host,
+  // The token this login replaces, read before the store overwrites it, to revoke once the new one is kept.
+  const stored = await storedCredential(io, profile.name);
+  const previous =
+    stored && stored.tokenId !== current.tokenId
+      ? await tokenOf(io, profile.name, stored).catch(() => null)
+      : null;
+  await storeCredential(
+    io,
+    profile.name,
+    {
+      host: profile.host,
+      tokenId: current.tokenId,
+      accountName: current.accountName,
+      role: current.role,
+      expiresAt: current.expiresAt,
+    },
     token,
-    tokenId: current.tokenId,
-    accountName: current.accountName,
-    role: current.role,
-    expiresAt: current.expiresAt,
-  });
-  if (previous && previous.tokenId !== current.tokenId) {
-    const revoked = await api(previous.token)
-      .fetch('/tokens/current', { method: 'DELETE' })
-      .catch(() => null);
+    log,
+  );
+  if (stored && stored.tokenId !== current.tokenId) {
+    const revoked = previous
+      ? await api(previous.token)
+          .fetch('/tokens/current', { method: 'DELETE' })
+          .catch(() => null)
+      : null;
     if (!revoked?.ok)
       io.stderr(
         'warning: the previous token could not be revoked; revoke it in Settings › API Tokens\n',
@@ -134,7 +179,12 @@ export async function login(
 export const TOKEN_EXPIRY_WARN_DAYS = 14;
 const DAY_MS = 86_400_000;
 
-export async function status(io: CliIo, profile: Profile, api: ApiClient, source: 'env' | 'file') {
+export async function status(
+  io: CliIo,
+  profile: Profile,
+  api: ApiClient,
+  source: CredentialSource,
+) {
   const current = await api.json<CurrentTokenResponse>('/tokens/current');
   const days =
     current.expiresAt === null ? null : Math.floor((current.expiresAt - io.now()) / DAY_MS);
@@ -154,7 +204,12 @@ export async function status(io: CliIo, profile: Profile, api: ApiClient, source
 }
 
 // Revokes the stored token, then forgets it; a 401 forgets too (CLI38). The env token is not the CLI's.
-export async function logout(io: CliIo, profile: Profile, api: ApiClient, source: 'env' | 'file') {
+export async function logout(
+  io: CliIo,
+  profile: Profile,
+  api: ApiClient,
+  source: CredentialSource,
+) {
   if (source === 'env')
     throw new CliError({
       exit: EXIT.usage,

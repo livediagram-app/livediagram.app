@@ -50,6 +50,9 @@ export function buildParticipantsByTab(input: {
   // A team document (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
   // with no share link, so tab presence shows there too.
   documentTeamId: string | null;
+  // An agent is present (docs/specs/024-agents/agent-presence.md): a personal document's stack shows too, so its
+  // owner sees their agent.
+  agentsPresent?: boolean;
   activeId: string;
   selfParticipant: Participant;
   tabs: { id: string }[];
@@ -62,6 +65,7 @@ export function buildParticipantsByTab(input: {
   const {
     documentShareable,
     documentTeamId,
+    agentsPresent = false,
     activeId,
     selfParticipant,
     tabs,
@@ -72,7 +76,7 @@ export function buildParticipantsByTab(input: {
     now,
   } = input;
   const map = new Map<string, Participant[]>();
-  if (!documentShareable && !documentTeamId) return map;
+  if (!documentShareable && !documentTeamId && !agentsPresent) return map;
   map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
   const defaultTabId = tabs[0]?.id ?? activeId;
   const tabFocus = new Map<string, string>(remoteTabFocus);

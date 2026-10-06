@@ -67,7 +67,7 @@ editable. There is no other state: the editor is uncontrolled and the live value
 1. `openNote(id)` toggles: the same id closes, any other id opens. `track('Note', 'Opened')` fires
    only on an open transition.
 2. Entry points: the element menu's Resources band (`Add Note` / `Edit Note` in
-   `ElementContentSections.tsx`), the badge (`BadgeStrip`, suppressed for annotations), an
+   `ElementContentSections.tsx`), the note indicator (`ElementIndicators`, suppressed for annotations), an
    annotation double-click ([Annotations blueprint](annotations.md)), and the command palette's
    `note` command.
 3. `NotePopover` anchors to `[data-element-id]`'s live rect, bottom-centre plus `GAP`, clamps
@@ -196,7 +196,7 @@ response.
 - **Persisted:** `note`, `noteRich` on the element, in the tab JSON (D1 or IndexedDB), through the
   normal tab sync.
 - **Never persisted:** `noteOpenId`, the popover position, the link field's draft, `ActiveFormat`.
-- **Readers of the mirror:** the badge's has-a-note test (`BadgeStrip`), the menu's Add / Edit Note
+- **Readers of the mirror:** the note indicator's has-a-note test (`buildIndicatorItems`), the menu's Add / Edit Note
   label, `hasReadableDetail` in presentation mode, JSON export, and the MCP and API payloads. Search
   and the Excalidraw round-trip do not carry a note [QD1].
 - **Snapshot / restore:** history snapshots carry both fields; undo restores the pair together.

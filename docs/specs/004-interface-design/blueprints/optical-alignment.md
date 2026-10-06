@@ -5,28 +5,28 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 
 ## Files
 
-| Path                                                         | Role                                                                                                        |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                         | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                   |
-| `packages/tailwind-config/src/optical-utilities.test.ts`     | The utilities' contracts                                                                                    |
-| `packages/ui/src/optical/GlyphDisc.tsx`                      | Glyph disc                                                                                                  |
-| `packages/ui/src/optical/Chip.tsx`                           | Chip                                                                                                        |
-| `packages/ui/src/optical/IconSlot.tsx`                       | Icon slot                                                                                                   |
-| `packages/ui/src/optical/index.ts`                           | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                       |
-| `packages/ui/src/optical/optical.test.tsx`                   | Primitive contracts                                                                                         |
-| `packages/ui/src/Button.tsx`                                 | `ButtonContent`; `optical-edges` in the button base                                                         |
-| `apps/live/components/chrome/header-action.tsx`              | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                   |
-| `packages/icons/src/svg-cap-band.ts`                         | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                  |
-| `packages/tailwind-config/src/optical-guard.ts`              | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                        |
-| `apps/{live,help,marketing,telemetry}/optical-guard.test.ts` | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                   |
-| `packages/ui/optical-guard.test.ts`                          | The guard over `packages/ui/src`                                                                            |
-| `apps/live/e2e/optical.ts`                                   | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                          |
-| `apps/live/e2e/optical-discover.ts`                          | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function       |
-| `apps/live/e2e/optical-audit.spec.ts`                        | The editor's audited screens                                                                                |
-| `apps/live/e2e/optical-audit-sites.spec.ts`                  | The help centre, telemetry dashboard and marketing site                                                     |
-| `apps/live/e2e/audit-screens.ts`                             | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                      |
-| `scripts/e2e-stack.mjs`                                      | Also serves `apps/help/out` at `/help/*`, `apps/telemetry/out` at `/telemetry/*`, marketing on its own port |
-| `.github/workflows/e2e.yml`                                  | Its Sites audit job builds help, telemetry and marketing beside live and runs the `sites` project           |
+| Path                                                                   | Role                                                                                                                                                |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/tailwind-config/theme.css`                                   | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                                           |
+| `packages/tailwind-config/src/optical-utilities.test.ts`               | The utilities' contracts                                                                                                                            |
+| `packages/ui/src/optical/GlyphDisc.tsx`                                | Glyph disc                                                                                                                                          |
+| `packages/ui/src/optical/Chip.tsx`                                     | Chip                                                                                                                                                |
+| `packages/ui/src/optical/IconSlot.tsx`                                 | Icon slot                                                                                                                                           |
+| `packages/ui/src/optical/index.ts`                                     | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                                               |
+| `packages/ui/src/optical/optical.test.tsx`                             | Primitive contracts                                                                                                                                 |
+| `packages/ui/src/Button.tsx`                                           | `ButtonContent`; `optical-edges` in the button base                                                                                                 |
+| `apps/live/components/chrome/header-action.tsx`                        | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                                           |
+| `packages/icons/src/svg-cap-band.ts`                                   | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                                          |
+| `packages/tailwind-config/src/optical-guard.ts`                        | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                                                |
+| `apps/{live,help,marketing,telemetry,community}/optical-guard.test.ts` | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                                                           |
+| `packages/ui/optical-guard.test.ts`                                    | The guard over `packages/ui/src`                                                                                                                    |
+| `apps/live/e2e/optical.ts`                                             | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                                                  |
+| `apps/live/e2e/optical-discover.ts`                                    | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                                               |
+| `apps/live/e2e/optical-audit.spec.ts`                                  | The editor's audited screens                                                                                                                        |
+| `apps/live/e2e/optical-audit-sites.spec.ts`                            | The help centre, telemetry dashboard, Community and marketing site                                                                                  |
+| `apps/live/e2e/audit-screens.ts`                                       | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                                              |
+| `scripts/e2e-stack.mjs`                                                | Also serves `apps/help/out` at `/help/*`, `apps/telemetry/out` at `/telemetry/*`, `apps/community/out` at `/community/*`, marketing on its own port |
+| `.github/workflows/e2e.yml`                                            | Its Sites audit job builds help, telemetry, community and marketing beside live and runs the `sites` project                                        |
 
 ## Names
 
@@ -222,10 +222,10 @@ center`, or shrink-wrapped content (its in-flow children, text and gaps fill the
 
 **Screens** (each `expect.soft(failures).toEqual([])` and `measured > 0`): wizard steps 1 and 2; the
 editor with a seeded diagram and its default panels, a shape selected, Settings, Share; the Join dialog;
-the Explorer; help home, a category and an article; the telemetry dashboard; marketing home and a
-feature page. Help and telemetry are same-origin under the e2e stack; marketing is on
+the Explorer; help home, a category and an article; the telemetry dashboard; the Community gallery; marketing home
+and a feature page. Help, telemetry and the Community are same-origin under the e2e stack; marketing is on
 `E2E_MARKETING_PORT` (default `3013`). Against dev servers: `E2E_HELP_URL`, `E2E_TELEMETRY_URL`,
-`E2E_MARKETING_URL`. A site that is not built fails with the build command to run.
+`E2E_COMMUNITY_URL`, `E2E_MARKETING_URL`. A site that is not built fails with the build command to run.
 
 ## Static guard
 

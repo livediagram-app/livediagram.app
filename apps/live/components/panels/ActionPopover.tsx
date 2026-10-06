@@ -11,10 +11,10 @@ import {
   SOLID_BRAND_DARK,
   Glyph,
   GlyphDisc,
+  Portal,
 } from '@livediagram/ui';
 import { useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@livediagram/document';
-import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';

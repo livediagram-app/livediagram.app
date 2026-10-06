@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   clearTourPending,
@@ -15,49 +14,20 @@ import { track } from '@/lib/telemetry';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
-import { findTour, waitForSelector, waitForTour } from './tour-dom';
+import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourLayoutPicker } from './TourLayoutPicker';
-import { TourPopover } from './TourPopover';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { TourStage } from './TourStage';
+import { useTourEngine, type TourOutcome } from './useTourEngine';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Orchestrates the interactive editor tour (docs/specs/007-editor/editor-tour.md). Mounted once in
 // EditorView; renders nothing until either the /new handoff flag is
 // consumed (a brand-new user's first document → the welcome offer card) or
-// the Settings dialog requests a relaunch. Each step runs prepare (opening
-// the real panel / dropdown / menu it explains), waits for its target
-// node, then renders a dimming highlight ring plus the step popover
-// anchored to it. A watcher re-measures the target every 150ms so the
-// highlight tracks layout changes, and re-runs prepare if the target is
-// dismissed mid-step (an outside click closing a menu). The last rect is
-// kept while the next step prepares, so the ring GLIDES between targets
-// (transition-all) instead of blinking out and back.
-
-// Plain rect (not DOMRect): dropdown steps highlight the UNION of the
-// trigger and its portalled menu, which getBoundingClientRect can't hand
-// us directly.
-export type TourTargetRect = { left: number; top: number; width: number; height: number };
-
-const rectsEqual = (a: TourTargetRect, b: TourTargetRect) =>
-  a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
-
-const toRect = (r: DOMRect): TourTargetRect => ({
-  left: r.left,
-  top: r.top,
-  width: r.width,
-  height: r.height,
-});
-
-const unionRects = (a: TourTargetRect, b: TourTargetRect): TourTargetRect => {
-  const left = Math.min(a.left, b.left);
-  const top = Math.min(a.top, b.top);
-  return {
-    left,
-    top,
-    width: Math.max(a.left + a.width, b.left + b.width) - left,
-    height: Math.max(a.top + a.height, b.top + b.height) - top,
-  };
-};
+// the Settings dialog requests a relaunch. The steps run on the shared
+// engine (useTourEngine) and draw through the shared stage (TourStage);
+// this host owns the offer, the step list and what ending means.
 
 export function TourHost() {
   const ctx = useEditorContext();
@@ -77,25 +47,6 @@ export function TourHost() {
   // check, and resolved once offered or found already seen. Only the offer effect reads it and it
   // never turns back on, so it is a ref rather than state.
   const offerPendingRef = useRef<boolean | null>(null);
-  const [active, setActive] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
-  // Direction of the last step change, for the popover content's
-  // directional slide (the TemplatePicker wizard's tip-next / tip-prev).
-  const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
-  const [targetRect, setTargetRect] = useState<TourTargetRect | null>(null);
-  const targetElRef = useRef<HTMLElement | null>(null);
-  // Monotonic token: bumping it invalidates any in-flight async step run
-  // (prepare + waits) so a fast Next/Next can't land a stale target.
-  const runTokenRef = useRef(0);
-  const healingRef = useRef(false);
-  // The step API is rebuilt every render through a ref so step callbacks
-  // always see fresh editor-context handlers (never stale closures).
-  // endTour, reachable from the step-run effect without depending on its
-  // per-render identity (declared here, kept current below, after its definition).
-  const endTourRef = useRef<(outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => void>(
-    () => {},
-  );
-
   const apiRef = useLatest<TourApi>({
     toolbar,
     openElementContextMenu: async () => {
@@ -138,16 +89,44 @@ export function TourHost() {
     closeContextMenu: () => ctx.closeContextMenu(),
   });
 
+  const engine = useTourEngine<TourApi>({
+    steps,
+    apiRef,
+    // Stage-view funnel (docs/specs/017-telemetry/telemetry.md): one event per step entry (Back re-entry
+    // included: it is a real view). The welcome card's view is already
+    // covered by Opened/TourOffer; the last View before an
+    // Ended/TourSkipped marks the drop-off stage on the dashboard.
+    onStepView: (step) => track('UI', 'View', tourStepTelemetryType(step.id)),
+    onStart: () => track('UI', 'Started', 'Tour'),
+    onFinish: (outcome) => endTour(outcome),
+  });
+  const { active } = engine;
+
+  // One tour at a time (docs/specs/026-plan/plan-tour.md "Where it appears"): this one publishes itself
+  // while on screen, and waits while the Plan tour is.
+  const otherTour = useActiveTour() === 'plan';
+  useEffect(() => {
+    setActiveTour('welcome', active);
+  }, [active]);
+  useEffect(() => () => setActiveTour('welcome', false), []);
+
+  const offer = () => {
+    engine.start();
+    track('UI', 'Opened', 'TourOffer');
+  };
+
   // Peek at the /new handoff flag (NOT consume: it stays set until the
   // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
   // of silently swallowing the tour), then wait for the editor to be
   // usable before offering (the small delay lets the fit-to-screen pass
   // and panel layout settle). The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md)
-  // makes the offer once-ever for the user, however it was dismissed —
+  // makes the offer once-ever for the user, however it was dismissed;
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
   const seen = ctx.userPreferences?.tourSeen === true;
-  const ready = ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode;
+  const ready =
+    ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode && !otherTour;
+  const offerRef = useLatest(offer);
   useEffect(() => {
     offerPendingRef.current ??= hasTourPending();
     if (!offerPendingRef.current || active || !ready) return;
@@ -159,128 +138,31 @@ export function TourHost() {
     }
     const t = setTimeout(() => {
       offerPendingRef.current = false;
-      setStepIndex(0);
-      setStepDir('forward');
-      setActive(true);
-      track('UI', 'Opened', 'TourOffer');
+      offerRef.current();
     }, 800);
     return () => clearTimeout(t);
-  }, [active, ready, seen]);
+  }, [active, ready, seen, offerRef]);
 
-  // Settings relaunch (the "I've seen the editor tour" row, unchecked +
-  // closed): rerun from the top — the welcome card is always step 1. Also
-  // re-marks the pending flag so a reload mid-rerun re-offers, exactly
-  // like the first-run path.
+  // Settings relaunch (the "Show Welcome Tour" row, turned on + closed):
+  // rerun from the top: the welcome card is always step 1. Also re-marks
+  // the pending flag so a reload mid-rerun re-offers, exactly like the
+  // first-run path. While the Plan tour runs it waits, offering once that ends.
   useEffect(() => {
     const onRelaunch = () => {
-      if (!ready) return;
       markTourPending();
-      runTokenRef.current++;
-      targetElRef.current = null;
-      setTargetRect(null);
-      setStepIndex(0);
-      setStepDir('forward');
-      setActive(true);
-      track('UI', 'Opened', 'TourOffer');
+      if (!ready) {
+        offerPendingRef.current = true;
+        return;
+      }
+      offerRef.current();
     };
     window.addEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, [ready]);
+  }, [ready, offerRef]);
 
-  // The step list can SHRINK mid-tour (crossing the mobile breakpoint
-  // drops the desktop-only step): clamp the index so the effects and
-  // render below never read past the end (steps[stepIndex] would be
-  // undefined and the sync .target access threw before this guard). Adjusted during render.
-  if (stepIndex > steps.length - 1) setStepIndex(steps.length - 1);
-
-  // Run the current step: prepare, then await the target node. The
-  // previous step's rect stays on screen meanwhile, so the ring glides to
-  // the new target when it lands.
-  useEffect(() => {
-    if (!active) return;
-    const step = steps[stepIndex];
-    if (!step) return; // an empty list: nothing to run
-    // Stage-view funnel (docs/specs/017-telemetry/telemetry.md): one event per step entry (Back re-entry
-    // included — it's a real view). The welcome card's view is already
-    // covered by Opened/TourOffer; the last View before an
-    // Ended/TourSkipped marks the drop-off stage on the dashboard.
-    if (step.card !== 'welcome') track('UI', 'View', tourStepTelemetryType(step.id));
-    const token = ++runTokenRef.current;
-    let cancelled = false;
-    void (async () => {
-      if (!step.target) {
-        // Anchorless (welcome / outro) card: centred, no highlight.
-        targetElRef.current = null;
-        setTargetRect(null);
-        return;
-      }
-      try {
-        await step.prepare?.(apiRef.current);
-      } catch {
-        // A failed prepare falls through to the target wait; a missing
-        // target then skips the step rather than wedging the tour.
-      }
-      const el = await waitForTour(step.target, 3500);
-      if (cancelled || token !== runTokenRef.current) return;
-      if (!el) {
-        // Target never appeared: skip forward (or finish from the last
-        // step). endTour is reached through a ref so this effect doesn't
-        // depend on its per-render identity (restarting the step run on
-        // unrelated renders).
-        step.cleanup?.(apiRef.current);
-        if (stepIndex < steps.length - 1) setStepIndex(stepIndex + 1);
-        else endTourRef.current('TourCompleted');
-        return;
-      }
-      targetElRef.current = el;
-      setTargetRect(measureStep(el, step.alsoHighlight));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [active, apiRef, stepIndex, steps]);
-
-  // Track the target while a step is showing: follow it when it moves and
-  // re-run prepare when it disappears (a menu dismissed under the tour).
-  useEffect(() => {
-    if (!active) return;
-    const step = steps[stepIndex];
-    if (!step?.target) return;
-    const id = window.setInterval(() => {
-      const el = targetElRef.current;
-      if (!el) return;
-      if (!el.isConnected) {
-        if (healingRef.current) return;
-        healingRef.current = true;
-        targetElRef.current = null;
-        const token = ++runTokenRef.current;
-        void (async () => {
-          try {
-            await step.prepare?.(apiRef.current);
-            const next = await waitForTour(step.target!, 3500);
-            if (token === runTokenRef.current && next) {
-              targetElRef.current = next;
-              setTargetRect(measureStep(next, step.alsoHighlight));
-            }
-          } finally {
-            healingRef.current = false;
-          }
-        })();
-        return;
-      }
-      const r = measureStep(el, step.alsoHighlight);
-      setTargetRect((prev) => (prev && rectsEqual(prev, r) ? prev : r));
-    }, 150);
-    return () => window.clearInterval(id);
-  }, [active, apiRef, stepIndex, steps]);
-
-  const endTour = (outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => {
-    runTokenRef.current++;
-    targetElRef.current = null;
-    setTargetRect(null);
-    setActive(false);
+  const endTour = (outcome: TourOutcome) => {
     // Safety net beyond the current step's cleanup: never strand an open
-    // menu; and never offer again, however the tour ended — via the synced
+    // menu; and never offer again, however the tour ended, via the synced
     // tourSeen preference (docs/specs/007-editor/user-preferences.md), so it holds across the user's devices.
     // The offer is now RESOLVED, so the reload-surviving pending flag can
     // finally go.
@@ -289,99 +171,9 @@ export function TourHost() {
     const next = { ...ctx.userPreferences, tourSeen: true };
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
-    if (outcome === 'TourDeclined') track('UI', 'Closed', 'TourOffer');
-    else track('UI', 'Ended', outcome);
-  };
-  useAssignRef(endTourRef, endTour);
-
-  if (!active) return null;
-  const step = steps[Math.min(stepIndex, steps.length - 1)];
-  if (!step) return null;
-  // The bookend cards sit outside the step count: "1 of N" is the palette.
-  const countableSteps = steps.filter((s) => !s.card).length;
-  const leaveStep = () => {
-    runTokenRef.current++;
-    targetElRef.current = null;
-    step.cleanup?.(apiRef.current);
-  };
-  const onNext = () => {
-    leaveStep();
-    if (step.card === 'welcome') track('UI', 'Started', 'Tour');
-    setStepDir('forward');
-    if (stepIndex < steps.length - 1) setStepIndex(stepIndex + 1);
-    else endTour('TourCompleted');
-  };
-  const onBack = () => {
-    leaveStep();
-    setStepDir('backward');
-    setStepIndex(stepIndex - 1);
-  };
-  const onSkip = () => {
-    leaveStep();
-    endTour(step.card === 'welcome' ? 'TourDeclined' : 'TourSkipped');
+    if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
+    else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
   };
 
-  return (
-    <Portal>
-      {step.card ? (
-        // Focus backdrop for the bookend cards: a SUBTLE full-screen tint
-        // (much lighter than Dialog's — the canvas should stay visible)
-        // that draws the eye to the card and absorbs stray clicks until
-        // it's answered. Deliberately NOT a click-to-dismiss surface —
-        // with the once-ever done-guard, a stray backdrop click must
-        // never count as a permanent decline.
-        <div
-          aria-hidden
-          className="fixed inset-0 z-[var(--z-overlay)] animate-fade-in bg-slate-900/15 dark:bg-slate-950/25"
-        />
-      ) : null}
-      {targetRect ? (
-        // The spotlight: a ring around the target whose giant box-shadow
-        // dims everything else. pointer-events-none so the user can still
-        // interact with whatever is highlighted; portalled menus (higher
-        // z / later portals) paint above the dim. transition-all makes it
-        // glide when the rect moves between steps; fade-in covers its
-        // first appearance.
-        <div
-          aria-hidden
-          className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-long ease-out dark:border-brand-500"
-          style={{
-            left: targetRect.left - 6,
-            top: targetRect.top - 6,
-            width: targetRect.width + 12,
-            height: targetRect.height + 12,
-            boxShadow: '0 0 0 100vmax rgba(15, 23, 42, 0.4)',
-          }}
-        />
-      ) : null}
-      <TourPopover
-        // The bookend cards have no number; real steps count from 1
-        // (welcome occupies index 0, so a step's index IS its number).
-        stepNumber={step.card ? 0 : stepIndex}
-        stepCount={countableSteps}
-        stepId={step.id}
-        stepDir={stepDir}
-        card={step.card}
-        title={step.title}
-        body={step.body}
-        targetRect={targetRect}
-        layoutPicker={step.card === 'welcome' ? <TourLayoutPicker /> : undefined}
-        onBack={stepIndex > 1 && !step.card ? onBack : undefined}
-        onNext={onNext}
-        onSkip={onSkip}
-      />
-    </Portal>
-  );
-}
-
-// Rect for a step's highlight: the target itself, unioned with the
-// optional secondary anchor (dropdown steps wrap trigger + menu as one).
-function measureStep(el: HTMLElement, alsoHighlight?: string): TourTargetRect {
-  const base = toRect(el.getBoundingClientRect());
-  if (!alsoHighlight) return base;
-  const also = findTour(alsoHighlight);
-  if (!also || !also.isConnected) return base;
-  const r = also.getBoundingClientRect();
-  if (r.width === 0 && r.height === 0) return base;
-  return unionRects(base, toRect(r));
+  return <TourStage engine={engine} layoutPicker={<TourLayoutPicker />} />;
 }

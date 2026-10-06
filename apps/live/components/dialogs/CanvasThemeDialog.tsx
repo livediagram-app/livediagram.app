@@ -14,10 +14,16 @@
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { lucideGrid3x3 } from '@livediagram/icons/lucide';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/document';
-import { Glyph, lucideGlyph, useEscape, useFocusTrap } from '@livediagram/ui';
+import {
+  Glyph,
+  lucideGlyph,
+  useEscape,
+  useFocusTrap,
+  Portal,
+  DialogCloseButton,
+} from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
@@ -25,7 +31,6 @@ import { DotsIcon, ResetIcon, ScaleIcon } from '@/components/palette/palette-ico
 import { FontSelect } from '@/components/palette/FontSelect';
 import { SizeButton } from '@/components/palette/palette-controls';
 import type { TextSize } from '@livediagram/document';
-import { Portal } from '@/components/primitives/Portal';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
 export type CanvasThemeTab = 'canvas' | 'theme' | 'font';

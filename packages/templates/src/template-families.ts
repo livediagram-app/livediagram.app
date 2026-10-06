@@ -20,6 +20,18 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'approval-workflow': null,
   'data-flow': null,
   kanban: 'kanban',
+  // Plan templates (docs/specs/026-plan/plan-templates.md): the Project Planner runs its sprints on a
+  // Kanban board by another name, the Team Retro is a retrospective; the rest belong to no family.
+  'blank-plan': null,
+  'project-planner': 'kanban',
+  'bug-triage': null,
+  'team-retro': 'retrospective',
+  'weekly-planner': null,
+  'content-calendar': null,
+  'hiring-pipeline': null,
+  okrs: null,
+  'product-launch': null,
+  'feedback-board': null,
   swot: null,
   timeline: null,
   'milestone-timeline': null,

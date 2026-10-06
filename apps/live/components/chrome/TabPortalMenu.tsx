@@ -1,7 +1,6 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import { Portal } from '@/components/primitives/Portal';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -34,7 +33,7 @@ import {
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
-import { DuplicateIcon, MenuTreeContext, useControlMenu } from '@livediagram/ui';
+import { DuplicateIcon, MenuTreeContext, useControlMenu, Portal } from '@livediagram/ui';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and
@@ -54,6 +53,7 @@ export function PortalMenu({
   onToggleLock,
   locked,
   opensIn,
+  planTab = false,
   selfId,
   voteSelfId,
   otherDocuments,
@@ -85,6 +85,8 @@ export function PortalMenu({
   locked: boolean;
   // The Opens in choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
   opensIn?: OpensInChoice;
+  // A Plan tab: Add to Document is off, its cards belong to this document's items.
+  planTab?: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
@@ -388,7 +390,7 @@ export function PortalMenu({
                 icon={<MoveIcon />}
                 label="Add to Document"
                 onClick={() => setView('copyTo')}
-                disabled={otherDocuments.length === 0}
+                disabled={otherDocuments.length === 0 || planTab}
               />
             </MenuTileGrid>
           </MenuAccordionSection>

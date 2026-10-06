@@ -112,6 +112,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'events',
   'telemetry',
   'share',
+  'community',
   'shared',
   'images',
   'documents',
@@ -172,6 +173,7 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'connect',
   'connection',
   'items',
+  'item-types',
   'lease',
 ]);
 

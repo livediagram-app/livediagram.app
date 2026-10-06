@@ -3,8 +3,23 @@
 // exit code is one of eight; stdout carries data only.
 
 import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagram/agent-verbs';
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resolveCredential } from './auth/credentials';
-import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
+import {
+  callApi,
+  guideOf,
+  installSkill,
+  login,
+  logout,
+  status,
+  type LoginInput,
+} from './commands/local';
+import { exportAll, type ExportInput } from './commands/export';
+import { pullDocument, type PullInput } from './commands/pull';
+import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
+import { pushFile, type PushInput } from './commands/push';
+import { waitFor, type WaitInput } from './commands/wait';
+import { watch, type WatchInput } from './commands/watch';
 import { loadCapabilities } from './config/capabilities';
 import { withTelemetry, type ConfigFile } from './config/config-file';
 import { configDir } from './config/paths';
@@ -33,6 +48,11 @@ function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise
   if (verb.id === 'guide') return Promise.resolve(guideOf(input.topic as string | undefined));
   if (verb.id === 'skill.print') return Promise.resolve({ text: renderSkill() });
   if (verb.id === 'skill.install') return installSkill(io, input.to as string | undefined);
+  // The render handlers load the icon catalogues and the PNG renderer: only when a render runs.
+  if (verb.id === 'graph.render')
+    return import('./commands/render').then(({ renderGraph }) =>
+      renderGraph(io, inputReader(io), input as { file: string; png?: string; svg?: string }, log),
+    );
   if (verb.id === 'graph.lint') {
     const file = input.file as string;
     return inputReader(io)(file).then((text) =>
@@ -58,6 +78,7 @@ async function runOnline(
   profile: Profile,
   log: DebugLog,
   reporting: (sink: TelemetrySink) => void,
+  json: boolean,
 ) {
   const caps = await loadCapabilities(io, profile, log);
   const sink: TelemetrySink = { io, apiBase: caps.apiBase, log };
@@ -72,9 +93,20 @@ async function runOnline(
       code: 'auth',
       message: `${profile.host} has no sign-in, so the CLI cannot act there`,
     });
+  // A verb that works on document files reads and writes them in the bundled format; a host storing a newer one
+  // would hand it documents it cannot keep (step 6).
+  if (verb.files && caps.documentFormat !== undefined && caps.documentFormat > DOCUMENT_FORMAT) {
+    log(`format refused ${caps.documentFormat} > ${DOCUMENT_FORMAT}`);
+    throw new CliError({
+      exit: EXIT.rejected,
+      code: 'version',
+      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livediagram reads format ${DOCUMENT_FORMAT}`,
+      hint: 'npm install -g livediagram@latest, or npx livediagram@latest',
+    });
+  }
   const http = transport(io, caps.apiBase, log);
   if (verb.id === 'auth.login')
-    return login(io, profile, http.forToken, input.withToken as boolean | undefined);
+    return login(io, profile, http.forToken, input as LoginInput, caps.oauthIssuer, log);
   const credential = await resolveCredential(io, profile.name);
   log(`credential ${credential?.source ?? 'none'}`);
   if (!credential)
@@ -113,6 +145,15 @@ async function runOnline(
     readInput: inputReader(io),
     copies: fileReadCopies(io, profile.name, log),
   };
+  if (verb.id === 'tab.render') {
+    const { renderTab } = await import('./commands/render');
+    return renderTab(io, ctx, input as { doc: string; tab?: string; png?: string; svg?: string });
+  }
+  if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
+  if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
+  if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
+  if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
+  if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
   return verb.run!(ctx, input);
 }
 
@@ -161,15 +202,27 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
     verbId = verb.id;
     log(`command ${verb.id}`);
     const input = inputOf(verb, routed.rest, globals);
-    let pending = runOffline(io, verb, input, log);
+    // A pull file named as <doc> is read here, offline (CLI70).
+    const pulled = await pullFileOf(io, input);
+    let pending = pulled
+      ? Promise.resolve(pullFileView(verb, input as ViewInput, pulled, io.now(), log))
+      : runOffline(io, verb, input, log);
     if (!pending) {
       const config = await readConfig(io);
       const profile = resolveProfile(globals, io, config);
       host = profile.host;
       log(`profile ${profile.name} host ${profile.host} source ${profile.source}`);
-      pending = runOnline(io, verb, input, profile, log, (sink) => {
-        reported.current = { sink, config, host: profile.host };
-      });
+      pending = runOnline(
+        io,
+        verb,
+        input,
+        profile,
+        log,
+        (sink) => {
+          reported.current = { sink, config, host: profile.host };
+        },
+        globals.mode.json,
+      );
     }
     const value = await pending;
     io.stdout(render(verb, value, globals.mode));

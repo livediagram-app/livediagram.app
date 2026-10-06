@@ -354,6 +354,61 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
+  // A board of three columns, a card raised in the middle one: work on the move.
+  'plan-mode': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <path d="M8.8 4v16M15.2 4v16" />
+      <rect x="4.2" y="7" width="3" height="3" rx="0.6" />
+      <rect x="10.2" y="6" width="3.6" height="5" rx="0.8" />
+      <rect x="16.6" y="7" width="3" height="3" rx="0.6" />
+    </Glyph>
+  ),
+  // A card with a number and a type stripe: one item.
+  items: (
+    <Glyph>
+      <rect x="4" y="6" width="16" height="12" rx="1.5" />
+      <path d="M7 6v12" />
+      <path d="M10 10h6M10 14h4" />
+    </Glyph>
+  ),
+  // A board header over three columns of differing heights: a board with its widgets.
+  boards: (
+    <Glyph>
+      <rect x="2.5" y="3" width="19" height="18" rx="1.5" />
+      <path d="M2.5 7.5h19" />
+      <path d="M5 4.9h4" />
+      <rect x="4.5" y="10" width="4" height="8.5" rx="0.6" />
+      <rect x="10" y="10" width="4" height="5.5" rx="0.6" />
+      <rect x="15.5" y="10" width="4" height="7" rx="0.6" />
+    </Glyph>
+  ),
+  // A card opened up: its title, a description line and a checklist tick.
+  cards: (
+    <Glyph>
+      <rect x="3.5" y="3" width="17" height="18" rx="1.5" />
+      <path d="M7 7h10M7 10.5h7" />
+      <path d="M7 15l1.5 1.5L11 14M13.5 15.5h3.5" />
+    </Glyph>
+  ),
+  // Two cards, one behind the other, each with its type stripe: kinds of card.
+  'card-types': (
+    <Glyph>
+      <path d="M7 5.5V4.5a1.5 1.5 0 0 1 1.5-1.5h11A1.5 1.5 0 0 1 21 4.5v9a1.5 1.5 0 0 1-1.5 1.5H18" />
+      <rect x="3" y="8" width="15" height="12" rx="1.5" />
+      <path d="M6 8v12M9 12h6M9 15.5h4" />
+    </Glyph>
+  ),
+  // A board with one card ringed by the tour's spotlight: Plan shown one part at a time.
+  'plan-tour': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <path d="M8.8 4v16M15.2 4v16" />
+      <rect x="10.4" y="8" width="3.2" height="4" rx="0.6" />
+      <rect x="9" y="6.5" width="6" height="7" rx="1.5" strokeDasharray="1.6 1.4" />
+      <path d="M4.5 16h2.5M17 16h2.5" />
+    </Glyph>
+  ),
   // A page with a title and a bar chart: the poster an infographic becomes.
   illustrate: (
     <Glyph>
@@ -557,6 +612,23 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'one-tab': (
     <Glyph>
       <Prims prims={lucidePanelsTopLeft} />
+    </Glyph>
+  ),
+  // A gallery wall: three framed boards, one with a heart on it.
+  community: (
+    <Glyph>
+      <rect x="2.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="13.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="2.5" y="14" width="8" height="6" rx="1.5" />
+      <path d="M17.5 20.5l-2.6-2.5a1.6 1.6 0 012.6-1.9 1.6 1.6 0 012.6 1.9z" />
+    </Glyph>
+  ),
+  // A search glass over a hashtag: finding boards by their tags.
+  'finding-community-documents': (
+    <Glyph>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.5 15.5 21 21" />
+      <path d="M9 7.5 8 13.5M12.5 7.5l-1 6M7 9.5h6M6.5 11.5h6" />
     </Glyph>
   ),
   // A chain whose far ring is a clock: the link, and the deadline on it.

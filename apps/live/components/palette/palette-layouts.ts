@@ -137,11 +137,39 @@ const ILLUSTRATE: PaletteLayout = {
   ],
 };
 
-export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE } as const;
+// Plan mode (docs/specs/026-plan/plan-mode.md "The palette"): cards, boards and their widgets first, then the
+// plan views that read every card (docs/specs/026-plan/plan-views.md), then the few other elements a team
+// plans beside its boards, borrowed from Write, Media and Behaviours; nothing that organises a diagram.
+const PLAN: PaletteLayout = {
+  // Opening on Cards: a Plan tab is worked by its boards, so the drawing and decorating categories, and a
+  // Popular drawn from them, stay with the other modes.
+  landing: 'plan-cards',
+  categories: [
+    { id: 'plan-cards' },
+    { id: 'plan-boards' },
+    { id: 'plan-widgets' },
+    { id: 'plan-metrics' },
+    { id: 'plan-visualisations' },
+    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
+    {
+      id: 'plan-tools',
+      tiles: [
+        'collab:temperature',
+        'collab:estimate',
+        'collab:idea-box',
+        'tools:picker',
+        'tools:session-timer',
+        'tools:session-stopwatch',
+      ],
+    },
+  ],
+};
+
+export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE, plan: PLAN } as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
 export function paletteLayoutFor(mode: EditorMode): PaletteLayout {
-  return mode === 'illustrate' ? ILLUSTRATE : DIAGRAM;
+  return mode === 'illustrate' ? ILLUSTRATE : mode === 'plan' ? PLAN : DIAGRAM;
 }
 
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {

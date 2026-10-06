@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { badgeCornerInset } from './badge-anchor';
 
-// docs/specs/008-canvas/canvas-and-palette.md: the BadgeStrip sits on the element's outline.
+// docs/specs/008-canvas/element-indicators.md: the indicator pip sits on the element's outline.
 
 const near = (v: { x: number; y: number }) => ({ x: Math.round(v.x), y: Math.round(v.y) });
 

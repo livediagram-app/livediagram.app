@@ -3,11 +3,15 @@
 // live in share-link-row.ts so the defensive mapper has its own test
 // surface.
 
-import { SHARE_LINK_EXPIRY_MS, type ShareLinkExpiry } from '@livediagram/api-schema';
+import {
+  SHARE_LINK_EXPIRY_MS,
+  type ShareLinkExpiry,
+  type SharePurpose,
+} from '@livediagram/api-schema';
 import { rowToShareLink, type ShareLinkRow } from '../share-link-row';
 import type { Env, ShareLinkDTO, ShareRole } from '../types';
 
-const SHARE_LINK_COLS = 'code, document_id, role, created_at, expiry, expires_at, tab_id';
+const SHARE_LINK_COLS = 'code, document_id, role, created_at, expiry, expires_at, tab_id, purpose';
 
 // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) is only a link while its tab is
 // still in the document. Part of the access lookup itself, so a race between a
@@ -36,9 +40,11 @@ export function generateShareCode(length = 8): string {
 
 // Owner-facing list for the Share dialog: ALL links, expired included
 // — the dialog splits them into Active / Inactive (docs/specs/013-workspace/share-link-expiry.md).
+// A Community post's own link is never listed (docs/specs/025-community/community.md): the Community section
+// manages it, so revoke-all and the dialog cannot take a post down by accident.
 export async function listShareLinks(env: Env, documentId: string): Promise<ShareLinkDTO[]> {
   const result = await env.DB.prepare(
-    `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE document_id = ? ORDER BY created_at ASC`,
+    `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE document_id = ? AND purpose = 'share' ORDER BY created_at ASC`,
   )
     .bind(documentId)
     .all<ShareLinkRow>();
@@ -80,19 +86,32 @@ export async function createShareLink(
   role: ShareRole,
   expiry: ShareLinkExpiry = 'never',
   tabId: string | null = null,
+  purpose: SharePurpose = 'share',
 ): Promise<ShareLinkDTO> {
   const createdAt = Date.now();
   const expiresAt = expiresAtFor(expiry, createdAt);
   await env.DB.prepare(
-    'INSERT INTO share_links (code, document_id, role, created_at, expiry, expires_at, tab_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO share_links (code, document_id, role, created_at, expiry, expires_at, tab_id, purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
   )
-    .bind(code, documentId, role, createdAt, expiry === 'never' ? null : expiry, expiresAt, tabId)
+    .bind(
+      code,
+      documentId,
+      role,
+      createdAt,
+      expiry === 'never' ? null : expiry,
+      expiresAt,
+      tabId,
+      purpose,
+    )
     .run();
   // Flip the shareable flag on so the realtime room opens + the
   // share-code resolver picks the document up. The "primary" code is
-  // derived from share_links on read, so no column to update.
-  await env.DB.prepare('UPDATE documents SET shareable = 1 WHERE id = ?').bind(documentId).run();
-  return { code, documentId, role, createdAt, expiry, expiresAt, tabId };
+  // derived from share_links on read, so no column to update. A community
+  // link opens no room, so it leaves the flag as it is.
+  if (purpose === 'share') {
+    await env.DB.prepare('UPDATE documents SET shareable = 1 WHERE id = ?').bind(documentId).run();
+  }
+  return { code, documentId, role, createdAt, expiry, expiresAt, tabId, purpose };
 }
 
 // Re-arm an expiring link for another round of its creation-time
@@ -156,7 +175,7 @@ export async function deleteShareLink(env: Env, code: string): Promise<void> {
 // no column to repoint.
 async function closeSharingIfNoLinksLeft(env: Env, documentId: string): Promise<void> {
   const remaining = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM share_links WHERE document_id = ?',
+    "SELECT COUNT(*) AS n FROM share_links WHERE document_id = ? AND purpose = 'share'",
   )
     .bind(documentId)
     .first<{ n: number }>();
