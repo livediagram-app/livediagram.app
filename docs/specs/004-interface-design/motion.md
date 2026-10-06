@@ -88,11 +88,20 @@ motion is stricter still.
 ## Editor arrival
 
 The editor's floating chrome (the Explorer, Palette and Map panels, the tab bar, the zoom cluster)
-and the canvas content **fade in** as they mount, `fade-in` at the short token (200ms), opacity
-only, so a document opens softly rather than its parts popping into place. It is one rule in
-`apps/live/app/globals.css` keyed on the surfaces' existing markers (`data-floating-panel`,
-`data-editor-tabbar`, `data-zoom-cluster`, `data-canvas-world`), in the components layer so a
-surface's own entrance utility still wins. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
+**fades in** as it mounts, `fade-in` at the short token (200ms), opacity only, so a document opens
+softly rather than its parts popping into place. It is one rule in `apps/live/app/globals.css`
+keyed on the surfaces' existing markers (`data-floating-panel`, `data-editor-tabbar`,
+`data-zoom-cluster`), in the components layer so a surface's own entrance utility still wins.
+
+The board itself (the canvas world, `data-canvas-world`) **appears at once**, with no fade. Fading
+the world animates the opacity of every element on the board, and Chrome lays out the whole page's
+compositing again as that fade starts and again as it ends: about 300 ms of main-thread work each
+time at the reference speed on the 1,000-element reference board. That alone kept opening the
+board over its 3 s time-to-interactive budget ([Canvas performance](../008-canvas/canvas-performance.md)).
+Measured on the reference board, with the elements' arrival change in
+[Canvas and palette](../008-canvas/canvas-and-palette.md) "Motion and animations": the median open
+went from 2.9 s (whiteboard) and 3.0 s (diagram), with runs up to 5.0 s and 4.2 s, to 2.2 s and
+1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
 brush, collaborate, zoom), used to scale in from nothing with an overshoot
 (`pop-in`); a whole panel or toolbar popping read as abrupt, so they fade (`animate-fade-in`)
 instead. `pop-in` stays
