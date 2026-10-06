@@ -109,9 +109,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Activity|Loaded|Retry':
     'Someone clicked "Try again" after the Explorer\'s Activity section failed to load, retrying the read.',
   'Activity|Opened|':
-    "Someone opened the Explorer's Activity section, which lists open actions assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
+    "Someone opened the Explorer's Activity section, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
   'Activity|Selected|Action':
     "Someone clicked an action row in the Explorer's Activity section, jumping to the element it's assigned on.",
+  'Activity|Selected|Card':
+    "Someone clicked a Plan card row in the Explorer's Activity section, jumping to the card on its board.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Activity section, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':

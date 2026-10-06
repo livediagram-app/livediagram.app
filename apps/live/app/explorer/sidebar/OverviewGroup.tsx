@@ -29,7 +29,7 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
       />
-      {/* Open actions ASSIGNED TO the reader (docs/specs/013-workspace/activity-page.md); hidden at zero. */}
+      {/* Open actions and Plan cards ASSIGNED TO the reader (docs/specs/013-workspace/activity-page.md); hidden at zero. */}
       <SidebarRow
         icon={<ActivityIcon />}
         label={SIDEBAR_LABELS.activity}

@@ -57,12 +57,31 @@ export type ActivityThread = ActivityPlace & {
   mentionsYou: boolean;
 };
 
+// An open Plan card (docs/specs/026-plan/items.md) whose Assignee is the reader (docs/specs/013-workspace/
+// activity-page.md §2.4). Not an ActivityPlace: a card is an item, not an element, and `board` (where the row
+// opens it) is null when no board in its document shows it.
+export type ActivityCard = {
+  documentId: string;
+  documentName: string;
+  teamId: string | null;
+  via: 'own' | 'team' | 'shared';
+  shareCode: string | null;
+  board: { tabId: string; tabName: string; elementId: string; title: string } | null;
+  id: string;
+  key: number;
+  type: string;
+  title: string;
+  status: string | null;
+  updatedAt: number;
+};
+
 export type ActivityReadResult = {
   actions: ActivityAction[];
   threads: ActivityThread[];
+  cards: ActivityCard[];
 };
 
-// Ceiling per kind on one read. The page is an inbox, not a history: a
+// Ceiling per kind (actions, threads, cards) on one read. The page is an inbox, not a history: a
 // reader with more than this outstanding is not going to scroll to the
 // hundredth, and the cap keeps the response bounded without paging.
 export const ACTIVITY_LIST_MAX = 100;

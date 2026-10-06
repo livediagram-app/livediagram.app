@@ -1828,7 +1828,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // An Activity-page row opened this document at one element (docs/specs/013-workspace/activity-page.md
   // §1): once the pinned tab is ready, select it, bring it into view and
-  // open its popover. See useCollabDeepLink.
+  // open its popover (or a Plan card's item panel). See useCollabDeepLink.
   useCollabDeepLink({
     link: collabDeepLink,
     hydrated,
@@ -1843,6 +1843,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
     openActionPopover,
     openComments,
+    // Read when the link lands, after this render has made the Plan slice below.
+    openItem: (itemId) => plan.context.openItem(itemId),
   });
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {

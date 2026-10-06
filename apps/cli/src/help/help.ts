@@ -18,7 +18,11 @@ const GROUPED_ROWS = [
     after: 'presence',
     summary: 'block until, or stream, comments and changes',
   },
-  { words: ['pull', 'push'], after: 'graph', summary: 'one document to a file and back' },
+  {
+    words: ['pull', 'push'],
+    after: 'graph',
+    summary: 'one document to a file and back; export --all',
+  },
 ] as const;
 export const NAMED_ONLY = [
   'template',

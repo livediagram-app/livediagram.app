@@ -18,13 +18,17 @@
     "@livediagram/agent-verbs": "workspace:*",
     "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
+    "@livediagram/icons": "workspace:*",
+    "@livediagram/render-png": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^26.6.3",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",

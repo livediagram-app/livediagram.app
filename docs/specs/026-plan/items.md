@@ -144,6 +144,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   name, else their invite address's local part), fetched once a document has Plan content. A guest, who has no
   teams, can assign only themselves. A card already assigned to someone outside that list keeps them, shown in its
   picker.
+- **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
+  [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
 - **Vote** with participate access, as comments.
 - An agent token acts as its person, and a read-only token reads only.
 

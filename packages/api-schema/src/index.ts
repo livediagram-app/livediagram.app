@@ -653,3 +653,4 @@ export * from './community-paths';
 export * from './community-query';
 export * from './document-paths';
 export * from './http-errors';
+export * from './oauth-clients';
