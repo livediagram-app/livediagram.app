@@ -111,7 +111,9 @@ A mind map root's **Edit Outline** and **Tidy Map** are commands, not status, so
 at rest and appear only while the pointer is over that root (not while it is selected, when the
 whole cluster is out of the way). In Top they lead the cluster (left of the indicators); in Footer
 they end the row; in the pip they lead it. Their space is reserved at rest, so nothing moves when
-they appear. Both stay in the root's Mind Map menu section too, which is the way in on a touch
+they appear. A cluster holding the commands alone (a root with no link, note, action or comment)
+hides whole at rest, its pip chip and backing included, so an empty chip never sits on the root.
+Both stay in the root's Mind Map menu section too, which is the way in on a touch
 device or from the keyboard.
 
 ## Unchanged

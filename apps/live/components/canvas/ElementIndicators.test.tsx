@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type ShapeKind } from '@livediagram/document';
@@ -205,6 +205,35 @@ describe('ElementIndicators', () => {
     expect(pip.className).toContain('bg-white');
     // No outline point given: the box-corner rule places it.
     expect(pip.style.right).toBe('0px');
+  });
+
+  it('hides a cluster of commands alone until hover, chip and all', () => {
+    const placed = { form: 'pip', box: null, pip: null, inset: { top: 0, bottom: 0 } } as const;
+    const only = items({ note: undefined, action: undefined, comments: undefined });
+    const { container } = render(
+      <ElementIndicators
+        element={shape('square', 60, 30)}
+        items={only}
+        placed={placed}
+        cornerPx={0}
+        selected={false}
+      />,
+    );
+    const pip = container.querySelector<HTMLElement>('[data-indicators="pip"]')!;
+    expect(pip.className).toContain('invisible');
+    expect(pip.className).toContain('group-hover/el:visible');
+    cleanup();
+    // With status beside the commands, the chip stays shown for it.
+    const { container: mixed } = render(
+      <ElementIndicators
+        element={shape('square', 60, 30)}
+        items={items()}
+        placed={placed}
+        cornerPx={0}
+        selected={false}
+      />,
+    );
+    expect(mixed.querySelector('[data-indicators="pip"]')!.className).not.toContain('invisible');
   });
 
   it('keeps a press on the cluster from reaching the element', () => {
