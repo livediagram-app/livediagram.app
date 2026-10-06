@@ -3,7 +3,7 @@
 // A board header's widget zone (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets"):
 // the board's widgets in order, one row that scrolls sideways when full. Someone who may edit drags a
 // widget left or right to reorder it (a bar shows where it lands), moves a focused one with Alt+← and
-// Alt+→, and takes one off with its × or Delete. A widget dragged in from the palette shows the same
+// Alt+→, and takes one off with its × (shown only while the board is selected) or Delete. A widget dragged in from the palette shows the same
 // bar (`dropAt`, from the palette drag); the drop itself is the palette's.
 import { useRef, useState, type ReactNode } from 'react';
 import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@livediagram/items';
@@ -22,6 +22,7 @@ type Reorder = { kind: BoardWidgetKind; startX: number; dx: number; slot: number
 export function BoardWidgetZone({
   widgets,
   canEdit,
+  selected = false,
   palette,
   dropAt,
   flash = null,
@@ -30,6 +31,8 @@ export function BoardWidgetZone({
 }: {
   widgets: readonly BoardWidgetKind[];
   canEdit: boolean;
+  // The board is selected: only then do the widgets show their ×.
+  selected?: boolean;
   palette: PlanPalette;
   // Where a widget dragged from the palette would land, while one is over this zone.
   dropAt: number | null;
@@ -171,11 +174,11 @@ export function BoardWidgetZone({
             }}
           >
             {render(kind)}
-            {canEdit ? (
+            {canEdit && selected ? (
               <button
                 type="button"
                 aria-label={`Remove ${BOARD_WIDGET_INFO[kind].label}`}
-                className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full border shadow-sm group-hover/widget:flex group-focus-within/widget:flex [@media(pointer:coarse)]:flex"
+                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border shadow-sm"
                 style={{
                   backgroundColor: palette.card,
                   borderColor: palette.border,
