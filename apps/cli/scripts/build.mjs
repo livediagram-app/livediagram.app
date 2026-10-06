@@ -1,6 +1,6 @@
 // The CLI as a publishable package (docs/specs/015-api/blueprints/cli.md CLI1, CLI2): dist/livediagram.mjs, every
 // workspace package and dependency bundled for Node 22 and later, beside the package.json npm publishes (named
-// `livediagram`, so turbo never sees two packages of one name), the licence, the user README and the notices of every
+// `@livediagram/cli` like the workspace; dist sits outside the workspace globs), the licence, the user README and the notices of every
 // bundled package, read from esbuild's metafile; beside the bundle the PNG renderer's wasm and font (CLI31), which only a
 // render reads, and the font's licence. A bundled package without a licence fails the build.
 
@@ -109,7 +109,8 @@ await writeFile(
   join(dist, 'package.json'),
   `${JSON.stringify(
     {
-      name: 'livediagram',
+      // Published under the workspace's own name, @livediagram/cli (CLI1); the command it installs is `livediagram`.
+      name: source.name,
       version: source.version,
       description: 'Read, build, edit and discuss livediagram documents from the terminal.',
       license: 'MIT',

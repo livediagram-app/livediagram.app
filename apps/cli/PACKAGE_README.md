@@ -4,7 +4,14 @@ The command line for [livediagram](https://livediagram.app): read, build, edit a
 built first for coding agents and second for scripts.
 
 ```bash
-npx livediagram --help
+npx @livediagram/cli --help
+```
+
+or install it, which gives you the `livediagram` command:
+
+```bash
+npm install -g @livediagram/cli
+livediagram --help
 ```
 
 ## Sign in

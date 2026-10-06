@@ -197,6 +197,7 @@ describe('pull', () => {
     const { code, err } = await cli(['pull', DOC], host({ format: 99 }).route);
     expect(code).toBe(1);
     expect(err).toContain('stores documents in format 99; this livediagram reads format 2');
+    expect(err).toContain('npm install -g @livediagram/cli@latest, or npx @livediagram/cli@latest');
   });
 });
 

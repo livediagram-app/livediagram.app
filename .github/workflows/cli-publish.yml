@@ -1,11 +1,11 @@
 name: CLI publish
 
-# Publishes the CLI to npm as `livediagram` with provenance (docs/specs/015-api/blueprints/cli.md CLI3), through npm
+# Publishes the CLI to npm as `@livediagram/cli` (command `livediagram`) with provenance (docs/specs/015-api/blueprints/cli.md CLI3), through npm
 # trusted publishing: npm trusts this workflow by its OIDC identity, so no npm token is stored anywhere. Runs when
 # apps/cli/package.json changes on main (a version bump) and by hand; a version already on npm is skipped, so a
 # change that keeps the version publishes nothing.
 #
-# Before the first run, on npmjs.com: create the `livediagram` package's trusted publisher for this repository and
+# Before the first run, on npmjs.com: create the `@livediagram/cli` package's trusted publisher for this repository and
 # this workflow file (Settings > Trusted publishing). Publishing cannot be undone.
 
 on:
@@ -64,9 +64,9 @@ jobs:
         run: |
           version=$(node -p "require('./apps/cli/dist/package.json').version")
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          if npm view "livediagram@$version" version > /dev/null 2>&1; then
+          if npm view "@livediagram/cli@$version" version > /dev/null 2>&1; then
             echo "already=true" >> "$GITHUB_OUTPUT"
-            echo "livediagram $version is already on npm: nothing to publish"
+            echo "@livediagram/cli $version is already on npm: nothing to publish"
           else
             echo "already=false" >> "$GITHUB_OUTPUT"
           fi

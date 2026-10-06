@@ -24,7 +24,7 @@ import { loadCapabilities } from './config/capabilities';
 import { withTelemetry, type ConfigFile } from './config/config-file';
 import { configDir } from './config/paths';
 import { readConfig, resolveProfile, type Profile } from './config/profiles';
-import { CLI_VERSION, isBelow } from './config/version';
+import { CLI_VERSION, isBelow, UPGRADE_HINT } from './config/version';
 import { debugLog, type DebugLog } from './debug';
 import { fieldsOf } from './dispatch/fields';
 import { splitGlobals, type Globals } from './dispatch/globals';
@@ -101,7 +101,7 @@ async function runOnline(
       exit: EXIT.rejected,
       code: 'version',
       message: `${profile.host} stores documents in format ${caps.documentFormat}; this livediagram reads format ${DOCUMENT_FORMAT}`,
-      hint: 'npm install -g livediagram@latest, or npx livediagram@latest',
+      hint: UPGRADE_HINT,
     });
   }
   const http = transport(io, caps.apiBase, log);
@@ -125,7 +125,7 @@ async function runOnline(
       exit: EXIT.rejected,
       code: 'version',
       message: `${profile.host} accepts writes from livediagram ${caps.minVersion} or later; this is ${CLI_VERSION}`,
-      hint: 'npm install -g livediagram@latest, or npx livediagram@latest',
+      hint: UPGRADE_HINT,
     });
   }
   const api = http.forToken(credential.token);
