@@ -76,6 +76,12 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   ),
   mcpTool('ListTrash', 'List Trash', 'Listing the documents in the Trash.'),
   mcpTool('RestoreDocument', 'Restore Document', 'Bringing a document back from the Trash.'),
+  mcpTool(
+    'ListItems',
+    'List Items',
+    'Reading a document’s Plan items: cards, tasks and their fields.',
+  ),
+  mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

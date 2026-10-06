@@ -740,10 +740,12 @@ and no `structuredContent`; MCP exempts errors from the output schema.
 | `list_items`       | `count`, `items[]` of `{ ref, id, type, status, title, fields }`, `url`                                   |
 | `change_items`     | `applied[]` (one line per change), `url`                                                                  |
 
-**The schema and the result can't drift.** The schemas live in
-`apps/mcp/src/output-schema.ts`, one per tool, and the `registerTool` wrapper
-(§4.14) makes `outputSchema` a **required** field beside `behaviour`, so a new
-tool without one is a type error. The MCP SDK validates every successful
+**The schema and the result can't drift.** Each tool is a verb in the shared catalogue
+(`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its
+name, title, description, behaviour and both schemas (`packages/agent-verbs/src/mcp/output-schema.ts`, one per
+tool); the `registerTool` wrapper (§4.14) registers a tool only from its verb, so a tool without an output schema
+or a behaviour cannot be written, and a parity test (`apps/mcp/src/verb-parity.test.ts`) fails when a registered
+tool and its verb disagree. The MCP SDK validates every successful
 result against its tool's schema on the way out, so a result that stopped
 matching fails the call loudly rather than shipping a wrong contract. A test
 drives every tool through a real SDK client and server, which validates
