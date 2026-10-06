@@ -183,6 +183,18 @@ it, and mints a session token for any test account on `/e2e/token?sub=user_…`,
 room, and two or three stub browsers can collaborate in one document. A test that changes an
 account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
+## Armed guest signatures
+
+The stack keeps guest signature enforcement off, because many specs still seed through the api
+with unsigned guest ids. The specs in `apps/live/e2e/armed/` prove the opposite case, as
+production runs it once armed: a first-time guest who arrives on `/` or `/new`, or opens the
+Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
+the canvas, and no api response is `401`. `pnpm --filter @livediagram/live test:e2e:armed` sets
+`E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
+(live `:3017`, api `:8789`, marketing `:3018`) with `GUEST_SIG_ENFORCE_AFTER` in the past. It
+reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
+has built it already.
+
 ## No uncaught errors
 
 The suite's standing assertion is that a flow produces **no uncaught
