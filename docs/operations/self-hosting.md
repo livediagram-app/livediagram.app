@@ -95,11 +95,12 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
 
-   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4) — this closes the "observe a guest id, use it as a credential" hole for shared documents. It's **off by default** so pre-signing guests aren't locked out; set `GUEST_SIG_ENFORCE_AFTER` to an epoch-ms cutoff once your active guests have rotated to signed ids (the app re-signs on load):
+   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4), which closes the "observe a guest id, use it as a credential" hole for shared documents. Two plain vars in `apps/api/wrangler.toml` `[vars]` control it, and **the file ships the hosted values, so edit both for your deployment** (or delete both lines to leave enforcement off):
 
-   ```sh
-   echo "$(date +%s000)" | pnpm --filter @livediagram/api exec wrangler secret put GUEST_SIG_ENFORCE_AFTER
-   ```
+   - `GUEST_SIGNING_LIVE_AT`: epoch ms when your deployment first had `GUEST_ID_HMAC_SECRET`. A guest id created before it can still make its one-time upgrade onto a signed id after enforcement starts, so returning pre-signing guests keep their documents.
+   - `GUEST_SIG_ENFORCE_AFTER`: epoch ms from which owner-scoped routes, the realtime room's owner leg and the upgrade itself require a valid signature.
+
+   Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` and the e2e stack blank `GUEST_SIG_ENFORCE_AFTER`.
 
 6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
 
