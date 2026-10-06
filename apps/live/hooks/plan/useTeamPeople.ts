@@ -3,8 +3,8 @@
 // Who a card can be assigned to (docs/specs/026-plan/items.md "Who may do what"): the joined members of the
 // teams you are part of. Named as items name people (hashed ids, docs/specs/026-plan/blueprints/
 // item-store.md "Security and trust"), so the person picked is the one the api signs their writes as.
-// Fetched once a document has Plan content (docs/specs/026-plan/plan-mode.md "Cost"); a guest, who has
-// no teams, gets nobody but themselves.
+// Fetched once a document has Plan content (docs/specs/026-plan/plan-mode.md "Cost"), and only when signed in:
+// a guest has no teams, so asking would only earn a 401 the browser logs on every load.
 import { useEffect, useState } from 'react';
 import { itemPersonId, type ItemPerson } from '@livediagram/items';
 import type { TeamMember } from '@livediagram/api-schema';
@@ -19,10 +19,14 @@ export async function teamMemberPerson(member: TeamMember): Promise<ItemPerson |
   return { id: await itemPersonId(member.userId), name, color: colorForKey(member.userId) };
 }
 
-export function useTeamPeople(ownerId: string, enabled: boolean): readonly ItemPerson[] {
+export function useTeamPeople(
+  ownerId: string,
+  enabled: boolean,
+  signedIn: boolean,
+): readonly ItemPerson[] {
   const [people, setPeople] = useState<readonly ItemPerson[]>([]);
   useEffect(() => {
-    if (!enabled || !ownerId) return;
+    if (!enabled || !signedIn || !ownerId) return;
     let live = true;
     void (async () => {
       try {
@@ -36,13 +40,13 @@ export function useTeamPeople(ownerId: string, enabled: boolean): readonly ItemP
           }
         if (live) setPeople([...byId.values()]);
       } catch (err) {
-        // A guest has no teams; a failure leaves the list as it was.
+        // A failure leaves the list as it was.
         console.warn('[plan] plan.team-people.load-failed', { error: String(err) });
       }
     })();
     return () => {
       live = false;
     };
-  }, [ownerId, enabled]);
+  }, [ownerId, enabled, signedIn]);
   return people;
 }

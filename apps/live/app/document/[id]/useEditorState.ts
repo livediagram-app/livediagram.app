@@ -1983,7 +1983,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     planNeeded,
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
+  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded, !!clerkUserId);
   const plan = usePlanSlice({
     planItems,
     itemTypes,

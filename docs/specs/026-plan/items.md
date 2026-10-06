@@ -203,7 +203,7 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - **Create, update, move, delete** with edit access.
 - **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
   name, else their invite address's local part), fetched once a document has Plan content. A guest, who has no
-  teams, can assign only themselves. A card already assigned to someone outside that list keeps them, shown in its
+  teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its
   picker.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
   [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
