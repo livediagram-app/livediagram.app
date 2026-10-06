@@ -46,8 +46,8 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
 15. Profile the following gestures; their timings carry the sampler's overhead, so read budgets from
     step 10, and the profile only for where the time goes.
 16. Map the `.cpuprofile` back through the build's source maps (a chunk's map is named by its
-    own hash: follow the chunk's `sourceMappingURL` comment, not the chunk's file name) and read self and inclusive time
-    for app code.
+    own hash: follow the chunk's `sourceMappingURL` comment, not the chunk's file name) and read
+    self and inclusive time for app code.
 
 ## Report
 
