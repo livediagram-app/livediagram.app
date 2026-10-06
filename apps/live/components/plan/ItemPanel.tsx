@@ -12,6 +12,7 @@ import {
   detailFieldsOf,
   detailsLabelOf,
   isArchived,
+  isFlagged,
   itemTitle,
   tabsOf,
   typeIn,
@@ -27,6 +28,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
+import { FLAG_COLOUR } from './item-flag';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import {
   ItemFieldEditor,
@@ -56,6 +58,7 @@ export function ItemPanel({
   onOpenItem,
   onDelete,
   onDuplicate,
+  onFlag,
   onArchive,
   onClose,
 }: {
@@ -78,6 +81,7 @@ export function ItemPanel({
   onOpenItem: (itemId: string) => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  onFlag: () => void;
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
@@ -137,13 +141,24 @@ export function ItemPanel({
         ))}
       </Select>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
+      {isFlagged(item) ? (
+        <span
+          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+          style={{ color: FLAG_COLOUR, backgroundColor: `${FLAG_COLOUR}14` }}
+        >
+          <PlanTypeGlyph glyph="flag" size={12} color={FLAG_COLOUR} />
+          Flagged
+        </span>
+      ) : null}
       <span className="flex-1" />
       <HelpArticleLink article="planCards" variant="labelled" />
       {canEdit ? (
         <ItemPanelMenu
           itemKey={item.key}
           archived={isArchived(item)}
+          flagged={isFlagged(item)}
           onDuplicate={onDuplicate}
+          onFlag={onFlag}
           onArchive={onArchive}
           onDelete={onDelete}
         />

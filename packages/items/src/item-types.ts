@@ -19,7 +19,9 @@ export type ItemFieldId =
   | 'parent'
   | 'votes'
   // Archived (docs/specs/026-plan/items.md "Archive"): kept, but off every board but an Archive board.
-  | 'archived';
+  | 'archived'
+  // Flagged (docs/specs/026-plan/items.md "Flags"): marked for attention, on every board it is on.
+  | 'flagged';
 
 // A field a person adds to a type (docs/specs/026-plan/item-types.md "An item type"): its value is
 // an ordinary entry in the item's `fields`, under `id`.

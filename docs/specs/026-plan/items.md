@@ -105,6 +105,18 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   **Archived** column, in Compact cards. It takes no new cards (no Add Card, and palette cards are refused).
 - Archive and Restore send `Plan · Moved · Archive` and `Plan · Restored · Card`.
 
+## Flags
+
+- **Flagging** an item marks it for attention without moving it: it sets `flagged: true` (a flag: set, or the key
+  removed). It is undoable like any change, and reaches everyone at once like any field.
+- It is done from a card's menu (**Flag**) or the item panel's ⋯ menu (**Flag**); on a flagged item both read
+  **Remove Flag**.
+- A flagged card wears a red flag at the end of its title on every board it is on, at every card size, in exports
+  and thumbnails, and on its item slide. The item panel's header shows a **Flagged** chip beside the key.
+- Flags change nothing else: a flagged card counts, sorts and moves like any other, and keeps its flag when
+  archived, trashed or restored.
+- Flag and Remove Flag send `Plan · Toggled · FlagOn` and `Plan · Toggled · FlagOff`.
+
 ## Trash
 
 - **Trash** is a status, `trash`, that no board shows (not in a column, not counted, not "not on this board", not

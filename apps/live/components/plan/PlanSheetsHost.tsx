@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import { isArchived, itemLabels } from '@livediagram/items';
 import { duplicateItem } from './duplicate-item';
+import { toggleFlag } from './item-flag';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
@@ -77,6 +78,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onOpenItem={(id) => ctx.openItem(id)}
         onDelete={() => ctx.deleteItem(item.id)}
         onDuplicate={() => duplicateItem(ctx, item)}
+        onFlag={() => toggleFlag(ctx, item)}
         onArchive={() => {
           const was = isArchived(item);
           ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });

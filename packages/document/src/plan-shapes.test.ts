@@ -109,6 +109,12 @@ describe('plan shapes in exports', () => {
     expect(svg).not.toContain('NaN');
   });
 
+  it('draws a flagged card with its flag (docs/specs/026-plan/items.md "Flags")', () => {
+    const flagged = new Map([['item0001', item('item0001', { title: 'Hot', flagged: true })]]);
+    expect(svgBoxed(card, { items: flagged })).toContain('⚑');
+    expect(svgBoxed(card, { items })).not.toContain('⚑');
+  });
+
   it('draws empty columns without items, and a card placeholder', () => {
     const svg = svgBoxed(board);
     expect(svg).toContain('Done');

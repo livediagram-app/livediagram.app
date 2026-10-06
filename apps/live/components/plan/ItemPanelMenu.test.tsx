@@ -11,8 +11,8 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 afterEach(cleanup);
 
 function open(archived = false) {
-  const fns = { onDuplicate: vi.fn(), onArchive: vi.fn(), onDelete: vi.fn() };
-  render(<ItemPanelMenu itemKey={7} archived={archived} {...fns} />);
+  const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onDelete: vi.fn() };
+  render(<ItemPanelMenu itemKey={7} archived={archived} flagged={archived} {...fns} />);
   fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
   return fns;
 }
@@ -31,9 +31,16 @@ describe('ItemPanelMenu', () => {
     expect(fns.onDelete).toHaveBeenCalledOnce();
   });
 
-  it('offers Restore for an archived card', () => {
+  it('offers Restore for an archived card, and Remove Flag for a flagged one', () => {
     open(true);
     expect(screen.getByRole('menuitem', { name: 'Restore' })).toBeTruthy();
+    expect(screen.getByRole('menuitem', { name: 'Remove Flag' })).toBeTruthy();
+  });
+
+  it('flags the card', () => {
+    const fns = open();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Flag' }));
+    expect(fns.onFlag).toHaveBeenCalledOnce();
   });
 });
 

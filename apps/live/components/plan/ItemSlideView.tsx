@@ -7,6 +7,7 @@
 import {
   ITEM_TYPES,
   PRIORITY_LABELS,
+  isFlagged,
   isPriority,
   itemAssignee,
   itemLabels,
@@ -21,6 +22,7 @@ import { NoteRichText } from '@/components/notes/NoteRichText';
 import { descriptionRuns } from './ItemDescription';
 import { PersonDisc } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { FLAG_COLOUR } from './item-flag';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from './plan-palette';
 
 // How much larger than the panel the description reads on a slide.
@@ -102,6 +104,12 @@ export function ItemSlideView({
         <PlanTypeGlyph glyph={type.glyph} size={26} color={accent} />
         <span>{type.label}</span>
         <span style={{ color: palette.muted }}>#{item.key}</span>
+        {isFlagged(item) ? (
+          <span className="flex items-center gap-1.5" style={{ color: FLAG_COLOUR }}>
+            <PlanTypeGlyph glyph="flag" size={22} color={FLAG_COLOUR} />
+            Flagged
+          </span>
+        ) : null}
       </div>
       <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">
         {itemTitle(item) || 'Untitled'}

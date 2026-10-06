@@ -53,6 +53,7 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   parent: 'item-ref',
   votes: 'votes',
   archived: 'flag',
+  flagged: 'flag',
 };
 
 export const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;

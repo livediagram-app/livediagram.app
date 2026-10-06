@@ -36,6 +36,7 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   parent: 'Parent',
   votes: 'Votes',
   archived: 'Archived',
+  flagged: 'Flagged',
 };
 
 export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {

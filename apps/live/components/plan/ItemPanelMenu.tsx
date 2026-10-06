@@ -1,24 +1,29 @@
 'use client';
 
-// The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Archive (or
-// Restore) and Delete, as icon-left rows beside the panel's Close, so the header keeps only the item's
+// The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
+// Flag), Archive (or Restore) and Delete, as icon-left rows beside the panel's Close, so the header keeps only the item's
 // type, its key, Help and the two buttons.
 import { useState } from 'react';
 import { DuplicateIcon, TrashIcon } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
 import { PlanBoardTileArt } from './plan-tile-art';
+import { PlanTypeGlyph } from './plan-type-glyph';
 
 export function ItemPanelMenu({
   itemKey,
   archived,
+  flagged,
   onDuplicate,
+  onFlag,
   onArchive,
   onDelete,
 }: {
   itemKey: number;
   archived: boolean;
+  flagged: boolean;
   onDuplicate: () => void;
+  onFlag: () => void;
   onArchive: () => void;
   onDelete: () => void;
 }) {
@@ -45,6 +50,12 @@ export function ItemPanelMenu({
             label="Duplicate"
             icon={<DuplicateIcon />}
             onClick={run(onDuplicate)}
+          />
+          <MenuActionRow
+            plain
+            label={flagged ? 'Remove Flag' : 'Flag'}
+            icon={<PlanTypeGlyph glyph="flag" size={14} />}
+            onClick={run(onFlag)}
           />
           <MenuActionRow
             plain

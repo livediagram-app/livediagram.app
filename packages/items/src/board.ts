@@ -123,6 +123,11 @@ export function isArchived(item: Item): boolean {
   return item.fields['archived'] === true;
 }
 
+// A flagged item (docs/specs/026-plan/items.md "Flags"): marked for attention wherever it shows.
+export function isFlagged(item: Item): boolean {
+  return item.fields['flagged'] === true;
+}
+
 // The Trash (docs/specs/026-plan/items.md "Trash"): a status no board shows. A trashed item keeps the status
 // it had under `trashedFrom`, so it can be restored to it.
 export const TRASH_STATUS = 'trash';

@@ -7,6 +7,7 @@
 // Face-down while its board hides writing; ringed in someone's colour while they drag or read it.
 import {
   PRIORITY_LABELS,
+  isFlagged,
   isPriority,
   itemAssignee,
   itemLabels,
@@ -26,6 +27,7 @@ import { customFieldText } from './custom-field-text';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { FLAG_COLOUR } from './item-flag';
 
 export type PlanCardFaceProps = {
   item: Item;
@@ -86,6 +88,15 @@ function StartTag({ start, palette }: { start: string; palette: PlanPalette }) {
   return (
     <span className="inline-flex items-center gap-1" style={{ color: palette.muted }}>
       From {dueLabel(start)}
+    </span>
+  );
+}
+
+// A flagged card's mark (docs/specs/026-plan/items.md "Flags"), at the end of its title on every size.
+function FlagMark() {
+  return (
+    <span className="mt-0.5 shrink-0" role="img" aria-label="Flagged">
+      <PlanTypeGlyph glyph="flag" size={13} color={FLAG_COLOUR} />
     </span>
   );
 }
@@ -155,6 +166,7 @@ export function PlanCardFace({
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
+  const flag = isFlagged(item) ? <FlagMark /> : null;
   const frame = {
     backgroundColor: palette.card,
     borderColor: palette.cardBorder,
@@ -189,6 +201,7 @@ export function PlanCardFace({
         >
           {title}
         </span>
+        {flag}
         {voting ? <VoteControl palette={palette} total={votes} voting={voting} /> : null}
       </div>
     );
@@ -222,6 +235,7 @@ export function PlanCardFace({
           >
             {title}
           </span>
+          {flag}
         </div>
         {meta ? (
           <div
@@ -285,11 +299,14 @@ export function PlanCardFace({
           ) : null}
         </div>
       ) : null}
-      <div
-        className="line-clamp-3 text-[14px] font-semibold leading-snug"
-        style={{ color: palette.text }}
-      >
-        {title}
+      <div className="flex items-start gap-1.5">
+        <div
+          className="line-clamp-3 min-w-0 flex-1 text-[14px] font-semibold leading-snug"
+          style={{ color: palette.text }}
+        >
+          {title}
+        </div>
+        {flag}
       </div>
       {show('parent') && parent ? (
         <div
