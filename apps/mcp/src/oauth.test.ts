@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from './env';
 import { __test, registerOauthRoutes } from './oauth';
 
@@ -122,7 +122,11 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
     const session = await startAuthorize(await register());
     const res = await app.request(`/oauth/session/${session}`, {}, env);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ clientName: 'Claude', redirectHost: 'client.test' });
+    expect(await res.json()).toEqual({
+      clientName: 'Claude',
+      redirectHost: 'client.test',
+      clientId: expect.any(String),
+    });
   });
 
   it('404s an unknown or expired session', async () => {
@@ -137,7 +141,7 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
       string,
       unknown
     >;
-    expect(Object.keys(body).sort()).toEqual(['clientName', 'redirectHost']);
+    expect(Object.keys(body).sort()).toEqual(['clientId', 'clientName', 'redirectHost']);
     expect(JSON.stringify(body)).not.toContain('code_challenge');
   });
 
@@ -181,7 +185,11 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
     );
     const id = new URL(session.headers.get('location')!).searchParams.get('session')!;
     const body = await (await app.request(`/oauth/session/${id}`, {}, env)).json();
-    expect(body).toEqual({ clientName: 'Notion', redirectHost: 'evil.test' });
+    expect(body).toEqual({
+      clientName: 'Notion',
+      redirectHost: 'evil.test',
+      clientId: expect.any(String),
+    });
   });
 });
 
@@ -346,5 +354,55 @@ describe('full authorize -> complete -> token flow', () => {
       env,
     );
     expect(((await tok.json()) as { error: string }).error).toBe('invalid_request');
+  });
+});
+
+describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", CLI35, CLI77)', () => {
+  const authorize = (redirect: string, client = 'livediagram-cli') =>
+    app.request(
+      `/oauth/authorize?client_id=${client}&redirect_uri=${encodeURIComponent(redirect)}&code_challenge=${'c'.repeat(43)}&code_challenge_method=S256&response_type=code`,
+      {},
+      env,
+    );
+
+  it('authorizes the built-in client on any loopback port, and names it to the consent page', async () => {
+    for (const redirect of ['http://127.0.0.1:53124/callback', 'http://[::1]:9/callback']) {
+      const res = await authorize(redirect);
+      expect(res.status).toBe(302);
+      const session = new URL(res.headers.get('Location')!).searchParams.get('session')!;
+      const looked = await app.request(`/oauth/session/${session}`, {}, env);
+      expect(await looked.json()).toMatchObject({
+        clientName: 'livediagram CLI',
+        clientId: 'livediagram-cli',
+      });
+    }
+  });
+
+  it('refuses another path, host or scheme, and any port for a client that registered none', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    for (const redirect of [
+      'http://127.0.0.1:5/other',
+      'http://evil.test:5/callback',
+      'https://127.0.0.1:5/callback',
+      'not a url',
+    ])
+      expect((await authorize(redirect)).status).toBe(400);
+    const id = await register();
+    expect((await authorize('https://client.test:8443/cb', id)).status).toBe(400);
+    expect(warn).toHaveBeenCalledWith(
+      '[oauth] authorize refused',
+      expect.objectContaining({ known: true }),
+    );
+  });
+
+  it('advertises the device endpoint and grant', async () => {
+    const meta = (await (
+      await app.request('/.well-known/oauth-authorization-server', {}, env)
+    ).json()) as Record<string, unknown>;
+    expect(meta.device_authorization_endpoint).toContain('/oauth/device_authorization');
+    expect(meta.grant_types_supported).toEqual([
+      'authorization_code',
+      'urn:ietf:params:oauth:grant-type:device_code',
+    ]);
   });
 });

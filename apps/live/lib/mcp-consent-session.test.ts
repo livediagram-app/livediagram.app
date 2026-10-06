@@ -38,6 +38,21 @@ describe('parseConsentSession', () => {
     expect(parseConsentSession({ clientName: 'Claude', redirectHost: 'claude.ai' })).toEqual({
       clientName: 'Claude',
       redirectHost: 'claude.ai',
+      clientId: null,
+    });
+  });
+
+  it('keeps the public client id, which tells the CLI apart', () => {
+    expect(
+      parseConsentSession({
+        clientName: 'livediagram CLI',
+        redirectHost: '127.0.0.1:5',
+        clientId: 'livediagram-cli',
+      }),
+    ).toEqual({
+      clientName: 'livediagram CLI',
+      redirectHost: '127.0.0.1:5',
+      clientId: 'livediagram-cli',
     });
   });
 
@@ -45,6 +60,7 @@ describe('parseConsentSession', () => {
     expect(parseConsentSession({ clientName: 'Claude', redirectHost: '' })).toEqual({
       clientName: 'Claude',
       redirectHost: '',
+      clientId: null,
     });
   });
 
@@ -78,6 +94,7 @@ describe('fetchConsentSession', () => {
     expect(await fetchConsentSession('s')).toEqual({
       clientName: 'Claude',
       redirectHost: 'claude.ai',
+      clientId: null,
     });
   });
 

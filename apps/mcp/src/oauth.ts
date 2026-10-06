@@ -4,12 +4,34 @@
 // apps/live) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
-import { bytesToBase64Url, isLoopbackHostname } from '@livediagram/api-schema';
+import { bytesToBase64Url, DEVICE_CODE_GRANT, isLoopbackHostname } from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
+import { lookupClient, type ClientReg } from './oauth-clients';
+import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 
 // ---- KV record shapes (all short-lived) ----
-type ClientReg = { redirectUris: string[]; clientName: string };
+// A redirect URI a client may use: one it registered exactly, or, for a registered http loopback URI, the same
+// scheme, host and path on any port (RFC 8252 §7.3: a native app listens on whatever port it was given).
+export function redirectUriAllowed(registered: readonly string[], uri: string): boolean {
+  if (registered.includes(uri)) return true;
+  let asked: URL;
+  try {
+    asked = new URL(uri);
+  } catch {
+    return false;
+  }
+  return registered.some((r) => {
+    const known = new URL(r);
+    return (
+      known.protocol === 'http:' &&
+      isLoopbackHostname(known.hostname) &&
+      asked.protocol === known.protocol &&
+      asked.hostname === known.hostname &&
+      asked.pathname === known.pathname
+    );
+  });
+}
 type AuthSession = {
   clientId: string;
   redirectUri: string;
@@ -56,6 +78,7 @@ function selfOrigin(reqUrl: string): string {
 }
 
 export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
+  registerDeviceRoutes(app);
   // --- Discovery (RFC 8414 + protected-resource metadata) ---
   app.get('/.well-known/oauth-authorization-server', (c) => {
     const base = selfOrigin(c.req.url);
@@ -65,7 +88,8 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
       token_endpoint: `${base}/oauth/token`,
       registration_endpoint: `${base}/oauth/register`,
       response_types_supported: ['code'],
-      grant_types_supported: ['authorization_code'],
+      device_authorization_endpoint: `${base}/oauth/device_authorization`,
+      grant_types_supported: ['authorization_code', DEVICE_CODE_GRANT],
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
     });
@@ -145,8 +169,9 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (q.response_type && q.response_type !== 'code') {
       return c.text('only response_type=code is supported', 400);
     }
-    const reg = await c.env.OAUTH_KV.get<ClientReg>(`client:${clientId}`, 'json');
-    if (!reg || !reg.redirectUris.includes(redirectUri)) {
+    const reg = await lookupClient(c.env, clientId);
+    if (!reg || !redirectUriAllowed(reg.redirectUris, redirectUri)) {
+      console.warn('[oauth] authorize refused', { clientId, known: Boolean(reg) });
       return c.text('unknown client or unregistered redirect_uri', 400);
     }
     const session = randomId();
@@ -208,7 +233,8 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
       // Validated at /oauth/authorize; an unparseable one shows as blank
       // rather than failing the lookup.
     }
-    return c.json({ clientName: session.clientName, redirectHost });
+    // The client id is public; the consent page reads it only to tell the CLI apart for telemetry (CLI77).
+    return c.json({ clientName: session.clientName, redirectHost, clientId: session.clientId });
   });
 
   // --- Complete: the Clerk-authed consent page posts the minted token here,
@@ -242,6 +268,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
   app.post('/oauth/token', async (c) => {
     const form = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
     const grantType = String(form.grant_type ?? '');
+    if (grantType === DEVICE_CODE_GRANT) return handleDeviceToken(c, form);
     const code = String(form.code ?? '');
     const verifier = String(form.code_verifier ?? '');
     const redirectUri = String(form.redirect_uri ?? '');

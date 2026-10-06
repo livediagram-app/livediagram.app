@@ -391,8 +391,16 @@ describe('auth', () => {
     ).toBe('signed in to https://livediagram.app as u1\n');
   });
 
-  it('refuses login without --with-token, from a terminal, or with something that is not a token', async () => {
-    expect((await cli(['auth', 'login'], fakeIo({ routes: [capabilities] }))).code).toBe(2);
+  it('refuses browser sign-in on a host without one, and a token from a terminal or that is not a token', async () => {
+    const bare = await cli(['auth', 'login'], fakeIo({ routes: [capabilities] }));
+    expect([bare.code, bare.err]).toEqual([
+      4,
+      expect.stringContaining('offers no browser sign-in'),
+    ]);
+    expect(
+      (await cli(['auth', 'login', '--with-token', '--device'], fakeIo({ routes: [capabilities] })))
+        .code,
+    ).toBe(2);
     expect(
       (
         await cli(

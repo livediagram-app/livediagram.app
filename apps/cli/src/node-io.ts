@@ -4,7 +4,9 @@ import { chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/pro
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { CliIo, RoomSocket } from './io';
+import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
+import type { CliIo, LoopbackRequest, LoopbackServer, RoomSocket } from './io';
 
 // The runtime's WebSocket (Node 22 and later), as the room stream uses it.
 function openSocket(url: string): RoomSocket {
@@ -49,6 +51,8 @@ export function nodeIo(): CliIo {
     cwd: process.cwd(),
     runtime: `node/${process.versions.node} ${process.platform}`,
     openSocket,
+    listenLoopback,
+    openUrl,
     // Beside the bundle: dist/ holds livediagram.mjs, resvg.wasm and Inter-Regular.ttf.
     readAsset: async (name) =>
       new Uint8Array(await readFile(join(dirname(fileURLToPath(import.meta.url)), name))),
@@ -85,4 +89,59 @@ export function nodeIo(): CliIo {
       remove: (path) => rm(path, { force: true }),
     },
   };
+}
+
+// One request at a time, in arrival order, until closed.
+function listenLoopback(): Promise<LoopbackServer> {
+  const waiting: ((request: LoopbackRequest) => void)[] = [];
+  const queued: LoopbackRequest[] = [];
+  const server = createServer((req, res) => {
+    const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+    const request: LoopbackRequest = {
+      path: url.pathname,
+      query: url.searchParams,
+      respond: (status, html) => {
+        res.writeHead(status, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        res.end(html);
+      },
+    };
+    const take = waiting.shift();
+    if (take) take(request);
+    else queued.push(request);
+  });
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      resolve({
+        port: typeof address === 'object' && address ? address.port : 0,
+        next: () => {
+          const ready = queued.shift();
+          return ready ? Promise.resolve(ready) : new Promise((r) => waiting.push(r));
+        },
+        close: () => server.close(),
+      });
+    });
+  });
+}
+
+// The platform's opener (CLI34): `open`, `xdg-open`, or `cmd /c start ""`. Detached, its output ignored.
+function openUrl(url: string): Promise<boolean> {
+  const [command, args] =
+    process.platform === 'darwin'
+      ? ['open', [url]]
+      : process.platform === 'win32'
+        ? ['cmd', ['/c', 'start', '""', url]]
+        : ['xdg-open', [url]];
+  return new Promise((resolve) => {
+    const child = spawn(command, args, { stdio: 'ignore', detached: true });
+    child.once('error', () => resolve(false));
+    child.once('spawn', () => {
+      child.unref();
+      resolve(true);
+    });
+  });
 }
