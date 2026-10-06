@@ -35,6 +35,7 @@ import {
 } from './responses';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
 import { MENTIONS_MAX } from './comment-mentions';
+import { applyPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
 
 // Bound on the round id, which is otherwise opaque.
 export const COLLAB_ROUND_MAX = 64;
@@ -63,7 +64,11 @@ export type ElementDelta =
   | { kind: 'comment-add'; comment: Comment }
   | { kind: 'comment-remove'; commentId: string }
   | { kind: 'comment-rekey'; from: string; to: string }
-  | { kind: 'comment-resolve'; resolved: boolean };
+  | { kind: 'comment-resolve'; resolved: boolean }
+  // A Plan board's set-up change, as only what changed (docs/specs/012-collaboration/collab-race-hardening.md,
+  // phase 6): column cogs and the Board flyout edit it without selecting the board, so two people set one
+  // board up at once.
+  | { kind: 'board'; patch: PlanBoardPatch };
 
 function sameRound(el: ShapeElement, round: string | undefined): boolean {
   return (el.collabRound ?? undefined) === (round ?? undefined);
@@ -179,6 +184,11 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       const next = threadResolved(thread, delta.resolved);
       return next === thread ? el : withThread(el, next);
     }
+    case 'board': {
+      if (el.type !== 'shape' || !el.planBoard) return el;
+      const planBoard = applyPlanBoardPatch(el.planBoard, delta.patch);
+      return planBoard === el.planBoard ? el : { ...el, planBoard };
+    }
     default:
       return el;
   }
@@ -204,8 +214,14 @@ export function keepLocalTicks(local: ChecklistItem[], incoming: ChecklistItem[]
 // delta-carried fields: those reached us one delta at a time and ours is
 // already the merged copy, where theirs is a snapshot from their last save that
 // can be missing somebody's answer. A different round means the peer cleared
-// or reset, and then their (empty) answers and ideas are the new truth.
-export function mergeIncomingElement(local: Element, incoming: Element): Element {
+// or reset, and then their (empty) answers and ideas are the new truth. A Plan
+// board's set-up is ours too (phase 6), except from a writer that sends no
+// deltas, an agent's changeset (`keepBoard: false`).
+export function mergeIncomingElement(
+  local: Element,
+  incoming: Element,
+  opts: { keepBoard?: boolean } = {},
+): Element {
   if (local.type !== incoming.type) return incoming;
   let next = incoming;
   const localThread = (local as { commentThread?: CommentThread }).commentThread;
@@ -221,6 +237,14 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
     if (local.checklistItems && shape.checklistItems) {
       const items = keepLocalTicks(local.checklistItems, shape.checklistItems);
       if (items !== shape.checklistItems) patched = { ...patched, checklistItems: items };
+    }
+    if (
+      opts.keepBoard !== false &&
+      local.planBoard &&
+      shape.planBoard &&
+      local.planBoard !== shape.planBoard
+    ) {
+      patched = { ...patched, planBoard: local.planBoard };
     }
     next = patched;
   }
@@ -241,7 +265,13 @@ function keepField<K extends 'responses' | 'ideaCards'>(
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const { responses: _r, ideaCards: _i, checklistItems, ...shape } = rest as ShapeElement;
+  const {
+    responses: _r,
+    ideaCards: _i,
+    planBoard: _b,
+    checklistItems,
+    ...shape
+  } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;
@@ -251,6 +281,9 @@ function withoutDeltaFields(el: Element): unknown {
 // sender has already said it, one delta at a time, and a whole-element update
 // on top would only hand receivers a snapshot to be wrong with.
 export function elementChangeIsDeltaOnly(before: Element, after: Element): boolean {
+  // A set-up that appeared or went has no patch to carry it: the update must go.
+  const board = (e: Element) => (e.type === 'shape' && e.planBoard ? 1 : 0);
+  if (board(before) !== board(after)) return false;
   return JSON.stringify(withoutDeltaFields(before)) === JSON.stringify(withoutDeltaFields(after));
 }
 

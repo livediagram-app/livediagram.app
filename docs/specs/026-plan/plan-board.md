@@ -204,6 +204,10 @@ In Plan mode:
 - **Reveal**: on a board hiding writing, anyone who may edit can press **Reveal**; every card turns face up for
   everyone, and the set-up's Hide writing turns off.
 - **Set-up**: a column's cog, and the board's element menu (above, "The board set-up").
+- **Together**: several people can set up one board at once. Each change travels as only what changed (a
+  column's new name, a moved column, a widget added), so two people editing different columns or settings
+  both keep their edits and everyone sees the same board ([Collaboration race
+  hardening](../012-collaboration/collab-race-hardening.md#phase-6-shipped-a-plan-boards-set-up-travels-as-deltas)).
 
 ### Keyboard
 
