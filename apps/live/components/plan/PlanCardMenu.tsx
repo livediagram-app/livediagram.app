@@ -2,7 +2,7 @@
 
 // A board card's right-click menu (docs/specs/026-plan/plan-board.md "Working on a board"): Open,
 // Duplicate, Add to Slides, Move to another column, Flag (or Remove Flag),
-// Archive (or Restore), and Delete. Someone who
+// Archive (or Restore), and Trash. Someone who
 // may only view gets Open alone. Built on the shared ContextMenu, so it opens at the click, re-clamps to
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
 import type { SyntheticEvent } from 'react';
@@ -29,7 +29,7 @@ export function PlanCardMenu({
   onOpen,
   onDuplicate,
   onMove,
-  onDelete,
+  onTrash,
   onAddSlide,
   archived = false,
   onArchive,
@@ -47,7 +47,8 @@ export function PlanCardMenu({
   onOpen: () => void;
   onDuplicate: () => void;
   onMove: (status: string) => void;
-  onDelete: () => void;
+  // Moves the card to the Trash (docs/specs/026-plan/items.md "Trash"), where it can be restored.
+  onTrash: () => void;
   // The card as a slide of the deck; absent where there is no deck.
   onAddSlide?: () => void;
   // Archive (or, for an archived card, Restore): kept, but off every board but an Archive board.
@@ -76,12 +77,18 @@ export function PlanCardMenu({
     >
       <ContextMenu position={at} label="Card menu" onClose={onClose}>
         <MenuHeader title={title} />
-        <MenuActionRow label="Open" icon={<PencilIcon />} onClick={act(onOpen)} />
+        <MenuActionRow plain label="Open" icon={<PencilIcon />} onClick={act(onOpen)} />
         {canEdit ? (
           <>
-            <MenuActionRow label="Duplicate" icon={<DuplicateIcon />} onClick={act(onDuplicate)} />
+            <MenuActionRow
+              plain
+              label="Duplicate"
+              icon={<DuplicateIcon />}
+              onClick={act(onDuplicate)}
+            />
             {onAddSlide ? (
               <MenuActionRow
+                plain
                 label="Add to Slides"
                 icon={<SlideDeckIcon />}
                 onClick={act(onAddSlide)}
@@ -92,6 +99,7 @@ export function PlanCardMenu({
                 <MenuGroupSeparator />
                 {columns.map((c) => (
                   <MenuActionRow
+                    plain
                     key={c.status}
                     label={`Move to ${c.name}`}
                     icon={
@@ -109,16 +117,18 @@ export function PlanCardMenu({
             ) : null}
             <MenuGroupSeparator />
             <MenuActionRow
+              plain
               label={flagged ? 'Remove Flag' : 'Flag'}
               icon={<PlanTypeGlyph glyph="flag" size={16} />}
               onClick={act(onFlag)}
             />
             <MenuActionRow
+              plain
               label={archived ? 'Restore' : 'Archive'}
               icon={<PlanBoardTileArt preset="archive" size={16} />}
               onClick={act(onArchive)}
             />
-            <MenuActionRow label="Delete" icon={<TrashIcon />} danger onClick={act(onDelete)} />
+            <MenuActionRow plain label="Trash" icon={<TrashIcon />} danger onClick={act(onTrash)} />
           </>
         ) : null}
       </ContextMenu>
@@ -165,9 +175,9 @@ export function PlanCardMenuHost({
         plan.moveItem(item.id, { status: to, before: null });
         plan.announce(`Moved to ${setup.columns.find((c) => c.status === to)?.name ?? to}`);
       }}
-      onDelete={() => {
-        plan.deleteItem(item.id);
-        plan.announce('Card deleted');
+      onTrash={() => {
+        plan.trashItem(item.id);
+        plan.announce('Card moved to the Trash');
       }}
       flagged={isFlagged(item)}
       onFlag={() => toggleFlag(plan, item)}

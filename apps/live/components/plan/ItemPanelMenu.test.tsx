@@ -11,7 +11,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 afterEach(cleanup);
 
 function open(archived = false) {
-  const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onDelete: vi.fn() };
+  const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onTrash: vi.fn() };
   render(<ItemPanelMenu itemKey={7} archived={archived} flagged={archived} {...fns} />);
   fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
   return fns;
@@ -22,13 +22,13 @@ describe('ItemPanelMenu', () => {
     const fns = open();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
     expect(fns.onDuplicate).toHaveBeenCalledOnce();
-    expect(screen.queryByRole('menuitem', { name: 'Delete' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Trash' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Archive' }));
     expect(fns.onArchive).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }));
-    expect(fns.onDelete).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Trash' }));
+    expect(fns.onTrash).toHaveBeenCalledOnce();
   });
 
   it('offers Restore for an archived card, and Remove Flag for a flagged one', () => {

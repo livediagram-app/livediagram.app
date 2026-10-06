@@ -174,10 +174,10 @@ In Plan mode:
   (taking the row's field). Arrow keys move between the tiles as in every menu; Escape or an outside press
   closes it and focus goes back to the button. There is no typed title: the card is titled in place or in its
   panel.
-- **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
+- **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** in red, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
-  **Move to** another column of the board, and **Delete** (undo brings it back). Someone who may only view gets
+  **Move to** another column of the board, and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
   Open alone; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
   inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
@@ -185,7 +185,7 @@ In Plan mode:
   closes with Escape or the close button, and follows the item if someone else moves it.
   - **Header**: the type (a picker, with its glyph), the key, **Help** (the `?` with a small label), a **⋯** menu
     of **Duplicate** (a copy right after it, without its votes, as the card menu's), **Archive** (or **Restore**)
-    and **Delete**, as icon-left rows, then the close button. Someone who may only view gets no ⋯.
+    and **Trash** (to the Trash), as icon-left rows, then the close button. Someone who may only view gets no ⋯.
   - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
     other labels offered as it is typed in; Backspace in an empty field takes the last one off.
@@ -215,8 +215,8 @@ In Plan mode:
 ### Keyboard
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
-card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete deletes the item
-(undoable); **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In progress,
+card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete moves it to the
+Trash; **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In progress,
 position 2 of 4").
 
 ## The Plan card

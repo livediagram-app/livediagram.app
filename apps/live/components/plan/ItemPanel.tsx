@@ -57,7 +57,7 @@ export function ItemPanel({
   onPatch,
   onType,
   onOpenItem,
-  onDelete,
+  onTrash,
   onDuplicate,
   onFlag,
   onArchive,
@@ -81,7 +81,7 @@ export function ItemPanel({
   onType: (type: string) => void;
   // Switches the panel to another item (a card's parent).
   onOpenItem: (itemId: string) => void;
-  onDelete: () => void;
+  onTrash: () => void;
   onDuplicate: () => void;
   onFlag: () => void;
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
@@ -171,7 +171,7 @@ export function ItemPanel({
           onDuplicate={onDuplicate}
           onFlag={onFlag}
           onArchive={onArchive}
-          onDelete={onDelete}
+          onTrash={onTrash}
         />
       ) : null}
       <DialogCloseButton compact onClick={onClose} />

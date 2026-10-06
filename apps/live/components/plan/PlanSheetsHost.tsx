@@ -76,7 +76,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onPatch={(patch) => ctx.patchItem(item.id, patch)}
         onType={(type) => ctx.patchItem(item.id, { type })}
         onOpenItem={(id) => ctx.openItem(id)}
-        onDelete={() => ctx.deleteItem(item.id)}
+        onTrash={() => {
+          ctx.trashItem(item.id);
+          ctx.announce('Card moved to the Trash');
+        }}
         onDuplicate={() => duplicateItem(ctx, item)}
         onFlag={() => toggleFlag(ctx, item)}
         onArchive={() => {
