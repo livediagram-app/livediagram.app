@@ -2,7 +2,14 @@ import { deflateRawSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  startBlankDocument,
+  test,
+  pageOwnerHeaders,
+} from './fixtures';
 
 // draw.io import end to end (docs/specs/020-import-export/drawio-import.md): pick a
 // file from the fixture corpus through the real Import dialog, and check the
@@ -32,10 +39,9 @@ async function importFile(page: Page, file: string) {
 
 // The saved document, read back through the api the way the editor stores it.
 async function storedTabs(page: Page) {
-  return page.evaluate(async () => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner };
     const stored = await (await fetch(`/api/documents/${id}`, { headers })).json();
     const summaries: { id: string; name: string }[] = stored.document?.tabs ?? [];
     return Promise.all(
@@ -44,15 +50,14 @@ async function storedTabs(page: Page) {
         return { name: t.name, elements: (got.tab?.elements ?? []).length as number };
       }),
     );
-  });
+  }, headers);
 }
 
 // Every stored tab's elements, as the api holds them.
 async function storedElements(page: Page) {
-  return page.evaluate(async () => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner };
     const stored = await (await fetch(`/api/documents/${id}`, { headers })).json();
     const summaries: { id: string; name: string }[] = stored.document?.tabs ?? [];
     return Promise.all(
@@ -61,7 +66,7 @@ async function storedElements(page: Page) {
         return { name: t.name, elements: (got.tab?.elements ?? []) as unknown[] };
       }),
     );
-  });
+  }, headers);
 }
 
 test('a multi-page draw.io file becomes a tab per page, with a summary', async ({
@@ -147,11 +152,11 @@ for (const file of [
       // The embedded logo came across into the gallery through the import image
       // pipeline; the web-linked status badge stayed a placeholder, never fetched.
       await expect(page.locator('[data-canvas-a11y-root]')).toBeVisible();
-      const images = await page.evaluate(async () => {
-        const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-        const res = await fetch('/api/images', { headers: { 'X-Owner-Id': owner } });
+      const headers = await pageOwnerHeaders(page);
+      const images = await page.evaluate(async (headers) => {
+        const res = await fetch('/api/images', { headers });
         return ((await res.json()) as { images: { contentType: string }[] }).images;
-      });
+      }, headers);
       // A 1 px PNG already beats its WebP, so the pipeline keeps it as PNG.
       expect(images.map((i) => i.contentType)).toEqual(['image/png']);
     }

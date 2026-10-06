@@ -66,6 +66,15 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
+- **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
+  `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
+  production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
+  A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
+  requests, `pageOwnerHeaders` for calls made inside the page (`apps/live/e2e/fixtures.ts`). A
+  hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
+  unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
+  `POST /__e2e/legacy-guest` puts a participant row dated before `GUEST_SIGNING_LIVE_AT` (1000 on
+  the stack) and one folder straight into the local D1, for `guest-upgrade.spec.ts`.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -185,13 +194,12 @@ account's synced settings takes a fresh id (`freshUserId`), since the stack's D1
 
 ## Armed guest signatures
 
-The stack keeps guest signature enforcement off, because many specs still seed through the api
-with unsigned guest ids. The specs in `apps/live/e2e/armed/` prove the opposite case, as
-production runs it once armed: a first-time guest who arrives on `/` or `/new`, or opens the
+Every stack enforces guest signatures (above), so every spec runs as production does once armed.
+The specs in `apps/live/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
 Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
 the canvas, and no api response is `401`. `pnpm --filter @livediagram/live test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3017`, api `:8789`, marketing `:3018`) with `GUEST_SIG_ENFORCE_AFTER` in the past. It
+(live `:3017`, api `:8789`, marketing `:3018`). It
 reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
 has built it already.
 

@@ -5,6 +5,7 @@ import {
   expect,
   expectNoPageErrors,
   test,
+  pageOwnerHeaders,
 } from './fixtures';
 
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip in the
@@ -18,18 +19,18 @@ const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 // The first tab's opening mode as the api stores it.
 async function savedOpensIn(page: Page): Promise<unknown> {
-  return page.evaluate(async (base) => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const sig = localStorage.getItem('livediagram:v2:self-sig');
-    const headers: Record<string, string> = { 'X-Owner-Id': owner };
-    if (sig) headers['X-Owner-Sig'] = sig;
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const doc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-    const tabId = doc.document?.tabs?.[0]?.id;
-    if (!tabId) return undefined;
-    const got = await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json();
-    return got.tab?.opensIn;
-  }, apiBase);
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(
+    async ({ base, headers }) => {
+      const id = location.pathname.split('/').filter(Boolean).pop()!;
+      const doc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+      const tabId = doc.document?.tabs?.[0]?.id;
+      if (!tabId) return undefined;
+      const got = await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json();
+      return got.tab?.opensIn;
+    },
+    { base: apiBase, headers },
+  );
 }
 
 const dock = (page: Page) => page.locator('[data-whiteboard-dock]');

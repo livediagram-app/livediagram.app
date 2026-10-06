@@ -288,14 +288,18 @@ export async function migrateOwnerId(
     .run();
   // participants: the guest's name and colour. The id IS the owner id, so an
   // account that already has a row keeps it (a signed-in name comes from Clerk
-  // anyway); the guest row goes, since nothing reads a retired guest id.
+  // anyway). The copy is stamped NOW, never with the source's created_at: a row
+  // older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned
+  // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
+  // carrying the old date over would let anyone holding the new id move its data
+  // without the signature. The guest row goes, since nothing reads a retired guest id.
   await env.DB.prepare(
     `INSERT OR IGNORE INTO participants (id, name, color, created_at)
-     SELECT ?, name, color, created_at
+     SELECT ?, name, color, ?
      FROM participants
      WHERE id = ?`,
   )
-    .bind(toOwnerId, fromOwnerId)
+    .bind(toOwnerId, Date.now(), fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(fromOwnerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history

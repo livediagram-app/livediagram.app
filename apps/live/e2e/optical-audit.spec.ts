@@ -45,7 +45,7 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
 
 // A seeded document open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
 async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   const id = await seedDocument(page, owner, new URL(baseURL).origin);
   await darkVisitor(page, owner);
   await page.goto(`/document/${id}`);
@@ -101,7 +101,7 @@ test.describe('Optical alignment audit', () => {
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = crypto.randomUUID();
+    const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);

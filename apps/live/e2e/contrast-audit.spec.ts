@@ -54,7 +54,7 @@ test.describe('Contrast audit, dark mode', () => {
   });
 
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
-    const owner = crypto.randomUUID();
+    const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDocument(page, owner, origin);
     await darkVisitor(page, owner);
@@ -84,7 +84,7 @@ test.describe('Contrast audit, dark mode', () => {
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = crypto.randomUUID();
+    const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);

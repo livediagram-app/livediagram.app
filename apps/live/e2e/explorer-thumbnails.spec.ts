@@ -1,5 +1,5 @@
 import { apiBase, darkVisitor, seedDocument } from './audit-screens';
-import { expect, expectNoPageErrors, test } from './fixtures';
+import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
 
 // The Explorer asks only for snapshots that exist (docs/specs/006-document/document-snapshots.md, "An
 // empty document is never asked for"): the list says which documents are empty, so their cards show
@@ -10,13 +10,13 @@ test('an empty document is never asked for its thumbnail; a drawn one is', async
   pageErrors,
   baseURL,
 }) => {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   await darkVisitor(page, owner);
   const origin = new URL(baseURL!).origin;
   const drawn = await seedDocument(page, owner, origin);
   const empty = crypto.randomUUID();
   const created = await page.request.post(`${apiBase}/documents`, {
-    headers: { 'X-Owner-Id': owner, Origin: origin },
+    headers: ownerHeaders(owner, { Origin: origin }),
     data: {
       id: empty,
       name: 'Nothing yet',

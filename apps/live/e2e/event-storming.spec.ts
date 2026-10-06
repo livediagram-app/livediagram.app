@@ -6,6 +6,7 @@ import {
   startEventStormingRow,
   startTemplateDocument,
   test,
+  pageOwnerHeaders,
 } from './fixtures';
 
 // The event-storming board's own gestures (docs/specs/021-event-storming/event-storming.md), in a real browser. The
@@ -47,16 +48,20 @@ async function boardTab(page: Page): Promise<BoardTab> {
   // Same base the app itself was built with: the e2e stack serves the api
   // same-origin, a local dev stack may put it on its own port.
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  return page.evaluate(async (base: string) => {
-    const apiBase = base;
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner };
-    const liveDoc = await (await fetch(`${apiBase}/documents/${id}`, { headers })).json();
-    const tabId = liveDoc.document.tabs[0].id;
-    const tab = await (await fetch(`${apiBase}/documents/${id}/tabs/${tabId}`, { headers })).json();
-    return tab.tab;
-  }, apiBase);
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(
+    async ({ base, headers }) => {
+      const apiBase = base;
+      const id = location.pathname.split('/').filter(Boolean).pop()!;
+      const liveDoc = await (await fetch(`${apiBase}/documents/${id}`, { headers })).json();
+      const tabId = liveDoc.document.tabs[0].id;
+      const tab = await (
+        await fetch(`${apiBase}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json();
+      return tab.tab;
+    },
+    { base: apiBase, headers },
+  );
 }
 
 const stickies = (tab: BoardTab) => tab.elements.filter((el) => el.type === 'sticky');

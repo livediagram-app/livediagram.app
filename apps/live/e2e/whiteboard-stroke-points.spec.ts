@@ -8,6 +8,7 @@ import {
   ownerHeaders,
   seedTab,
   test,
+  pageOwnerHeaders,
 } from './fixtures';
 
 // Packed stroke points end to end (docs/specs/006-document/stroke-points.md), in dark mode: a pen
@@ -34,18 +35,18 @@ async function openWhiteboard(page: Page) {
 
 // The document's first tab as the api stores it.
 async function savedElements(page: Page): Promise<SavedElement[]> {
-  return page.evaluate(async (base) => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const sig = localStorage.getItem('livediagram:v2:self-sig');
-    const headers: Record<string, string> = { 'X-Owner-Id': owner };
-    if (sig) headers['X-Owner-Sig'] = sig;
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const doc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-    const tabId = doc.document?.tabs?.[0]?.id;
-    if (!tabId) return [];
-    const got = await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json();
-    return (got.tab?.elements ?? []) as SavedElement[];
-  }, apiBase);
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(
+    async ({ base, headers }) => {
+      const id = location.pathname.split('/').filter(Boolean).pop()!;
+      const doc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+      const tabId = doc.document?.tabs?.[0]?.id;
+      if (!tabId) return [];
+      const got = await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json();
+      return (got.tab?.elements ?? []) as SavedElement[];
+    },
+    { base: apiBase, headers },
+  );
 }
 
 // The tab through the Export dialog, as the file it downloads.

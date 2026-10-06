@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, test, openStartBlank } from './fixtures';
+import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
@@ -22,16 +22,15 @@ async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<v
 
 // The saved elements of the document's first tab, read through the api.
 async function savedElements(page: Page): Promise<El[]> {
-  return page.evaluate(async () => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner };
     const liveDoc = await (await fetch(`/api/documents/${id}`, { headers })).json();
     const tabId = liveDoc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
     const got = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
     return (got.tab?.elements ?? []) as El[];
-  });
+  }, headers);
 }
 
 // Autosave is debounced: wait until the saved tab satisfies `ok`.
