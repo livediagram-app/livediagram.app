@@ -9,7 +9,7 @@
 import type { SyntheticEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { MenuHeader, PortalMenu } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -81,7 +81,7 @@ export function AddCardPopover({
     // keys typed in the menu never reach the canvas's shortcuts.
     <div className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
       <PortalMenu anchor={anchor} placement="below-start" onClose={onClose} initialFocus="first">
-        <MenuHeader title="Add a Card" />
+        {/* No header: it opens right under its own Add card button, which names it. */}
         {tiles}
       </PortalMenu>
     </div>

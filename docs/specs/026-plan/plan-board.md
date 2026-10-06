@@ -167,7 +167,8 @@ In Plan mode:
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
-  the **Add a Card** menu (the shared anchored menu with a tile grid; a bottom sheet on a phone), as
+  the **Add a Card** menu (the shared anchored menu with a tile grid and no header, since it opens under its
+  own button; a bottom sheet titled "Add a Card" on a phone), as
   Illustrate's + opens "Add a page": a tile per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the tiles as in every menu; Escape or an outside press

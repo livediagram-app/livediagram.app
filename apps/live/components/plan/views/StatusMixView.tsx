@@ -70,7 +70,8 @@ export function StatusMixView({
             </span>
           </span>
         </div>
-        <ul className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden text-[12px]">
+        {/* Capped, so on a wide view each count stays beside its name instead of at the far edge. */}
+        <ul className="flex min-w-0 max-w-[14rem] flex-1 flex-col gap-1.5 overflow-hidden text-[12px]">
           {model.slices.map((s, i) => (
             <li key={s.status ?? '-'} className="flex min-w-0 shrink-0 items-center gap-2">
               <span
