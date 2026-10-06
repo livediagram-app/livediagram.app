@@ -1,10 +1,13 @@
 // The numbers the board widgets read (docs/specs/026-plan/board-widgets.md "Widget kinds"), from the
 // items the board shows (their status is one of its columns). Pure, so each rule is tested on its own.
 import {
+  DAY_MS,
   PRIORITIES,
+  dayNumber,
   itemAssignee,
   itemStatus,
   itemVoteTotal,
+  todayNumber,
   type Priority,
   type BoardProjection,
   type Item,
@@ -16,7 +19,6 @@ import {
 export const DUE_SOON_DAYS = 7;
 // Days without a change before a card not yet done is stale.
 export const STALE_DAYS = 14;
-const DAY_MS = 86_400_000;
 
 // The cards a board shows, as its projection placed them (so never archived on an ordinary board, every
 // archived one on an Archive board, every live one on an All Cards board): what its widgets count.
@@ -61,11 +63,6 @@ export function overWipColumns(projection: BoardProjection): number {
   return projection.columns.filter((c) => c.overLimit).length;
 }
 
-function isoDay(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
 // Cards not yet done that are past due, and due within DUE_SOON_DAYS (today included).
 export function dueCounts(
   setup: PlanBoardSetup,
@@ -73,15 +70,13 @@ export function dueCounts(
   now: Date,
 ): { overdue: number; soon: number } {
   const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
-  const today = isoDay(now);
-  const horizon = new Date(now);
-  horizon.setDate(horizon.getDate() + DUE_SOON_DAYS);
-  const last = isoDay(horizon);
+  const today = todayNumber(now);
+  const last = today + DUE_SOON_DAYS;
   let overdue = 0;
   let soon = 0;
   for (const it of items) {
-    const due = it.fields['due'];
-    if (typeof due !== 'string' || (doneStatus && itemStatus(it) === doneStatus)) continue;
+    const due = dayNumber(it.fields['due']);
+    if (due === undefined || (doneStatus && itemStatus(it) === doneStatus)) continue;
     if (due < today) overdue += 1;
     else if (due <= last) soon += 1;
   }

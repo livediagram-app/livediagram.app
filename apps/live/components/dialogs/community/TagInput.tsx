@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { COMMUNITY_TAG_MAX, COMMUNITY_TAG_MIN, COMMUNITY_TAGS_MAX } from '@livediagram/api-schema';
-import { CloseIcon, FIELD_INVALID } from '@livediagram/ui';
+import { ChipField, type ChipFieldHandle } from '@/components/primitives/ChipField';
 import { FieldError } from './FieldError';
 import { commitTag, commitTagInput, tagPreview, type TagRejection } from './tag-draft';
 
-// The publish dialog's tag field (docs/specs/025-community/community.md "Tags"): chips typed into one
-// field. Enter or a comma adds the draft, Backspace in an empty field takes the last chip back, and
+// The publish dialog's tag field (docs/specs/025-community/community.md "Tags"): the shared ChipField
+// with Community's tag rules. Enter or a comma adds the draft, Backspace in an empty field takes the last chip back, and
 // each chip has its own remove button. The draft is shown as it will be stored while typing, and a
 // rejected draft stays in the field with a hint saying why. Suggestions (the most used tags) add with
 // one click.
@@ -35,23 +35,9 @@ export function TagInput({
 }) {
   const [draft, setDraft] = useState('');
   const [rejected, setRejected] = useState<TagRejection | null>(null);
-  // A chip's own remove button, a Popular suggestion and the input itself (disabled once five tags are in) can all
-  // leave the page under the focus that used them: after each, focus comes back to the input, or to the last chip's
-  // remove button while the input is full, rather than falling out of the dialog.
-  const inputRef = useRef<HTMLInputElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
-  const refocus = useRef(false);
-  useEffect(() => {
-    if (!refocus.current) return;
-    refocus.current = false;
-    const input = inputRef.current;
-    if (input && !input.disabled) {
-      input.focus();
-      return;
-    }
-    const removers = boxRef.current?.querySelectorAll<HTMLButtonElement>('button[data-remove-tag]');
-    removers?.[removers.length - 1]?.focus();
-  });
+  // A chip's remove button, a Popular suggestion and the field itself (disabled once five tags are in)
+  // can all leave the page under the focus that used them: the field puts focus back after each.
+  const field = useRef<ChipFieldHandle>(null);
   const inputId = useId();
   const hintId = useId();
   const errorId = useId();
@@ -66,7 +52,7 @@ export function TagInput({
 
   // Enter and comma keep typing in the field; leaving it (blur) commits without pulling focus back.
   const commitDraft = ({ keepFocus = true }: { keepFocus?: boolean } = {}) => {
-    refocus.current = keepFocus;
+    if (keepFocus) field.current?.refocus();
     const result = commitTag(tags, draft);
     apply(result);
     if (!result.rejected) setDraft('');
@@ -74,75 +60,40 @@ export function TagInput({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div
-        ref={boxRef}
-        className={`flex flex-wrap items-center gap-1.5 rounded-md border bg-white px-2 py-1.5 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:bg-slate-900 ${
-          rejected || error ? FIELD_INVALID : 'border-slate-200 dark:border-slate-700'
-        }`}
-      >
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pr-1 pl-2.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200"
-          >
-            #{tag}
-            <button
-              type="button"
-              onClick={() => {
-                refocus.current = true;
-                onChange(tags.filter((t) => t !== tag));
-                setRejected(null);
-              }}
-              disabled={disabled}
-              data-remove-tag
-              aria-label={`Remove tag ${tag}`}
-              className="flex h-4 w-4 items-center justify-center rounded-full text-brand-500 transition hover:bg-brand-100 hover:text-brand-700 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100"
-            >
-              <CloseIcon size={10} />
-            </button>
-          </span>
-        ))}
-        <input
-          ref={inputRef}
-          id={inputId}
-          value={draft}
-          disabled={disabled || full}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value.includes(',')) {
-              const result = commitTagInput(tags, value);
-              apply(result);
-              setDraft(result.draft);
-              return;
-            }
-            setDraft(value);
-            setRejected(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              // Never submits the dialog's form: Enter here means "add this tag".
-              e.preventDefault();
-              commitDraft();
-            } else if (e.key === 'Backspace' && draft === '' && tags.length > 0) {
-              e.preventDefault();
-              onChange(tags.slice(0, -1));
-              setRejected(null);
-            }
-          }}
-          onBlur={() => {
-            if (draft.trim()) commitDraft({ keepFocus: false });
-          }}
-          placeholder={
-            full ? 'That is all five' : tags.length ? 'Add another' : 'e.g. aws, onboarding'
+      <ChipField
+        ref={field}
+        chips={tags}
+        chipText={(tag) => `#${tag}`}
+        removeLabel={(tag) => `Remove tag ${tag}`}
+        draft={draft}
+        onDraftChange={(value) => {
+          if (value.includes(',')) {
+            const result = commitTagInput(tags, value);
+            apply(result);
+            setDraft(result.draft);
+            return;
           }
-          aria-label="Tags"
-          aria-describedby={error ? `${errorId} ${hintId}` : hintId}
-          aria-invalid={rejected !== null || !!error}
-          autoComplete="off"
-          spellCheck={false}
-          className="min-w-[8rem] flex-1 bg-transparent px-1 py-0.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed dark:text-slate-100"
-        />
-      </div>
+          setDraft(value);
+          setRejected(null);
+        }}
+        onCommit={() => commitDraft()}
+        onRemove={(tag) => {
+          onChange(tags.filter((t) => t !== tag));
+          setRejected(null);
+        }}
+        onBlur={() => {
+          if (draft.trim()) commitDraft({ keepFocus: false });
+        }}
+        disabled={disabled}
+        inputDisabled={full}
+        invalid={rejected !== null || !!error}
+        id={inputId}
+        placeholder={
+          full ? 'That is all five' : tags.length ? 'Add another' : 'e.g. aws, onboarding'
+        }
+        ariaLabel="Tags"
+        ariaDescribedBy={error ? `${errorId} ${hintId}` : hintId}
+      />
       <p
         id={hintId}
         aria-live="polite"
@@ -164,7 +115,7 @@ export function TagInput({
               type="button"
               disabled={disabled}
               onClick={() => {
-                refocus.current = true;
+                field.current?.refocus();
                 apply(commitTag(tags, tag));
               }}
               className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"

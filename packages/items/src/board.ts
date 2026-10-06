@@ -19,6 +19,7 @@ import {
   PLAN_VOTE_BUDGET_MAX,
   PLAN_WIP_MAX,
 } from './limits';
+import { HEX_COLOUR, isObj } from './validate';
 
 export interface PlanColumn {
   id: string;
@@ -566,12 +567,6 @@ export function votesSpent(projection: BoardProjection, viewerId: string): numbe
 
 export type BoardSetupRejection = 'setup_invalid' | 'columns_invalid' | 'column_invalid';
 
-const HEX = /^#[0-9a-fA-F]{6}$/;
-
-function isObj(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
-}
-
 // Validates a stored set-up; normalises it (drops a duplicate status, unknown
 // card fields) so a set-up written by an agent never breaks a board.
 export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
@@ -600,7 +595,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ) {
       col.wipLimit = wipLimit;
     }
-    if (typeof color === 'string' && HEX.test(color)) col.color = color;
+    if (typeof color === 'string' && HEX_COLOUR.test(color)) col.color = color;
     const width = (c as { width?: unknown }).width;
     if (width === 2 || width === 3) col.width = width;
     columns.push(col);

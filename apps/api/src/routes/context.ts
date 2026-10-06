@@ -13,7 +13,7 @@ import {
   type DocumentGrant,
 } from '../auth/document-access';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
-import { documentTrashed, forbidden, missingAuth, notFound } from '../responses';
+import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env } from '../types';
 
 export type RouteContext = {
@@ -295,4 +295,17 @@ export async function deniedOnTab(
 ): Promise<Response> {
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   return grant ? notFound() : forbidden();
+}
+
+// The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't
+// parse, `expected a JSON object` when it parses to anything but a plain object.
+export async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Response> {
+  try {
+    const body: unknown = await ctx.request.json();
+    return typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : badRequest('expected a JSON object');
+  } catch {
+    return badRequest('invalid json');
+  }
 }

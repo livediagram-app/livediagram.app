@@ -4,9 +4,8 @@
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
-import { Select } from '@livediagram/ui';
+import { Select, TextInput } from '@livediagram/ui';
 import type { CustomFieldDef, ItemFieldValue } from '@livediagram/items';
-import { FIELD_CLASS } from './PlanModal';
 import { DateField, DebouncedText } from './item-field-editors';
 
 type Save = (value: ItemFieldValue | undefined) => void;
@@ -42,13 +41,13 @@ export function CustomFieldEditor({
       );
     case 'link':
       return (
-        <input
+        <TextInput
           id={id}
           type="url"
           inputMode="url"
           placeholder="https://"
           disabled={disabled}
-          className={FIELD_CLASS}
+          compact
           defaultValue={text}
           key={text}
           onBlur={(e) => {
@@ -62,12 +61,12 @@ export function CustomFieldEditor({
       );
     case 'number':
       return (
-        <input
+        <TextInput
           id={id}
           type="number"
           step="any"
           disabled={disabled}
-          className={FIELD_CLASS}
+          compact
           defaultValue={typeof value === 'number' ? value : ''}
           key={typeof value === 'number' ? value : 'none'}
           onBlur={(e) => {

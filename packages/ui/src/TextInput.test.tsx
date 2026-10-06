@@ -25,4 +25,12 @@ describe('the shared text fields', () => {
     expect(note.className).toContain('resize-none');
     expect(note.className).toContain(FIELD_INVALID);
   });
+
+  it('take the denser form rhythm when compact, keeping the border and focus ring', () => {
+    render(<TextInput aria-label="compact" compact />);
+    const field = screen.getByLabelText('compact');
+    expect(field.className).toContain('py-1.5');
+    expect(field.className).not.toContain('py-2');
+    expect(field.className).toContain('focus:ring-2');
+  });
 });

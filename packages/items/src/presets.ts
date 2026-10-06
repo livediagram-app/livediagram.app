@@ -16,7 +16,12 @@ export const PLAN_BOARD_PRESET_IDS = [
 ] as const;
 export type PlanBoardPresetId = (typeof PLAN_BOARD_PRESET_IDS)[number];
 
-function col(status: string, name: string, extra: Partial<PlanColumn> = {}): PlanColumn {
+// A column whose status is its id: how every preset and Plan template builds its columns.
+export function statusColumn(
+  status: string,
+  name: string,
+  extra: Partial<PlanColumn> = {},
+): PlanColumn {
   return { id: status, status, name, ...extra };
 }
 
@@ -51,11 +56,11 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Kanban',
       columns: [
-        col('backlog', 'Backlog'),
-        col('todo', 'To do'),
-        col('doing', 'In progress', { wipLimit: 3 }),
-        col('review', 'Review', { wipLimit: 2 }),
-        col('done', 'Done'),
+        statusColumn('backlog', 'Backlog'),
+        statusColumn('todo', 'To do'),
+        statusColumn('doing', 'In progress', { wipLimit: 3 }),
+        statusColumn('review', 'Review', { wipLimit: 2 }),
+        statusColumn('done', 'Done'),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'none',
@@ -71,10 +76,10 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Sprint',
       columns: [
-        col('sprint-backlog', 'Sprint backlog'),
-        col('doing', 'In progress'),
-        col('review', 'In review'),
-        col('done', 'Done'),
+        statusColumn('sprint-backlog', 'Sprint backlog'),
+        statusColumn('doing', 'In progress'),
+        statusColumn('review', 'In review'),
+        statusColumn('done', 'Done'),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'assignee',
@@ -90,11 +95,11 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Bug triage',
       columns: [
-        col('new', 'New'),
-        col('confirmed', 'Confirmed'),
-        col('fixing', 'Fixing', { wipLimit: 4 }),
-        col('fixed', 'Fixed'),
-        col('wont-fix', "Won't fix"),
+        statusColumn('new', 'New'),
+        statusColumn('confirmed', 'Confirmed'),
+        statusColumn('fixing', 'Fixing', { wipLimit: 4 }),
+        statusColumn('fixed', 'Fixed'),
+        statusColumn('wont-fix', "Won't fix"),
       ],
       doneColumnId: 'fixed',
       swimlaneBy: 'priority',
@@ -110,9 +115,9 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Retro',
       columns: [
-        col('went-well', 'Went well', { color: '#16a34a' }),
-        col('to-improve', 'To improve', { color: '#dc2626' }),
-        col('ideas', 'Ideas', { color: '#0d9488' }),
+        statusColumn('went-well', 'Went well', { color: '#16a34a' }),
+        statusColumn('to-improve', 'To improve', { color: '#dc2626' }),
+        statusColumn('ideas', 'Ideas', { color: '#0d9488' }),
       ],
       swimlaneBy: 'none',
       cardFields: ['assignee', 'votes'],
@@ -128,7 +133,11 @@ export const PLAN_BOARD_PRESETS: Readonly<
     label: 'Roadmap',
     setup: {
       title: 'Roadmap',
-      columns: [col('now', 'Now'), col('next', 'Next'), col('later', 'Later')],
+      columns: [
+        statusColumn('now', 'Now'),
+        statusColumn('next', 'Next'),
+        statusColumn('later', 'Later'),
+      ],
       swimlaneBy: 'none',
       cardFields: ['key', 'assignee', 'labels', 'start', 'due'],
       voting: { on: false },
@@ -142,11 +151,11 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'This week',
       columns: [
-        col('mon', 'Monday'),
-        col('tue', 'Tuesday'),
-        col('wed', 'Wednesday'),
-        col('thu', 'Thursday'),
-        col('fri', 'Friday'),
+        statusColumn('mon', 'Monday'),
+        statusColumn('tue', 'Tuesday'),
+        statusColumn('wed', 'Wednesday'),
+        statusColumn('thu', 'Thursday'),
+        statusColumn('fri', 'Friday'),
       ],
       swimlaneBy: 'none',
       cardFields: ['type', 'due', 'checklist'],
@@ -161,7 +170,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     label: 'All Cards',
     setup: {
       title: 'All Cards',
-      columns: [col('all', 'All Cards')],
+      columns: [statusColumn('all', 'All Cards')],
       swimlaneBy: 'status',
       cardFields: ['key', 'type', 'assignee', 'priority', 'due'],
       cardSize: 'compact',
@@ -176,7 +185,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     label: 'Archive Board',
     setup: {
       title: 'Archive',
-      columns: [col('archived', 'Archived')],
+      columns: [statusColumn('archived', 'Archived')],
       swimlaneBy: 'none',
       cardFields: ['key', 'type', 'assignee', 'labels'],
       cardSize: 'compact',

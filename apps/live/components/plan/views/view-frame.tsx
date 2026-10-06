@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { STATUS_PHASES, STATUS_PHASE_LABELS } from '@livediagram/items';
 import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
-import { CountBadge } from '../CountBadge';
+import { CountBadge } from '@livediagram/ui';
 
 // The phase colours, the same on either surface: they read as status, not as theme.
 export const PHASE_COLOURS = {
@@ -86,7 +86,7 @@ export function ViewFrame({
       >
         <span className="min-w-0 truncate text-[13px] font-semibold">{title}</span>
         {count !== undefined && state === 'ready' ? (
-          <CountBadge background={palette.column} color={palette.text} label={countLabel}>
+          <CountBadge size="md" background={palette.column} color={palette.text} label={countLabel}>
             {count}
           </CountBadge>
         ) : null}

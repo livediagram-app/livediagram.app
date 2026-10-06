@@ -3,6 +3,8 @@ import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
 import type { Env } from './types';
 import {
   broadcastShareOp,
+  relayItems,
+  relayItemTypes,
   relayElementDelta,
   deleteAgentPresence,
   putAgentPresence,
@@ -112,6 +114,36 @@ describe('broadcastShareOp', () => {
       'd1',
       expect.any(Error),
     );
+    warn.mockRestore();
+  });
+});
+
+// The item store's relays are ordered broadcasts (docs/specs/026-plan/items.md "Live for everyone").
+describe('relayItems and relayItemTypes', () => {
+  it('post an ordered op to the room', async () => {
+    const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
+    await relayItems(env, 'd1', { kind: 'items', upserts: [], removed: ['i1'], rev: 3 });
+    await relayItemTypes(env, 'd1', { kind: 'item-types', itemTypes: null });
+    const bodies = stubFetch.mock.calls.map(
+      (c) => JSON.parse((c as unknown as [string, RequestInit])[1].body as string) as unknown,
+    );
+    expect(bodies).toEqual([
+      { op: { kind: 'items', upserts: [], removed: ['i1'], rev: 3 }, ordered: true },
+      { op: { kind: 'item-types', itemTypes: null }, ordered: true },
+    ]);
+  });
+
+  it('log and carry on when the room cannot be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { env } = envWith(async () => {
+      throw new Error('room down');
+    });
+    await relayItems(env, 'd1', { kind: 'items', upserts: [], removed: [], rev: 1 });
+    await relayItemTypes(env, 'd1', { kind: 'item-types', itemTypes: null });
+    expect(warn.mock.calls.map((c) => c[0])).toEqual([
+      '[room-broadcast] items did not reach the room',
+      '[room-broadcast] item types did not reach the room',
+    ]);
     warn.mockRestore();
   });
 });

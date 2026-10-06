@@ -198,7 +198,7 @@ export function ShapeContentRouter({
     <PlanCardView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && element.shape === 'plan-view' ? (
     // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card.
-    <PlanViewView element={element} fontFamily={fontFamily} />
+    <PlanViewView element={element} fontFamily={fontFamily} chartPalette={chartPalette} />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).

@@ -132,8 +132,10 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   colours still change); a card let go there is trashed and the move is announced.
 - Pressed, it opens the **Trash** popover (352 px wide): how many cards it holds, then each card, newest change
   first, with its type's stripe and glyph, its whole title, its type, number, the status it came from and when,
-  and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own; **Empty Trash** deletes every one after a
-  confirmation ("This can't be undone").
+  and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own. **Delete** asks first
+  in a confirm popover beside the button ("Delete #12 for good? This cannot be undone.", **Delete**), as
+  the workspace Trash does; **Empty Trash** deletes every one after a confirmation ("This can't be undone").
+- An empty Trash shows the shared empty state: **The Trash is empty**, and how to put a card there.
 - Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.
 
 ## Comments

@@ -3,7 +3,7 @@
 import { itemAssignee, itemStatus, type Item, type ItemPerson } from './item';
 import { PRIORITIES, isPriority, type Priority } from './fields';
 import { statusLabel } from './board';
-import { dayNumber, dayParts, MONTH_LONG, monthStart } from './plan-view-dates';
+import { dayNumber, dayParts, MONTH_LONG, monthStart, shiftMonth } from './plan-view-dates';
 import { STATUS_PHASES, liveCards, phaseOf, type StatusPhase } from './plan-views';
 
 const byKey = (a: Item, b: Item) => a.key - b.key;
@@ -23,16 +23,6 @@ export interface CalendarModel {
   weeks: CalendarDay[][];
   // Cards due in the month.
   due: number;
-}
-
-// The month `offset` months from `year`/`month` (0-based), normalised.
-export function shiftMonth(
-  year: number,
-  month: number,
-  offset: number,
-): { year: number; month: number } {
-  const n = year * 12 + month + offset;
-  return { year: Math.floor(n / 12), month: ((n % 12) + 12) % 12 };
 }
 
 export function calendarModel(

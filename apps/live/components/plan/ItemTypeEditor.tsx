@@ -18,10 +18,10 @@ import {
   type ItemTypeDef,
   type ItemTypeTab,
 } from '@livediagram/items';
-import { Button, Select } from '@livediagram/ui';
+import { Button, Select, TextInput } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { FIELD_CLASS, SheetRow } from './PlanModal';
+import { SheetRow } from './PlanModal';
 import { ItemTypeFieldList, type FieldDraft } from './ItemTypeFieldList';
 import { NOT_TABBABLE, TabPicker, TabsList, withoutEmptyTabs } from './ItemTypeTabsEditor';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -164,9 +164,9 @@ export function ItemTypeEditor({
         ) : (
           <>
             <SheetRow label="Name" htmlFor={`${titleId}-name`}>
-              <input
+              <TextInput
                 id={`${titleId}-name`}
-                className={FIELD_CLASS}
+                compact
                 value={label}
                 maxLength={ITEM_TYPE_LABEL_MAX}
                 placeholder="Customer call"

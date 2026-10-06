@@ -7,6 +7,18 @@
 import { contrastRatio, hexToRgb, isLightColor, type CanvasSurface } from './colors';
 import { mixHex } from './svg-render-face-kit';
 
+// A card's priority dot and tint, the same on the canvas and in the export: they read as urgency, not
+// as theme.
+export const PRIORITY_COLOURS = {
+  urgent: '#dc2626',
+  high: '#ea580c',
+  medium: '#ca8a04',
+  low: '#64748b',
+} as const;
+
+// A flagged card's flag (docs/specs/026-plan/items.md "Flags"), on the canvas and in the export alike.
+export const FLAG_COLOUR = '#e11d48';
+
 export type PlanPalette = {
   surface: string;
   border: string;

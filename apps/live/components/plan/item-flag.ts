@@ -2,8 +2,8 @@ import { isFlagged, type Item } from '@livediagram/items';
 import { track } from '@/lib/telemetry';
 import type { PlanContextValue } from './PlanContext';
 
-// The flag's colour on a card face and in the item panel (docs/specs/026-plan/items.md "Flags").
-export const FLAG_COLOUR = '#e11d48';
+// The flag's colour on a card face and in the item panel, shared with the export.
+export { FLAG_COLOUR } from '@livediagram/document';
 
 // Flag a card, or take its flag off: `flagged: true`, or the key removed. The card menu's and the item
 // panel's Flag / Remove Flag.

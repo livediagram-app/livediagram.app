@@ -3,6 +3,7 @@
 // @livediagram/document's TextRun, checked here because the item store sits below that package.
 import type { ItemFieldValue } from './item';
 import { ITEM_DESCRIPTION_MAX } from './limits';
+import { HEX_COLOUR } from './validate';
 
 export const DESCRIPTION_RICH_FIELD = 'descriptionRich';
 // Runs in one description; an edit splits text into a run per change of mark, so this is generous.
@@ -10,7 +11,6 @@ export const ITEM_RICH_RUNS_MAX = 2000;
 const LINK_MAX = 2048;
 
 const SIZES = ['xs', 'sm', 'md', 'lg'];
-const HEX = /^#[0-9a-fA-F]{6}$/;
 const SAFE_LINK = /^(https?:\/\/|mailto:)/i;
 const BOOLS = ['bold', 'italic', 'underline', 'strikethrough'] as const;
 
@@ -37,7 +37,7 @@ export function normaliseRichRuns(v: unknown): ItemFieldValue[] | undefined {
       next['size'] = run['size'] as string;
     }
     if (run['color'] !== undefined) {
-      if (typeof run['color'] !== 'string' || !HEX.test(run['color'])) return undefined;
+      if (typeof run['color'] !== 'string' || !HEX_COLOUR.test(run['color'])) return undefined;
       next['color'] = run['color'];
     }
     if (run['link'] !== undefined) {

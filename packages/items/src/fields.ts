@@ -24,6 +24,7 @@ import {
   ITEM_VOTERS_MAX,
   ITEM_VOTES_PER_PERSON_MAX,
 } from './limits';
+import { HEX_COLOUR } from './validate';
 
 export type ItemFieldKind =
   | 'text'
@@ -106,7 +107,6 @@ export function isValidFieldKey(key: string): boolean {
   return ITEM_FIELD_KEY_PATTERN.test(key);
 }
 
-const HEX = /^#[0-9a-fA-F]{6}$/;
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function isScalar(v: unknown): v is string | number | boolean | null {
@@ -150,7 +150,7 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
       const { id, name, color } = v;
       if (typeof id !== 'string' || id.length === 0 || id.length > 64) return undefined;
       if (typeof name !== 'string' || name.length > 80) return undefined;
-      if (typeof color !== 'string' || !HEX.test(color)) return undefined;
+      if (typeof color !== 'string' || !HEX_COLOUR.test(color)) return undefined;
       return { id, name: name.trim(), color };
     }
     case 'priority':

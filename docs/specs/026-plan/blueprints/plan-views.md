@@ -17,9 +17,11 @@ Derived from [Plan views](../plan-views.md).
 
 ```
 packages/items/src/plan-views.ts        ids, sizes, liveCards, statusPhasesOf, phaseOf, metricBoard
-packages/items/src/plan-view-dates.ts   dayNumber, todayNumber, dayParts, monthStart, month names
+packages/items/src/plan-view-dates.ts   dayNumber, todayNumber, dayParts, dayKey, monthStart, shiftMonth,
+                                        daysInMonth, DAY_MS, month and weekday names (also the timeline's
+                                        month grid, packages/ui/src/timeline/monthCells.ts)
 packages/items/src/plan-view-gantt.ts   ganttModel, ganttAt, GANTT_* constants
-packages/items/src/plan-view-charts.ts  calendarModel, shiftMonth, workloadModel, statusMixModel,
+packages/items/src/plan-view-charts.ts  calendarModel, workloadModel, statusMixModel,
                                         priorityMatrixModel
 packages/document/src/svg-render-plan.ts svgPlanView (a labelled box)
 apps/live/hooks/plan/usePlanStatusNames.ts usePlanStatusPhases -> PlanContext.statusPhases
@@ -76,11 +78,12 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
 
 ## Presentation and UX
 
-- Frame: `rounded-xl border`, `palette.surface`, 40 px header (title, `CountBadge` count, aside controls).
+- Frame: `rounded-xl border`, `palette.surface`, 40 px header (title, `CountBadge` (`@livediagram/ui`, `size="md"`) count, aside controls).
 - Phase colours: Not Started `#94a3b8`, In Progress `#3b82f6`, Done `#16a34a`; overdue and today `#dc2626`.
 - Gantt names column `min(220px, 33%)`, rows 30 px, axis 22 px; bar 14 px, project colour at 28 % with the
   children-done share solid (green when the project is done).
-- Status colours cycle `STATUS_COLOURS` (10); No status is `palette.muted`. Donut is a conic gradient.
+- Status colours cycle the tab theme's chart palette (`themeChartPalette`, the pie chart's `chartPalette`,
+  `PIE_PALETTE` without one); No status is `palette.muted`. Donut is a conic gradient.
 
 ## Accessibility
 

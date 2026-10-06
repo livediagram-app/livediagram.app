@@ -2,7 +2,7 @@
 
 // The plan view element's body (docs/specs/026-plan/plan-views.md): a metric or a visualisation of
 // every live card, in the canvas theme's board colours. Each view is its own component; this picks one.
-import type { ShapeElement } from '@livediagram/document';
+import { PIE_PALETTE, type ShapeElement } from '@livediagram/document';
 import { planViewMetric, type Item, type PlanViewId } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan, type PlanContextValue } from '../PlanContext';
@@ -18,6 +18,8 @@ export type PlanViewProps = {
   plan: PlanContextValue | undefined;
   items: ReadonlyMap<string, Item>;
   palette: PlanPalette;
+  // The tab theme's categorical colours, as the chart elements take them (docs/specs/009-elements/pie-chart.md).
+  chartPalette: readonly string[];
   fontFamily?: string;
   // The element's size, for views that fit their content to it.
   width: number;
@@ -29,9 +31,11 @@ const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
 export function PlanViewView({
   element,
   fontFamily,
+  chartPalette,
 }: {
   element: ShapeElement;
   fontFamily?: string;
+  chartPalette?: readonly string[];
 }) {
   const plan = usePlan();
   const palette = planPalette(useCanvasSurface(), planOwnColours(element));
@@ -40,6 +44,7 @@ export function PlanViewView({
     plan,
     items: plan?.items ?? NO_ITEMS,
     palette,
+    chartPalette: chartPalette && chartPalette.length > 0 ? chartPalette : PIE_PALETTE,
     fontFamily,
     width: element.width,
     height: element.height,

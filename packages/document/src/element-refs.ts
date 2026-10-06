@@ -1,6 +1,7 @@
 // Refs, slug ids and kind words (docs/specs/024-agents/document-views.md "Refs"): how views, edit
 // operations and the lint name elements alike. Element ids are opaque strings; nothing here reads
 // them as UUIDs.
+import { cutSlug, slugText, uniqueSlug } from '@livediagram/items';
 import { eventStormingKindOf } from './event-storming';
 import type { Element } from './index';
 import { ELEMENT_TYPES, SHAPE_KINDS } from './validate';
@@ -109,19 +110,6 @@ export function resolveRef(input: string, table: RefTable): RefResolution {
   return { kind: 'not-found', input, nearest: nearestRefs(wanted, table) };
 }
 
-function slugText(text: string): string {
-  return text
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function cutSlug(base: string, max: number): string {
-  return base.slice(0, max).replace(/-+$/, '');
-}
-
 // The id an element an agent adds takes when it names none: a slug of its label, `-2`, `-3` … on a
 // clash with `takenIds`. Always satisfies `isSlugId`.
 export function slugIdFor(label: string, kindWord: string, takenIds: ReadonlySet<string>): string {
@@ -132,12 +120,7 @@ export function slugIdFor(label: string, kindWord: string, takenIds: ReadonlySet
     text === '' ? kindBase : /^[0-9]/.test(text) ? `${kindBase}-${text}` : text,
     SLUG_ID_MAX_LENGTH,
   );
-  if (!takenIds.has(base)) return base;
-  for (let n = 2; ; n++) {
-    const suffix = `-${n}`;
-    const candidate = `${cutSlug(base, SLUG_ID_MAX_LENGTH - suffix.length)}${suffix}`;
-    if (!takenIds.has(candidate)) return candidate;
-  }
+  return uniqueSlug(base, takenIds, SLUG_ID_MAX_LENGTH);
 }
 
 const UNKNOWN_KIND_MARK = '?';

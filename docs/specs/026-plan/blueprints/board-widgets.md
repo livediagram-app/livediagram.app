@@ -69,7 +69,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
   carry their own `widgets` (presets.ts); Blank keeps the default set.
-- Counts render through `CountBadge` (an 18 px pill with `text-optical-centre`), shared with column heads.
+- Counts render through `CountBadge` from `@livediagram/ui` at `size="md"` (an 18 px pill with
+  `text-optical-centre`) painted with the board's `background`/`color`, shared with column heads.
 
 ## Interfaces and contracts
 

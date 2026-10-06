@@ -102,6 +102,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - A donut of every live card by status, in the order the document's boards name them (the open tab's first), then any other status, then
   **No status**; the legend gives each status its name (as a column calls it), colour and count. The donut's
   middle holds the total.
+- The statuses take the tab theme's chart colours in turn, as a pie chart's slices do
+  ([pie chart](../009-elements/pie-chart.md)), so a theme switch recolours both; **No status** is the muted ink.
 - Empty: **No cards yet. Add cards to a board to see where they stand.**
 
 ### Priority by Status

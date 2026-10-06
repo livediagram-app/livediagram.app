@@ -1433,6 +1433,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:^
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config
