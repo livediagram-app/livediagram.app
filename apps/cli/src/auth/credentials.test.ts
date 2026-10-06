@@ -19,6 +19,9 @@ const stored: StoredCredential = {
   expiresAt: null,
 };
 
+const { token: _token, ...details } = stored;
+const quiet = () => {};
+
 async function failureOf(fn: () => unknown): Promise<CliFailure> {
   try {
     await fn();
@@ -35,15 +38,15 @@ describe('credentials', () => {
     expect(await resolveCredential(io, 'default')).toEqual({ token: TOKEN, source: 'env' });
     const plain = fakeIo();
     expect(await resolveCredential(plain, 'default')).toBeNull();
-    await storeCredential(plain, 'default', stored);
+    await storeCredential(plain, 'default', details, TOKEN, quiet);
     expect(await resolveCredential(plain, 'default')).toEqual({ token: TOKEN, source: 'file' });
     expect(await storedCredential(plain, 'other')).toBeNull();
   });
 
   it('stores at 0600 and forgets one profile, keeping the others', async () => {
     const io = fakeIo();
-    await storeCredential(io, 'default', stored);
-    await storeCredential(io, 'work', { ...stored, tokenId: 't2' });
+    await storeCredential(io, 'default', details, TOKEN, quiet);
+    await storeCredential(io, 'work', { ...details, tokenId: 't2' }, TOKEN, quiet);
     expect(io.fileMap.get(FILE)?.mode).toBe(0o600);
     await forgetCredential(io, 'default');
     expect(JSON.parse(io.fileMap.get(FILE)!.data)).toEqual({

@@ -47,7 +47,14 @@ export type CliIo = {
   listenLoopback: () => Promise<LoopbackServer>;
   // Opens a URL in the person's browser; false when no opener ran.
   openUrl: (url: string) => Promise<boolean>;
+  // `process.platform`: which credential store the system offers.
+  platform: string;
+  // Runs a system tool with `input` on its stdin (never a secret in `args`) and collects its stdout; null when the
+  // tool could not be started.
+  runTool: (command: string, args: readonly string[], input: string) => Promise<ToolRun | null>;
 };
+
+export type ToolRun = { code: number; stdout: string };
 
 // A one-shot HTTP listener on 127.0.0.1 for the browser sign-in's callback (blueprint "The CLI's OAuth client").
 export type LoopbackRequest = {
