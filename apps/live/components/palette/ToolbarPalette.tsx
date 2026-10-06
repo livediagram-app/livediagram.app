@@ -3,7 +3,16 @@
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import type { Element, PageKind } from '@livediagram/document';
 import { AddPageStripButton } from './AddPageStripButton';
-import { Fragment, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
 import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
@@ -228,6 +237,22 @@ export function ToolbarPalette(props: Props) {
     track('UI', 'Opened', 'ToolbarMore');
     more.openFrom(button);
   };
+  // S asks for the Search (lib/toolbar-search-request): answered only while it is on show, so the
+  // key keeps its Select meaning on an event-storming board or with the chrome away.
+  const searchButtonRef = useRef<HTMLDivElement>(null);
+  const openSearchFromKey = useEffectEvent(() => {
+    const button = searchButtonRef.current?.querySelector<HTMLElement>(
+      '[data-toolbar-search-button]',
+    );
+    if (!button || search.open) return;
+    more.setOpen(false);
+    track('UI', 'Opened', 'ToolbarSearch');
+    search.openFrom(button);
+  });
+  useEffect(() => {
+    if (esBoard || hidden) return;
+    return onToolbarSearchRequest(() => openSearchFromKey());
+  }, [esBoard, hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     track('UI', 'Opened', 'ToolbarSearch');
@@ -436,7 +461,9 @@ export function ToolbarPalette(props: Props) {
                 {esBoard ? null : (
                   <>
                     <Divider />
-                    <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                    <div ref={searchButtonRef} className="flex">
+                      <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                    </div>
                   </>
                 )}
               </div>

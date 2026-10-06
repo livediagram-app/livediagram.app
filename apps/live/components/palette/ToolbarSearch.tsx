@@ -11,6 +11,8 @@ import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { searchElementTiles } from './palette-tile-search';
+import { searchCatalogueTiles } from './palette-catalogue-search';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { markerTiles } from './palette-marker-tiles';
 import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -34,6 +36,7 @@ export function ToolbarSearchButton({
       type="button"
       data-toolbar-search-button=""
       aria-label="Search elements"
+      aria-keyshortcuts="S"
       aria-expanded={open}
       onClick={(e) => onToggle(e.currentTarget)}
       className={`flex h-9 items-center rounded-md px-2 transition ${
@@ -50,7 +53,7 @@ export function ToolbarSearchButton({
   return (
     <HoverCard
       title="Search Elements"
-      description="Find any element by name, from every category and every mode."
+      description="Find any element by name, from every category and every mode. Shortcut: S."
     >
       {button}
     </HoverCard>
@@ -79,7 +82,9 @@ export function ToolbarSearchPanel({
   // Draw mode's markers as this browser last set them, read once per opening.
   const [pens] = useState(loadWhiteboardPrefs);
   const surface = useCanvasSurface();
-  const { here, elsewhere } = searchElementTiles({
+  // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.
+  useIconCatalogs();
+  const elements = searchElementTiles({
     query,
     mode,
     hasImage: actions.hasImage,
@@ -87,6 +92,10 @@ export function ToolbarSearchPanel({
     tabElements,
     drawTiles: markerTiles(pens, surface),
   });
+  const catalogues = searchCatalogueTiles({ query, mode, tabElements });
+  // Element types first, then the catalogue entries, in each section.
+  const here = [...elements.here, ...catalogues.here];
+  const elsewhere = [...elements.elsewhere, ...catalogues.elsewhere];
   const browsing = !query.trim();
   const modeName = editorModeLabel(mode);
 

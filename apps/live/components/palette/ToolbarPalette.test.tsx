@@ -9,6 +9,7 @@ import type { EsBoardControls } from './EventStormingBoardRows';
 import type { EditorMode, Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
+import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
@@ -335,6 +336,20 @@ describe('ToolbarPalette', () => {
       fireEvent.click(within(popover).getByRole('button', { name: 'Marker 2' }));
       expect(h.onBeginMarker).toHaveBeenCalledWith('second');
       expect(document.querySelector('[data-toolbar-search]')).toBeNull();
+    });
+
+    it('opens on S where it is shown, and leaves S to Select where it is not', () => {
+      show();
+      act(() => {
+        expect(requestToolbarSearch()).toBe(true);
+      });
+      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
+      cleanup();
+      show({ esBoard: true });
+      expect(requestToolbarSearch()).toBe(false);
+      cleanup();
+      show({ hidden: true });
+      expect(requestToolbarSearch()).toBe(false);
     });
 
     it('uses the best match on Enter', () => {

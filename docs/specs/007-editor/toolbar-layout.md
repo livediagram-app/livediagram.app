@@ -46,11 +46,22 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
   screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
   strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes
-  it. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
+  it. **S** opens it too, wherever it is shown (with the strip in this layout, an editor, not an
+  event-storming board, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
+  alias of Select. The field's clear button (×, once there is text) clears the query and returns to
+  the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
   it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
-  each once however many categories hold it. The open-ended catalogues (My shapes, Icons,
-  Stickers, Technology) are not element types and keep their own searches in their categories.
+  each once however many categories hold it. **Icons, Stickers and Technology** are searched too,
+  entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
+  each catalogue at most **15** best matches (five rows; its category has the rest, with its browse),
+  listed after the element tiles of the same section. A catalogue is this mode's when the mode's
+  palette offers its category (Icons and Stickers in Diagram and Illustrate, Technology in Diagram)
+  and another mode's otherwise. Before anything is typed, the entries already on the tab list with
+  the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
+  carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
+  opening and fills in when it lands. My shapes stays in its own category: it is the person's
+  libraries, not a catalogue of the product.
   **Draw mode's markers** join them: Draw has no palette layout (its pens are the dock's), so its
   Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
   its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
@@ -98,7 +109,9 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **Cost:** the candidate tiles are a few hundred static entries; the match is a linear filter and
   sort over them per keystroke, only while the popover is open, and the popover mounts only while
   open. The on-tab list is one pass over the tab's elements into a set of signatures, then one
-  lookup per tile.
+  lookup per tile. The catalogues add a linear rank over their entries (123 icons, 225 stickers and
+  70 technology marks today): measured at 0.4 ms for a query matching most of them, the element
+  tiles 0.2 ms; tests hold both under a frame.
 
 ## More: the rest of the category
 
