@@ -1,6 +1,8 @@
 import type { EditorMode } from '@livediagram/document';
 import {
+  POPULAR_PER_MODE,
   POPULAR_TEMPLATE_KINDS,
+  popularKindsFor,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
@@ -8,7 +10,6 @@ import {
   templateEditorMode,
   type TemplateCategory,
   type TemplateDescriptor,
-  type TemplateKind,
 } from '@livediagram/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
@@ -140,28 +141,15 @@ export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   })).filter((g) => g.templates.length > 0);
 }
 
-// Popular under a mode filter: Popular's own templates of that mode (its blank first), topped up
-// from the mode's best so it never shows fewer than POPULAR_PER_MODE. Everything keeps Popular as
-// the catalogue lists it.
-export const POPULAR_PER_MODE = 5;
-const MODE_BEST: Readonly<Record<EditorMode, readonly TemplateKind[]>> = {
-  diagram: ['swot', 'timeline', 'flowchart'],
-  draw: ['journey-doodle', 'comic-strip', 'idea-garden', 'rich-picture'],
-  illustrate: ['event-poster', 'year-in-review', 'social-carousel', 'data-story'],
-  plan: ['project-planner', 'kanban', 'team-retro', 'bug-triage'],
-};
+// Popular under a mode filter, topped up from the mode's best (popularKindsFor, shared with the editor's
+// template step).
+export { POPULAR_PER_MODE };
 
 export function popularFor(choice: ModeChoice): GalleryTemplate[] {
-  const popular = byMode(popularTemplates(), choice);
-  if (choice === 'all' || popular.length >= POPULAR_PER_MODE) return popular;
-  const have = new Set(popular.map((t) => t.kind));
-  const extra = MODE_BEST[choice].flatMap((kind) => {
+  return popularKindsFor(choice).flatMap((kind) => {
     const t = BY_KIND.get(kind);
-    return t && !t.hidden && !have.has(kind) && templateEditorMode(kind) === choice
-      ? [toGallery(t)]
-      : [];
+    return t ? [toGallery(t)] : [];
   });
-  return [...popular, ...extra].slice(0, Math.max(POPULAR_PER_MODE, popular.length));
 }
 
 // Popular and every category, under the mode filter, emptied shelves dropped.

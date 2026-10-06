@@ -40,7 +40,9 @@ sees only what starts there.
   Experimental ([Experimental modes](editor-modes.md)), there is no Illustrate option and no
   Illustrate template is shown in any view.
 - Choosing a mode narrows **everything the step shows** to templates of that mode:
-  - **Popular** shows only its templates of that mode.
+  - **Popular** shows its templates of that mode, the mode's blank first, topped up from the mode's best
+    (`MODE_BEST` in `packages/templates`: Plan adds Project Planner, Kanban Board, Team Retro, Bug Tracker)
+    so it never holds fewer than five (`POPULAR_PER_MODE`), as the marketing gallery's does.
   - The **open shelf** shows only its templates of that mode.
   - **Explore More Categories** shows only categories holding at least one template of that mode,
     each tile's count, fan and the "N more categories, M more templates" line counting only
@@ -73,7 +75,7 @@ Popular opens with one blank per mode, in mode order:
 | Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                             |
 | Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                     |
 | Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic or Article). |
-| Blank Plan         | `blank-plan`         | Plan       | One Kanban board (To do, In progress, Done), ready for items.     |
+| Blank Plan         | `blank-plan`         | Plan       | One empty board that asks for its first column.                   |
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.

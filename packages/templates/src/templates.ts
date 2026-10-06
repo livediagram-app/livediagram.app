@@ -249,7 +249,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-plan',
     title: 'Blank Plan',
-    description: 'One board of To do, In progress and Done, ready for your first items.',
+    description: 'One empty board: name its first column and build it the way your team works.',
     extra: true,
   },
   {

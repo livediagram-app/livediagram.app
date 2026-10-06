@@ -4,6 +4,7 @@
 // MCP worker so the two can't drift.
 export * from './templates';
 export * from './template-modes';
+export { MODE_BEST, POPULAR_PER_MODE, popularKindsFor } from './popular';
 export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
