@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';
-import { useCollabDeepLink } from './useCollabDeepLink';
+import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import type { TabLoadState } from './editor-page-helpers';
 
 // Arriving from an Activity row (docs/specs/013-workspace/activity-page.md §1): an element and its popover,
@@ -90,5 +90,35 @@ describe('useCollabDeepLink', () => {
     );
     expect(calls.openItem).not.toHaveBeenCalled();
     expect(calls.select).not.toHaveBeenCalled();
+  });
+
+  it('opens a thread’s comments', () => {
+    const { calls } = arrive({
+      at: { tabId: 't1', elementId: 'b1' },
+      open: 'comments',
+      itemId: null,
+    });
+    expect(calls.openComments).toHaveBeenCalledWith('b1');
+  });
+});
+
+describe('useCollabDeepLinkCapture', () => {
+  it('captures the link from the fragment and keeps it when the hash is rewritten to a plain pin', () => {
+    window.location.hash = '#t=t1&el=b1&item=it1';
+    const { result, rerender } = renderHook(() => useCollabDeepLinkCapture());
+    expect(result.current.current).toEqual({
+      at: { tabId: 't1', elementId: 'b1' },
+      open: null,
+      itemId: 'it1',
+    });
+    window.location.hash = '#t=t1';
+    rerender();
+    expect(result.current.current?.itemId).toBe('it1');
+  });
+
+  it('holds nothing for a plain tab pin', () => {
+    window.location.hash = '#t=t1';
+    const { result } = renderHook(() => useCollabDeepLinkCapture());
+    expect(result.current.current).toBeNull();
   });
 });

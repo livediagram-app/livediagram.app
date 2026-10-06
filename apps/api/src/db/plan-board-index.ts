@@ -134,25 +134,20 @@ export type CardRow = {
   board: string | null;
 };
 
-// A 'shared' row whose link has lapsed has nowhere to go and is dropped, as the other kinds drop it.
+// A 'shared' row whose link has lapsed never arrives: `visible` (document-visibility.ts) drops it.
 export function cardsFromRows(rows: readonly CardRow[]): ActivityCard[] {
-  const out: ActivityCard[] = [];
-  for (const r of rows) {
-    if (r.via === 'shared' && !r.share_code) continue;
-    out.push({
-      documentId: r.document_id,
-      documentName: r.document_name,
-      teamId: r.document_team_id,
-      via: r.via,
-      shareCode: r.via === 'shared' ? r.share_code : null,
-      board: r.board ? (JSON.parse(r.board) as ActivityCard['board']) : null,
-      id: r.id,
-      key: r.item_key,
-      type: r.type,
-      title: typeof r.title === 'string' ? r.title : '',
-      status: typeof r.status === 'string' ? r.status : null,
-      updatedAt: r.updated_at,
-    });
-  }
-  return out;
+  return rows.map((r) => ({
+    documentId: r.document_id,
+    documentName: r.document_name,
+    teamId: r.document_team_id,
+    via: r.via,
+    shareCode: r.via === 'shared' ? r.share_code : null,
+    board: r.board ? (JSON.parse(r.board) as ActivityCard['board']) : null,
+    id: r.id,
+    key: r.item_key,
+    type: r.type,
+    title: typeof r.title === 'string' ? r.title : '',
+    status: typeof r.status === 'string' ? r.status : null,
+    updatedAt: r.updated_at,
+  }));
 }
