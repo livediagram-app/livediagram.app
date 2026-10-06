@@ -415,7 +415,7 @@ export function EditorView() {
                         </AgentFocusContext.Provider>
                       </ChangesetRevealContext.Provider>
                       {ctx.plan.openItemId || ctx.plan.editingTypeId ? (
-                        <PlanSheetsHost plan={ctx.plan} elements={activeTab.elements} />
+                        <PlanSheetsHost plan={ctx.plan} />
                       ) : null}
                     </AreaErrorBoundary>
                     {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.

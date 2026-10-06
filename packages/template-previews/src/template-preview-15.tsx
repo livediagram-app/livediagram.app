@@ -2,10 +2,12 @@ import type { ReactElement, ReactNode } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
 
-// Group 15: the Plan templates (docs/specs/026-plan/plan-mode.md "Templates"), drawn as the Plan
-// board the editor draws: a pale board, columns with their header bars, and white cards with a type
-// stripe. Each preview's hover story moves work the way that board is used. The Kanban board keeps
-// its own preview in group 2. Static SVG preview tiles; TemplatePreview chains the groups with ??.
+// Group 15: the Plan templates (docs/specs/026-plan/plan-templates.md), drawn as the Plan board the
+// editor draws: a pale board, columns with their header bars, and white cards with a type stripe. A
+// template of several tabs shows a strip of tabs over its first board, the first one open; a board of
+// projects shows its Gantt under it. Each preview's hover story moves work the way that board is used.
+// The Kanban board keeps its own preview in group 2. Static SVG preview tiles; TemplatePreview chains
+// the groups with ??.
 
 const BOARD = 'rgb(248 250 252)';
 const BOARD_EDGE = 'rgb(203 213 225)';
@@ -53,15 +55,85 @@ function CardFace({ x, y, w, card }: { x: number; y: number; w: number; card: Ca
   );
 }
 
-// The board: columns side by side under the board's title bar, and any story drawn over it.
+// The template's tabs across the top, the first one open, in place of the board's title bar.
+function TabStrip({ count }: { count: number }) {
+  return (
+    <g>
+      {Array.from({ length: count }, (_, i) => (
+        <rect
+          key={i}
+          x={4 + i * 12.5}
+          y="2.8"
+          width="11"
+          height="3.6"
+          rx="1.2"
+          fill={i === 0 ? 'rgb(51 65 85)' : 'rgb(226 232 240)'}
+        />
+      ))}
+    </g>
+  );
+}
+
+// A Project Gantt Chart under a board of projects: a bar per project, the first filling as it goes.
+function GanttPanel({ bars }: { bars: { x: number; w: number }[] }) {
+  return (
+    <g>
+      <rect
+        x="4"
+        y="30"
+        width="72"
+        height="16"
+        rx="1.6"
+        fill="white"
+        stroke={BOARD_EDGE}
+        strokeWidth="0.5"
+      />
+      <rect x="44" y="31" width="0.5" height="14" fill={BUG} />
+      {bars.map((bar, i) => (
+        <g key={i}>
+          <rect x="6" y={33 + i * 4} width="8" height="1.2" rx="0.6" fill="rgb(148 163 184)" />
+          <rect
+            x={bar.x}
+            y={32.4 + i * 4}
+            width={bar.w}
+            height="2.4"
+            rx="1"
+            fill={EPIC}
+            fillOpacity="0.35"
+          />
+          {i === 0 ? (
+            <rect
+              className="pv-new"
+              opacity="0"
+              x={bar.x}
+              y={32.4}
+              width={bar.w * 0.6}
+              height="2.4"
+              rx="1"
+              fill={EPIC}
+              style={pv({ '--pv-at': '900ms' })}
+            />
+          ) : null}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+// The board: columns side by side under the board's title bar (or the template's tabs), any Gantt under
+// them, and any story drawn over it.
 function board({
   columns,
   rows = 1,
   overlay,
+  tabs,
+  gantt,
 }: {
   columns: Column[];
   rows?: number;
   overlay?: ReactNode;
+  tabs?: number;
+  gantt?: { x: number; w: number }[];
 }) {
   const n = columns.length;
   const gap = 1.6;
@@ -79,12 +151,16 @@ function board({
         stroke={BOARD_EDGE}
         strokeWidth="0.8"
       />
-      <rect x="4" y="4" width="22" height="2.4" rx="1" fill="rgb(51 65 85)" />
+      {tabs ? (
+        <TabStrip count={tabs} />
+      ) : (
+        <rect x="4" y="4" width="22" height="2.4" rx="1" fill="rgb(51 65 85)" />
+      )}
       {columns.map((col, i) => {
         const x = left + i * (w + gap);
         return (
           <g key={i}>
-            <rect x={x} y="9" width={w} height="37" rx="1.6" fill={COLUMN} />
+            <rect x={x} y="9" width={w} height={gantt ? 19 : 37} rx="1.6" fill={COLUMN} />
             <rect x={x} y="9" width={w} height="1.4" rx="0.7" fill={col.head ?? HEAD} />
             <rect
               x={x + 1.4}
@@ -106,6 +182,7 @@ function board({
           </g>
         );
       })}
+      {gantt ? <GanttPanel bars={gantt} /> : null}
       {rows > 1
         ? Array.from({ length: rows - 1 }, (_, r) => (
             <rect key={r} x="4" y={28 + r * 13} width="72" height="0.5" fill={BOARD_EDGE} />
@@ -131,20 +208,26 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
           { cards: [] },
         ],
       });
-    case 'sprint-board':
-      // A row per person; the story moves one story from In progress to In review.
+    case 'project-planner':
+      // Roadmap: projects on Now, Next, Later, Shipped over their Gantt; the story ships a project.
       return board({
-        rows: 2,
+        tabs: 4,
         columns: [
-          { cards: [{ stripe: STORY }, { stripe: TASK }] },
-          { cards: [{ stripe: STORY, moveTo: { dx: w4, dy: 0, at: 900 } }, { stripe: BUG }] },
-          { cards: [{ stripe: TASK }] },
-          { head: STORY, cards: [{ stripe: STORY }, { stripe: TASK }] },
+          { cards: [{ stripe: EPIC, moveTo: { dx: w4 * 3, dy: 0, at: 900 } }] },
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC }] },
+          { head: STORY, cards: [] },
+        ],
+        gantt: [
+          { x: 18, w: 26 },
+          { x: 30, w: 22 },
+          { x: 46, w: 26 },
         ],
       });
     case 'bug-triage':
-      // Bugs only; the story confirms a new bug.
+      // Triage, a row per priority; the story confirms a new bug.
       return board({
+        tabs: 3,
         columns: [
           {
             cards: [
@@ -155,27 +238,27 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
           },
           { cards: [{ stripe: BUG }] },
           { cards: [{ stripe: BUG }, { stripe: BUG }] },
-          { head: STORY, cards: [{ stripe: BUG }] },
+          { cards: [{ stripe: BUG }] },
           { cards: [{ stripe: BUG }] },
         ],
       });
     case 'team-retro': {
-      // Four coloured columns of face-down notes; the story reveals them.
+      // Three coloured columns of face-down notes and ideas; the story reveals them.
       const notes = (n: number, stripe: string): Card[] =>
         Array.from({ length: n }, () => ({ stripe, faceDown: true }));
       return board({
+        tabs: 3,
         columns: [
           { head: STORY, cards: notes(3, NOTE) },
           { head: BUG, cards: notes(3, NOTE) },
           { head: IDEA, cards: notes(2, IDEA) },
-          { head: ACTION, cards: [{ stripe: ACTION, faceDown: true }] },
         ],
-        overlay: [0, 1, 2, 3].map((i) => (
+        overlay: [0, 1, 2].map((i) => (
           <rect
             key={i}
             className="pv-new"
             opacity="0"
-            x={4 + i * w4 + 3.6}
+            x={4 + i * step + 3.6}
             y="17.6"
             width="8"
             height="1"
@@ -186,54 +269,25 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
         )),
       });
     }
-    case 'roadmap-board':
-      // Epics on Now, Next and Later; the story pulls an epic from Next into Now.
-      return board({
-        columns: [
-          { cards: [{ stripe: EPIC }, { stripe: EPIC }] },
-          {
-            cards: [{ stripe: EPIC, moveTo: { dx: -step, dy: 15.2, at: 900 } }, { stripe: EPIC }],
-          },
-          { cards: [{ stripe: EPIC }, { stripe: EPIC }] },
-        ],
-      });
     case 'weekly-planner':
-      // A column a day; the story carries Monday's leftover to Tuesday.
+      // A column a day and Done; the story carries Monday's leftover to Tuesday.
       return board({
+        tabs: 3,
         columns: [
-          { cards: [{ stripe: TASK }, { stripe: TASK, moveTo: { dx: w5, dy: 0, at: 900 } }] },
+          { cards: [{ stripe: TASK }, { stripe: TASK, moveTo: { dx: w6, dy: 0, at: 900 } }] },
           { cards: [{ stripe: TASK }] },
           { cards: [{ stripe: ACTION }] },
           { cards: [{ stripe: TASK }, { stripe: TASK }] },
           { cards: [{ stripe: TASK }] },
-        ],
-      });
-    case 'project-overview':
-      // A row per project, At Risk in amber; the story brings a task back on track.
-      return board({
-        rows: 2,
-        columns: [
-          { cards: [{ stripe: TASK }, { stripe: TASK }] },
-          { cards: [{ stripe: TASK }] },
-          { head: NOTE, cards: [{ stripe: TASK, moveTo: { dx: -w4, dy: 0, at: 900 } }] },
-          { head: STORY, cards: [{ stripe: TASK }, { stripe: TASK }] },
-        ],
-      });
-    case 'daily-standup':
-      // A row per person, Blocked in red; the story unblocks a task into Today.
-      return board({
-        rows: 2,
-        columns: [
-          { cards: [{ stripe: TASK }, { stripe: TASK }] },
-          { cards: [{ stripe: TASK }, { stripe: ACTION }] },
-          { head: BUG, cards: [{ stripe: TASK, moveTo: { dx: -step, dy: 0, at: 900 } }] },
+          { head: STORY, cards: [{ stripe: TASK }] },
         ],
       });
     case 'content-calendar':
-      // Ideas to Published; the story schedules a reviewed piece.
+      // Production, Approved to Published; the story schedules a reviewed piece.
       return board({
+        tabs: 3,
         columns: [
-          { cards: [{ stripe: IDEA }, { stripe: IDEA }, { stripe: IDEA }] },
+          { head: STORY, cards: [{ stripe: IDEA }, { stripe: IDEA }, { stripe: IDEA }] },
           { cards: [{ stripe: TASK }, { stripe: TASK }] },
           { cards: [{ stripe: TASK, moveTo: { dx: w5, dy: 0, at: 900 } }] },
           { cards: [{ stripe: TASK }] },
@@ -241,15 +295,59 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
         ],
       });
     case 'hiring-pipeline':
-      // Applied to Hired; the story moves a candidate from Interview to Offer.
+      // Roles: projects on a Gantt; the story fills a role.
       return board({
+        tabs: 3,
         columns: [
-          { cards: [{ stripe: TASK }, { stripe: TASK }, { stripe: TASK }] },
-          { cards: [{ stripe: TASK }, { stripe: TASK }] },
-          { cards: [{ stripe: TASK, moveTo: { dx: w6, dy: 0, at: 900 } }, { stripe: TASK }] },
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC, moveTo: { dx: w4 * 2, dy: 0, at: 900 } }, { stripe: EPIC }] },
+          { head: NOTE, cards: [] },
+          { head: STORY, cards: [{ stripe: EPIC }] },
+        ],
+        gantt: [
+          { x: 22, w: 30 },
+          { x: 34, w: 30 },
+          { x: 18, w: 20 },
+        ],
+      });
+    case 'okrs':
+      // Key Results by objective, On Track to Off Track; the story brings one back on track.
+      return board({
+        tabs: 2,
+        rows: 2,
+        columns: [
+          { cards: [{ stripe: TASK }] },
+          { head: STORY, cards: [{ stripe: TASK }, { stripe: TASK }] },
+          { head: NOTE, cards: [{ stripe: TASK, moveTo: { dx: -w5, dy: 0, at: 900 } }] },
+          { head: BUG, cards: [{ stripe: TASK }] },
+          { cards: [{ stripe: TASK }] },
+        ],
+      });
+    case 'product-launch':
+      // Workstreams over their Gantt; the story readies a workstream.
+      return board({
+        tabs: 3,
+        columns: [
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC, moveTo: { dx: w4, dy: 0, at: 900 } }, { stripe: EPIC }] },
+          { head: STORY, cards: [] },
           { cards: [] },
-          { head: STORY, cards: [{ stripe: TASK }] },
-          { cards: [{ stripe: NOTE }] },
+        ],
+        gantt: [
+          { x: 18, w: 22 },
+          { x: 28, w: 28 },
+          { x: 40, w: 30 },
+        ],
+      });
+    case 'feedback-board':
+      // Requests voted on; the story plans the top one.
+      return board({
+        tabs: 2,
+        columns: [
+          { cards: [{ stripe: IDEA }, { stripe: IDEA }, { stripe: IDEA }] },
+          { cards: [{ stripe: IDEA, moveTo: { dx: w4, dy: 0, at: 900 } }, { stripe: IDEA }] },
+          { head: IDEA, cards: [{ stripe: IDEA }] },
+          { cards: [{ stripe: IDEA }] },
         ],
       });
     default:

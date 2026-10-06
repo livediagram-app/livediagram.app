@@ -53,7 +53,7 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **New cards a board takes**: the Cards menu's **New Cards Can Be** row, a tile per card type pressed on or off
   (at least one stays on). Add Card offers only those types, and the palette refuses another ("This board takes
   Note, Idea and Action cards"). A card of another type that reaches the board (dragged, or by status) still shows.
-  Defaults: Retro, Note, Idea and Action; Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
+  Defaults: Retro, Note and Idea (an action is tracked on a board of its own); Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
   Week, Task, Action and Note; Blank and All Cards, every type.
 - **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and a
   field to name the first; Enter or **Add Column** makes it. Every new column gets a status of its own (its name
@@ -103,7 +103,8 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 - An **All Cards** board (the Boards category's All Cards tile) shows every card in the document that is not
   archived, whatever its status, in its one column, a **swimlane per status**. A status row is named by the
-  column that has it on a board of the tab (in board and column order), else by the status itself; every status
+  column that has it on a board of the document (the open tab's boards first, then each other tab's, in board
+  and column order), else by the status itself; every status
   a board names has a row, empty or not. Cards with no status sit under "No status".
 - With no cards and no statuses yet it shows a single "No status" row, never a nameless one; with every row shut,
   the spare height goes to an empty row after them.

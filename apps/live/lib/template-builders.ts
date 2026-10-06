@@ -9,10 +9,15 @@
 // page by definition.
 
 import { type Tab } from '@livediagram/document';
-import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
+import {
+  templateCanvasOverrides,
+  templateTabs,
+  type TemplateKind,
+  type TemplateTabDef,
+} from '@livediagram/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
-export { buildTemplate } from '@livediagram/templates';
+export { buildTemplate, templateTabs } from '@livediagram/templates';
 
 export function buildTemplatedTab(
   kind: TemplateKind,
@@ -22,12 +27,36 @@ export function buildTemplatedTab(
   tabId: string,
   tabName: string,
 ): Tab {
+  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName);
+}
+
+// Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
+// the first takes `tabId` and `tabName` (unless the template names it), the rest a fresh id each and
+// the template's names.
+export function buildTemplatedTabs(
+  kind: TemplateKind,
+  themeId: string,
+  tabId: string,
+  tabName: string,
+  newId: () => string = () => crypto.randomUUID(),
+): Tab[] {
+  return templateTabs(kind).map((def, i) =>
+    themedTab(def, kind, themeId, i === 0 ? tabId : newId(), def.name ?? tabName),
+  );
+}
+
+function themedTab(
+  def: TemplateTabDef,
+  kind: TemplateKind,
+  themeId: string,
+  tabId: string,
+  tabName: string,
+): Tab {
   const theme = getTheme(themeId);
-  const rawElements = buildTemplate(kind, 0, 0);
   // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
-  const elements = recolourElementsForTheme(rawElements, theme);
+  const elements = recolourElementsForTheme(def.build(0, 0), theme);
   return {
     id: tabId,
     name: tabName,

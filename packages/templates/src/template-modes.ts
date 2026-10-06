@@ -28,18 +28,18 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'how-it-works': 'illustrate',
   versus: 'illustrate',
   'social-carousel': 'illustrate',
-  // Plan templates (docs/specs/026-plan/plan-mode.md "Templates").
+  // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
   kanban: 'plan',
-  'sprint-board': 'plan',
+  'project-planner': 'plan',
   'bug-triage': 'plan',
   'team-retro': 'plan',
-  'roadmap-board': 'plan',
   'weekly-planner': 'plan',
-  'project-overview': 'plan',
-  'daily-standup': 'plan',
   'content-calendar': 'plan',
   'hiring-pipeline': 'plan',
+  okrs: 'plan',
+  'product-launch': 'plan',
+  'feedback-board': 'plan',
 };
 
 /** The mode a template's tab opens in. */

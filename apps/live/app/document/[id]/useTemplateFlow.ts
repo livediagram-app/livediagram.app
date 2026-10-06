@@ -7,6 +7,7 @@ import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
+import { insertTabsAfter, templateFollowerTabs } from './template-tab-set';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 type TemplatePickerMode = 'welcome' | 'templates' | 'identity';
@@ -58,6 +59,8 @@ export function useTemplateFlow(opts: {
   setTemplatePickerMode: SetState<TemplatePickerMode>;
   // Frames the tab once the template's elements have rendered (useTabEntryEffects).
   requestFit: () => void;
+  // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
+  markTabLoaded: (id: string) => void;
 }) {
   const {
     activeId,
@@ -72,6 +75,7 @@ export function useTemplateFlow(opts: {
     setSelfParticipant,
     setTemplatePickerMode,
     requestFit,
+    markTabLoaded,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -153,8 +157,10 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing document never download it.
-    const { buildTemplate } = await import('@/lib/template-builders');
-    const rawElements = buildTemplate(kind, centre.x, centre.y);
+    const { templateTabs } = await import('@/lib/template-builders');
+    // A template may make several tabs (docs/specs/026-plan/plan-templates.md): the first lands here.
+    const [first, ...rest] = templateTabs(kind);
+    const rawElements = first!.build(centre.x, centre.y);
     const theme = themeId ? getTheme(themeId) : null;
     // Repaint the scaffold with the chosen theme so the Mind map circles,
     // Org chart boxes etc. land in the user's selected colours rather
@@ -185,20 +191,35 @@ export function useTemplateFlow(opts: {
     // per-template pattern override still wins at creation time.
     const overrides = templateCanvasOverrides(kind);
     const opensIn = templateOpensIn(overrides);
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== activeId) return t;
-        const backdrop = theme && themeId ? switchThemeBackdrop(t, getTheme(t.theme), theme) : null;
-        return {
-          ...t,
-          elements,
-          templateChosen: true,
-          ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
-          ...overrides,
-          ...(opensIn ? { opensIn } : {}),
-        };
-      }),
-    );
+    // The template's later tabs: built at the origin (a fresh tab frames itself), recoloured as the
+    // first, named by the template.
+    const followers = rest.map((def) => {
+      const raw = def.build(0, 0);
+      return {
+        id: crypto.randomUUID(),
+        name: def.name ?? '',
+        elements: theme ? recolourElementsForTheme(raw, theme) : raw,
+      };
+    });
+    commitTabs((ts) => {
+      const active = ts.find((t) => t.id === activeId);
+      if (!active) return ts;
+      const backdrop =
+        theme && themeId ? switchThemeBackdrop(active, getTheme(active.theme), theme) : null;
+      const landed: Tab = {
+        ...active,
+        elements,
+        templateChosen: true,
+        ...(first!.name ? { name: first!.name } : {}),
+        ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
+        ...overrides,
+        ...(opensIn ? { opensIn } : {}),
+      };
+      const next = ts.map((t) => (t.id === activeId ? landed : t));
+      const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
+      return insertTabsAfter(next, activeId, templateFollowerTabs(landed, followers, withMode));
+    });
+    for (const f of followers) markTabLoaded(f.id);
     // ...and decides it afresh for its maker too: the mode pinned when the empty tab opened is
     // released, so the canvas follows the template's.
     if (opensIn) releaseOpening(activeId);
