@@ -14,17 +14,19 @@
 import { deprecatedDescription, legacyToolName } from './legacy-tool-names';
 import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
+import type { ZodRawShape } from 'zod';
+import type { McpToolVerb } from '@livediagram/agent-verbs/mcp';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import { pascalToken } from '@livediagram/api-schema';
 import { postTelemetry } from './api';
 import type { Env } from './env';
 import { runInTool } from './tool-scope';
 
-// Three behaviours cover every tool. The split mirrors docs/specs/015-api/mcp-server.md §4.11's
+// Three behaviours cover every tool (a verb's `behaviour`). The split mirrors docs/specs/015-api/mcp-server.md §4.11's
 // read-only-token boundary: what a `read_only = 1` token can still reach is
 // exactly what `read` annotates, so the hint a client sees and the rule the
 // api enforces can't drift apart.
-export type ToolBehaviour = 'read' | 'write' | 'destructive';
+export type ToolBehaviour = McpToolVerb['behaviour'];
 
 // `openWorldHint: false` throughout: every tool acts on the caller's own
 // livediagram library through our api, a closed and known domain rather than
@@ -41,18 +43,6 @@ export const TOOL_ANNOTATIONS: Record<ToolBehaviour, ToolAnnotations> = {
   destructive: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
 };
 
-type ToolConfig<InputArgs extends ZodRawShapeCompat> = {
-  title: string;
-  description: string;
-  // Required, and the whole point of this wrapper: a new tool cannot reach the
-  // wire unannotated, because omitting this is a type error.
-  behaviour: ToolBehaviour;
-  inputSchema: InputArgs;
-  // Required for the same reason (docs/specs/015-api/mcp-server.md §4.17): the result shape, from
-  // output-schema.ts. The SDK validates each success's structuredContent against it.
-  outputSchema: ZodRawShapeCompat;
-};
-
 /**
  * Register an MCP tool with its behaviour annotations attached.
  *
@@ -60,13 +50,24 @@ type ToolConfig<InputArgs extends ZodRawShapeCompat> = {
  * It is the same call with `behaviour` in place of a hand-written
  * `annotations` block, so the hints stay consistent across the surface.
  */
-export function registerTool<InputArgs extends ZodRawShapeCompat>(
+export function registerTool<
+  InputArgs extends ZodRawShapeCompat & ZodRawShape,
+  OutputArgs extends ZodRawShape,
+>(
   server: McpServer,
   env: Env,
-  name: string,
-  { behaviour, ...config }: ToolConfig<InputArgs>,
+  verb: McpToolVerb<InputArgs, OutputArgs>,
   handler: ToolCallback<InputArgs>,
 ): void {
+  // The tool as its verb declares it (packages/agent-verbs mcp-tools.ts): name, words, behaviour and schemas.
+  const name = verb.mcp.tool;
+  const behaviour = verb.behaviour;
+  const config = {
+    title: verb.mcp.title,
+    description: verb.description,
+    inputSchema: verb.mcpShapes.input,
+    outputSchema: verb.mcpShapes.output,
+  };
   // The handler runs inside the tool's scope so an api failure anywhere below
   // it reports which tool it came from (tool-scope.ts).
   const scoped = ((...args: unknown[]) =>

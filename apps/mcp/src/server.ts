@@ -4,7 +4,11 @@
 // each tool, so a fresh server per request carries no cross-request state.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
-import { elementSchemaDoc, SCHEMA_RESOURCE_URI, SERVER_INSTRUCTIONS } from './schema';
+import {
+  elementSchemaDoc,
+  SCHEMA_RESOURCE_URI,
+  SERVER_INSTRUCTIONS,
+} from '@livediagram/agent-verbs/mcp';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
 

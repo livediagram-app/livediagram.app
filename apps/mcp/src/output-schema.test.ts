@@ -10,7 +10,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { connectTestClient } from './mcp-test-client';
-import * as outputs from './output-schema';
+import * as outputs from '@livediagram/agent-verbs/mcp';
 
 // Structured output and described parameters (docs/specs/015-api/mcp-server.md §4.17), end to end
 // through a real SDK client and server: the server validates each success's
@@ -149,7 +149,7 @@ describe('tool output schemas', () => {
     expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(current.map((t) => t.name)));
   });
 
-  for (const { tool, output, args } of CALLS) {
+  for (const { tool, args } of CALLS) {
     it(`${tool} ${JSON.stringify(args)} returns structured content matching its schema`, async () => {
       const client = await connectTestClient(api);
       // listTools primes the client's own outputSchema validation of callTool.
@@ -157,7 +157,10 @@ describe('tool output schemas', () => {
       const result = await client.callTool({ name: tool, arguments: args });
       expect(result.isError, JSON.stringify(result.content)).toBeFalsy();
       const structured = result.structuredContent;
-      z.object(outputs[output]).strict().parse(structured);
+      // The output schema the tool's verb declares, which the server registered.
+      z.object(outputs.MCP_TOOL_VERBS.find((v) => v.mcp.tool === tool)!.mcpShapes.output)
+        .strict()
+        .parse(structured);
       // The text block carries the same object for clients that ignore structuredContent; a view
       // carries its text, then one line naming the document, the tab and its revision (VW55).
       const [first] = result.content as { type: string; text: string }[];

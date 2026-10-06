@@ -100,7 +100,7 @@ data = ?` (`apps/api/src/db/tabs.ts:422`). `tabs.updated_at` exists for a cheap 
   An agent should never have to choose an anchor.
 - **Frame and lane membership is spatial, not a parent pointer.** A node belongs to the smallest
   frame containing its centre (`mermaid-serialise.ts`); a lane owns what lies fully inside its box
-  (`apps/mcp/src/schema.ts`). Groups were removed ([web components and no groups](../../specs/009-elements/web-components-and-no-groups.md)).
+  (`packages/agent-verbs/src/mcp/schema.ts`). Groups were removed ([web components and no groups](../../specs/009-elements/web-components-and-no-groups.md)).
   Consequence: **any move or resize can silently change membership**, and wrapping a section in a
   frame can silently capture a bystander. draw.io and Miro have an explicit parent (`set-cell-parent`,
   item `parent`); we do not, so the CLI must compute and report membership changes.
@@ -649,7 +649,7 @@ When this becomes a spec, the deltas are:
 - Penpot MCP: <https://github.com/penpot/penpot-mcp>
 - VS Code `WorkspaceEdit`: <https://code.visualstudio.com/api/references/vscode-api#WorkspaceEdit>
 - Kubernetes declarative management, three-way merge: <https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/>
-- livediagram: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `apps/mcp/src/schema.ts`,
+- livediagram: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `collab-ledger.ts`, `validate.ts`,
   `mermaid-serialise.ts`, `arrow-rebind.ts`, `anchor-choice.ts`, `graph-authoring.ts`,
   `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/db/tabs.ts`,
