@@ -39,7 +39,9 @@ export function ToolbarSearchButton({
       aria-keyshortcuts="S"
       aria-expanded={open}
       onClick={(e) => onToggle(e.currentTarget)}
-      className={`flex h-9 items-center rounded-md px-2 transition ${
+      // A square the size of a tile, not side padding: a phone's strip trims its pickers' px-2
+      // (PHONE_TOOLBAR_ITEMS), which squeezed this icon-only button to 24px beside 36px tiles.
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition ${
         open
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
           : TOOLBAR_TRIGGER_TONE
