@@ -152,6 +152,8 @@ test('someone who joins after a card was opened sees it held', async ({
   browser,
   baseURL,
 }) => {
+  // Two browsers, a share-link join and a held card: more than the default 30 seconds on a slow runner.
+  test.setTimeout(60_000);
   const owner = await mintSignedGuest(page.request);
   const id = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
@@ -197,7 +199,8 @@ test('someone who joins after a card was opened sees it held', async ({
     .getByRole('button', { name: /add card/i })
     .nth(1)
     .click();
-  await a.getByRole('button', { name: /^Task$/ }).click();
+  // The Add a Card menu's tiles are menu items (the shared menu tiles).
+  await a.getByRole('menuitem', { name: /^Task$/ }).click();
   await boardA.getByText('New task').first().click();
   await expect(a.getByRole('dialog')).toBeVisible();
 
