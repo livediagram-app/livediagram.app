@@ -2,6 +2,11 @@
 
 export const CLI_VERSION = '0.1.0';
 
+// The name npm publishes the CLI under (blueprint CLI1); its command is `livediagram`.
+export const NPM_PACKAGE = '@livediagram/cli';
+
+export const UPGRADE_HINT = `npm install -g ${NPM_PACKAGE}@latest, or npx ${NPM_PACKAGE}@latest`;
+
 const parts = (v: string) => v.split('.').map(Number);
 
 // Whether `current` is older than `min`, both x.y.z.

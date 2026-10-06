@@ -180,6 +180,12 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # The CLI package as npm would publish it (docs/specs/015-api/blueprints/cli.md CLI3): its file list and size,
+      # without publishing. `pnpm build` wrote apps/cli/dist.
+      - name: CLI package dry run
+        working-directory: apps/cli/dist
+        run: npm pack --dry-run
+
       # Resolve the staging wrangler configs without deploying anything
       # (docs/specs/016-platform/staging-environment.md). Wrangler does NOT inherit bindings into a named
       # environment, so a binding left out of an `[env.staging]` block is

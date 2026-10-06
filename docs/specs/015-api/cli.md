@@ -174,8 +174,9 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
 
 ## Distribution
 
-- npm package `livediagram`, one bundled ESM file plus the resvg wasm and font, Node 22 or later, run with
-  `npx livediagram@latest` or installed. Published from CI with provenance, versioned on its own.
+- npm package `@livediagram/cli`, under the `livediagram` npm organisation, installing the command `livediagram`: one
+  bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livediagram/cli@latest` or installed.
+  npm refuses the plain name `livediagram` as too close to the existing `live-diagram`. Published from CI with provenance, versioned on its own.
 - Standalone binaries and a Homebrew tap may follow; a `curl | sh` installer is never offered.
 - Once a day at most, after a command, it checks npm for a newer version and says so on stderr; never in CI, when
   stderr is not a terminal, or with `LIVEDIAGRAM_NO_UPDATE_CHECK=1`.

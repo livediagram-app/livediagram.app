@@ -5,6 +5,7 @@
 import { createPngRenderer } from '@livediagram/render-png';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
+import { NPM_PACKAGE } from '../config/version';
 import { EXIT } from '../output/exit-codes';
 
 export type Picture = { path: string; width: number; height: number; bytes: number };
@@ -20,7 +21,7 @@ function rendererFor(io: CliIo) {
           exit: EXIT.failure,
           code: 'missing_asset',
           message: `${name} is missing beside the CLI: ${String(err)}`,
-          hint: 'reinstall: npm install -g livediagram@latest',
+          hint: `reinstall: npm install -g ${NPM_PACKAGE}@latest`,
         });
       });
     renderer = createPngRenderer({
