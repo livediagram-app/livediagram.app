@@ -417,6 +417,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A part of the editor or help centre crashed with an error nothing in the code caught. No longer recorded in this bare form; a crash like this now also records which page it happened on and what kind of error it was.',
   'Error|Client|UnhandledRejection':
     'A background task failed and nothing in the code handled the failure. No longer recorded in this bare form; a failure like this now also records which page it happened on and what kind of error it was.',
+  'Error|Warning|DocumentLoad.Slow':
+    'A document took more than 10 seconds to load, so the opening screen offered Refresh.',
+  'Error|Warning|DocumentLoad.AutoReload':
+    'A document load hit its 30-second limit and the page reloaded itself once to try a fresh start.',
+  'Error|Warning|DocumentLoad.Late':
+    'A document finished loading after its 30-second limit had already shown the error screen; the editor replaced it.',
+  'Error|Warning|OfflineStore.Unavailable':
+    "The browser's local database did not open in time, so the load carried on without checking for Offline Mode documents.",
+  'Error|Warning|SessionToken.TimedOut':
+    "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
   'Error|Warning|AiQuota.BrowserReader':
     "Someone imported sticky notes from a photo of a wall, and livediagram's free hosted quota for reading the handwriting had run out, so it fell back to the slower job of reading it in the visitor's own browser.",
   'Facilitator|Changed|Granted':
@@ -835,6 +845,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
+  'UI|Cleared|BrowserRepair':
+    "Someone used Repair This Browser on a failed document load: livediagram's settings and caches in that browser were cleared and the page reloaded.",
+  'UI|Cleared|BrowserRepair.Help':
+    "Someone used Repair This Browser from the help centre's Repair page, clearing livediagram's settings and caches in that browser.",
+  'UI|Copied|Diagnostics':
+    'Someone copied the diagnostics report from a failed document load, to send to support.',
+  'UI|Copied|Diagnostics.Help':
+    "Someone copied the browser diagnostics report from the help centre's Repair page.",
   'UI|Copied|EmbedCode':
     "Someone copied an embed URL or an iframe snippet from the Share dialog's Embed menu.",
   'UI|Copied|LiveImage':
@@ -1389,6 +1407,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
     "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
+  'UI|Cleared':
+    "Someone cleared livediagram's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':
     'Someone closed or dismissed a banner, card, or presentation somewhere in the editor.',
   'UI|Copied':

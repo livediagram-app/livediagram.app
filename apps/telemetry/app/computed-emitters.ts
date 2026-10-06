@@ -382,6 +382,26 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: SLUGS,
     open: SLUG_WHY,
   },
+  // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
+  // the load named by its error.
+  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
+    values: [
+      'DocumentLoad.TimedOut.Identity',
+      'DocumentLoad.TimedOut.Participant',
+      'DocumentLoad.TimedOut.Document',
+      'DocumentLoad.TimedOut.Share',
+      'DocumentLoad.TimedOut.FirstTab',
+      'DocumentLoad.AutoReload',
+      'DocumentLoad.Late',
+    ],
+  },
+  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
+    values: ['DocumentLoad.TypeError', 'DocumentLoad.Error'],
+    open: 'DocumentLoad.<ErrorName>',
+  },
+  'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
+    values: ['OfflineStore.Unavailable', 'SessionToken.TimedOut'],
+  },
   'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Api': {
     values: API_ERRORS,
     open: API_ERROR_WHY,
