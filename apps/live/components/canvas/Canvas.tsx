@@ -56,6 +56,7 @@ import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/M
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
+import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
@@ -748,8 +749,6 @@ function CanvasView(props: CanvasProps) {
             : undefined
         }
         data-path-cursor={pathTool.cursor ? '' : undefined}
-        // Fades in as the editor arrives (globals.css, "Editor fade-in").
-        data-canvas-world=""
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
@@ -799,45 +798,47 @@ function CanvasView(props: CanvasProps) {
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
-          {/* The zoom reaches only the counter-scaled parts of each element
+          <CanvasArrivalProvider tabId={props.activeTabId ?? ''}>
+            {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-          <CanvasZoomProvider zoom={viewportZoom}>
-            <MindGrowProvider value={mindGrow}>
-              <MindOutlineProvider value={mindOutlineBadges}>
-                <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
-                  <CanvasElementsLayer
-                    {...props}
-                    elements={pathTool.elements}
-                    // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                    // so the prop from the host is overridden with the local resolver.
-                    onEnterPortal={resolvePortal}
-                    onFireReaction={props.onFireReaction}
-                    reactionBursts={props.reactionBursts}
-                    onReactionBurstDone={props.onReactionBurstDone}
-                    // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                    // lives, rather than threaded from the page.
-                    chairSitters={sittersOf}
-                    // Pressing a Selection Mode button that hands out Avatar mode drops
-                    // the character at THAT button (see avatarSpawn), not the viewport
-                    // centre: you pressed a thing on the canvas, so the character should
-                    // appear where you pressed it.
-                    onPressModeButton={pressModeButton}
-                    onPressFocusButton={props.onPressFocusButton}
-                    hasArrows={hasArrows}
-                    arrowLabels={arrowLabels}
-                    selectionInput={selectionInput}
-                    isPaintMode={isPaintMode}
-                    handleArrowSelect={handleArrowSelect}
-                    handleElementClick={handleElementClick}
-                    handleElementContextSelect={handleElementContextSelect}
-                    quickRingOpen={quickRingOpen}
-                    setQuickRingOpen={setQuickRingOpen}
-                    drawDrag={drawDrag}
-                  />
-                </ElementIndicatorStyleProvider>
-              </MindOutlineProvider>
-            </MindGrowProvider>
-          </CanvasZoomProvider>
+            <CanvasZoomProvider zoom={viewportZoom}>
+              <MindGrowProvider value={mindGrow}>
+                <MindOutlineProvider value={mindOutlineBadges}>
+                  <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
+                    <CanvasElementsLayer
+                      {...props}
+                      elements={pathTool.elements}
+                      // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                      // so the prop from the host is overridden with the local resolver.
+                      onEnterPortal={resolvePortal}
+                      onFireReaction={props.onFireReaction}
+                      reactionBursts={props.reactionBursts}
+                      onReactionBurstDone={props.onReactionBurstDone}
+                      // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                      // lives, rather than threaded from the page.
+                      chairSitters={sittersOf}
+                      // Pressing a Selection Mode button that hands out Avatar mode drops
+                      // the character at THAT button (see avatarSpawn), not the viewport
+                      // centre: you pressed a thing on the canvas, so the character should
+                      // appear where you pressed it.
+                      onPressModeButton={pressModeButton}
+                      onPressFocusButton={props.onPressFocusButton}
+                      hasArrows={hasArrows}
+                      arrowLabels={arrowLabels}
+                      selectionInput={selectionInput}
+                      isPaintMode={isPaintMode}
+                      handleArrowSelect={handleArrowSelect}
+                      handleElementClick={handleElementClick}
+                      handleElementContextSelect={handleElementContextSelect}
+                      quickRingOpen={quickRingOpen}
+                      setQuickRingOpen={setQuickRingOpen}
+                      drawDrag={drawDrag}
+                    />
+                  </ElementIndicatorStyleProvider>
+                </MindOutlineProvider>
+              </MindGrowProvider>
+            </CanvasZoomProvider>
+          </CanvasArrivalProvider>
         </CanvasStillProvider>
         {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so

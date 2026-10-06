@@ -23,6 +23,7 @@ import {
   type Gesture,
   type Measurement,
 } from './budget';
+import { interactiveMs, OPEN_QUIET_MS } from './interactive';
 import { buildReferenceBoard } from './reference-board';
 import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
@@ -81,6 +82,13 @@ async function benchmark(browser: Browser): Promise<number> {
   return Math.min(...runs);
 }
 
+// Opening (D68, D80): the probe waits until the page has been quiet for OPEN_QUIET_MS before it reads
+// the number, and touches the page (the tour check, keys) only after, so its own work stays out.
+const OPEN_POLL_MS = 1000;
+const OPEN_SETTLE_TIMEOUT_MS = 60_000;
+
+// One open of the board in a fresh context: how long it took to become interactive, and the page,
+// ready for gestures.
 async function openBoard(browser: Browser, owner: string, id: string, throttle: number) {
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark' });
   await ctx.addInitScript(
@@ -88,13 +96,15 @@ async function openBoard(browser: Browser, owner: string, id: string, throttle: 
       localStorage.setItem('livediagram:v2:self-id', o);
       if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      // Long tasks from the very start, for the open row.
-      const w = window as unknown as { __longTasks: { start: number; end: number }[] };
-      w.__longTasks = [];
-      new PerformanceObserver((list) => {
-        for (const e of list.getEntries())
-          w.__longTasks.push({ start: e.startTime, end: e.startTime + e.duration });
-      }).observe({ type: 'longtask', buffered: true });
+      // Every long task and long animation frame from the very start, for the open row: long tasks
+      // alone miss a frame that only renders.
+      const w = window as unknown as { __busy: { start: number; end: number }[] };
+      w.__busy = [];
+      for (const type of ['longtask', 'long-animation-frame'])
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries())
+            w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
+        }).observe({ type, buffered: true });
     },
     { o: owner, sig: guestSigFor(owner) },
   );
@@ -104,36 +114,39 @@ async function openBoard(browser: Browser, owner: string, id: string, throttle: 
   await page.goto(`/document/${id}`);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 60_000 });
   await page.locator('[data-element-id="ref-0"]').first().waitFor({ timeout: 60_000 });
+  const ms = await settledOpenMs(page);
   await dismissQuickTour(page);
   await page.keyboard.press('Escape');
   await page.keyboard.press('v');
-  // Settle, and leave room for the open row's quiet window.
-  await page.waitForTimeout(4000);
-  return { ctx, page, cdp };
+  await page.waitForTimeout(2000);
+  return { ctx, page, cdp, openMs: ms };
 }
 
-// Interactive: from the tab's response to the start of the first 500 ms with no long task
-// (docs/specs/008-canvas/blueprints/DEFAULTS.md D68).
-async function openMs(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const tab = performance
-      .getEntriesByType('resource')
-      .filter((e) => /\/documents\/[^/]+\/tabs\/[^/?]+$/.test(new URL(e.name).pathname))
-      .map((e) => (e as PerformanceResourceTiming).responseEnd)
-      .sort((a, b) => a - b)[0];
-    if (tab === undefined) throw new Error('no tab response');
-    const tasks = (
-      window as unknown as { __longTasks: { start: number; end: number }[] }
-    ).__longTasks
-      .filter((t) => t.end > tab)
-      .sort((a, b) => a.start - b.start);
-    let quietFrom = tab;
-    for (const t of tasks) {
-      if (t.start - quietFrom >= 500) break;
-      quietFrom = Math.max(quietFrom, t.end);
-    }
-    return quietFrom - tab;
-  });
+// Polls until the quiet window interactiveMs found has actually elapsed, then returns it.
+async function settledOpenMs(page: Page): Promise<number> {
+  const deadline = Date.now() + OPEN_SETTLE_TIMEOUT_MS;
+  for (;;) {
+    await page.waitForTimeout(OPEN_POLL_MS);
+    const { from, busy, now } = await page.evaluate(() => {
+      const tab = performance
+        .getEntriesByType('resource')
+        .filter((e) => /\/documents\/[^/]+\/tabs\/[^/?]+$/.test(new URL(e.name).pathname))
+        .map((e) => (e as PerformanceResourceTiming).responseEnd)
+        .sort((a, b) => a - b)[0];
+      return {
+        from: tab ?? null,
+        busy: (window as unknown as { __busy: { start: number; end: number }[] }).__busy,
+        now: performance.now(),
+      };
+    });
+    if (from === null) throw new Error('no tab response');
+    const ms = interactiveMs(from, busy);
+    if (now - (from + ms) >= OPEN_QUIET_MS) return ms;
+    if (Date.now() > deadline)
+      throw new Error(
+        `opening never went quiet for ${OPEN_QUIET_MS} ms within ${OPEN_SETTLE_TIMEOUT_MS} ms`,
+      );
+  }
 }
 
 async function traced(
@@ -463,14 +476,15 @@ test('canvas performance budget', async ({ browser, baseURL, page }) => {
   const measurements: Measurement[] = [];
   for (const tab of ['whiteboard', 'diagram'] as const) {
     const id = await seed(page, baseURL!, owner, tab);
-    const board = await openBoard(browser, owner, id, calibration.rate);
-    measurements.push({
-      tab,
-      zoom: 'fit',
-      gesture: 'open',
-      longestTaskMs: 0,
-      openMs: await openMs(board.page),
-    });
+    // Opened REPEATS times, each in a fresh context; the gestures run on the last.
+    const opens: Measurement[] = [];
+    let board!: Awaited<ReturnType<typeof openBoard>>;
+    for (let r = 0; r < REPEATS; r++) {
+      if (board) await board.ctx.close();
+      board = await openBoard(browser, owner, id, calibration.rate);
+      opens.push({ tab, zoom: 'fit', gesture: 'open', longestTaskMs: 0, openMs: board.openMs });
+    }
+    measurements.push(medianOfRuns(opens));
     for (const zoom of ['fit', '100%'] as const)
       measurements.push(...(await measureZoom(board.cdp, board.page, tab, zoom)));
     await board.ctx.close();

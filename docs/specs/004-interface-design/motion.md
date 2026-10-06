@@ -93,7 +93,7 @@ softly rather than its parts popping into place. It is one rule in `apps/live/ap
 keyed on the surfaces' existing markers (`data-floating-panel`, `data-editor-tabbar`,
 `data-zoom-cluster`), in the components layer so a surface's own entrance utility still wins.
 
-The board itself (the canvas world, `data-canvas-world`) **appears at once**, with no fade. Fading
+The board itself (the canvas world) **appears at once**, with no fade. Fading
 the world animates the opacity of every element on the board, and Chrome lays out the whole page's
 compositing again as that fade starts and again as it ends: about 300 ms of main-thread work each
 time at the reference speed on the 1,000-element reference board. That alone kept opening the

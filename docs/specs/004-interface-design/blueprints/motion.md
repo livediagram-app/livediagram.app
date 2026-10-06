@@ -127,7 +127,7 @@ moves to `canvas-motion.css` with the canvas gesture it belongs to.
 and `useBoxedElementAnimation` uses it in place of `animate-pop-in`, on elements added after the
 board arrived only ([Canvas performance blueprint](../../008-canvas/blueprints/canvas-performance.md)
 "Opening animates nothing across the board"). The editor fade-in rule in `globals.css` covers the
-chrome markers and never `[data-canvas-world]`: the board appears at once (spec, "Editor
+chrome markers and never the canvas world: the board appears at once (spec, "Editor
 arrival").
 
 ### Shared theme (`packages/tailwind-config/theme.css`)

@@ -26,7 +26,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/hooks/canvas/useCanvasLongTaskLog.ts`          | The `[canvas-perf] long task` debug log                                                  |
 | `apps/live/components/canvas/CanvasArrivalContext.tsx`    | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                  |
 | `apps/live/components/canvas/useBoxedElementAnimation.ts` | Pops in only what is added after the board arrived; no timer when nothing pops           |
-| `apps/live/app/globals.css`                               | The editor fade-in rule: chrome markers only, never `[data-canvas-world]`                |
+| `apps/live/app/globals.css`                               | The editor fade-in rule: chrome markers only, never the canvas world                     |
 | `apps/live/e2e/perf/interactive.ts`                       | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure) |
 | `apps/live/e2e/perf/reference-board.ts`                   | `buildReferenceBoard(seed, count)`                                                       |
 | `apps/live/e2e/perf/budget.ts`                            | `evaluateBudget`, `budgetTable` and the budget constants (pure)                          |
@@ -184,14 +184,13 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### Opening animates nothing across the board
 
 - The editor fade-in rule in `globals.css` lists `[data-floating-panel]`, `[data-editor-tabbar]`
-  and `[data-zoom-cluster]`; `[data-canvas-world]` keeps its marker but no animation.
-- `CanvasArrivalProvider` (`CanvasArrivalContext.tsx`) wraps the element layer in `Canvas`, keyed
-  by `activeTabId`. It holds one `BoardArrival` per canvas (`createBoardArrival()`, in
-  `useState`), whose `settledTab` is set in an effect after each commit that shows a tab
-  (`useEffect(() => arrival.settle(tabId), [arrival, tabId])`). Its context value is
-  `{ arrival, tabId }`, memoised, so it changes only on a tab switch.
+  and `[data-zoom-cluster]` only; the canvas world carries no marker and no animation.
+- `CanvasArrivalProvider` (`CanvasArrivalContext.tsx`) wraps the element layer in `Canvas`, given
+  `activeTabId`. It holds `settledTab`, a ref set in an effect after each commit that shows a tab
+  (`useEffect(() => { settledTab.current = tabId }, [tabId])`). Its context value is
+  `{ settledTab, tabId }`, memoised, so it changes only on a tab switch.
 - `useArrivesWithBoard()` reads, once per element mount (a `useState` initialiser),
-  `arrival.settledTab !== tabId`: true for the elements in the commit that shows the tab, false
+  `settledTab.current !== tabId`: true for the elements in the commit that shows the tab, false
   for any element mounted later. Outside a provider it reads false (an element alone pops in).
 - `useBoxedElementAnimation`: `entered` starts as `still || arrivesWithBoard`. Only an element
   that starts not entered arms the 400 ms timer that drops `animate-element-pop-in`; an element

@@ -24,18 +24,18 @@
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 
 /*
- * Editor fade-in (docs/specs/004-interface-design/motion.md): the editor's floating chrome and
- * the canvas content fade in as they mount rather than popping into place, most visibly as a
- * document opens. Opacity only, so the canvas world's inline transform and a panel's own
- * position are untouched; `fade-in` has no `to`, so a translucent panel settles at its own
- * opacity. In the components layer, so a surface's own entrance utility (a panel's pop-in, a
- * banner's fade) still wins. Reduced motion collapses it with every other animation.
+ * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
+ * chrome fades in as it mounts rather than popping into place, most visibly as a document opens.
+ * Opacity only, so a panel's own position is untouched; `fade-in` has no `to`, so a translucent
+ * panel settles at its own opacity. In the components layer, so a surface's own entrance utility (a
+ * panel's pop-in, a banner's fade) still wins. Reduced motion collapses it with every other
+ * animation. The board appears at once: fading the canvas world re-lays out the
+ * whole page's compositing as the fade starts and ends.
  */
 @layer components {
   [data-floating-panel],
   [data-editor-tabbar],
-  [data-zoom-cluster],
-  [data-canvas-world] {
+  [data-zoom-cluster] {
     animation: fade-in var(--transition-duration-short) ease-out;
   }
 }
