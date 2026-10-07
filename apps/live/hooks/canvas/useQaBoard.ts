@@ -26,6 +26,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { apiQaAction } from '@/lib/api-client';
+import { isVoteLimitError, VOTE_LIMIT_MESSAGE } from '@/lib/vote-limit';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 
@@ -172,13 +173,15 @@ export function useQaBoard({
       const base = baseRef.current.get(key);
       if (!base || state.rev > base.rev) baseRef.current.set(key, state);
       rebuild(tabId, element.id);
-    } catch {
+    } catch (err) {
       settle();
       rebuild(tabId, element.id);
       onError(
-        isParticipantQaAction(action)
-          ? 'That didn’t reach the board. Try again in a moment.'
-          : 'Couldn’t update the board. Try again in a moment.',
+        isVoteLimitError(err)
+          ? VOTE_LIMIT_MESSAGE
+          : isParticipantQaAction(action)
+            ? 'That didn’t reach the board. Try again in a moment.'
+            : 'Couldn’t update the board. Try again in a moment.',
       );
     }
   };

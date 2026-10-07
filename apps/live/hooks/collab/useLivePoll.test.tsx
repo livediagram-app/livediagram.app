@@ -157,6 +157,21 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     expect(ops[1]).toMatchObject({ kind: 'poll-answer', value: 'pizza', key: 'me' });
   });
 
+  // docs/specs/012-collaboration/vote-integrity.md: the proof is this browser's own secret, the same on every
+  // answer (so a re-answer after a reconnect still counts as ours), and never the public key.
+  it('proves its answers with one per-browser secret', () => {
+    const { result, send } = withKey('me');
+    act(() => result.current.receivePoll(poll('p1')));
+    act(() => result.current.answerPoll('pizza'));
+    act(() => result.current.answerPoll('sushi'));
+    const [first, second] = send.mock.calls.map((c) => c[0].op);
+    expect(typeof first.proof).toBe('string');
+    expect(first.proof.length).toBeGreaterThan(20);
+    expect(second.proof).toBe(first.proof);
+    expect(first.proof).not.toBe('me');
+    expect(localStorage.getItem('livediagram:v2:collab-secret')).toBe(first.proof);
+  });
+
   it('hosts the poll it starts, until it ends or a peer poll replaces it', () => {
     const { result } = withKey('me');
     act(() => result.current.startPoll({ question: 'Lunch?', style: 'text', options: [] }));

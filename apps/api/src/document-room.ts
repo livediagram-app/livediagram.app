@@ -171,6 +171,12 @@ type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
+  //   - `networkTag`: the caller's network, hashed with the document id, from X-Verified-Network
+  //     (docs/specs/012-collaboration/vote-integrity.md): what caps one network's poll answers. 32 hex characters.
+  networkTag?: string | null;
+  //   - `pollAnsweredAs`: the key this session answered the running poll under, so a socket cannot become a
+  //     second person in the same poll (docs/specs/012-collaboration/vote-integrity.md).
+  pollAnsweredAs?: { pollId: string; key: string } | null;
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
@@ -178,6 +184,8 @@ type SessionAttachment = {
 const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'document-meta']);
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
+// A network tag is a 32-hex digest; the clamp keeps a forged header from bloating the attachment.
+const MAX_NETWORK_TAG_LEN = 32;
 
 // Share-link ops that end the sessions their code admitted.
 const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
@@ -232,6 +240,8 @@ export class DocumentRoom implements DurableObject {
   // (docs/specs/012-collaboration/collab-race-hardening.md), each in its own module; see room-ledger-store / room-live-poll.
   ledger: RoomLedgerStore;
   poll: RoomLivePoll;
+  // The poll answers in flight, in arrival order (relayPollAnswer). Awaited by tests.
+  pollAnswers: Promise<void>;
   // Each session's selection, for the api's held check (room-selections.ts).
   selections: RoomSelectionStore;
   // Agent presence entries (docs/specs/024-agents/agent-presence.md "Presence").
@@ -256,6 +266,7 @@ export class DocumentRoom implements DurableObject {
     this.env = env;
     this.ledger = new RoomLedgerStore(state.storage);
     this.poll = new RoomLivePoll(state.storage);
+    this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
     this.agents = new RoomAgentPresence(
       state.storage,
@@ -398,7 +409,17 @@ export class DocumentRoom implements DurableObject {
     const shareCode = request.headers.get('X-Verified-Share-Code') || null;
     const account = request.headers.get('X-Verified-Account') === '1';
     const personTag = request.headers.get('X-Verified-Person') || null;
-    this.acceptSession(server, verifiedRole, isOwner, tabScope, shareCode, account, personTag);
+    const networkTag = request.headers.get('X-Verified-Network') || null;
+    this.acceptSession(
+      server,
+      verifiedRole,
+      isOwner,
+      tabScope,
+      shareCode,
+      account,
+      personTag,
+      networkTag,
+    );
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -413,6 +434,7 @@ export class DocumentRoom implements DurableObject {
     shareCode: string | null = null,
     account = false,
     personTag: string | null = null,
+    networkTag: string | null = null,
   ): void {
     // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
@@ -429,6 +451,8 @@ export class DocumentRoom implements DurableObject {
       shareCode,
       account,
       personTag: personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
+      networkTag: networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
+      pollAnsweredAs: null,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -793,7 +817,17 @@ export class DocumentRoom implements DurableObject {
         // peer's real owner id (docs/specs/015-api/public-api-and-tokens.md §6) — which also means a receiver can't
         // recognise its own id in the packet. So the routing happens here, and
         // a client acts on any avatar-push that reaches it.
-        if (opKind === 'poll-answer') this.poll.noteAnswer(msg.op, sender.id);
+        // The room decides who an answer belongs to, and relays only what it accepted, under the key it chose
+        // (docs/specs/012-collaboration/vote-integrity.md): the sender's proof never leaves the room.
+        // Chained, so answers apply in the order they arrived even though each one is hashed first: a quick change
+        // of mind must not lose to the answer it replaced.
+        if (opKind === 'poll-answer') {
+          const op = msg.op;
+          this.pollAnswers = this.pollAnswers
+            .then(() => this.relayPollAnswer(ws, op))
+            .catch(() => {});
+          return;
+        }
         if (opKind === 'avatar-push') {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
@@ -920,6 +954,32 @@ export class DocumentRoom implements DurableObject {
    * the caller is about to send reports the truth, and "Alex left" is not news
    * to somebody who never saw Alex.
    */
+  // One live poll answer (docs/specs/012-collaboration/vote-integrity.md). The poll decides the key from what the
+  // room holds about this session, and the room relays only an accepted answer, as the poll rewrote it.
+  private async relayPollAnswer(ws: WebSocket, op: unknown): Promise<void> {
+    const session = this.readSession(ws);
+    const sender = session?.presence;
+    if (!session || !sender) return;
+    const outcome = await this.poll.noteAnswer(op, {
+      presenceId: sender.id,
+      personTag: session.personTag ?? null,
+      networkTag: session.networkTag ?? null,
+      answeredAs: () => this.readSession(ws)?.pollAnsweredAs ?? null,
+      rememberAnswer: (answeredAs) => {
+        const latest = this.readSession(ws);
+        if (latest) ws.serializeAttachment({ ...latest, pollAnsweredAs: answeredAs });
+      },
+    });
+    if (!outcome.accepted) {
+      // A stale or malformed answer is routine; a refusal is the interesting one. Never the key or the proof.
+      if (outcome.reason !== 'no_poll' && outcome.reason !== 'bad_value') {
+        console.warn('[live-poll] answer refused', { reason: outcome.reason });
+      }
+      return;
+    }
+    this.broadcast({ kind: 'op', from: sender.id, op: outcome.op }, ws);
+  }
+
   private sweepLapsedBaton(): void {
     if (!graceExpired(this.facilitator, Date.now())) return;
     this.facilitator = FREE_BATON;

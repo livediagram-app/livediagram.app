@@ -30,6 +30,7 @@ vi.mock('../auth/document-access', () => gates);
 
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
+import { networkTagFor } from '../vote-integrity';
 import { personTagFor } from '../person-tag';
 import { signOwnerId } from '../auth/owner-signature';
 
@@ -531,5 +532,28 @@ describe('person tag', () => {
       }),
     );
     expect(spoofed.seen[0]!.headers.get('X-Verified-Person')).toBe('');
+  });
+
+  // docs/specs/012-collaboration/vote-integrity.md: what caps one network's poll answers. The worker derives it
+  // from the edge's client address on every leg, so a client can never choose its own.
+  it('stamps X-Verified-Network from the caller address, over anything the client sent', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'view' });
+    const upgrade = async (ip: string) => {
+      const { env, seen } = roomEnv();
+      await handleDocumentRoomRoutes(
+        makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
+          owner: null,
+          headers: { Upgrade: 'websocket', 'CF-Connecting-IP': ip, 'X-Verified-Network': 'forged' },
+          env,
+        }),
+      );
+      return seen[0]!.headers.get('X-Verified-Network');
+    };
+    const a = await upgrade('203.0.113.7');
+    expect(a).toBe(await networkTagFor('d1', '203.0.113.7'));
+    expect(a).not.toBe('forged');
+    // One IPv6 /64 is one network.
+    expect(await upgrade('2001:db8:0:1::5')).toBe(await upgrade('2001:db8:0:1:ffff::9'));
   });
 });

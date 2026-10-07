@@ -18,6 +18,7 @@ import {
 } from '@livediagram/api-schema';
 import { pollStyleUsesRoster } from '@livediagram/document';
 import { pollCollaboratorOptions, type PollCandidate } from '@/lib/poll-collaborators';
+import { ensureCollabSecret } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
 
 type RoomHandle = { send: (msg: RoomOutgoing) => void };
@@ -188,7 +189,14 @@ export function useLivePoll(deps: {
       setAnswers((prev) => new Map(prev).set(selfKey(), clean));
       roomRef.current?.send({
         kind: 'op',
-        op: { kind: 'poll-answer', pollId: current.id, value: clean, key: selfKey() },
+        // `proof` lets the room know the key is ours; it never relays it (docs/specs/012-collaboration/vote-integrity.md).
+        op: {
+          kind: 'poll-answer',
+          pollId: current.id,
+          value: clean,
+          key: selfKey(),
+          proof: ensureCollabSecret(),
+        },
       });
       if (countedPollRef.current !== current.id) {
         countedPollRef.current = current.id;

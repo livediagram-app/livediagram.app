@@ -769,13 +769,13 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Items',
     summary:
-      "Add (1) or take back (-1) one of the caller's votes on an item. Needs participate access.",
+      "Add (1) or take back (-1) one of the caller's votes on an item. Needs participate access. A guest's +1 answers 429 vote_limit once its network holds the most guest voters the document takes; an account is never capped.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [ITEM_TAB_QUERY],
     requestSchema: 'ItemVoteRequest',
     responseSchema: 'ItemResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410],
+    statuses: [200, 400, 401, 403, 404, 409, 410, 429],
   },
   {
     method: 'POST',
@@ -851,7 +851,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body.',
+      "Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body. A guest's upvote answers 429 vote_limit once its network holds the most guest voters the document takes.",
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
@@ -883,7 +883,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       },
       required: ['notes', 'rev', 'voterId'],
     },
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413, 429],
   },
   {
     method: 'POST',

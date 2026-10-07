@@ -266,6 +266,19 @@ describe('changing items', () => {
     expect((await call({ path: `/items/${item.id}/vote`, body: { delta: 2 } })).status).toBe(400);
   });
 
+  // docs/specs/012-collaboration/vote-integrity.md: guest voters are capped per network per document; one already in
+  // can keep voting, and taking a vote back is never refused.
+  it('caps guest voters per network, and never refuses taking a vote back', async () => {
+    const vote = (owner: string, delta: number) =>
+      call({ path: `/items/${item.id}/vote`, owner, code: 'VIEW', body: { delta } });
+    for (let i = 0; i < 100; i++) expect((await vote(`guest-${i}`, 1)).status).toBe(200);
+    const late = await vote('guest-late', 1);
+    expect(late.status).toBe(429);
+    expect(late.body).toEqual({ error: 'vote_limit' });
+    expect((await vote('guest-0', 1)).status).toBe(200);
+    expect((await vote('guest-late', -1)).status).toBe(200);
+  });
+
   it('deletes and relays the removal', async () => {
     relayed = [];
     expect((await call({ method: 'DELETE', path: `/items/${item.id}` })).status).toBe(204);

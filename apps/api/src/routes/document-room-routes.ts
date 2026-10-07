@@ -13,6 +13,7 @@ import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { COMMUNITY_CONTENT, gateGrant, missingDocument, type RouteContext } from './context';
 import { personTagFor } from '../person-tag';
+import { networkTagFor } from '../vote-integrity';
 
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -189,6 +190,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
     // same reason as the headers above. Empty = none.
     forwarded.headers.set('X-Verified-Person', personTag ?? '');
+    // The caller's network, hashed with the document id (docs/specs/012-collaboration/vote-integrity.md): what
+    // caps a poll's answers from one network. Set on every path for the same reason as the headers above.
+    forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));
     return stub.fetch(forwarded);
   }
 

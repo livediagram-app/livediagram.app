@@ -51,6 +51,7 @@ import {
 } from '../db';
 import { badRequest, forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import { relayItems } from '../room-client';
+import { refuseGuestVoteOverCap } from '../vote-integrity';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
   deniedOnTab,
@@ -404,6 +405,12 @@ async function vote(ctx: RouteContext, documentId: string, itemId: string): Prom
   if (body instanceof Response) return body;
   if (body.delta !== 1 && body.delta !== -1) return badRequest('delta must be 1 or -1');
   const delta = body.delta;
+  // A guest's +1 counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);
+  // taking a vote back never does.
+  if (delta === 1) {
+    const refused = await refuseGuestVoteOverCap(ctx, documentId, caller.owner);
+    if (refused) return refused;
+  }
   return writeItem(ctx, caller, itemId, (item, by) =>
     applyVote(item, by.id, delta, { now: Date.now(), by }),
   );
