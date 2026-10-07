@@ -53,6 +53,7 @@ export const ROOT_TYPES = [
   'LayoutView',
   'CommentsView',
   'ShowView',
+  'ShowSelectedView',
   'FindView',
   'DiffView',
   'OverviewView',

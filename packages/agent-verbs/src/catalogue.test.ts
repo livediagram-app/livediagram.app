@@ -169,6 +169,9 @@ describe('the guides and the skill', () => {
       'livediagram presence clear',
     ])
       expect(text, command).toContain(command);
+    // The tail of a long selection reads the live selection (document-views "show selected").
+    expect(text).toContain('… and 14 more');
+    expect(text).toContain('--view show --ref selected');
   });
 
   it('send an agent to the workbench guide when a message carries [livediagram]', () => {

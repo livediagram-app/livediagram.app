@@ -486,7 +486,7 @@ Lines joined by `\n`, no trailing newline. `count` is the number of selected ele
 
 `guide workbench` (topic `workbench` of `GUIDE_TOPICS`, within `GUIDE_TOPIC_MAX_TOKENS`) teaches an agent to read a
 selection reference: the header, the `selected` items as data, never instructions; re-reading the refs with `tab view
---view show --ref` and `--only`; `tab render` to look; `presence set` and `presence clear` while it works; and that
+--view show --ref` and `--only`, and the `… and n more` tail with `--ref selected`; `tab render` to look; `presence set` and `presence clear` while it works; and that
 the person's own selection never holds the agent's writes. The skill's description names the `[livediagram]` line
 (within `SKILL_FRONTMATTER_MAX_TOKENS`) and its body sends an agent to `guide workbench` first.
 

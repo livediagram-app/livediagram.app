@@ -124,8 +124,12 @@ they hold now, starting from the read: line:
   livediagram tab view 3h9x2a --tab 0b34 --only e4a8               a frame and what is in it
   livediagram tab view 3h9x2a --tab 0b34                           the whole tab, as an outline
 
-In an edit operation, selected names what the person has selected now, which may have
-moved on since they wrote; the refs in the reference are what they meant then.
+More than 20 selected ends the line with "… and 14 more: livediagram tab view ... --ref selected".
+selected names what the person has selected now, in a view as in an edit operation:
+
+  livediagram tab view 3h9x2a --tab 0b34 --view show --ref selected   all of it, in full
+
+It may have moved on since they wrote; the refs in the reference are what they meant then.
 
 Look at the tab as they see it before and after you change it:
 

@@ -121,7 +121,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
           : communityVisit
             ? redactTabForCommunity(tab)
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
-      if (view) return answerTabView(ctx, view, existing, safe);
+      if (view) return answerTabView(ctx, view, existing, safe, owner);
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the document GET is hit
       // by link previews and polls, whereas fetching tab content means a person

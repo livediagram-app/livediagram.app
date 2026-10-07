@@ -213,6 +213,11 @@ describe('readRoomSelections', () => {
       '[changeset] selections-unreachable',
       expect.objectContaining({ documentId: 'd1', tabId: 't1' }),
     );
+    expect(await readRoomSelections(env, 'd1', 't1', null, 'views')).toBeNull();
+    expect(warn).toHaveBeenLastCalledWith(
+      '[views] selections-unreachable',
+      expect.objectContaining({ documentId: 'd1' }),
+    );
     warn.mockRestore();
   });
 });

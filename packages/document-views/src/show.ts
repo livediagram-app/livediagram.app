@@ -184,12 +184,13 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
   return lines;
 }
 
-// `el` is a printed element of the model.
-export function showView(
+export type ShownElement = Omit<ShowView, 'header'>;
+
+// One printed element of the model in full: its lines after the header, and its JSON.
+export function showElement(
   model: ViewModel,
   el: Element,
-  options: ShowOptions = {},
-): ViewResult<ShowView> {
+): { lines: ViewLine[]; json: ShownElement } {
   const ref = model.refs.refOf(el.id);
   const kind = model.kindOf(el);
   const node = model.tree.nodes.get(el.id);
@@ -226,18 +227,10 @@ export function showView(
     ...edgeLines(model, outgoing, '→'),
     ...(omitted.length > 0 ? [{ text: `  omitted: ${omitted.join(', ')}`, noun: LINE }] : []),
   ];
-  const fitted = fitLines({
-    header: headerLine(model.facts),
-    lines,
-    budget: options.budget,
-    door: options.door ?? 'cli',
-  });
   const { id: _id, type: _type, ...jsonFields } = fields;
   return {
-    text: fitted.text,
-    fit: fitOf(fitted),
+    lines,
     json: {
-      header: viewHeader('show', model.facts),
       ref,
       kind,
       container:
@@ -253,5 +246,25 @@ export function showView(
       outgoing: outgoing.map(edgeJson),
       omitted,
     },
+  };
+}
+
+// `el` is a printed element of the model.
+export function showView(
+  model: ViewModel,
+  el: Element,
+  options: ShowOptions = {},
+): ViewResult<ShowView> {
+  const { lines, json } = showElement(model, el);
+  const fitted = fitLines({
+    header: headerLine(model.facts),
+    lines,
+    budget: options.budget,
+    door: options.door ?? 'cli',
+  });
+  return {
+    text: fitted.text,
+    fit: fitOf(fitted),
+    json: { header: viewHeader('show', model.facts), ...json },
   };
 }
