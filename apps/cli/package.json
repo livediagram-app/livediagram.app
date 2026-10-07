@@ -23,6 +23,7 @@
     "@livediagram/document-views": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/render-png": "workspace:*",
+    "smol-toml": "^1.9.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {

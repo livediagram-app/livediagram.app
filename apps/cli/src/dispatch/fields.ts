@@ -3,7 +3,8 @@
 
 import type { z } from 'zod';
 
-export type FieldKind = 'string' | 'number' | 'boolean' | 'enum';
+// A list is a flag given once per value (`--doc a --doc b`).
+export type FieldKind = 'string' | 'number' | 'boolean' | 'enum' | 'list';
 
 export type Field = {
   key: string;
@@ -36,9 +37,11 @@ export function fieldsOf(input: z.ZodObject): Field[] {
         ? 'boolean'
         : def.type === 'number'
           ? 'number'
-          : def.type === 'enum'
-            ? 'enum'
-            : 'string';
+          : def.type === 'array'
+            ? 'list'
+            : def.type === 'enum'
+              ? 'enum'
+              : 'string';
     return {
       key,
       kind,

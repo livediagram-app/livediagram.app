@@ -131,3 +131,24 @@ describe('pullFileText and parsePullFile', () => {
     });
   });
 });
+
+describe('a pull file without pulledAt', () => {
+  it('parses, its sync data kept without a time', () => {
+    const { pulledAt: _p, ...sync } = file().livediagramSync;
+    const text = JSON.stringify({ ...file(), livediagramSync: sync });
+    expect(parsePullFile(text)).toEqual({ ok: true, file: { ...file(), livediagramSync: sync } });
+  });
+});
+
+describe('a pull file whose pulledAt is not a time', () => {
+  it('is not a pull file', () => {
+    const text = JSON.stringify({
+      ...file(),
+      livediagramSync: { ...file().livediagramSync, pulledAt: 'x' },
+    });
+    expect(parsePullFile(text)).toEqual({
+      ok: false,
+      message: 'not pulled by the CLI (no livediagramSync)',
+    });
+  });
+});

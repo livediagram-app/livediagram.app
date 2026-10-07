@@ -50,6 +50,9 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `graph lint\|render <file>`                                            | Lint or preview a graph or Mermaid file locally, before writing anything             |
 | `pull <doc> [--to <dir>]` / `push <file>`                              | Sync one document to a file and back                                                 |
 | `export --all --to <dir> [--format json,svg,png,mermaid,md]`           | Every document to files                                                              |
+| `link init [--folder <f>] [--doc <d>] [--level <l>]`                   | Writes `livediagram.toml`; with no folder or document, a picker of the folders       |
+| `link status\|ls [--all]`                                              | A [repository link](../027-repositories/repository-link.md)'s documents and states   |
+| `sync [--watch] [--relocate] [--dry-run] [--all]`                      | Mirrors the link's documents into the repository; `--watch` keeps doing it           |
 | `template ls\|view`, `icon search <text>`, `schema [kind]`             | The catalogues and the element format, from the api                                  |
 | `guide [topic]`                                                        | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`                         |
 | `skill print\|install --to <dir>`                                      | The agent skill file                                                                 |

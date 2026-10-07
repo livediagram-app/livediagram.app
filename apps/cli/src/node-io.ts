@@ -1,7 +1,21 @@
 // The real CliIo: the process's streams and environment, the file system, global fetch and the clock.
 
-import { chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
+import { readdirSync, watch, type Dirent, type FSWatcher } from 'node:fs';
+import {
+  chmod,
+  lstat,
+  mkdir,
+  readdir,
+  readFile,
+  realpath,
+  rename,
+  rm,
+  rmdir,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
+import { homedir, hostname } from 'node:os';
+import { createInterface, type Interface } from 'node:readline';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
@@ -37,6 +51,87 @@ async function readStdin(): Promise<string> {
   return Buffer.concat(chunks).toString('utf8');
 }
 
+// One line interface for the process, made on the first prompt: stdin read a line at a time, the prompt on stderr.
+// Ctrl-C on a terminal reaches readline, not the process: it is passed on as SIGINT, so `onInterrupt` hears it.
+let lines: Interface | null = null;
+function readLine(prompt: string): Promise<string | null> {
+  lines ??= createInterface({ input: process.stdin, output: process.stderr, terminal: true });
+  const rl = lines;
+  return new Promise((resolve) => {
+    const onClose = () => {
+      lines = null;
+      resolve(null);
+    };
+    rl.once('close', onClose);
+    rl.removeAllListeners('SIGINT');
+    rl.on('SIGINT', () => {
+      if (process.listenerCount('SIGINT') > 0) process.emit('SIGINT');
+      else process.kill(process.pid, 'SIGINT');
+    });
+    rl.question(prompt, (answer) => {
+      rl.off('close', onClose);
+      resolve(answer);
+    });
+  });
+}
+
+// Change events under `dir`: one non-recursive watch per directory, added as directories appear. Node's recursive
+// watch on Linux follows each file by its inode and goes quiet once a file is replaced by a rename, which is how
+// editors, formatters and the CLI itself save; a directory's own watch hears every name in it. Symbolic links are
+// never followed.
+function watchTree(dir: string, onChange: (path: string) => void): () => void {
+  const watchers = new Map<string, FSWatcher>();
+  const add = (at: string) => {
+    if (watchers.has(at)) return;
+    let watcher: FSWatcher;
+    try {
+      watcher = watch(at, (event, name) => {
+        if (!name) return;
+        const path = join(at, name.toString());
+        onChange(path);
+        if (event === 'rename') void follow(path);
+      });
+    } catch {
+      return;
+    }
+    watcher.on('error', () => drop(at));
+    watchers.set(at, watcher);
+    for (const entry of readdirSafe(at)) if (entry.isDirectory()) add(join(at, entry.name));
+  };
+  const drop = (at: string) => {
+    for (const [path, watcher] of watchers)
+      if (path === at || path.startsWith(`${at}/`)) {
+        watcher.close();
+        watchers.delete(path);
+      }
+  };
+  // A name that came or went: a new directory is watched, a gone one dropped.
+  const follow = async (path: string) => {
+    const kind = await lstat(path).catch(() => null);
+    if (kind?.isDirectory()) add(path);
+    else if (!kind) drop(path);
+  };
+  add(dir);
+  return () => drop(dir);
+}
+
+function readdirSafe(dir: string): Dirent[] {
+  try {
+    return readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+}
+
+function processAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code !== 'ESRCH';
+  }
+}
+
 export function nodeIo(): CliIo {
   return {
     env: process.env,
@@ -44,6 +139,12 @@ export function nodeIo(): CliIo {
     stderr: (text) => void process.stderr.write(text),
     readStdin,
     stdinIsTTY: Boolean(process.stdin.isTTY),
+    stdoutIsTTY: Boolean(process.stdout.isTTY),
+    readLine,
+    watchTree,
+    pid: process.pid,
+    hostname: hostname(),
+    processAlive,
     fetch: (request) => fetch(request),
     now: () => Date.now(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
@@ -88,7 +189,38 @@ export function nodeIo(): CliIo {
           () => null,
         ),
       chmod: (path, mode) => chmod(path, mode),
-      remove: (path) => rm(path, { force: true }),
+      // A file, or an empty directory.
+      remove: (path) =>
+        rm(path, { force: true }).catch((err: NodeJS.ErrnoException) => {
+          if (err.code !== 'ERR_FS_EISDIR') throw err;
+          return rmdir(path);
+        }),
+      list: async (path) => {
+        try {
+          const entries = await readdir(path, { withFileTypes: true });
+          return entries.map((e) => ({
+            name: e.name,
+            kind: e.isSymbolicLink() ? 'link' : e.isDirectory() ? 'dir' : 'file',
+          }));
+        } catch {
+          return null;
+        }
+      },
+      move: async (from, to) => {
+        await mkdir(dirname(to), { recursive: true });
+        await rename(from, to);
+      },
+      createExclusive: async (path, data) => {
+        await mkdir(dirname(path), { recursive: true });
+        try {
+          await writeFile(path, data, { flag: 'wx', mode: 0o600 });
+          return true;
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code === 'EEXIST') return false;
+          throw err;
+        }
+      },
+      realpath: (path) => realpath(path).catch(() => null),
     },
   };
 }

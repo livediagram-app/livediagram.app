@@ -45,6 +45,7 @@ import {
 } from './verbs/lifecycle';
 import { tabLint, tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
+import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 
 export const VERBS: readonly Verb[] = [
   documentLs,
@@ -95,6 +96,10 @@ export const VERBS: readonly Verb[] = [
   pull,
   push,
   exportAll,
+  linkInit,
+  linkStatus,
+  linkLs,
+  sync,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -110,6 +115,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
+  { name: 'link', summary: 'Repository links: livediagram.toml and what it covers' },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },
@@ -118,7 +124,16 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
+export const TOP_LEVEL = [
+  'guide',
+  'api',
+  'wait',
+  'watch',
+  'pull',
+  'push',
+  'export',
+  'sync',
+] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

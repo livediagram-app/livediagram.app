@@ -19,46 +19,55 @@ and `diverged` refused, `--relocate`, `--dry-run`, `--all`, the local sync state
 Scope, by file. "(planned)" marks a file that does not exist yet and "new" a symbol added to an existing file;
 every other file and symbol exists today.
 
-| File                                                                               | Role                                                                                                                                                  |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/agent-verbs/src/verbs/link.ts` (planned)                                 | The local verbs `link.init`, `link.status`, `link.ls`, `sync`: schemas, descriptions, compact text, CLI projections (CLI55)                           |
-| `packages/agent-verbs/src/catalogue.ts`                                            | `VERBS` gains the four; `RESOURCES` gains `link`; `TOP_LEVEL` gains `sync`                                                                            |
-| `packages/agent-verbs/src/define.ts`                                               | `Verb.telemetryType?: (input) => string` (new field, RL24)                                                                                            |
-| `packages/agent-verbs/src/verbs/document.ts`                                       | `documentRows(found, refs)` and `documentListText(...)` (new) extracted from `documentLs`, shared with `link.ls`                                      |
-| `packages/agent-verbs/src/find-documents.ts`                                       | `readLibraries(api)` (new): personal documents and folders, each joined team's documents and folders, in one sweep                                    |
-| `packages/document-views/src/index.ts`                                             | Exports `headerLine` (new export of `header.ts`'s existing function), for `INDEX.md` at `index`                                                       |
-| `apps/cli/src/link/link-file.ts` (planned)                                         | `LINK_FILE_NAME`, `LinkFile`, `MirrorLevel`, `parseLinkFile`, `linkFileText`, the link file's rejections                                              |
-| `apps/cli/src/link/find-links.ts` (planned)                                        | `nearestLink(io, cwd)`, `linksBelow(io, cwd)`                                                                                                         |
-| `apps/cli/src/link/coverage.ts` (planned)                                          | `readCoverage(ctx, link)`: the covered documents with their folder paths, from `readLibraries` and the listed ids                                     |
-| `apps/cli/src/link/mirror-file.ts` (planned)                                       | `mirrorFileText`, `hasConflictMarkers`, `MirrorFile`                                                                                                  |
-| `apps/cli/src/link/mirror-scan.ts` (planned)                                       | `scanMirrorDir(io, link)`: every `*.livediagram.json` under `dir`, classified                                                                         |
-| `apps/cli/src/link/mirror-paths.ts` (planned)                                      | `folderPathSegments`, `mirrorPathFor`, `outlinePathOf`                                                                                                |
-| `apps/cli/src/link/sync-state.ts` (planned)                                        | `SyncState`, `syncStateOf` (pure)                                                                                                                     |
-| `apps/cli/src/link/sync-plan.ts` (planned)                                         | `planSync` (pure): scan, coverage and remote facts to `SyncAction[]`                                                                                  |
-| `apps/cli/src/link/sync-run.ts` (planned)                                          | `runSyncPass`: lock, plan, reads, writes, `INDEX.md`, report                                                                                          |
-| `apps/cli/src/link/sync-watch.ts` (planned)                                        | `watchLink`: room streams, local watching, settle timers, one pass at a time                                                                          |
-| `apps/cli/src/link/index-file.ts` (planned)                                        | `indexFileText`                                                                                                                                       |
-| `apps/cli/src/link/outline-file.ts` (planned)                                      | `outlineFileText`                                                                                                                                     |
-| `apps/cli/src/link/markdown.ts` (planned)                                          | `markdownText`, `codeSpan`, `fenceFor`                                                                                                                |
-| `apps/cli/src/link/local-state.ts` (planned)                                       | `linkIdOf`, `linkStateDir`, `readLinkState`, `writeLinkState`, `saveReport`                                                                           |
-| `apps/cli/src/link/lock.ts` (planned)                                              | `acquireLinkLock`, `LinkLock`                                                                                                                         |
-| `apps/cli/src/link/git.ts` (planned)                                               | `gitDirOf`, `gitMove`                                                                                                                                 |
-| `apps/cli/src/link/constants.ts` (planned)                                         | The `SYNC_*` and `LINK_*` constants                                                                                                                   |
-| `apps/cli/src/link/folder-picker.ts` (planned)                                     | `pickFolder`, `folderChoices`, `folderNeededError`: the picker and its refusal                                                                        |
-| `apps/cli/src/link/recorded-state.ts` (planned)                                    | `recordedStateOf` (pure): states at `index` and `none`, from the local sync state                                                                     |
-| `apps/cli/src/commands/link.ts` (planned)                                          | Handlers of `link init`, `link status`, `link ls`                                                                                                     |
-| `apps/cli/src/commands/sync.ts` (planned)                                          | Handler of `sync`: one link, `--all`, `--watch`                                                                                                       |
-| `apps/cli/src/commands/snapshot.ts` (planned)                                      | `readDocumentSnapshot(ctx, documentId)`, extracted from `pull.ts`; `pull` and `sync` both read through it                                             |
-| `apps/cli/src/commands/pull.ts`                                                    | Reads through `readDocumentSnapshot`; its output is unchanged                                                                                         |
-| `apps/cli/src/sync/pull-file.ts`                                                   | `PullSync.pulledAt` becomes optional; `parsePullFile` accepts it absent                                                                               |
-| `apps/cli/src/commands/pull-file-views.ts`                                         | `savedAt` of a file without `pulledAt` (RL10)                                                                                                         |
-| `apps/cli/src/main.ts`                                                             | Dispatch of the four verbs; `Cli·Used` type from `verb.telemetryType` when present                                                                    |
-| `apps/cli/src/io.ts`, `apps/cli/src/node-io.ts`, `apps/cli/src/testing/fake-io.ts` | `CliFiles.list`, `move`, `createExclusive`, `realpath`; `CliIo.stdoutIsTTY`, `readLine`, `watchTree`, `pid`, `hostname`, `processAlive` (new members) |
-| `apps/cli/src/debug.ts`                                                            | `debugLog(io, scope = 'cli')` (new parameter) so sync lines print as `[sync] …`                                                                       |
-| `apps/cli/src/help/help.ts`                                                        | `GROUPED_ROWS` gains `sync` after `link`                                                                                                              |
-| `apps/cli/package.json`                                                            | `smol-toml` 1.9.0 (new dependency, bundled; RL1)                                                                                                      |
-| `apps/telemetry/app/cli-commands.ts`                                               | `CLI_COMMANDS` rows `LinkInit`, `LinkStatus`, `LinkLs`, `Sync`, `SyncWatch`                                                                           |
-| `packages/agent-verbs/src/guides/index.ts`                                         | Unchanged in this slice; a `link` guide is not specified                                                                                              |
+| File                                                                                  | Role                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/agent-verbs/src/verbs/link.ts`                                              | The local verbs `link.init`, `link.status`, `link.ls`, `sync`: schemas, descriptions, compact text, CLI projections (CLI55)                                                                           |
+| `packages/agent-verbs/src/catalogue.ts`                                               | `VERBS` gains the four; `RESOURCES` gains `link`; `TOP_LEVEL` gains `sync`                                                                                                                            |
+| `packages/agent-verbs/src/define.ts`                                                  | `Verb.telemetryType?: (input) => string` (new field, RL24)                                                                                                                                            |
+| `packages/agent-verbs/src/verbs/document.ts`                                          | `documentRows(found, refs)` and `documentListText(...)` (new) extracted from `documentLs`, shared with `link.ls`                                                                                      |
+| `packages/agent-verbs/src/find-documents.ts`                                          | `readLibraries(api)` (new): personal documents and folders, each joined team's documents and folders, in one sweep                                                                                    |
+| `packages/document-views/src/index.ts`                                                | Exports `headerLine` (new export of `header.ts`'s existing function), for `INDEX.md` at `index`                                                                                                       |
+| `apps/cli/src/link/link-file.ts`                                                      | `LINK_FILE_NAME`, `LinkFile`, `MirrorLevel`, `parseLinkFile`, `linkFileText`, the link file's rejections                                                                                              |
+| `apps/cli/src/link/find-links.ts`                                                     | `nearestLink(io, cwd)`, `linksBelow(io, cwd)`                                                                                                                                                         |
+| `apps/cli/src/link/coverage.ts`                                                       | `readCoverage(ctx, link)`: the covered documents with their folder paths, from `readLibraries` and the listed ids                                                                                     |
+| `apps/cli/src/link/mirror-file.ts`                                                    | `mirrorFileText`, `hasConflictMarkers`, `MirrorFile`                                                                                                                                                  |
+| `apps/cli/src/link/mirror-scan.ts`                                                    | `scanMirrorDir(io, link)`: every `*.livediagram.json` under `dir`, classified                                                                                                                         |
+| `apps/cli/src/link/mirror-paths.ts`                                                   | `folderPathSegments`, `mirrorPathFor`, `outlinePathOf`                                                                                                                                                |
+| `apps/cli/src/link/sync-state.ts`                                                     | `SyncState`, `syncStateOf` (pure)                                                                                                                                                                     |
+| `apps/cli/src/link/sync-plan.ts`                                                      | `planSync` (pure): scan, coverage and remote facts to `SyncAction[]`                                                                                                                                  |
+| `apps/cli/src/link/sync-run.ts`                                                       | `runSyncPass`: lock, plan, reads, writes, `INDEX.md`, report                                                                                                                                          |
+| `apps/cli/src/link/sync-watch.ts`                                                     | `watchLink`: room streams, local watching, settle timers, one pass at a time                                                                                                                          |
+| `apps/cli/src/link/index-file.ts`                                                     | `indexFileText`                                                                                                                                                                                       |
+| `apps/cli/src/link/outline-file.ts`                                                   | `outlineFileText`                                                                                                                                                                                     |
+| `apps/cli/src/link/markdown.ts`                                                       | `markdownText`, `codeSpan`, `fenceFor`                                                                                                                                                                |
+| `apps/cli/src/link/local-state.ts`                                                    | `linkIdOf`, `linkStateDir`, `readLinkState`, `writeLinkState`, `saveReport`                                                                                                                           |
+| `apps/cli/src/link/lock.ts`                                                           | `acquireLinkLock`, `LinkLock`                                                                                                                                                                         |
+| `apps/cli/src/link/git.ts`                                                            | `gitDirOf`, `gitMove`, `gitRemote`                                                                                                                                                                    |
+| `apps/cli/src/link/constants.ts`                                                      | The `SYNC_*` and `LINK_*` constants                                                                                                                                                                   |
+| `apps/cli/src/link/folder-picker.ts`                                                  | `pickFolder`, `folderChoices`, `folderNeededError`: the picker and its refusal                                                                                                                        |
+| `apps/cli/src/link/recorded-state.ts`                                                 | `recordedStateOf` (pure): states at `index` and `none`, from the local sync state                                                                                                                     |
+| `apps/cli/src/link/remote.ts`                                                         | `RemoteFact`, `EnvelopeFields`, `readRemoteFacts`: step 5, each document's overview and envelope, `SYNC_CONCURRENCY` at a time                                                                        |
+| `apps/cli/src/link/sync-survey.ts`                                                    | `surveyLink`: steps 2 to 6, shared by `sync` and `link status`                                                                                                                                        |
+| `apps/cli/src/link/mirror-tree.ts`                                                    | `mirrorTree`: writes when bytes differ, removals (RL42), moves (RL9), empty directories pruned, paths touched (RL23)                                                                                  |
+| `apps/cli/src/link/index-entries.ts`                                                  | `indexEntriesOf`: each document's `INDEX.md` entry as the pass left it (RL16)                                                                                                                         |
+| `apps/cli/src/link/sync-lines.ts`                                                     | `actionLine`, `totalsLine`: the output lines, final copy                                                                                                                                              |
+| `apps/cli/src/testing/link-host.ts`                                                   | The suites' fake host: libraries, folders, teams, documents that move on, trash, purge or fail                                                                                                        |
+| `apps/cli/src/testing/sync-fixtures.ts`                                               | The planner suites' overviews, tracked files and coverage                                                                                                                                             |
+| `apps/cli/src/commands/link.ts`                                                       | Handlers of `link init`, `link status`, `link ls`                                                                                                                                                     |
+| `apps/cli/src/commands/sync.ts`                                                       | Handler of `sync`: one link, `--all`, `--watch`                                                                                                                                                       |
+| `apps/cli/src/commands/snapshot.ts`                                                   | `readDocumentSnapshot(ctx, documentId)`, extracted from `pull.ts`; `pull` and `sync` both read through it                                                                                             |
+| `apps/cli/src/commands/pull.ts`                                                       | Reads through `readDocumentSnapshot`; its output is unchanged                                                                                                                                         |
+| `apps/cli/src/sync/pull-file.ts`                                                      | `PullSync.pulledAt` becomes optional; `parsePullFile` accepts it absent; `sha256` exported                                                                                                            |
+| `apps/cli/src/commands/pull-file-views.ts`                                            | `savedAt` of a file without `pulledAt` (RL10)                                                                                                                                                         |
+| `apps/cli/src/main.ts`                                                                | Dispatch of the four verbs; `Cli·Used` type from `verb.telemetryType` when present                                                                                                                    |
+| `apps/cli/src/io.ts`, `apps/cli/src/node-io.ts`, `apps/cli/src/testing/fake-io.ts`    | `CliFiles.list`, `move`, `createExclusive`, `realpath`; `CliIo.stdoutIsTTY`, `readLine`, `watchTree`, `pid`, `hostname`, `processAlive` (new members); `CliFiles.remove` takes an empty directory too |
+| `apps/cli/src/debug.ts`                                                               | `debugLog(io, scope = 'cli')` (new parameter) so sync lines print as `[sync] …`                                                                                                                       |
+| `apps/cli/src/dispatch/fields.ts`, `apps/cli/src/dispatch/parse-flags.ts`             | A `list` field kind: an array input is a flag given once per value (`--doc a --doc b`)                                                                                                                |
+| `apps/cli/src/help/help.ts`                                                           | `GROUPED_ROWS` gains `sync` after `link`                                                                                                                                                              |
+| `apps/cli/package.json`                                                               | `smol-toml` 1.9.0 (new dependency, bundled; RL1)                                                                                                                                                      |
+| `apps/telemetry/app/cli-commands.ts`                                                  | `CLI_COMMANDS` rows `LinkInit`, `LinkStatus`, `LinkLs`, `Sync`, `SyncWatch`                                                                                                                           |
+| `apps/telemetry/app/computed-emitters.ts`, `apps/telemetry/app/metric-series.test.ts` | `Cli·Used` values gain `SYNC_WATCH_TYPE` (new export of `packages/agent-verbs/src/verbs/link.ts`, RL24)                                                                                               |
+| `packages/agent-verbs/src/guides/index.ts`                                            | Unchanged in this slice; a `link` guide is not specified                                                                                                                                              |
 
 ## Domain and naming
 
@@ -230,24 +239,25 @@ there; at `index` its `INDEX.md` section renders the same bytes, so nothing chan
 
 ### Actions (`SyncAction`)
 
-| State or class           | Action      | Effect                                                                                                                                                    | Exit |
-| ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| `in-step`                | `none`      | Nothing; the outline file is rewritten only when missing (RL12)                                                                                           | 0    |
-| `behind`, `new`          | `write`     | `readDocumentSnapshot`; the mirror file at its path (below) and its outline file                                                                          | 0    |
-| `ahead`                  | `refuse`    | Nothing written; `! <path>: changed here; send it: livediagram push <path>`                                                                               | 1    |
-| `diverged`               | `refuse`    | Nothing written; `! <path>: changed here and in livediagram; send it: livediagram push <path>`                                                            | 1    |
-| `gone`                   | `remove`    | The mirror file and its outline file removed; at `index` the section dropped; the record dropped                                                          | 0    |
-| `gone`, locally changed  | `refuse`    | Nothing; `! <path>: gone from the link, but changed here and not sent; kept. Send it: livediagram push <path>, or delete it`                              | 1    |
-| lowered, unchanged       | `lower`     | The mirror file and its outline file removed, as `gone` removes them                                                                                      | 0    |
-| lowered, locally changed | `refuse`    | Nothing; `! <path>: level <level> keeps no mirror files, but this one changed here and is not sent; kept. Send it: livediagram push <path>, or delete it` | 1    |
-| `unreadable`             | `report`    | Nothing; one line per file, once per pass                                                                                                                 | 0    |
-| `local-new`              | `report`    | Nothing; `? <path>: a document written by hand; this version of livediagram does not create it`                                                           | 0    |
-| `conflicted`             | `refuse`    | Nothing; `! <path>: holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`                           | 1    |
-| `invalid`                | `refuse`    | Nothing; `! <path>: <parsePullFile message>`                                                                                                              | 1    |
-| `foreign-host`           | `refuse`    | Nothing; `! <path>: synced from <host>, not this link's <link host>`                                                                                      | 1    |
-| `duplicate`              | `refuse`    | Nothing; `! <path>: names the same document as <other path>`                                                                                              | 1    |
-| transient                | `transient` | Nothing; `! "<name>": <failure>; files kept`                                                                                                              | 6, 7 |
-| a path that would differ | `relocate`  | Without `--relocate`: the line only; with it: moved before the pass writes                                                                                | 0    |
+| State or class           | Action      | Effect                                                                                                                                                                                                                                                                                                  | Exit |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| `in-step`                | `none`      | Nothing; the outline file is rewritten only when missing (RL12)                                                                                                                                                                                                                                         | 0    |
+| `behind`, `new`          | `write`     | `readDocumentSnapshot`; the mirror file at its path (below) and its outline file                                                                                                                                                                                                                        | 0    |
+| `ahead`                  | `refuse`    | Nothing written; `! <path>: changed here; send it: livediagram push <path>`                                                                                                                                                                                                                             | 1    |
+| `diverged`               | `refuse`    | Nothing written; `! <path>: changed here and in livediagram; send it: livediagram push <path>`                                                                                                                                                                                                          | 1    |
+| `gone`                   | `remove`    | The mirror file and its outline file removed; at `index` the section dropped; the record dropped                                                                                                                                                                                                        | 0    |
+| `gone`, locally changed  | `refuse`    | Nothing; `! <path>: gone from the link, but changed here and not sent; kept. Send it: livediagram push <path>, or delete it`                                                                                                                                                                            | 1    |
+| lowered, unchanged       | `lower`     | The mirror file and its outline file removed, as `gone` removes them                                                                                                                                                                                                                                    | 0    |
+| lowered, locally changed | `refuse`    | Nothing; `! <path>: level <level> keeps no mirror files, but this one changed here and is not sent; kept. Send it: livediagram push <path>, or delete it`                                                                                                                                               | 1    |
+| `unreadable`             | `report`    | Nothing; one line per file, once per pass                                                                                                                                                                                                                                                               | 0    |
+| `local-new`              | `report`    | Nothing; `? <path>: a document written by hand; this version of livediagram does not create it`                                                                                                                                                                                                         | 0    |
+| `conflicted`             | `refuse`    | Nothing; `! <path>: holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`                                                                                                                                                                         | 1    |
+| `invalid`                | `refuse`    | Nothing; `! <path>: <parsePullFile message>`                                                                                                                                                                                                                                                            | 1    |
+| `foreign-host`           | `refuse`    | Nothing; `! <path>: synced from <host>, not this link's <link host>`                                                                                                                                                                                                                                    | 1    |
+| `new`, its path held     | `refuse`    | Nothing; `! "<name>": not written while <path> holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`, or for an invalid file `! "<name>": not written while <path> is invalid (<parsePullFile message>); fix or delete it, then livediagram sync` | 1    |
+| `duplicate`              | `refuse`    | Nothing; `! <path>: names the same document as <other path>`                                                                                                                                                                                                                                            | 1    |
+| transient                | `transient` | Nothing; `! "<name>": <failure>; files kept`                                                                                                                                                                                                                                                            | 6, 7 |
+| a path that would differ | `relocate`  | Without `--relocate`: the line only; with it: moved before the pass writes                                                                                                                                                                                                                              | 0    |
 
 A file that would be written is never also removed in one pass; a refused document's outline file is not
 rewritten.
@@ -257,6 +267,9 @@ rewritten.
 - **New file.** `mirrorPathFor(document, folderPath, taken)`: `<dir>/<folder path>/<slug>.livediagram.json` with
   `slug = fileSlug(document.name, document.id)`; when that path is held by a file naming another document (or a
   `local-new` file), `<slug>-<idSlug(id)>`, then the whole id (CLI27, CLI85).
+- **Held back.** Walking those candidates in order, one held by a `conflicted` or `invalid` file is the document's
+  mirror path, broken: the `new` document is not written at any path; its action is `refuse` with reason `held`
+  (spec "A broken file holds its document back").
 - **Stable.** A `tracked` file keeps its path on every later write. Its **expected path** is `mirrorPathFor` with
   the document's current name and folder path, its own path excluded from `taken`. A different expected path is a
   `relocate` action.
@@ -441,7 +454,7 @@ level = "<level>"
 
 `host` is always written (RL28); `folder`, `documents` and `[mirror]` only when given.
 
-### The verbs (`packages/agent-verbs/src/verbs/link.ts` (planned))
+### The verbs (`packages/agent-verbs/src/verbs/link.ts`)
 
 All `local: true` (CLI55); `sync` and `link.status` are `files: true` (they read mirror files, so a host storing a
 newer document format refuses them, CLI blueprint step 6).
@@ -487,7 +500,8 @@ type CliIo = {
   // Writes `prompt` to stderr and reads one line from stdin (node:readline, the terminal's own line editing);
   // null at end of input.
   readLine(prompt: string): Promise<string | null>;
-  // Recursive change events under `dir` (node:fs watch, recursive); the returned function stops it.
+  // Change events under `dir`, its subdirectories included (one node:fs watch per directory: the recursive
+  // watch on Linux goes quiet once a file is replaced by a rename); the returned function stops it.
   watchTree(dir: string, onChange: (path: string) => void): () => void;
   pid: number;
   hostname: string;
@@ -631,11 +645,13 @@ backtick (RL32).
 | index         | `~ <dir>/INDEX.md` when rewritten                                                                                                  |
 | totals        | `<n> in step · <n> written · <n> removed · <n> refused · <n> unreadable` (zero counts left out; `nothing to do` when all are zero) |
 
-`--dry-run` prints the same lines and then `dry run: nothing written`. `--all` prints `<link path>` before each
+`--dry-run` prints the same lines and then `dry run: nothing written`; its `INDEX.md` line is decided on the sections a
+real pass would write, each written or in-step document's tabs taken from the overview's facts at the path it would
+hold. `--all` prints `<link path>` before each
 link's lines and a blank line between links.
 
 `link status` rows, aligned with `columns`: `<state>  <ref>  "<name>"  <path>`; a file with no readable document
-prints `<state>  -  <path>`; then the totals line `<n> in-step · <n> behind · …` in state-table order, zero counts
+prints `<state>  -  <path>`; a document held back by a broken file prints `held` with that file's path; then the totals line `<n> in-step · <n> behind · …` in state-table order, zero counts
 left out.
 
 ## Data and persistence
@@ -676,6 +692,8 @@ No api change, no D1 table, no migration. Local files:
 - **E5** A mirror file edited into invalid JSON: `invalid`, refused, exit 1; the document's other files untouched.
 - **E6** A mirror file with git's conflict markers: `conflicted`, refused naming `git checkout --ours|--theirs`,
   exit 1; the rest of the pass proceeds.
+- **E6a** A covered document whose mirror path a conflicted or invalid file holds: `held`, refused naming the file
+  and its fix, exit 1; never written at a `-<id8>` path, so resolving the conflict leaves no duplicate.
 - **E7** A covered document whose mirror file was deleted: `new`, written again at a fresh path.
 - **E8** A document moved to the Trash: `410`, `gone`, files removed; restoring it makes it `new` again.
 - **E9** A document purged, or not this account's to open: `404`, `unreadable`, untouched, one line per pass.
@@ -785,24 +803,24 @@ for tab "<name>"`, exit 7 (as `pull`).
 Printed to stderr only under `LIVEDIAGRAM_DEBUG=1`, as `[sync] …` and `[link] …` (`debugLog(io, 'sync')`,
 `debugLog(io, 'link')`, RL33). Ids only.
 
-| Fingerprint                                                                                                                     | Where                     |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `[sync] link <link id> level <level> folder <id\|-> documents <n>`                                                              | pass start                |
-| `[sync] coverage <n> covered folder <found\|unreadable>`                                                                        | `readCoverage`            |
-| `[sync] state <documentId> <state>`                                                                                             | `planSync`, each document |
-| `[sync] wrote <documentId> <tabId> rev <n>`                                                                                     | each tab written          |
-| `[sync] gone <documentId> <trashed\|outside>`                                                                                   | each removal              |
-| `[sync] unreadable <documentId>`                                                                                                | each `404`                |
-| `[sync] refused <documentId\|-> <ahead\|diverged\|gone-changed\|lowered-changed\|conflicted\|invalid\|foreign-host\|duplicate>` | each refusal              |
-| `[sync] lowered <documentId>`                                                                                                   | each lowered file removed |
-| `[sync] local-new`                                                                                                              | each hand-written file    |
-| `[link] picker <shown <n>\|narrowed <n>\|chosen\|cancelled\|refused-not-tty>`                                                   | `pickFolder`              |
-| `[link] remote <yes\|no\|unknown>`                                                                                              | `link init` step 7        |
-| `[sync] transient <documentId> <status\|network>`                                                                               | each transient failure    |
-| `[sync] relocate <documentId> <moved\|pending> <git\|rename>`                                                                   | each relocation           |
-| `[sync] lock <taken\|released\|stale <pid>>`, `[sync] lock-wait <pid>`                                                          | the lock                  |
-| `[sync] watch <room <documentId>\|local\|coverage> settled`                                                                     | `watchLink`               |
-| `[sync] pass <n> actions exit <code> <ms> ms`                                                                                   | pass end                  |
+| Fingerprint                                                                                                                           | Where                     |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `[sync] link <link id> level <level> folder <id\|-> documents <n>`                                                                    | pass start                |
+| `[sync] coverage <n> covered folder <found\|unreadable>`                                                                              | `readCoverage`            |
+| `[sync] state <documentId> <state>`                                                                                                   | `planSync`, each document |
+| `[sync] wrote <documentId> <tabId> rev <n>`                                                                                           | each tab written          |
+| `[sync] gone <documentId> <trashed\|outside>`                                                                                         | each removal              |
+| `[sync] unreadable <documentId>`                                                                                                      | each `404`                |
+| `[sync] refused <documentId\|-> <ahead\|diverged\|gone-changed\|lowered-changed\|conflicted\|invalid\|foreign-host\|duplicate\|held>` | each refusal              |
+| `[sync] lowered <documentId>`                                                                                                         | each lowered file removed |
+| `[sync] local-new`                                                                                                                    | each hand-written file    |
+| `[link] picker <shown <n>\|narrowed <n>\|chosen\|cancelled\|refused-not-tty>`                                                         | `pickFolder`              |
+| `[link] remote <yes\|no\|unknown>`                                                                                                    | `link init` step 7        |
+| `[sync] transient <documentId> <status\|network>`                                                                                     | each transient failure    |
+| `[sync] relocate <documentId> <moved\|pending> <git\|rename>`                                                                         | each relocation           |
+| `[sync] lock <taken\|released\|stale <pid>>`, `[sync] lock-wait <pid>`                                                                | the lock                  |
+| `[sync] watch <room <documentId>\|local\|coverage> settled`                                                                           | `watchLink`               |
+| `[sync] pass <n> actions exit <code> <ms> ms`                                                                                         | pass end                  |
 
 The spec's `[sync] sent`, `merged`, `lost-local-value`, `pending` and `resolved` belong to the second slice. The
 room stream's own `[cli] room …` lines and each request's `[cli] request …` line print as today.
@@ -813,60 +831,61 @@ Every suite runs on `fakeIo` and `fakeApi` with a fixed clock; none waits on a r
 file system, except `git.test.ts`, which runs a real `git` in a temporary directory and is skipped when `git` is
 absent.
 
-| Spec rule                                                                                        | Test                                                                                        |
-| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| The link file: every key, its defaults (`index`, `diagrams`), types                              | `apps/cli/src/link/link-file.test.ts` (planned)                                             |
-| Covers needs a folder, documents or both                                                         | `link-file.test.ts` (`no_coverage`)                                                         |
-| Unknown keys refused by name at every level; `[[sources]]` contents not judged                   | `link-file.test.ts` (one case per table; did-you-mean)                                      |
-| Every rejection of the table, with its exit and copy                                             | `link-file.test.ts` (table-driven over the rejection table)                                 |
-| `mirror.dir` stays inside the link root, symbolic links included                                 | `link-file.test.ts`, `apps/cli/src/commands/sync.test.ts` (planned) (E18)                   |
-| `link init` writes the file byte for byte; refuses an existing one; resolves folder and docs     | `apps/cli/src/commands/link.test.ts` (planned)                                              |
-| Nearest link at or above; `--all` below, skipping hidden, `node_modules`, nested links' dirs     | `apps/cli/src/link/find-links.test.ts` (planned)                                            |
-| Host absent is the profile's; another host refused naming the profile; no request before         | `apps/cli/src/commands/sync.test.ts` (planned) (fetch log empty on refusal)                 |
-| Coverage: folder subtree in personal and team libraries; listed documents anywhere; folder path  | `apps/cli/src/link/coverage.test.ts` (planned)                                              |
-| Mirror level `none` writes nothing in the tree; it records revisions                             | `sync.test.ts`                                                                              |
-| States at `index` and `none` from the recorded revisions; never synced here is `new`             | `apps/cli/src/link/recorded-state.test.ts` (planned) (table-driven, one row per state)      |
-| A rename (any envelope field) makes a document `behind`; files rewritten                         | `sync-state.test.ts` (name, deck, tab order, tab folder), `sync.test.ts`                    |
-| Lowering the level removes what the new level does not write; changed files kept and refused     | `sync.test.ts` (files to index, files to none, index to none; a changed file kept)          |
-| A gone file with an unsent change is kept and refused, naming it                                 | `sync-plan.test.ts`, `sync.test.ts`                                                         |
-| `local-new` reported only, never created                                                         | `sync.test.ts` (no `POST /documents` ever sent)                                             |
-| `INDEX.md` in a stable order: folder path, name, id; a new document reorders nothing             | `index-file.test.ts` (an added document leaves the other sections' bytes)                   |
-| `link init`: picker on a terminal (choose, narrow, out of range, cancel three ways, empty)       | `apps/cli/src/link/folder-picker.test.ts` (planned) (scripted `readLine`, golden stderr)    |
-| `link init` piped: refusal listing runnable `--folder <id>` commands; stdin never read           | `folder-picker.test.ts`, `link.test.ts`                                                     |
-| `link init` remote line when any git remote exists                                               | `link.test.ts` (`runTool` scripted: remote, none, no git)                                   |
-| `index` writes `INDEX.md` only, with each tab's header line                                      | `sync.test.ts`; `apps/cli/src/link/index-file.test.ts` (planned) (golden)                   |
-| `files` writes `INDEX.md`, a mirror file and an outline file per document                        | `sync.test.ts`                                                                              |
-| `INDEX.md` opens with the generated line; sections as specified                                  | `index-file.test.ts` (golden, `__fixtures__/INDEX.index.md`, `INDEX.files.md`)              |
-| Mirror file: one element per line, keys sorted, no time, deterministic bytes                     | `apps/cli/src/link/mirror-file.test.ts` (planned) (golden; written twice, byte-equal)       |
-| The editor's import reads a mirror file; `parsePullFile` reads it                                | `mirror-file.test.ts` (`parseDocumentEnvelope`, `parsePullFile`)                            |
-| `push` and pull-file views work on a mirror file; `pulledAt` stays absent                        | `apps/cli/src/commands/pull-push.test.ts`, `export-views.test.ts`                           |
-| `pull` unchanged after the `readDocumentSnapshot` extraction                                     | `pull-push.test.ts` (existing cases stay green)                                             |
-| Formatting is not meaning: a reformatted file is `in-step` and untouched                         | `apps/cli/src/link/sync-state.test.ts` (planned), `sync.test.ts`                            |
-| Outline file: generated line with the link, one section per tab, `text` fence                    | `apps/cli/src/link/outline-file.test.ts` (planned) (golden; a label with backticks)         |
-| The slug stays; a path that would differ is named; `--relocate` moves through `git mv`           | `sync.test.ts`; `apps/cli/src/link/git.test.ts` (planned) (real git, tracked and untracked) |
-| Every state of the state table                                                                   | `sync-state.test.ts` (table-driven, one row per state)                                      |
-| `in-step` does nothing; `behind` and `new` write                                                 | `apps/cli/src/link/sync-plan.test.ts` (planned), `sync.test.ts`                             |
-| A deleted mirror file is `new`; deleting never deletes a document                                | `sync.test.ts` (no `DELETE` request ever sent)                                              |
-| `gone`: `410`, or readable and outside coverage; files removed                                   | `sync-plan.test.ts`, `sync.test.ts`                                                         |
-| `unreadable`: `404` touches nothing, reported once per pass                                      | `sync.test.ts`                                                                              |
-| Only an envelope without sync data is `local-new`; a tracked file is never created               | `apps/cli/src/link/mirror-scan.test.ts` (planned), `sync-plan.test.ts`                      |
-| Transient failures keep files and are reported, never `gone` or `unreadable`                     | `sync.test.ts` (429, 503, network; files byte-equal after)                                  |
-| Conflict markers refused naming `git checkout --ours` or `--theirs`, then sync                   | `mirror-scan.test.ts`, `sync.test.ts`                                                       |
-| `ahead` and `diverged` refused per document naming `push <file>`; the rest proceeds              | `sync.test.ts`                                                                              |
-| `--dry-run` writes nothing, takes no lock                                                        | `sync.test.ts` (file map and state dir unchanged)                                           |
-| Local sync state under the git dir, else the cache; link id from the path; each worktree its own | `apps/cli/src/link/local-state.test.ts` (planned); `git.test.ts` (two worktrees)            |
-| `state.json` records when each tab was last synced; the last `SYNC_REPORTS_KEPT` reports kept    | `local-state.test.ts`                                                                       |
-| One sync at a time: a second waits, then fails after `SYNC_LOCK_WAIT_MS` naming the pid          | `apps/cli/src/link/lock.test.ts` (planned) (fake clock); stale lock taken over              |
-| `sync --watch`: room bursts settle, then one pass; one line per sync                             | `apps/cli/src/link/sync-watch.test.ts` (planned) (fake sockets and timers)                  |
-| `sync --watch`: local changes synced after `SYNC_LOCAL_SETTLE_MS`; own writes ignored            | `sync-watch.test.ts`                                                                        |
-| `sync --watch` reconnects as the room stream does; trashed and refused tickets handled           | `sync-watch.test.ts`                                                                        |
-| `link status` prints every covered document with its state and exits 0                           | `link.test.ts` (every state, a refusal and a transient failure: exit 0)                     |
-| `link ls` prints as `document ls`                                                                | `link.test.ts`; `packages/agent-verbs/src/verbs/verbs.test.ts` (shared rows)                |
-| Help within budgets, the new resource and verbs listed                                           | `apps/cli/src/help/help.test.ts`, `apps/cli/src/dispatch/commands-table.test.ts`            |
-| Exit codes per action; highest wins                                                              | `sync.test.ts`                                                                              |
-| Telemetry `Cli·Used·LinkInit`, `LinkStatus`, `LinkLs`, `Sync`, `SyncWatch`                       | `apps/cli/src/telemetry.test.ts`; `apps/telemetry` `metric-series.test.ts`                  |
-| Debug fingerprints carry ids only                                                                | `sync.test.ts` (debug output scanned for names and paths)                                   |
-| A self-host link never contacts livediagram.app                                                  | `sync.test.ts` (every request's origin)                                                     |
+| Spec rule                                                                                        | Test                                                                               |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| The link file: every key, its defaults (`index`, `diagrams`), types                              | `apps/cli/src/link/link-file.test.ts`                                              |
+| Covers needs a folder, documents or both                                                         | `link-file.test.ts` (`no_coverage`)                                                |
+| Unknown keys refused by name at every level; `[[sources]]` contents not judged                   | `link-file.test.ts` (one case per table; did-you-mean)                             |
+| Every rejection of the table, with its exit and copy                                             | `link-file.test.ts` (table-driven over the rejection table)                        |
+| `mirror.dir` stays inside the link root, symbolic links included                                 | `link-file.test.ts`, `apps/cli/src/commands/sync.test.ts` (E18)                    |
+| `link init` writes the file byte for byte; refuses an existing one; resolves folder and docs     | `apps/cli/src/commands/link.test.ts`                                               |
+| Nearest link at or above; `--all` below, skipping hidden, `node_modules`, nested links' dirs     | `apps/cli/src/link/find-links.test.ts`                                             |
+| Host absent is the profile's; another host refused naming the profile; no request before         | `apps/cli/src/commands/sync.test.ts` (fetch log empty on refusal)                  |
+| Coverage: folder subtree in personal and team libraries; listed documents anywhere; folder path  | `apps/cli/src/link/coverage.test.ts`                                               |
+| Mirror level `none` writes nothing in the tree; it records revisions                             | `sync.test.ts`                                                                     |
+| States at `index` and `none` from the recorded revisions; never synced here is `new`             | `apps/cli/src/link/recorded-state.test.ts` (table-driven, one row per state)       |
+| A rename (any envelope field) makes a document `behind`; files rewritten                         | `sync-state.test.ts` (name, deck, tab order, tab folder), `sync.test.ts`           |
+| Lowering the level removes what the new level does not write; changed files kept and refused     | `sync.test.ts` (files to index, files to none, index to none; a changed file kept) |
+| A gone file with an unsent change is kept and refused, naming it                                 | `sync-plan.test.ts`, `sync.test.ts`                                                |
+| `local-new` reported only, never created                                                         | `sync.test.ts` (no `POST /documents` ever sent)                                    |
+| `INDEX.md` in a stable order: folder path, name, id; a new document reorders nothing             | `index-file.test.ts` (an added document leaves the other sections' bytes)          |
+| `link init`: picker on a terminal (choose, narrow, out of range, cancel three ways, empty)       | `apps/cli/src/link/folder-picker.test.ts` (scripted `readLine`, golden stderr)     |
+| `link init` piped: refusal listing runnable `--folder <id>` commands; stdin never read           | `folder-picker.test.ts`, `link.test.ts`                                            |
+| `link init` remote line when any git remote exists                                               | `link.test.ts` (`runTool` scripted: remote, none, no git)                          |
+| `index` writes `INDEX.md` only, with each tab's header line                                      | `sync.test.ts`; `apps/cli/src/link/index-file.test.ts` (golden)                    |
+| `files` writes `INDEX.md`, a mirror file and an outline file per document                        | `sync.test.ts`                                                                     |
+| `INDEX.md` opens with the generated line; sections as specified                                  | `index-file.test.ts` (golden, `__fixtures__/INDEX.index.md`, `INDEX.files.md`)     |
+| Mirror file: one element per line, keys sorted, no time, deterministic bytes                     | `apps/cli/src/link/mirror-file.test.ts` (golden; written twice, byte-equal)        |
+| The editor's import reads a mirror file; `parsePullFile` reads it                                | `mirror-file.test.ts` (`parseDocumentEnvelope`, `parsePullFile`)                   |
+| `push` and pull-file views work on a mirror file; `pulledAt` stays absent                        | `apps/cli/src/commands/pull-push.test.ts`, `export-views.test.ts`                  |
+| `pull` unchanged after the `readDocumentSnapshot` extraction                                     | `pull-push.test.ts` (existing cases stay green)                                    |
+| Formatting is not meaning: a reformatted file is `in-step` and untouched                         | `apps/cli/src/link/sync-state.test.ts`, `sync.test.ts`                             |
+| Outline file: generated line with the link, one section per tab, `text` fence                    | `apps/cli/src/link/outline-file.test.ts` (golden; a label with backticks)          |
+| The slug stays; a path that would differ is named; `--relocate` moves through `git mv`           | `sync.test.ts`; `apps/cli/src/link/git.test.ts` (real git, tracked and untracked)  |
+| Every state of the state table                                                                   | `sync-state.test.ts` (table-driven, one row per state)                             |
+| `in-step` does nothing; `behind` and `new` write                                                 | `apps/cli/src/link/sync-plan.test.ts`, `sync.test.ts`                              |
+| A deleted mirror file is `new`; deleting never deletes a document                                | `sync.test.ts` (no `DELETE` request ever sent)                                     |
+| `gone`: `410`, or readable and outside coverage; files removed                                   | `sync-plan.test.ts`, `sync.test.ts`                                                |
+| `unreadable`: `404` touches nothing, reported once per pass                                      | `sync.test.ts`                                                                     |
+| Only an envelope without sync data is `local-new`; a tracked file is never created               | `apps/cli/src/link/mirror-scan.test.ts`, `sync-plan.test.ts`                       |
+| Transient failures keep files and are reported, never `gone` or `unreadable`                     | `sync.test.ts` (429, 503, network; files byte-equal after)                         |
+| Conflict markers refused naming `git checkout --ours` or `--theirs`, then sync                   | `mirror-scan.test.ts`, `sync.test.ts`                                              |
+| A broken file at a document's mirror path holds that document back, never written elsewhere      | `sync-plan.test.ts`, `sync.test.ts`, `sync-lines.test.ts`                          |
+| `ahead` and `diverged` refused per document naming `push <file>`; the rest proceeds              | `sync.test.ts`                                                                     |
+| `--dry-run` writes nothing, takes no lock                                                        | `sync.test.ts` (file map and state dir unchanged)                                  |
+| Local sync state under the git dir, else the cache; link id from the path; each worktree its own | `apps/cli/src/link/local-state.test.ts`; `git.test.ts` (two worktrees)             |
+| `state.json` records when each tab was last synced; the last `SYNC_REPORTS_KEPT` reports kept    | `local-state.test.ts`                                                              |
+| One sync at a time: a second waits, then fails after `SYNC_LOCK_WAIT_MS` naming the pid          | `apps/cli/src/link/lock.test.ts` (fake clock); stale lock taken over               |
+| `sync --watch`: room bursts settle, then one pass; one line per sync                             | `apps/cli/src/link/sync-watch.test.ts` (fake sockets and timers)                   |
+| `sync --watch`: local changes synced after `SYNC_LOCAL_SETTLE_MS`; own writes ignored            | `sync-watch.test.ts`                                                               |
+| `sync --watch` reconnects as the room stream does; trashed and refused tickets handled           | `sync-watch.test.ts`                                                               |
+| `link status` prints every covered document with its state and exits 0                           | `link.test.ts` (every state, a refusal and a transient failure: exit 0)            |
+| `link ls` prints as `document ls`                                                                | `link.test.ts`; `packages/agent-verbs/src/verbs/verbs.test.ts` (shared rows)       |
+| Help within budgets, the new resource and verbs listed                                           | `apps/cli/src/help/help.test.ts`, `apps/cli/src/dispatch/commands-table.test.ts`   |
+| Exit codes per action; highest wins                                                              | `sync.test.ts`                                                                     |
+| Telemetry `Cli·Used·LinkInit`, `LinkStatus`, `LinkLs`, `Sync`, `SyncWatch`                       | `apps/cli/src/telemetry.test.ts`; `apps/telemetry` `metric-series.test.ts`         |
+| Debug fingerprints carry ids only                                                                | `sync.test.ts` (debug output scanned for names and paths)                          |
+| A self-host link never contacts livediagram.app                                                  | `sync.test.ts` (every request's origin)                                            |
 
 ## Constants and configuration
 

@@ -2,17 +2,51 @@
 
 import { z } from 'zod';
 import { defineVerb } from '../define';
-import { listAllDocuments } from '../find-documents';
+import { listAllDocuments, type FoundDocument } from '../find-documents';
 import { shortestUniquePrefixes } from '../refs';
 import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
 
-const listed = z.object({
+export const listedDocument = z.object({
   ref: z.string(),
   id: z.string(),
   name: z.string(),
   library: z.string(),
   updated: z.string(),
 });
+export type ListedDocument = z.infer<typeof listedDocument>;
+
+// The rows `document ls` prints, shared with `link ls`: each document's ref, name, library and last saved day.
+export function documentRows(
+  found: readonly FoundDocument[],
+  refs: ReadonlyMap<string, string>,
+): ListedDocument[] {
+  return found.map((d) => ({
+    ref: refs.get(d.id)!,
+    id: d.id,
+    name: d.name,
+    library: d.library,
+    updated: day(d.updatedAt),
+  }));
+}
+
+// A document list as compact lines: an empty list says so, a cut one says how many more.
+export function documentListText({
+  documents,
+  more,
+  query,
+}: {
+  documents: readonly ListedDocument[];
+  more: number;
+  query?: string;
+}): string[] {
+  return [
+    ...(documents.length === 0 ? [query ? `no documents match "${query}"` : 'no documents'] : []),
+    ...columns(documents.map((d) => [d.ref, JSON.stringify(d.name), d.library, d.updated])),
+    ...(more > 0
+      ? [`… ${more} more; --limit ${documents.length + more}, or narrow with a query`]
+      : []),
+  ];
+}
 
 export const documentLs = defineVerb({
   id: 'document.ls',
@@ -30,7 +64,11 @@ export const documentLs = defineVerb({
       .default(LIST_DEFAULT_LIMIT)
       .describe('At most this many'),
   }),
-  output: z.object({ documents: z.array(listed), more: z.number(), query: z.string().optional() }),
+  output: z.object({
+    documents: z.array(listedDocument),
+    more: z.number(),
+    query: z.string().optional(),
+  }),
   listKey: 'documents',
   run: async (ctx, { query, limit }) => {
     const all = await listAllDocuments(ctx.api);
@@ -38,24 +76,12 @@ export const documentLs = defineVerb({
     const q = query?.toLowerCase();
     const kept = q ? all.filter((d) => d.name.toLowerCase().includes(q)) : all;
     return {
-      documents: kept.slice(0, limit).map((d) => ({
-        ref: refs.get(d.id)!,
-        id: d.id,
-        name: d.name,
-        library: d.library,
-        updated: day(d.updatedAt),
-      })),
+      documents: documentRows(kept.slice(0, limit), refs),
       more: Math.max(0, kept.length - limit),
       ...(query ? { query } : {}),
     };
   },
-  text: ({ documents, more, query }) => [
-    ...(documents.length === 0 ? [query ? `no documents match "${query}"` : 'no documents'] : []),
-    ...columns(documents.map((d) => [d.ref, JSON.stringify(d.name), d.library, d.updated])),
-    ...(more > 0
-      ? [`… ${more} more; --limit ${documents.length + more}, or narrow with a query`]
-      : []),
-  ],
+  text: documentListText,
   quiet: ({ documents }) => documents.map((d) => d.ref),
   cli: {
     positionals: ['query'],

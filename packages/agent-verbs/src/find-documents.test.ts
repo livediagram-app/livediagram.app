@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DocumentSummary } from '@livediagram/api-schema';
-import { fetchTeamLibraries, listAllDocuments, matchDocuments } from './find-documents';
+import {
+  fetchTeamLibraries,
+  listAllDocuments,
+  matchDocuments,
+  readLibraries,
+} from './find-documents';
 import { createApiClient, type ApiClient } from '@livediagram/api-client';
 
 function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
@@ -126,5 +131,61 @@ describe('listAllDocuments', () => {
       { id: 'p1', name: 'Mine', updatedAt: 5, library: 'personal' },
     ]);
     expect(api.calls).toContain('/teams/t1/library');
+  });
+});
+
+describe('readLibraries', () => {
+  const folder = (id: string, name: string, parentId: string | null, teamId: string | null) => ({
+    id,
+    ownerId: 'user-1',
+    parentId,
+    teamId,
+    name,
+    createdAt: 1,
+    updatedAt: 1,
+  });
+
+  it('reads the personal documents and folders and each joined team’s, in one sweep', async () => {
+    const api = apiRouting({
+      '/documents': { documents: [summary({ id: 'p1' })] },
+      '/folders': { folders: [folder('f1', 'Games', null, null)] },
+      '/teams': { teams: [{ id: 't1', name: 'Crew' }] },
+      '/teams/t1/library': {
+        folders: [folder('f2', 'Shared', null, 't1')],
+        documents: [summary({ id: 'a', teamId: 't1', folderId: 'f2' })],
+      },
+    });
+    expect(await readLibraries(api)).toEqual({
+      personal: {
+        documents: [summary({ id: 'p1' })],
+        folders: [folder('f1', 'Games', null, null)],
+      },
+      teams: [
+        {
+          id: 't1',
+          name: 'Crew',
+          documents: [summary({ id: 'a', teamId: 't1', folderId: 'f2' })],
+          folders: [folder('f2', 'Shared', null, 't1')],
+        },
+      ],
+    });
+  });
+
+  it('degrades a team that fails to no documents and no folders, and no teams to none', async () => {
+    const failing = apiRouting({
+      '/documents': { documents: [] },
+      '/folders': { folders: [] },
+      '/teams': { teams: [{ id: 't1', name: 'Crew' }] },
+      '/teams/t1/library': new Error('boom'),
+    });
+    expect((await readLibraries(failing)).teams).toEqual([
+      { id: 't1', name: 'Crew', documents: [], folders: [] },
+    ]);
+    const noTeams = apiRouting({
+      '/documents': { documents: [] },
+      '/folders': { folders: [] },
+      '/teams': new Error('boom'),
+    });
+    expect((await readLibraries(noTeams)).teams).toEqual([]);
   });
 });
