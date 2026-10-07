@@ -187,7 +187,7 @@
 
 - [x] Domain and naming
 - [x] Behaviour and state
-- [ ] Interfaces and contracts
+- [x] Interfaces and contracts
 - [x] Data and persistence
 - [x] Errors and edge cases
 - [x] Security and trust

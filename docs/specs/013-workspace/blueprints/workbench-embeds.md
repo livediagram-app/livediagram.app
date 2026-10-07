@@ -9,9 +9,6 @@ the person tag of [Agent presence](../../024-agents/agent-presence.md), the leve
 `loginWithDevice` in `apps/cli/src/auth/oauth.ts`. The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `WBn`.
 
-One question is open and blocks one contract (see [Open question](#open-question)): the order of the words of a
-selected element in the selection reference.
-
 **Levels today.** [Share roles](../share-roles.md) is specified, not built: a token carries `read_only`
 (`resolveApiToken` returns `readOnly`). A workbench level is `'view' | 'edit'` today, read from `read_only`, stored
 and sent as `role` with the share-roles `CHECK` so the participate level slots in with no migration (WB1).
@@ -438,9 +435,9 @@ the editor knows for the tab: its load, its own saves' answers, relayed changese
 ${tabRefOf(tab.id)}, rev ${rev})`. The document is named by its full id (WB19).
 2. Selected elements, in the tab's element order (WB20), ids not on the tab dropped. None: the second line is
    `whole tab` and there is no third (WB21).
-3. Second line: `selected: ` and the first `WORKBENCH_SELECTION_MAX_REFS` items joined by `, `. Item: the ref
-   (`refs.refOf(id)`), the kind word (`kindOf(el)`) and the label (`jsonString(label, LABEL_CUT_CHARS)` from
-   `textField(el, 'label')`, omitted when null), joined by a space, **in the order of the open question**. More:
+3. Second line: `selected: ` and the first `WORKBENCH_SELECTION_MAX_REFS` items joined by `, `. Item, as the outline's
+   `nodeLine` prints an element: the kind word (`kindOf(el)`), the ref (`refs.refOf(id)`) and the label (`jsonString(label, LABEL_CUT_CHARS)` from
+   `textField(el, 'label')`, omitted when null), joined by a space in that order (`button 146b "Play"`). More:
    ` … and ${n} more: livediagram tab view ${documentId} --tab ${tabRef} --view show --ref selected` appended to
    the same line (WB22).
 4. Third line: `read: livediagram tab view ${documentId} --tab ${tabRef} --view show --ref ${firstRef}`.
@@ -940,7 +937,7 @@ and the two CLI rows.
 | Images: no owner shortcut, `d` must be the session's document                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `apps/api/src/routes/images.test.ts`                                                                                              |
 | Sweep deletes what is due and nothing else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `apps/api/src/db/workbench.test.ts` (planned)                                                                                     |
 | OpenAPI parity and schemas                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                   |
-| Selection reference: header, refs, kind words, labels quoted and cut, cap and tail, none, element order (order of words pending)                                                                                                                                                                                                                                                                                                                                                                                                                                         | `packages/document-views/src/selection-reference.test.ts` (planned)                                                               |
+| Selection reference: header, refs, kind words, labels quoted and cut, cap and tail, none, element order, kind-ref-label words                                                                                                                                                                                                                                                                                                                                                                                                                                            | `packages/document-views/src/selection-reference.test.ts` (planned)                                                               |
 | Fragment read and cleared before any request                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | `apps/live/app/embed/workbench/workbench-fragment.test.ts` (planned)                                                              |
 | Page machine: every transition of the phase table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `apps/live/app/embed/workbench/workbench-machine.test.ts` (planned)                                                               |
 | Port: target origin on every send; foreign origin and source dropped; unknown logged once                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `apps/live/lib/workbench/workbench-port.test.ts` (planned)                                                                        |
@@ -999,14 +996,6 @@ Configuration: `APP_BASE_URL` (existing var) builds the URLs; `WORKBENCH_TICKET_
 
 No new asset. The external-link glyph and the key glyph already ship in the editor's icon set; the pairing page
 reuses `OauthShell` and `AnimatedLinesBackdrop`.
-
-## Open question
-
-**Q1. The words of one selected element.** The spec's example and parenthetical give `ref kind "label"`
-(`146b button "Play"`), and the same sentence says "as the outline prints it"; the outline prints
-`kind ref "label"` (`button 146b "Play"`, `packages/document-views/src/outline.ts` `nodeLine`). Which order does
-the selection reference use? Everything else about the item (which ref, which kind word, the label's quoting and
-cut) is the same either way; `selectionReference` keeps the order in one place.
 
 ## Defaults ledger
 
