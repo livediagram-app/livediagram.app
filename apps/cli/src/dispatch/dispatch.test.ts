@@ -251,3 +251,15 @@ describe('rest positionals and short flags', () => {
     expect(failureOf(() => route(['edt']))).toMatchObject({ lines: ['did you mean: edit'] });
   });
 });
+
+describe('repeated flags', () => {
+  it('collect a list flag’s values in order, and read it as a list field', () => {
+    const init = verb('link.init');
+    expect(fieldsOf(init.input).find((f) => f.key === 'doc')).toMatchObject({ kind: 'list' });
+    expect(parseVerbArgs(init, ['--doc', '3f9c', '--doc', '7a1b', '--level', 'files'])).toEqual({
+      doc: ['3f9c', '7a1b'],
+      level: 'files',
+    });
+    expect(parseVerbArgs(init, [])).toEqual({});
+  });
+});

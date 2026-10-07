@@ -77,6 +77,8 @@ export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.Zo
   // newer one (blueprint "One command" step 6).
   files?: true;
   run?: (ctx: VerbContext, input: z.infer<I>) => Promise<z.infer<O>>;
+  // The `Cli·Used` type when it is not the verb's own (`sync --watch` counts as SyncWatch, RL24).
+  telemetryType?: (input: z.infer<I>) => string;
   // Compact lines; absent prints JSON.
   text?: (output: z.infer<O>) => string[];
   // What `--json` prints, when it is not the output object itself; undefined prints nothing.

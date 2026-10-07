@@ -131,3 +131,11 @@ describe('pullFileText and parsePullFile', () => {
     });
   });
 });
+
+describe('a pull file without pulledAt', () => {
+  it('parses, its sync data kept without a time', () => {
+    const { pulledAt: _p, ...sync } = file().livediagramSync;
+    const text = JSON.stringify({ ...file(), livediagramSync: sync });
+    expect(parsePullFile(text)).toEqual({ ok: true, file: { ...file(), livediagramSync: sync } });
+  });
+});

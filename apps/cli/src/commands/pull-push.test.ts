@@ -215,8 +215,10 @@ describe('push', () => {
 
   it('says so when nothing changed', async () => {
     const { h, io, path } = await pulled();
-    const { code, out } = await cli(['push', path], h.route, io);
+    const { code, out, err } = await cli(['push', path], h.route, io);
     expect([code, out]).toEqual([0, 'nothing to push\n']);
+    // A tab in a folder is hashed as written, its folder included: nothing to name as not pushed.
+    expect(err).toBe('');
     expect(h.requests).toEqual([]);
   });
 

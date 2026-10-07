@@ -11,7 +11,8 @@ import {
 } from '@livediagram/document';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
-export type PullSync = { host: string; pulledAt: number; tabs: Record<string, PulledTab> };
+// `pulledAt` is absent from a mirror file, which holds no time (repository-link blueprint "The mirror file").
+export type PullSync = { host: string; pulledAt?: number; tabs: Record<string, PulledTab> };
 export type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
 
 export const PULL_FILE_SUFFIX = '.livediagram.json';
@@ -76,12 +77,12 @@ function isPulledTab(value: unknown): value is PulledTab {
 }
 
 function syncOf(value: unknown): PullSync | null {
-  if (!isRecord(value) || typeof value.host !== 'string' || typeof value.pulledAt !== 'number')
-    return null;
+  if (!isRecord(value) || typeof value.host !== 'string') return null;
+  if (value.pulledAt !== undefined && typeof value.pulledAt !== 'number') return null;
   if (!isRecord(value.tabs) || !Object.values(value.tabs).every(isPulledTab)) return null;
   return {
     host: value.host,
-    pulledAt: value.pulledAt,
+    ...(value.pulledAt === undefined ? {} : { pulledAt: value.pulledAt }),
     tabs: value.tabs as Record<string, PulledTab>,
   };
 }

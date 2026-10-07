@@ -69,7 +69,21 @@ export type FakeIo = CliIo & {
   // Moves the clock on, running each timer that falls due, in order.
   advance(ms: number): Promise<void>;
   interrupt(): void;
+  // Directories made with mkdir; a file's parents exist without one.
+  dirMap: Set<string>;
+  // Symbolic links: path to target.
+  linkMap: Map<string, string>;
+  // A change under a watched directory: each `watchTree` handler whose directory holds the path hears it.
+  touch(path: string): void;
+  // The prompts `readLine` showed, in order.
+  prompts: string[];
+  // Processes this machine runs, for `processAlive`.
+  alive: Set<number>;
 };
+
+const parentOf = (path: string) => path.slice(0, Math.max(path.lastIndexOf('/'), 1));
+const under = (dir: string, path: string) =>
+  path.startsWith(dir === '/' ? '/' : `${dir}/`) && path !== dir;
 
 export const NOW = Date.UTC(2026, 9, 5, 8, 0, 0);
 
@@ -79,7 +93,16 @@ export function fakeIo(
     routes?: Route[];
     stdin?: string;
     stdinIsTTY?: boolean;
+    stdoutIsTTY?: boolean;
     files?: Record<string, string>;
+    links?: Record<string, string>;
+    // The answers `readLine` gives, in order; null is the end of input; past the end, null.
+    lines?: (string | null)[];
+    // The answers `runTool` gives: a function of the command and its arguments.
+    tool?: (
+      command: string,
+      args: readonly string[],
+    ) => { code: number; stdout: string } | null | Promise<{ code: number; stdout: string } | null>;
   } = {},
 ): FakeIo {
   let out = '';
@@ -88,6 +111,12 @@ export function fakeIo(
     Object.entries(options.files ?? {}).map(([k, v]) => [k, { data: v, mode: 0o600 }]),
   );
   const byteMap = new Map<string, Uint8Array>();
+  const dirMap = new Set<string>();
+  const linkMap = new Map(Object.entries(options.links ?? {}));
+  const watchers = new Set<{ dir: string; onChange: (path: string) => void }>();
+  const prompts: string[] = [];
+  const answers = [...(options.lines ?? [])];
+  const alive = new Set<number>();
   const requests: Request[] = [];
   const slept: number[] = [];
   let clock = NOW;
@@ -105,6 +134,20 @@ export function fakeIo(
     stderr: (text) => void (err += text),
     readStdin: async () => options.stdin ?? '',
     stdinIsTTY: options.stdinIsTTY ?? false,
+    stdoutIsTTY: options.stdoutIsTTY ?? false,
+    readLine: async (prompt) => {
+      prompts.push(prompt);
+      err += prompt;
+      return answers.length > 0 ? answers.shift()! : null;
+    },
+    watchTree: (dir, onChange) => {
+      const watcher = { dir, onChange };
+      watchers.add(watcher);
+      return () => void watchers.delete(watcher);
+    },
+    pid: 4242,
+    hostname: 'test-host',
+    processAlive: (pid) => alive.has(pid),
     now: () => clock,
     sleep: async (ms) => {
       slept.push(ms);
@@ -126,13 +169,49 @@ export function fakeIo(
       read: async (path) => fileMap.get(path)?.data ?? null,
       write: async (path, data, mode) => void fileMap.set(path, { data, mode: mode ?? 0o644 }),
       writeBytes: async (path, data) => void byteMap.set(path, data),
-      mkdir: async () => {},
+      mkdir: async (path) => void dirMap.add(path),
       mode: async (path) => fileMap.get(path)?.mode ?? null,
       chmod: async (path, mode) => {
         const file = fileMap.get(path);
         if (file) file.mode = mode;
       },
-      remove: async (path) => void fileMap.delete(path),
+      remove: async (path) => {
+        fileMap.delete(path);
+        if (![...fileMap.keys(), ...dirMap].some((p) => under(path, p))) dirMap.delete(path);
+      },
+      list: async (path) => {
+        const children = new Map<string, 'file' | 'dir' | 'link'>();
+        for (const p of [...fileMap.keys(), ...dirMap]) {
+          if (!under(path, p)) continue;
+          const rest = p.slice(path === '/' ? 1 : path.length + 1);
+          const name = rest.split('/')[0]!;
+          children.set(name, rest.includes('/') || dirMap.has(p) ? 'dir' : 'file');
+        }
+        for (const p of linkMap.keys())
+          if (parentOf(p) === path) children.set(p.slice(path.length + 1), 'link');
+        if (children.size === 0 && !dirMap.has(path)) return null;
+        return [...children].map(([name, kind]) => ({ name, kind }));
+      },
+      move: async (from, to) => {
+        const file = fileMap.get(from);
+        if (!file) throw Object.assign(new Error(`ENOENT: ${from}`), { code: 'ENOENT' });
+        fileMap.delete(from);
+        fileMap.set(to, file);
+      },
+      createExclusive: async (path, data) => {
+        if (fileMap.has(path)) return false;
+        fileMap.set(path, { data, mode: 0o600 });
+        return true;
+      },
+      realpath: async (path) => {
+        for (const [link, target] of linkMap)
+          if (path === link || under(link, path)) return `${target}${path.slice(link.length)}`;
+        const exists =
+          fileMap.has(path) ||
+          dirMap.has(path) ||
+          [...fileMap.keys(), ...dirMap].some((p) => under(path, p));
+        return exists ? path : null;
+      },
     },
     listenLoopback: async () => ({
       port: 4321,
@@ -160,7 +239,7 @@ export function fakeIo(
       }),
     // No platform store unless a suite gives one: the credentials file keeps the token.
     platform: 'test',
-    runTool: async () => null,
+    runTool: async (command, args) => (options.tool ? options.tool(command, args) : null),
     readAsset: async (name) => new Uint8Array(await readFile(ASSET_PATHS[name])),
     openSocket: (url) => {
       const socket = fakeSocket(url);
@@ -192,6 +271,13 @@ export function fakeIo(
       clock = until;
     },
     interrupt: () => [...interrupts].forEach((h) => h()),
+    dirMap,
+    linkMap,
+    touch: (path) => {
+      for (const w of [...watchers]) if (under(w.dir, path)) w.onChange(path);
+    },
+    prompts,
+    alive,
     out: () => out,
     err: () => err,
     fileMap,
