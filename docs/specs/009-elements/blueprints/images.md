@@ -117,6 +117,13 @@ Guards run in this order; the first failure answers.
 7. Soft caps, only when at least one is set: one `imageTotalsByOwner` query; `count >= maxImages`
    → 403 `gallery_full` `reason: 'count'`; `bytes + Content-Length > maxBytes` → 403
    `gallery_full` `reason: 'bytes'` (D35).
+   7a. Network budget, only when `IMAGE_MAX_PER_NETWORK_DAY` or `IMAGE_MAX_BYTES_PER_NETWORK_DAY`
+   is set: `networkUploadKey(env, clientRateKey(request))` (HMAC-SHA256 hex), then one
+   `networkUploadUsage(env, key, day)` read for today's UTC day; `images >= max` → 429
+   `upload_limit_reached` `reason: 'count'`; `bytes + Content-Length > max` → 429
+   `upload_limit_reached` `reason: 'bytes'`; both carry `retryAfter` (seconds to the next UTC
+   day) and a `Retry-After` header. A lookup that throws logs `[images] network budget
+unavailable` and lets the upload through.
 8. `X-Image-Width` / `X-Image-Height` not finite and positive → 400 (D38: trusted, not decoded).
 9. Body read; `byteLength > MAX_IMAGE_BYTES` → 413 `file_too_large`.
 10. `sniffImageType(first 16 bytes)` null or not equal to the declared type → 415
@@ -131,7 +138,10 @@ customMetadata: { ownerId, originalName } })`. `[QB10]`
     `gallery_full` when a cap still holds, else 409 `upload_conflict` (room again; the client may
     retry). A unique conflict on `(owner, sha)` from a concurrent identical upload deletes the
     object and answers the existing row `deduped: true` (GB4).
-15. `waitUntil(recordImageUploaded(env, owner))` ([Timeline](../../013-workspace/timeline.md));
+15. When a network budget is set: `waitUntil(recordNetworkUpload(env, key, day, storedBytes))`,
+    one upsert that adds one image and the stored bytes, plus a sweep of rows older than
+    `day - 1`. Dedupes never reach this step, so they never count.
+16. `waitUntil(recordImageUploaded(env, owner))` ([Timeline](../../013-workspace/timeline.md));
     200 `{ image, deduped: false }`.
 
 Invariants:
@@ -143,6 +153,9 @@ Invariants:
 - **I4:** a row's R2 key equals `images.id`.
 - **I5:** after any committed insert, an owner's row count and summed `byte_size` are within
   every set cap.
+- **I6:** a network's recorded images and bytes for a UTC day exceed its budget by at most the
+  uploads that were in flight together (the budget is checked before, and recorded after, the
+  store).
 
 ### Read (`GET /api/images/:id`)
 
@@ -280,19 +293,19 @@ export function addImageFileForDocument(
 
 Routes (error bodies are `{ error: <token>, ... }`, `[QB10]`):
 
-| Route                    | Success                                   | Rejections                                                                                                                                                                                                        |
-| ------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/images`        | 200 `{ images: ImageSummary[] }`          | 400 no owner; 503 `images_unavailable`                                                                                                                                                                            |
-| `POST /api/images`       | 200 `{ image, deduped }`                  | 400; 403 `gallery_full` `{ reason, limit, current }`; 409 `upload_conflict`; 413 `payload_too_large` / `file_too_large` `{ limitBytes }`; 415 `unsupported_type` `{ acceptedTypes }` / `malformed_jpeg`; 429; 503 |
-| `GET /api/images/usage`  | 200 `{ usage: Record<id, {id, name}[]> }` | 400; 503                                                                                                                                                                                                          |
-| `GET /api/images/:id`    | 200 bytes                                 | 404 (never 403, no existence leak); 503                                                                                                                                                                           |
-| `DELETE /api/images/:id` | 200 `{ ok: true }`                        | 400; 403 not the owner; 429; 503                                                                                                                                                                                  |
+| Route                    | Success                                   | Rejections                                                                                                                                                                                                                                                                                         |
+| ------------------------ | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/images`        | 200 `{ images: ImageSummary[] }`          | 400 no owner; 503 `images_unavailable`                                                                                                                                                                                                                                                             |
+| `POST /api/images`       | 200 `{ image, deduped }`                  | 400; 403 `gallery_full` `{ reason, limit, current }`; 409 `upload_conflict`; 413 `payload_too_large` / `file_too_large` `{ limitBytes }`; 415 `unsupported_type` `{ acceptedTypes }` / `malformed_jpeg`; 429 `rate_limited` / `upload_limit_reached` `{ reason, limit, current, retryAfter }`; 503 |
+| `GET /api/images/usage`  | 200 `{ usage: Record<id, {id, name}[]> }` | 400; 503                                                                                                                                                                                                                                                                                           |
+| `GET /api/images/:id`    | 200 bytes                                 | 404 (never 403, no existence leak); 503                                                                                                                                                                                                                                                            |
+| `DELETE /api/images/:id` | 200 `{ ok: true }`                        | 400; 403 not the owner; 429; 503                                                                                                                                                                                                                                                                   |
 
 Upload request headers: `Content-Type`, `Content-Length`, `X-Image-Sha256` (optional, 64 lower
 hex), `X-Image-Width`, `X-Image-Height`, `X-Image-Original-Name` (optional).
 
 Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `file_too_large`,
-`images_unavailable` map to fixed copy; `payload_too_large`, `malformed_jpeg` and
+`images_unavailable` and `upload_limit_reached` map to fixed copy; `payload_too_large`, `malformed_jpeg` and
 `upload_conflict` show the raw `ApiError` message (GB6). The import pipeline maps the same
 tokens separately through `failureFromUploadError` (GB6). `apiListImages` and `apiImageUsage`
 read a 503 as `null` and `{}`.
@@ -322,7 +335,12 @@ read a 503 as `null` and `{}`.
   [Image reference index](image-reference-index.md) blueprint.
 - **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Document convert
   ([Offline Mode](../../006-document/offline-mode.md)).
-- **Migration**: `0014` for `images`; `0050_image_refs.sql` belongs to the index blueprint.
+- **D1 `network_upload_usage`** (`0075_network_upload_usage.sql`): `network_hash` TEXT (keyed
+  hash of the caller's network, never the address), `day` INTEGER (UTC days since the epoch),
+  `images`, `bytes`; primary key `(network_hash, day)`, index on `day` for the sweep. Holds at
+  most two days of rows; not owner data, so account deletion and migration do not touch it.
+- **Migration**: `0014` for `images`; `0050_image_refs.sql` belongs to the index blueprint;
+  `0075` for the network budget.
 
 ## Errors and edge cases
 
@@ -361,13 +379,17 @@ read a 503 as `null` and `{}`.
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
   cap; optional per-owner caps, enforced atomically at insert (I5) and set on hosted
-  livediagram.app by `hosted-vars.json`; guest signature enforcement covers the `images` segment
+  livediagram.app by `hosted-vars.json`; an optional per-network daily budget (step 7a, I6) so
+  uploading under many guest identities buys nothing; the network is held only as an HMAC under
+  the guest-signing secret, for at most two days; guest signature enforcement covers the `images` segment
   (`OWNER_SCOPED_SEGMENTS`); read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
 
 ## Performance and limits
 
-- Upload: one D1 read for the header dedupe, one grouped totals query when capped, one body hash,
+- Upload: one D1 read for the header dedupe, one grouped totals query when capped, one HMAC and
+  one primary-key read for the network budget when set (plus one upsert and one indexed sweep
+  off the response path), one body hash,
   one linear JPEG walk (`O(n)`, one output buffer of input size), one R2 put, one D1 insert
   carrying two cap sub-selects. Worst case 10 MiB in memory twice (input plus stripped copy).
 - Read by reference: one D1 row plus one indexed lookup on `image_refs`; no tab body is read.
@@ -425,6 +447,8 @@ read a 503 as `null` and `{}`.
 | O3  | Upload stored / deduped (GB5) | `console.info` | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
 | O4  | Delete (GB5)                  | `console.info` | `[images] deleted id=<id>`                                                         |
 | O5  | Client upload failure (GB5)   | `console.warn` | `[image-upload] failed code=<token>`                                               |
+| O6  | Network budget reached        | `console.warn` | `[images] network budget reached` + `{ reason }`                                   |
+| O7  | Network budget lookup failed  | `console.warn` | `[images] network budget unavailable` + `{ error }`                                |
 
 O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands. The retention and
 backfill fingerprints live in [Image reference index](image-reference-index.md#observability).
@@ -442,6 +466,8 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | Caps passed to the insert; racing upload refused     | `POST /api/images under a per-owner cap` suite            | `apps/api/src/routes/images.test.ts`           |
 | Atomic caps, owner-scoped, uncapped default          | `insertImage with caps` suite                             | `apps/api/src/db/image-cap.test.ts`            |
 | Hosted profile caps every gallery                    | `turns telemetry on and caps every owner…`                | `apps/api/src/hosted-vars.test.ts`             |
+| Network budget: refuse, dedupe free, fail open       | `POST /api/images under a network budget` suite           | `apps/api/src/routes/images.test.ts`           |
+| Network usage: key, upsert, sweep, real SQL          | `network upload usage` suite                              | `apps/api/src/db/network-upload-usage.test.ts` |
 | Upload guard order, dedupes, strip, 415s, 409        | none (GB2)                                                | `apps/api/src/routes/images.test.ts`           |
 | Magic-number sniff, SVG rejected                     | `sniffImageType` suite                                    | `apps/api/src/image-sniff.test.ts`             |
 | JPEG strip (APPn, COM, SOS verbatim, throws)         | `stripJpegMetadata` suite                                 | `apps/api/src/image-strip.test.ts`             |
@@ -465,18 +491,20 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 
 ## Constants and configuration
 
-| Name                        | Value                                    | Provenance / safe range                                    |
-| --------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| `MAX_IMAGE_BYTES`           | `10 * 1024 * 1024`                       | Spec per-file cap; below the 100 MB Workers body limit     |
-| `MAX_IMAGE_MB`              | `10`                                     | Derived, for copy                                          |
-| `ACCEPTED_IMAGE_TYPES`      | png, jpeg, webp, gif                     | Spec whitelist; SVG must never join                        |
-| `MAX_BODY_BYTES`            | `8 * 1024 * 1024`                        | Non-image write cap in `limits.ts`                         |
-| `IMAGE_MAX_PER_OWNER`       | unset; hosted `"100"`                    | `hosted-vars.json`; positive integer or unset              |
-| `IMAGE_MAX_BYTES_PER_OWNER` | unset; hosted `"104857600"`              | `hosted-vars.json`; positive integer or unset              |
-| `IMAGE_EMBED_BUDGET_BYTES`  | `3 * 1024 * 1024`                        | Spec; 1 to 8 MiB keeps snapshots streamable                |
-| Read `Cache-Control`        | `private, max-age=86400`                 | Spec; `private` is load-bearing                            |
-| Sniff window                | first 16 bytes, minimum 12               | Longest signature (WebP) needs 12                          |
-| Gallery placement size      | `240` px on the longer side              | D40; literal `max` in `addImageFromGallery`                |
-| `createImage` size          | 200 × 150                                | D49                                                        |
-| `WRITE_RATE_LIMITER`        | 300 per 60 s                             | `wrangler.toml`, namespace `1001`                          |
-| Buckets                     | `livediagram-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |
+| Name                              | Value                                    | Provenance / safe range                                    |
+| --------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| `MAX_IMAGE_BYTES`                 | `10 * 1024 * 1024`                       | Spec per-file cap; below the 100 MB Workers body limit     |
+| `MAX_IMAGE_MB`                    | `10`                                     | Derived, for copy                                          |
+| `ACCEPTED_IMAGE_TYPES`            | png, jpeg, webp, gif                     | Spec whitelist; SVG must never join                        |
+| `MAX_BODY_BYTES`                  | `8 * 1024 * 1024`                        | Non-image write cap in `limits.ts`                         |
+| `IMAGE_MAX_PER_OWNER`             | unset; hosted `"100"`                    | `hosted-vars.json`; positive integer or unset              |
+| `IMAGE_MAX_BYTES_PER_OWNER`       | unset; hosted `"104857600"`              | `hosted-vars.json`; positive integer or unset              |
+| `IMAGE_MAX_PER_NETWORK_DAY`       | unset; hosted `"2000"`                   | Busiest service day 10 images (2026-10-07); unset or > 100 |
+| `IMAGE_MAX_BYTES_PER_NETWORK_DAY` | unset; hosted `"1073741824"`             | Busiest service day 12 MB; unset or >= 100 MB              |
+| `IMAGE_EMBED_BUDGET_BYTES`        | `3 * 1024 * 1024`                        | Spec; 1 to 8 MiB keeps snapshots streamable                |
+| Read `Cache-Control`              | `private, max-age=86400`                 | Spec; `private` is load-bearing                            |
+| Sniff window                      | first 16 bytes, minimum 12               | Longest signature (WebP) needs 12                          |
+| Gallery placement size            | `240` px on the longer side              | D40; literal `max` in `addImageFromGallery`                |
+| `createImage` size                | 200 × 150                                | D49                                                        |
+| `WRITE_RATE_LIMITER`              | 300 per 60 s                             | `wrangler.toml`, namespace `1001`                          |
+| Buckets                           | `livediagram-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |

@@ -282,6 +282,7 @@ The api worker honours two optional `[vars]` that cap how much one owner can kee
 
 - `IMAGE_MAX_PER_OWNER`: maximum image rows per owner (decimal string).
 - `IMAGE_MAX_BYTES_PER_OWNER`: maximum summed `byte_size` per owner (decimal byte count).
+- `IMAGE_MAX_PER_NETWORK_DAY` and `IMAGE_MAX_BYTES_PER_NETWORK_DAY`: images and stored bytes per caller network (IPv4 address, IPv6 /64) per UTC day, whatever identity uploads them, so uploading under many guest ids buys nothing. Over either, 429 `{ error: "upload_limit_reached" }`. Hosted: `2000` and `1073741824` (1 GiB). The network is stored only as a keyed hash, for at most two days.
 
 Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare them under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livediagram.app sets them to `100` and `104857600` (100 MB) through its hosted profile, which a fork's deploy does not apply. The worker also honours an early `X-Image-Sha256` dedupe check sent by the live editor: if the header matches an existing row at `(owner, sha256)` the upload short-circuits before the body parse, the cap check, or the R2 write, so re-uploading bytes the user already has costs almost nothing.
 

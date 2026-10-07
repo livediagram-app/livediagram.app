@@ -175,6 +175,15 @@ describe('uploadImageFile, happy path', () => {
     expect((err as ImageUploadError).message).toContain('gallery is full');
   });
 
+  it('maps the per-network daily budget to a try-tomorrow message', async () => {
+    apiUploadImageMock.mockRejectedValue(new ApiError('upload image', 429, 'upload_limit_reached'));
+    const file = makeFile([1, 2, 3, 4], 'image/png');
+    const err = await uploadImageFile('owner-a', file).catch((e: unknown) => e);
+    expect((err as ImageUploadError).message).toBe(
+      'The image upload limit for today has been reached. Try again tomorrow.',
+    );
+  });
+
   it('returns null-dimension failure as a friendly ImageUploadError, not as a thrown raw error', async () => {
     // Override the global Image to fire onerror instead of onload
     // so readImageDimensions resolves null.

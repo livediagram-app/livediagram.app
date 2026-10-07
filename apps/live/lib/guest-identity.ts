@@ -45,6 +45,17 @@ export function ensureSignedGuestIdentity(): Promise<GuestIdentity> {
   return inflight;
 }
 
+// A guest whose mint was refused (offline, or its network's mint limit spent)
+// is left on a local unsigned id, which a server enforcing signatures refuses
+// on every call. A user's retry asks again: the signed identity when this
+// browser holds none yet and a mint now succeeds, else null (nothing changed,
+// so the caller keeps the identity it has). docs/specs/014-identity/auth-and-guest-access.md "Server-minted".
+export async function retrySignedGuestIdentity(): Promise<GuestIdentity | null> {
+  if (getGuestSelfSig()) return null;
+  const identity = await ensureSignedGuestIdentity();
+  return identity.sig ? identity : null;
+}
+
 async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
   const existingId = getGuestSelfId();
   const existingSig = getGuestSelfSig();

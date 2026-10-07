@@ -199,6 +199,12 @@ export type Env = {
   // Unset or non-positive = no limit. Hosted livediagram.app sets
   // this to "104857600" (100 MB).
   IMAGE_MAX_BYTES_PER_OWNER?: string;
+  // Per-network daily image budget (docs/specs/009-elements/images.md "Per-network daily budget"):
+  // images and stored bytes per caller network (IPv4 address, IPv6 /64) per
+  // UTC day, whatever identity uploads them. Same parsing as the per-owner
+  // caps; unset = no limit. Hosted: "2000" and "1073741824" (1 GiB).
+  IMAGE_MAX_PER_NETWORK_DAY?: string;
+  IMAGE_MAX_BYTES_PER_NETWORK_DAY?: string;
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
   // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
   // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers

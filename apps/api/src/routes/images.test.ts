@@ -19,11 +19,18 @@ const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
     imageUsageByOwner: vi.fn(),
     insertImage: vi.fn(),
     listImagesByOwner: vi.fn(),
+    networkUploadKey: vi.fn(),
+    networkUploadUsage: vi.fn(),
+    recordNetworkUpload: vi.fn(),
+    secondsToNextUtcDay: vi.fn(),
+    utcDay: vi.fn(),
   },
   canReadDocument: vi.fn(),
   resolveDocumentGrant: vi.fn(),
 }));
 vi.mock('../db', () => db);
+// The timeline write runs off the response path; these tests have no D1.
+vi.mock('../timeline', () => ({ recordImageUploaded: vi.fn(async () => {}) }));
 vi.mock('../auth/document-access', () => ({
   canReadDocument,
   canEditDocument: vi.fn(),
@@ -246,5 +253,113 @@ describe('POST /api/images under a per-owner cap', () => {
       limit: 1000,
       current: 995,
     });
+  });
+});
+
+// docs/specs/009-elements/images.md "Per-network daily budget" (blueprint 7a, 15, I6): keyed on the
+// caller's network, so uploading under many identities buys nothing.
+describe('POST /api/images under a network budget', () => {
+  const PNG = new Uint8Array([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 1, 2, 3, 4,
+  ]);
+  const BUDGET = { IMAGE_MAX_PER_NETWORK_DAY: '3', IMAGE_MAX_BYTES_PER_NETWORK_DAY: '1000' };
+
+  function upload(owner: string, vars: Record<string, string>, extra: Record<string, string> = {}) {
+    const pending: Promise<unknown>[] = [];
+    const ctx = makeTestRouteContext('POST', '/api/images', {
+      owner,
+      env: { IMAGES: imagesBinding(), ...vars } as unknown as Env,
+      waitUntil: (p) => void pending.push(p),
+    });
+    const request = new Request('https://api.test/api/images', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'image/png',
+        'Content-Length': String(PNG.byteLength),
+        'X-Image-Width': '4',
+        'X-Image-Height': '4',
+        'CF-Connecting-IP': '2001:db8:0:1::7',
+        ...extra,
+      },
+      body: PNG,
+    });
+    return { res: handleImages({ ...ctx, request }), settled: () => Promise.all(pending) };
+  }
+
+  beforeEach(() => {
+    db.findImageBySha.mockResolvedValue(null);
+    db.insertImage.mockResolvedValue({ id: 'new' });
+    db.networkUploadKey.mockResolvedValue('net-hash');
+    db.utcDay.mockReturnValue(20_000);
+    db.secondsToNextUtcDay.mockReturnValue(3600);
+    db.recordNetworkUpload.mockResolvedValue(undefined);
+  });
+
+  it('keys the budget on the network, not the owner', async () => {
+    db.networkUploadUsage.mockResolvedValue({ images: 0, bytes: 0 });
+    await upload('owner-a', BUDGET).res;
+    await upload('owner-b', BUDGET).res;
+    // Both identities on one /64 resolve to the same network.
+    expect(db.networkUploadKey.mock.calls.map((c) => c[1])).toEqual([
+      '2001:0db8:0000:0001::/64',
+      '2001:0db8:0000:0001::/64',
+    ]);
+  });
+
+  it('429 upload_limit_reached once the day has its images, whoever uploads', async () => {
+    db.networkUploadUsage.mockResolvedValue({ images: 3, bytes: 10 });
+    const { res } = upload('a-fresh-identity', BUDGET);
+    const r = await res;
+    expect(r.status).toBe(429);
+    expect(r.headers.get('Retry-After')).toBe('3600');
+    expect(await r.json()).toEqual({
+      error: 'upload_limit_reached',
+      reason: 'count',
+      limit: 3,
+      current: 3,
+      retryAfter: 3600,
+    });
+    expect(db.insertImage).not.toHaveBeenCalled();
+  });
+
+  it('names the byte budget when the upload would cross it', async () => {
+    db.networkUploadUsage.mockResolvedValue({ images: 0, bytes: 995 });
+    const r = await upload('owner-1', BUDGET).res;
+    expect(r.status).toBe(429);
+    expect(await r.json()).toMatchObject({ reason: 'bytes', limit: 1000, current: 995 });
+  });
+
+  it('records a stored upload against the network', async () => {
+    db.networkUploadUsage.mockResolvedValue({ images: 0, bytes: 0 });
+    const { res, settled } = upload('owner-1', BUDGET);
+    expect((await res).status).toBe(200);
+    await settled();
+    expect(db.recordNetworkUpload).toHaveBeenCalledWith(
+      expect.anything(),
+      'net-hash',
+      20_000,
+      PNG.byteLength,
+    );
+  });
+
+  it('never counts a dedupe', async () => {
+    db.networkUploadUsage.mockResolvedValue({ images: 0, bytes: 0 });
+    db.findImageBySha.mockResolvedValue({ id: 'existing' });
+    const r = await upload('owner-1', BUDGET).res;
+    expect(await r.json()).toMatchObject({ deduped: true });
+    expect(db.recordNetworkUpload).not.toHaveBeenCalled();
+  });
+
+  it('lets the upload through when the budget cannot be read', async () => {
+    db.networkUploadUsage.mockRejectedValue(new Error('d1 down'));
+    const r = await upload('owner-1', BUDGET).res;
+    expect(r.status).toBe(200);
+  });
+
+  it('does no budget work when no budget is set (the self-host default)', async () => {
+    const r = await upload('owner-1', {}).res;
+    expect(r.status).toBe(200);
+    expect(db.networkUploadKey).not.toHaveBeenCalled();
+    expect(db.networkUploadUsage).not.toHaveBeenCalled();
   });
 });

@@ -33,7 +33,7 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureSignedGuestIdentity, retrySignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import {
@@ -497,7 +497,18 @@ export default function NewDocumentPage() {
               }
               setCreateError(null);
               const a = lastCreateArgs.current;
-              if (a) void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
+              if (!a) return;
+              // A guest refused for an unsigned id (its first mint never landed) mints again
+              // first; retrying with the same id would only be refused again.
+              void (async () => {
+                const healed = clerkUserId ? null : await retrySignedGuestIdentity();
+                if (healed && healed.id !== selfRef.current.id) {
+                  const next = { ...selfRef.current, id: healed.id };
+                  selfRef.current = next;
+                  setSelf(next);
+                }
+                void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
+              })();
             }}
           />
         </main>

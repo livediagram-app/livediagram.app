@@ -139,6 +139,14 @@ export function rateLimited(): Response {
   return json({ error: 'rate_limited' }, { status: 429 });
 }
 
+// The same 429 with a Retry-After header, for a caller (the guest-id mint)
+// that waits and tries again rather than giving up.
+export function rateLimitedRetryAfter(seconds: number): Response {
+  const res = rateLimited();
+  res.headers.set('Retry-After', String(seconds));
+  return res;
+}
+
 // Clerk-only surfaces (teams, docs/specs/013-workspace/teams.md). Unlike missingAuth() below —
 // which names both identity sources because either is acceptable —
 // this is for endpoints where the guest X-Owner-Id path is

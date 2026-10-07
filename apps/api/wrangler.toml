@@ -272,6 +272,11 @@ simple = { limit = 30, period = 60 }
 #     may keep in the gallery. Hosted: "100".
 #   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
 #     across one owner's images. Hosted: "104857600" (100 MB).
+#   - IMAGE_MAX_PER_NETWORK_DAY / IMAGE_MAX_BYTES_PER_NETWORK_DAY: images and
+#     stored bytes per caller network (IPv4 address, IPv6 /64) per UTC day,
+#     whatever identity uploads them, so rotating guest ids buys nothing. Over
+#     either, POST /api/images returns 429 { error: "upload_limit_reached" }.
+#     Hosted: "2000" and "1073741824" (1 GiB).
 #
 # Plain vars; values are decimal strings parsed via parseInt at request time.
 # Unset, blank, "0", or non-numeric values all read as "no limit". A self-host
