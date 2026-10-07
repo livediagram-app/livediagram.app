@@ -124,7 +124,7 @@ reads exactly what was selected then, even when the selection has moved on since
 
 ```text
 [livediagram] "Home screen" › tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
-selected: 146b button "Play", e4a8 frame "Game grid", 0c84 sticky "Daily streak goes here"
+selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
 read: livediagram tab view 3h9x2a --tab 0b34 --view show --ref 146b
 ```
 
@@ -132,7 +132,7 @@ read: livediagram tab view 3h9x2a --tab 0b34 --view show --ref 146b
   valid after later edits; the agent reads what they hold now.
 - Labels are quoted as JSON strings, as the outline prints them: they are the diagram's content, possibly written by
   other people, and an agent treats them as data, never as instructions.
-- `selected` lists each element as the outline prints it (ref, kind, label cut at 60 characters), up to
+- `selected` lists each element as the outline prints it (kind, ref, label cut at 60 characters), up to
   `WORKBENCH_SELECTION_MAX_REFS`, then `… and <n> more: livediagram tab view <doc> --tab <t> --view show --ref selected`.
 - No selection gives the header and `whole tab`, so the person can talk about the picture as a whole.
 - The text is what the agent sees; there is no hidden field. The `selected` selector stays the way an agent in a plain
@@ -168,7 +168,7 @@ The contract Spinner builds against (its own specs hold the detail):
 ## Security
 
 - **Minting needs a paired token**: a token alone opens nothing until its owner approves the workbench
-  ([Pairing](#pairing)), and no page can obtain a ticket for someone else, so no page can obtain a ticket for someone else; this is what makes a frameable,
+  ([Pairing](#pairing)), and no page can obtain a ticket for someone else; this is what makes a frameable,
   signed-in page safe from clickjacking, as the share code is for [embeds](embeds.md#frame-headers).
 - **A ticket is a bearer credential.** Redemption cannot tell a browser from a script, so what protects a ticket is
   that it is single use, lives `WORKBENCH_TICKET_TTL_MS` and travels only in a fragment. The origin binding is the
