@@ -64,9 +64,16 @@ describe('POST /api/workbench/tickets', () => {
       tabId: 't1',
       expiresAt: NOW + WORKBENCH_TICKET_TTL_MS,
     });
-    expect(rows(db, 'SELECT role, pairing_id, origin, ticket_hash FROM workbench_tickets')).toEqual([
-      { role: 'edit', pairing_id: 'pair1', origin: ORIGIN, ticket_hash: expect.stringMatching(/^[0-9a-f]{64}$/) },
-    ]);
+    expect(rows(db, 'SELECT role, pairing_id, origin, ticket_hash FROM workbench_tickets')).toEqual(
+      [
+        {
+          role: 'edit',
+          pairing_id: 'pair1',
+          origin: ORIGIN,
+          ticket_hash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        },
+      ],
+    );
     expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
       documentId: 'doc1',
       tokenId: 'tok1',
@@ -104,7 +111,9 @@ describe('POST /api/workbench/tickets', () => {
     expect(first.status).toBe(428);
     expect(a).toEqual({
       error: 'pairing_required',
-      pairingUrl: expect.stringMatching(/^https:\/\/app\.test\/workbench\/pair\?code=[A-Za-z0-9_-]{22}$/),
+      pairingUrl: expect.stringMatching(
+        /^https:\/\/app\.test\/workbench\/pair\?code=[A-Za-z0-9_-]{22}$/,
+      ),
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
     });
     expect(b.pairingUrl).toBe(a.pairingUrl);
@@ -126,7 +135,11 @@ describe('POST /api/workbench/tickets', () => {
 
   it.each([
     ['a missing document id', { origin: ORIGIN }, 'invalid documentId'],
-    ['an overlong document id', { documentId: 'x'.repeat(65), origin: ORIGIN }, 'invalid documentId'],
+    [
+      'an overlong document id',
+      { documentId: 'x'.repeat(65), origin: ORIGIN },
+      'invalid documentId',
+    ],
     ['a bad tab id', { documentId: 'doc1', tabId: 5, origin: ORIGIN }, 'invalid tabId'],
   ])('refuses %s', async (_why, body, message) => {
     const db = await workbenchDb();
@@ -182,6 +195,16 @@ describe('POST /api/workbench/tickets', () => {
     const res = await mint(db);
 
     expect(res.status).toBe(410);
+  });
+
+  it('answers 404, not 410, for a trashed document the owner could never open', async () => {
+    const db = await workbenchDb();
+    pairToken(db);
+    db.sql.exec(`UPDATE documents SET trashed_at = 1 WHERE id = 'doc2'`);
+
+    const res = await mint(db, { body: { documentId: 'doc2', origin: ORIGIN } });
+
+    expect(res.status).toBe(404);
   });
 
   it('ignores a share code: only the owner own access counts', async () => {

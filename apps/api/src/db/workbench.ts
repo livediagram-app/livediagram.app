@@ -71,7 +71,7 @@ export async function openPairingRequest(
   )
     .bind(crypto.randomUUID(), code, ownerId, tokenId, origin, name, now, expiresAt)
     .run();
-  if ((inserted.meta?.changes ?? 0) > 0) return { code, expiresAt, reused: false };
+  if (inserted.meta.changes > 0) return { code, expiresAt, reused: false };
   const live = await livePairingRequest(env, tokenId, origin);
   if (!live) throw new Error('workbench: no live pairing request after a refused insert');
   if (name !== null && name !== live.name) {
@@ -124,7 +124,7 @@ export async function readPairingRequest(
 
 export type PairingAnswer =
   | { outcome: 'approved'; pairing: WorkbenchPairing }
-  | { outcome: 'declined' }
+  | { outcome: 'declined'; tokenId: string }
   | { outcome: 'missing' }
   | { outcome: 'answered' }
   | { outcome: 'expired' };
@@ -152,15 +152,17 @@ export async function answerPairingRequest(
   ).bind(answer === 'approve' ? 'approved' : 'declined', now, code, now);
   if (answer === 'decline') {
     const res = await flip.run();
-    return (res.meta?.changes ?? 0) > 0 ? { outcome: 'declined' } : { outcome: 'answered' };
+    return res.meta.changes > 0
+      ? { outcome: 'declined', tokenId: request.tokenId }
+      : { outcome: 'answered' };
   }
   const record = env.DB.prepare(
     `INSERT OR IGNORE INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
      SELECT ?, owner_id, token_id, origin, name, ? FROM workbench_pairing_requests
       WHERE code = ? AND status = 'approved' AND answered_at = ?`,
   ).bind(pairingId, now, code, now);
-  const [flipped] = await env.DB.batch([flip, record]);
-  if ((flipped?.meta?.changes ?? 0) === 0) return { outcome: 'answered' };
+  const results = await env.DB.batch([flip, record]);
+  if (results[0]!.meta.changes === 0) return { outcome: 'answered' };
   const pairing = await findWorkbenchPairing(env, request.tokenId, request.origin);
   if (!pairing) throw new Error('workbench: approved request recorded no pairing');
   return { outcome: 'approved', pairing };
@@ -449,7 +451,7 @@ export async function sweepWorkbench(env: Env, now: number): Promise<number> {
          (SELECT id FROM api_tokens WHERE revoked = 1 OR expires_at <= ?)`,
     ).bind(now),
   ]);
-  return results.reduce((sum, r) => sum + (r.meta?.changes ?? 0), 0);
+  return results.reduce((sum, r) => sum + r.meta.changes, 0);
 }
 
 // The owner of a pairing, for Unpair: only they may remove it.

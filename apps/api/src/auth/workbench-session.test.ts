@@ -47,7 +47,8 @@ describe('resolveWorkbenchSession', () => {
     const db: SqliteD1 = sqliteD1();
     db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('doc1', 'user_1', 'Doc', 0, 1, 1)`);
-    db.sql.exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)
+    db.sql
+      .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)
                  VALUES ('tok1', 'user_1', 'h', NULL, 1, ${NOW + 1e9}, ${over.tokenRevoked ? 1 : 0},
                          ${over.tokenReadOnly ? 1 : 0})`);
     db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)

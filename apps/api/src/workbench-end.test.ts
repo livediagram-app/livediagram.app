@@ -8,7 +8,11 @@ const P1 = '3f1c9a2e-7b4d-4c8e-9a1f-2b3c4d5e6f70';
 const P2 = '00000000-0000-4000-8000-000000000002';
 
 // Two pairings of tok1 (sessions on doc1 and doc2), one of tok2 (a session on doc1), and pending requests.
-function arrange(roomOk = true): { db: SqliteD1; env: Env; closes: { doc: string; body: unknown }[] } {
+function arrange(roomOk = true): {
+  db: SqliteD1;
+  env: Env;
+  closes: { doc: string; body: unknown }[];
+} {
   const closes: { doc: string; body: unknown }[] = [];
   const db = sqliteD1();
   const env = {
@@ -25,7 +29,8 @@ function arrange(roomOk = true): { db: SqliteD1; env: Env; closes: { doc: string
   } as unknown as Env;
   db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'u1', 'A', 0, 1, 1), ('doc2', 'u1', 'B', 0, 1, 1)`);
-  db.sql.exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
+  db.sql
+    .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
                VALUES ('tok1', 'u1', 'h1', NULL, 1, ${NOW * 2}, 0), ('tok2', 'u1', 'h2', NULL, 1, ${NOW * 2}, 0)`);
   db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
                VALUES ('${P1}', 'u1', 'tok1', 'https://a.example', NULL, 1),
@@ -37,14 +42,17 @@ function arrange(roomOk = true): { db: SqliteD1; env: Env; closes: { doc: string
                  (id, secret_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
                VALUES ${session('s1aaaaaaaa', P1, 'doc1')}, ${session('s2bbbbbbbb', P1, 'doc2')},
                       ${session('s3cccccccc', P2, 'doc1')}, ${session('s4dddddddd', 'p3', 'doc1', 'tok2')}`);
-  db.sql.exec(`INSERT INTO workbench_pairing_requests (id, code, owner_id, token_id, origin, status, created_at, expires_at)
+  db.sql
+    .exec(`INSERT INTO workbench_pairing_requests (id, code, owner_id, token_id, origin, status, created_at, expires_at)
                VALUES ('r1', 'c1', 'u1', 'tok1', 'https://c.example', 'pending', 1, ${NOW * 2}),
                       ('r2', 'c2', 'u1', 'tok2', 'https://c.example', 'pending', 1, ${NOW * 2})`);
   return { db, env, closes };
 }
 
 const ids = (db: SqliteD1, table: string) =>
-  (db.sql.prepare(`SELECT id FROM ${table} ORDER BY id`).all() as { id: string }[]).map((r) => r.id);
+  (db.sql.prepare(`SELECT id FROM ${table} ORDER BY id`).all() as { id: string }[]).map(
+    (r) => r.id,
+  );
 
 describe('endWorkbenchAccess', () => {
   afterEach(() => vi.restoreAllMocks());

@@ -287,7 +287,6 @@ describe('POST room-ticket', () => {
     });
   });
 
-
   it('mints an edit ticket when the caller holds edit', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-1', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });

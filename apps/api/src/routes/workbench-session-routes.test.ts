@@ -11,7 +11,10 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
 import { NOW, ORIGIN, pairToken, rows, workbenchDb } from './workbench-test-fixtures';
 
-async function mintTicket(db: SqliteD1, token = { id: 'tok1' } as { id: string; readOnly?: boolean }) {
+async function mintTicket(
+  db: SqliteD1,
+  token = { id: 'tok1' } as { id: string; readOnly?: boolean },
+) {
   const res = await handleWorkbench(
     makeTestRouteContext('POST', '/api/workbench/tickets', {
       env: db.env,
@@ -159,6 +162,16 @@ describe('POST /api/workbench/sessions', () => {
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: 'bad_request', message: 'invalid ticket' });
+  });
+
+  it('refuses a body that is not JSON', async () => {
+    const db = await workbenchDb();
+
+    const res = await handleWorkbench(
+      makeTestRouteContext('POST', '/api/workbench/sessions', { env: db.env, rawBody: 'nope' }),
+    );
+
+    expect(res.status).toBe(400);
   });
 
   it('refuses a workbench session redeeming another ticket', async () => {

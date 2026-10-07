@@ -7393,6 +7393,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PairingRequestStatus": {
+    "enum": [
+      "pending",
+      "approved",
+      "declined",
+      "expired"
+    ],
+    "type": "string"
+  },
   "ParticipantRecord": {
     "additionalProperties": false,
     "properties": {
@@ -11330,5 +11339,308 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lint"
     ],
     "type": "string"
+  },
+  "WorkbenchPairing": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "origin": {
+        "type": "string"
+      },
+      "pairedAt": {
+        "type": "number"
+      },
+      "tokenId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "tokenId",
+      "origin",
+      "name",
+      "pairedAt"
+    ],
+    "type": "object"
+  },
+  "WorkbenchPairingRequestCreate": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "origin": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "origin"
+    ],
+    "type": "object"
+  },
+  "WorkbenchPairingRequestCreated": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "pairing": {
+            "$ref": "#/components/schemas/WorkbenchPairing"
+          },
+          "status": {
+            "const": "paired",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "pairing"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "interval": {
+            "type": "number"
+          },
+          "pairingUrl": {
+            "type": "string"
+          },
+          "status": {
+            "const": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "pairingUrl",
+          "code",
+          "expiresAt",
+          "interval"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "WorkbenchPairingRequestView": {
+    "additionalProperties": false,
+    "properties": {
+      "expiresAt": {
+        "type": "number"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "origin": {
+        "type": "string"
+      },
+      "status": {
+        "$ref": "#/components/schemas/PairingRequestStatus"
+      },
+      "tokenName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "origin",
+      "name",
+      "tokenName",
+      "expiresAt",
+      "status"
+    ],
+    "type": "object"
+  },
+  "WorkbenchPairingStatusResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "expiresAt": {
+        "type": "number"
+      },
+      "interval": {
+        "type": "number"
+      },
+      "status": {
+        "$ref": "#/components/schemas/PairingRequestStatus"
+      }
+    },
+    "required": [
+      "status",
+      "expiresAt",
+      "interval"
+    ],
+    "type": "object"
+  },
+  "WorkbenchPairingsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "pairings": {
+        "items": {
+          "$ref": "#/components/schemas/WorkbenchPairing"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "pairings"
+    ],
+    "type": "object"
+  },
+  "WorkbenchPerson": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color",
+      "pictureUrl"
+    ],
+    "type": "object"
+  },
+  "WorkbenchRole": {
+    "enum": [
+      "view",
+      "participate",
+      "edit"
+    ],
+    "type": "string"
+  },
+  "WorkbenchSessionRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "ticket": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "ticket"
+    ],
+    "type": "object"
+  },
+  "WorkbenchSessionResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      },
+      "origin": {
+        "type": "string"
+      },
+      "person": {
+        "$ref": "#/components/schemas/WorkbenchPerson"
+      },
+      "role": {
+        "$ref": "#/components/schemas/WorkbenchRole"
+      },
+      "session": {
+        "type": "string"
+      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "session",
+      "documentId",
+      "tabId",
+      "origin",
+      "role",
+      "expiresAt",
+      "person"
+    ],
+    "type": "object"
+  },
+  "WorkbenchTicketRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "origin": {
+        "type": "string"
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "origin"
+    ],
+    "type": "object"
+  },
+  "WorkbenchTicketResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "documentId",
+      "tabId",
+      "expiresAt"
+    ],
+    "type": "object"
   }
 };

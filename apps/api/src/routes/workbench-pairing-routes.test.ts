@@ -11,7 +11,14 @@ type Caller =
   | { kind: 'clerk'; userId: string }
   | { kind: 'none' };
 
-function call(db: SqliteD1, method: string, path: string, caller: Caller, body?: unknown, env?: Env) {
+function call(
+  db: SqliteD1,
+  method: string,
+  path: string,
+  caller: Caller,
+  body?: unknown,
+  env?: Env,
+) {
   const identity =
     caller.kind === 'token'
       ? {
@@ -23,7 +30,11 @@ function call(db: SqliteD1, method: string, path: string, caller: Caller, body?:
         ? { owner: caller.userId, clerkUserId: caller.userId }
         : {};
   return handleWorkbench(
-    makeTestRouteContext(method, `/api/workbench/${path}`, { env: env ?? db.env, body, ...identity }),
+    makeTestRouteContext(method, `/api/workbench/${path}`, {
+      env: env ?? db.env,
+      body,
+      ...identity,
+    }),
   );
 }
 
@@ -51,7 +62,10 @@ describe('workbench pairing routes', () => {
     it('opens a request with a name and a poll interval', async () => {
       const db = await workbenchDb();
 
-      const res = await call(db, 'POST', 'pairing-requests', TOKEN, { origin: ORIGIN, name: ' Spinner ' });
+      const res = await call(db, 'POST', 'pairing-requests', TOKEN, {
+        origin: ORIGIN,
+        name: ' Spinner ',
+      });
 
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual({
@@ -61,7 +75,9 @@ describe('workbench pairing routes', () => {
         expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
         interval: DEVICE_POLL_INTERVAL_S,
       });
-      expect(rows(db, 'SELECT name FROM workbench_pairing_requests')).toEqual([{ name: 'Spinner' }]);
+      expect(rows(db, 'SELECT name FROM workbench_pairing_requests')).toEqual([
+        { name: 'Spinner' },
+      ]);
     });
 
     it('reuses the request a mint opened, taking the name', async () => {
@@ -93,12 +109,30 @@ describe('workbench pairing routes', () => {
 
       const clerk = await call(db, 'POST', 'pairing-requests', OWNER, { origin: ORIGIN });
       const origin = await call(db, 'POST', 'pairing-requests', TOKEN, { origin: '*' });
-      const limited = await call(db, 'POST', 'pairing-requests', TOKEN, { origin: ORIGIN }, {
-        ...db.env,
-        WORKBENCH_TICKET_RATE_LIMITER: { limit },
-      });
+      const limited = await call(
+        db,
+        'POST',
+        'pairing-requests',
+        TOKEN,
+        { origin: ORIGIN },
+        {
+          ...db.env,
+          WORKBENCH_TICKET_RATE_LIMITER: { limit },
+        },
+      );
+
+      const notJson = await handleWorkbench(
+        makeTestRouteContext('POST', '/api/workbench/pairing-requests', {
+          env: db.env,
+          owner: 'user_1',
+          token: { id: 'tok1' },
+          rawBody: 'nope',
+        }),
+      );
+      const noOrigin = await call(db, 'POST', 'pairing-requests', TOKEN, {});
 
       expect([clerk.status, origin.status, limited.status]).toEqual([403, 400, 429]);
+      expect([notJson.status, noOrigin.status]).toEqual([400, 400]);
       expect(await clerk.json()).toEqual({ error: 'token_required' });
       expect(await origin.json()).toEqual({ error: 'invalid_origin' });
     });
@@ -110,9 +144,12 @@ describe('workbench pairing routes', () => {
       const { code } = await ask(db, 'Spinner');
 
       const mine = await call(db, 'GET', `pairing-requests/${code}`, OWNER);
-      const theirs = await call(db, 'GET', `pairing-requests/${code}`, { kind: 'clerk', userId: 'user_2' });
+      const theirs = await call(db, 'GET', `pairing-requests/${code}`, {
+        kind: 'clerk',
+        userId: 'user_2',
+      });
       const token = await call(db, 'GET', `pairing-requests/${code}`, TOKEN);
-      const bad = await call(db, 'GET', 'pairing-requests/short', OWNER);
+      const bad = await call(db, 'GET', 'pairing-requests/short', OWNER); // no such request
 
       expect(await mine.json()).toEqual({
         request: {
@@ -215,7 +252,9 @@ describe('workbench pairing routes', () => {
       const token = await call(db, 'GET', 'pairings', TOKEN);
 
       expect(await res.json()).toEqual({
-        pairings: [{ id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Spinner', pairedAt: NOW }],
+        pairings: [
+          { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Spinner', pairedAt: NOW },
+        ],
       });
       expect(token.status).toBe(401);
     });
@@ -228,16 +267,33 @@ describe('workbench pairing routes', () => {
       const mine = await call(db, 'DELETE', 'pairings/pair1', OWNER);
       const gone = await call(db, 'DELETE', 'pairings/pair1', OWNER);
 
-      expect([other.status, mine.status, gone.status]).toEqual([404, 204, 404]);
+      const token = await call(db, 'DELETE', 'pairings/pair1', TOKEN);
+
+      expect([other.status, mine.status, gone.status, token.status]).toEqual([404, 204, 404, 401]);
       expect(rows(db, 'SELECT * FROM workbench_pairings')).toEqual([]);
     });
   });
 
-  it('answers 404 for an unknown path and 405 for a wrong method', async () => {
+  it('answers 404 for an unknown path', async () => {
     const db = await workbenchDb();
 
     expect((await call(db, 'GET', 'nope', OWNER)).status).toBe(404);
-    expect((await call(db, 'PUT', 'pairings', OWNER)).status).toBe(405);
-    expect((await call(db, 'GET', 'tickets', TOKEN)).status).toBe(405);
+  });
+
+  it.each([
+    ['GET', 'tickets'],
+    ['GET', 'sessions'],
+    ['GET', 'sessions/current'],
+    ['GET', 'pairing-requests'],
+    ['POST', 'pairing-requests/code_aaaaaaaaaaaaaaaaaa'],
+    ['POST', 'pairing-requests/code_aaaaaaaaaaaaaaaaaa/status'],
+    ['GET', 'pairing-requests/code_aaaaaaaaaaaaaaaaaa/approve'],
+    ['GET', 'pairing-requests/code_aaaaaaaaaaaaaaaaaa/decline'],
+    ['PUT', 'pairings'],
+    ['GET', 'pairings/pair1'],
+  ])('answers 405 to %s %s', async (method, path) => {
+    const db = await workbenchDb();
+
+    expect((await call(db, method, path, OWNER)).status).toBe(405);
   });
 });

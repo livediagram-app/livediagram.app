@@ -58,7 +58,10 @@ describe('the workbench close match', () => {
   it('matches only the sockets of that pairing', () => {
     expect(sessionMatchesAccessClose({ workbenchPairing: PAIRING }, workbench)).toBe(true);
     expect(
-      sessionMatchesAccessClose({ workbenchPairing: '00000000-0000-4000-8000-000000000000' }, workbench),
+      sessionMatchesAccessClose(
+        { workbenchPairing: '00000000-0000-4000-8000-000000000000' },
+        workbench,
+      ),
     ).toBe(false);
     expect(sessionMatchesAccessClose({ personTag: TAG, workbenchPairing: null }, workbench)).toBe(
       false,

@@ -43,5 +43,5 @@ export async function ownerDocumentAccess(
     ownerId,
   );
   if (!grant) return notFound();
-  return { documentId, role: grant.role === 'edit' ? 'edit' : 'view' };
+  return { documentId, role: grant.role };
 }

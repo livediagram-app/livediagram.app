@@ -7,7 +7,6 @@ import {
   DEVICE_POLL_INTERVAL_S,
   normaliseWorkbenchName,
   parseWorkbenchOrigin,
-  WORKBENCH_HANDLE_PATTERN,
   type WorkbenchPairingRequestCreated,
   type WorkbenchPairingRequestView,
   type WorkbenchPairingStatusResponse,
@@ -123,11 +122,9 @@ export async function answerPairing(
       return conflict('pairing_answered');
     case 'expired':
       return json({ error: 'pairing_expired' }, { status: 410 });
-    case 'declined': {
-      const request = await readPairingRequest(ctx.env, code, Date.now());
-      console.log('[workbench] pairing-declined', { tokenId: request?.tokenId ?? null });
+    case 'declined':
+      console.log('[workbench] pairing-declined', { tokenId: result.tokenId });
       return noContent();
-    }
     case 'approved':
       console.log('[workbench] paired', {
         tokenId: result.pairing.tokenId,
@@ -152,6 +149,3 @@ export async function unpair(ctx: RouteContext, id: string): Promise<Response> {
   await endWorkbenchAccess(ctx.env, { pairingId: id }, 'unpaired');
   return noContent();
 }
-
-export const isPairingCode = (value: string | undefined): value is string =>
-  value !== undefined && WORKBENCH_HANDLE_PATTERN.test(value);

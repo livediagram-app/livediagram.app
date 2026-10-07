@@ -51,7 +51,8 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
   if (!isId(body.documentId)) return badRequest('invalid documentId');
   if (body.tabId !== undefined && !isId(body.tabId)) return badRequest('invalid tabId');
   const parsed = parseWorkbenchOrigin(typeof body.origin === 'string' ? body.origin : '');
-  if (!parsed.ok) return refused('invalid_origin', json({ error: 'invalid_origin' }, { status: 400 }));
+  if (!parsed.ok)
+    return refused('invalid_origin', json({ error: 'invalid_origin' }, { status: 400 }));
   const origin = parsed.origin;
   const documentId = body.documentId;
   const tabId = body.tabId ?? null;

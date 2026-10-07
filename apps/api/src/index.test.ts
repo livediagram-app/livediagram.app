@@ -315,7 +315,11 @@ describe('workbench sessions at the front door', () => {
   });
 
   it('401s a session that does not resolve, never reading it as a guest', async () => {
-    resolveWorkbenchSessionMock.mockResolvedValue({ ok: false, reason: 'expired', sessionPrefix: 'abcdef12' });
+    resolveWorkbenchSessionMock.mockResolvedValue({
+      ok: false,
+      reason: 'expired',
+      sessionPrefix: 'abcdef12',
+    });
 
     const res = await call('GET', '/api/documents/doc1', { 'X-Owner-Id': 'guest-1' });
 
@@ -338,7 +342,10 @@ describe('workbench sessions at the front door', () => {
   });
 
   it('refuses a view session its writes', async () => {
-    resolveWorkbenchSessionMock.mockResolvedValue({ ok: true, workbench: { ...SESSION, level: 'view' } });
+    resolveWorkbenchSessionMock.mockResolvedValue({
+      ok: true,
+      workbench: { ...SESSION, level: 'view' },
+    });
 
     const res = await call('PUT', '/api/documents/doc1/tabs/t1');
 
@@ -349,7 +356,12 @@ describe('workbench sessions at the front door', () => {
   it('hands an allowed route the owner as a person: no Clerk id, no token, writes keyed on the session', async () => {
     const limit = vi.fn(async () => ({ success: true }));
 
-    const res = await call('DELETE', '/api/workbench/sessions/current', {}, { WRITE_RATE_LIMITER: { limit } });
+    const res = await call(
+      'DELETE',
+      '/api/workbench/sessions/current',
+      {},
+      { WRITE_RATE_LIMITER: { limit } },
+    );
     const ctx = (handleWorkbenchMock.mock.calls[0] as unknown as [RouteContext])[0];
 
     expect(res.status).toBe(204);

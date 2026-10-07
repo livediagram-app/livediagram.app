@@ -32,9 +32,9 @@ export async function endWorkbenchAccess(
     .all<SessionRow>();
 
   const deletes = [
-    env.DB.prepare(
-      `DELETE FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`,
-    ).bind(key),
+    env.DB.prepare(`DELETE FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`).bind(
+      key,
+    ),
   ];
   if (byToken)
     deletes.push(

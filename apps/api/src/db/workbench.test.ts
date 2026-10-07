@@ -25,7 +25,8 @@ function arrange(): SqliteD1 {
   const db = sqliteD1();
   db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1)`);
-  db.sql.exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
+  db.sql
+    .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
                VALUES ('tok1', 'user_1', 'h1', 'livediagram CLI', 1, ${NOW + 1e9}, 0),
                       ('tok2', 'user_2', 'h2', NULL, 1, ${NOW + 1e9}, 0)`);
   return db;
@@ -196,7 +197,7 @@ describe('pairing requests', () => {
       now: NOW,
     });
 
-    expect(answered).toEqual({ outcome: 'declined' });
+    expect(answered).toEqual({ outcome: 'declined', tokenId: 'tok1' });
     expect(count(db, 'workbench_pairings')).toBe(0);
     expect(await pairingRequestStatus(db.env, 'code_aaaaaaaaaaaaaaaaaa', 'tok1', NOW)).toEqual({
       status: 'declined',
@@ -237,6 +238,109 @@ describe('pairing requests', () => {
   });
 });
 
+// Another answer lands between the read and the flip: the env runs `sql` right after the request is read.
+function raceAfterRead(db: SqliteD1, sql: string): SqliteD1 {
+  const prepare = db.env.DB.prepare.bind(db.env.DB);
+  const DB = {
+    ...db.env.DB,
+    prepare: (query: string) => {
+      const statement = prepare(query);
+      if (!query.includes('JOIN api_tokens t ON t.id = r.token_id')) return statement;
+      return {
+        ...statement,
+        bind: (...args: unknown[]) => {
+          const bound = statement.bind(...args);
+          return {
+            ...bound,
+            first: async <T>() => {
+              const row = await bound.first<T>();
+              db.sql.exec(sql);
+              return row;
+            },
+          };
+        },
+      };
+    },
+  };
+  return { ...db, env: { ...db.env, DB } as SqliteD1['env'] };
+}
+
+describe('racing answers', () => {
+  async function pending(db: SqliteD1) {
+    await openPairingRequest(db.env, {
+      ownerId: 'user_1',
+      tokenId: 'tok1',
+      origin: ORIGIN,
+      name: null,
+      code: 'code_aaaaaaaaaaaaaaaaaa',
+      now: NOW,
+    });
+  }
+  const ANSWERED = `UPDATE workbench_pairing_requests SET status = 'declined', answered_at = 1`;
+
+  it.each(['approve', 'decline'] as const)(
+    'reads a %s that lost to a concurrent answer as answered, recording nothing',
+    async (answer) => {
+      const db = arrange();
+      await pending(db);
+
+      const result = await answerPairingRequest(raceAfterRead(db, ANSWERED).env, {
+        code: 'code_aaaaaaaaaaaaaaaaaa',
+        ownerId: 'user_1',
+        answer,
+        pairingId: 'pair1',
+        now: NOW,
+      });
+
+      expect(result).toEqual({ outcome: 'answered' });
+      expect(count(db, 'workbench_pairings')).toBe(0);
+    },
+  );
+
+  it('refuses to report a pairing nobody can find after approval', async () => {
+    const db = arrange();
+    await pending(db);
+    const batch = db.env.DB.batch.bind(db.env.DB);
+    const env = {
+      ...db.env,
+      DB: {
+        ...db.env.DB,
+        batch: async (statements: Parameters<typeof batch>[0]) => {
+          const results = await batch(statements);
+          db.sql.exec('DELETE FROM workbench_pairings');
+          return results;
+        },
+      },
+    } as SqliteD1['env'];
+
+    await expect(
+      answerPairingRequest(env, {
+        code: 'code_aaaaaaaaaaaaaaaaaa',
+        ownerId: 'user_1',
+        answer: 'approve',
+        pairingId: 'pair1',
+        now: NOW,
+      }),
+    ).rejects.toThrow('approved request recorded no pairing');
+  });
+
+  it('refuses a code that collides with another request', async () => {
+    const db = arrange();
+    await pending(db);
+
+    await expect(
+      openPairingRequest(db.env, {
+        ownerId: 'user_2',
+        tokenId: 'tok2',
+        origin: ORIGIN,
+        name: null,
+        code: 'code_aaaaaaaaaaaaaaaaaa',
+        now: NOW,
+      }),
+    ).rejects.toThrow('no live pairing request after a refused insert');
+  });
+});
+
 describe('pairings', () => {
   it('lists the owner pairings of live tokens only, newest first', async () => {
     const db = arrange();
@@ -246,7 +350,13 @@ describe('pairings', () => {
 
     expect(await listWorkbenchPairings(db.env, 'user_1', NOW)).toEqual([
       { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Spinner', pairedAt: NOW },
-      { id: 'pair0', tokenId: 'tok1', origin: 'https://old.example', name: null, pairedAt: NOW - 10 },
+      {
+        id: 'pair0',
+        tokenId: 'tok1',
+        origin: 'https://old.example',
+        name: null,
+        pairedAt: NOW - 10,
+      },
     ]);
     db.sql.exec(`UPDATE api_tokens SET revoked = 1 WHERE id = 'tok1'`);
     expect(await listWorkbenchPairings(db.env, 'user_1', NOW)).toEqual([]);

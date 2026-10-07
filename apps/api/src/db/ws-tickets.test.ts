@@ -31,7 +31,17 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
     const db = fakeD1();
     const ticket = await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
     const insert = db.one('INSERT INTO ws_tickets');
-    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000, null, null, 0, null, null]);
+    expect(insert.bindings).toEqual([
+      ticket,
+      'diag-1',
+      'edit',
+      1_060_000,
+      null,
+      null,
+      0,
+      null,
+      null,
+    ]);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: the ticket carries the scope and the admitting code
@@ -46,7 +56,13 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       personTag: null,
       workbenchPairing: null,
     });
-    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual(['t2', 'CODE2345', 0, null, null]);
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual([
+      't2',
+      'CODE2345',
+      0,
+      null,
+      null,
+    ]);
   });
 
   // docs/specs/024-agents/agent-changesets.md "Held elements": an account's ticket carries its
