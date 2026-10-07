@@ -120,3 +120,15 @@ describe('hasConflictMarkers', () => {
     expect(hasConflictMarkers('========\n<<<<<<<\n')).toBe(false);
   });
 });
+
+describe('a document with no tabs (E24)', () => {
+  it('writes empty tabs and an empty record', () => {
+    const empty: MirrorFile = {
+      ...mirror(),
+      document: { id: 'd', name: 'Empty', presentation: null, tabs: [] },
+      livediagramSync: { host: 'https://livediagram.app', tabs: {} },
+    };
+    expect(mirrorFileText(empty)).toContain('"tabs": []');
+    expect(mirrorFileText(empty)).toContain('"tabs": {}');
+  });
+});

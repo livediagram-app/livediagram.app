@@ -106,3 +106,13 @@ describe('scanMirrorDir', () => {
     expect((await scanMirrorDir(io, www, HOST))[0]!.class).toBe('tracked');
   });
 });
+
+describe('a file gone between the listing and the read', () => {
+  it('is invalid', async () => {
+    const io = fakeIo({ files: { '/repo/diagrams/a.livediagram.json': '{}' } });
+    io.files.read = async () => null;
+    expect(await scanMirrorDir(io, link, HOST)).toEqual([
+      { class: 'invalid', path: 'a.livediagram.json', message: 'not JSON' },
+    ]);
+  });
+});

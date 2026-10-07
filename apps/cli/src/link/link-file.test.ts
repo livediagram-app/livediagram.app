@@ -198,3 +198,11 @@ describe('linkFileText', () => {
     expect(parseLinkFile(bare, PATH).covers).toEqual({ folder: 'f', documents: [] });
   });
 });
+
+describe('linkFileText for documents alone', () => {
+  it('writes no folder key', () => {
+    expect(linkFileText({ host: 'https://x.org', documents: ['d1'] })).toContain(
+      '[covers]\ndocuments = ["d1"]\n',
+    );
+  });
+});

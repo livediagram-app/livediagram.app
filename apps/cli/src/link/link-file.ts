@@ -4,7 +4,7 @@
 
 import { posix } from 'node:path';
 import { MIRROR_LEVELS } from '@livediagram/agent-verbs';
-import { parse, TomlError } from 'smol-toml';
+import { parse, type TomlError } from 'smol-toml';
 import { didYouMean } from '../dispatch/did-you-mean';
 import { CliError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -43,8 +43,8 @@ const isTable = (value: unknown): value is Table =>
 const refuse = (exit: ExitCode, code: string, message: string, hint?: string) =>
   new CliError({ exit, code, message, ...(hint ? { hint } : {}) });
 
-function syntaxError(err: unknown, path: string): CliError {
-  if (!(err instanceof TomlError)) throw err;
+// smol-toml throws a TomlError for every text it cannot read.
+function syntaxError(err: TomlError, path: string): CliError {
   const reason = err.message.split('\n')[0]!.replace(/^Invalid TOML document: /, '');
   return refuse(
     EXIT.usage,
@@ -198,7 +198,7 @@ export function parseLinkFile(text: string, path: string): LinkFile {
   try {
     raw = parse(text);
   } catch (err) {
-    throw syntaxError(err, path);
+    throw syntaxError(err as TomlError, path);
   }
   checkKeys(raw, '', path);
   const root = posix.dirname(path);

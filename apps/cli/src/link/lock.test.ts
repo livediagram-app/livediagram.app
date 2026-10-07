@@ -103,3 +103,20 @@ describe('a stale lock another pass takes first', () => {
     expect(logs).toEqual(['lock stale 77', 'lock-wait 88']);
   });
 });
+
+describe('a lock that vanished or names no process', () => {
+  it('waits naming no process', async () => {
+    for (const data of [null, '{}']) {
+      const io = fakeIo(data === null ? {} : { files: { [LOCK]: data } });
+      io.files.createExclusive = async () => false;
+      const failure = await acquireLinkLock(
+        io,
+        '/state',
+        '/repo/livediagram.toml',
+        'sync',
+        () => {},
+      ).catch((err: unknown) => (err as CliError).failure);
+      expect(failure).toMatchObject({ hint: 'wait for it, or stop process ?' });
+    }
+  });
+});

@@ -38,7 +38,7 @@ async function checkMirrorDir(io: CliIo, link: LinkFile): Promise<void> {
 async function readLink(io: CliIo, path: string): Promise<LinkFile | null> {
   const text = await io.files.read(path);
   if (text === null) return null;
-  const link = parseLinkFile(text, (await io.files.realpath(path)) ?? path);
+  const link = parseLinkFile(text, (await io.files.realpath(path))!);
   await checkMirrorDir(io, link);
   debugLog(
     io,
@@ -57,8 +57,8 @@ export async function nearestLink(io: CliIo, cwd: string): Promise<LinkFile> {
 
 const SKIPPED = new Set(['.git', 'node_modules']);
 export const isWalked = (name: string) => !SKIPPED.has(name) && !name.startsWith('.');
-export const byName = (a: { name: string }, b: { name: string }) =>
-  a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+// Names in one directory differ: they never compare equal.
+export const byName = (a: { name: string }, b: { name: string }) => (a.name < b.name ? -1 : 1);
 
 export async function linksBelow(io: CliIo, cwd: string): Promise<LinkFile[]> {
   const found: LinkFile[] = [];
