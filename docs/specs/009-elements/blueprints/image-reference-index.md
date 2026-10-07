@@ -126,9 +126,31 @@ the isolate's life (`D2`); `resetImageRefIndexMemo()` clears it for tests.
 `SELECT DISTINCT r.image_id, d.id, d.name FROM documents d JOIN document_tabs dt ON dt.document_id = d.id JOIN image_refs r ON r.tab_id = dt.tab_id WHERE d.owner_id = ? ORDER BY d.name, d.id`
 (`D3`), folded into `Record<imageId, { id, name }[]>`.
 
-**Share read** `documentReferencesImage(env, documentId, imageId, onlyTabId)`: when not complete, run
-`imageRefIndexDocumentStatement` first. Then
-`SELECT 1 FROM document_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ? WHERE dt.document_id = ? [AND dt.tab_id = ?] LIMIT 1`.
+**Share read** `documentServesImage(env, documentId, imageId, onlyTabId)` (`db/image-grants.ts`): when not
+complete, run `imageRefIndexDocumentStatement` first. Then one query: the document places the image
+(`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`) AND `SERVES`, where
+`SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id)`.
+A refusal logs `[images] not servable by document` with the document and image ids.
+
+**Render read** `servableImageIds(env, documentId, ids)`: of a tab's ids, those `SERVES` admits, one query over a
+bound JSON array. `thumbnail.ts` `loadEmbeddedImages` reads R2 only for those; the rest keep the placeholder.
+
+### Placement grants
+
+`image_grants (document_id, image_id, created_at)`, primary key `(document_id, image_id)`, `WITHOUT ROWID`, no
+foreign keys (migration 0075, which also grants every reference that already crossed owners).
+
+- **Placement writer** `imageGrantPlacementStatements(env, tabId, ids, now)`, appended after the index statements by
+  `upsertTab`, `seedTabs` and `swapTabData`: `INSERT OR IGNORE` one row per (document holding the tab, placed image)
+  where `i.owner_id <> d.owner_id` AND (a `team_members` row with `team_id = d.team_id`, `user_id = i.owner_id`,
+  `status = 'joined'`, OR a `shared_with` row with `owner_id = i.owner_id`, `document_id = d.id`, `role = 'edit'`).
+  No row for an empty id list.
+- **Copy writer** `imageGrantCopyStatements(env, sourceId, targetId, ids, now)`, per copied tab in `copyDocument`:
+  `INSERT OR IGNORE` the target for each id the source `SERVES`.
+- **Link writer** `imageGrantLinkStatement(env, targetId, tabId, now)`, run by `linkTabToDocument` after the link:
+  `INSERT OR IGNORE` the target for each image the tab places that another holder of the tab `SERVES`.
+- **Removal** `imageGrantRemovalStatement`, in `documentRemovalStatements`, keyed on the doomed documents.
+- I5: a document serves an image only if `SERVES` holds; a grant is written only by the writers above and migration 0075.
 
 ### Invariants
 
@@ -256,7 +278,8 @@ rebuilds `tabs` must keep tab ids (the index is keyed on them); nothing cascades
 ## Security and trust
 
 The share-read check authorises bytes to a share visitor, so it must never say yes to an image the document doesn't
-place. A reference exists only from a body that placed the image; the add-only writers can leave one behind only when
+place, nor to one it places but may not serve (an id written into a document its owner has no tie to; see
+[Placement grants](#placement-grants)). The server renderer applies the same rule before reading R2. A reference exists only from a body that placed the image; the add-only writers can leave one behind only when
 a concurrent write or the backfill raced, and only for an id that tab's body carried. Before completion, a share
 visitor's image read writes index rows from that document's own tabs, derived data only. No input reaches SQL unbound:
 ids travel as one bound JSON array read by `json_each`. The modules above are held to 100% coverage

@@ -26,6 +26,8 @@ const GATE_KEEPERS = [
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
   'src/image-refs/**',
   'src/db/image-refs.ts',
+  // Which documents may serve an image they don't own ("Placement grants").
+  'src/db/image-grants.ts',
   'src/db/image-retention.ts',
   'src/db/document-removal.ts',
 ];

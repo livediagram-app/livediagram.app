@@ -13,6 +13,8 @@ const db = vi.hoisted(() => ({
   markThumbRendered: vi.fn(),
   thumbnailKey: (id: string) => `thumb/${id}`,
   communityThumbnailKey: (id: string) => `thumb-community/${id}`,
+  // Placement grants (docs/specs/009-elements/images.md): by default every placed image is servable.
+  servableImageIds: vi.fn(async (_env: unknown, _doc: string, ids: string[]) => new Set(ids)),
 }));
 vi.mock('./db', () => db);
 
@@ -254,6 +256,32 @@ describe('getDocumentThumbnailSvg', () => {
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('stroke-dasharray="4 4"'); // dashed placeholder
+    expect(out).not.toContain('<image');
+  });
+
+  // An id the document may not serve (docs/specs/009-elements/images.md, "Placement grants")
+  // is never read from R2 and keeps the placeholder.
+  it('keeps the placeholder for an image the document may not serve, without reading it', async () => {
+    const images = r2();
+    const tabData = JSON.stringify({
+      elements: [
+        { id: 'e1', type: 'image', x: 0, y: 0, width: 100, height: 80, imageId: 'foreign' },
+      ],
+    });
+    db.getThumbRenderedAt.mockResolvedValue(null);
+    db.getTabBody.mockResolvedValue(stored(tabData));
+    db.servableImageIds.mockResolvedValueOnce(new Set());
+    images.get.mockResolvedValue({
+      arrayBuffer: async () => new Uint8Array([1, 2, 3, 4]).buffer,
+      httpMetadata: { contentType: 'image/png' },
+    });
+    const env = { IMAGES: images } as unknown as Env;
+
+    const out = await getDocumentThumbnailSvg(env, liveDoc());
+
+    expect(db.servableImageIds).toHaveBeenCalledWith(env, 'd1', ['foreign']);
+    expect(images.get).not.toHaveBeenCalledWith('foreign');
+    expect(out).toContain('stroke-dasharray="4 4"');
     expect(out).not.toContain('<image');
   });
 

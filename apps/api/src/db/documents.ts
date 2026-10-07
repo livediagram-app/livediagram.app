@@ -16,6 +16,7 @@ import { getParticipant } from './participants';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
 import { redactTabDataForCommunity } from '../community-redact';
+import { imageGrantCopyStatements } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
 import { documentRemovalStatements } from './document-removal';
 import { firstTabCountSql, isEmptyCount } from './tabs';
@@ -539,6 +540,8 @@ export async function copyDocument(
       // Image references from the copied body itself, not the source rows, so
       // a copy is indexed even if its source never was.
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
+      // Placement grants (docs/specs/009-elements/images.md): the copy may serve what its source could.
+      ...imageGrantCopyStatements(env, sourceId, newId, imageRefIdsFromData(data), now),
     ];
   });
   // The items go in the same batch as the tabs (two statements that copy nothing from a store without
