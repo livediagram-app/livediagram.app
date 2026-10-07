@@ -189,7 +189,7 @@ describe('planSync at files', () => {
         exit: 7,
         reason: 'network',
       },
-      { kind: 'report', reason: 'unreadable', documentId: 'd-zeta', path: 'd-zeta' },
+      { kind: 'report', reason: 'unreadable', documentId: 'd-zeta', path: null },
     ]);
   });
 

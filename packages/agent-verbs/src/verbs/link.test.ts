@@ -39,9 +39,9 @@ describe('link status', () => {
 
   it('prints one aligned row per document or file, then the totals in state order', () => {
     expect(linkStatus.text!(output)).toEqual([
-      'in-step     aaaa   "Home screen"                diagrams/home-screen.livediagram.json',
+      'in-step     aaaa   "Home screen"  diagrams/home-screen.livediagram.json',
       'behind      bbbb1  "Flow"',
-      'conflicted  -      diagrams/x.livediagram.json',
+      'conflicted  -                     diagrams/x.livediagram.json',
       '?           cccc   "Offline"',
       '1 in-step · 1 behind · 1 conflicted · 1 ?',
     ]);

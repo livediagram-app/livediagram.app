@@ -27,7 +27,7 @@ export type HostDoc = {
   savedAt: number;
   tabs: HostTab[];
   // live, trashed (410), purged or another's (404), or failing with a status or the network.
-  state: 'live' | 'trashed' | 'purged' | 429 | 503 | 'network';
+  state: 'live' | 'trashed' | 'purged' | 403 | 429 | 503 | 'network';
 };
 export type HostFolder = {
   id: string;

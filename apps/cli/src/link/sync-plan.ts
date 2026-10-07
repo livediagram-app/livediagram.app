@@ -49,7 +49,13 @@ export type SyncAction =
       // The parse failure, the other host, or the other file.
       detail: string | null;
     }
-  | { kind: 'report'; reason: 'unreadable' | 'local-new'; documentId: string | null; path: string };
+  // An unreadable document with no file has no path.
+  | {
+      kind: 'report';
+      reason: 'unreadable' | 'local-new';
+      documentId: string | null;
+      path: string | null;
+    };
 
 export type PlanInput = {
   level: MirrorLevel;
@@ -61,7 +67,12 @@ export type PlanInput = {
   scope: { documents: ReadonlySet<string>; paths: ReadonlySet<string> } | null;
 };
 
-export type Plan = { actions: SyncAction[]; states: Map<string, SyncState | 'transient'> };
+// Each decided document's state and name, in index order.
+export type Plan = {
+  actions: SyncAction[];
+  states: Map<string, SyncState | 'transient'>;
+  names: Map<string, string>;
+};
 
 type Tracked = Extract<ScannedFile, { class: 'tracked' }>;
 
@@ -94,6 +105,7 @@ function indexOrder(keyOf: (id: string) => { path: readonly string[]; name: stri
 export function planSync(input: PlanInput): Plan {
   const { level, scan, coverage, remote, recorded, scope } = input;
   const states = new Map<string, SyncState | 'transient'>();
+  const names = new Map<string, string>();
   const inScope = (documentId: string | null, path: string | null) =>
     scope === null ||
     (documentId !== null && scope.documents.has(documentId)) ||
@@ -141,6 +153,7 @@ export function planSync(input: PlanInput): Plan {
         ? recordedStateOf({ remote: fact, covered, recorded: undefined })
         : recordedStateOf({ remote: fact, covered, recorded: recorded[documentId] });
     states.set(documentId, state);
+    names.set(documentId, name);
     const path = file?.path ?? null;
     if (state === 'transient') {
       const { failure, exit, reason } = fact as Extract<RemoteFact, { kind: 'transient' }>;
@@ -152,7 +165,7 @@ export function planSync(input: PlanInput): Plan {
         kind: 'report',
         reason: 'unreadable',
         documentId,
-        path: path ?? documentId,
+        path,
       });
       continue;
     }
@@ -248,7 +261,7 @@ export function planSync(input: PlanInput): Plan {
                 : null,
       });
   }
-  return { actions: [...documentActions, ...fileActions], states };
+  return { actions: [...documentActions, ...fileActions], states, names };
 }
 
 export type { TabHashes };

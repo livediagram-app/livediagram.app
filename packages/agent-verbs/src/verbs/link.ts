@@ -9,6 +9,9 @@ import { columns, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
 
 export const MIRROR_LEVELS = ['none', 'index', 'files'] as const;
 
+// The `Cli·Used` type `sync --watch` counts as, beside `sync`'s own (RL24).
+export const SYNC_WATCH_TYPE = 'SyncWatch';
+
 // The order `link status` totals its rows in: the spec's states, then the files a sync refuses or removes, then a
 // document whose read failed.
 export const STATUS_ORDER = [
@@ -52,7 +55,8 @@ const linkStatusOutput = z.object({
 const rowCells = (row: StatusRow): string[] => [
   row.state,
   row.ref ?? '-',
-  ...(row.name === null ? [] : [JSON.stringify(row.name)]),
+  // A file with no readable document keeps its path in the path column.
+  row.name === null ? '' : JSON.stringify(row.name),
   ...(row.path === null ? [] : [row.path]),
 ];
 
@@ -154,7 +158,7 @@ export const sync = defineVerb({
   text: ({ lines }) => lines,
   json: ({ lines }) => ({ lines }),
   exitCode: ({ exit }) => exit,
-  telemetryType: (input) => (input.watch ? 'SyncWatch' : 'Sync'),
+  telemetryType: (input) => (input.watch ? SYNC_WATCH_TYPE : 'Sync'),
   cli: {
     positionals: [],
     examples: ['livediagram sync', 'livediagram sync --watch'],
