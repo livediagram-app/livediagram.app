@@ -4,7 +4,7 @@
 // Durable Object WebSocket upgrade with its role / password trust
 // boundary.
 
-import { isClerkIdShape } from '@livediagram/api-schema';
+import { capWorkbenchRole, isClerkIdShape } from '@livediagram/api-schema';
 import { guestSignatureEnforced } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
@@ -50,15 +50,23 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // A verified Clerk session (not an API token, not a guest header) marks the ticket as an
     // account session: the room lets it publish a profile picture and see others'
     // (docs/specs/014-identity/profile-picture.md §6).
+    // A workbench session (docs/specs/013-workspace/workbench-embeds.md) joins as its owner: an account session
+    // carrying the owner's person tag, so their agent's `selected` reads its selection, at most at its level, and
+    // tagged with its pairing so unpairing closes exactly its sockets.
+    const workbench = ctx.workbench ?? null;
+    const personId = ctx.clerkUserId ?? workbench?.ownerId ?? null;
+    const role =
+      workbench && capWorkbenchRole(grant.role, workbench.level) !== 'edit' ? 'view' : grant.role;
     const ticket = await createWsTicket(env, id, {
-      role: grant.role,
+      role,
       tabScope: grant.tabScope,
       shareCode: grant.shareCode,
-      account: ctx.clerkUserId !== null,
+      account: personId !== null,
       // The same verified session carries its person tag, so the room can tell this owner's
       // sessions from everyone else's without holding the owner id
       // (docs/specs/024-agents/agent-changesets.md "Held elements").
-      personTag: ctx.clerkUserId === null ? null : await personTagFor(id, ctx.clerkUserId),
+      personTag: personId === null ? null : await personTagFor(id, personId),
+      workbenchPairing: workbench?.pairingId ?? null,
     });
     return json({ ticket });
   }
@@ -81,6 +89,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let account = false;
     // Only a ticket carries a person tag; every other leg has none.
     let personTag: string | null = null;
+    // Only a workbench session's ticket carries its pairing; every other leg has none.
+    let workbenchPairing: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -128,7 +138,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       ownerSigOk &&
       isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
-      ({ role, tabScope, shareCode, account, personTag } = admission);
+      ({ role, tabScope, shareCode, account, personTag, workbenchPairing } = admission);
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
@@ -190,6 +200,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
     // same reason as the headers above. Empty = none.
     forwarded.headers.set('X-Verified-Person', personTag ?? '');
+    // The workbench pairing that opened the session (docs/specs/013-workspace/workbench-embeds.md), set on every
+    // path for the same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Workbench-Pairing', workbenchPairing ?? '');
     // The caller's network, hashed with the document id (docs/specs/012-collaboration/vote-integrity.md): what
     // caps a poll's answers from one network. Set on every path for the same reason as the headers above.
     forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));

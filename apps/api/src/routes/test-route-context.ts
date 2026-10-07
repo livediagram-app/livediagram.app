@@ -1,4 +1,4 @@
-import type { RouteContext } from './context';
+import type { RouteContext, WorkbenchContext } from './context';
 import type { Env } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
@@ -27,6 +27,8 @@ export function makeTestRouteContext(
     clerkEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
     token?: { id: string; readOnly?: boolean } | null;
+    // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
+    workbench?: WorkbenchContext | null;
     // JSON-encoded into the request body when present.
     body?: unknown;
     // Sent as is, for a body that does not parse.
@@ -59,6 +61,7 @@ export function makeTestRouteContext(
     clerkEmail: opts.clerkEmail ?? null,
     resolveOwner: () => opts.owner ?? null,
     token: opts.token ?? null,
+    workbench: opts.workbench ?? null,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };
 }

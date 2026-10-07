@@ -562,3 +562,14 @@ export async function swapTabData(
     .run();
   return true;
 }
+
+// Does the document link this tab? A workbench ticket naming a tab the document lacks is refused
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
+export async function documentLinksTab(env: Env, documentId: string, tabId: string): Promise<boolean> {
+  const row = await env.DB.prepare(
+    'SELECT 1 AS present FROM document_tabs WHERE document_id = ? AND tab_id = ?',
+  )
+    .bind(documentId, tabId)
+    .first<{ present: number }>();
+  return row !== null;
+}

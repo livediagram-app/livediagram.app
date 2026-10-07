@@ -1,5 +1,6 @@
 import {
   ACCESS_CHANGED_CLOSE,
+  WORKBENCH_ENDED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
   isPresenceOpKind,
@@ -177,6 +178,9 @@ type SessionAttachment = {
   //   - `pollAnsweredAs`: the key this session answered the running poll under, so a socket cannot become a
   //     second person in the same poll (docs/specs/012-collaboration/vote-integrity.md).
   pollAnsweredAs?: { pollId: string; key: string } | null;
+  //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
+  //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
+  workbenchPairing?: string | null;
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
@@ -184,6 +188,8 @@ type SessionAttachment = {
 const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'document-meta']);
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
+// A workbench pairing id is a UUID.
+const MAX_PAIRING_ID_LEN = 36;
 // A network tag is a 32-hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_NETWORK_TAG_LEN = 32;
 
@@ -410,6 +416,7 @@ export class DocumentRoom implements DurableObject {
     const account = request.headers.get('X-Verified-Account') === '1';
     const personTag = request.headers.get('X-Verified-Person') || null;
     const networkTag = request.headers.get('X-Verified-Network') || null;
+    const workbenchPairing = request.headers.get('X-Verified-Workbench-Pairing') || null;
     this.acceptSession(
       server,
       verifiedRole,
@@ -419,6 +426,7 @@ export class DocumentRoom implements DurableObject {
       account,
       personTag,
       networkTag,
+      workbenchPairing,
     );
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -435,6 +443,7 @@ export class DocumentRoom implements DurableObject {
     account = false,
     personTag: string | null = null,
     networkTag: string | null = null,
+    workbenchPairing: string | null = null,
   ): void {
     // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
@@ -453,6 +462,7 @@ export class DocumentRoom implements DurableObject {
       personTag: personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
       networkTag: networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
       pollAnsweredAs: null,
+      workbenchPairing: workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -558,7 +568,8 @@ export class DocumentRoom implements DurableObject {
     for (const ws of this.state.getWebSockets()) {
       if (!sessionMatchesAccessClose(this.readSession(ws), close)) continue;
       try {
-        ws.close(ACCESS_CHANGED_CLOSE, 'access-changed');
+        if (close.match === 'workbench') ws.close(WORKBENCH_ENDED_CLOSE, 'workbench-ended');
+        else ws.close(ACCESS_CHANGED_CLOSE, 'access-changed');
       } catch {
         // Already gone.
       }
