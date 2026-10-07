@@ -451,3 +451,11 @@ export async function sweepWorkbench(env: Env, now: number): Promise<number> {
   ]);
   return results.reduce((sum, r) => sum + (r.meta?.changes ?? 0), 0);
 }
+
+// The owner of a pairing, for Unpair: only they may remove it.
+export async function workbenchPairingOwner(env: Env, id: string): Promise<string | null> {
+  const row = await env.DB.prepare('SELECT owner_id FROM workbench_pairings WHERE id = ?')
+    .bind(id)
+    .first<{ owner_id: string }>();
+  return row?.owner_id ?? null;
+}

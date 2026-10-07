@@ -52,6 +52,16 @@ export function closeShareCodeSessions(env: Env, documentId: string): Promise<bo
   return closeRoomSessions(env, documentId, { match: 'share-code' });
 }
 
+// A workbench pairing ended (unpaired, or its token revoked): close the sockets it opened on one document
+// (docs/specs/013-workspace/workbench-embeds.md), with WORKBENCH_ENDED_CLOSE.
+export function closeWorkbenchSessions(
+  env: Env,
+  documentId: string,
+  pairingId: string,
+): Promise<boolean> {
+  return closeRoomSessions(env, documentId, { match: 'workbench', pairingId });
+}
+
 // A member left or was removed from a team: end their sessions on each of the team's documents.
 // Matched by the per-document person tag their tickets carried, so no account id reaches a room.
 export async function closeMemberTeamSessions(
