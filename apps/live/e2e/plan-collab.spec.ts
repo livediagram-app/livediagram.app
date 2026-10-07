@@ -201,7 +201,7 @@ test('someone who joins after a card was opened sees it held', async ({
     .click();
   // The Add a Card menu's tiles are menu items (the shared menu tiles).
   await a.getByRole('menuitem', { name: /^Task$/ }).click();
-  await boardA.getByText('New task').first().click();
+  // The new card opens at once (docs/specs/026-plan/plan-board.md "Working on a board"), so it is held without a click.
   await expect(a.getByRole('dialog')).toBeVisible();
 
   // B joins late, and sees A's tag on that card without A doing anything more.
