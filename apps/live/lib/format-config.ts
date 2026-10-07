@@ -30,7 +30,7 @@ export const FORMAT_GROUPS: readonly { id: FormatGroup; label: string; hint: str
   {
     id: 'border',
     label: 'Border',
-    hint: 'Stroke colour, width, pattern, corners — and an arrow’s line',
+    hint: 'Stroke colour, width, pattern, corners, and an arrow’s line',
   },
   { id: 'text', label: 'Text', hint: 'Colour, size, weight, font, alignment' },
   { id: 'effects', label: 'Effects', hint: 'Shadow, opacity, and animations' },

@@ -25,7 +25,6 @@ src/fields.ts        KNOWN_FIELDS (field -> kind), PRIORITIES, validateFields, v
 src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store)
-src/quick-add.ts     parseQuickAdd(text, types) -> { title, type?, fields, tokens }
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
 src/views.ts         itemSummary, itemAccessibleName: one-line text for agents and announcements
@@ -374,7 +373,6 @@ include `fields` or comment text.
 | Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                              |
 | Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                  |
 | apply functions                                | `apply.test.ts`                                                                                  |
-| Quick add tokens                               | `quick-add.test.ts`                                                                              |
 | Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                  |
 | Tab-scoped set                                 | `tab-items.test.ts`                                                                              |
 | Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                        |

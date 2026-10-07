@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { ProgressBarAndRing } from '@/components/illustrations/palette-data';
+import { ProgressMenu } from '@/components/illustrations/tools-menus';
 
 export const metadata = helpMetadata({
   title: 'Progress Bars and Rings',
@@ -20,11 +21,15 @@ A progress bar and a progress ring both show one number, a percentage from 0 to 
 
 ## Adding one
 
-<Step n={1}>Open the floating palette and switch to the **Data** category.</Step>
+<Step n={1}>
+  In [Illustrate](/help/canvas/illustrate/), open the floating palette and switch to the **Data**
+  category (**Donut** is also in Illustrate's **Popular**). In Diagram mode, type "progress" into
+  the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) instead.
+</Step>
 
 <Step n={2}>
-  Pick **Progress** for the bar or **Donut** for the ring. It drops onto the canvas already set to
-  50% and animates its fill in on arrival.
+  Pick **Progress** for the bar or **Donut** for the ring, then tap the canvas to drop it, or drag
+  to draw it at a size. It lands already set to 50% and animates its fill in on arrival.
 </Step>
 
 <Step n={3}>
@@ -36,10 +41,10 @@ Both elements show a centred percentage label, so you don't add your own text. T
 
 ## Setting the value and animation
 
-Right-click the element to open its context menu and find the **Progress** category. There you can:
+Right-click the element, open **Tools**, then **Progress**. There you can:
 
 - Drag the **Percentage** slider to set the value from 0 to 100.
-- Choose a **Fill animation**: **None**, **Fill**, **Pulse**, or **Stripes**.
+- Choose how the fill animates: **None**, **Fill**, **Pulse**, or **Stripes**.
 
 The animations each behave differently:
 
@@ -47,11 +52,15 @@ The animations each behave differently:
 - **Pulse** gently breathes the opacity of the filled portion.
 - **Stripes** runs a barber-pole pattern across the fill, which reads as ongoing or in-progress.
 
-Once you pick an animation, a **Speed** row (Slow / Normal / Fast) and a **Repeat** toggle appear so you can fine-tune it. Fill plays once by default while pulse and stripes loop, but the Repeat toggle lets you override that either way.
+Once you pick an animation, a speed row (**Slowest**, **Slow**, **Normal**, **Fast**) and a **Repeat** toggle appear so you can fine-tune it. Fill plays once by default while Pulse and Stripes loop, but the Repeat toggle lets you override that either way.
+
+<Figure caption="Right-click, Tools, then Progress: the Percentage slider and the four ways the fill can animate.">
+  <ProgressMenu />
+</Figure>
 
 <Tip>
-  Animations are reduced-motion-safe and freeze on export, so the still image shows the filled level
-  rather than a half-drawn frame.
+  Animations respect your system's reduce-motion setting and freeze on export, so the still image
+  shows the filled level rather than a half-drawn frame.
 </Tip>
 
 </ArticleLayout>

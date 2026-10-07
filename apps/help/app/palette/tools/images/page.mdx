@@ -19,24 +19,27 @@ Images bring screenshots, photos, logos, and mockups onto the canvas alongside y
 The Image tool drops an image element you then attach a file to.
 
 <Step n={1}>
-  Pick the Image tool from the palette, then tap the canvas to drop a default-size image, or drag to
-  size it as you place it.
+  Open the floating palette's **Media** category and pick **Image** (it is also in **Popular** in
+  Diagram mode, or press `9`). Tap the canvas to drop a default-size image, or drag to size it as
+  you place it.
 </Step>
 
 <Step n={2}>
-  The empty placeholder shows a "Double-click to upload" prompt. Double-click it to open the image
-  picker. A single click selects the placeholder instead, so you can move and resize it without the
-  picker opening every time.
+  The empty placeholder shows a "Double-click to upload" prompt. Double-click it to open the
+  **Image** picker. A single click selects the placeholder instead, so you can move and resize it
+  without the picker opening every time.
 </Step>
 
 <Step n={3}>
-  Drag a file in, click to browse, or paste from your clipboard. The image attaches and the
-  placeholder becomes the picture.
+  On the **Upload** tab, drop a file in, click to browse, or paste from your clipboard. The image
+  attaches and the placeholder becomes the picture.
 </Step>
 
-You can also paste an image straight onto the canvas with the usual paste shortcut, and it lands as a new image element.
+You can also paste an image straight onto the canvas with `⌘V` or `Ctrl+V`, and it lands as a new image element.
 
-An image is a boxed element, so it moves, locks, groups, links, and layers like everything else. Resizing keeps the original aspect ratio by default so the picture is not squashed. To stretch it freely, turn off **Lock aspect ratio** (see [Size](/help/canvas/size/)); holding Shift never unlocks it, because Shift keeps the proportions of anything you resize.
+To swap the picture later, double-click the image to reopen the picker and choose another. **Remove from element** at the bottom of the picker detaches the picture from the element and leaves the gallery copy in place.
+
+An image is a boxed element, so it moves, locks, links, and layers like everything else. Resizing keeps the original aspect ratio by default so the picture is not squashed. To stretch it freely, turn off **Lock aspect ratio** (see [Size](/help/canvas/size/)); holding Shift never unlocks it, because Shift keeps the proportions of anything you resize.
 
 <Figure caption="A placed image element behaves like any boxed element, with selection handles to resize it.">
   <ImageElement />
@@ -46,7 +49,7 @@ An image is a boxed element, so it moves, locks, groups, links, and layers like 
 
 Don't have the picture you need? The image picker's **Search** tab finds openly licensed photos and illustrations from [Openverse](https://openverse.org), a free search engine over Creative Commons and public-domain works.
 
-<Step n={1}>Open the image picker and choose the **Search** tab.</Step>
+<Step n={1}>Open the **Image** picker and choose the **Search** tab.</Step>
 
 <Step n={2}>
   Type what you're looking for, such as "server rack" or "team meeting", and press Enter. Hover a
@@ -58,7 +61,7 @@ Don't have the picture you need? The image picker's **Search** tab finds openly 
 </Step>
 
 - **Safe to reuse.** Search only shows pictures whose licence allows both commercial use and changes (CC0, public domain, CC BY and CC BY-SA), so you can use them in a diagram for work and crop or resize them freely.
-- **The credit comes with it.** Many of these licences ask you to credit the creator. The image's **Image** section in its menu shows the credit, with links to the picture's source and its licence, so you can copy it into your diagram wherever you share it.
+- **The credit comes with it.** Many of these licences ask you to credit the creator. The **Image** section of the picture's right-click menu shows the credit, with links to the picture's source and its licence, so you can copy it into your diagram wherever you share it.
 - **Privacy.** Your search goes straight from your browser to Openverse, so Openverse sees the words you search for and your IP address. livediagram's servers never see the search.
 
 ## Accepted formats
@@ -70,6 +73,10 @@ The picker accepts the formats that display reliably in every browser:
 
 Some formats are turned away with a helpful hint, including SVG (for safety) and HEIC from iPhones (save as JPEG and re-upload). For privacy, identifying metadata such as GPS location and camera details is stripped from JPEG uploads before the file is stored, so it never reaches anyone you share the document with.
 
+## Avatars
+
+The **Avatar** tile, beside Image in the **Media** category, places a circular photo of a person: an image element that starts square, keeps its proportions as you resize it, and is cropped to a circle. Tap or drag to place it, then double-click it to pick or upload the photo through the same picker. It suits org charts, team pages and personas.
+
 ## Your image gallery
 
 Every image you upload is indexed in a personal gallery, shared across all your documents.
@@ -78,15 +85,16 @@ Every image you upload is indexed in a personal gallery, shared across all your 
   <ImagePicker />
 </Figure>
 
-- **Reuse, no re-upload.** The Gallery tab in the image picker shows everything you have uploaded. Pick a tile to reuse it. If you upload the same file twice, livediagram recognises it and reuses the existing copy rather than storing it again.
+- **Reuse, no re-upload.** The **Gallery** tab in the image picker shows everything you have uploaded. Pick a tile to reuse it. If you upload the same file twice, livediagram recognises it and reuses the existing copy rather than storing it again.
+- **A gallery has a limit.** On livediagram.app each person's gallery holds up to 100 images and 100 MB in total. Once either is reached, a new upload is turned away with "Your image gallery is full", and deleting images you no longer use makes room. A self-hosted deployment has no limit unless its operator sets one.
 - **Manage it from the Explorer.** The Explorer's Image Gallery lists every image with its size and dimensions, a "Used in N documents" badge, and a delete action, so you can spot unused files and clean them up.
 - Deleting an image from the gallery removes the stored file. Any element still pointing at it shows a broken-image fallback, so delete only what you are sure is unused.
 - **Unused uploads are cleared automatically.** Once a day, livediagram removes images that are both more than 30 days old and used in no document, so abandoned uploads do not pile up. An image any document still uses is kept no matter its age, and recent uploads are left alone until the 30-day window passes.
 
 <Note>
   Image uploads rely on storage that a self-hosted deployment may not have configured. When uploads
-  are not available the Image tool is hidden and the picker explains that uploads are not enabled on
-  that deployment.
+  are not available, the Image and Avatar tiles are hidden, and an upload attempt explains that
+  uploads are not available on that server.
 </Note>
 
 <Tip>

@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ThemePicker } from '@/components/illustrations/canvas';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Themes',
@@ -18,37 +18,40 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("themes")}
 >
 
-A theme is the fastest way to make a diagram look intentional. Instead of colouring each shape, border, and background by hand, pick a theme and livediagram recolours the whole tab at once, from the canvas backdrop to every element on it. The catalogue ships a generous spread of looks, and you can save your own themes too.
+A theme is the fastest way to make a diagram look intentional. Instead of colouring each shape, border, and background by hand, pick a theme and livediagram recolours the whole tab at once, from the canvas backdrop to every element on it. The catalogue ships twenty-six themes, and you can save your own too.
 
-## What a theme covers
+## What a Theme Covers
 
-A theme sets the canvas background and pattern together with the fill, border, and text colours of your elements, so the diagram reads as one coherent style. Most themes paint every element the same colours; some are cleverer, tinting each branch of a hierarchy a different hue, or colouring each shape kind by its meaning. Switching themes recolours your shapes but leaves your [fonts](/help/canvas/text-and-fonts/) untouched.
+A theme sets the canvas background and pattern together with the fill, border, and text colours of your elements, so the diagram reads as one coherent style. Most themes paint every element the same colours; some are cleverer, tinting each branch of a hierarchy a different hue, or colouring each shape kind by its meaning (the **Formal** category's UML theme makes decisions amber and data stores purple, for example). Sticky notes keep their own note colours, and switching themes leaves your [fonts](/help/canvas/text-and-fonts/) untouched.
 
-## Default, the one that follows you
+A theme belongs to one tab, so the tabs of one document can each wear a different one. A new document starts on Default, and a tab you add starts on the theme of the tab you added it from.
 
-Every new tab starts on **Default**, which leads the catalogue and also leads the Dark category — one scheme listed twice, because it has two halves. Which half you see is your own [appearance](/help/tools/dark-mode/): light chrome shows the white canvas with the familiar blue elements, dark chrome shows the charcoal canvas with grey ones.
+## Default, the One That Follows You
+
+Every new document starts on **Default**, which leads the catalogue and also leads the Dark category: one scheme listed twice, because it has two halves. Which half you see is your own [appearance](/help/tools/dark-mode/): light chrome shows the white canvas with the familiar blue elements, dark chrome shows the charcoal canvas with grey ones.
 
 That makes it the only theme that differs per reader, and nothing is saved when it changes: a colleague in light chrome sees the light half of the very same tab while you work in the dark one. Every other scheme is a decision stored in the document, so it looks the same for everybody.
 
-## Browsing and applying
+## Browsing and Applying
 
-You change a tab's theme from the Tab Look & Feel dialog, reached from the canvas right-click menu, where themes are organised into categories you can browse and drill into. Applying a theme updates the canvas live as you click. See [Changing the theme](/help/canvas/themes/changing-theme/) for the full walkthrough.
+You change a tab's theme from the **Tab Look & Feel** dialog: click the paintbrush button in the bottom-right corner of the editor, beside the zoom controls, and it opens on the **Theme** tab. Themes are organised into categories you can browse and drill into, and applying one updates the canvas live as you click. See [Changing the Theme](/help/canvas/themes/changing-theme/) for the full walkthrough.
 
-<Figure caption="The theme picker shows a grid of swatch cards; clicking one recolours the whole tab live.">
-  <ThemePicker />
+<Figure caption="The Theme tab of the Tab Look & Feel dialog: Default, a card for each category, and your Custom themes.">
+  <LookAndFeelTheme />
 </Figure>
 
-## Beyond a single colour
+## Beyond a Single Colour
 
-Two kinds of theme go past the one-colour look. [Multicolour themes](/help/canvas/themes/multicolour-themes/) give each branch of a mind map or hierarchy its own hue, the way a rainbow mind map does. And when no built-in theme fits, [custom themes](/help/canvas/themes/custom-themes/) let you author your own palette, save it to your account, and reuse it across documents.
+Two kinds of theme go past the one-colour look. [Multicolour themes](/help/canvas/themes/multicolour-themes/) give each branch of a mind map or hierarchy its own hue, the way a rainbow mind map does. And when no built-in theme fits, [custom themes](/help/canvas/themes/custom-themes/) let you author your own palette, save it, and reuse it across documents.
 
-## Quick emphasis
+## Quick Emphasis
 
 For tweaks to a single element rather than the whole tab, the [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click colour and border variations derived from the active theme, so a key shape can stand out while still matching the overall look.
 
 <Tip>
   Every control in the Tab Look & Feel dialog applies live with no Apply or Cancel, so you can click
-  through themes and watch the canvas change behind the dialog until one feels right.
+  through themes and watch the canvas change behind the dialog until one feels right. Undo takes a
+  theme change back if you change your mind later.
 </Tip>
 
 </ArticleLayout>

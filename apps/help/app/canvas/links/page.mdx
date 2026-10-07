@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LinkCard, ElementLink } from '@/components/illustrations/canvas';
+import { LinkElementDialogScene } from '@/components/illustrations/canvas-links-notes';
 
 export const metadata = helpMetadata({
   title: 'Links and Link Cards',
@@ -14,7 +15,7 @@ export const metadata = helpMetadata({
 
 Links connect your diagram to the rest of your work. Any element can become a clickable jump point, and a dedicated link card turns a URL into a tidy bookmark with a title, favicon, and preview image. Together they let a diagram point at the things it describes instead of just naming them.
 
-## Linking an element
+## Linking an Element
 
 Give any element a link, and it gains a small "Follow link" badge whose hover card names the target. A link can point at:
 
@@ -22,7 +23,17 @@ Give any element a link, and it gains a small "Follow link" badge whose hover ca
 - **Another document** entirely.
 - **An external URL**, which opens in a new browser tab.
 
-To add one, right-click the element and open the **Link** category, then **Set Link** (or **Add Link** from the Resources tiles) and pick the target. The same category later offers **Change Link** and **Remove Link**. The link follows the element if you move it. For more on tab and element targets, see [Linking Across Tabs](/help/tabs/linking-tabs/).
+To add one, right-click the element, open the **Resources** category and choose **Add Link** (it reads **Edit Link** once there is one). The **Link element** dialog opens on three choices:
+
+- **External URL**: type a **Web address** and press **Save link** (or Enter). Leave off the `https://` and it is added for you.
+- **Tab**: pick one of the document's tabs.
+- **Document**: pick one of your other documents.
+
+To change a link, open the same dialog again and pick a new target; the Remove link button at its foot takes the link off. The link follows the element if you move it, and like any edit it can be undone. For more on tab and element targets, see [Linking Across Tabs](/help/tabs/linking-tabs/).
+
+<Figure caption="The Link element dialog, open on External URL: type the web address and save the link.">
+  <LinkElementDialogScene />
+</Figure>
 
 <Figure caption="A linked element gains a follow-link badge; clicking it jumps to the target, here another tab.">
   <ElementLink />
@@ -33,20 +44,23 @@ To add one, right-click the element and open the **Link** category, then **Set L
   schemes are blocked.
 </Note>
 
-## Link cards
+## Link Cards
 
 A **link card** is a rectangular element that turns a URL into a rich preview: the page's favicon, its title, the site name, and, when available, its preview image. It is the right choice when the link is the content, such as a reference doc, a ticket, or a related page you want visible on the canvas.
 
 <Step n={1}>
-  Add a link card from the tools. It lands at the centre of your view at a default size, ready to
-  move or resize like any shape.
+  Open the palette's **Collaborate** category and pick **Link card**, under **Navigate**. Click the
+  canvas to drop it at its default size, or drag to draw it the size you want.
 </Step>
 
-<Step n={2}>Double-click the empty card to open the link picker and paste in a URL.</Step>
+<Step n={2}>
+  The empty card prompts you to add a link. Double-click it to open the link dialog and paste in a
+  URL.
+</Step>
 
 <Step n={3}>
   The card fills in with the page's title, favicon, and preview image automatically. Clicking the
-  card follows the link.
+  row along the bottom of the card, with its title, follows the link.
 </Step>
 
 A link card recolours, moves, locks, layers, and resizes like any other element. To learn how the preview is fetched and what gets shown, see [Link Cards](/help/canvas/links/link-cards/).
@@ -55,7 +69,7 @@ A link card recolours, moves, locks, layers, and resizes like any other element.
   <LinkCard />
 </Figure>
 
-## Choosing between them
+## Choosing Between Them
 
 Both rely on the same kind of URL, so the choice is about emphasis:
 

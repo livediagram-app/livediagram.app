@@ -41,7 +41,7 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 ## API
 
 - `POST /api/documents/:id/share` body gains optional `expiry: 'never' | 'week' | 'month' | 'sixMonths'` (default / unknown value → `never`).
-- `POST /api/documents/:id/share/:code/extend` — owner-only. Re-arms the link: `expires_at = now + lifetime(expiry)`, where `expiry` is the duration **chosen when the link was created**. Works on active links too (pushes the deadline out from now). `400` on a never-expiring link (nothing to extend). Returns the updated link.
+- `POST /api/documents/:id/share/:code/extend` — owner-only. Re-arms the link: `expires_at = now + lifetime(expiry)`, where `expiry` is the duration **chosen when the link was created**. Works on active links too (pushes the deadline out from now), though the Share dialog only offers Extend on expired passes. `400` on a never-expiring link (nothing to extend). Returns the updated link.
 - `GET /api/documents/:id/share` (owner list) returns all links, expired included; the client splits them.
 
 ## Share dialog
@@ -49,6 +49,10 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 - The composer's **Valid** segmented control sets the lifetime: Forever (default, never expires), 1 week, 1 month, 6 months.
 - **Passes** (the active list): links with a deadline show a compact countdown chip ("6d left") beside Valid.
 - **Expired** (rendered under Passes only when non-empty, see [Live app → Share dialog](../007-editor/live-app.md#share-dialog)): each expired pass is greyed with an "Expired" stamp, its URL struck through (no Copy/Embed — it doesn't work), a Delete action (same revoke endpoint), and an **Extend** action labelled with the link's creation duration ("Extend 1 week"). Extending moves the link back to Passes with a fresh deadline.
+
+## Expiry warning
+
+A daily cron pass (`apps/api/src/timeline/expiry-sweep.ts`) finds links that expire within the next 7 days and writes one future-dated **Share Link Expiring** entry per document to the owner's [Timeline](timeline.md) (`share_link_expiring`). Deleting or extending a link retracts it; the next daily pass re-emits it if another link is still inside the window. The warning is in-app only; no email is sent.
 
 ## Telemetry
 
@@ -61,6 +65,6 @@ The landing page ([Marketing site](../019-marketing/marketing-site.md)) may clai
 ## Out of scope
 
 - Custom dates / arbitrary durations.
-- Email or in-app notification before a link expires.
+- Email notification before a link expires.
 - Force-disconnecting live sessions at the expiry instant.
 - Changing a link's lifetime after creation (delete + recreate covers it).

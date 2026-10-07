@@ -5,12 +5,9 @@ import type { CanvasTool } from '@/components/palette/CommandPalette';
 // out of useEditorState as one cohesive slice. Active while the
 // palette's Format tool is picked: clicking elements arms a source then
 // paints its style onto each subsequent click (see useEditorDrag).
-// Leaving the tool disarms the source so a stale source never drives
-// the single-shot toolbar banner; entering it starts clean. A ref
-// tracks the previous tool so the reset fires only on the format-tool
-// boundary (a blanket `canvasTool !== 'format'` clear would wipe the
-// single-shot painter the instant it armed, since that path runs with
-// the Select tool active).
+// Leaving the tool disarms the source and entering it starts clean. A
+// ref tracks the previous tool so the reset fires only on the
+// format-tool boundary.
 export function useFormatTool({
   canvasTool,
   setCanvasTool,

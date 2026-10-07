@@ -263,6 +263,7 @@ export function resolveBoxedResize({
   shiftHeld,
   dragAspectLocked,
   guidesOn,
+  noSnap = false,
 }: {
   elements: Element[];
   startBounds: ReadonlyMap<string, ShapeBounds>;
@@ -277,6 +278,9 @@ export function resolveBoxedResize({
   shiftHeld: boolean;
   dragAspectLocked: boolean;
   guidesOn: boolean;
+  // Cmd/Ctrl held: resize freely, with no edge / size snap and no guide lines
+  // (docs/specs/008-canvas/snap-override.md).
+  noSnap?: boolean;
   // As resolveBoxedMove's: page lines to snap the resized edge to.
   pageSnapBoxes?: Element[];
 }): { boundsById: Map<string, ShapeBounds>; guides: AlignmentGuide[] | null } | null {
@@ -334,22 +338,23 @@ export function resolveBoxedResize({
     // other side is re-derived from the ratio, so the snap can't bend it
     // (docs/specs/008-canvas/canvas-and-palette.md "Resize"). The floor stays the
     // start box's, expressed relative to the candidate.
-    const next = !snapMode
-      ? raw
-      : constrain
-        ? snapLeadingAxis(
-            raw,
-            snapMode,
-            leadingAxis(mode, dx, dy),
-            (c, edge) =>
-              snapResizeBounds(c, edge, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE),
-            (minUniformScale(start) * start.width) / raw.width,
-          )
-        : snapResizeBounds(raw, snapMode, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE);
+    const next =
+      !snapMode || noSnap
+        ? raw
+        : constrain
+          ? snapLeadingAxis(
+              raw,
+              snapMode,
+              leadingAxis(mode, dx, dy),
+              (c, edge) =>
+                snapResizeBounds(c, edge, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE),
+              (minUniformScale(start) * start.width) / raw.width,
+            )
+          : snapResizeBounds(raw, snapMode, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE);
     // Guide off the snapped bounds (same rationale as move), so guides
     // only appear when an edge / centre genuinely lines up. Suppressed
     // when the user has turned alignment guides off.
-    const guides = guidesOn ? alignmentGuides(next, aligned, memberIds) : [];
+    const guides = guidesOn && !noSnap ? alignmentGuides(next, aligned, memberIds) : [];
     return { boundsById: new Map([[primaryId, next]]), guides };
   }
 

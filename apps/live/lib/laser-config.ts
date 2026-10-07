@@ -52,7 +52,7 @@ export const LASER_TRAILS: readonly { id: LaserTrail; label: string }[] = [
 
 export const LASER_EFFECTS: readonly { id: LaserEffect; label: string; hint: string }[] = [
   { id: 'beam', label: 'Beam', hint: 'A clean line with a bright tip' },
-  { id: 'glow', label: 'Glow', hint: 'A soft halo — reads on a projector' },
+  { id: 'glow', label: 'Glow', hint: 'A soft halo that reads on a projector' },
   { id: 'comet', label: 'Comet', hint: 'Tapers away behind the tip' },
   { id: 'spark', label: 'Spark', hint: 'A dotted trail rather than a line' },
 ];

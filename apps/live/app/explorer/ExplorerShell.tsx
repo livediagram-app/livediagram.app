@@ -19,6 +19,7 @@ import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
+import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -112,6 +113,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
   } = useExplorer();
   // Navigating to another section clears a crashed pane's notice.
   const pathname = usePathname();
+  // Cmd/Ctrl+K and Cmd/Ctrl+. open search here as in the editor (docs/specs/007-editor/command-palette.md).
+  useSearchShortcut(() => setSearchOpen(true));
 
   // Settings live in the bottom bar's gear (same synced UserPreferences as
   // the editor, docs/specs/007-editor/user-preferences.md). The prefs themselves are owned by

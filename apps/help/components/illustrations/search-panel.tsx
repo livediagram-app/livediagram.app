@@ -24,18 +24,18 @@ type Row = {
   /** Glyph drawn in the leading icon slot, centred on the origin. */
   icon: ReactNode;
   label: string;
-  /** Muted right-aligned context, e.g. a folder path or "in Platform". */
+  /** Muted right-aligned context, as the panel prints it: "on Payments",
+   *  "in Platform team", "current". */
   meta?: string;
   /** Brand-highlighted (the preselected first match). */
   active?: boolean;
-  /** Render as an action row (brand text, distinct from a plain match). */
-  action?: boolean;
 };
 
 type Group = { title: string; rows: Row[] };
 
-/** The search overlay: a rounded query field with a magnifier, then groups of
- *  result rows. The single reusable surface behind every search-panel figure. */
+/** The search overlay as the editor draws it: a query row (magnifier, the
+ *  typed text, an Esc chip) over a divider, then groups of result rows, the
+ *  first preselected. The single reusable surface behind every search figure. */
 function SearchOverlay({
   query,
   groups,
@@ -50,17 +50,17 @@ function SearchOverlay({
 }) {
   const px = 40; // overlay left edge
   const pw = w - px * 2; // overlay width
-  const fieldY = 24;
-  const fieldH = 36;
+  const top = 14;
+  const fieldH = 38;
   const rowH = 26;
-  const groupGap = 8;
-  const groupHeadH = 16;
+  const groupGap = 6;
+  const groupHeadH = 18;
 
   // Lay out rows top-down, tracking the running y. Plain loops rather than
   // map(), because map's callbacks would close over the running cursor and
   // reassigning a captured binding mid-render is what react-hooks/refs flags.
   const laidGroups: { title: string; headY: number; rows: (Row & { y: number })[] }[] = [];
-  let cursorY = fieldY + fieldH + 14;
+  let cursorY = top + fieldH + 6;
   for (const g of groups) {
     const headY = cursorY;
     cursorY += groupHeadH;
@@ -72,8 +72,8 @@ function SearchOverlay({
     cursorY += groupGap;
     laidGroups.push({ title: g.title, headY, rows });
   }
-  const overlayH = cursorY - 16 + 14;
-  const sceneH = h ?? overlayH + 28;
+  const overlayH = cursorY - top + 4;
+  const sceneH = h ?? overlayH + top * 2;
 
   return (
     <Scene w={w} h={sceneH} bg="canvas">
@@ -83,7 +83,7 @@ function SearchOverlay({
       {/* overlay card */}
       <rect
         x={px}
-        y={fieldY - 14}
+        y={top}
         width={pw}
         height={overlayH}
         rx={12}
@@ -91,35 +91,45 @@ function SearchOverlay({
         strokeWidth={2}
       />
 
-      {/* query field */}
-      <rect
-        x={px + 14}
-        y={fieldY}
-        width={pw - 28}
-        height={fieldH}
-        rx={9}
-        className="fill-slate-50 stroke-brand-300"
-        strokeWidth={2}
-      />
-      <g transform={`translate(${px + 32} ${fieldY + fieldH / 2})`}>
-        <Magnifier tone="accent" />
+      {/* query row: magnifier, typed text + caret, Esc chip, divider */}
+      <g transform={`translate(${px + 20} ${top + fieldH / 2})`}>
+        <Magnifier />
       </g>
-      <Label x={px + 48} y={fieldY + fieldH / 2 + 1} size={11} tone="strong" weight={500}>
+      <Label x={px + 36} y={top + fieldH / 2 + 1} size={12} tone="strong" weight={500}>
         {query}
       </Label>
-      {/* text caret */}
       <rect
-        x={px + 48 + query.length * 6 + 3}
-        y={fieldY + 9}
+        x={px + 36 + query.length * 6.9 + 3}
+        y={top + 11}
         width={1.5}
-        height={fieldH - 18}
+        height={fieldH - 22}
         className="fill-slate-400"
+      />
+      <rect
+        x={px + pw - 40}
+        y={top + 10}
+        width={28}
+        height={18}
+        rx={4}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1}
+      />
+      <Label x={px + pw - 26} y={top + 20} size={10} tone="muted" anchor="middle" weight={500}>
+        Esc
+      </Label>
+      <line
+        x1={px}
+        y1={top + fieldH}
+        x2={px + pw}
+        y2={top + fieldH}
+        className="stroke-slate-200"
+        strokeWidth={1.5}
       />
 
       {/* groups */}
       {laidGroups.map((g, gi) => (
         <g key={gi}>
-          <Label x={px + 16} y={g.headY + groupHeadH / 2 + 1} size={8} weight={700} tone="muted">
+          <Label x={px + 14} y={g.headY + groupHeadH / 2 + 1} size={10} weight={700} tone="muted">
             {g.title.toUpperCase()}
           </Label>
           {g.rows.map((r, ri) => {
@@ -128,36 +138,29 @@ function SearchOverlay({
               <g key={ri}>
                 {r.active && (
                   <rect
-                    x={px + 10}
+                    x={px + 2}
                     y={r.y + 1}
-                    width={pw - 20}
+                    width={pw - 4}
                     height={rowH - 2}
-                    rx={7}
-                    className="fill-brand-50"
+                    rx={4}
+                    className="fill-brand-100"
                   />
                 )}
                 {/* leading icon */}
-                <g transform={`translate(${px + 26} ${cy})`}>{r.icon}</g>
+                <g transform={`translate(${px + 22} ${cy})`}>{r.icon}</g>
                 <Label
-                  x={px + 44}
+                  x={px + 38}
                   y={cy + 1}
-                  size={10}
-                  weight={r.active || r.action ? 600 : 400}
-                  tone={r.active || r.action ? 'accent' : 'body'}
+                  size={11}
+                  weight={r.active ? 600 : 400}
+                  tone={r.active ? 'accent' : 'body'}
                 >
                   {r.label}
                 </Label>
                 {r.meta && (
-                  <Label x={px + pw - 16} y={cy + 1} size={8} tone="muted" anchor="end">
+                  <Label x={px + pw - 14} y={cy + 1} size={10} tone="muted" anchor="end">
                     {r.meta}
                   </Label>
-                )}
-                {/* action affordance: a small plus pill on the right */}
-                {r.action && (
-                  <g transform={`translate(${px + pw - 24} ${cy})`}>
-                    <circle r={8} className="fill-brand-500" />
-                    <path d="M-3.5 0 H3.5 M0 -3.5 V3.5" className="stroke-white" strokeWidth={2} />
-                  </g>
                 )}
               </g>
             );
@@ -169,82 +172,129 @@ function SearchOverlay({
 }
 
 // --- Reusable result icons ---------------------------------------------------
+// One glyph per result kind, after the editor's own (search-panel-icons.tsx):
+// a document, a folder, people for a team, a panel for a tab, a circle for an
+// element, a plus-in-a-box for Add to canvas, a bolt for an action, sliders for
+// a setting, and a question mark for help.
+
+const GLYPH = 'fill-none stroke-slate-500';
 
 /** A document glyph: a small framed canvas with two nodes. */
 function DocumentIcon() {
   return (
     <g>
       <rect
-        x={-8}
-        y={-7}
-        width={16}
-        height={14}
+        x={-7}
+        y={-6}
+        width={14}
+        height={12}
         rx={2.5}
         className="fill-white stroke-brand-400"
         strokeWidth={1.5}
       />
-      <rect x={-5} y={-4} width={5} height={4} rx={1} className="fill-brand-300" />
-      <rect x={2} y={1} width={5} height={4} rx={1} className="fill-brand-200" />
+      <rect x={-4.5} y={-3.5} width={4} height={3.5} rx={1} className="fill-brand-300" />
+      <rect x={1} y={0.5} width={4} height={3.5} rx={1} className="fill-brand-200" />
     </g>
   );
 }
 
 /** A folder glyph. */
-function FolderIcon({ accent = false }: { accent?: boolean }) {
-  const cls = accent ? 'fill-brand-400' : 'fill-slate-300';
-  return <path d="M-8 -5 h5 l2 2 h9 v8 h-16 Z" className={cls} />;
-}
-
-/** A people / team glyph (two overlapping heads). */
-function TeamIcon() {
+function FolderIcon() {
   return (
-    <g className="fill-violet-400">
-      <circle cx={-4} cy={-3} r={3} />
-      <path d="M-9 6 a5 5 0 0 1 10 0 Z" />
-      <circle cx={4} cy={-3} r={3} className="fill-violet-300" />
-      <path d="M-1 6 a5 5 0 0 1 10 0 Z" className="fill-violet-300" />
-    </g>
-  );
-}
-
-/** A tab glyph (a labelled tab shape). */
-function TabIcon({ active = false }: { active?: boolean }) {
-  const cls = active ? 'fill-brand-400 stroke-brand-500' : 'fill-white stroke-slate-300';
-  return (
-    <g>
-      <path d="M-8 6 V-3 a2 2 0 0 1 2 -2 h5 l2 2 h5 v9 Z" className={cls} strokeWidth={1.5} />
-    </g>
-  );
-}
-
-/** A generic element glyph: a small rounded node. */
-function ElementIcon() {
-  return (
-    <rect
-      x={-8}
-      y={-5}
-      width={16}
-      height={10}
-      rx={2.5}
-      className="fill-white stroke-brand-400"
+    <path
+      d="M-7 -5 h4.5 l2 2 h7.5 v8 h-14 Z"
+      className={GLYPH}
       strokeWidth={1.5}
+      strokeLinejoin="round"
     />
   );
 }
 
-/** A table glyph (a small grid). */
-function TableIcon() {
+/** The share glyph the Shared with You rows wear: three linked dots. */
+function SharedIcon() {
   return (
-    <g className="fill-none stroke-brand-400" strokeWidth={1.4}>
-      <rect x={-8} y={-6} width={16} height={12} rx={1.5} />
-      <path d="M-8 -1 H8 M-8 3 H8 M-2 -6 V6 M3 -6 V6" />
+    <g className={GLYPH} strokeWidth={1.5}>
+      <circle cx={4.5} cy={-4.5} r={2.2} />
+      <circle cx={-4.5} cy={0} r={2.2} />
+      <circle cx={4.5} cy={4.5} r={2.2} />
+      <path d="M-2.5 -1 L2.5 -3.5 M-2.5 1 L2.5 3.5" />
+    </g>
+  );
+}
+
+/** A people / team glyph (two heads). */
+function TeamIcon() {
+  return (
+    <g className={GLYPH} strokeWidth={1.5}>
+      <circle cx={-2.5} cy={-3} r={2.6} />
+      <path d="M-7 6 a4.5 4.5 0 0 1 9 0" />
+      <path d="M2.5 -5.5 a2.6 2.6 0 0 1 0 5.2 M4 1.5 a4.5 4.5 0 0 1 3 4.5" />
+    </g>
+  );
+}
+
+/** A tab glyph: a panel with a top bar and a side column. */
+function TabIcon() {
+  return (
+    <g className={GLYPH} strokeWidth={1.5}>
+      <rect x={-6.5} y={-6} width={13} height={12} rx={2} />
+      <path d="M-6.5 -2 H6.5 M-2 -2 V6" />
+    </g>
+  );
+}
+
+/** An element glyph: the plain circle the panel gives every element. */
+function ElementIcon() {
+  return <circle r={5.5} className={GLYPH} strokeWidth={1.5} />;
+}
+
+/** Add to canvas: a plus in a box. */
+function AddIcon() {
+  return (
+    <g className="fill-none stroke-brand-500" strokeWidth={1.5}>
+      <rect x={-6.5} y={-6.5} width={13} height={13} rx={2.5} />
+      <path d="M-3 0 H3 M0 -3 V3" />
+    </g>
+  );
+}
+
+/** An action: a bolt. */
+function CommandIcon() {
+  return (
+    <path
+      d="M1.5 -7 L-5 1 H0 L-1.5 7 L5 -1 H0 Z"
+      className={GLYPH}
+      strokeWidth={1.4}
+      strokeLinejoin="round"
+    />
+  );
+}
+
+/** A setting: horizontal sliders. */
+function SettingIcon() {
+  return (
+    <g className={GLYPH} strokeWidth={1.5} strokeLinecap="round">
+      <path d="M-6.5 -3.5 H6.5 M-6.5 3.5 H6.5" />
+      <circle cx={-2} cy={-3.5} r={1.8} className="fill-white stroke-slate-500" />
+      <circle cx={3} cy={3.5} r={1.8} className="fill-white stroke-slate-500" />
+    </g>
+  );
+}
+
+/** A help article: a question mark in a circle. */
+function HelpIcon() {
+  return (
+    <g className={GLYPH} strokeWidth={1.5} strokeLinecap="round">
+      <circle r={6.5} />
+      <path d="M-2 -2 a2 2 0 1 1 2.6 1.9 c-0.6 0.2 -0.6 0.7 -0.6 1.4" />
+      <circle cx={0} cy={3.6} r={0.6} className="fill-slate-500" />
     </g>
   );
 }
 
 // --- Scenes ------------------------------------------------------------------
 
-/** Mixed results across documents, tabs, and elements: search at a glance. */
+/** Mixed results across documents, tabs, elements, actions and help: search at a glance. */
 export function SearchOverview() {
   return (
     <SearchOverlay
@@ -256,14 +306,18 @@ export function SearchOverview() {
         },
         {
           title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'this document' }],
+          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'current' }],
         },
         {
           title: 'Elements',
           rows: [
-            { icon: <ElementIcon />, label: 'Check stock' },
-            { icon: <ElementIcon />, label: 'Payment check' },
+            { icon: <ElementIcon />, label: 'Check stock', meta: 'on Checkout' },
+            { icon: <ElementIcon />, label: 'Payment check', meta: 'on Payments' },
           ],
+        },
+        {
+          title: 'Help',
+          rows: [{ icon: <HelpIcon />, label: 'Checklists' }],
         },
       ]}
     />
@@ -281,12 +335,12 @@ export function SearchDocuments() {
           rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
-          title: 'My documents',
-          rows: [{ icon: <FolderIcon accent />, label: 'Onboarding', meta: 'folder' }],
+          title: 'Shared with You',
+          rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
         },
         {
-          title: 'Shared with you',
-          rows: [{ icon: <DocumentIcon />, label: 'Onboarding v2', meta: 'shared' }],
+          title: 'My documents',
+          rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
         },
       ]}
     />
@@ -303,8 +357,8 @@ export function SearchTeams() {
           title: 'Teams',
           rows: [
             { icon: <TeamIcon />, label: 'Platform team', active: true },
-            { icon: <FolderIcon accent />, label: 'Architecture', meta: 'in Platform' },
-            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform' },
+            { icon: <FolderIcon />, label: 'Architecture / Services', meta: 'in Platform team' },
+            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform team' },
           ],
         },
       ]}
@@ -320,13 +374,13 @@ export function SearchTabsAndElements() {
       groups={[
         {
           title: 'Tabs',
-          rows: [{ icon: <TabIcon active />, label: 'Revenue model', active: true }],
+          rows: [{ icon: <TabIcon />, label: 'Revenue model', active: true }],
         },
         {
           title: 'Elements',
           rows: [
-            { icon: <ElementIcon />, label: 'Revenue growth' },
-            { icon: <TableIcon />, label: 'Revenue 2026', meta: 'table cell' },
+            { icon: <ElementIcon />, label: 'Revenue growth', meta: 'on Revenue model' },
+            { icon: <ElementIcon />, label: 'Revenue 2026: 1.2m', meta: 'on Forecast' },
           ],
         },
       ]}
@@ -334,7 +388,7 @@ export function SearchTabsAndElements() {
   );
 }
 
-/** Palette results with an "add to canvas" affordance. */
+/** Palette results under Add to canvas, below an ordinary document match. */
 export function SearchAddToCanvas() {
   return (
     <SearchOverlay
@@ -342,61 +396,72 @@ export function SearchAddToCanvas() {
       groups={[
         {
           title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo' }],
+          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
         },
         {
           title: 'Add to canvas',
-          rows: [
-            {
-              icon: (
-                <path
-                  d="M-7 -3 a7 3 0 0 0 14 0 v6 a7 3 0 0 1 -14 0 Z M-7 -3 a7 3 0 0 1 14 0"
-                  className="fill-none stroke-brand-500"
-                  strokeWidth={1.5}
-                />
-              ),
-              label: 'Cylinder',
-              action: true,
-            },
-            {
-              icon: (
-                <path
-                  d="M0 -7 L7 0 L0 7 L-7 0 Z"
-                  className="fill-none stroke-brand-500"
-                  strokeWidth={1.5}
-                />
-              ),
-              label: 'Cylinder (database)',
-              action: true,
-            },
-          ],
+          rows: [{ icon: <AddIcon />, label: 'Cylinder' }],
         },
       ]}
     />
   );
 }
 
-/** A "Create new tab" action row alongside an ordinary match. */
+/** A "Create new tab" action row below an ordinary tab match. */
 export function SearchCreateTab() {
   return (
     <SearchOverlay
-      query="new tab"
+      query="new"
       groups={[
         {
           title: 'Tabs',
-          rows: [
-            { icon: <TabIcon active />, label: 'New ideas', active: true, meta: 'this document' },
-          ],
+          rows: [{ icon: <TabIcon />, label: 'New ideas', active: true }],
         },
         {
           title: 'Actions',
+          rows: [{ icon: <CommandIcon />, label: 'Create new tab' }],
+        },
+      ]}
+    />
+  );
+}
+
+/** The command palette: actions for a typed verb, with a matching setting below. */
+export function SearchCommandPalette() {
+  return (
+    <SearchOverlay
+      query="layout"
+      groups={[
+        {
+          title: 'Actions',
           rows: [
-            {
-              icon: <TabIcon />,
-              label: 'Create new tab',
-              action: true,
-            },
+            { icon: <CommandIcon />, label: 'Auto Layout (tidy up)', active: true },
+            { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (down)' },
+            { icon: <CommandIcon />, label: 'Auto Layout: Tree' },
           ],
+        },
+        {
+          title: 'Help',
+          rows: [{ icon: <HelpIcon />, label: 'Layout Cleanup' }],
+        },
+      ]}
+    />
+  );
+}
+
+/** A Settings result, labelled with the category it opens on. */
+export function SearchSettings() {
+  return (
+    <SearchOverlay
+      query="dark"
+      groups={[
+        {
+          title: 'Settings',
+          rows: [{ icon: <SettingIcon />, label: 'Theme', meta: 'in Appearance', active: true }],
+        },
+        {
+          title: 'Help',
+          rows: [{ icon: <HelpIcon />, label: 'Appearance: Light, Dark, System' }],
         },
       ]}
     />

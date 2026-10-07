@@ -35,10 +35,10 @@ export function StackOverview() {
       <Arrow from={[134, 196]} to={[114, 196]} tone="muted" />
       <Arrow from={[286, 196]} to={[306, 196]} tone="muted" />
 
-      <Label x={73} y={236} anchor="middle" size={9} tone="muted">
+      <Label x={73} y={236} anchor="middle" size={10} tone="muted">
         database
       </Label>
-      <Label x={350} y={236} anchor="middle" size={9} tone="muted">
+      <Label x={350} y={236} anchor="middle" size={10} tone="muted">
         realtime room
       </Label>
     </Scene>
@@ -72,7 +72,7 @@ export function RequestRouting() {
               className="fill-white stroke-brand-300"
               strokeWidth={2}
             />
-            <Label x={282} y={y + 13} size={9} tone="muted">
+            <Label x={282} y={y + 13} size={10} tone="muted">
               {path}
             </Label>
             <Label x={282} y={y + 26} size={11} weight={600} tone="strong">
@@ -85,45 +85,54 @@ export function RequestRouting() {
   );
 }
 
-/** The deploy flow: GitHub Actions builds, then deploys the six apps in
- *  parallel, with the router last because its bindings depend on them. */
+/** The deploy flow: GitHub Actions builds, then deploys marketing, telemetry,
+ *  help, community and api in parallel; live and the optional mcp follow the
+ *  api; the router goes last because its bindings need the six path-routed
+ *  apps to exist. */
 export function DeployFlow() {
+  const first: [string, number][] = [
+    ['marketing', 14],
+    ['telemetry', 50],
+    ['help', 86],
+    ['community', 122],
+    ['api', 166],
+  ];
   return (
-    <Scene w={420} h={250}>
+    <Scene w={420} h={260}>
       {/* GitHub Actions trigger */}
-      <Shape x={20} y={100} w={92} h={48} kind="rect" label="GitHub" labelTone="strong" />
-      <Label x={66} y={138} anchor="middle" size={9} tone="muted">
+      <Shape x={10} y={96} w={80} h={48} kind="rect" label="GitHub" labelTone="strong" />
+      <Label x={50} y={160} anchor="middle" size={10} tone="muted">
         Actions
       </Label>
 
-      {/* Parallel app deploys */}
-      <Shape x={172} y={16} w={92} h={28} kind="rect" accent label="marketing" />
-      <Shape x={172} y={50} w={92} h={28} kind="rect" accent label="live" />
-      <Shape x={172} y={84} w={92} h={28} kind="rect" accent label="telemetry" />
-      <Shape x={172} y={118} w={92} h={28} kind="rect" accent label="help" />
-      <Shape x={172} y={152} w={92} h={28} kind="rect" accent label="community" />
-      <Shape x={172} y={186} w={92} h={28} kind="rect" accent label="api" />
+      {/* First wave, in parallel */}
+      {first.map(([name, y]) => (
+        <g key={name}>
+          <Shape x={118} y={y} w={88} h={28} kind="rect" accent label={name} />
+          <Arrow from={[90, 120]} to={[118, y + 14]} kind="curved" />
+        </g>
+      ))}
+      <Label x={162} y={210} anchor="middle" size={10} tone="muted">
+        in parallel
+      </Label>
 
-      <Arrow from={[112, 116]} to={[172, 30]} kind="curved" />
-      <Arrow from={[112, 118]} to={[172, 64]} kind="curved" />
-      <Arrow from={[112, 120]} to={[172, 98]} />
-      <Arrow from={[112, 126]} to={[172, 132]} />
-      <Arrow from={[112, 128]} to={[172, 166]} kind="curved" />
-      <Arrow from={[112, 130]} to={[172, 200]} kind="curved" />
-
-      <Label x={218} y={232} anchor="middle" size={9} tone="muted">
-        deploy in parallel
+      {/* After the api */}
+      <Shape x={228} y={150} w={72} h={28} kind="rect" accent label="live" />
+      <Shape x={228} y={196} w={72} h={28} kind="rect" dashed label="mcp" labelTone="strong" />
+      <Arrow from={[206, 180]} to={[228, 164]} />
+      <Arrow from={[206, 180]} to={[228, 210]} />
+      <Label x={264} y={240} anchor="middle" size={10} tone="muted">
+        optional
       </Label>
 
       {/* Router last */}
-      <Shape x={312} y={91} w={92} h={48} kind="rect" label="router" labelTone="strong" />
-      <Arrow from={[264, 30]} to={[312, 100]} kind="curved" tone="muted" />
-      <Arrow from={[264, 64]} to={[312, 106]} tone="muted" />
-      <Arrow from={[264, 98]} to={[312, 112]} tone="muted" />
-      <Arrow from={[264, 132]} to={[312, 118]} tone="muted" />
-      <Arrow from={[264, 166]} to={[312, 124]} tone="muted" />
-      <Arrow from={[264, 200]} to={[312, 130]} kind="curved" tone="muted" />
-      <Label x={358} y={154} anchor="middle" size={9} tone="muted">
+      <Shape x={326} y={70} w={84} h={48} kind="rect" label="router" labelTone="strong" />
+      <Arrow from={[206, 28]} to={[326, 84]} kind="curved" tone="muted" />
+      <Arrow from={[206, 64]} to={[326, 90]} tone="muted" />
+      <Arrow from={[206, 100]} to={[326, 96]} tone="muted" />
+      <Arrow from={[206, 136]} to={[326, 102]} tone="muted" />
+      <Arrow from={[300, 164]} to={[350, 118]} kind="curved" tone="muted" />
+      <Label x={368} y={134} anchor="middle" size={10} tone="muted">
         last
       </Label>
     </Scene>
@@ -133,15 +142,16 @@ export function DeployFlow() {
 /** Configuration supplied at runtime: secrets per surface, never in source. */
 export function ConfigSources() {
   const rows: [string, string][] = [
-    ['Local dev', '.env.local (gitignored)'],
-    ['Workers', 'wrangler secret put'],
-    ['Frontends', 'NEXT_PUBLIC_* only'],
+    ['Local dev', '.env.local, .dev.vars'],
+    ['Secrets', 'wrangler secret put'],
+    ['Settings', 'wrangler.toml [vars]'],
+    ['Frontends', 'NEXT_PUBLIC_* at build'],
   ];
   return (
     <Scene w={420} h={210}>
-      <Panel x={70} y={24} w={280} h={162} title="ENVIRONMENT">
+      <Panel x={70} y={18} w={280} h={176} title="ENVIRONMENT">
         {rows.map(([surface, source], i) => {
-          const y = 64 + i * 38;
+          const y = 62 + i * 34;
           return (
             <g key={i}>
               <Label x={90} y={y} size={11} weight={600} tone="strong">
@@ -178,14 +188,14 @@ export function GuestFallback() {
       {/* Configured path */}
       <Shape x={28} y={104} w={132} h={40} kind="rect" label="Signed-in" labelTone="strong" />
       <Arrow from={[164, 56]} to={[94, 104]} kind="curved" />
-      <Label x={60} y={86} anchor="middle" size={9} tone="accent">
+      <Label x={60} y={86} anchor="middle" size={10} tone="accent">
         yes
       </Label>
 
       {/* Guest fallback path */}
       <Shape x={258} y={104} w={132} h={40} kind="rect" accent label="Guest path" />
       <Arrow from={[256, 56]} to={[324, 104]} kind="curved" />
-      <Label x={360} y={86} anchor="middle" size={9} tone="muted">
+      <Label x={360} y={86} anchor="middle" size={10} tone="muted">
         unset
       </Label>
 

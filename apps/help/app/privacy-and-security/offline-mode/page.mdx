@@ -16,8 +16,8 @@ Most documents are saved to livediagram's servers so you can reach them from any
 
 Offline Mode is off by default and chosen per document, so you can keep normal documents and offline ones side by side.
 
-- On the **New document** screen, step through the wizard to the **Location** step (the third step, after Template and Theme) and choose **Local Browser** under **Save location**, then click **Create**.
-- The document is written to your browser's local storage and opens like any other. A **Local only** badge next to its name in the editor, and the matching **Local only** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it so you always know which documents are local-only. Hover or focus the pill to read that the document lives only in this browser and that clearing this browser's site data deletes it; click it to come back to this guide. The Explorer sidebar's **This browser** row lists them all.
+- On the [New Document](/new) screen, pick a template, then go on to the **Location** step and choose the **Local Browser** tile ("This device only") as the save location, then click **Create**. A warning under it reminds you that the document is not backed up or synced.
+- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **Local only** badge next to its name in the editor, and the matching **Local only** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it so you always know which documents are local-only. Hover or focus the pill to read that the document lives only in this browser and that clearing this browser's site data deletes it; click it to come back to this guide. The Explorer sidebar's **This browser** row lists them all.
 
 <Note>
   An offline document is **not synced and not backed up**. It lives only in this browser: clearing
@@ -30,22 +30,25 @@ Offline Mode is off by default and chosen per document, so you can keep normal d
 An offline document is a normal document: every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
 - **Sharing** needs a document on the server, so opening **Share** on an offline document prompts you to sync it to your account first. Embeds are unavailable for the same reason.
-- **Live collaboration** and **teams** don't apply; an offline document is yours alone.
+- **Live collaboration** and **teams** don't apply; an offline document is yours alone. Comments still work, but only you see them.
 - The AI assistant works while you're online (it reads your current canvas), but not with no connection.
 - Images you add are stored **inside the document**, so it stays fully local.
+- In the Explorer it shows a fixed offline picture instead of a thumbnail, because there is no server copy to draw one from.
 
 ## Moving to and from your account
 
-You can change your mind at any time, from the document's menu in the Explorer.
+You can change your mind at any time, from the document's **⋯** menu in the Explorer.
 
 - **Sync Document** uploads an offline document to the cloud. It becomes a normal document, shareable and reachable from your other devices, and the local-only copy is removed.
 - **Take Offline** does the reverse: it downloads a cloud document into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 - **A tab it shares with other documents** (see [Add a Tab to Another Document](/help/tabs/add-to-document/)) stays in those documents, and this browser keeps its own copy. From then on the two are separate: edits on one side no longer reach the other, and syncing the document back brings your copy in as a new tab beside the original.
 
 <Note>
-  "Take Offline" is deliberate and irreversible on the server side: once a document is offline it
+  **Take Offline** is deliberate and irreversible on the server side: once a document is offline it
   exists only in the browser you took it offline in. If it was shared, taking it offline also
-  revokes the share links.
+  revokes the share links. It is a move, not a delete, so it never goes to the
+  [Trash](/help/account-and-data/trash/); an offline document you delete goes to this browser's own
+  Trash.
 </Note>
 
 </ArticleLayout>

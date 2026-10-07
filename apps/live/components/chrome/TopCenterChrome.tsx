@@ -22,7 +22,6 @@ type TopCenterChromeProps = Pick<
   | 'readOnly'
   | 'pendingDraw'
   | 'onCancelDraw'
-  | 'onCancelFormatPainter'
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
@@ -37,8 +36,6 @@ type TopCenterChromeProps = Pick<
   | 'onPrevVoteResult'
   | 'onDoneVoteReview'
 > & {
-  // From CanvasChrome's computed ChromeExtras, not CanvasProps.
-  isPaintMode: boolean;
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
   dockOnTop?: boolean;
@@ -58,11 +55,9 @@ export function TopCenterChrome({
   pendingDraw,
   hasPlanBoard = false,
   onCancelDraw,
-  onCancelFormatPainter,
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  isPaintMode,
   dockOnTop = false,
   tabTimer,
   tabVote,
@@ -115,12 +110,9 @@ export function TopCenterChrome({
       {/* The multi-selection toolbar used to sit here; it now floats over the
           selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
-        {/* Persistent Format tool (the palette tool): a two-phase guided
-            banner. Phase 1 (no source armed) asks the user to pick a base;
-            phase 2 (source armed) invites them to tap as many targets as
-            they like. Checked before the single-shot painter banner below
-            so the format tool owns the banner even once a source is armed
-            (which also flips isPaintMode true). */}
+        {/* The Format tool (the palette tool): a two-phase guided banner.
+            Phase 1 (no source armed) asks the user to pick a base; phase 2
+            (source armed) invites them to tap as many targets as they like. */}
         {canvasTool === 'format' ? (
           <ModeBanner
             icon={<FormatPainterIcon />}
@@ -131,12 +123,6 @@ export function TopCenterChrome({
             }
             actionLabel="Done"
             onAction={onExitFormatTool}
-          />
-        ) : isPaintMode ? (
-          <ModeBanner
-            icon={<FormatPainterIcon />}
-            message="Click an element to apply formatting"
-            onAction={onCancelFormatPainter}
           />
         ) : null}
 

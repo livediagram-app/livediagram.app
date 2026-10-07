@@ -92,6 +92,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   again if the field returns. The type editor says so under the field list once a field is removed.
 - **Deleting a type with items** asks where they go: another type (picked from the catalogue) or **Keep as
   Item** (they keep the old type id and draw as the fallback "Item"). Without items it deletes at once.
+  A board that took new cards of only the deleted type takes every type again ([Plan board](plan-board.md)).
 
 ## Where types show
 

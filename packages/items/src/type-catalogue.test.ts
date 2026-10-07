@@ -10,7 +10,6 @@ import {
   newItemTypeId,
   readItemTypeCatalogue,
   slugOf,
-  typeByNameIn,
   typeIn,
   typesOf,
   validateItemTypeCatalogue,
@@ -118,13 +117,6 @@ describe('the type catalogue', () => {
     expect(newItemTypeId('42 things', ITEM_TYPES)).toBe('type-42-things');
     expect(newCustomFieldId('Outcome', ['f-outcome'])).toBe('f-outcome-2');
     expect(newCustomFieldId('!!!', [])).toBe('f-field');
-  });
-
-  it('matches a quick-add name to a type, plural or not', () => {
-    const types = [...ITEM_TYPES, { ...call, newTitle: 'New call', custom: [] } as ItemTypeDef];
-    expect(typeByNameIn(types, 'Projects')?.id).toBe('project');
-    expect(typeByNameIn(types, 'customer calls')?.id).toBe('customer-call');
-    expect(typeByNameIn(types, 'nope')).toBeUndefined();
   });
 
   it('draws every glyph, and an unknown one as a square', () => {

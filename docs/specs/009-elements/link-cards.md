@@ -17,7 +17,7 @@ marker) and recolour / move / lock / layer / delete like any element.
 
 - **URL source = `element.link` (`{ kind: 'url' }`)** — no new field. Editing
   reuses the existing `LinkPickerDialog` + `applyElementLink`; the empty card
-  prompts "Add a link — double-click", and double-clicking opens that picker
+  prompts "Double-click to add a link", and double-clicking opens that picker
   (`onEditLink` → `setLinkPickerOpenForId`). The card also gets the normal
   link badge, so clicking it follows the URL.
 - **`meta` is the cached preview** (`LinkCardMeta`: `url` + optional `title` /

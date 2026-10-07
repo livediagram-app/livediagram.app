@@ -56,6 +56,7 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **New cards a board takes**: the Cards menu's **New Cards Can Be** row, a tile per card type pressed on or off
   (at least one stays on). Add Card offers only those types, and the palette refuses another ("This board takes
   Note, Idea and Action cards"). A card of another type that reaches the board (dragged, or by status) still shows.
+  A board whose chosen types have all since been deleted takes every type again, so Add Card is never empty.
   Defaults: Retro, Note and Idea (an action is tracked on a board of its own); Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
   Week, Task, Action and Note; Blank and All Cards, every type.
 - **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and a

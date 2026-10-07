@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ShareExpiry } from '@/components/illustrations/collaboration';
+import { ShareLifetimes } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Share Link Expiry',
@@ -16,37 +16,42 @@ A share link is a standing invitation: anyone holding the URL keeps the link's r
 
 ## Choosing a lifetime
 
-When you create a link in the **Share** dialog, the **Valid** row under the role cards sets its lifetime. You can pick:
+When you create a link in the **Share** dialog, the **Valid** control under the role cards sets its lifetime, right beside **Create Pass**. You can pick:
 
-- **Forever**, the default, which is the original behaviour: the link lasts until you delete it.
-- **1 week**
-- **1 month**
-- **6 months**
+- **Forever**, the default: the link lasts until you revoke it.
+- **1 week** (7 days)
+- **1 month** (30 days)
+- **6 months** (183 days)
 
-Pick the shortest span that fits, like a week for a workshop group or a month for a project review.
+The countdown starts when you press **Create Pass**. Pick the shortest span that fits, like a week for a workshop group or a month for a project review. With the dialog open, the arrow keys move between the choices.
 
-<Figure caption="The Share dialog's Valid row offers a week, a month, or six months for a new link.">
-  <ShareExpiry />
+<Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
+  <ShareLifetimes />
 </Figure>
+
+Passes with a deadline show a small countdown chip beside **Valid**, like "6d left" (or hours and minutes on the last day), so you can see at a glance how long each one has. Passes that never expire read **Forever**.
 
 ## What happens when a link expires
 
-When a link's lifetime runs out, it stops granting access everywhere at once. The share URL and any embed using it show the same not-found surface as a deleted link, and it stops opening the realtime room. People already viewing through it lose access on their next load or save.
+When a link's lifetime runs out, it stops granting access everywhere at once: the share URL, any [embed](/help/collaboration/sharing/embeds/) and [live image](/help/collaboration/sharing/live-image/) made from it, and the realtime room. Visitors see the same not-found page as for a revoked link.
 
-Passes with a deadline show a small countdown chip beside **Valid**, like "6d left", so you can see at a glance how long each one has.
+People who already have the document open are not thrown out at the exact moment it expires: they lose access the next time they load the page or their changes are saved. If you need someone out straight away, revoke the link instead.
+
+Once a link is within a week of expiring, a **Share Link Expiring** warning appears in the upcoming section at the top of your [Timeline](/help/explorer/timeline/), dated for when it runs out (the check runs once a day). Extending or revoking the link clears it. No email is sent.
 
 ## Expired links: extend or delete
 
-Expired links do not vanish. They move into an **Expired** section in the Share dialog, where each pass is greyed out with an "Expired" stamp over its struck-through URL. From there you can:
+Expired links do not vanish on their own. They move into an **Expired** section of the Share dialog, below your live passes, where each one is greyed out with an **Expired** stamp over its struck-through URL. From there you can:
 
-- **Extend** the link, which gives it a fresh deadline using its original duration (for example "Extend 1 week") and moves it back to your live passes, or
-- **Delete** it for good.
+- **Extend** it. The button is named for the lifetime the link was created with, like **Extend 1 week**, and gives it that much time again, counted from now. The link keeps its URL and moves back up to your live passes, so anyone who already has it can use it again.
+- **Delete** it for good with the bin. This happens straight away, without a confirmation.
 
-You can also extend a link that is still active to push its deadline further out.
+The Expired section only appears when there is something in it.
 
 <Tip>
-  Want to change a link's lifetime after creating it? A never-expiring link cannot be extended, so
-  the simplest route is to delete it and create a new one with the lifetime you want.
+  A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be
+  given an expiry later. To change either, revoke the link and create a new one with the lifetime
+  you want (the new pass has a new URL).
 </Tip>
 
 </ArticleLayout>

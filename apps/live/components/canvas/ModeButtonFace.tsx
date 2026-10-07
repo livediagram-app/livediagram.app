@@ -155,8 +155,8 @@ export function ModeButtonFace({
         // keeps it unambiguous for a screen reader.
         aria-label={
           isCurrent
-            ? `${text} — back to your previous mode`
-            : `${text} — switch to ${MODE_LABEL[mode]} mode`
+            ? `${text}: back to your previous mode`
+            : `${text}: switch to ${MODE_LABEL[mode]} mode`
         }
         // Press on a click, silent on a drag: the button is an element too, so
         // dragging it must move it without also switching everyone's mode.

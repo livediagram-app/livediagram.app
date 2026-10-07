@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { WhiteboardImportList } from '@/components/illustrations/explorer-imports';
 
 export const metadata = helpMetadata({
   title: 'Importing Microsoft Whiteboard boards',
@@ -17,18 +18,27 @@ export const metadata = helpMetadata({
 
 Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026 and are deleted on **16 October 2026**. **Import from Microsoft Whiteboard** brings your boards across, each as its **own document** holding one tab that opens in [Draw mode](/help/canvas/draw-mode/), so you can keep drawing on it: every pen stroke stays a stroke, with its pressure and colour, and sticky notes, text, shapes, lines and images come with it.
 
+Everything happens in your browser: the import needs no Microsoft account and makes no call to Microsoft, so it also works on a self-hosted livediagram.
+
 ## What you need
 
-The import reads a **board export**: a folder per board holding the board's edit history, the way the Whiteboard web app syncs it. A board folder contains:
+The import reads a **board export**: a folder per board holding the board's edit history, the way the Whiteboard web app syncs it. (Getting that export out of Whiteboard happens outside livediagram.) A board folder contains:
 
-- `manifest.json`, `metadata.json`, `session.json` and `changes.json`
+- `manifest.json`, `session.json` and `changes.json`, which every board needs
+- `metadata.json`, which holds the board's title and dates
 - an `objects` folder with the board's images
 
-Other files beside them (such as a screenshot) are ignored. You can import **one board folder**, a **folder holding many board folders**, or a **.zip** of either.
+Other files beside them (such as a screenshot) are ignored. You can import **one board folder**, a **folder holding many board folders**, or a **.zip** of either. One pick can be up to 512 MB; for a bigger export, import the boards in batches.
 
 ## Importing
 
-On the [Explorer page](/help/explorer/explorer-page/), next to **Help** and **New document** at the top right, **Import from** shows a button for each tool you can import from. (Excalidraw files have their own button: see [Excalidraw files as new documents](/help/tabs/import-tabs/#excalidraw-files-as-new-documents).) Press the **Microsoft Whiteboard** button (hover it to see its name). From inside a folder, the new documents go into that folder. Then choose a folder or a .zip, or drop one onto the panel. A single board imports straight away. When there are several, the panel lists them, newest first, each under the name its document will get, with the date it was last edited and how many items it holds. Every board starts ticked; untick the ones you don't want and press **Import**.
+On the [Explorer page](/help/explorer/explorer-page/), **Import from** at the top right shows a button for each tool you can import from; Microsoft Whiteboard is the first. (Excalidraw files have their own button: see [Excalidraw files as new documents](/help/tabs/import-tabs/#excalidraw-files-as-new-documents).) The group shows wherever you can start a new document, such as Recent and My documents, but not on Home; it also shows on Shape libraries, for draw.io libraries. Press the **Microsoft Whiteboard** button (hover it to see its name). From inside a folder, the new documents go into that folder.
+
+In the **Import from Microsoft Whiteboard** dialog, press **Choose a folder** or **Choose a .zip**, or drop either onto the panel. A single board imports straight away. When there are several, the panel lists them, newest first, each under the name its document will get, with the date it was last edited and how many items it holds. Every board starts ticked; untick the ones you don't want, or use **Select all**, then press the import button, which counts what you chose (for example **Import 3 boards**).
+
+<Figure caption="Several boards are listed newest first, all ticked, before anything is imported.">
+  <WhiteboardImportList />
+</Figure>
 
 Each board becomes **its own document**, named after the board and **dated as the board**: it shows when the board was made and last edited, so your library keeps its history. A board that never had a title is named after the day it was made, such as "Whiteboard, 14 Aug 2020". When the import finishes, it lists the new documents so you can open them, and the Explorer shows them straight away. Nothing in your other documents changes.
 
@@ -37,7 +47,7 @@ Each board becomes **its own document**, named after the board and **dated as th
 - **Pen strokes** become marker strokes with their pressure, so thick and thin stay as you drew them.
 - **Colours** follow your board: black ink on a light board, and white ink on a dark board, become your whiteboard's own ink, so they read on either background. Other colours keep their hue.
 - **Highlighter** strokes stay highlighter strokes, and arrowheads drawn on pen strokes come with them.
-- **Sticky notes**, **text** and **shapes** keep their position, size and text.
+- **Sticky notes**, **text** and **shapes** keep their position, size and text. Lines keep their arrowheads, width and dashes, and shapes you drew by hand and Whiteboard tidied keep their outline.
 - **Images** are saved to your [image gallery](/help/explorer/image-gallery/) like any imported image.
 - The board's **background** (plain, dots or grid, light or dark) carries over.
 
@@ -46,6 +56,14 @@ A few things change on the way, and the import says how many of each:
 - **Rainbow ink** is drawn in pink, and **galaxy ink** in violet.
 - **Tables** become rectangles, with the ink inside them kept.
 - **Strokes drawn in the board's own colour**, which you could never see on the board, are left out.
+- **Images missing from the export** come in as empty image placeholders you can fill later.
+- Anything Whiteboard keeps that livediagram doesn't recognise is skipped and counted, never fatal.
+
+Comments and reactions on a board are not imported.
+
+## When a board fails
+
+A board that fails never stops the others: the report lists it with its reason. A board whose files can't be read, or one too big to store as one document, is named there, and the rest of the import still lands. If the whole pick holds no boards, the panel says "No Microsoft Whiteboard boards found. Pick a board folder or its .zip."
 
 <Tip>
   Importing many boards at once can take a moment while the images save. The panel counts the boards

@@ -182,4 +182,3 @@ The visitor-join event is unchanged (`Document` / `Joined` / `Edit|View`).
 ## Out of scope (for now)
 
 - Per-link passwords (one document-level password is the requirement).
-- Active mid-session eviction when the password changes.

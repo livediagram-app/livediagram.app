@@ -25,26 +25,34 @@ The person who creates a team is its first **Admin**. Admins can:
 - remove a member or cancel an invite,
 - delete the team.
 
-**Members** can see the team and its member list and work in the shared library, but cannot manage membership.
+**Members** can see the team and its member list, work in the shared library, and leave the team, but cannot manage membership.
 
-One rule shapes the whole team: the **last remaining Admin** cannot be demoted, removed, or leave. If you are the only Admin you will not see a Leave action on your own row. To step away, promote someone else to Admin first, or delete the team. Deleting a team removes all of its member rows.
+On the team page, an Admin sees a role dropdown (**Admin** or **Member**) on each row to change someone's role, and a small cross to remove them or cancel their invite; both ask you to confirm. An invited person can be given the Admin role before they accept, but they can't manage anything until they have joined.
+
+One rule shapes the whole team: the **last remaining Admin** cannot be demoted, removed, or leave. If you are the only Admin, your row has no role dropdown and **Leave team** is missing from the team's **⋯** menu. To step away, promote someone else to Admin first, or delete the team. Deleting a team removes all of its member rows; its documents go back to their owners (see [Team Shared Documents](/help/collaboration/teams/team-shared-documents/#when-a-team-is-deleted)).
 
 ## Inviting by email
 
-<Step n={1}>Open your team in the Explorer and use the invite-by-email row (Admins only).</Step>
-<Step n={2}>Enter the person's email address. This creates a pending invite for that address.</Step>
+<Step n={1}>
+  Open your team in the Explorer. At the foot of the member list (Admins only) is the invite field,
+  "Add your team by email address, they will receive an invite."
+</Step>
+<Step n={2}>
+  Enter the person's email address and choose **Invite**. They join the list straight away, marked
+  **Invited** with "Waiting for them to accept".
+</Step>
 <Step n={3}>
   They get an email letting them know, with a link to their Invites page. (If email isn't configured
   on the deployment, the invite still lands in their in-app Invites section, so tell them out of
   band as well.)
 </Step>
 
-When that person signs in with the same email address, the invite appears in their Explorer **Invites** section, showing the team name, organisation, and member count. They then choose:
+When that person signs in with the same email address, the invite appears in their Explorer **Invites** section, showing the team name, organisation, and member count. They don't need an account yet when you invite them: the invite waits until they sign up with that address. They then choose:
 
 - **Accept**, which adds them to the team as a Member, or
 - **Decline**, which removes the invite. An Admin can re-invite the same address later.
 
-A pending invite grants no access until it is accepted.
+A pending invite grants no access until it is accepted. Admins can get an email when someone accepts or declines, controlled by **Someone Responds to a Team Invite** in their [email notifications](/help/account-and-data/email-notifications/).
 
 <Figure caption="Member rows show their role badges above the invite-by-email row that adds someone new.">
   <RolesAndInvites />
@@ -54,11 +62,19 @@ A pending invite grants no access until it is accepted.
 
 As an alternative, an Admin can turn on a **shareable invite link**. Anyone signed in who opens it can join the team as a Member.
 
-- It is off by default; an Admin generates it deliberately.
-- It **expires after one week**. Regenerating it rotates the link and resets the week.
-- An Admin can turn it off at any time from the **Invite by link** button on the team page.
+<Step n={1}>
+  Open the team page and press the link button beside the **⋯** menu at the top (**Invite by link**,
+  Admins only).
+</Step>
+<Step n={2}>
+  Choose **Turn on invite link**, then **Copy link** and send it to whoever should join.
+</Step>
 
-Opening the link lands on a join page that shows what team you are joining. A signed-in visitor sees Join or Decline; a signed-out visitor is asked to sign in or create an account first, then returns to finish joining.
+- It is off by default; an Admin turns it on deliberately.
+- It **expires after one week**; the dialog shows how long it has left ("Expires in 6 days").
+- An Admin can **Turn off** the link at any time from the same dialog. Turning it on again makes a new link, so the old one never works again: do that if a link has spread further than you meant.
+
+Opening the link lands on a join page that shows what team you are joining. A signed-in visitor sees **Join** or **Decline**; a signed-out visitor is asked to **Sign in to join** or **Create an account** first, then returns to finish joining. A link that has been turned off or has expired says "This invite link isn't valid".
 
 <Tip>
   The invite link is a credential: anyone who has the URL can join while it is active. Turn it off

@@ -347,6 +347,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A board on its stand with a marker scribble.
+  // One canvas, two ways of working on it: a clean shape on one side of the split, a hand-drawn
+  // stroke on the other.
+  'editor-modes': (
+    <Glyph>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 3l18 18" />
+      <rect x="13.5" y="5.5" width="5" height="5" rx="1" />
+      <path d="M5.5 17.5c1-2.2 2-2.2 2.8 0s1.9 2.2 2.8-0.3" />
+    </Glyph>
+  ),
   'draw-mode': (
     <Glyph>
       <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
@@ -1421,6 +1431,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
       <path d="M8 10.5V7.5a4 4 0 018 0v3" />
       <path d="M12 14.5v2.5" />
+    </Glyph>
+  ),
+  // A card with small marks along its top-right: the badges an element wears.
+  'element-indicators': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="15" rx="2" />
+      <path d="M6.5 15.5h7" />
+      <circle cx="13.5" cy="9" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M16 7.5h3.5v2.6h-1.6l-1.2 1.1v-1.1H16z" />
     </Glyph>
   ),
   // A magnet, not another set of guide lines: `alignment-guides` in the Palette

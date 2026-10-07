@@ -16,19 +16,32 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-The **zoom controls** sit in the corner of the canvas and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, Layers and the **Theme & canvas** paintbrush, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
 
-<Figure caption="The zoom cluster: step out, the current level, step in — with the preset popover open above.">
+<Figure caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
   <ZoomControls />
 </Figure>
 
 ## The controls
 
-- **Zoom in / out** — step closer or further, centred on the canvas.
-- **The percentage button** — shows the current level. **Click it to fit the whole canvas** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels — 25% to 150%, plus Fit to screen — and pick one to jump straight there (100% is true size).
+- **Zoom out** / **Zoom in**: step 10% further or closer.
+- **The percentage button**: shows the current level. **Click it to fit the whole canvas** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size).
 
-You can also zoom with a trackpad pinch or `Ctrl`/`Cmd` + scroll, and pan with the [Hand tool](/help/selection-modes/hand/) or by dragging empty canvas, the zoom controls are simply the always-visible way to do it.
+Zoom runs from 10% to 500%.
 
-On a phone the percentage button hides to save space and a dedicated **Fit** button stands in for it.
+## From the keyboard and trackpad
+
+| Keys                     | Does                              |
+| ------------------------ | --------------------------------- |
+| `⌘+` / `⌘-`              | Zoom in / out                     |
+| `⌘0`                     | Reset the zoom to 100%            |
+| `⇧1`                     | Zoom to fit everything on the tab |
+| `⌘` + scroll, or a pinch | Zoom in or out                    |
+
+`⌘` is Ctrl on Windows and Linux. A plain two-finger scroll pans rather than zooms, and so do the [Hand tool](/help/selection-modes/hand/), `Space` + drag, and a middle-button drag. Zoom never changes the document, so it works on a view-only link too. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+
+## On a phone and in zen mode
+
+On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a dedicated **Fit** button stands in for fit-to-screen. In [Zen mode](/help/tools/zen-mode/) everything else hides but the zoom controls stay, joined by an **Exit zen mode** button.
 
 </ArticleLayout>

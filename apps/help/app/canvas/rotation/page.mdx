@@ -2,11 +2,12 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { Rotation } from '@/components/illustrations/element-properties';
+import { RotationCategory } from '@/components/illustrations/style-panels';
 
 export const metadata = helpMetadata({
   title: 'Rotating Elements',
   description:
-    'Tilt an element to a preset angle from the Rotation category of the right-click menu or the search command palette.',
+    'Tilt an element, or a whole selection, to a preset 45° angle from the Rotation category of the right-click menu, or rotate it from the search palette.',
   path: '/help/canvas/rotation/',
 });
 
@@ -14,28 +15,37 @@ export const metadata = helpMetadata({
 
 Most elements sit upright, but sometimes a shape, label, or image reads better at an angle: a tilted callout, a diagonal banner, a label following a sloped arrow. The **Rotation** controls turn an element to the angle you want.
 
-<Figure caption="A square rotated 45° over its upright outline, with the angle read off the snap arc.">
+<Figure caption="A square rotated 45° over its upright outline.">
   <Rotation />
 </Figure>
 
 ## Snap to a preset angle
 
-Right-click an element and open the **Rotation** category. It offers eight preset angles, every 45° around the circle: **0°, 45°, 90°, 135°, 180°, 225°, 270°,** and **315°**. Each tile previews the orientation, so you can see the result before you pick it. Choosing one snaps the element to that exact angle, which keeps a row of tilted elements perfectly consistent. Picking **0°** sets it back upright.
+Right-click an element (or press the **⋯** button on its selection toolbar) and open the **Rotation** category. It offers eight preset angles, every 45° around the circle: **0°, 45°, 90°, 135°, 180°, 225°, 270°,** and **315°**. Each tile shows the orientation, and with a mouse, hovering a tile previews it on the element before you click. Choosing one snaps the element to that exact angle, which keeps a row of tilted elements perfectly consistent. Picking **0°** sets it back upright. Angles are measured clockwise.
+
+<Figure caption="The Rotation category: eight 45° tiles, with 45° chosen.">
+  <RotationCategory />
+</Figure>
+
+Select several elements and the multi-selection menu has the same **Rotation** category, turning every one of them that can rotate to the angle you pick.
 
 ## Rotate from the search palette
 
-With a single element selected, open the search palette (`⌘.` / `Ctrl .`) and type **rotate** for quick **Rotate 90°**, **Rotate 180°**, **Rotate 270°**, and **Reset rotation** actions — the keyboard-only route to the same result, without opening the menu.
+With a single element selected, open the search palette (**Cmd+K** or **Cmd+.**, **Ctrl** on Windows and Linux) and type **rotate** for quick **Rotate 90°**, **Rotate 180°**, **Rotate 270°**, and **Reset rotation** actions: the keyboard-only route to the same result, without opening the menu. They set the angle rather than add to it, so **Rotate 90°** twice still leaves the element at 90°.
 
 <Note>
   Rotation uses these fixed 45° steps rather than a free-drag handle, so tilted elements stay
-  consistent with one another and any angle is easy to reproduce or undo.
+  consistent with one another and any angle is easy to reproduce. Each change is one undo step.
 </Note>
 
 ## Good to know
 
-- Rotation is a per-element property, so different elements on the same tab can sit at different angles.
+- Rotation turns an element about its centre, and is a per-element property, so different elements on the same tab can sit at different angles. Copy, paste and duplicate keep the angle.
+- Shapes, text, sticky notes, images, freehand strokes, tables and link cards can all be rotated. Arrows have no Rotation category: move their ends instead.
 - A rotated element keeps its resize handles, turned with it. Dragging one grows the element along its own tilted sides while the opposite corner or edge stays put. It doesn't snap to other elements while it is tilted.
-- Some markers, like annotations, deliberately stay upright. A tilted note marker reads as a mistake, so rotation is kept off for them.
+- Arrows attached to a rotated element stay on its outline as it turns.
+- [Annotation](/help/canvas/annotations/) markers don't rotate: they are round numbered pins, so they have no Rotation category or **Rotate** actions, and a multi-selection's Rotation leaves them upright.
+- Notes on an [event storming board](/help/canvas/event-storming-boards/) have no Rotation category: their tilt is part of the notation.
 - The **Bounce** and **Wobble** [animations](/help/canvas/animations/) compose with an element's rotation, so a tilted shape still bobs or wiggles around its angle.
 
 <Tip>

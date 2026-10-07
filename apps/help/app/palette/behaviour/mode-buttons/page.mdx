@@ -25,7 +25,9 @@ A Selection Mode button is an element that hands out a [selection mode](/help/se
 
 The **Selection Mode** row of the [Collaborate](/help/palette/behaviour/) category opens into eight buttons, one per mode: **Avatar**, **Select**, **Hand**, **Laser**, **Spotlight**, **Eraser**, **Format** and **Isometric**.
 
-Pick the mode you want and it drops ready to press, reading "Switch to Avatar" and switching whoever presses it into that mode. You can still repoint an existing button from **Button**, or type your own label over the derived one.
+Pick the mode you want and it drops ready to press, reading "Switch to Avatar" and switching whoever presses it into that mode. To point an existing button at another mode, right-click it and open **Button**; the face relabels itself to match. You can also type your own label over the derived one ("Walk with me"), and clearing it brings the derived text back.
+
+Selection Mode buttons are in the palette in Diagram and Draw mode.
 
 <Figure caption="A row of Selection Mode buttons: two offering a mode, one offering the way back out.">
   <ModeButtonBar />
@@ -39,9 +41,13 @@ Pressing it again while you are in that mode hands you back your previous one, s
 
 A click presses the button; a drag still moves it, so you can arrange a bar of them without setting one off.
 
+An **Avatar** button drops your character just below the button, rather than in the middle of the screen, so it appears where you pressed.
+
 ## Why a bar of them works
 
-A Selection Mode button keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. That is what makes it useful on a walkthrough: the viewer has the controls they need in front of them, on the canvas, rather than in a panel they were never told about.
+A Selection Mode button keeps working while you are in a mode that makes the rest of the canvas read-only (Avatar, Spotlight or Isometric), so a row of them makes a usable little control bar. It also works for somebody on a view-only link, since switching your own tool changes nothing for anyone else (though an Eraser or Format button only changes the canvas for someone who can edit it). That is what makes it useful on a walkthrough: the viewer has the controls they need in front of them, on the canvas, rather than in a panel they were never told about.
+
+In a read-only embed there is no tool to switch, so the button shows but does nothing.
 
 <Tip>
   Pair an **Eraser** button with a **Select** button so a reviewer can tidy up what they see and put

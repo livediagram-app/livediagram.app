@@ -215,6 +215,10 @@ The system has three layers, all under `apps/help`:
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
   indigo) already used by `featureColours`.
+- **`components/illustrations/<surface>.tsx`**: an editor surface several
+  areas show (the Settings dialog in `settings-dialog.tsx`, with the shared
+  `Switch`), drawn once and imported wherever it recurs. Files are named after
+  their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the
   Explorer's sidebar row and document card; the palette's per-mode glyphs and

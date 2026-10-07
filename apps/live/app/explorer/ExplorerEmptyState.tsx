@@ -29,7 +29,7 @@ const CONTENT: Record<
   recent: {
     icon: <ClockIcon />,
     title: 'No recent documents',
-    description: 'Documents you open show up here for quick access. Make your first one.',
+    description: 'Documents show up here as they change, newest first. Make your first one.',
     cta: 'New document',
   },
   shared: {

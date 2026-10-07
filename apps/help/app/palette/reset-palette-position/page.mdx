@@ -1,12 +1,13 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { PaletteSettings, ResetPalettePosition } from '@/components/illustrations/palette-modes';
+import { ResetPalettePosition } from '@/components/illustrations/palette-modes';
+import { PaletteHeaderReset } from '@/components/illustrations/palette-settings';
 
 export const metadata = helpMetadata({
   title: 'Reset Palette Position',
   description:
-    'Snap the floating palette back to its default corner after you have dragged it around the canvas.',
+    'Snap the floating palette back to its default top-right corner after you have dragged it somewhere else.',
   path: '/help/palette/reset-palette-position/',
 });
 
@@ -18,18 +19,30 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("reset-palette-position")}
 >
 
-Reset Palette Position is an action (a button), not a toggle. You will find it in the palette's own header, beside minimise: it appears once you have moved the palette, and is the only control left there now that the palette's preferences live in [Settings](/help/user-interface/settings/).
+Reset Palette Position is a button, not a setting. It lives in the palette's own header, between the help button and the collapse button, and only appears once you have moved the palette away from its home.
 
 ## What it does
 
-The palette is movable: you can drag it around the canvas to wherever suits your work. This action snaps it back to its default corner, the top-right. Use it whenever the palette has drifted somewhere awkward and you want it back in its familiar spot.
+The palette is movable: drag it by its header to any corner of the screen, where it docks, or drop it anywhere else and it floats right where you left it. The **Reset position** button snaps it back to its default spot, the top-right corner. Use it whenever the palette has drifted somewhere awkward and you want it back in its familiar place.
 
-<Figure caption="The action snaps a drifted palette back to its default top-right corner.">
+<Figure caption="The palette's header after it has been moved: Reset position sits between help and collapse.">
+  <PaletteHeaderReset />
+</Figure>
+
+<Figure caption="One click snaps a drifted palette back to its default top-right corner.">
   <ResetPalettePosition />
 </Figure>
 
-## When it is available
+## When it shows
 
-The button is disabled when the palette is already at the default position, and its hint then reads: "Already at the default corner." Once you have moved the palette, the button becomes active and its hint reads: "Snap back to the default corner."
+While the palette is in its home corner, the button isn't there at all, which keeps the header short. It appears as soon as the palette is somewhere else, whether floating free or docked in another corner, and hovering it shows "Snap back to the default corner." Once the palette is home again, the button goes away.
+
+Every other floating panel has the same button in its header, so the Explorer, Layers, Collaborate and the Map can each be sent home the same way. See [Panel Layout](/help/user-interface/panel-layout/) for docking panels into corners.
+
+## Good to know
+
+- **Per device.** Where your panels sit is remembered for this browser and device, not synced to your account, since a laptop and a large monitor want different arrangements.
+- **Not on a phone.** Panels can't be dragged on a phone, so there is nothing to reset and the button never shows there.
+- **Not in the Toolbar layout.** In the [Toolbar layout](/help/palette/toolbar-layout/) the palette is a fixed strip across the top of the canvas, so it has no position to reset.
 
 </ArticleLayout>

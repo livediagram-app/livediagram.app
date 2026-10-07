@@ -1,44 +1,45 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TechnologyCatalogue } from '@/components/illustrations/palette-catalogues';
+import { TechGrid } from '@/components/illustrations/palette-categories';
 
 export const metadata = helpMetadata({
   title: 'Technology',
   description:
-    'Full-colour AWS, Azure, Cloudflare, Firebase, and generic infrastructure brand icons for system-architecture diagrams.',
+    'Full-colour AWS, Azure, Cloudflare, Firebase and generic infrastructure icons for system-architecture diagrams.',
   path: '/help/palette/technology/',
 });
 
-<ArticleLayout title="Technology" description="Brand icons for the services people put on system-architecture diagrams, in their official colours." categoryTitle="Palette" categorySlug="palette" subArticles={getSubArticles("technology")}>
+<ArticleLayout title="Technology" description="Icons for the services people put on system-architecture diagrams, in their brand colours." categoryTitle="Palette" categorySlug="palette" subArticles={getSubArticles("technology")}>
 
-The **Technology** category in the palette holds full-colour brand icons for the infrastructure services that show up on system-architecture diagrams: AWS S3, Lambda, EC2, Azure Functions, Kubernetes, Postgres, and many more. They sit beside the regular Icons category but are deliberately a separate surface, because they are coloured filled marks rather than the single-weight line art the Icons catalogue holds. An orange Lambda is only recognisable orange, so technology icons keep their fixed brand colours rather than tinting to your theme.
+The **Technology** category in the palette holds full-colour icons for the infrastructure services that show up on system-architecture diagrams: AWS S3, Lambda, EC2, Azure Functions, Kubernetes, PostgreSQL and many more. They sit beside the regular Icons category but are deliberately a separate surface, because they are coloured filled marks rather than the single-weight line art the [Icons](/help/palette/icons/) catalogue holds. An orange Lambda is only recognisable orange, so technology icons keep their fixed brand colours rather than tinting to your theme.
 
 ## What's in the set
 
 The set covers a curated selection of common services across five providers:
 
-- **AWS:** S3, EC2, Lambda, RDS, DynamoDB, API Gateway, CloudFront, Route 53, VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM.
-- **Azure:** Virtual Machines, Blob Storage, App Service, Functions, SQL Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key Vault, Monitor.
-- **Cloudflare:** Workers, Pages, R2, D1, KV, Durable Objects, Queues, Zero Trust, CDN, DNS, WAF, Workers AI, Images, Stream.
-- **Firebase:** Firestore, Realtime Database, Authentication, Cloud Functions, Hosting, Cloud Storage, Cloud Messaging.
-- **Generic infrastructure:** Kubernetes, Docker, PostgreSQL, MySQL, Redis, MongoDB, Cassandra, Kafka, RabbitMQ, Elasticsearch, Nginx, GraphQL, Node.js, React, GitHub, GitLab, Terraform, Prometheus, Vercel, Supabase.
+- **AWS:** S3, EC2, Lambda, RDS, DynamoDB, API Gateway, CloudFront, Route 53, VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM, Lake Formation and MSK.
+- **Azure:** Virtual Machine, Blob Storage, App Service, Functions, SQL Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key Vault and Monitor.
+- **Cloudflare:** Workers, Pages, R2, D1, KV, Durable Objects, Queues, Zero Trust, CDN, DNS, WAF, Workers AI, Images and Stream.
+- **Firebase:** Firestore, Realtime Database, Authentication, Cloud Functions, Hosting, Cloud Storage and Cloud Messaging.
+- **Generic:** Kubernetes, Docker, PostgreSQL, MySQL, Redis, MongoDB, Cassandra, Kafka, RabbitMQ, Elasticsearch, Nginx, GraphQL, Node.js, React, GitHub, GitLab, Terraform, Prometheus, Vercel and Supabase.
 
-Each icon is a brand-coloured rounded tile with a white line-art symbol, the AWS resource-icon visual language, applied uniformly across all five providers for a cohesive look.
+Each icon is a brand-coloured rounded tile with a white line-art symbol, the AWS resource-icon visual language, applied uniformly across all five providers for a cohesive look. The symbols are drawn for livediagram rather than copied from the vendors' logos.
 
-<Figure caption="The Tech category shows a grid of full-colour brand tiles, each in its own accent hue with a caption beneath.">
-  <TechnologyCatalogue />
+<Figure caption="The Tech category, drilled into AWS: a grid of full-colour tiles, three across, each with its caption beneath.">
+  <TechGrid />
 </Figure>
 
 ## Adding one
 
 <Step n={1}>
   Open the palette's category picker and choose **Tech**, in the **Decorate** band. (The category is
-  labelled Tech for width; it is the Technology catalogue this page describes.)
+  labelled Tech for width; it is the Technology catalogue this page describes.) It is in the palette
+  in Diagram mode.
 </Step>
 
 <Step n={2}>
-  Pick a **provider** (AWS, Azure, Cloudflare, Firebase, Generic) to see its marks, or type in the
+  Pick a **provider** (AWS, Azure, Cloudflare, Firebase or Generic) to see its icons, or type in the
   search box to look across all of them at once.
 </Step>
 
@@ -49,18 +50,21 @@ Each icon is a brand-coloured rounded tile with a white line-art symbol, the AWS
   pointer.
 </Step>
 
-The Technology grid shows three icons across with a caption under each, since brand icons aren't always self-explanatory at thumbnail size. A few long names use a shorter caption (Virtual Machine shows as VM, for example), but the full name is always used for search and for the placed element's label.
+The Technology grid shows three icons across with a caption under each, since brand icons aren't always self-explanatory at thumbnail size. A few long names use a shorter caption (Virtual Machine shows as VM, Load Balancer as Load Bal.), but the full name is always used for search and for the placed element's label.
+
+You don't need the category to find one. The editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and the Toolbar layout's [Search](/help/palette/toolbar-layout/) both find technology icons by name in any mode, so "database" turns up PostgreSQL, MySQL and the rest.
 
 ## Working with them on the canvas
 
-- A technology icon is the same kind of element the regular Icons category produces, so there's no new element type to learn. It is **aspect-locked**, so the brand mark never warps when you resize it.
-- Double-click to type a label and the text drops in a band **below** the icon, the architecture-diagram convention of icon on top, caption beneath, which is exactly right for labelling `S3`, `Orders DB`, and the like.
+- A technology icon is the same kind of element the regular Icons category produces, so there's no new element type to learn.
+- It arrives **labelled** with the service's name, in a band **below** the icon: the architecture-diagram convention of icon on top, caption beneath. Double-click to change it to something specific, such as `Orders DB`.
+- The mark itself stays a fixed size, so it never warps however you resize the element; resizing only changes the room around it and the caption. To make the mark bigger or smaller, right-click it and pick **Small**, **Medium**, **Large** or **Huge** in its **Icon** section.
 - A technology icon is **always a standalone element**: unlike a line-art icon, it never folds inside a shape as an inline icon, and dragging an existing one over a shape leaves it standalone.
 
 <Note>
-  The **System architecture** starter template seeds some of these branded tiles, so a developer
-  audience lands on a diagram that already speaks their stack. Brand tiles keep their colours even
-  when you change the tab's theme.
+  The **System architecture** starter [template](/help/canvas/templates/) seeds some of these
+  branded tiles, so a developer audience lands on a diagram that already speaks their stack. Brand
+  tiles keep their colours even when you change the tab's theme.
 </Note>
 
 </ArticleLayout>

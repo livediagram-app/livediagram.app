@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@livediagram/document';
 import { ITEM_TYPES, presetSetup } from '@livediagram/items';
-import { PlanBoardMenuSection } from './PlanBoardMenuSection';
+import { PlanBoardMenuSection, PlanCardsMenuSection } from './PlanBoardMenuSection';
 
 // docs/specs/012-collaboration/presentation-mode.md "Board slides": the Board flyout adds the whole board
 // to the slides.
@@ -78,5 +78,28 @@ describe('Swimlanes by a field', () => {
     const next = updateBoard.mock.calls[0]![1];
     expect(next.swimlaneBy).toBe('assignee');
     expect(next.swimlaneField).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "The board set-up": a board whose chosen types were all deleted takes
+// every type again, and its New Cards Can Be says so.
+describe('New Cards Can Be after a type is deleted', () => {
+  it('shows every type pressed, and a change stores only current types', () => {
+    const updateBoard = vi.fn();
+    cleanup();
+    const stale = {
+      ...board,
+      planBoard: { ...presetSetup('kanban'), addTypes: ['customer-call'] },
+    } as ShapeElement;
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types: ITEM_TYPES });
+    render(<PlanCardsMenuSection element={stale} flyoutProps={{} as never} />);
+    // The New Cards Can Be tiles come first (a card field such as Project shares a name).
+    const tile = (name: string) => screen.getAllByRole('button', { name })[0]!;
+    for (const t of ITEM_TYPES) expect(tile(t.label).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(tile('Note'));
+    expect(updateBoard.mock.calls[0]![1].addTypes).toEqual(
+      ITEM_TYPES.map((t) => t.id).filter((id) => id !== 'note'),
+    );
   });
 });

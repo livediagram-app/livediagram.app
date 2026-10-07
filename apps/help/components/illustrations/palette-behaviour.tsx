@@ -1,6 +1,6 @@
 // Behaviour-category illustrations (docs/specs/018-help/help-app.md, drawing docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md and
 // docs/specs/009-elements/reaction-pad.md): the palette's Behaviour groups, plus one scene per element that
-// does something when somebody presses it — Selection Mode buttons, Session
+// does something when somebody presses it: Selection Mode buttons, Session
 // buttons, the Done check, Reaction pads, Reveal zones and the Picker.
 //
 // One scene per sub-article, so each small article can show the surface it
@@ -110,24 +110,55 @@ function AvatarGlyph() {
   );
 }
 
+/** A page with ruled lines, the Record group glyph. */
+function RecordGlyph() {
+  return (
+    <g {...glyph} strokeLinecap="round">
+      <rect x={-6} y={-8} width={12} height={16} rx={2} />
+      <path d="M-3 -3 H3 M-3 1 H3 M-3 5 H1" />
+    </g>
+  );
+}
+/** A four-point spark, the React group glyph. */
+function SparkGlyph() {
+  return <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" className="fill-brand-600" />;
+}
+/** An hourglass, the Timer glyph (it runs down). */
+function HourglassGlyph() {
+  return (
+    <g {...glyph} strokeLinejoin="round">
+      <path d="M-5 -8 H5 M-5 8 H5 M-4 -8 C-4 -3 4 -2 4 0 C4 2 -4 3 -4 8 M4 -8 C4 -3 -4 -2 -4 0 C-4 2 4 3 4 8" />
+    </g>
+  );
+}
+/** A stopwatch, the Stopwatch glyph (it counts up). */
+function StopwatchGlyph() {
+  return (
+    <g {...glyph} strokeLinecap="round">
+      <circle cy={1.5} r={6.5} />
+      <path d="M0 1.5 V-2 M-2 -8 H2 M0 -8 V-5" />
+    </g>
+  );
+}
+
 // --- Scenes ----------------------------------------------------------------
 
-/** The Collaborate tab of the palette (id `behaviour`): a search box over the six group tiles
- *  you click into. Ordered room-first, matching BEHAVIOUR_GROUPS. */
+/** The Collaborate category of the palette (id `behaviour`): a search box over the six group
+ *  tiles you click into. Ordered room-first, with the labels BEHAVIOUR_GROUPS gives them. */
 export function BehaviourGroups() {
   const px = 52;
   const py = 12;
   const groups: { label: string; icon: ReactNode }[] = [
-    { label: 'Ask the room', icon: <PollGlyph /> },
-    { label: 'Run the room', icon: <ClockGlyph /> },
-    { label: 'Keep a record', icon: <DotsGlyph /> },
-    { label: 'Reactions', icon: <DotsGlyph /> },
+    { label: 'Ask', icon: <PollGlyph /> },
+    { label: 'Tools', icon: <ClockGlyph /> },
+    { label: 'Record', icon: <RecordGlyph /> },
+    { label: 'React', icon: <SparkGlyph /> },
     { label: 'Selection Mode', icon: <SelectGlyph /> },
-    { label: 'Get around', icon: <AvatarGlyph /> },
+    { label: 'Navigate', icon: <AvatarGlyph /> },
   ];
   return (
     <Scene w={420} h={228} bg="plain">
-      <Panel x={px} y={py} w={316} h={200} title="BEHAVIOURS">
+      <Panel x={px} y={py} w={316} h={200} title="COLLABORATE">
         {/* Search across all six groups at once */}
         <rect
           x={px + 12}
@@ -152,7 +183,7 @@ export function BehaviourGroups() {
           strokeWidth={1.5}
         />
         <Label x={px + 38} y={py + 42} size={10} tone="muted">
-          Search behaviours
+          Search collaboration
         </Label>
         {groups.map((g, i) => {
           const gx = px + 12 + (i % 3) * 102;
@@ -171,7 +202,7 @@ export function BehaviourGroups() {
               <Chip x={gx + 44} y={gy + 20} r={13}>
                 {g.icon}
               </Chip>
-              <Label x={gx + 44} y={gy + 45} anchor="middle" size={9} weight={600} tone="body">
+              <Label x={gx + 44} y={gy + 45} anchor="middle" size={10} weight={600} tone="body">
                 {g.label}
               </Label>
             </g>
@@ -230,102 +261,135 @@ export function ModeButtonBar() {
   );
 }
 
-/** The three Session buttons, each labelled from its own setting. */
+/** The four session elements: a Timer, which is the clock itself, then the Stopwatch, Dot vote
+ *  and Poll buttons, each labelled from its own setting. */
 export function SessionButtons() {
-  const cards: { kicker: string; action: string; icon: ReactNode; menu: boolean }[] = [
-    { kicker: 'START', action: '5 min timer', icon: <ClockGlyph />, menu: true },
-    { kicker: 'START VOTE', action: '3 dots each', icon: <DotsGlyph />, menu: true },
-    { kicker: 'ASK THE ROOM', action: 'Ready to ship?', icon: <PollGlyph />, menu: true },
+  const cards: { kicker: string; action: string; icon: ReactNode }[] = [
+    { kicker: 'START', action: 'a stopwatch', icon: <StopwatchGlyph /> },
+    { kicker: 'START VOTE', action: '3 dots each', icon: <DotsGlyph /> },
+    { kicker: 'ASK', action: 'Ready to ship?', icon: <PollGlyph /> },
   ];
   return (
-    <Scene w={420} h={200}>
+    <Scene w={420} h={226}>
+      {/* The Timer element: the same clock as the top-bar pill, idle at its length. */}
+      <rect
+        x={98}
+        y={14}
+        width={224}
+        height={50}
+        rx={12}
+        className="fill-white stroke-brand-300"
+        strokeWidth={2}
+      />
+      <Label x={114} y={40} size={13} weight={700} tone="muted">
+        …
+      </Label>
+      <Chip x={146} y={39} r={13}>
+        <HourglassGlyph />
+      </Chip>
+      <Label x={168} y={40} size={10} weight={600} tone="muted">
+        TIMER
+      </Label>
+      <Label x={210} y={40} size={15} weight={700} tone="strong">
+        5:00
+      </Label>
+      <circle cx={292} cy={39} r={11} className="fill-brand-500" />
+      <path d="M288.5 33.5 L297 39 L288.5 44.5 Z" className="fill-white" />
       {cards.map((c, i) => {
-        const cx = 20 + i * 130;
+        const cx = 34 + i * 122;
         return (
           <g key={c.kicker}>
             <rect
               x={cx}
-              y={28}
-              width={116}
-              height={92}
+              y={80}
+              width={108}
+              height={88}
               rx={10}
               className="fill-white stroke-brand-300"
               strokeWidth={2}
             />
-            {c.menu && (
-              <Label x={cx + 104} y={40} anchor="middle" size={13} weight={700} tone="muted">
-                …
-              </Label>
-            )}
-            <Chip x={cx + 58} y={57}>
+            <Label x={cx + 96} y={92} anchor="middle" size={13} weight={700} tone="muted">
+              …
+            </Label>
+            <Chip x={cx + 54} y={107}>
               {c.icon}
             </Chip>
-            <Label x={cx + 58} y={88} anchor="middle" size={8} weight={700} tone="muted">
+            <Label x={cx + 54} y={137} anchor="middle" size={10} weight={600} tone="muted">
               {c.kicker}
             </Label>
-            <Label x={cx + 58} y={102} anchor="middle" size={11} weight={700} tone="strong">
+            <Label x={cx + 54} y={153} anchor="middle" size={11} weight={700} tone="strong">
               {c.action}
             </Label>
           </g>
         );
       })}
-      <Label x={210} y={148} anchor="middle" size={11} tone="body">
+      <Label x={210} y={192} anchor="middle" size={11} tone="body">
         Pressing one starts that tool for everyone in the room.
       </Label>
-      <Label x={210} y={170} anchor="middle" size={10} tone="muted">
+      <Label x={210} y={212} anchor="middle" size={10} tone="muted">
         The … menu holds the setting you change most.
       </Label>
     </Scene>
   );
 }
 
-/** The Done check: who has marked themselves finished, and who it is waiting
- *  on. */
+/** The Done check: the ring with the count, who has finished, and who it is still waiting on. */
 export function DoneCheckCard() {
-  const x = 88;
-  const y = 16;
-  const w = 244;
+  const x = 70;
+  const y = 14;
+  const w = 280;
+  const ringX = x + 62;
+  const ringY = y + 96;
+  const r = 34;
+  const circ = 2 * Math.PI * r;
   return (
-    <Scene w={420} h={218}>
+    <Scene w={420} h={222}>
       <rect
         x={x}
         y={y}
         width={w}
-        height={186}
+        height={194}
         rx={11}
         className="fill-white stroke-brand-300"
         strokeWidth={2}
       />
-      <Label x={x + 14} y={y + 20} size={12} weight={700} tone="strong">
-        Everyone done?
-      </Label>
-      <Label x={x + w - 34} y={y + 20} anchor="end" size={11} weight={600} tone="accent">
-        2/4
-      </Label>
-      <Label x={x + w - 16} y={y + 20} anchor="end" size={13} weight={700} tone="muted">
+      <Label x={x + 14} y={y + 20} size={13} weight={700} tone="muted">
         …
       </Label>
-      <line
-        x1={x}
-        y1={y + 32}
-        x2={x + w}
-        y2={y + 32}
-        className="stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={x + 14} y={y + 50} size={8} weight={700} tone="muted">
-        DONE · 2
+      <Label x={x + 32} y={y + 20} size={12} weight={700} tone="strong">
+        Everyone done?
       </Label>
-      <Avatar cx={x + 26} cy={y + 74} r={12} initial="A" colour="emerald" />
-      <Avatar cx={x + 58} cy={y + 74} r={12} initial="R" colour="brand" />
-      <Label x={x + 14} y={y + 104} size={8} weight={700} tone="muted">
-        WAITING ON · 2
+      <Label x={x + w - 14} y={y + 20} anchor="end" size={11} weight={600} tone="accent">
+        2/4
+      </Label>
+      {/* The ring fills as people finish, with the count in the middle. */}
+      <circle cx={ringX} cy={ringY} r={r} className="fill-none stroke-slate-200" strokeWidth={7} />
+      <circle
+        cx={ringX}
+        cy={ringY}
+        r={r}
+        className="fill-none stroke-brand-500"
+        strokeWidth={7}
+        strokeLinecap="round"
+        strokeDasharray={`${circ / 2} ${circ}`}
+        transform={`rotate(-90 ${ringX} ${ringY})`}
+      />
+      <Label x={ringX} y={ringY + 1} anchor="middle" size={16} weight={700} tone="strong">
+        2/4
+      </Label>
+      <Label x={x + 124} y={y + 50} size={10} weight={700} tone="muted">
+        Done · 2
+      </Label>
+      <Avatar cx={x + 136} cy={y + 72} r={12} initial="A" colour="emerald" />
+      <Avatar cx={x + 166} cy={y + 72} r={12} initial="R" colour="brand" />
+      <Label x={x + 124} y={y + 104} size={10} weight={700} tone="muted">
+        Waiting · 2
       </Label>
       <g opacity={0.45}>
-        <Avatar cx={x + 26} cy={y + 128} r={12} initial="P" colour="slate" />
-        <Avatar cx={x + 58} cy={y + 128} r={12} initial="J" colour="slate" />
+        <Avatar cx={x + 136} cy={y + 126} r={12} initial="P" colour="slate" />
+        <Avatar cx={x + 166} cy={y + 126} r={12} initial="J" colour="slate" />
       </g>
-      <Button x={x + 14} y={y + 150} w={w - 28} h={26} label="I'm done" variant="primary" />
+      <Button x={x + 14} y={y + 156} w={w - 28} h={26} label="I'm done" variant="primary" />
     </Scene>
   );
 }
@@ -334,7 +398,7 @@ export function DoneCheckCard() {
 export function ReactionPads() {
   const pads: { label: string; icon: ReactNode }[] = [
     {
-      label: 'Confetti',
+      label: 'Celebrate',
       icon: (
         <g>
           <rect
@@ -377,7 +441,7 @@ export function ReactionPads() {
       ),
     },
     {
-      label: 'Sparkles',
+      label: 'Nice one',
       icon: (
         <g className="fill-amber-400">
           <path d="M-3 -9 L-1 -3 L5 -1 L-1 1 L-3 7 L-5 1 L-11 -1 L-5 -3 Z" />
@@ -386,7 +450,7 @@ export function ReactionPads() {
       ),
     },
     {
-      label: 'Hearts',
+      label: 'Show some love',
       icon: (
         <path
           d="M0 8 C-9 1 -11 -3 -8.5 -6 C-6 -9 -1.5 -7.5 0 -4 C1.5 -7.5 6 -9 8.5 -6 C11 -3 9 1 0 8 Z"
@@ -395,7 +459,7 @@ export function ReactionPads() {
       ),
     },
     {
-      label: 'Applause',
+      label: 'Thanks',
       icon: (
         <g>
           <path
@@ -414,7 +478,7 @@ export function ReactionPads() {
       ),
     },
     {
-      label: 'Fireworks',
+      label: 'It shipped',
       icon: (
         <g className="stroke-violet-500" strokeWidth={1.8} strokeLinecap="round">
           <path d="M0 -9 V-4 M0 4 V9 M-9 0 H-4 M4 0 H9 M-6.4 -6.4 L-3.2 -3.2 M6.4 -6.4 L3.2 -3.2 M-6.4 6.4 L-3.2 3.2 M6.4 6.4 L3.2 3.2" />
@@ -435,27 +499,35 @@ export function ReactionPads() {
         <circle cx={186} cy={26} r={2.5} className="fill-brand-400" />
       </g>
       {pads.map((p, i) => {
-        const px = 26 + i * 76;
+        // Each pad: the emoji over a glowing spot to stand on, its caption in a pill below.
+        const cx = 50 + i * 80;
         const lit = i === 2;
         return (
           <g key={p.label}>
-            <rect
-              x={px}
-              y={78}
-              width={64}
-              height={64}
-              rx={12}
-              className={lit ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-brand-300'}
-              strokeWidth={2}
+            <ellipse
+              cx={cx}
+              cy={122}
+              rx={28}
+              ry={9}
+              className={lit ? 'fill-brand-200' : 'fill-brand-100'}
             />
-            <g transform={`translate(${px + 32} 104)`}>{p.icon}</g>
-            <Label x={px + 32} y={130} anchor="middle" size={9} weight={600} tone="body">
+            <g transform={`translate(${cx} 100)`}>{p.icon}</g>
+            <rect
+              x={cx - 38}
+              y={134}
+              width={76}
+              height={16}
+              rx={8}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1}
+            />
+            <Label x={cx} y={143} anchor="middle" size={10} weight={600} tone="body">
               {p.label}
             </Label>
           </g>
         );
       })}
-      <Label x={210} y={168} anchor="middle" size={11} tone="muted">
+      <Label x={210} y={176} anchor="middle" size={11} tone="muted">
         Press a pad, or walk a character onto it in Avatar mode.
       </Label>
     </Scene>
@@ -503,8 +575,8 @@ export function RevealZone() {
       <Label x={105} y={98} anchor="middle" size={12} weight={700} tone="strong">
         Estimates
       </Label>
-      <rect x={58} y={108} width={94} height={16} rx={8} className="fill-slate-200" />
-      <Label x={105} y={116} anchor="middle" size={8} weight={600} tone="body">
+      <rect x={44} y={107} width={122} height={18} rx={9} className="fill-slate-200" />
+      <Label x={105} y={116} anchor="middle" size={10} weight={600} tone="body">
         Double-click to reveal
       </Label>
 
@@ -525,9 +597,9 @@ export function RevealZone() {
       <TextBar x={248} y={104} w={84} />
       <TextBar x={248} y={120} w={98} />
       <g className="help-art-as-drawn">
-        <rect x={340} y={46} width={50} height={18} rx={9} className="fill-slate-800" />
-        <Eye x={352} y={55} off />
-        <Label x={366} y={56} size={9} weight={600} tone="onAccent">
+        <rect x={336} y={46} width={56} height={18} rx={9} className="fill-slate-800" />
+        <Eye x={349} y={55} off />
+        <Label x={362} y={56} size={10} weight={600} tone="onAccent">
           Hide
         </Label>
       </g>
@@ -556,8 +628,8 @@ export function PickerCard() {
         className="fill-white stroke-brand-300"
         strokeWidth={2}
       />
-      <Label x={200} y={76} anchor="middle" size={8} weight={700} tone="muted">
-        WHO DEMOS?
+      <Label x={200} y={76} anchor="middle" size={10} weight={600} tone="muted">
+        Who demos?
       </Label>
       <Avatar cx={158} cy={102} r={13} initial="P" colour="violet" />
       <Label x={182} y={103} size={16} weight={700} tone="strong">

@@ -33,7 +33,7 @@ Use a current version of any mainstream evergreen browser.
 2. **Hard refresh the page.** Reload while bypassing the cache so you are running the latest files rather than a stale copy.
 3. **Try an incognito or private window.** This loads the site with extensions off and no cached data, which quickly tells you whether an extension is the cause.
 4. **Disable interfering extensions.** Privacy, ad-blocking, and script-blocking extensions can break parts of the editor, sign-in, or the live connection. Turn them off for the site and retry.
-5. **Clear the site's cached data** if a hard refresh did not help, then reload.
+5. **Clear the site's cached files** if a hard refresh did not help, then reload. Clear only cached images and files, not cookies and site data: site data holds your [guest identity](/help/account-and-data/guest-identity/) and any [offline documents](/help/privacy-and-security/offline-mode/), and clearing it loses them.
 
 <Figure caption="A stale render clipping and misaligning a shape, cleared by an update or hard refresh.">
   <RenderGlitch />
@@ -44,6 +44,8 @@ Use a current version of any mainstream evergreen browser.
 - **Allow JavaScript.** The editor cannot run with JavaScript disabled for the site.
 - **Do not block live connections.** Some networks and extensions block the connection real-time collaboration depends on; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/).
 - **Try another device.** If a problem follows you to a fresh browser on the same machine, test a different device to separate a browser issue from a network one.
+- **Private windows forget you.** A private or incognito window starts with no guest identity and throws its storage away when you close it. That makes it good for testing, but documents you make there as a guest are hard to get back: sign in first if you want to keep them.
+- **Phones and tablets work too.** See [Supported Devices](/help/supported-devices/) for what each kind of device offers.
 
 <Tip>
   For the smoothest experience, especially with large diagrams and live collaboration, use the

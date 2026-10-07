@@ -15,11 +15,11 @@ A clean, consistent look does not have to mean fiddling with colours one element
 
 ## Start with a theme
 
-A theme sets the look of the whole tab at once. Picking one writes its colours, background, and pattern onto the tab, and from then on new elements inherit the theme's fill, border, and text colours, so everything you add stays on-brand automatically.
+A theme sets the look of the whole tab at once. Open it from the **Theme & canvas** paintbrush in the bottom-right corner of the editor. Picking a theme writes its colours, background, and pattern onto the tab, and from then on new elements inherit the theme's fill, border, and text colours, so everything you add stays on-brand automatically.
 
-The catalogue ships with twenty-seven themes, including dark and multi-colour options. They are organised by temperament (Cool, Warm, Dark, Multi-colour, Formal), so you browse by mood rather than scanning a wall of swatches, and every theme sits inside one of those categories rather than behind a "show more" step.
+The catalogue ships with twenty-six themes, grouped by temperament (**Formal**, **Cool**, **Warm**, **Dark** and **Multi-colour**), so you browse by mood rather than scanning a wall of swatches. Themes you save yourself sit in a **Custom** category beside them. See [Themes](/help/canvas/themes/) and [Custom Themes](/help/canvas/themes/custom-themes/).
 
-Switching theme is non-destructive to deliberate choices: a background pattern you hand-picked survives a theme change rather than resetting, and existing elements keep their colours unless you re-apply them.
+Switching theme respects deliberate choices. Elements still on the old theme's colours take the new theme's; an element you coloured by hand keeps its colour, and a background pattern you hand-picked survives too. When you do want everything back in line, **Reset elements to theme** in the same dialog recolours every element on the tab.
 
 <Figure caption="Pick a theme to recolour the whole tab at once, then new elements arrive on-brand.">
   <ThemePicker />
@@ -27,15 +27,17 @@ Switching theme is non-destructive to deliberate choices: a background pattern y
 
 ## Add emphasis with presets
 
-Once the overall look is set, **style presets** let you make individual elements stand out without dialling each field by hand. Right-click a single shape and open the **Presets** category at the top of the menu.
+Once the overall look is set, **style presets** let you make individual elements stand out without dialling each field by hand. Right-click a shape (or a selection holding several) and open **Style**, where the presets lead.
 
-For shapes you get one grid of up to twelve one-click looks derived from the active theme, spanning soft, tinted, solid, bold, outline, and muted variations. Each look pairs a colour with a border treatment that suits it (weight, pattern, and corner radius), with label colour auto-contrasted so text stays readable.
+For shapes you get one grid of looks derived from the active theme, in four tiers, each running quiet to loud: the **theme** accent at rising strength (plus a card per branch colour on a multi-colour theme), **neutral** greys, **border** treatments (hairline, outline, dotted and so on), and the semantic **status** colours (info, success, warning, danger, highlight). That is twenty looks on a single-colour theme. Each pairs a colour with a matching border weight and pattern, with the label colour auto-contrasted so text stays readable; your corner radius is left alone.
 
-Arrows get their own set of eight presets that combine line pattern, thickness, and an optional flow animation. Every preset includes a **Reset to default** option that returns the element to its theme look in one click.
+A preset follows the theme: switch theme later and a shape on the Bold preset becomes the new theme's Bold, rather than keeping the old colours.
+
+Arrows get their own twelve presets: solid weights, dashed and dotted patterns, and animated flows. Every preset grid ends with **Reset to default**, which returns the element to its theme look in one click. On a computer, hovering a preset previews it before you commit. See [Style Presets](/help/palette/shapes/style-presets/).
 
 <Tip>
-  Theme the tab first so new elements arrive on-brand, then use colour and border presets to lift
-  just the handful of elements you want the reader's eye to land on.
+  Theme the tab first so new elements arrive on-brand, then use presets to lift just the handful of
+  elements you want the reader's eye to land on.
 </Tip>
 
 </ArticleLayout>

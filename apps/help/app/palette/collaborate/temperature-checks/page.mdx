@@ -21,12 +21,22 @@ export const metadata = helpMetadata({
 
 A fist-of-five check-in. Everyone taps the face that fits, from a frown (1, blocked) to a beam (5, enthusiastic), and the bars and the mood meter move as the answers land. Tap another face to change your reading. It sits in the **Ask** group of the [Collaborate](/help/palette/collaborate/) category.
 
+The label is the question; a new card asks "How are we feeling?". Double-click it to ask your own.
+
 <Figure caption="Five faces, the bars they fill, and the room's average on the mood meter.">
   <TemperatureCheckCard />
 </Figure>
 
+- **The bars** show how many people chose each value, with the count over each one.
+- **The mood meter** under them runs cool to warm, with a marker at the average and the average itself, to one decimal, beside the number of people who answered.
+- **Empty**, the card says "No readings yet" rather than drawing an average of zero.
+
+The five values and their colours are fixed: fist of five is a ritual with a shared meaning, so the card doesn't offer a different range, and the colours don't change with the tab theme.
+
+Anyone who can edit the document can answer. View-only visitors see the readings but can't add one, and nobody else's Ctrl+Z can take your reading back.
+
 ## It is never hidden
 
-This one is **never hidden**, deliberately. Watching the shape of the room appear is the reading: a flat 3 across the board and a split between 1s and 5s have the same average and mean opposite things.
+This one is **never hidden**, deliberately. Watching the shape of the room appear is the reading: a flat 3 across the board and a split between 1s and 5s have the same average and mean opposite things. There is no reveal and no reset button; for a fresh reading, drop a new card.
 
 </ArticleLayout>

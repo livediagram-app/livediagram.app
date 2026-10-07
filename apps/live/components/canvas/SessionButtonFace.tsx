@@ -209,7 +209,7 @@ export function SessionButtonFace({
         {face(
           <button
             type="button"
-            aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
+            aria-label={`${text || `${derived.kicker} ${derived.action}`}: starts this for everyone`}
             {...press}
             style={{ color: textColor }}
             className={`${chipClass} pointer-events-auto cursor-pointer transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.1] sm:hover:ring-2 sm:hover:ring-black/15 dark:sm:hover:bg-white/20 dark:sm:hover:ring-white/25`}

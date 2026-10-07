@@ -15,7 +15,7 @@ The canvas always works without signing in. You can land on [a new document](/ne
 
 ## Your per-browser id
 
-The first time you visit, livediagram mints a unique guest id and stores it in your browser's `localStorage`. Every document, folder, and image you create as a guest is owned by that id, which is how the app knows which content to show you when you come back.
+The first time you visit, livediagram's server issues a unique guest id and your browser keeps it in `localStorage`. Every document, folder, and image you create as a guest is owned by that id, which is how the app knows which content to show you when you come back. The editor sends it with each request; you never see or type it.
 
 <Figure caption="A per-browser guest id owns the documents you create, with no sign-in required.">
   <GuestIdentity />
@@ -26,11 +26,13 @@ Two things follow from this:
 - **It is per browser, not per person.** The id lives in one browser on one device. Open livediagram in a different browser or on another device and you get a fresh guest id, so your earlier documents will not appear there.
 - **It is not cross-device.** Guest content does not sync between devices, because there is no account tying them together yet.
 
-As a guest you still get the full feature set: persistence, share links, and real-time collaboration all work exactly as they do for signed-in users. The only difference is how the request is identified behind the scenes.
+As a guest you still get the core of livediagram: persistence, share links and real-time collaboration all work exactly as they do for signed-in users. A few things need an address or an account to attach to, so they ask you to sign in: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), [connecting an AI tool](/help/account-and-data/connect-ai-mcp/), [email notifications](/help/account-and-data/email-notifications/) and the [Google Drive](/help/account-and-data/google-drive/) mirror.
 
 ## What this means for your data
 
-Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, means the app can no longer recognise you as the owner. Treat your guest documents as living in that browser.
+Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, means the app can no longer recognise you as the owner. Your documents are still on the server, but nothing in a fresh browser can claim them back. Treat your guest documents as living in that browser.
+
+Share links are the exception: anyone holding one, including you in another browser, can still open that document with the link's role. They just won't be its owner there.
 
 If you want your documents to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you create an account, the documents you built as a guest migrate into it automatically, so you do not lose the work you have already done.
 

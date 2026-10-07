@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
   boardAddTypes,
+  boardTakesType,
   isArchived,
   placeWidget,
   typeIn,
@@ -125,7 +126,11 @@ export function usePlanBoardDrop(opts: {
     // An Archive board takes cards moved to it, never a new one.
     // The types it takes new cards of (docs/specs/026-plan/plan-board.md "The board set-up").
     acceptsType: (type: string) =>
-      !!setup && canEdit && !setup.archive && (!setup.addTypes || setup.addTypes.includes(type)),
+      !!setup &&
+      canEdit &&
+      !setup.archive &&
+      (!setup.addTypes ||
+        (plan ? boardTakesType(setup, plan.types, type) : setup.addTypes.includes(type))),
     // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
     // there to see, and a click opens it.
     addCard: (type: string, slot: PlanDropSlot) => {

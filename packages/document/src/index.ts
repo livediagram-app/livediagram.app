@@ -457,6 +457,8 @@ export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
+// Which elements can be rotated (an annotation marker cannot).
+export * from './rotation';
 export * from './shape-marker';
 // Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
 export * from './selection-mode';

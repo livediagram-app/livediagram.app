@@ -29,8 +29,9 @@ livediagram runs entirely on Cloudflare. The frontends are static (built with Ne
 - **Cloudflare Workers** serve the apps and host the API.
 - **Cloudflare D1** is the database where documents live, reached only through the API Worker.
 - **Cloudflare Durable Objects** power the per-document real-time room.
+- **Cloudflare R2** (optional) stores uploaded images and the thumbnails the Explorer shows. Without it, image uploads and live images are unavailable and documents show a generic icon in the Explorer.
 
-This means there is no separate database server, no container fleet, and no always-on box to babysit. You deploy Workers and static assets to your Cloudflare account.
+This means there is no separate database server, no container fleet, and no always-on box to babysit. You deploy Workers and static assets to your Cloudflare account. Durable Objects need the Workers paid plan on that account.
 
 <Figure caption="The whole stack: static apps and the router in front of the api Worker, which owns D1 and the Durable Object room.">
   <StackOverview />
@@ -42,6 +43,7 @@ A self-hosted instance has no required calls to any outside service.
 
 - **Sign-in is optional.** Leave it unconfigured and the app runs in pure-guest mode, fully usable, with no account system at all.
 - **Telemetry is off by default.** A self-host emits and serves nothing unless you explicitly enable it.
+- **Every integration is opt-in.** Email, the AI features, the Google Drive mirror and the MCP server for AI tools each stay off until you set them up. See [Configuration and Optional Auth](/help/self-hosting/configuration/).
 - **No license gating.** Nothing phones home to unlock features.
 
 <Tip>

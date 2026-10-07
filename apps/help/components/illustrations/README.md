@@ -13,6 +13,11 @@ static export.
 - **`<area>.tsx`** — one file per help area, exporting named **scene**
   components (PascalCase) composed from the primitives. `canvas.tsx` is the
   worked exemplar; mirror its structure and density.
+- **`<surface>.tsx`**: an editor surface several areas show, drawn once and
+  imported wherever it recurs. `settings-dialog.tsx` holds the Settings frame,
+  its Editor and Panels panes, and the `Switch` every settings-style row uses.
+  Name every file after its subject (an area or a surface), never after the
+  batch of work that produced it.
 - **`../Figure.tsx`** — frames a scene in an "editor viewport" card with a
   caption. Globally registered in `mdx-components.tsx`, so MDX uses
   `<Figure caption="…"><Scene/></Figure>` without importing `Figure`.

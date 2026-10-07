@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { WelcomeTourCard } from '@/components/illustrations/getting-started';
 
 export const metadata = helpMetadata({
   title: 'The Welcome Tour',
@@ -19,26 +20,36 @@ The welcome tour is a guided, interactive introduction to the editor. Rather tha
 
 ## When it's offered
 
-The first document you ever create opens with a centred welcome card: **Show me around** starts the tour, **No thanks** dismisses it. The same card lets you **choose your panel layout**: Floating or Toolbar, drawn side by side with the one in force ringed. Click a drawing and the editor switches straight away, so you can try both before deciding, and the tour that follows points at the layout you picked. Your choice sticks whether you take the tour or not, and you can change it later in Settings under **Panel Layout**. (A phone always uses Toolbar, so there the card has no layout choice.) The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. You can always [replay it from Settings](#replaying-the-tour).
+When you create your first document from the [New Document wizard](/help/getting-started/your-first-diagram/), it opens with a centred **Welcome to livediagram** card: **Show me around** starts the tour, **No thanks** dismisses it. (A document opened through **Start Blank**, a share link or an embed does not offer it, and nor does a view-only document.)
+
+The same card lets you **choose your panel layout**: Floating or Toolbar, drawn side by side with the one in force ringed. Click a drawing and the editor switches straight away, so you can try both before deciding, and the tour that follows points at the layout you picked. Your choice sticks whether you take the tour or not, and you can change it later in Settings, under **Panels › Panel Layout**. (A phone always uses Toolbar, so there the card has no layout choice.)
+
+The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own; the answer is saved with your other settings, so if you're signed in it follows you to every device. You can always [replay it from Settings](#replaying-the-tour).
+
+<Figure caption="The welcome card: choose a panel layout, then take the tour or decline it.">
+  <WelcomeTourCard />
+</Figure>
 
 ## What it covers
 
 The tour walks the editor's chrome in a natural order:
 
 1. **The Palette**: the floating panel every shape, arrow, and icon comes from.
-2. **Selection modes**: the dropdown that changes what your pointer does (Select, Hand, Eraser, and friends). See [Selection modes](/help/selection-modes/).
-3. **Shape categories**: the Palette's category picker, with Popular first and the rest grouped into the Common, Structure, Decorate and Dynamic bands.
-4. **Diagram & Draw**: the switch between the two editor modes, Diagram for shapes and arrows, Draw for sketching by hand (**Shift+D** flips between them). See [Draw mode](/help/canvas/draw-mode/).
-5. **The Explorer**: browsing and organising your documents without leaving the editor.
-6. **The element menu**: the right-click menu where styling, links, notes, comments, and actions live.
+2. **Selection modes**: the dropdown that changes what your pointer does (Select, Hand, Eraser, and friends). See [Selection Modes](/help/selection-modes/).
+3. **Shape categories**: the Palette's category dropdown, with Popular first and the rest grouped into the Common, Structure, Decorate and Dynamic bands.
+4. **Diagram & Draw**: the editor mode switch. Diagram is for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand, and the same switch also offers Illustrate and Plan. **Shift+D** moves to the next mode. See [Editor Modes](/help/canvas/editor-modes/).
+5. **The Explorer**: browsing and organising your documents without leaving the editor. In the Toolbar layout the step opens it from the menu button instead.
+6. **The element menu**: the right-click menu (long-press on touch) where styling, links, notes, comments, and actions live.
 7. **Tabs**: pages within one document, plus the **+** button and the tab menu.
-8. **Theme & Canvas**: the paintbrush button that restyles the whole tab. (The button lives on every screen size; the tour step itself only runs on desktop.)
+8. **Theme & canvas**: the paintbrush button in the bottom-right corner that restyles the whole tab.
 
-On a phone the tour is slightly shorter: it skips the Theme & Canvas step.
+A closing **You're ready to go** card then offers **Visit Help Centre** or **Start creating**.
+
+On a phone the tour is shorter: it skips the Diagram & Draw and Theme & canvas steps. On an [Event Storming board](/help/canvas/event-storming-boards/) it skips Selection modes, Shape categories and Diagram & Draw, since the board offers none of them.
 
 ## During the tour
 
-- Each step shows a **step counter**, a title, a sentence or two of copy, and **Back** / **Next** buttons, with **Skip** always available.
+- Each step shows a **step counter** ("2 of 8") with progress dots, a title, a sentence or two of copy, and **Back** / **Next** buttons, with **Skip tour** always available.
 - The highlight ring **never blocks your pointer**: you're free to poke at whatever is highlighted while the step is up. The tour opens real menus, so what you see is exactly what you'll use afterwards.
 - Finishing (or skipping) closes anything the tour opened and returns you to a quiet editor, ready to work.
 
@@ -54,7 +65,7 @@ You can rerun the tour whenever you like:
   Close Settings. The tour relaunches from the welcome card, exactly like the first run.
 </Step>
 
-Finishing the rerun marks it completed again.
+Finishing (or skipping) the rerun switches **Show Welcome Tour** off again. Plan mode has a tour of its own, replayed the same way from **Show Plan Tour**: see [The Plan Tour](/help/canvas/plan-mode/plan-tour/).
 
 <Tip>
   Prefer learning by doing? [Your First Diagram](/help/getting-started/your-first-diagram/) builds a

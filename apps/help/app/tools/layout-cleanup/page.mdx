@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CleanupBeforeAfter } from '@/components/illustrations/tools';
+import { CleanupBeforeAfter, CleanupMenu } from '@/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Layout Cleanup',
@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Layout Cleanup" description="Two complementary tidiers, one for nudging things into alignment and one for laying a diagram out from scratch." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
 
-When a diagram gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the layout never really happened and you want it computed for you. livediagram has a tool for each, grouped under a **Cleanup** category in the tab and canvas context menu. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how the diagram is wired together.
+When a diagram gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the layout never really happened and you want it computed for you. livediagram has a tool for each, grouped under a **Cleanup** section in the tab and canvas menu. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how the diagram is wired together.
 
 <Figure caption="The Cleanup tools take a scattered, mis-sized jumble and turn it into a neat, aligned layout.">
   <CleanupBeforeAfter />
@@ -20,21 +20,27 @@ When a diagram gets messy, you usually want one of two things: either everything
 
 ## The two tools
 
-- **Auto-align** is a grid snap. It rounds every element's position and size to a fixed grid so near-aligned shapes become exactly aligned and small drift collapses. It never moves anything far. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
-- **Auto Layout** (also called Tidy Up) reads the arrow graph and computes brand-new positions, laying out connected shapes into clean layers, or into a style you pick: flowchart (down or right), tree, or mindmap. It can legitimately move an element across the canvas. See [Auto Layout](/help/tools/layout-cleanup/auto-layout/).
+- **Auto-align** is a grid snap. It rounds every element's position and size to a 10 px grid so near-aligned shapes become exactly aligned and small drift collapses. Nothing moves more than 5 px. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
+- **Auto Layout** ("tidy up" in the command palette) reads the arrow graph and computes brand-new positions, laying out connected shapes into clean layers, or into a style you pick: flowchart (down or right), tree, or mindmap. It can legitimately move an element across the canvas. See [Auto Layout](/help/tools/layout-cleanup/auto-layout/).
 
 <FeatureGrid>
-  <Feature slug="layout-cleanup" title="Auto-Align">
+  <Feature slug="auto-align" title="Auto-Align">
     Snap current positions to a tidy grid when things are just a few pixels off.
   </Feature>
-  <Feature slug="layout-cleanup" title="Auto Layout">
+  <Feature slug="auto-layout" title="Auto Layout">
     Recompute the whole diagram's layout from the connections between shapes.
   </Feature>
 </FeatureGrid>
 
 ## How to run them
 
-Right-click an empty part of the canvas (or the active tab) to open the context menu, then find the **Cleanup** category and pick the tidier you want. Both run on the active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
+Right-click an empty part of the canvas (on a touchscreen, long-press it), or open the active tab's ⋯ menu, then open the **Cleanup** section and pick the tidier you want. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was. Each is also a command in the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K): type "Auto Layout" or "Auto-align to grid".
+
+<Figure caption="The Cleanup section lists one tidier per row. On a computer, resting the pointer on a row previews it on the tab behind the menu.">
+  <CleanupMenu />
+</Figure>
+
+On a computer, resting the pointer on a row lays the tab out that way behind the menu, live; nothing changes for real until you click, and moving off the rows puts everything back. Cleanup is for editors: it isn't offered in a view-only session, and it leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
 
 The two tools compose nicely. Auto Layout finishes by running Auto-Align, so a freshly laid-out diagram is also grid-aligned. If you want, you can run Auto Layout to get the structure right, then trust it has already snapped to the grid for you.
 

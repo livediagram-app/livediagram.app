@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-A canvas element that **starts a session tool when pressed**: a countdown timer, a dot vote ([Session tools (timer + voting)](session-tools.md)), or a live poll ([Live poll (ephemeral pulse-check)](live-poll.md)). The third member of the palette's **Behaviour** group, beside the [Selection Mode button](../009-elements/mode-button.md) and the [Portal](../009-elements/portal-element.md).
+A canvas element that **starts a session tool when pressed**: a countdown timer, a dot vote ([Session tools (timer + voting)](session-tools.md)), or a live poll ([Live poll (ephemeral pulse-check)](live-poll.md)). Its tiles live in the palette's **Collaborate** category: the Timer and the Stopwatch under **Tools**, the Dot vote and the Poll under **Ask**.
 
 ## Why
 
@@ -115,15 +115,16 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## One tile per tool in the palette
 
-The palette offers **Timer**, **Dot vote** and **Poll** as separate tiles,
-collapsed behind a **Session** accordion in Behaviour, the way Media does for
-embed providers ([More than YouTube](../009-elements/embed-providers.md)).
+The palette offers **Timer**, **Stopwatch**, **Dot vote** and **Poll** as separate
+tiles in Collaborate. There is no Session group: a dot vote and a poll ask the
+room, so they sit in **Ask** beside the estimate card and the temperature
+check; a timer and a stopwatch are facilitation, so they sit in **Tools** beside
+the Reveal, the Done check and the Picker.
 
 The three have nothing in common at the moment of choosing: you know whether
 you want a countdown or a vote before you reach for the palette, so a single
 button you place and then reconfigure is two steps for something already
-decided. Flattened out beside the reactions they would also have buried the
-six single-purpose Behaviour elements, which is why both groups collapse.
+decided.
 
 **This is the only place the tool is chosen**, which is the other half of the
 same argument: if the palette asks once and the answer is a whole element,

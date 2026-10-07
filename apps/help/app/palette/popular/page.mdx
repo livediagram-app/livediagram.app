@@ -1,35 +1,50 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { PopularCatalogue } from '@/components/illustrations/palette-catalogues';
+import { PopularGrid } from '@/components/illustrations/palette-categories';
 
 export const metadata = helpMetadata({
   title: 'Popular',
   description:
-    'The palette category it opens on: twelve of the tiles most reached for, picked from across the palette, so your everyday shapes and tools are one tap away.',
+    'The palette category it opens on: twelve of the tiles most reached for, picked from across the palette for the editor mode you are in, so your everyday shapes and tools are one tap away.',
   path: '/help/palette/popular/',
 });
 
 <ArticleLayout
   title="Popular"
-  description="The palette's landing grid: the tiles most reached for, in one place."
+  description="The palette's landing grid: the twelve tiles most reached for in your editor mode, in one place."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("popular")}
 >
 
-**Popular** is the palette's first category, and the one it opens on. It holds twelve of the tiles people reach for most, picked from across the palette, so your everyday vocabulary isn't spread over Shapes, Write, Draw and Build. Each tile behaves exactly like the same tile in its home category: tap to add, drag to place, and it previews the tab theme the same way.
+**Popular** is the palette's first category, and the one it opens on. It holds twelve of the tiles people reach for most, picked from across the palette, so your everyday vocabulary isn't spread over Shapes, Write, Draw and Build. Each tile behaves exactly like the same tile in its home category: click it and then tap the canvas to drop it or drag to draw it at a size, or drag the tile straight onto the canvas. Tiles preview the tab's theme the same way.
 
-<Figure caption="Popular: a fixed grid of the tiles most reached for.">
-  <PopularCatalogue />
+<Figure caption="Popular in Diagram mode: twelve tiles, the same for everyone.">
+  <PopularGrid />
 </Figure>
 
 ## What's in it
 
-In **Diagram** mode: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note, Image, Shape Pen, Table, Code and Entity.
+Popular is picked per editor mode, because a diagram and a visual page are built from different things.
 
-In **Illustrate** mode it is picked for a visual page instead: Text, Square, Circle, Image, Speech bubble, Pie, Bar, Donut, Stat row, Process, Timeline and Callout.
+In **Diagram** mode: Square, Circle, Diamond, Text, Arrow, Frame, Note (a sticky note), Image, Shape Pen, Table, Code (a code block) and Entity.
 
-The list is the same for everyone and is not edited. Everything else is a category away in the palette's category picker, or a search away in the editor's **Search** panel.
+In [Illustrate](/help/canvas/illustrate/) mode: Text, Square, Circle, Image, Bubble (a speech bubble), Pie, Bar, Donut, Stat row, Process, Timeline and Callout.
+
+[Plan mode](/help/canvas/plan-mode/) has no Popular: its palette opens on **Cards**, since a plan is worked from its boards. An [Event Storming board](/help/canvas/event-storming-boards/) opens on its own notation instead. [Draw mode](/help/canvas/draw-mode/) shows its own set of pens rather than the palette's categories.
+
+The list is fixed and the same for everyone: using a tile never reorders it, and it can't be edited. Everything else is a category away in the palette's category picker, or a search away in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/).
+
+## Every time you open a document
+
+The palette opens on Popular each time a document loads, rather than on the last category you used. In the [Toolbar layout](/help/palette/toolbar-layout/) the strip opens on Popular too, and shows the same twelve tiles (fewer on a narrow window, with the rest behind **More**).
+
+<Tip>
+  Several Popular tiles have a single-key shortcut, so you can skip the palette altogether: **R**
+  for a square, **O** a circle, **D** a diamond, **T** text, **A** an arrow, **F** a frame and **N**
+  a sticky note. Hold **⌘** (Ctrl on Windows) to see each tile's shortcut on the palette. See
+  [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+</Tip>
 
 </ArticleLayout>

@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Auto-Align" description="A quick grid snap for when shapes are nearly lined up but a few pixels off." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-align")}>
 
-Auto-Align is the gentle tidier. It rounds every boxed element's position and size to a fixed grid, and snaps free arrow endpoints to the same grid, so shapes that were almost aligned become exactly aligned and tiny drift collapses. The use case is "these things are a few pixels off", not "this diagram has no layout".
+Auto-Align is the gentle tidier. It rounds every boxed element's position and size to a 10 px grid, and snaps free arrow endpoints to the same grid, so shapes that were almost aligned become exactly aligned and tiny drift collapses. The use case is "these things are a few pixels off", not "this diagram has no layout".
 
 <Figure caption="Shapes that sit a few pixels off the grid snap onto the nearest grid lines.">
   <AutoAlignGrid />
@@ -21,20 +21,27 @@ Auto-Align is the gentle tidier. It rounds every boxed element's position and si
 ## What it does
 
 - It is **structure-blind**: it never reads the arrow graph or considers how shapes connect. It just snaps positions and sizes to the grid.
-- It **never moves anything far**. Because it only rounds to the nearest grid line, a shape that was roughly in place stays roughly in place, only neater.
+- It **never moves anything far**. Because it only rounds to the nearest grid line, nothing moves more than 5 px: a shape that was roughly in place stays roughly in place, only neater.
+- It works on **every element on the active tab**, not just a selection.
+- **Arrows follow their shapes.** An arrow attached to a shape stays attached as the shape snaps; only loose arrow ends snap on their own.
+- **Locked elements stay put.** A [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), is not snapped.
+- **Round shapes stay round.** Circles, diamonds and actors keep equal sides, and an element whose aspect ratio you locked keeps its ratio.
 - **Running it again changes nothing**: a second pass leaves everything where it is, because it is already on the grid.
 
 ## Running it
 
 <Step n={1}>
-  Right-click an empty part of the canvas (or the active tab) to open the context menu.
+  Right-click an empty part of the canvas (on a touchscreen, long-press it), or open the active
+  tab's ⋯ menu.
 </Step>
 
-<Step n={2}>Open the **Cleanup** category and choose **Auto-align**.</Step>
+<Step n={2}>Open the **Cleanup** section and choose **Auto-align**.</Step>
 
 <Step n={3}>Everything on the tab snaps to the grid in a single undoable step.</Step>
 
-If the result isn't what you wanted, one undo restores the previous positions exactly.
+You can also run it from the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K) as "Auto-align to grid". On a computer, resting the pointer on the **Auto-align** row shows the result on the tab behind the menu before you click.
+
+If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previous positions exactly. Auto-Align needs edit access and leaves a locked tab alone.
 
 ## When to use it instead of Auto Layout
 

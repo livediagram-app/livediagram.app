@@ -17,8 +17,8 @@ Chosen to cover distinct **things people mean**, not five ways of saying
 | **Applause**  | 👏    | Thanks for the talk or the demo   |
 | **Fireworks** | 🎆    | It shipped                        |
 
-**The palette offers a tile per reaction**, collapsed behind a **Reactions**
-accordion in Behaviour, the way Media does for embed providers ([More than YouTube](embed-providers.md)).
+**The palette offers a tile per reaction**, grouped under **React** in the
+palette's Collaborate category.
 Which reaction you want is the whole decision — a pad is not useful until it is
 the right one — so placing one and then going to change it is two steps for
 something you already knew. The choice rides the draw intent

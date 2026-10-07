@@ -19,15 +19,19 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'pickers')}
 >
 
-A **Picker** chooses at random when you press it. It lives in the **Tools** group of the [Collaborate](/help/palette/behaviour/) category.
+A **Picker** chooses at random when you press it. It lives in the **Tools** group of the [Collaborate](/help/palette/behaviour/) category (and in Plan mode's **Tools** category).
 
 ## What it picks from
 
-Either one of the people currently in the room, or one of the options you write. Both are set in **Picker**: choose **People here** or **A list**, and a list gets an **Options** box, one entry per line.
+Either one of the people currently in the room, or one of the options you write. Right-click the Picker and open **Picker**: choose **People here** (the default) or **A list**, and a list gets an **Options** box, one entry per line, up to 24 of them. A list with nothing in it shows "Nothing to pick from".
+
+**People here** means whoever is in the room at the moment you press it, so it can only pick somebody who is actually there. Alone, it picks you.
+
+Give the Picker a label to say what it is choosing ("Who demos?"); the label sits small above the result.
 
 ## Rolling it
 
-It spins the candidates past and slows to a stop on the answer. People appear with their own avatar as they go by.
+Press **Pick**. It spins the candidates past and slows to a stop on the answer over about a second and a half. People appear with their own avatar as they go by. Once it has landed the button reads **Again**, for another roll.
 
 **Everyone watches the same roll**, not just whoever pressed it: the spin plays on every screen in the room and every one of them lands on the same name. That is the point of rolling on the canvas rather than saying a name out loud.
 
@@ -35,6 +39,12 @@ It spins the candidates past and slows to a stop on the answer. People appear wi
   <PickerCard />
 </Figure>
 
-Handy for "who demos next" without anyone having to volunteer.
+On a view-only link you can still press it, but the roll is yours alone: you see the spin and a result on your own screen, and nobody else's Picker changes.
+
+While somebody holds the [facilitator](/help/collaboration/facilitator/) role, spinning the Picker is theirs to do.
+
+A drag moves the Picker rather than rolling it, so you can rearrange the canvas without setting it off.
+
+<Tip>Handy for "who demos next" without anyone having to volunteer.</Tip>
 
 </ArticleLayout>

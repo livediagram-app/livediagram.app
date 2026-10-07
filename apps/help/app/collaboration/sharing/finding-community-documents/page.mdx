@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { CommunitySearchBox } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Finding Documents in the Community',
@@ -37,13 +38,17 @@ You can type these yourself, or use the buttons inside the right of the search b
   Copied**.
 </Step>
 
-On smaller screens the buttons show just their icons. Your search stays in the page address, so you can bookmark it or send it to someone.
+<Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+  <CommunitySearchBox />
+</Figure>
+
+On smaller screens the buttons show just their icons. The cross at the end of the box clears what you searched for. Your search stays in the page address, so you can bookmark it or send it to someone.
 
 <Tip>On a document's own page, choose any of its tags to search the gallery for that tag.</Tip>
 
 ## Your own shares
 
-Choose **My Shares** in the search box to see only the documents you have shared, signed in. Above them, **Your Shares** adds up how many you have shared, and how many likes and copies they have had altogether, so you can see how they are doing. Each card shows its own likes and copies, and you can still search, filter and sort within them.
+Signed in, choose **My Shares** in the search box to see only the documents you have shared. Above them, **Your Shares** adds up how many you have shared, and how many likes and copies they have had altogether, so you can see how they are doing. Each card shows its own likes and copies, and you can still search, filter and sort within them.
 
 A document taken out of the Community after reports shows here marked **Hidden**; only you can see it. Choose it to open the document in the editor.
 
@@ -53,14 +58,16 @@ Open a card to see the document's page: a live preview you can pan, zoom and pag
 
 ## Liking a document
 
-Choose the heart on a card, or **Like** on a document's page, to show the author you liked it. Choose it again to take your like back. Likes are kept per browser, and **Most Loved** sorts by them.
+Choose the heart on a card or on a document's page to show the author you liked it. Choose it again to take your like back. Likes are kept per browser, and **Most Loved** sorts by them.
 
 ## Making your own copy
 
-Choose **Make a Copy** on a document's page, or in the bar across the top of an open document. A copy of the whole document opens in the editor as your own document, with every tab. Change anything you like; the original never changes. Each person who copies a document counts once towards its copy count.
+Choose **Make a Copy** on a document's page, or in the bar across the top of an open document. A copy of the whole document opens in the editor as your own document, with every tab. Change anything you like; the original never changes. Each person who copies a document counts once towards its copy count. You don't need an account: as a guest the copy belongs to this browser's guest identity, and it moves into your account if you [sign up](/help/getting-started/guest-vs-account/) later.
+
+A document's page also lists **More Like This**: other documents in the same category to look at next.
 
 ## Reporting a document
 
-If a document is spam, offensive, shows someone's personal information or isn't the author's to share, choose **Report** on its page, pick a reason and add a note if it helps. A document reported by several people is hidden automatically, for good. Nobody reviews posts by hand: the reports decide.
+If a document is spam, offensive, shows someone's personal information or isn't the author's to share, choose **Report** on its page. In **Report This Document**, pick a reason (**Spam**, **Offensive**, **Personal Information**, **Copyright** or **Something Else**), add a note of up to 300 characters if it helps, and send it with **Send Report**. A document reported by three different people is hidden automatically, for good. Nobody reviews posts by hand: the reports decide.
 
 </ArticleLayout>

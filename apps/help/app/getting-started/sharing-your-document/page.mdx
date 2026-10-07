@@ -15,20 +15,27 @@ livediagram is multiplayer from the first shape. Sharing is just creating a link
 
 ## Create a share link
 
-<Step n={1}>Open the document you want to share and click **Share** in the editor header.</Step>
+<Step n={1}>
+  Open the document you want to share and click **Share** at the top right of the editor.
+</Step>
 
 <Step n={2}>
-  In the Share dialog, pick a role for the new link: **Edit** (they can change the document) or
-  **View-only** (they can look but not change). Optionally set a link lifetime so it expires later.
+  Under **Issue a pass**, pick a role for the new link: **Editor** (draws with you in real time, the
+  default) or **Viewer** (watches, pans and zooms, but can't change a thing). **Valid** sets how
+  long it lasts: Forever, 1 week, 1 month or 6 months. In a document with several tabs, **Opens**
+  can limit the link to one tab.
 </Step>
 
 <Step n={3}>
-  Click **Create**, then **Copy link**. Send that URL to whoever you want in the document.
+  Click **Create Pass**. The link is copied for you straight away, ready to send to whoever you want
+  in the document; each pass in the list also has its own copy button.
 </Step>
 
-If you are a guest, set **Your name** at the top of the dialog first, that is the name peers see on your cursor and comments.
+If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press
+**Shuffle name** for another): that is the name peers see on your cursor and comments. A document
+saved to **Local Browser** has to be synced to your account before it can be shared.
 
-<Figure caption="The Share dialog mints Edit and View links, each with a Copy button to hand over.">
+<Figure caption="The Share dialog lists your passes, Editor and Viewer, each with its own copy button.">
   <ShareLinks />
 </Figure>
 
@@ -41,20 +48,21 @@ When someone opens your link they land directly on the canvas:
 </Figure>
 
 - **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.
-- **Simultaneous editing.** On an Edit link, you both change the document at once. To avoid clashes, an element one person has selected is gently locked for the others while they hold it.
+- **Simultaneous editing.** On an Editor pass, you both change the document at once. To avoid clashes, an element one person has selected is gently locked for the others while they hold it.
 - **No sign-in required.** A guest can edit straight away, the canvas never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
 
 ## Managing and ending access
 
 Back in the Share dialog you can manage links over time:
 
-- **Multiple links.** Mint several links with different roles, for example a View-only link for stakeholders and an Edit link for collaborators.
-- **Revoke** a link to cut off access through it. Expiring links show a countdown, and expired ones can be extended or deleted.
-- **Optional password.** Protect every link with a shared password.
+- **Multiple passes.** Issue several, with different roles, for example a Viewer pass for stakeholders and an Editor pass for collaborators. They are listed under **Passes**.
+- **Revoke** a pass to cut off access through it. Expiring passes show a countdown, and expired ones move under **Expired**, where they can be extended or deleted. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
+- **Password Protection.** Protect every pass with one shared password; everyone opening a link must enter it first, embeds included. See [Share Passwords](/help/collaboration/sharing/share-passwords/).
 
 <Tip>
-  Want to put a read-only document on a page or in a doc? Use the embed option in the Share dialog
-  to copy iframe code. See [Sharing](/help/collaboration/sharing/).
+  Want to put the document on a web page or in a doc? Each pass can also be copied as an embed
+  (**Copy iframe**) or as a live image that stays up to date. A Viewer pass embeds read-only; an
+  Editor pass embeds an editable canvas. See [Embeds](/help/collaboration/sharing/embeds/).
 </Tip>
 
 </ArticleLayout>

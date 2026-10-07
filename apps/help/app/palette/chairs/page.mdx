@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { ChairSeating } from '@/components/illustrations/palette-build-chairs';
 
 export const metadata = helpMetadata({
   title: 'Chairs',
@@ -11,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Chairs"
-  description="Walk an Avatar-mode character into one and it sits down."
+  description="Walk an Avatar-mode character into one and it sits down, and the room sees who is sitting where."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("chairs")}
@@ -19,34 +20,39 @@ export const metadata = helpMetadata({
 
 A **Chair** is furniture. Walk your Avatar-mode character into one and it sits down.
 
-It lives in the palette's **Collaborate** category, beside Portals and Session buttons.
+It lives in the **Navigate** group of the palette's [Collaborate](/help/palette/behaviour/) category, beside the Portal, Bring Focus and the Link card. Chairs, like the rest of Collaborate, are in the Diagram and Draw palettes.
 
 ## Sitting down
 
-1. Switch to **Avatar** mode (the canvas-tool picker, or press **W**).
-2. Click the chair. Your character walks over and takes the seat.
+1. Switch to [Avatar mode](/help/selection-modes/avatar-mode/) (the canvas-tool picker, or press **W**).
+2. Click the chair, or steer onto it with the arrow keys. Your character walks over and takes the seat, turning to face the way the chair faces.
 
 While seated:
 
-- Your character **ignores clicks elsewhere on the canvas**, so you can't be dragged out of your chair by a stray click.
-- Press any **arrow key** to stand up and walk away.
+- Your character **ignores clicks elsewhere on the canvas**, so a stray click can't drag you out of your chair.
+- To stand up, press any **arrow key**, double-click the canvas, or press the small **Stand** pill under your character (the easy way on a touch screen).
 - You can still wave and play reactions. Sitting takes away walking, not personality.
 
 ## Everyone sees who is sitting where
 
 An occupied chair shows a ring in the sitter's colour with their name above it, on everyone's screen.
 
+<Figure caption="Four chairs facing a drawn table: one taken, two labelled with a role.">
+  <ChairSeating />
+</Figure>
+
 Seating is **presence**, not part of the document. That means:
 
-- A chair is never left stuck by somebody who closed their laptop — leaving the mode, switching tab or disconnecting frees the seat immediately.
+- A chair is never left stuck by somebody who closed their laptop: leaving Avatar mode, switching tab or disconnecting frees the seat immediately.
 - Nothing about who sat where is saved, logged, or undoable.
 
 Two people can end up in the same chair. That is allowed on purpose: a rule that stopped it would need a lock, and a locked chair is one that eventually gets stuck.
 
 ## Setting it up
 
-- **Facing** (element menu → Chair) points the seat one of four ways, so a ring of chairs around a table faces inward. Whoever sits down turns to face the same way.
-- Give the chair a **label** to make it somebody's chair: a name, or a role like "Facilitator" or "Scribe".
+- Right-click the chair and open **Chair** to point the seat one of four ways: **Down**, **Left**, **Up** or **Right**. A ring of chairs around a table can then face inward, and whoever sits down faces the same way.
+- Give the chair a **label** to make it somebody's chair: a name, or a role like "Facilitator" or "Scribe". The label sits under the chair.
+- Unlike most Collaborate elements, a chair has no **…** on its face; everything is in its right-click menu.
 - Otherwise it behaves like any element: move, resize, rotate, theme, lock, copy and export.
 
 ## What it's for

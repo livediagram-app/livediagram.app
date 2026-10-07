@@ -1,11 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TabletRotate, TabletLandscape } from '@/components/illustrations/devices';
+import { TabletLandscape } from '@/components/illustrations/devices';
 
 export const metadata = helpMetadata({
   title: 'Tablet',
   description:
-    'On a tablet, livediagram adapts to your screen: a roomy screen behaves like a computer, a narrow one like a phone, and a keyboard adds shortcuts.',
+    'On a tablet, livediagram gives you the full editor layout with touch gestures, and a paired keyboard adds shortcuts. When the compact phone layout applies instead.',
   path: '/help/supported-devices/tablet/',
 });
 
@@ -15,20 +15,22 @@ A tablet is a great middle ground: a big enough screen for real work, with touch
 
 ## It adapts to your screen
 
-livediagram chooses its layout from how wide the editor is on screen, not from the kind of device:
+livediagram chooses its layout from the size of the editor on screen, not from the kind of device:
 
-- With plenty of room (most tablets held in **landscape**, or any large tablet), you get the **full layout**, the same as a [computer](/help/supported-devices/desktop/): the floating panels, hover helpers, and the [Spotlight](/help/selection-modes/spotlight/) tool.
-- On a **narrow** screen (a smaller tablet, or one held in **portrait**), it switches to the **compact, touch-first layout** described in the [mobile](/help/supported-devices/mobile/) guide, with the palette in one strip across the top (the [Toolbar layout](/help/palette/toolbar-layout/)).
+- On a screen at least 640 pixels wide (which includes almost every tablet, in portrait as well as landscape) you get the **full layout**, the same as a [computer](/help/supported-devices/desktop/): the floating panels, the [Map](/help/user-interface/minimap/), and the [Spotlight](/help/selection-modes/spotlight/) and [Slide Deck](/help/selection-modes/slide-deck/) tools.
+- Only a narrower window (a tablet running livediagram in a narrow split-screen pane, say) switches to the **compact, touch-first layout** described in the [mobile](/help/supported-devices/mobile/) guide, with the palette in one strip across the top (the [Toolbar layout](/help/palette/toolbar-layout/)).
 
-Rotating the tablet switches between the two, so if you want the full set of panels, turn it to landscape.
+So rotating a tablet usually keeps the same layout; landscape just gives the canvas more width. If you prefer the strip anyway, choose **Toolbar** under **Panels › Panel Layout** in [Settings](/help/user-interface/settings/). In [Draw mode](/help/canvas/draw-mode/), **Dock Position** in Settings can move the drawing dock to the bottom, closer to hand.
 
-<Figure caption="Held in portrait you get the Toolbar strip; rotate to landscape and the full floating panels return.">
-  <TabletRotate />
+<Figure caption="A tablet has room for the full layout, the same floating palette and panels as a computer.">
+  <TabletLandscape />
 </Figure>
 
 ## Touch works everywhere
 
-However the tablet is held, the touch gestures are the same as on a phone: pinch to zoom, drag to move around, tap to select, and press and hold for an element's menu. Drag handles and buttons get extra padding on touch so they are easy to hit.
+However the tablet is held, the touch gestures are the same as on a phone: pinch to zoom, drag to move around, tap to select, and press and hold for an element's menu. Drag handles get extra padding on touch so they are easy to hit. Because the screen is large, the editor starts on the **Select** tool, as on a computer, so dragging empty canvas draws a selection box. To move around, switch to **Hand** in the Palette's selection-mode dropdown and drag, or tap or drag on the [Map](/help/user-interface/minimap/).
+
+Touch has no hover, so style previews (which show as you rest a pointer on a colour) don't appear: a tap applies the change, and undo takes it back.
 
 ## Add a keyboard for more
 
@@ -39,13 +41,9 @@ A few things are built for a physical keyboard. If you pair a keyboard with your
 
 Without a keyboard you can still do all of this through the palette and on-screen controls; a keyboard just adds the faster way.
 
-<Figure caption="A landscape tablet has room for the full layout, the same floating palette and panels as a computer.">
-  <TabletLandscape />
-</Figure>
-
 <Tip>
-  Holding the tablet in landscape gives you the most room and the full set of panels, which is the
-  most comfortable way to do detailed work on a tablet.
+  Holding the tablet in landscape gives the canvas the most room, which is the most comfortable way
+  to do detailed work on a tablet.
 </Tip>
 
 </ArticleLayout>

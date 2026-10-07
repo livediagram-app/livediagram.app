@@ -156,7 +156,7 @@ export function ChairView(props: { element: ShapeElement; sitters: ChairSitter[]
   `#94a3b8`, label `#0f172a`; dark paper stroke `#64748b`, label `#ffffff`. The export follows
   this; `ChairView` reads `element.strokeColor ?? '#94a3b8'` on either paper (GF15).
 - **Label:** under the chair (`textAlignY: 'bottom'`), on the canvas and in the export.
-- **Palette:** tile `tools:chair` ("Add chair") in the **Navigate** accordion of Behaviours.
+- **Palette:** tile `tools:chair` ("Add chair") in the **Navigate** group of Collaborate.
 - **Occupied:** a 3 px ring (`CHAIR_GEOMETRY.ring`, opacity 0.85) in the first sitter's colour;
   names in a pill ABOVE the chair, outside the rotated SVG so they never turn [QF16].
 - **No `…`:** `carriesSharedSettingsMenu('chair')` is `false`.

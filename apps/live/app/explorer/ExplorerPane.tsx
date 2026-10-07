@@ -19,6 +19,7 @@ import { useTimelineFeed } from './useTimelineFeed';
 import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
 import { VIEW_TITLES } from './view-titles';
+import { paneHeaderActions } from './pane-header-actions';
 
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
@@ -194,29 +195,12 @@ export function ExplorerPane() {
   // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
-  const newDocument =
-    // Home and All activity get one too. Neither is a container you add to, but Home is the
-    // first screen of the app (docs/specs/013-workspace/explorer-home.md), where starting a
-    // document must never be a dead end; it navigates to /new and files nothing here.
-    //
-    // Activity does NOT: a new document puts nothing on an inbox of
-    // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
-    selected.kind === 'activity' ||
-    selected.kind === 'shared' ||
-    selected.kind === 'gallery' ||
-    selected.kind === 'themes' ||
-    selected.kind === 'shape-libraries' ||
-    selected.kind === 'trash' ||
-    selected.kind === 'team' ||
-    selected.kind === 'invites' ||
-    // This browser is a read-through view, not a place you hand-author into
-    // (offline documents are created from the /new wizard's Settings toggle).
-    selected.kind === 'offline'
-      ? undefined
-      : () =>
-          window.location.assign(
-            selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new',
-          );
+  // Which of New document, New folder and Import from this section offers (pane-header-actions.ts).
+  const offers = paneHeaderActions(selected.kind);
+  const newDocument = offers.newDocument
+    ? () =>
+        window.location.assign(selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new')
+    : undefined;
   // Imports sit beside New document: imported boards land where new documents do.
   const imports = useExplorerImport({
     ownerId,
@@ -235,12 +219,12 @@ export function ExplorerPane() {
         onOpenNav={() => setMobileNavOpen(true)}
         helpArticle={sectionHelp}
         headerActions={
-          selected.kind === 'timeline' || newDocument ? (
+          selected.kind === 'timeline' || offers.importFrom ? (
             <>
               {selected.kind === 'timeline' ? (
                 <TimelineControls controls={timeline.controls} />
               ) : null}
-              {newDocument && selected.kind !== 'home' ? imports.toolbar : null}
+              {offers.importFrom ? imports.toolbar : null}
             </>
           ) : undefined
         }
@@ -248,21 +232,9 @@ export function ExplorerPane() {
         onSetViewMode={isBrowse ? setViewMode : undefined}
         onCreateDocument={newDocument}
         onCreateFolder={
-          selected.kind === 'home' ||
-          selected.kind === 'timeline' ||
-          selected.kind === 'activity' ||
-          selected.kind === 'shared' ||
-          selected.kind === 'gallery' ||
-          selected.kind === 'themes' ||
-          selected.kind === 'shape-libraries' ||
-          selected.kind === 'trash' ||
-          selected.kind === 'team' ||
-          selected.kind === 'invites' ||
-          selected.kind === 'recent' ||
-          selected.kind === 'search' ||
-          selected.kind === 'offline'
-            ? undefined
-            : () => createFolder(selected.kind === 'folder' ? selected.id : null)
+          offers.newFolder
+            ? () => createFolder(selected.kind === 'folder' ? selected.id : null)
+            : undefined
         }
         folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
       />

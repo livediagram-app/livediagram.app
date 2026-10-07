@@ -78,7 +78,9 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 
 - A selected annotation shows corner resize handles and keeps its aspect lock, so it stays round
   [QD8].
-- The Size section (width, height, aspect lock) applies; Rotation is hidden for annotations [QD8].
+- The Size section (width, height, aspect lock) applies; Rotation is hidden for annotations [QD8]:
+  `supportsRotation` (`packages/document/src/rotation.ts`) gates the Rotation category, the Rotate
+  commands and `applyRotationToEl`.
 - Shape morph grid and Border are hidden: both gate on `type === 'shape'` / `supportsBorder`.
 
 ### Everything else

@@ -392,7 +392,8 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   the source's name in the app's tooltip, takes keyboard focus with a visible
   ring, and opens that source's import. It sits wherever the section offers
   New document, so imported documents land where new ones do (in the focused
-  folder, inside a folder section). It is as tall as Help; below the `sm`
+  folder, inside a folder section), except Home, which carries none; and on
+  [Shape libraries](shape-libraries.md), where draw.io libraries are imported. It is as tall as Help; below the `sm`
   breakpoint the "Import from" label hides first, leaving the icons.
 - **Create:** a single floating action button at the bottom-right
   opens a popover with "New document" and "New folder" (or "New

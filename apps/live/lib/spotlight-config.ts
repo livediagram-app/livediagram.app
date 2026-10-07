@@ -43,13 +43,13 @@ export const SPOTLIGHT_DIMS: readonly { id: SpotlightDim; label: string; hint: s
 ];
 
 export const SPOTLIGHT_EDGES: readonly { id: SpotlightEdge; label: string; hint: string }[] = [
-  { id: 'soft', label: 'Soft', hint: 'A feathered rim that fades out — reads as lighting' },
-  { id: 'crisp', label: 'Crisp', hint: 'A defined pool of light — reads as deliberate' },
+  { id: 'soft', label: 'Soft', hint: 'A feathered rim that fades out, reading as lighting' },
+  { id: 'crisp', label: 'Crisp', hint: 'A defined pool of light that reads as deliberate' },
 ];
 
 export const SPOTLIGHT_SHAPES: readonly { id: SpotlightShape; label: string; hint: string }[] = [
   { id: 'circle', label: 'Circle', hint: 'An even pool around the cursor' },
-  { id: 'wide', label: 'Wide', hint: 'A broad ellipse — lights a lane or a table row' },
+  { id: 'wide', label: 'Wide', hint: 'A broad ellipse that lights a lane or a table row' },
 ];
 
 // --- What the overlay draws from --------------------------------------------

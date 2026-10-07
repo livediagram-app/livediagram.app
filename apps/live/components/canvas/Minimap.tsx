@@ -337,7 +337,7 @@ export function Minimap({
           className={`block w-full cursor-pointer touch-none text-slate-400 ${MAP_HEIGHT[size]}`}
           style={{ backgroundColor: paperColor }}
           role="img"
-          aria-label="Canvas map — tap or drag to navigate, scroll to zoom"
+          aria-label="Canvas map: tap or drag to navigate, scroll to zoom"
           onPointerDown={(e) => {
             draggingRef.current = true;
             e.currentTarget.setPointerCapture(e.pointerId);

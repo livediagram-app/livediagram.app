@@ -1,87 +1,113 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { SettingsDialogScene } from '@/components/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'The livediagram Settings dialog: panel layout, the Map, the welcome tour, notifications, reduce motion, the AI assistant and anonymous usage events, and how preferences follow you between devices.',
+    'The livediagram Settings dialog, category by category: editor behaviour, appearance and UI scale, keyboard shortcuts, panels, accessibility and tours, AI tools, where new documents go, your account, notifications, API tokens and privacy, plus which settings follow you between devices.',
   path: '/help/user-interface/settings/',
 });
 
 <ArticleLayout
   title="Settings"
-  description="The preference toggles, what each one does, and which device they follow you to."
+  description="Every category in the Settings dialog, what each setting does, and which ones follow you to another device."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
 **Settings** opens from the gear in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular document, which is why there is one set of them and not one per document.
 
-They are grouped, and **one group is open at a time**, so the dialog is a short list you read rather than a wall of switches.
+The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
+
+<Figure caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
+  <SettingsDialogScene />
+</Figure>
+
+Some categories hold **sub-categories** (Editor holds Draw; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
 
 ## Editor
 
-- **Middle-Mouse Pan**: hold the middle mouse button and drag to pan the canvas from anywhere, whatever tool is active. Turn it off to leave the middle button to your browser.
-- **Welcome Tour Completed** — ticked once you have taken or dismissed the tour, which is how it only offers itself once. **Untick it and close Settings to run the tour again.** See [The Welcome Tour](/help/getting-started/welcome-tour/).
+- **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
+- **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+- **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+- **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
+- **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+- **Power User Mode**, under **Power User**: applies a set of recommended settings in one go and unlocks **Minimal Chrome**, which hides labels and hints while keeping every control. Switching it off puts back the settings you did not change. See [Power User Mode](/help/user-interface/power-user-mode/).
 
-- **Power User Mode** — applies a set of recommended settings in one go, and unlocks **Minimal Chrome**, which hides labels and hints while keeping every control. Switching it off puts back the settings you did not change. See [Power User Mode](/help/user-interface/power-user-mode/).
+### Draw
+
+- **Dock Position**: where [Draw mode](/help/canvas/draw-mode/)'s dock of pens, shapes and tools sits, **Top** or **Bottom** (closer to hand when drawing on a tablet). Only Draw mode has a dock, so Diagram mode is unchanged.
 
 ## Appearance
 
-- **Theme**: Light, Dark or System, which follows your device. It is saved per device, not per account (see below).
+- **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a diagram's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
 - **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo, layers) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale** goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
-
-## Panels
-
-- **Panel Layout**: Floating (the default) or Toolbar. Toolbar puts the palette in one strip across the top of the canvas and opens the Explorer from a menu button. A phone always uses Toolbar; Floating shows as Toolbar there. See [Toolbar Layout](/help/palette/toolbar-layout/).
-- **Panel Opacity**: fades every panel so the canvas shows through. See [Panel Opacity](/help/palette/panel-opacity/).
-
-**Panels** holds five sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it while it is on. On a computer, click **Panels** (or its arrow) to show them, and again to fold them away. On a phone, tap **Panels** and they are listed at the bottom of its page:
-
-- **Layers**: **Enable Layers Panel**, then layer thumbnails, element counts, and previewing a layer on hover. Turning the panel off also hides its button and the **Move to layer** choices in the element menu; your layers keep working as before. See [Layers](/help/canvas/layers/).
-- **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), dimming everything outside your view, and the Map's size. Desktop only. See [The Map](/help/user-interface/minimap/).
-- **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements.
-- **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu.
 
 ## Keyboard
 
-- **Keyboard Shortcuts** — the switch that turns single-key shortcuts on and off. It is saved per device, not per account (see below).
-- Below it, the full shortcut reference in collapsible groups. The **Keyboard shortcuts** command in [search](/help/search-panel/) opens Settings straight on this category. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+- **Keyboard Shortcuts**: the switch that turns the editor's keyboard shortcuts on and off. Off means all of them, chords like undo included, not just the single-letter keys. Saved on this device only (see below).
+- **All Shortcuts**: the full shortcut reference, in collapsible groups. The **Keyboard shortcuts** command in [search](/help/search-panel/) opens Settings straight on this category. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+
+## Panels
+
+- **Panel Layout**: **Floating** (the default) or **Toolbar**. Toolbar puts the palette in one strip across the top of the canvas and opens the Explorer from a menu button. A phone always uses Toolbar. See [Toolbar Layout](/help/palette/toolbar-layout/).
+- **Panel Opacity**: fades every panel, from 30% to 100%, so the canvas shows through; a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
+
+**Panels** holds four sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
+
+- **Layers**: **Enable Layers Panel**, then **Layer Thumbnails**, **Layer Element Counts** and **Preview Layer on Hover**. Turning the panel off also hides its button and the **Move to layer** choices in the element menu; your layers keep working as before. See [Layers](/help/canvas/layers/).
+- **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
+- **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/).
+- **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu. See [Quick Style Panel](/help/canvas/quick-style-panel/).
 
 ## Accessibility
 
-- **Reduce motion** — turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
+- **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
+- **Show Welcome Tour**: switches itself off once you have taken or dismissed the tour. Switch it back on and close Settings to run the tour again. See [The Welcome Tour](/help/getting-started/welcome-tour/).
+- **Show Plan Tour**: the same for the short tour of Plan mode. See [The Plan Tour](/help/canvas/plan-mode/plan-tour/).
 
-## AI
+## AI Tools
 
-- **AI Assistant** — shows the AI panel, with its **Ask** and **Clean** modes. Off by default, and the group is absent entirely on a deployment with no AI configured. See [AI Tools](/help/tools/ai/ai-tools/).
-- **Manage API Tokens** — jumps to **Account › API Tokens** below, since the AI tools you connect over MCP use a token.
+Only present on a deployment with AI configured.
+
+- **AI Assistant**: shows the AI panel, with its **Ask** and **Clean** modes. Off by default. See [AI Tools](/help/tools/ai/ai-tools/).
+- **Suggested Prompts**: a row of one-click starter prompts under the AI panel's mode buttons. On by default.
+- **API Tokens**: **Manage API Tokens** jumps to **Account › API Tokens**, since the AI tools you connect over MCP use a token.
+
+## Documents
+
+- **Where New Documents Go**: the default folder for each kind of new document (diagrams, whiteboards, plans and so on), used when you create one without choosing a place. **Skip the Location Step** saves every new document in one place without asking; you turn it on from the **Location** step of the New Document wizard. See [Default Folders](/help/explorer/folders/default-folders/).
 
 ## Account
 
-**Account** holds your identity, Trash, Cloud Sync and Delete Account, plus two sub-categories, shown the same way as the panels under **Panels**: on a computer, click **Account** (or its arrow) to show them; on a phone, they are listed at the bottom of its page.
+**Account** shows who you are (a guest, or your name and email when signed in), **Show My Profile Picture** (signed in only), your [Trash](/help/account-and-data/trash/) (deleted documents wait there for 30 days), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, and **Delete Account**. It holds two sub-categories:
 
 ### Notifications
 
-- **Show notifications** — the brief confirmation shown when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. **Errors are always shown**, whatever this is set to, so a failure is never silently swallowed.
+- **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. **Errors are always shown**, whatever this is set to, so a failure is never silently swallowed.
+- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your document, assigns you an action, responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
 
 ### API Tokens
 
-- Create, view and revoke the tokens your own scripts and connected AI tools use to call livediagram as you. A new token's secret is shown once, so copy it before you choose **Done**. Signed-in only: a guest sees a **Sign In** link instead, and it is absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+- Create, view and revoke the tokens your own scripts and connected AI tools use to call livediagram as you. Each expires six months after it is created. A new token's secret is shown once, so copy it before you choose **Done**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 
 ## Privacy
 
-- **Send anonymous usage events** — the small first-party events listed on the public [telemetry dashboard](/telemetry): no user content, no third-party trackers. Turn it off to keep everything you do on your device. See [What We Collect](/help/privacy-and-security/what-we-collect/).
+- **Send Anonymous Usage Events**: the small first-party events listed on the public [telemetry dashboard](/telemetry): no user content, no third-party trackers. Turn it off to keep everything you do on your device. See [What We Collect](/help/privacy-and-security/what-we-collect/).
 
 ## Settings follow you, most of them
 
-Everything in this dialog is **stored against your identity, not your browser**, and applies to every document you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your documents](/help/getting-started/guest-vs-account/) if you later sign up.
+Settings are **stored against your identity, not your browser**, and apply to every document you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your documents](/help/getting-started/guest-vs-account/) if you later sign up.
 
-Two things to know about where settings live:
+A few things deliberately stay on the device you are using:
 
-- **The canvas-behaviour toggles** live here too, under **Editor** and **Panels**: [auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/). They used to sit in the palette's own gear menu; every setting now has one home.
-- **Tool settings are per device**, not per account: the eraser's brush, the laser's pen, the presenter's settings, and the **Keyboard Shortcuts** switch in the **Keyboard** category that [turns single-key shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/). These are about the machine you are sitting at, so they deliberately do not follow you to another one.
+- **Theme** (light, dark or system) in **Appearance**.
+- The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
+- **Tool settings**: the eraser's brush, the laser's pen and the presenter's settings.
+
+The canvas-behaviour toggles ([auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/)) used to sit in the palette's own gear menu. They now live here, under **Editor** and **Panels**, so every setting has one home.
 
 </ArticleLayout>

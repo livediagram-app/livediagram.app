@@ -212,7 +212,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // tab. The lazy fetch resolves in well under a second; asking the
     // user to retry beats silently duplicating nothing.
     if (!isTabLoaded(id)) {
-      toast.error('That tab is still loading — try again in a moment.');
+      toast.error('That tab is still loading. Try again in a moment.');
       return;
     }
     const copy: Tab = {

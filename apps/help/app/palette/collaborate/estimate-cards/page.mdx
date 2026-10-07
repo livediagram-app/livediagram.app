@@ -6,7 +6,7 @@ import { EstimateCard } from '@/components/illustrations/palette-collaborate';
 export const metadata = helpMetadata({
   title: 'Estimate Cards',
   description:
-    'Planning poker on the canvas: everyone picks a number privately, one Reveal shows every answer at once, and the card calls out the spread.',
+    'Planning poker on the canvas: everyone picks a value privately, one Reveal shows every answer at once, and the card calls out the spread.',
   path: '/help/palette/collaborate/estimate-cards/',
 });
 
@@ -19,26 +19,34 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'estimate-cards')}
 >
 
-Planning poker. Everyone picks a number privately; one **Reveal** shows every answer at once.
+Planning poker. Everyone picks a value privately; one **Reveal** shows every answer at once.
 
 ## Choosing a scale
 
-Add an **Estimate** card from the **Ask** row of the [Collaborate](/help/palette/collaborate/) category. A new card asks which scale to use right on the canvas: **Fibonacci** (1 2 3 5 8 13 21 ?), **T-shirt** (XS to XL) or **Powers of two**. Tap one and the card is ready. You can change it later from the card's menu, under Scale.
+Add an **Estimate** card from the **Ask** group of the [Collaborate](/help/palette/collaborate/) category. A new card asks **Choose a scale** right on the canvas: **Fibonacci** (1 2 3 5 8 13 21 ?), **T-shirt** (XS S M L XL ?) or **Powers of two** (1 2 4 8 16 ?). Tap one and the card is ready. Anyone who can edit may choose; a view-only visitor sees "Waiting for a scale".
+
+To change it later, right-click the card and open **Tools**, then **Scale**. Changing the scale keeps answers already cast, so start a new round first if people have answered.
 
 Every scale ends in **?**, which is a real answer: "I can't size this."
 
+The card's label is the thing being estimated. Double-click it to name the story.
+
 ## Before the reveal
 
-Tap a card to pick it. The card shows **who** has answered, as a face-down card with their avatar and a count of how many are in, not what they said. That is the point: seeing a number first is what anchors a room.
+Tap a value to pick it; your pick lifts in the accent colour. The card shows **who** has answered, as a face-down card with their avatar, and the header counts how many are in ("3/5 answered"), never what they said. That is the point: seeing a number first is what anchors a room.
 
-<Figure caption="Before the reveal the card names who has answered, never what they picked.">
+<Figure caption="Before the reveal the card shows who has answered, never what they picked, with Reveal at the foot.">
   <EstimateCard />
 </Figure>
 
 Press your own pick again to withdraw it. Picking a different one replaces it.
 
+**Reveal** sits at the foot of the card once anybody has answered. It doesn't wait for everyone: the count already tells you who is missing.
+
 ## After the reveal
 
-Every card turns face up at once, sorted low to high with its author's avatar, and the **spread** is called out, or "Unanimous" when everyone agreed. The lowest and highest cards are ringed: they are the two people who should talk first. **New round** empties the card for the next story.
+Every card turns face up at once, sorted low to high with its author's avatar, and the **spread** is called out ("Spread 3 → 13"), or "Unanimous" when everyone agreed. The lowest and highest cards are ringed: they are the two people who should talk first. **New round** takes Reveal's place and empties the card for the next story.
+
+Reveal and New round belong to the [facilitator](/help/collaboration/facilitator/) while somebody holds that role, and to any editor otherwise. Only people who can edit the document can pick a value, and picks are never undone by somebody else's Ctrl+Z.
 
 </ArticleLayout>

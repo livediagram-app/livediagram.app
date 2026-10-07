@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { MultiSelect } from '@/components/illustrations/canvas';
+import { MultiSelectionBar } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Marquee and Multi-Select',
@@ -21,30 +22,46 @@ export const metadata = helpMetadata({
 
 Selecting one element is easy: you click it. The interesting part is grabbing several at once so you can move, copy, or restyle a whole region of the canvas in a single action. livediagram offers two complementary ways to do this, and they work together.
 
-## The marquee
+## The Marquee
 
-The marquee is a selection rectangle you drag across the canvas. Start the drag on an empty patch of background, pull a box around the elements you want, and release: every element that sits entirely inside the rectangle becomes selected together, while anything the box only clips is left out. It is the fastest way to scoop up a cluster of shapes, a row of cards, or an entire section of a board.
+The marquee is a selection rectangle you drag across the canvas. With the Select tool active, start the drag on an empty patch of background, pull a box around the elements you want, and release: every element that sits entirely inside the rectangle becomes selected together, while anything the box only clips is left out. Arrows count too, as long as both of their ends are inside the box. It is the fastest way to scoop up a cluster of shapes, a row of cards, or an entire section of a board.
 
-Because the marquee starts on empty canvas, it never conflicts with dragging an element. Press directly on a shape and you move that shape; press on the background and you draw a marquee instead.
+Because the marquee starts on empty canvas, it never conflicts with dragging an element. Press directly on a shape and you move that shape; press on the background and you draw a marquee instead. A drag of only a few pixels counts as a click, so it simply clears the selection.
 
 <Figure caption="A marquee drag sweeps a rectangle across the canvas, selecting every element it fully encloses.">
   <MultiSelect />
 </Figure>
 
-## Building a selection by hand
+On a phone the canvas starts on the [Hand tool](/help/selection-modes/hand/), where a drag pans instead. Switch to [Select](/help/selection-modes/select/) from the canvas tool menu (or press `V` on a keyboard) to draw a marquee.
+
+## Building a Selection by Hand
 
 When the elements you want are not neatly boxed together, build the selection one at a time. Click the first element, then **hold Shift and click** more to add them without dropping what you already have. You can keep extending the selection across the canvas, picking out exactly the elements you need and leaving their neighbours untouched. Shift-clicking an element that is already selected removes it again, so you can fine-tune the set as you go.
 
-Only Shift adds to a selection. A plain click, without Shift, always starts over: click an element outside the selection and it becomes the only one selected, and click an element inside the selection to keep just that one.
+Only Shift adds to a selection. A plain click, without Shift, always starts over: click an element outside the selection and it becomes the only one selected, and click an element inside the selection to keep just that one. Clicking the only selected element again deselects it.
 
-## Acting on a selection
+To take everything on the tab at once, press `Cmd` / `Ctrl` + `A`.
 
-However you gathered it, a multi-selection behaves as one. Press any part of it and drag, and the whole set moves together, keeping its relative spacing. You can copy and paste the selection, delete it, lock it, or open the right-click menu to restyle the lot at once. The [format painter](/help/selection-modes/format-painter/) is happy to paint a look across an entire multi-selection too.
+<Note>
+  In [Draw mode](/help/canvas/draw-mode/), holding Shift while you drag always draws a marquee that
+  adds to the selection, even when the drag starts on top of an element. Elsewhere, Shift + drag on
+  an element drops a duplicate of it instead.
+</Note>
+
+## Acting on a Selection
+
+However you gathered it, a multi-selection behaves as one. Press any part of it and drag, and the whole set moves together, keeping its relative spacing. A small toolbar floats above the selection with **More** (the full selection menu), a funnel that narrows the selection to one kind of element (shown only when the selection mixes kinds), **Duplicate**, **Export**, **Lock** and **Delete**.
+
+<Figure caption="The multi-selection toolbar: More, the kind filter, Duplicate, Export, Lock and Delete.">
+  <MultiSelectionBar />
+</Figure>
+
+You can also copy and paste the selection, delete it with Delete or Backspace (locked members are kept), nudge it with the arrow keys (hold Shift for 10 pixels at a time), or open the right-click menu to restyle the lot at once. The [format painter](/help/selection-modes/format-painter/) is happy to paint a look across an entire multi-selection too.
 
 <Tip>
   Clicking an empty patch of canvas clears the current selection (a right-click there does too, as
-  it opens the canvas menu), so you always have a quick way to start fresh before drawing a new
-  marquee.
+  it opens the canvas menu), and so does Escape, so you always have a quick way to start fresh
+  before drawing a new marquee.
 </Tip>
 
 </ArticleLayout>

@@ -111,7 +111,7 @@ connection to lay out, export and explain.
 
 ## Registration
 
-- In the palette's **Behaviour → Collaborate** group beside the Comment panel,
+- In the palette's **Collaborate → Record** group beside the Comment panel,
   placed from there only (the element menu keeps Assign Action for putting an
   action on an existing element).
 - Not self-painting: a card that wants the fill, border and rounded corners

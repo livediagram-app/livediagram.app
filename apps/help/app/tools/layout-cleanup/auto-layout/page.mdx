@@ -1,20 +1,20 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { AutoLayoutTidy } from '@/components/illustrations/tools';
+import { AutoLayoutTidy, CleanupMenu } from '@/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Auto Layout',
   description:
-    "Recompute a diagram's positions from the arrow graph with Tidy Up, in your choice of style: smart layers, a directed flowchart, a tree, or a mindmap.",
+    "Recompute a diagram's positions from the arrow graph with Auto Layout, in your choice of style: smart layers, a directed flowchart, a tree, or a mindmap.",
   path: '/help/tools/layout-cleanup/auto-layout/',
 });
 
 <ArticleLayout title="Auto Layout" description="Let livediagram compute the layout for you from the connections between shapes." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-layout")}>
 
-Auto Layout, also labelled Tidy Up, is the structural tidier. Rather than nudging the positions you already have, it reads the arrow graph, works out how shapes connect, and computes brand-new positions, arranging connected shapes into clean layers. Unlike Auto-Align, it can legitimately move an element right across the canvas to give the diagram a proper layout.
+Auto Layout is the structural tidier (the command palette calls it "Auto Layout (tidy up)"). Rather than nudging the positions you already have, it reads the arrow graph, works out how shapes connect, and computes brand-new positions, arranging connected shapes into clean layers. Unlike Auto-Align, it can legitimately move an element right across the canvas to give the diagram a proper layout.
 
-<Figure caption="Tidy Up reads the arrow graph and re-lays a tangled diagram into clean, ordered layers.">
+<Figure caption="Auto Layout reads the arrow graph and re-lays a tangled diagram into clean, ordered layers.">
   <AutoLayoutTidy />
 </Figure>
 
@@ -24,44 +24,52 @@ Auto Layout, also labelled Tidy Up, is the structural tidier. Rather than nudgin
 - It keeps connections **readable**: each shape settles beside the shapes it connects to, an arrow that skips a level gets its own lane instead of running through the shape in between, and arrows leave and arrive on the sides facing the flow.
 - It **infers direction** from where your shapes roughly sit now, so the result follows the orientation you were already drawing in.
 - It works on the **whole active tab**. Shapes that aren't wired to anything (loose stickies, text, or images) pass through with their positions untouched, and spacing respects each element's size.
+- It leaves **locked elements where they are**: a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), is not moved or resized, and the rest of the diagram is laid out as if it were not there. Unlock it first if you want it included.
 - It is **origin-preserving**: the laid-out block stays pinned to the diagram's current top-left, so the result appears where you're already looking instead of jumping to the canvas origin.
 - It finishes with a **grid snap** (the same one [Auto-Align](/help/tools/layout-cleanup/auto-align/) runs), so the tidied output is also grid-aligned.
 
 ## Layout styles
 
-One arrangement doesn't fit every diagram, so alongside the smart default the Cleanup category offers a tile per style. All of them read the same arrow graph and differ only in the shape of the result:
+One arrangement doesn't fit every diagram, so alongside the smart default the Cleanup section offers a row per style. All of them read the same arrow graph and differ only in the shape of the result:
 
 - **Auto Layout** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
 - **Flowchart ↓** and **Flowchart →**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
 - **Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
 - **Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
 
-Every style is also available from the command palette ("Auto Layout: Mindmap", and so on). If a diagram isn't a perfect tree (a shape with two parents, or a loop), Tree and Mindmap still work: they lay out the main skeleton and reconnect the extra arrows across it.
+Every style is also available from the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K): "Auto Layout: Flowchart (down)", "Auto Layout: Tree", "Auto Layout: Mindmap", and so on. If a diagram isn't a perfect tree (a shape with two parents, or a loop), Tree and Mindmap still work: they lay out the main skeleton and reconnect the extra arrows across it.
 
 ## Running it
 
 <Step n={1}>
-  Right-click an empty part of the canvas (or the active tab) to open the context menu.
+  Right-click an empty part of the canvas (on a touchscreen, long-press it), or open the active
+  tab's ⋯ menu.
 </Step>
 
 <Step n={2}>
-  Open the **Cleanup** category and choose **Auto Layout** (Tidy Up) or one of the style tiles:
-  Flowchart ↓, Flowchart →, Tree, or Mindmap.
+  Open the **Cleanup** section and choose **Auto Layout**, or one of the style rows below it.
 </Step>
 
 <Step n={3}>The whole tab is laid out anew in a single undoable step.</Step>
 
 On a computer you can see a style before you choose it: **rest the pointer on a row** and the tab lays itself out behind the menu, live. Move to the next row to see that one instead, move off the rows and everything goes back exactly as it was. Nothing is saved, logged, or sent to the people you're working with until you click.
 
-Because it's one undoable operation, you can also try a style and undo it in a single step if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.
+<Figure caption="Resting the pointer on Tree lays the tab out as a tree behind the menu; clicking keeps it.">
+  <CleanupMenu />
+</Figure>
+
+On a touchscreen there is no preview, since a tap runs the row. Because it's one undoable operation, you can still try a style and undo it in a single step (⌘Z / Ctrl+Z) if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.
 
 ## When to use it
 
 Reach for Auto Layout when a diagram has grown organically and lost its shape, or when shapes were placed without much thought and you want the connections to drive the layout. If the diagram already looks right and only needs its drift cleaned up, use Auto-Align instead.
 
+Auto Layout needs edit access and leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first.
+
 <Note>
   Auto Layout is deterministic and works offline, available in every deployment. It is separate from
-  the AI "Clean" assistance, which is the optional, key-gated path.
+  the AI [Clean](/help/tools/ai/ai-tools/) mode, which is optional and only exists where an AI
+  provider is configured.
 </Note>
 
 </ArticleLayout>

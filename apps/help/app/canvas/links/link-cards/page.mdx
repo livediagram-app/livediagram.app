@@ -18,37 +18,40 @@ A link card is a bookmark you can see. Paste a URL into it and the card turns in
   <LinkCard />
 </Figure>
 
-## Adding and editing a card
+## Adding and Editing a Card
 
 A link card behaves like any other boxed element, so it moves, resizes, recolours, locks, and layers in the usual way.
 
 <Step n={1}>
-  Add a link card from the tools. It lands at the centre of your view, and you can then move and
-  resize it like any boxed element.
+  Open the palette's **Collaborate** category and pick **Link card**, under **Navigate**. Click the
+  canvas to drop it at its default size, or drag to draw it the size you want.
 </Step>
 
-<Step n={2}>An empty card prompts you to add a link. Double-click it to open the link picker.</Step>
+<Step n={2}>An empty card prompts you to add a link. Double-click it to open the link dialog.</Step>
 
 <Step n={3}>
-  Paste a URL and confirm. The card fetches the preview and fills itself in. To change the URL
-  later, double-click the card again.
+  Paste a URL and press **Save link**. The card fetches the preview and fills itself in. To change
+  the URL later, double-click the card again.
 </Step>
 
-Clicking a filled card follows its link, the same as any other linked element.
+Right-click a card and its **Link** category offers **Set Link** on an empty card, then **Change Link** and **Remove Link** once it has one. A card can also point at a tab or another of your documents, picked in the same dialog; it then shows that tab's or document's name.
 
-## How the preview is fetched
+Clicking the row along the bottom of a filled card (its favicon, title and address) follows its link; the rest of the card drags and selects like any element.
+
+## How the Preview Is Fetched
 
 When you set a URL, livediagram fetches the page's preview once and caches it onto the card. Because the preview is stored with the card, collaborators and anyone who reloads the document see the same card without it being fetched again.
 
 - The card shows the **title**, **site name**, **favicon**, and **preview image** when the page exposes them.
 - The preview image and favicon are referenced straight from the source page, so if a page later removes them the card falls back gracefully.
+- A card keeps its own neutral look whatever the tab's theme, and you can still recolour it.
 - While there is no preview yet, or if a fetch does not return one, the card shows the bare URL and its host so it is always useful.
 
-## Safe by design
+## Safe by Design
 
 Fetching a preview happens on livediagram's server, never from your browser reaching across the web on its own, and that path is built to be safe to run on a public, self-hostable codebase:
 
-- Only `http` and `https` addresses are fetched.
+- Only `http` and `https` addresses are fetched, and a slow page is given up on after a few seconds rather than holding the card.
 - Addresses pointing at private networks, local machines, or internal metadata are refused, so a card can never be used to probe somewhere it should not reach.
 
 The result is that a link card is just a friendly preview of a public page, with none of the surprises that fetching arbitrary URLs could otherwise bring.

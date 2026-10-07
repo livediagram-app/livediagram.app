@@ -19,7 +19,7 @@ You can work on the canvas without a mouse. This page covers the keyboard-naviga
 
 ## Reaching the canvas
 
-The canvas is a focus stop in the normal `Tab` order, labelled **"Canvas"**. Tab to it from the page and you'll see a focus ring (only when navigating by keyboard, so mouse users see nothing new). The floating panels, the [Palette](/help/tips-and-tricks/command-palette/), [Explorer](/help/explorer/explorer-page/), and the Map, stay reachable by the keyboard too.
+The canvas is a focus stop in the normal `Tab` order, labelled **"Canvas"**. Tab to it from the page and you'll see a focus ring (only when navigating by keyboard, so mouse users see nothing new). The floating panels (the [Palette](/help/tips-and-tricks/command-palette/), the [Explorer](/help/explorer/explorer-page/) and the [Map](/help/user-interface/minimap/)) stay reachable by the keyboard too.
 
 ## Walking the elements
 
@@ -27,32 +27,38 @@ Once focus is on the canvas:
 
 - **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the canvas. The canvas scrolls the selected element into view as you go.
 - There's **no wrap and no trap**: pressing `Tab` past the last element (or `Shift`+`Tab` before the first) moves focus out of the canvas to the next thing on the page, so you can always keyboard your way onward.
-- The **selection ring is the focus indicator**, there's one highlighted element, not two competing outlines.
-- Elements **locked by someone else** are skipped, the same as when you click.
+- The **selection ring is the focus indicator**: there's one highlighted element, not two competing outlines.
+- Elements **locked by someone else** are skipped, the same as when you click, and so are elements on a hidden or locked [layer](/help/canvas/layers/).
+- On a selected [mind map](/help/palette/mind-maps/) node, `Tab` adds a child node instead, and `Enter` a sibling.
 
-This works even in read-only views, since it's just navigation.
+This works even in read-only views, since it's just navigation. It is part of the editor's keyboard shortcuts, so it pauses while a dialog is open or a slide deck is presenting, and it is off if you have switched **Keyboard Shortcuts** off in Settings.
 
 ## Hearing what's selected
 
 Every element carries a name, so a screen reader can describe it, for example `Square "Login"`, `Sticky note`, or `Arrow "yes"`. A polite live region announces changes as they happen:
 
-- **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label), a short summary when several are selected, or `Selection cleared`.
-- **Editing:** deleting an element, and **Undo** / **Redo**, are announced too.
+- **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label), a short summary when several are selected (`Selected 2 Squares & an Arrow`), or `Selection cleared`.
+- **Editing:** deleting an element (`Deleted 'Login'`), **Undo** and **Redo** (`Undid the last change`, `Redid the last change`) are announced too.
+- **Mode:** switching editor mode with `Shift`+`D` announces the new one, for example `Draw mode`.
 
 These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off.
 
 ## Editing from the keyboard
 
-With an element selected by keyboard, the usual keyboard verbs apply: arrow keys nudge it, `Delete` / `Backspace` removes it, `Space` edits its label, and `⌘`/`Ctrl`+`Z` undoes. The editing verbs are disabled in read-only views and while you're typing in a field. See [Keyboard Essentials](/help/getting-started/keyboard-essentials/) and the full [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) reference.
+With an element selected by keyboard, the usual keyboard verbs apply: arrow keys nudge it, `Delete` / `Backspace` removes it, `Space` edits its label, and `⌘`/`Ctrl`+`Z` undoes. The editing verbs are disabled in read-only views and while you're typing in a field. `⌘`/`Ctrl`+`K` opens [search](/help/search-panel/), which reaches documents, tabs, elements and commands from the keyboard. See [Keyboard Essentials](/help/getting-started/keyboard-essentials/) and the full [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) reference.
 
 ## Reducing motion
 
-If animation is uncomfortable, turn on **Reduce motion** in Settings (in the Accessibility group). It reduces the editor's canvas and interface animation so panels and popovers appear instantly instead of sliding or popping, and your device's own reduce-motion preference is always respected as well.
+If animation is uncomfortable, turn on **Reduce Motion** in [Settings](/help/user-interface/settings/), under **Accessibility**. It turns off the editor's decorative animations and transitions so panels and popovers appear instantly instead of sliding or popping. Your device's own reduce-motion preference is always respected as well, and the setting follows you to your other devices.
+
+## Larger controls
+
+If the panels and buttons are too small to read or hit comfortably, **UI Scale** in Settings, under **Appearance**, makes the panels, the toolbar and the bottom-right buttons bigger (up to 120%, or 140% for the Toolbar layout's strip) without zooming the canvas. Desktop only.
 
 <Tip>
   This is a baseline, honest but not exhaustive: keyboard-only users can reach, traverse, and edit
-  the canvas. If something you rely on is hard to reach with the keyboard, tell us, it helps us
-  prioritise what to improve next.
+  the canvas. If something you rely on is hard to reach with the keyboard, [tell
+  us](/help/contact/): it helps us prioritise what to improve next.
 </Tip>
 
 </ArticleLayout>

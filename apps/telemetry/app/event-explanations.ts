@@ -85,7 +85,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
   'AI|Toggled|AiSuggestedPromptsOn':
-    "Someone turned on Suggested Prompts, the starter questions the AI Assistant offers before you've typed anything.",
+    "Someone turned on Suggested Prompts, the row of one-click starter prompts under the AI Assistant's mode buttons.",
   'AI|Used|Ask':
     'Someone asked the AI Assistant a question about the active tab and got an answer.',
   'AI|Used|Clean':

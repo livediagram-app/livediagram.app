@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { LaneCarry } from '@/components/illustrations/palette-structure-elements';
 
 export const metadata = helpMetadata({
   title: 'Lanes',
@@ -19,30 +20,42 @@ export const metadata = helpMetadata({
 
 A **Lane** is a wide band with a titled gutter down one edge, for cross-functional flows: a role, a team or a system per lane, with its steps laid inside.
 
-It sits in the palette's **Build** category, beside Frame.
+It sits in the palette's [Build](/help/palette/build/) category, beside Frame, in Diagram mode. Illustrate mode's palette leaves lanes out; add one there from the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) if you need it. A new lane is 900 by 200, titled "Lane".
 
 ## Dragging a lane takes its contents
 
-Drag a lane and everything **fully inside** it comes along. That is the difference between a lane and a plain rectangle: a swimlane is a container, so moving the band moves the work.
+Drag a lane and everything **inside** it comes along. That is the difference between a lane and a plain rectangle: a swimlane is a container, so moving the band moves the work.
 
-Two rules make that predictable:
+<Figure caption="Dragging a lane carries every element whose centre it holds; one straddling the edge with its centre outside stays put.">
+  <LaneCarry />
+</Figure>
 
-- Only elements the lane **completely** contains travel with it. Something half in and half out stays where it is.
-- If two containers overlap, an element belongs to the one **furthest back**, so it travels with that one and not with whichever you happened to drag.
+The rules are the same ones a [frame](/help/palette/build/frames/) follows:
 
-Resizing a lane is deliberately different: it resizes the band and leaves the contents where they are.
+- An element belongs to a lane when its **centre** is inside the band. Something straddling the edge travels if its centre is in, and stays if its centre is out.
+- If an element sits inside two containers, it belongs to the **smaller** one. A frame or lane nested inside the lane travels with it, carrying its own contents.
+- Pinned arrows between elements follow them, and a loose arrow travels when both of its free ends are inside.
 
-## The title
+Resizing a lane is deliberately different: it resizes the band and leaves the contents where they are. A lane always draws behind the elements on it, so dropping one over a finished flow never hides it.
 
-The title is an ordinary element label, so you edit, format and align it like any other. The tinted gutter is its backdrop and **follows its alignment** — align the title right and the gutter moves with it.
+## The title and its gutter
+
+The title is an ordinary element label, so you edit, format and align it like any other. The tinted gutter is its backdrop and **follows its alignment**:
+
+- Align the title left or right and the gutter runs down that side.
+- Centre it at the top or bottom and the gutter becomes a band across that edge, which turns the lane into a **column** with a header, for a board of columns rather than a stack of rows.
+
+Drag the seam between the gutter and the body to make the gutter wider or narrower. It snaps to the seams of other lanes, so a stack of lanes keeps its headings lined up. To recolour the gutter, right-click the lane and pick a **Heading** colour in the **Colours** section; left unset, it is a light wash of the lane's own border colour.
+
+For a lane with its gutter down a side, **Upright title** in the right-click menu's **Text** section turns the title a quarter so it reads from bottom to top in a slim strip, the way draw.io and BPMN tools draw swimlanes. Lanes imported from draw.io use it automatically.
 
 ## Stacking lanes
 
-Lanes are placed like anything else and are not auto-stacked; snapping and the alignment guides make butting one under another straightforward. Flush lanes look right: a lane's outline is a single hairline, so two touching lanes do not double into a heavier line.
+Lanes are placed like anything else and are not auto-stacked; snapping and the [alignment guides](/help/palette/alignment-guides/) make butting one under another straightforward. Flush lanes look right: a lane's outline is a single hairline, so two touching lanes do not double into a heavier line.
 
 <Tip>
   Build the flow first and drop the lanes underneath it afterwards. Because a lane picks up whatever
-  it fully contains, sizing a band around a finished row is often quicker than placing the band and
+  sits inside it, sizing a band around a finished row is often quicker than placing the band and
   then working inside it.
 </Tip>
 

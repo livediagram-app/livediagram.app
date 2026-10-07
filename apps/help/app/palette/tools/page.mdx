@@ -20,45 +20,62 @@ export const metadata = helpMetadata({
 
 There is no longer a **Tools** tab. Every group it held is now a palette **category** of its own, one click away in the category picker rather than two, so this page is a map of where each tool went.
 
-The categories are grouped into four bands: **Common** (Shapes, Write, Draw), **Structure** (Build, Components, Devices), **Decorate** (Icons, Stickers, Tech, Media), and **Dynamic** (Data, Collaborate), with **Popular** across the top.
+The categories are grouped into four bands: **Common**, **Structure**, **Decorate**, and **Dynamic**, with **Popular** across the top. Open the picker from the category name at the top of the palette.
 
-<Figure caption="The category picker: Popular across the top, then the four bands the categories fall into.">
+<Figure caption="The category picker in Diagram mode: Popular across the top, then the four bands the categories fall into.">
   <CategoryPicker />
 </Figure>
 
+## Which categories each mode offers
+
+The palette is laid out per editor mode, so not every category appears everywhere:
+
+- **Diagram** (the default): Popular, Shapes, Write, Draw, Build, Icons, Stickers, Tech, Media (Image and Avatar), and Collaborate. **My shapes** joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
+- **[Illustrate](/help/canvas/illustrate/)**: Popular, Shapes, Write, Build, Components, Devices, Icons, Stickers, Media (with the embeds), and Data. There is no Draw, Tech or Collaborate, and Write and Build leave out the diagram-only tiles (Page, Annotation, Mind node, Lane and Frame).
+- **[Plan](/help/canvas/plan-mode/)**: its own Plan band (Cards, Boards, Widgets, Metrics, Visualisations), plus Content (sticky note, text, image, page) and Tools (temperature check, estimate card, idea box, picker, timer and stopwatch).
+- **[Draw mode](/help/canvas/draw-mode/)** swaps the palette for the whiteboard's own pens and shapes.
+
+Anything a mode leaves out is still one search away: the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) can add any palette element by name, whatever the mode.
+
 ## Where each tool lives
 
-**Build** holds the elements you lay a diagram out with, the ones that hold other work: **Mind Node** (Tab adds a child, Enter a sibling), **Lane** (a titled band that carries its steps), **Frame** (a labelled box that groups a section), **Timeline** (a track for sequencing events), and **Table** (an editable grid of cells).
+**Build** holds the elements you lay a diagram out with, the ones that hold other work: **Mind node** (Tab adds a child, Enter a sibling), **Table** (an editable grid of cells), **Lane** (a titled band that carries its steps), **Frame** (a labelled box that groups a section, `F`), and **Timeline** (a track for sequencing events).
 
-**Write** holds the wordy elements: **Text** drops a free-standing label, **Page** is a paper-sized sheet you write into, **Sticky note** is a coloured note card, and **Annotation** is a small note marker for callouts. The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
+**Write** holds the wordy elements: **Page** is a paper-sized sheet you write into, **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`), and **Annotation** is a small marker that holds a note. The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
 
-**Draw** holds the gesture tools: **Freehand** sketches a stroke and keeps it exactly as drawn, the **Shape Pen** turns a rough sketch into a real shape, the **Highlighter** lays one wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/). (**Frame** moved to Build.)
+**Draw** holds the gesture tools: **Freehand** (`P`) sketches a stroke and keeps it exactly as drawn, the **Shape Pen** (`6`) turns a rough sketch into a real shape, the **Highlighter** lays one wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** (`A`) drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/).
 
-**Components** holds the ready-made pieces: **Code Block**, **Checklist**, **Entity**, and the themed composites (Banner, Callout, Stat row, Process, Hero, Header). (**Timeline** moved to Build.)
+**Components** (Illustrate) holds the ready-made pieces: **Code**, **Checklist**, **Entity** (Diagram's version of it lives in Popular), and a **Web Elements** group of themed composites (Banner, Callout, Stat row, Process, Hero, Header). In Diagram mode, **Code block** and **Entity** sit in Popular; add a **Checklist** from the search panel.
 
-**Data** holds the charts and meters. See [Data and Chart Elements](/help/palette/tools/data-elements/). (**Table** moved to Build.)
+**Data** (Illustrate) holds the charts and meters: Pie, Bar, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
 
-**Collaborate** holds the elements that _do_ something when somebody interacts with them, browsed in five groups: **Selection Mode** buttons, **Tools** (Reveal zone, Done check, Picker), **Navigate** (Portal, Chair, Link card), **Session** buttons for the timer, vote and poll, and **React** (the five reaction pads). See [Collaborate](/help/palette/behaviour/).
+**Collaborate** (Diagram) holds the elements that do something when somebody interacts with them, or that ask the room something, browsed in six groups: **Ask** (dot vote, poll, quiz, estimate card, temperature check, idea box, Q&A board), **Tools** (timer, stopwatch, reveal zone, done check, picker), **Record** (comment panel, action panel, agenda, decision record, roll call), **React** (the five reaction pads), **Selection Mode** buttons, and **Navigate** (portal, bring focus, chair, link card). See [Collaborate](/help/palette/behaviour/) and [Collaborate Elements](/help/palette/collaborate/).
 
-**Collaborate** holds the elements that ask the room something: the Comment panel, estimate cards, a temperature check, an idea box, an agenda, a decision record and a roll call. See [Collaborate Elements](/help/palette/collaborate/).
+**Media** covers pictures and other people's pages: **Image** (`9`) and **Avatar**, plus, in Illustrate, an **Embed** group for YouTube, Vimeo, Loom, Figma, Google Docs and any website ([embeds](/help/palette/embed-elements/)). Image and Avatar only appear where image uploads are available.
 
-**Media** covers pictures, figures and other people's pages: **Image**, **Avatar**, and the [embeds](/help/palette/embed-elements/) for YouTube, Vimeo, Loom, Figma, Google Docs and any website.
+Each behaves like any other element once placed: select it, restyle it, multi-select it with others, and move it freely. Pick a tile and tap the canvas to drop the element at its default size, or drag to draw it at the size you want.
 
-Each behaves like any other element once placed: select, restyle, group, and move it freely.
+<Note>
+  The palette is hidden for people with view-only access, since they can't add anything. With the
+  [Toolbar layout](/help/palette/toolbar-layout/) on, the same categories sit on the toolbar strip
+  instead of the floating palette.
+</Note>
 
 ## Guides for these tools
 
 Several tools have their own walkthroughs, listed below and linked here:
 
 - [Drawing and Sketch](/help/palette/tools/drawing/) covers Freehand, the Shape Pen, and the Polygon tool.
-- [Images](/help/palette/tools/images/) covers uploading and placing pictures, avatars, and user figures.
+- [Highlighter](/help/palette/tools/highlighter/) covers the translucent marker and its colours and widths.
+- [Images](/help/palette/tools/images/) covers uploading, searching for and reusing pictures, and avatars.
+- [Pages](/help/palette/tools/pages/) covers the paper-sized sheet for prose.
 - [Tables](/help/palette/tools/tables/) covers the editable grid: adding one, filling cells, and rows/columns.
 - [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short annotations.
-- [Code Blocks](/help/palette/tools/code-blocks/) covers the dark monospace card for syntax-highlighted snippets.
+- [Code Blocks](/help/palette/tools/code-blocks/) covers the monospace card for syntax-highlighted snippets.
 - [Checklists](/help/palette/tools/checklists/) covers the card of checkable to-do rows you tick on the canvas.
 - [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
-- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie Chart, Bar Chart, Line Chart, Progress Bar, Progress Ring (a donut meter), and Rating (stars).
-- [Collaborate](/help/palette/behaviour/) covers the **Collaborate** category: Selection Mode buttons, Reveal zones, Done checks, Pickers, Portals, Chairs, Link cards, Session buttons, and Reaction pads.
+- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie, Bar and Line charts, Legend, Progress, Donut and Rating, plus the Timeline rail from Build.
+- [Collaborate](/help/palette/behaviour/) covers the **Collaborate** category's interactive elements: Selection Mode buttons, Reveal zones, Done checks, Pickers, Bring Focus, Session buttons, and Reaction pads.
 
 Arrows are deep enough to deserve their own guide: see [Arrows](/help/palette/arrows/).
 
