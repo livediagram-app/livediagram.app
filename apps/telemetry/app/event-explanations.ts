@@ -880,6 +880,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|SettingsAppearance': 'Someone opened the Appearance category in the Settings dialog.',
   'UI|Opened|SettingsControls': 'Someone opened the Controls category in the Settings dialog.',
   'UI|Opened|SettingsEditor': 'Someone opened the Editor category in the Settings dialog.',
+  'UI|Opened|SettingsExperimental':
+    'Someone opened the Experimental category in the Settings dialog. No longer recorded: the category is gone.',
   'UI|Opened|SettingsKeyboard': 'Someone opened the Keyboard category in the Settings dialog.',
   'UI|Opened|SettingsNotifications':
     'Someone opened the Notifications category in the Settings dialog.',
@@ -1056,10 +1058,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|QuickAddHoverOn':
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
-  'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
-  'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
-  'UI|Toggled|PlanModeOff': 'Someone turned off Plan mode, in Settings > Experimental.',
-  'UI|Toggled|PlanModeOn': 'Someone turned on Plan mode, in Settings > Experimental.',
+  'UI|Toggled|IllustrateModeOff':
+    'Someone turned off Illustrate mode, in Settings > Experimental. No longer recorded: Illustrate mode is always offered.',
+  'UI|Toggled|IllustrateModeOn':
+    'Someone turned on Illustrate mode, in Settings > Experimental. No longer recorded: Illustrate mode is always offered.',
+  'UI|Toggled|PlanModeOff':
+    'Someone turned off Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
+  'UI|Toggled|PlanModeOn':
+    'Someone turned on Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',

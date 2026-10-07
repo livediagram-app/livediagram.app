@@ -1,17 +1,16 @@
 # Plan mode blueprint
 
-Derived from [Plan mode](../plan-mode.md). Contract for wiring the `plan` editor mode, its gate, its palette
+Derived from [Plan mode](../plan-mode.md). Contract for wiring the `plan` editor mode, its palette
 and its templates.
 
 ## Domain and naming
 
-| Spec term        | Identifier                                                                             |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| Plan mode        | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)                             |
-| Plan Mode switch | preference `planModeEnabled`; `EXPERIMENTAL_EDITOR_MODES`                              |
-| Plan palette     | `PLAN` layout in `palette-layouts.ts`; categories `plan-boards`, `plan-cards` (band 4) |
-| Plan mark        | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                            |
-| Blank Plan       | `TemplateKind` `'blank-plan'`                                                          |
+| Spec term    | Identifier                                                                             |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Plan mode    | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)                             |
+| Plan palette | `PLAN` layout in `palette-layouts.ts`; categories `plan-boards`, `plan-cards` (band 4) |
+| Plan mark    | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                            |
+| Blank Plan   | `TemplateKind` `'blank-plan'`                                                          |
 
 ## Mode wiring
 
@@ -22,13 +21,6 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
   boards"), marketing `MODE_BEST`, `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
 - By hand: explorer lens `VALUE_LABELS['opens-in'].plan`, `paletteLayoutFor` (switch on mode), OpenAPI
   regeneration, marketing hero/gallery mode unions, telemetry explanations and catalogue `types`.
-
-## Gate
-
-- `offeredModesFor(enabled: ExperimentalModeFlags)` with `ExperimentalModeFlags = { illustrate: boolean; plan:
-boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES = ['illustrate', 'plan']`.
-- `planModeEnabled` preference read as `!== false`; Settings › Experimental row "Plan Mode", telemetry
-  `PlanModeOn` / `PlanModeOff` fired before persisting.
 
 ## Palette
 
@@ -93,7 +85,6 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
 | Rule                           | Test                                                                                          |
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
 | Mode catalogue order, cycle    | `editor-mode.test.ts`                                                                         |
-| Gate per mode                  | `offered-editor-modes.test.ts`                                                                |
 | Plan palette layout            | `palette-layouts.test.ts`                                                                     |
 | Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts`                                              |
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |

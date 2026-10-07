@@ -21,9 +21,8 @@ item store.
 
 - Plan is the fourth mode, after Illustrate: the mode switch, **Opens in**, **Shift+D** and the template picker's
   mode filter list it in that order.
-- It is an **experimental mode** with its own switch, **Plan mode** in Settings › Experimental, on by default,
-  apart from Illustrate's. Turned off, Plan leaves every list of modes and a tab that opens in Plan opens in
-  Diagram, as Illustrate does.
+- It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
+  Its Settings › Experimental switch went when it graduated.
 - Its mark is a board: three columns, the middle one holding a raised card.
 
 ## What the mode brings into focus

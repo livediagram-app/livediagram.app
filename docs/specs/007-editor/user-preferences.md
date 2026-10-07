@@ -212,10 +212,6 @@ type UserPreferences = {
   // Defaults to false (full motion, subject to the OS setting).
   reduceMotion?: boolean;
 
-  // Settings › Experimental › Illustrate Mode (editor-modes.md
-  // "Experimental modes"): offers Illustrate mode. Defaults to true (only false hides it).
-  illustrateModeEnabled?: boolean;
-
   // Email notification preferences (docs/specs/014-identity/profile-and-email-notifications.md). Account-level email
   // settings that share this synced blob rather than a parallel store,
   // surfaced in the Settings dialog's Notifications category (only when the deployment has
@@ -395,6 +391,10 @@ Missing key === undefined === default behaviour. Concretely:
   hover preview went with the Activity panel (removed 2026-10-03). A value
   still stored under either is ignored on read and dropped on the next
   write; Undo and Redo always show in the bottom-right cluster.
+  `illustrateModeEnabled` (and its older name `infographicModeEnabled`) and
+  `planModeEnabled` went with the Settings › Experimental category (removed
+  2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
+  every mode is always offered, and a stored `false` is dropped the same way.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -744,10 +744,7 @@ and the dialog stays as the one complete, browsable index of them.
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is
-  always respected and this only adds a user-forced override. The
-  Experimental group, after AI Tools, holds `illustrateModeEnabled`
-  ([Editor modes](editor-modes.md#experimental-modes)), on by default;
-  it emits `UI`/`Toggled`/`IllustrateMode{On,Off}`.
+  always respected and this only adds a user-forced override.
 
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two

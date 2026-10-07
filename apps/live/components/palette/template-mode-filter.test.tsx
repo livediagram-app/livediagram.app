@@ -11,7 +11,6 @@ import {
   type TemplateCategory,
   type TemplateKind,
 } from '@livediagram/templates';
-import { setIllustrateModeEnabled } from '@/lib/offered-editor-modes';
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
 import { useTemplateModeFilter } from './useTemplateModeFilter';
 
@@ -40,7 +39,7 @@ function Step({ initial = null, query = '' }: { initial?: ShelfCategory | null; 
     listed.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
   const matching = (t: (typeof TEMPLATES)[number]) => t.title.toLowerCase().includes(query);
   const matches = query ? listed.filter(matching) : [];
-  const everywhere = query ? TEMPLATES.filter((t) => filter.offered(t) && matching(t)).length : 0;
+  const everywhere = query ? TEMPLATES.filter(matching).length : 0;
   return (
     <>
       <output data-testid="selected">{kind}</output>
@@ -79,7 +78,6 @@ const cardModes = () =>
   );
 
 afterEach(() => {
-  act(() => setIllustrateModeEnabled(true));
   trackMock.mockClear();
 });
 
@@ -185,16 +183,6 @@ describe('the mode filter', () => {
     } finally {
       vi.useRealTimers();
     }
-  });
-
-  it('offers no Illustrate option, and shows no Illustrate template, when Illustrate is off', () => {
-    act(() => setIllustrateModeEnabled(false));
-    render(<Step />);
-    fireEvent.click(chip());
-    expect(screen.queryByRole('menuitemradio', { name: /^Illustrate/ })).toBeNull();
-    fireEvent.click(chip());
-    expect(cardModes()).not.toContain('Opens in Illustrate');
-    expect(screen.queryByText('Blank Illustration')).toBeNull();
   });
 });
 

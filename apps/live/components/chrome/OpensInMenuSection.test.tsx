@@ -2,12 +2,9 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OpensInMenuSection } from './OpensInMenuSection';
-import { setIllustrateModeEnabled, setPlanModeEnabled } from '@/lib/offered-editor-modes';
 
 afterEach(() => {
   cleanup();
-  setIllustrateModeEnabled(false);
-  setPlanModeEnabled(false);
 });
 
 function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']> = {}) {
@@ -32,9 +29,7 @@ const choices = () =>
 // docs/specs/007-editor/editor-modes.md "Opens in": every editor mode as a one-of-a-set choice, a
 // toggle button in the Tab control menu (docs/specs/004-interface-design/menus.md, D55).
 describe('OpensInMenuSection', () => {
-  it('lists every offered editor mode from the catalogue, the opening one checked', () => {
-    setIllustrateModeEnabled(true);
-    setPlanModeEnabled(true);
+  it('lists every editor mode from the catalogue, the opening one checked', () => {
     setup();
     const group = screen.getByRole('group', { name: 'Opens in' });
     expect(group).toBeTruthy();
@@ -50,14 +45,6 @@ describe('OpensInMenuSection', () => {
       'true',
       'false',
       'false',
-    ]);
-  });
-
-  it('leaves out Illustrate and Plan while they are switched off in Settings', () => {
-    setup();
-    expect(choices().map((i) => i.textContent)).toEqual([
-      expect.stringContaining('Diagram'),
-      expect.stringContaining('Draw'),
     ]);
   });
 

@@ -5,7 +5,6 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import type { Participant } from '@/lib/identity';
-import { setIllustrateModeEnabled } from '@/lib/offered-editor-modes';
 import { TemplatePicker } from './TemplatePicker';
 
 // jsdom has no ResizeObserver; the height-animated boxes only need one to exist.
@@ -274,7 +273,7 @@ describe('TemplatePicker, default folders', () => {
 
 // docs/specs/007-editor/new-document-route.md "`/new?mode=<mode>` and `/new?q=<words>`".
 describe('TemplatePicker, the /new presets', () => {
-  const renderPreset = (preset: { initialModeChoice?: 'illustrate'; initialQuery?: string }) => {
+  const renderPreset = (preset: { initialModeChoice?: 'plan'; initialQuery?: string }) => {
     const onPick = vi.fn();
     render(
       <TemplatePicker
@@ -296,17 +295,5 @@ describe('TemplatePicker, the /new presets', () => {
       (screen.getByRole('searchbox', { name: 'Search templates' }) as HTMLInputElement).value,
     ).toBe('town hall');
     expect(screen.queryByRole('heading', { name: /^Popular/ })).toBeNull();
-  });
-
-  it('ignores a mode that is switched off, selecting the plain blank', () => {
-    setIllustrateModeEnabled(false);
-    try {
-      const onPick = renderPreset({ initialModeChoice: 'illustrate' });
-      fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
-      fireEvent.click(screen.getByRole('button', { name: 'Create' }));
-      expect(onPick.mock.calls[0]![0]).toBe('blank');
-    } finally {
-      setIllustrateModeEnabled(true);
-    }
   });
 });

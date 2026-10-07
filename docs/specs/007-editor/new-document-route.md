@@ -475,10 +475,9 @@ default document name) without walking the wizard:
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
 - **`/new?mode=<mode>` and `/new?q=<words>`**: open the wizard on the template step **already
-  narrowed**: `mode` (`diagram`, `draw` or `illustrate`) sets the [mode filter](templates-by-mode.md)
+  narrowed**: `mode` (`diagram`, `draw`, `illustrate` or `plan`) sets the [mode filter](templates-by-mode.md)
   in place of Everything, and selects that mode's blank so Create never starts something filtered
-  away (a mode that is switched off is ignored, as the filter ignores it: Everything, and the
-  plain blank); `q` fills the search box (trimmed, at most 60 characters), so the step opens on
+  away; `q` fills the search box (trimmed, at most 60 characters), so the step opens on
   its matches at once (only typing is debounced, so the guard never lifts on the unfiltered
   step). They compose with each other and with the placement params, and are not a bypass:
   nothing is committed until the author picks. An unknown mode, or an empty `q`, is ignored. The

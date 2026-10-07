@@ -24,7 +24,6 @@ import {
   type EditorModeTab,
 } from '@/lib/editor-mode-store';
 import { debugLog } from '@/lib/debug-log';
-import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 import { track } from '@/lib/telemetry';
 
 export type EditorModeState = {
@@ -60,8 +59,7 @@ export function useEditorMode(
     EditorMode | null,
     EditorMode | null,
   ];
-  const offered = useOfferedEditorModes();
-  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, opened, canEdit, offered });
+  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, opened, canEdit });
   const setMode = useCallback(
     (next: EditorMode) => {
       if (!canSwitch || !tabId || next === mode) return;

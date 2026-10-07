@@ -65,7 +65,7 @@ where it is and changes only how the next mark is made.
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
-- **One mode chosen:** Diagram, Draw, Illustrate or Plan (the last two while offered, "Experimental modes").
+- **One mode chosen:** Diagram, Draw, Illustrate or Plan.
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
@@ -76,7 +76,7 @@ where it is and changes only how the next mark is made.
   notation, and shows no switch.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
   moves when the mode changes.
-- **Shift+D** moves to the next offered mode, wrapping round, shown in the switch's menu, `aria-keyshortcuts` and Settings ›
+- **Shift+D** moves to the next mode, wrapping round, shown in the switch's menu, `aria-keyshortcuts` and Settings ›
   Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
@@ -106,7 +106,7 @@ where it is and changes only how the next mark is made.
   Blank included, opens in Diagram. An import that sets its own opening
   mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
-  listing every offered editor mode (Diagram, Draw, Illustrate) as a radio choice with the
+  listing every editor mode (Diagram, Draw, Illustrate, Plan) as a radio choice with the
   current one checked. Choosing one sets `Tab.opensIn` for everyone and
   switches the chooser's own mode on that tab to it (remembered like any
   switch), so the choice visibly lands; nobody else's current mode changes.
@@ -373,23 +373,19 @@ something on it asks first:
 - Confirming sends `Editor` · `Changed` · `LeaveIllustrateConfirmed`, beside the switch's own
   `ModeDiagram` / `ModeDraw`.
 
-## Experimental modes
+## Every mode, always offered
 
-Illustrate mode is still new, so it keeps a switch in **Settings ›
-Experimental › Illustrate Mode**: **on by default** (the
-`illustrateModeEnabled` preference; only an explicit `false` turns it off).
-The **Experimental** category is listed after **AI Tools**.
+Every mode of the catalogue is offered to everyone: the mode switch, Opens in,
+Shift+D and the template picker's mode filter always list all four, and a tab
+always opens in the mode it is stored or remembered in.
 
-- While it is off, Illustrate is offered nowhere: not on the mode switch, not
-  in Opens in, and Shift+D skips it (`apps/live/lib/offered-editor-modes.ts`).
-- A tab stored as opening in Illustrate, or remembered in it, opens in Diagram
-  for a person who has it off. Nothing stored changes.
-- Turning it on fires `UI` · `Toggled` · `IllustrateModeOn` (and `…Off`).
-
-Plan mode has a switch of its own, **Settings › Experimental › Plan Mode**,
-on by default (`planModeEnabled`), with the same rules: off, Plan is offered
-nowhere and a tab opening in Plan opens in Diagram. It fires `PlanModeOn` /
-`PlanModeOff`. Each experimental mode is gated by its own preference.
+Illustrate and Plan each had a switch in **Settings › Experimental** while they
+were new. Both graduated on 2026-10-06, and the **Experimental** category went
+with them. Their `illustrateModeEnabled` and `planModeEnabled` preferences are
+retired keys ([User preferences](user-preferences.md) "Retired keys"), so a
+person who had switched either off sees it again. Their `UI` · `Toggled` ·
+`IllustrateMode{On,Off}` / `PlanMode{On,Off}` events are retired from the
+dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 ## Existing whiteboards
 
@@ -435,8 +431,8 @@ nowhere and a tab opening in Plan opens in Diagram. It fires `PlanModeOn` /
   `opensIn: 'infographic'`, a remembered mode, a recorded creation intent and
   a create's intent (`parseEditorMode`), a default-folder key
   `mode:infographic` (`parsePlacementDefaultKey`; clearing the default clears
-  both names) and the `infographicModeEnabled` preference
-  (`upgradeLegacyPreferences`). Nothing stored is rewritten. "Infographic" now
+  both names). Nothing stored is rewritten. The `infographicModeEnabled`
+  preference went with Illustrate's Settings switch (a retired key). "Infographic" now
   names a kind of page ([Illustrate pages](illustrate-pages.md) "Page kinds").
   The help articles moved to `/help/canvas/illustrate/`, the old addresses
   redirecting.

@@ -30,6 +30,16 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
   });
 
+  it('retires Settings › Experimental and its mode switches, not the modes', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsExperimental')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModePlan')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);
