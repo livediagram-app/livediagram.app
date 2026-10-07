@@ -562,6 +562,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone permanently deleted their account and its data, after typing their email address to confirm.',
   'Session|Opened|Embed':
     'A read-only embedded copy of a document was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
+  'Session|Opened|Workbench': 'A document opened inside a developer tool’s frame, signed in.',
   'Session|SignedIn|': 'A visitor just signed in to their account.',
   'Session|SignedOut|': 'A visitor just signed out.',
   'Session|SignedUp|': 'A visitor just created an account.',
@@ -753,6 +754,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
     'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
+  'Token|Linked|Workbench': 'A token’s owner allowed a developer tool to open their documents.',
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite':
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
@@ -1410,6 +1412,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone brought a deleted document back from the Trash, putting it back where it was.',
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
+  'Token|Linked': 'A token’s owner allowed a developer tool to open their documents.',
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':

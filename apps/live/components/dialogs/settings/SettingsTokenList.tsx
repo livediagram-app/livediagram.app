@@ -1,10 +1,10 @@
 'use client';
 
 // The token manager's list (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
-// newest first, one card each, and a revoke that confirms in a popover
-// before anything breaks.
+// newest first, one card each with its paired workbenches, and a revoke that
+// confirms in a popover before anything breaks.
 import { useState } from 'react';
-import type { ApiToken } from '@livediagram/api-schema';
+import type { ApiToken, WorkbenchPairing } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { useRelativeNow } from '@/lib/relative-time';
 import { SettingsTokenCard } from './SettingsTokenCard';
@@ -14,9 +14,13 @@ import { sortTokens } from './token-status';
 export function SettingsTokenList({
   tokens,
   onRevoke,
+  pairingsFor,
+  onUnpair,
 }: {
   tokens: ApiToken[] | null;
   onRevoke: (id: string) => void;
+  pairingsFor: (tokenId: string) => readonly WorkbenchPairing[];
+  onUnpair: (pairingId: string) => void;
 }) {
   const now = useRelativeNow();
   const [confirm, setConfirm] = useState<{ id: string; anchor: HTMLElement } | null>(null);
@@ -46,6 +50,8 @@ export function SettingsTokenList({
             token={token}
             now={now}
             onRevoke={(anchor) => setConfirm({ id: token.id, anchor })}
+            pairings={pairingsFor(token.id)}
+            onUnpair={onUnpair}
           />
         ))}
       </ul>

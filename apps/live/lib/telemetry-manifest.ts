@@ -198,6 +198,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
+  // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).
+  'Token·Linked',
   'Token·Removed',
   // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
   // document restored / deleted for good / a group emptied, typed by which Trash.
