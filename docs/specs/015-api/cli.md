@@ -1,6 +1,6 @@
 # CLI
 
-**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06). Every command below signs in through the
+**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `link`, `sync` and `workbench`). Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
