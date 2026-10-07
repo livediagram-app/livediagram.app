@@ -25,6 +25,7 @@ import {
 import { getDocument, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
+import { refuseGuestVoteOverCap } from '../vote-integrity';
 import {
   gateEdit,
   gateRead,
@@ -66,6 +67,12 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
     ? await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId)
     : await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
   if (!allowed) return forbidden();
+  // A guest's upvote counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);
+  // withdrawing never does.
+  if (action.type === 'vote' && action.on) {
+    const refused = await refuseGuestVoteOverCap(ctx, id, owner);
+    if (refused) return refused;
+  }
 
   // Server-derived identity: the voter id from the authenticated owner, the
   // author from their participant row (never from the request).

@@ -563,7 +563,11 @@ export type RoomOp =
   // `key` is the answerer's collab key (docs/specs/012-collaboration/collab-race-hardening.md): answers used to be keyed
   // by the per-socket presence id, so re-answering after a reconnect counted
   // twice. Optional so an older client still parses.
-  | { kind: 'poll-answer'; pollId: string; value: string | null; key?: string }
+  //
+  // `proof` is the sender's per-browser collab secret (docs/specs/012-collaboration/vote-integrity.md): it proves the
+  // key is the sender's own. The room checks it and NEVER relays it; a relayed or replayed answer carries the key the
+  // room decided and no proof.
+  | { kind: 'poll-answer'; pollId: string; value: string | null; key?: string; proof?: string }
   // The host ended the poll: drop the question, the answers, and the
   // panel everywhere. Edit-role only, like poll-start.
   | { kind: 'poll-end'; pollId: string }

@@ -32,6 +32,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
+import { isVoteLimitError, VOTE_LIMIT_MESSAGE } from '@/lib/vote-limit';
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").
 export const ITEM_REFETCH_DEBOUNCE_MS = 400;
@@ -205,7 +206,9 @@ export function usePlanItems(opts: {
         callbacks.current.onError(
           (err as { code?: string }).code === 'items_full'
             ? 'This document already holds the most items it can'
-            : "Couldn't save that change",
+            : isVoteLimitError(err)
+              ? VOTE_LIMIT_MESSAGE
+              : "Couldn't save that change",
         );
         void load();
         return { ok: false, made: [] };

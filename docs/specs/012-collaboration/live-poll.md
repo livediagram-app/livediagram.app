@@ -43,7 +43,11 @@ and reads these three to keep the running poll (above).
 - `{ kind: 'poll-answer'; pollId: string; value: string | null; key?: string }`
   — one participant's answer; `null` means they skipped. Keyed by `key`, the
   answerer's collab key (the sender's presence id only for an old client), so
-  re-sending replaces their previous answer, across a reconnect too.
+  re-sending replaces their previous answer, across a reconnect too. The sender
+  adds `proof` (its per-browser collab secret), which the room checks and never
+  relays. The room decides the key, relays only answers it accepted, and refuses
+  one that would change somebody else's answer or stuff the poll
+  ([Vote integrity](vote-integrity.md)).
 - `{ kind: 'poll-end'; pollId: string }` — tear it down everywhere.
 
 None of them touches the document. `poll-answer` relays unordered like cursor /

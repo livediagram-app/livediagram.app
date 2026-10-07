@@ -89,7 +89,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **Move**: a new `status` and/or a new `rank`, given as "after this item" or "before this item" (or the top or
   end of a column), so a move needs no knowledge of other ranks.
 - **Vote**: plus or minus one for the caller; a person's count never drops below zero. Votes are written only this
-  way, so two people voting at once never lose a vote.
+  way, so two people voting at once never lose a vote. A guest's `+1` is admitted against a per-network cap of guest
+  voters per document; an account votes freely, and withdrawing is never refused
+  ([Vote integrity](../012-collaboration/vote-integrity.md)).
 - **Delete**: removes the item. Its key is not reused.
 - **Restore** (an undo of a delete, or an offline document's sync): a create may name the item's old id and key
   and carry its votes and its comment thread; the key is honoured while it is free.

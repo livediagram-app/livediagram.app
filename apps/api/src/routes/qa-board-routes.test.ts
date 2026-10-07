@@ -9,11 +9,13 @@ import type { QaWriteRequest } from '../qa-board-write';
 // handing the write to the document's room. The write and its serialisation are
 // the room's, covered in document-room-qa.test.ts and qa-board-write.test.ts.
 
-const { db, gates } = vi.hoisted(() => ({
+const { db, gates, votes } = vi.hoisted(() => ({
   db: { getDocument: vi.fn(), getParticipant: vi.fn() },
   gates: { gateRead: vi.fn(), gateEdit: vi.fn() },
+  votes: { refuseGuestVoteOverCap: vi.fn() },
 }));
 vi.mock('../db', () => db);
+vi.mock('../vote-integrity', () => votes);
 vi.mock('./context', async (orig) => ({
   ...(await orig<typeof import('./context')>()),
   gateRead: gates.gateRead,
@@ -52,6 +54,33 @@ beforeEach(() => {
   db.getParticipant.mockResolvedValue({ name: 'Priya', color: '#0af' });
   gates.gateRead.mockResolvedValue(true);
   gates.gateEdit.mockResolvedValue(false);
+  votes.refuseGuestVoteOverCap.mockReset();
+  votes.refuseGuestVoteOverCap.mockResolvedValue(null);
+});
+
+// docs/specs/012-collaboration/vote-integrity.md: an upvote is admitted against the guest-voter cap; taking one back
+// never is.
+describe('guest voter cap', () => {
+  it('refuses an upvote the cap refuses, without reaching the room', async () => {
+    votes.refuseGuestVoteOverCap.mockResolvedValue(
+      Response.json({ error: 'vote_limit' }, { status: 429 }),
+    );
+    const { call, sent } = setup();
+    const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
+    expect(res!.status).toBe(429);
+    expect(votes.refuseGuestVoteOverCap).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-1');
+    expect(sent).toEqual([]);
+  });
+
+  it('never gates withdrawing a vote, or adding a question', async () => {
+    const { call } = setup();
+    await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: false } });
+    await call({
+      elementId: 'b1',
+      action: { type: 'add', id: 'q1', text: 'Why?', anonymous: true },
+    });
+    expect(votes.refuseGuestVoteOverCap).not.toHaveBeenCalled();
+  });
 });
 
 describe('handleQaBoardRoute', () => {

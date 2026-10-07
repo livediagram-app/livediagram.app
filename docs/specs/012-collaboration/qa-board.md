@@ -94,7 +94,9 @@ retried request can't flip a vote back off. Pressing your own upvote again
 withdraws it. Done notes take no votes: their counts freeze when they're closed.
 
 The honest limit is the same one every per-browser identity here has: a guest
-who clears their browser storage is a new person.
+who clears their browser storage is a new person. A guest id costs nothing to
+make, so guest voters are capped per network per document; an account votes
+freely ([Vote integrity](vote-integrity.md)).
 
 ## How it syncs
 

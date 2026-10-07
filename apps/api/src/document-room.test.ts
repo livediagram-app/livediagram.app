@@ -558,8 +558,14 @@ describe('DocumentRoom op-role enforcement', () => {
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
+  // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
+  // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer'];
   for (const kind of [...PRESENCE_OP_KINDS].filter(
-    (k) => !ADDRESSED_PRESENCE_KINDS.includes(k) && !EDITOR_ONLY_PRESENCE_KINDS.includes(k),
+    (k) =>
+      !ADDRESSED_PRESENCE_KINDS.includes(k) &&
+      !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
+      !ROOM_DECIDED_PRESENCE_KINDS.includes(k),
   )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
@@ -784,16 +790,31 @@ describe('DocumentRoom op-role enforcement', () => {
   // Live poll (docs/specs/012-collaboration/live-poll.md): a presenter polling an audience is the main use,
   // and audiences sit on view links — so answering must work at view role
   // while starting / ending a poll stays behind the edit gate.
-  it('relays a poll answer from a view-role session', () => {
+  it('relays a poll answer from a view-role session', async () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
     const viewer = connect(room, 'viewer', 'view');
+    sendFrame(room, editor.ws, {
+      kind: 'op',
+      op: {
+        kind: 'poll-start',
+        poll: {
+          id: 'p1',
+          question: 'Ok?',
+          style: 'text',
+          options: [],
+          startedAt: 1,
+          hostKey: 'h',
+        },
+      },
+    });
     editor.ws.sent.length = 0;
 
     sendFrame(room, viewer.ws, {
       kind: 'op',
-      op: { kind: 'poll-answer', pollId: 'p1', value: 'Yes' },
+      op: { kind: 'poll-answer', pollId: 'p1', value: 'Yes', key: 'vk', proof: 'secret' },
     });
+    await room.pollAnswers;
 
     expect(opsReceived(editor.ws)).toHaveLength(1);
   });
@@ -1658,15 +1679,16 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       .filter((m) => m.kind === 'op')
       .map((m) => m.op);
 
-  it('replays the running poll and every answer to a late joiner', () => {
+  it('replays the running poll and every answer to a late joiner', async () => {
     const { room } = newRoom();
     const host = join(room, 'h');
     const viewer = join(room, 'v', 'view');
     sendFrame(room, host, pollOp('p1'));
     sendFrame(room, viewer, {
       kind: 'op',
-      op: { kind: 'poll-answer', pollId: 'p1', value: 'pizza', key: 'viewer-key' },
+      op: { kind: 'poll-answer', pollId: 'p1', value: 'pizza', key: 'viewer-key', proof: 's1' },
     });
+    await room.pollAnswers;
     const late = join(room, 'late');
     expect(ops(late)).toEqual([
       expect.objectContaining({ kind: 'poll-start', poll: expect.objectContaining({ id: 'p1' }) }),
@@ -1674,17 +1696,189 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
     ]);
   });
 
-  it('a re-answer under the same key replaces the first', () => {
+  it('a re-answer under the same key replaces the first, in the order sent', async () => {
     const { room } = newRoom();
     const host = join(room, 'h');
     sendFrame(room, host, pollOp('p1'));
     for (const value of ['pizza', 'sushi']) {
       sendFrame(room, host, {
         kind: 'op',
-        op: { kind: 'poll-answer', pollId: 'p1', value, key: 'k' },
+        op: { kind: 'poll-answer', pollId: 'p1', value, key: 'k', proof: 'secret' },
       });
     }
+    await room.pollAnswers;
     expect(room.poll.state?.answers).toEqual({ k: 'sushi' });
+  });
+
+  // docs/specs/012-collaboration/vote-integrity.md: the room decides who an answer belongs to.
+  describe('vote integrity', () => {
+    const answer = (value: string, key?: string, proof?: string) => ({
+      kind: 'op',
+      op: {
+        kind: 'poll-answer',
+        pollId: 'p1',
+        value,
+        ...(key ? { key } : {}),
+        ...(proof ? { proof } : {}),
+      },
+    });
+    function joinAs(
+      room: DocumentRoom,
+      id: string,
+      opts: { personTag?: string; networkTag?: string } = {},
+    ) {
+      const ws = makeSocket();
+      room.acceptSession(
+        asWs(ws),
+        'view',
+        false,
+        null,
+        null,
+        !!opts.personTag,
+        opts.personTag ?? null,
+        opts.networkTag ?? 'net-a',
+      );
+      sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
+      return ws;
+    }
+    const presenceOf = (ws: FakeSocket) => storedPresence(ws)!.id;
+
+    it('never relays the proof, and relays the answer under the key the room chose', async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      const viewer = joinAs(room, 'v');
+      host.sent.length = 0;
+      sendFrame(room, viewer, answer('pizza', 'vk', 'secret'));
+      await room.pollAnswers;
+      expect(ops(host)).toEqual([{ kind: 'poll-answer', pollId: 'p1', value: 'pizza', key: 'vk' }]);
+      expect(JSON.stringify(host.sent)).not.toContain('secret');
+      expect(JSON.stringify(room.poll.state)).not.toContain('secret');
+    });
+
+    it("will not let another browser change an answer under somebody else's key", async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      const victim = joinAs(room, 'victim');
+      sendFrame(room, victim, answer('pizza', 'victim-key', 'victim-secret'));
+      await room.pollAnswers;
+      const attacker = joinAs(room, 'attacker');
+      host.sent.length = 0;
+      sendFrame(room, attacker, answer('sushi', 'victim-key', 'a-guess'));
+      await room.pollAnswers;
+      // The victim's answer stands; the attacker's counts once, under its own presence id.
+      expect(room.poll.state?.answers['victim-key']).toBe('pizza');
+      expect(room.poll.state?.answers[presenceOf(attacker)]).toBe('sushi');
+      expect(ops(host)).toEqual([
+        { kind: 'poll-answer', pollId: 'p1', value: 'sushi', key: presenceOf(attacker) },
+      ]);
+    });
+
+    it('lets the same browser re-answer after a reconnect, with its secret', async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      sendFrame(room, joinAs(room, 'first-socket'), answer('pizza', 'k', 'mine'));
+      sendFrame(room, joinAs(room, 'second-socket'), answer('sushi', 'k', 'mine'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers).toEqual({ k: 'sushi' });
+    });
+
+    it('refuses a second key from the same socket, and relays nothing for it', async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      const viewer = joinAs(room, 'v');
+      sendFrame(room, viewer, answer('pizza', 'k1', 's1'));
+      await room.pollAnswers;
+      host.sent.length = 0;
+      sendFrame(room, viewer, answer('sushi', 'k2', 's2'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers).toEqual({ k1: 'pizza' });
+      expect(ops(host)).toEqual([]);
+    });
+
+    it("caps one network's answers, and lets an answer already in change", async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      for (let i = 0; i < 100; i++)
+        sendFrame(room, joinAs(room, `g${i}`), answer('pizza', `k${i}`, `s${i}`));
+      await room.pollAnswers;
+      sendFrame(room, joinAs(room, 'one-too-many'), answer('pizza', 'k100', 's100'));
+      sendFrame(
+        room,
+        joinAs(room, 'other-network', { networkTag: 'net-b' }),
+        answer('pizza', 'kb', 'sb'),
+      );
+      sendFrame(room, joinAs(room, 'g0-again'), answer('sushi', 'k0', 's0'));
+      await room.pollAnswers;
+      const answers = room.poll.state!.answers;
+      expect(Object.keys(answers)).toHaveLength(101);
+      expect(answers['k100']).toBeUndefined();
+      expect(answers['kb']).toBe('pizza');
+      expect(answers['k0']).toBe('sushi');
+    });
+
+    it('gives an account one answer per poll, from any of its sessions', async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      sendFrame(
+        room,
+        joinAs(room, 'laptop', { personTag: 'acct' }),
+        answer('pizza', 'laptop-key', 'l'),
+      );
+      await room.pollAnswers;
+      host.sent.length = 0;
+      sendFrame(
+        room,
+        joinAs(room, 'phone', { personTag: 'acct' }),
+        answer('sushi', 'phone-key', 'p'),
+      );
+      await room.pollAnswers;
+      expect(room.poll.state?.answers).toEqual({ 'laptop-key': 'sushi' });
+      expect(ops(host)).toEqual([
+        { kind: 'poll-answer', pollId: 'p1', value: 'sushi', key: 'laptop-key' },
+      ]);
+    });
+
+    it("does not let an account take a guest's key", async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      sendFrame(room, joinAs(room, 'guest'), answer('pizza', 'guest-key', 'g'));
+      const account = joinAs(room, 'acct', { personTag: 'acct' });
+      sendFrame(room, account, answer('sushi', 'guest-key', 'x'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers['guest-key']).toBe('pizza');
+      expect(room.poll.state?.answers[presenceOf(account)]).toBe('sushi');
+    });
+
+    it('keys an old client with no proof on its own presence id, which nobody else can claim', async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      const old = joinAs(room, 'old');
+      sendFrame(room, old, answer('pizza', 'claimed-key'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers).toEqual({ [presenceOf(old)]: 'pizza' });
+      const squatter = joinAs(room, 'squatter');
+      sendFrame(room, squatter, answer('sushi', presenceOf(old), 'sq'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers[presenceOf(old)]).toBe('pizza');
+    });
+
+    it('drops an answer to a poll the room is not running', async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      const viewer = joinAs(room, 'v');
+      host.sent.length = 0;
+      sendFrame(room, viewer, answer('pizza', 'k', 's'));
+      await room.pollAnswers;
+      expect(ops(host)).toEqual([]);
+    });
   });
 
   it('forgets the poll when it ends, and keeps the newer of two starts', () => {
