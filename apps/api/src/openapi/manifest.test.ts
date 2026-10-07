@@ -231,9 +231,10 @@ describe('generated component schemas are up to date', () => {
       'schemas.generated.ts is stale — run: pnpm --filter @livediagram/api gen:openapi',
     ).toEqual(COMPONENT_SCHEMAS);
     // Generous timeout: this dynamically imports the heavy schema generator
-    // (kept out of the worker bundle), which is cold-loaded here and overran
-    // vitest's 5s default on CI.
-  }, 30_000);
+    // (kept out of the worker bundle) and builds a TypeScript program of
+    // @livediagram/api-schema. About 3 s alone, it takes 30 s on a CI runner
+    // under coverage beside another suite, which overran a 30 s limit.
+  }, 120_000);
 });
 
 describe('buildOpenApiDocument', () => {
