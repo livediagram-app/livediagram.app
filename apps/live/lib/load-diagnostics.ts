@@ -1,16 +1,19 @@
 // The diagnostics report a person copies from the load-error screen (docs/specs/007-editor/load-recovery.md
 // "Diagnostics"). Identifiers and states only, never document content. Two credentials are kept out on
 // purpose: a share code (the path's `?s=` is reported as "share link: yes") and a full guest id (an
-// `X-Owner-Id` credential; only its first 8 characters go in, enough for support to find the row).
+// `X-Owner-Id` credential; @livediagram/ui's identity lines carry only its first 8 characters).
 
 import { isClerkIdShape } from '@livediagram/api-schema';
-import { formatBrowserChecks, runBrowserChecks, type BrowserChecks } from '@livediagram/ui';
+import {
+  formatBrowserChecks,
+  formatBrowserIdentity,
+  readBrowserIdentity,
+  runBrowserChecks,
+  type BrowserChecks,
+  type BrowserIdentity,
+} from '@livediagram/ui';
 import { getLoadProgress, type LoadProgress } from './load-progress';
-import { getGuestSelfId, getGuestSelfSig, getPendingGuestUpgrade } from './local-identity';
 import { EDITOR_BUILD_ID } from './server-release';
-
-/** How many characters of a guest id a report carries. */
-export const GUEST_ID_PREFIX_LENGTH = 8;
 
 export type DiagnosticsInput = {
   /** The participant id the editor resolved, or null while still the placeholder. */
@@ -20,18 +23,14 @@ export type DiagnosticsInput = {
   progress: LoadProgress;
   buildId: string | null;
   checks: BrowserChecks;
-  guest: { id: string | null; signed: boolean; pendingUpgrade: boolean };
+  identity: BrowserIdentity;
 };
 
-function identityLine(input: DiagnosticsInput): string[] {
-  if (input.ownerId && isClerkIdShape(input.ownerId))
-    return [`Identity: signed in (${input.ownerId})`];
-  const id = input.guest.id;
-  return [
-    `Identity: guest ${id ? `${id.slice(0, GUEST_ID_PREFIX_LENGTH)}…` : '(none yet)'}`,
-    `Guest id signed: ${input.guest.signed ? 'yes' : 'no'}`,
-    `Identity upgrade pending: ${input.guest.pendingUpgrade ? 'yes' : 'no'}`,
-  ];
+// The shared identity lines, with the account the editor resolved: a Clerk-shaped owner id is the
+// signed-in account (not a credential on its own), anything else is the guest the lines already cover.
+function identityLines(input: DiagnosticsInput): string[] {
+  const account = input.ownerId && isClerkIdShape(input.ownerId) ? input.ownerId : null;
+  return formatBrowserIdentity(input.identity, account);
 }
 
 function loadLines(p: LoadProgress, now: Date): string[] {
@@ -52,7 +51,7 @@ export function formatDiagnostics(input: DiagnosticsInput): string {
     `Time: ${input.now.toISOString()}`,
     `Page: ${input.location.pathname}${share ? ' (share link: yes)' : ''}`,
     `Build: ${input.buildId ?? 'unknown'}`,
-    ...identityLine(input),
+    ...identityLines(input),
     ...loadLines(input.progress, input.now),
     ...formatBrowserChecks(input.checks),
   ].join('\n');
@@ -67,10 +66,6 @@ export async function buildLoadDiagnostics(ownerId: string | null): Promise<stri
     progress: getLoadProgress(),
     buildId: EDITOR_BUILD_ID,
     checks: await runBrowserChecks(),
-    guest: {
-      id: getGuestSelfId(),
-      signed: getGuestSelfSig() !== null,
-      pendingUpgrade: getPendingGuestUpgrade() !== null,
-    },
+    identity: readBrowserIdentity(),
   });
 }

@@ -19,7 +19,12 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  setNavigatorOnline(true);
 });
+
+function setNavigatorOnline(online: boolean) {
+  Object.defineProperty(navigator, 'onLine', { value: online, configurable: true });
+}
 
 describe('DocumentLoading', () => {
   it('offers Refresh after 10 seconds and reports the slow load', () => {
@@ -44,5 +49,20 @@ describe('DocumentLoading', () => {
     });
     expect(screen.getByText('Still working on it. Trying a fresh start.')).toBeTruthy();
     expect(screen.queryByText(/longer than usual/)).toBeNull();
+  });
+
+  // docs/specs/007-editor/load-recovery.md "Offline".
+  it('says it is offline instead of offering a Refresh', () => {
+    setNavigatorOnline(false);
+    render(<DocumentLoading stage="opening" />);
+    act(() => vi.advanceTimersByTime(10_000));
+    expect(screen.getByText(/You’re offline. Waiting for the connection/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /refresh/i })).toBeNull();
+    act(() => {
+      setNavigatorOnline(true);
+      window.dispatchEvent(new Event('online'));
+    });
+    expect(screen.queryByText(/You’re offline/)).toBeNull();
+    expect(screen.getByRole('button', { name: /refresh/i })).toBeTruthy();
   });
 });

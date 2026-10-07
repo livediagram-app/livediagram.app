@@ -26,6 +26,7 @@ class MemoryStorage {
 let storage: MemoryStorage;
 let now: number;
 const deps = (extra: Record<string, unknown> = {}) => ({
+  online: () => true,
   storage: storage as unknown as Storage,
   url: 'https://x.test/document/d1',
   now: () => now,
@@ -93,6 +94,16 @@ describe('armLoadWatchdog', () => {
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS);
     expect(third).not.toHaveBeenCalled();
     expect(getLoadProgress().healing).toBe(true);
+  });
+
+  it('does not reload while offline, and leaves the claim for when it can help', () => {
+    const onTimedOut = vi.fn();
+    const reload = vi.fn();
+    armLoadWatchdog(onTimedOut, deps({ reload, online: () => false }));
+    vi.advanceTimersByTime(LOAD_TIMEOUT_MS + AUTO_RELOAD_DELAY_MS);
+    expect(onTimedOut).toHaveBeenCalledTimes(1);
+    expect(reload).not.toHaveBeenCalled();
+    expect(storage.getItem('livediagram:load-auto-reloads')).toBeNull();
   });
 
   it('shows the error when session storage is unavailable, rather than risking a loop', () => {

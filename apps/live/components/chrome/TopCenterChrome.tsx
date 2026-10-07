@@ -5,6 +5,7 @@ import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
+import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
@@ -81,6 +82,9 @@ export function TopCenterChrome({
     <TopCenterStack
       below={dockOnTop ? 'dock' : toolbarLayout === true && !readOnly ? 'toolbar' : undefined}
     >
+      {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
+          anything else on screen is being saved. */}
+      <OfflineBanner readOnly={readOnly === true} />
       {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}

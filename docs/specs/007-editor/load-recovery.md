@@ -88,10 +88,18 @@ holding identifiers and states only, never document content:
 - the time (ISO) and the page path, with the share code replaced by
   "share link: yes" (a share code is a credential);
 - the editor build id;
-- the identity: signed in or guest. A signed-in report carries the account id.
-  A guest report carries only the first 8 characters of the guest id (a full
-  guest id is an `X-Owner-Id` credential), whether it is signed, and whether an
-  identity upgrade is pending;
+- the identity, the same lines on every surface:
+  - **Signed in:** yes or no. The editor adds the account id it resolved. The
+    help page, which has no sign-in provider loaded, reads the provider's
+    `__client_uat` cookie (`0` signed out, a timestamp signed in), which says
+    whether but not who; with no such cookie it reports "unknown".
+  - **Guest id in this browser:** only its first 8 characters (a full guest id
+    is an `X-Owner-Id` credential) and whether it is signed, or "none".
+  - **Identity upgrade pending:** yes or no.
+  - When signed in with a guest id still present: "Guest documents moved to
+    the account: NOT YET". Signing in moves a guest's documents and then
+    clears the guest id, so one still there means the move has not happened,
+    the usual cause of "my documents went missing after I signed in";
 - the load: the step it reached (`identity`, `participant`, `document`,
   `share`, `first-tab`, `done`), how long it has run, and whether it timed out;
 - the browser: the user agent, online state, and the results of the browser
@@ -140,8 +148,8 @@ runs the same repair from the help centre ([Help app](../018-help/help-app.md)).
 It lives there, not only in the editor, because every app shares one origin:
 the help page can repair the editor's storage even when the editor itself
 cannot start. The page lists what is cleared and kept, runs the browser checks
-on open, and offers Copy Diagnostics (browser checks only, as it has no load)
-and Repair This Browser. After a repair it says "Done. Open your document
+and the identity lines on open and shows both, and offers Copy Diagnostics
+(identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your document
 again." with a link to the Explorer. The "A Document Will Not Load" article
 gains two sections: "Stuck on "Opening your document"" (the escalation above)
 and "It opens for a colleague but not for you" (account first, then the share
@@ -166,8 +174,50 @@ link, the repair, another browser or network).
   help page; `BrowserRepair` and `BrowserRepair.Help`). A repair fires before
   it clears anything.
 
+## Offline
+
+"Offline" is the browser's own answer (`navigator.onLine` false, and the
+`offline` / `online` events). It is trusted only in that direction: a browser
+that says offline is offline, while one that says online may still not reach
+the server, which the rest of this spec covers.
+
+- **Opening screen.** While offline it says "You're offline. Waiting for the
+  connection…" in place of the 10-second message, with no Refresh (reloading
+  offline only swaps in the browser's own error page).
+- **No self-healing reload offline.** A watchdog that fires while offline goes
+  straight to the load-error screen; reloading cannot help until the
+  connection is back.
+- **Load-error screen.** While offline its card reads eyebrow "Offline", title
+  "You're offline", message "This document will open as soon as you
+  reconnect." The recovery card stays below it. When the connection comes back
+  the page reloads on its own, once; a card shown while online never reloads
+  itself.
+- **In the editor.** While offline a banner sits at the top of the canvas
+  stack: "You're offline. Changes stay in this tab and save when you
+  reconnect." for someone who can edit, "You're offline. You'll see changes
+  when you reconnect." for a viewer. Changes are held in memory only, so the
+  banner says "in this tab": closing it while offline loses them. The save
+  failure toast reads "You're offline. Your changes will save when you
+  reconnect. Keep this tab open." instead of the connection message.
+- **A document that did not load is never written.** The load-error and Not
+  found paths still hand the editor the document id, and its empty default tab
+  used to look like an unsaved change: on reconnect it was saved into the real
+  document as a second "Tab 1". The autosave treats both states as read-only.
+- **Reconnecting saves at once.** A failed save waiting on its retry timer (5 s
+  to 60 s) is retried as soon as the browser comes back online.
+- **A code chunk that fails to load while offline is not a stale build.** The
+  stale-build safety net ([Stale builds](../016-platform/stale-builds.md))
+  stands down offline instead of reloading into the browser's error page and
+  spending its one reload; the same failure reported once back online still
+  recovers. The load-error card ships in the editor's bundle for the same
+  reason, lazy-loading only its recovery tools, which show online only.
+- No telemetry: events cannot leave while offline, and the reload on reconnect
+  drops anything buffered.
+
 ## Out of scope
 
 - A request id on API responses for matching a report to a log line.
+- A service worker or any offline copy of the editor itself: without a
+  connection the editor still cannot start.
 - Timeouts on every API request. The watchdog bounds the load; requests after
   it are already reported when they fail.

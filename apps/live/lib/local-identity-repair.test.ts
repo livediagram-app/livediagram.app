@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isRepairClearable } from '@livediagram/ui';
+import { GUEST_IDENTITY_KEYS, isRepairClearable } from '@livediagram/ui';
 import { LOCAL_IDENTITY_KEYS } from './local-identity';
 import { COMMUNITY_KEY_STORAGE } from '@livediagram/api-schema';
 
@@ -14,6 +14,12 @@ const CLEARABLE: ReadonlySet<string> = new Set([
 describe('browser repair keeps the guest identity', () => {
   it.each(Object.entries(LOCAL_IDENTITY_KEYS))('%s', (_name, key) => {
     expect(isRepairClearable(key)).toBe(CLEARABLE.has(key));
+  });
+
+  it('reads the guest identity under the names the editor writes', () => {
+    for (const [name, key] of Object.entries(GUEST_IDENTITY_KEYS)) {
+      expect(LOCAL_IDENTITY_KEYS[name as keyof typeof LOCAL_IDENTITY_KEYS], name).toBe(key);
+    }
   });
 
   it('keeps the community key', () => {

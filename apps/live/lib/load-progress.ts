@@ -5,6 +5,7 @@
 // An external store (docs/specs/003-system-architecture/react-state-and-effects.md): the opening
 // screen reads `healing` with useSyncExternalStore.
 
+import { getOnline } from './online-status';
 import { claimReloadIn } from './reload-guard';
 
 export type LoadStep = 'identity' | 'participant' | 'document' | 'share' | 'first-tab' | 'done';
@@ -72,6 +73,7 @@ export type WatchdogDeps = {
   url?: string;
   reload?: () => void;
   warn?: (type: string) => void;
+  online?: () => boolean;
 };
 
 /**
@@ -95,7 +97,9 @@ export function armLoadWatchdog(
     set({ timedOut: true });
     console.warn(`[load] timed out after ${LOAD_TIMEOUT_MS} ms at step ${step ?? 'unknown'}`);
     warn(`DocumentLoad.TimedOut.${loadStepToken(step)}`);
-    if (claimAutoReload(deps)) {
+    // Offline, a reload only swaps in the browser's own error page: go to the load-error screen,
+    // which reloads by itself once the connection is back (docs/specs/007-editor/load-recovery.md "Offline").
+    if ((deps.online ?? getOnline)() && claimAutoReload(deps)) {
       warn('DocumentLoad.AutoReload');
       set({ healing: true });
       setTimeout(deps.reload ?? (() => window.location.reload()), AUTO_RELOAD_DELAY_MS);

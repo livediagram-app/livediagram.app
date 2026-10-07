@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Button, DiagramBuildAnimation, RefreshIcon } from '@livediagram/ui';
 import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
+import { useOnline } from '@/hooks/ui/useOnline';
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the
@@ -63,6 +64,9 @@ export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoading
     }, SLOW_AFTER_MS);
     return () => window.clearTimeout(id);
   }, [stage]);
+  // Offline wins over both (docs/specs/007-editor/load-recovery.md "Offline"): a Refresh would only
+  // swap in the browser's own error page.
+  const online = useOnline();
   const healing = useSyncExternalStore(
     subscribeLoadProgress,
     () => getLoadProgress().healing,
@@ -109,7 +113,11 @@ export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoading
           </div>
         </div>
 
-        {healing ? (
+        {!online ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            You&rsquo;re offline. Waiting for the connection&hellip;
+          </p>
+        ) : healing ? (
           <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
             Still working on it. Trying a fresh start.
           </p>

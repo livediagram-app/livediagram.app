@@ -25,7 +25,12 @@ const base: DiagnosticsInput = {
   },
   buildId: 'abc123',
   checks,
-  guest: { id: '6f1c2d3e-aaaa-bbbb-cccc-123456789abc', signed: true, pendingUpgrade: false },
+  identity: {
+    signedIn: false,
+    guestIdPrefix: '6f1c2d3e',
+    guestSigned: true,
+    pendingUpgrade: false,
+  },
 };
 
 describe('formatDiagnostics', () => {
@@ -40,17 +45,17 @@ describe('formatDiagnostics', () => {
     expect(text).toContain('Browser: TestBrowser/1');
   });
 
-  it('carries only a guest id prefix, never the whole credential', () => {
+  it('describes a guest by id prefix, never the whole credential', () => {
     const text = formatDiagnostics(base);
-    expect(text).toContain('Identity: guest 6f1c2d3e…');
+    expect(text).toContain('Signed in: no');
+    expect(text).toContain('Guest id in this browser: 6f1c2d3e… (signed: yes)');
     expect(text).not.toContain('123456789abc');
-    expect(text).toContain('Guest id signed: yes');
   });
 
-  it('names a signed-in account', () => {
+  it('names a signed-in account, and flags guest documents not yet moved to it', () => {
     const text = formatDiagnostics({ ...base, ownerId: 'user_2abcDEF' });
-    expect(text).toContain('Identity: signed in (user_2abcDEF)');
-    expect(text).not.toContain('Guest id signed');
+    expect(text).toContain('Signed in: yes (user_2abcDEF)');
+    expect(text).toContain('Guest documents moved to the account: NOT YET');
   });
 
   it('never carries a share code', () => {
@@ -68,11 +73,12 @@ describe('formatDiagnostics', () => {
       ownerId: null,
       buildId: null,
       progress: { step: null, startedAt: null, timedOut: false, healing: false },
-      guest: { id: null, signed: false, pendingUpgrade: true },
+      identity: { signedIn: null, guestIdPrefix: null, guestSigned: false, pendingUpgrade: true },
     });
     expect(text).toContain('Load step: not started');
     expect(text).toContain('Build: unknown');
-    expect(text).toContain('Identity: guest (none yet)');
+    expect(text).toContain('Signed in: unknown');
+    expect(text).toContain('Guest id in this browser: none');
     expect(text).toContain('Identity upgrade pending: yes');
   });
 });

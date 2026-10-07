@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import {
   BrowserRepairPanel,
   formatBrowserChecks,
+  formatBrowserIdentity,
+  readBrowserIdentity,
   runBrowserChecks,
   type BrowserChecks,
 } from '@livediagram/ui';
@@ -19,18 +21,24 @@ async function buildReport(): Promise<string> {
   return [
     'livediagram diagnostics (help centre)',
     `Time: ${new Date().toISOString()}`,
+    ...formatBrowserIdentity(readBrowserIdentity()),
     ...formatBrowserChecks(checks),
   ].join('\n');
 }
 
 export function BrowserRepairTool() {
-  const [checks, setChecks] = useState<BrowserChecks | null>(null);
+  const [lines, setLines] = useState<string[] | null>(null);
   const [repaired, setRepaired] = useState<number | null>(null);
 
   useEffect(() => {
     let live = true;
-    void runBrowserChecks().then((c) => {
-      if (live) setChecks(c);
+    void runBrowserChecks().then((c: BrowserChecks) => {
+      // The browser line leads the report; on the page it is noise, so it is left off.
+      if (live)
+        setLines([
+          ...formatBrowserIdentity(readBrowserIdentity()),
+          ...formatBrowserChecks(c).slice(1),
+        ]);
     });
     return () => {
       live = false;
@@ -44,13 +52,7 @@ export function BrowserRepairTool() {
         aria-live="polite"
         className="mt-2 mb-4 space-y-1 font-mono text-xs text-slate-600 dark:text-slate-300"
       >
-        {checks ? (
-          formatBrowserChecks(checks)
-            .slice(1)
-            .map((line) => <li key={line}>{line}</li>)
-        ) : (
-          <li>Checking…</li>
-        )}
+        {lines ? lines.map((line) => <li key={line}>{line}</li>) : <li>Checking…</li>}
       </ul>
       {repaired === null ? (
         <BrowserRepairPanel
