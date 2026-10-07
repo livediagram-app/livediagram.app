@@ -24,6 +24,14 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-sa
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
+import { confinementRefusal } from './workbench-confinement';
+// A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
+export {
+  getWorkbenchConfinement,
+  setWorkbenchConfinement,
+  WorkbenchConfinedError,
+  type WorkbenchConfinement,
+} from './workbench-confinement';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
 // apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
 import {
@@ -83,6 +91,9 @@ export function wsUrl(path: string): string {
 // failure still throws to the caller before any signal is raised.
 export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
   const method = (init?.method ?? 'GET').toUpperCase();
+  // A workbench session's request outside its allow-list is refused unsent, and is no network error.
+  const refusal = confinementRefusal(input, init);
+  if (refusal) throw refusal;
   let res: Response;
   try {
     res = await fetch(input, init);

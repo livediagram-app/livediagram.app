@@ -10,6 +10,7 @@ import {
   resetAppearanceForTests,
   resolveAppearance,
   setAppearance,
+  setAppearanceOverride,
   subscribeAppearance,
 } from './appearance-store';
 
@@ -260,5 +261,70 @@ describe('applyAppearance', () => {
   it('is a no-op without a document rather than throwing', () => {
     delete (globalThis as Record<string, unknown>).document;
     expect(() => applyAppearance('dark')).not.toThrow();
+  });
+});
+
+// A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
+// workbench", WB15): the workbench's scheme wins over the setting and is never stored.
+describe('setAppearanceOverride', () => {
+  it('paints the override over the stored setting', () => {
+    store[APPEARANCE_STORAGE_KEY] = 'light';
+
+    setAppearanceOverride('dark');
+
+    expect(getResolvedAppearance()).toBe('dark');
+    expect(classes.has('dark')).toBe(true);
+  });
+
+  it('never stores the override', () => {
+    store[APPEARANCE_STORAGE_KEY] = 'light';
+
+    setAppearanceOverride('dark');
+
+    expect(store[APPEARANCE_STORAGE_KEY]).toBe('light');
+    expect(getAppearanceSetting()).toBe('light');
+  });
+
+  it('follows the OS under a System override, whatever is stored', () => {
+    store[APPEARANCE_STORAGE_KEY] = 'light';
+    setAppearanceOverride('system');
+    expect(getResolvedAppearance()).toBe('light');
+
+    setOsPrefersDark(true);
+
+    expect(getResolvedAppearance()).toBe('dark');
+    expect(classes.has('dark')).toBe(true);
+  });
+
+  it('keeps winning when the setting changes underneath it', () => {
+    setAppearanceOverride('dark');
+
+    setAppearance('light');
+
+    expect(store[APPEARANCE_STORAGE_KEY]).toBe('light');
+    expect(getResolvedAppearance()).toBe('dark');
+    expect(classes.has('dark')).toBe(true);
+  });
+
+  it('ignores the OS under a Light or Dark override', () => {
+    store[APPEARANCE_STORAGE_KEY] = 'system';
+    setAppearanceOverride('light');
+
+    setOsPrefersDark(true);
+
+    expect(classes.has('dark')).toBe(false);
+  });
+
+  it('hands back to the setting when cleared, and notifies subscribers', () => {
+    store[APPEARANCE_STORAGE_KEY] = 'light';
+    setAppearanceOverride('dark');
+    let calls = 0;
+    subscribeAppearance(() => calls++);
+
+    setAppearanceOverride(null);
+
+    expect(getResolvedAppearance()).toBe('light');
+    expect(classes.has('dark')).toBe(false);
+    expect(calls).toBe(1);
   });
 });

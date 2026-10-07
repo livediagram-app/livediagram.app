@@ -24,6 +24,7 @@ import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { getWorkbenchConfinement } from './api/workbench-confinement';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
 export type UserPreferences = {
@@ -351,7 +352,9 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
-  if (ownerId) {
+  // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
+  // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame.
+  if (ownerId && !getWorkbenchConfinement()) {
     // Cast to the wider Record shape the api-client expects.
     // UserPreferences is the typed surface in this app; the wire
     // is intentionally opaque so adding a flag doesn't need an

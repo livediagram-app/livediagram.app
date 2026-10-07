@@ -12,6 +12,7 @@ export {
   resetAppearanceForTests,
   resolveAppearance,
   setAppearance,
+  setAppearanceOverride,
   subscribeAppearance,
   type Appearance,
   type AppearanceSetting,

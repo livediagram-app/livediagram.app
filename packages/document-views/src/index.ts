@@ -10,3 +10,8 @@ export { overviewView, editedAge, type OverviewDocument, type OverviewTabInput }
 export { diffView, type DiffContext } from './diff';
 export { PERSON_ID_FIELDS } from './show';
 export { commentHosts, threadListingLines } from './comments';
+export {
+  selectionReference,
+  type SelectionReference,
+  type SelectionReferenceInput,
+} from './selection-reference';
