@@ -11,7 +11,7 @@ import type { Env } from '../types';
 const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
   db: {
     deleteImage: vi.fn(),
-    documentReferencesImage: vi.fn(),
+    documentServesImage: vi.fn(),
     findImageBySha: vi.fn(),
     getDocument: vi.fn(),
     getImage: vi.fn(),
@@ -134,7 +134,7 @@ describe('handleImages', () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
     db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
     canReadDocument.mockResolvedValue(true);
-    db.documentReferencesImage.mockResolvedValue(true);
+    db.documentServesImage.mockResolvedValue(true);
     const ctx = makeCtx('GET', '/api/images/i1?d=d1');
     (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
       body: 'bytes',
@@ -144,15 +144,36 @@ describe('handleImages', () => {
     expect(res.status).toBe(200);
   });
 
+  // docs/specs/009-elements/images.md, "Placement grants": a readable document that places the
+  // image but may not serve it (an id pasted where its owner has no tie) answers 404.
+  it('404s a readable document that places the image but may not serve it', async () => {
+    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'victim' });
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'reader' });
+    canReadDocument.mockResolvedValue(true);
+    db.documentServesImage.mockResolvedValue(false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const ctx = makeCtx('GET', '/api/images/i1?d=d1');
+    const res = await handleImages(ctx);
+    expect(res.status).toBe(404);
+    expect(
+      (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get,
+    ).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith('[images] not servable by document', {
+      documentId: 'd1',
+      imageId: 'i1',
+    });
+    warn.mockRestore();
+  });
+
   // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
   it('asks whether the scoped tab, not the whole document, uses the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
     db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
     resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
-    db.documentReferencesImage.mockResolvedValue(false);
+    db.documentServesImage.mockResolvedValue(false);
     const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
     expect(res.status).toBe(404);
-    expect(db.documentReferencesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
+    expect(db.documentServesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
   });
 });
 

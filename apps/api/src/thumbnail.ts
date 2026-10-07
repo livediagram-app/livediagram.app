@@ -29,7 +29,9 @@ import {
   thumbnailKey,
   type StoredTabBody,
   listItems,
+  servableImageIds,
 } from './db';
+import { imageRefIds } from './image-refs/extract';
 import { redactTabForCommunity } from './community-redact';
 import type { DocumentDTO, Env } from './types';
 
@@ -184,7 +186,7 @@ export async function renderTabSvg(
   }
   if (!stored) return null;
   const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] } as Tab);
-  const images = await loadEmbeddedImages(env, tab);
+  const images = await loadEmbeddedImages(env, documentId, tab);
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
@@ -242,7 +244,7 @@ async function renderTabBodyToSvg(
   const tab = community ? redactTabForCommunity(stored) : stored;
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
-  const images = await loadEmbeddedImages(env, tab);
+  const images = await loadEmbeddedImages(env, liveDoc.id, tab);
   // A Plan board or card draws its document's items (docs/specs/026-plan/plan-board.md).
   const plan = tab.elements.some(
     (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
@@ -266,13 +268,27 @@ async function renderTabBodyToSvg(
 // IMAGE_EMBED_BUDGET_BYTES is spent, after which (or on a missing object) the
 // element keeps its placeholder. R2 is the same store the authenticated image
 // endpoint reads (key = imageId), so a shared document's images embed without
-// re-auth.
-async function loadEmbeddedImages(env: Env, tab: Tab): Promise<Map<string, string>> {
+// re-auth, and the same rule decides which: only an image the document may serve
+// (docs/specs/009-elements/images.md, "Placement grants") is read, one query for the tab.
+async function loadEmbeddedImages(
+  env: Env,
+  documentId: string,
+  tab: Tab,
+): Promise<Map<string, string>> {
   const images = env.IMAGES;
   if (!images) return new Map();
+  const ids = imageRefIds(tab.elements);
+  const servable = await servableImageIds(env, documentId, ids);
+  if (servable.size < ids.length) {
+    console.warn('[images] not servable by document', {
+      documentId,
+      refused: ids.filter((id) => !servable.has(id)),
+    });
+  }
   return embedTabImages(
     tab,
     async (id) => {
+      if (!servable.has(id)) return null;
       const object = await images.get(id);
       if (!object) return null;
       return {

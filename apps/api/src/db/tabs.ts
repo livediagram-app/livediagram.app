@@ -17,6 +17,7 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
+import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
 import { collabIndexStatements } from './collab-index';
 import {
   imageRefAddStatements,
@@ -236,6 +237,9 @@ export function tabWriteStatements(
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
     // this batch missed is an image the retention sweep reaps.
     ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements)),
+    // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
+    // document_tabs upsert above, which they read.
+    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements), now),
   ];
 }
 
@@ -345,6 +349,7 @@ export async function seedTabs(
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
     stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements)));
+    stmts.push(...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements), now));
   }
   await env.DB.batch(stmts);
 }
@@ -426,6 +431,8 @@ export async function linkTabToDocument(
   await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
     .bind(now, documentId)
     .run();
+  // Placement grants (docs/specs/009-elements/images.md): the new holder serves what the tab showed.
+  await imageGrantLinkStatement(env, documentId, tabId, now).run();
   return true;
 }
 
@@ -547,6 +554,7 @@ export async function swapTabData(
       'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND data = ?',
     ).bind(nextData, now, nextElementCount, tabId, expectedData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
+    ...imageGrantPlacementStatements(env, tabId, imageRefIdsFromData(nextData), now),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
   await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')

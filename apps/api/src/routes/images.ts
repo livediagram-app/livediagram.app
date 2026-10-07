@@ -4,7 +4,7 @@
 import { sha256Hex } from '@livediagram/api-schema';
 import {
   deleteImage,
-  documentReferencesImage,
+  documentServesImage,
   findImageBySha,
   getDocument,
   getImage,
@@ -259,11 +259,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       if (d) {
         // Reader must be able to read document `d` (owner OR
         // a valid share code that resolves to it), AND that
-        // document must actually use this image. The image's
-        // own owner doesn't have to be the share-code's
-        // owner: if a document references an image owned by
-        // a different owner (only happens via Copy-Diagram
-        // in v1), the share recipient can still load it.
+        // document must place this image AND may serve it: the
+        // image's owner owns `d`, or `d` holds a placement grant
+        // (a teammate's or collaborator's upload, or a copy).
         const liveDoc = await getDocument(env, d);
         if (liveDoc) {
           // canReadDocument (owner OR any valid share code
@@ -279,7 +277,12 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // own tab uses, not every image in the document.
           const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId, COMMUNITY_CONTENT);
           if (grant) {
-            allowed = await documentReferencesImage(env, d, imageId, grant.tabScope);
+            // Placed by the document AND servable by it (docs/specs/009-elements/images.md,
+            // "Placement grants"): an id pasted into an unrelated document serves nothing.
+            allowed = await documentServesImage(env, d, imageId, grant.tabScope);
+            if (!allowed) {
+              console.warn('[images] not servable by document', { documentId: d, imageId });
+            }
           }
         }
       }

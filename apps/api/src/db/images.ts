@@ -2,11 +2,7 @@
 // metadata + owner. Which documents place each image comes from the image
 // reference index (db/image-refs.ts), never from a tab body.
 
-import {
-  imageRefIndexDocumentStatement,
-  imageRefIndexOwnerStatement,
-  isImageRefIndexComplete,
-} from './image-refs';
+import { imageRefIndexOwnerStatement, isImageRefIndexComplete } from './image-refs';
 import { imageRowToSummary, type ImageRow } from '../image-row';
 import type { Env, ImageSummary } from '../types';
 
@@ -150,30 +146,4 @@ export async function imageUsageByOwner(
     (usage[row.image_id] ??= []).push({ id: row.document_id, name: row.document_name });
   }
   return usage;
-}
-
-// The byte-read endpoint's share check: a visitor with read access to
-// document `d` may read image `id` only when one of `d`'s tabs places it. Read
-// from the reference index, never a tab body; while the backfill is
-// incomplete, the document's own tabs are indexed first.
-export async function documentReferencesImage(
-  env: Env,
-  documentId: string,
-  imageId: string,
-  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md): only their tab counts.
-  onlyTabId: string | null = null,
-): Promise<boolean> {
-  if (!(await isImageRefIndexComplete(env))) {
-    await imageRefIndexDocumentStatement(env, documentId).run();
-  }
-  const row = await env.DB.prepare(
-    `SELECT 1 AS present
-       FROM document_tabs dt
-       JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ?
-      WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
-      LIMIT 1`,
-  )
-    .bind(...(onlyTabId === null ? [imageId, documentId] : [imageId, documentId, onlyTabId]))
-    .first<{ present: number }>();
-  return row !== null;
 }

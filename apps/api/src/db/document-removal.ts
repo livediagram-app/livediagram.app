@@ -9,6 +9,7 @@
 // doesn't drop would be stranded with no document to reach it from.
 
 import type { Env } from '../types';
+import { imageGrantRemovalStatement } from './image-grants';
 
 // Which documents are being removed: one by id, every document an owner holds,
 // or a set of ids (the Trash purge, docs/specs/013-workspace/trash.md).
@@ -39,6 +40,9 @@ export function documentRemovalStatements(
     // image_refs has no FK (docs/specs/009-elements/images.md, "Reference index"), so the doomed
     // tabs' references go explicitly, first, while the links that name them still exist.
     env.DB.prepare(`DELETE FROM image_refs WHERE tab_id IN (${doomedTabs})`).bind(value, value),
+    // Placement grants are keyed by document, also without an FK
+    // (docs/specs/009-elements/images.md, "Placement grants").
+    imageGrantRemovalStatement(env, doomed, [value]),
     // The Google Drive mirror's rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data"):
     // a removed document is no longer mirrored. The browser finishes the Drive
     // side from its own memory of the rows it saw.
