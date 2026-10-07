@@ -383,9 +383,8 @@ name = "livediagram-api-staging"
 # for production (see the top of this file). Staging's events land in its own D1,
 # on STAGING's /telemetry dashboard, never in production's published numbers.
 [env.staging.vars]
-# Links in staging email point back at staging (docs/specs/014-identity/transactional-email.md). Without this a
-# welcome email sent from a staging test lands someone on production.
-APP_BASE_URL = "https://staging.livediagram.app"
+# APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
+# back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 
 # Lock the AI endpoint to the staging origin so the OpenAI key behind it

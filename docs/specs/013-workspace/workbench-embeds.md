@@ -30,7 +30,7 @@ that acts as the person on one document only.
    - **The origin** is exactly `scheme://host[:port]`, nothing more: `https` anywhere, `http` only on a loopback
      host (`localhost`, `127.0.0.1`, `[::1]`). `*`, `null`, a path, a query or any other scheme is refused
      `400 invalid_origin`; another workbench's scheme (a VS Code webview's) joins the list in this spec first.
-2. **Frame.** The workbench frames `url`: `<live origin>/embed/workbench?d=<documentId>#ticket=<ticket>`. The
+2. **Frame.** The workbench frames `url`, whose origin is the live app's canonical origin, never one that redirects (the workbench checks every message against it): `<live origin>/embed/workbench?d=<documentId>#ticket=<ticket>`. The
    document id is no secret; the ticket travels in the fragment, which no server, log or `Referer` sees, and the page
    removes it from its address on load.
 3. **Redeem.** The page sends `POST /api/workbench/sessions { ticket }`. The api consumes the ticket and answers
