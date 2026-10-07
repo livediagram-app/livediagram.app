@@ -6,13 +6,14 @@ import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { InfographicPages } from './hero-illustrate-page';
 import { MindMapBoard } from './hero-mindmap-board';
+import { PlanBoard } from './hero-plan-board';
 import { TownHallBoard } from './hero-townhall-board';
 import type { HeroMode } from './hero-mode-palette';
 
 // The hero's first window (docs/specs/019-marketing/marketing-site.md "Hero"): an overview of every
 // window that follows, a bare board (no editor chrome) with one named frame per scene. Each frame
 // draws its scene settled (the same components the windows play, under .hero-static), and pressing
-// one moves the stage to that window. Three over three on a wide window; two across on a phone.
+// one moves the stage to that window. Four over three on a wide window; two across on a phone, narrower so its four rows fit.
 
 export type OverviewScene = {
   key: string;
@@ -27,6 +28,7 @@ const SCENES: Record<string, () => ReactNode> = {
   infographic: () => <InfographicPages />,
   article: () => <ArticlePage />,
   townhall: () => <TownHallBoard />,
+  plan: () => <PlanBoard />,
 };
 
 export function HeroOverview({
@@ -45,7 +47,7 @@ export function HeroOverview({
       <div
         className={`relative h-full overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 ${CANVAS}`}
       >
-        <div className="hero-overview-frames absolute inset-0 flex flex-wrap content-center justify-center gap-x-3 gap-y-6 px-3 py-4 sm:gap-x-8 sm:gap-y-5 sm:px-6 sm:py-5">
+        <div className="hero-overview-frames absolute inset-0 flex flex-wrap content-center justify-center gap-x-4 gap-y-3 px-3 py-3 sm:gap-x-8 sm:gap-y-5 sm:px-6 sm:py-5">
           {scenes.map((scene) => (
             <OverviewFrame key={scene.key} scene={scene} onOpen={onOpen} />
           ))}
@@ -67,7 +69,7 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
         e.stopPropagation();
         onOpen(scene.key);
       }}
-      className="group/frame flex w-[calc(50%-0.375rem)] flex-col text-left sm:w-[calc((100%-4rem)/3)] sm:max-w-[15.5rem]"
+      className="group/frame flex w-[42%] flex-col text-left sm:w-[calc((100%-6rem)/4)] sm:max-w-[13rem]"
     >
       {/* The frame's name, above its top-left corner, as the editor labels a frame. */}
       <span className="mb-1.5 flex items-center gap-1 px-0.5 text-[9px] font-semibold text-slate-500 transition-colors group-hover/frame:text-brand-600 sm:text-xs dark:text-slate-400 dark:group-hover/frame:text-brand-300">

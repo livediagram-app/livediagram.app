@@ -399,7 +399,7 @@
     opacity: 0;
   }
 }
-/* A question slides to its new place in the list (--dy). */
+/* A piece slides to its new place: a question up the list (--dy), a Plan card across the board (--dx, --dy). */
 .hm-move {
   animation: hm-move 0.6s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
 }
@@ -408,7 +408,7 @@
     transform: none;
   }
   to {
-    transform: translateY(var(--dy, 0));
+    transform: translate(var(--dx, 0), var(--dy, 0));
   }
 }
 /* A reaction floats up from the room and fades. */
@@ -455,7 +455,7 @@
 }
 .hero-static .hm-move {
   animation: none;
-  transform: translateY(var(--dy, 0));
+  transform: translate(var(--dx, 0), var(--dy, 0));
 }
 .hero-static .hm-float {
   display: none;
@@ -467,13 +467,26 @@
   }
   .hm-move {
     animation: none;
-    transform: translateY(var(--dy, 0));
+    transform: translate(var(--dx, 0), var(--dy, 0));
   }
   .hm-float {
     display: none;
   }
   .hm-live {
     animation: none;
+  }
+}
+
+/* --- The Plan window (components/hero-plan-board.tsx) --- */
+
+/* A carrier's pointer rides its card (hm-move on the group) once it has arrived (hm-cursor); a settled
+   board shows the cards where they were dropped, with nobody holding them. */
+.hero-static .hm-carrier {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-carrier {
+    display: none;
   }
 }
 

@@ -39,10 +39,10 @@ export const CTA_SOURCES = {
   Faq: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan', 'Card'],
   Status: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
   Dashboard: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
-  Help: ['Header'],
+  Help: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
   // The Community app (docs/specs/025-community/community.md): its header. Its Share Your Own buttons open
   // Explorer Home, not /new, so they are not funnel sources.
-  Community: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration'],
+  Community: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type CtaSurface = keyof typeof CTA_SOURCES;

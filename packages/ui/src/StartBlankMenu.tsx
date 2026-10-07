@@ -8,7 +8,7 @@
 // Opens like the apps menu beside the logo (ProductNav): mouse hover shows it through CSS without
 // taking focus, and a press or the keyboard opens it with focus inside (useMenuButton + useMenu).
 
-import { ctaHref, type CtaSlot, type CtaSource, type CtaSurface } from '@livediagram/api-schema';
+import { ctaHref, isCtaSource, type CtaSlot, type CtaSurface } from '@livediagram/api-schema';
 import { useRef, type ComponentType } from 'react';
 import { ButtonContent, buttonClassName } from './Button';
 import {
@@ -23,7 +23,7 @@ import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
 import { useClickOutside } from './useClickOutside';
 
-type HeaderSurface = Exclude<CtaSurface, 'Help'>;
+type HeaderSurface = CtaSurface;
 
 const BLANKS: {
   label: string;
@@ -61,6 +61,18 @@ const BLANKS: {
     Icon: PlanIcon,
   },
 ];
+
+// A blank's link, tagged with its funnel source when the surface lists that slot (docs/specs/019-marketing/
+// landing-funnel.md). Checked against the table rather than cast, so a surface missing a slot sends a plain
+// link instead of a source the editor would drop.
+export function blankHref(
+  href: string,
+  slot: CtaSlot<HeaderSurface>,
+  surface?: HeaderSurface,
+): string {
+  const source = surface ? `${surface}.${slot}` : null;
+  return isCtaSource(source) ? ctaHref(href, source) : href;
+}
 
 // `className` is the header's placement only (it hides the menu below `sm`).
 export function StartBlankMenu({
@@ -123,7 +135,7 @@ export function StartBlankMenu({
           {BLANKS.map(({ label, desc, href, slot, Icon }) => (
             <a
               key={slot}
-              href={ctaSurface ? ctaHref(href, `${ctaSurface}.${slot}` as CtaSource) : href}
+              href={blankHref(href, slot, ctaSurface)}
               role="menuitem"
               tabIndex={-1}
               onClick={close}
