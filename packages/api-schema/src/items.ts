@@ -41,6 +41,10 @@ export type ItemMoveRequest = ItemMove & ItemUndoFlag;
 // POST /api/documents/:id/items/bulk: template seeds and an offline document's items.
 export type ItemsBulkRequest = { items: ItemCreate[] };
 
+// POST /api/documents/:id/items/patches: up to 200 items changed in one write (a card type's or a removed column's
+// cards to the Trash), optionally marked as an undo or redo.
+export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
+
 // POST /api/documents/:id/items/:itemId/vote.
 export type ItemVoteRequest = { delta: 1 | -1 };
 

@@ -380,14 +380,13 @@ export function PlanBoardView({
                 onTrashCards={(status) => {
                   if (!plan) return;
                   // Every card in the state, whatever board shows it (the column's removal moves them all).
-                  const going = [...plan.items.values()].filter(
-                    (it) => itemStatus(it) === status && !isTrashed(it),
+                  const went = plan.trashItems(
+                    [...plan.items.values()]
+                      .filter((it) => itemStatus(it) === status && !isTrashed(it))
+                      .map((it) => it.id),
                   );
-                  for (const it of going) plan.trashItem(it.id);
-                  if (going.length)
-                    plan.announce(
-                      `${going.length === 1 ? 'Card' : `${going.length} cards`} moved to the Trash`,
-                    );
+                  if (went)
+                    plan.announce(`${went === 1 ? 'Card' : `${went} cards`} moved to the Trash`);
                 }}
               />
             ))}

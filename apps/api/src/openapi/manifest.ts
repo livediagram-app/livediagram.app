@@ -726,6 +726,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/items/patches',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      'Change up to 200 items in one write: each an item id with fields to set, fields to clear and optionally a new type. Every item is checked first, so one refusal (naming its item) changes nothing.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemsPatchRequest',
+    responseSchema: 'ItemsResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/items/{itemId}',
     segment: 'documents',
     tag: 'Items',

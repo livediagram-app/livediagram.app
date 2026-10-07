@@ -1,5 +1,5 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
-// contracts"): list, create, bulk create, patch (POST), move, vote and delete under
+// contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), move, vote and delete under
 // /api/documents/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
 // same doors. Every write applies the pure functions of @livediagram/items, lands guarded by the item's rev
 // (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
@@ -7,7 +7,7 @@
 // "Comments").
 
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
-import { itemForRoom, itemForViewer, readRestoredThread } from '@livediagram/document';
+import { itemForViewer, readRestoredThread } from '@livediagram/document';
 import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
@@ -20,142 +20,46 @@ import {
   fieldsWithinBounds,
   isValidItemId,
   isValidItemType,
-  itemIdsShownOnTab,
-  itemPersonId,
-  itemStatus,
-  isTrashed,
-  TRASHED_FROM_FIELD,
-  typeAllowsStatus,
-  typeIn,
   typesOf,
   withDefaultStatuses,
   makeItem,
   newItemId,
-  validateClear,
   validateFields,
   validateVotes,
   type Item,
   type ItemCreate,
   type ItemMove,
-  type ItemPatch,
   type ItemPerson,
   type ItemPlace,
   type ItemRejection,
-  type TabItemElement,
 } from '@livediagram/items';
 import {
   deleteItemRow,
-  getDocument,
   getItemStoreHead,
   getItemsRev,
-  getParticipant,
-  getTab,
   insertItems,
   itemKeyTaken,
   listItems,
   readItem,
   updateItemAtRev,
 } from '../db';
-import { badRequest, forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
-import { relayItems } from '../room-client';
+import { badRequest, forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { refuseGuestVoteOverCap } from '../vote-integrity';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
-  deniedOnTab,
-  gateEdit,
-  gateGrant,
-  gateParticipate,
-  gateRead,
-  missingDocument,
-  readBody,
-  requireOwner,
-  type RouteContext,
-} from './context';
-
-type Level = 'read' | 'participate' | 'edit';
-
-export type ItemCaller = {
-  documentId: string;
-  owner: string;
-  // The document, for the gates a comment delete checks (item-comment-routes.ts); absent on a new document's
-  // seed, which writes no comments.
-  doc?: NonNullable<Awaited<ReturnType<typeof getDocument>>>;
-  // The item ids the caller may touch, when their grant is confined to one tab.
-  scope: Set<string> | null;
-  // The store as read to work out that scope, so a list does not read it twice.
-  items?: Item[];
-};
-
-const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
-
-function rejected(error: ItemRejection, field?: string): Response {
-  console.info('[items] items.rejected', { error, field });
-  return json({ error, ...(field ? { field } : {}) }, { status: 400 });
-}
-
-const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
-
-// An item moved into a status its card type leaves out (docs/specs/026-plan/item-types.md "An item type"). Only a
-// change of status into such a one is refused: making a card in any status is allowed (a type that leaves every
-// status out can still be made, it just never moves), a card already in one is never moved out by this, and a type
-// change that keeps its status is let through. Putting a change back is never refused either: a trashed card
-// restored to the status it was trashed from, and an undo or redo (`undo` set: the body's `undo: true`).
-function excludedStatus(caller: ItemCaller, next: Item, before: Item, undo: boolean): boolean {
-  const status = itemStatus(next);
-  if (undo || !status || itemStatus(before) === status) return false;
-  if (isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
-  const type = typeIn(typesOf(caller.doc?.itemTypes), next.type);
-  return !typeAllowsStatus(type, status);
-}
-const itemBusy = () => {
-  console.warn('[items] items.write.busy');
-  return json(
-    { error: 'item_busy', message: 'the item kept changing; try again' },
-    { status: 409 },
-  );
-};
-
-// The caller and their reach: the whole document, or (a tab-scoped grant) the items one tab shows.
-export async function itemCaller(
-  ctx: RouteContext,
-  documentId: string,
-  level: Level,
-): Promise<ItemCaller | Response> {
-  const owner = requireOwner(ctx);
-  if (owner instanceof Response) return owner;
-  const doc = await getDocument(ctx.env, documentId);
-  if (!doc) return missingDocument(ctx, documentId);
-  const gate = GATES[level];
-  if (await gate(ctx, documentId, doc.ownerId, doc.teamId))
-    return { documentId, owner, doc, scope: null };
-  const tabId = ctx.url.searchParams.get('tabId');
-  if (!tabId) {
-    // A whole-document grant that falls short of the level (a view link writing) is refused
-    // outright; a grant confined to one tab must name it.
-    const grant = await gateGrant(ctx, documentId, doc.ownerId, doc.teamId);
-    return grant && grant.tabScope === null ? forbidden() : deniedOnTab(ctx, doc);
-  }
-  if (!(await gate(ctx, documentId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
-  const tab = await getTab(ctx.env, documentId, tabId);
-  if (!tab) return notFound();
-  const items = await listItems(ctx.env, documentId);
-  return {
-    documentId,
-    owner,
-    doc,
-    scope: itemIdsShownOnTab(tab.elements as unknown as TabItemElement[], items),
-    items,
-  };
-}
-
-async function writer(ctx: RouteContext, owner: string): Promise<ItemPerson> {
-  const p = await getParticipant(ctx.env, owner);
-  return {
-    id: await itemPersonId(owner),
-    name: p?.name ?? 'Someone',
-    color: p?.color ?? '#94a3b8',
-  };
-}
+  excludedStatus,
+  forCaller,
+  itemBusy,
+  itemCaller,
+  itemNotFound,
+  readPatch,
+  rejected,
+  relay,
+  writer,
+  type ItemCaller,
+} from './item-route-kit';
+import { patches } from './item-patches-route';
+import { readBody, type RouteContext } from './context';
 
 function readPlace(raw: unknown): ItemPlace | ItemRejection {
   if (raw === undefined) return {};
@@ -202,27 +106,6 @@ function readCreate(raw: unknown, owner: string): ItemCreate | ItemRejection {
     ...(typeof b.key === 'number' && Number.isInteger(b.key) && b.key > 0 ? { key: b.key } : {}),
   };
 }
-
-function relay(
-  ctx: RouteContext,
-  documentId: string,
-  upserts: Item[],
-  removed: string[],
-  rev: number,
-) {
-  ctx.waitUntil?.(
-    relayItems(ctx.env, documentId, {
-      kind: 'items',
-      upserts: upserts.map(itemForRoom),
-      removed,
-      rev,
-    }),
-  );
-}
-
-// What a caller is answered with: their own comment author ids, nobody else's.
-const forCaller = (caller: ItemCaller, items: Item[]) =>
-  items.map((i) => itemForViewer(i, caller.owner));
 
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
 async function list(ctx: RouteContext, documentId: string): Promise<Response> {
@@ -367,23 +250,6 @@ export async function writeItem(
   return itemBusy();
 }
 
-function readPatch(body: Record<string, unknown>): ItemPatch | ItemRejection {
-  const patch: ItemPatch = {};
-  if (body.set !== undefined) {
-    const set = validateFields(body.set, 'patch');
-    if (!set.ok) return set.error;
-    patch.set = set.fields;
-  }
-  const clear = validateClear(body.clear);
-  if (!clear.ok) return clear.error;
-  if (clear.keys.length) patch.clear = clear.keys;
-  if (body.type !== undefined) {
-    if (!isValidItemType(body.type)) return 'type_invalid';
-    patch.type = body.type;
-  }
-  return patch;
-}
-
 async function patch(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'edit');
   if (caller instanceof Response) return caller;
@@ -475,6 +341,8 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
   }
   if (segments.length === 5 && segments[4] === 'bulk')
     return method === 'POST' ? bulk(ctx, documentId) : methodNotAllowed();
+  if (segments.length === 5 && segments[4] === 'patches')
+    return method === 'POST' ? patches(ctx, documentId) : methodNotAllowed();
   const itemId = segments[4]!;
   if (segments.length === 5) {
     // A field patch is a POST: the api's CORS (responses.ts) admits GET, POST, PUT and DELETE.

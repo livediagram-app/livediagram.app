@@ -222,15 +222,16 @@ WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by
 All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
 (tag `Items`), DTOs in `packages/api-schema/src/items.ts` (`ItemsResponse { items, rev }`, `ItemResponse { item, rev }`).
 
-| Method | Path                  | Gate        | Body                                        | Answers             |
-| ------ | --------------------- | ----------- | ------------------------------------------- | ------------------- |
-| GET    | `/items[?tabId=]`     | read        |                                             | `ItemsResponse`     |
-| POST   | `/items`              | edit        | `ItemCreate`                                | 201 `ItemResponse`  |
-| POST   | `/items/bulk`         | edit        | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX` | 201 `ItemsResponse` |
-| POST   | `/items/:itemId`      | edit        | `ItemPatch`                                 | `ItemResponse`      |
-| POST   | `/items/:itemId/move` | edit        | `ItemMove`                                  | `ItemResponse`      |
-| POST   | `/items/:itemId/vote` | participate | `{ delta: 1 \| -1 }`                        | `ItemResponse`      |
-| DELETE | `/items/:itemId`      | edit        |                                             | 204                 |
+| Method | Path                  | Gate        | Body                                                         | Answers             |
+| ------ | --------------------- | ----------- | ------------------------------------------------------------ | ------------------- |
+| GET    | `/items[?tabId=]`     | read        |                                                              | `ItemsResponse`     |
+| POST   | `/items`              | edit        | `ItemCreate`                                                 | 201 `ItemResponse`  |
+| POST   | `/items/bulk`         | edit        | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
+| POST   | `/items/patches`      | edit        | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
+| POST   | `/items/:itemId`      | edit        | `ItemPatch`                                                  | `ItemResponse`      |
+| POST   | `/items/:itemId/move` | edit        | `ItemMove`                                                   | `ItemResponse`      |
+| POST   | `/items/:itemId/vote` | participate | `{ delta: 1 \| -1 }`                                         | `ItemResponse`      |
+| DELETE | `/items/:itemId`      | edit        |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
 
@@ -243,7 +244,16 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 - `POST /documents` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.
 - The patch is a POST: the api's CORS admits GET, POST, PUT and DELETE only.
-- Routes live in `apps/api/src/routes/item-routes.ts`, dispatched from `document-subresource-routes.ts`.
+- `/items/patches` changes many items at once (a type's or a removed column's cards sent to the Trash): every id
+  must exist (`404 item_not_found`, and in a tab-scoped grant be in scope), each patch is validated as a single
+  one is, and every resulting item is checked (`status_excluded` unless `undo`, the field bounds) before anything
+  is written, so one refusal refuses the whole request, naming the item (`{ error, field?, id }`). The updates go
+  in one D1 batch, each guarded by the rev read, with one `items_rev` raise; an item a concurrent write moved on
+  is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs
+  `[items] patched` with the count.
+- Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
+  share, such as the caller, refusals and relay, in `item-route-kit.ts`), dispatched from
+  `document-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
 
 ## Comments
 
@@ -316,7 +326,8 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 ## Editor slice
 
 - `apps/live/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
-  patch, move, vote, delete; a create of many goes to `/items/bulk` in batches); each dispatches
+  patch, patches, move, vote, delete; a create of many goes to `/items/bulk` and a patch of many to
+  `/items/patches`, each in batches of `ITEM_BULK_MAX`); each dispatches
   `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies `applyItemWrite` to the record's store
   inside `serializeOfflineWrite`.
 - `apps/live/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the
@@ -340,7 +351,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 journal (`hooks/plan/item-undo-journal.ts`, pure): each item step records the depth it was made at; undo runs the
 item step when the depth still matches (no canvas step since), else the canvas's; redo mirrors it by the redo
 side's length and branch. An item step's closures send the inverse writes (`inverseItemWrites`: the old values of
-the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete), and redo
+the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete, one `patches` of each item's inverse for a `patches`), and redo
 replays the write with the keys the first write was given. Votes push nothing.
 
 ## Errors and edge cases
@@ -378,6 +389,8 @@ replays the write with the keys the first write was given. Votes push nothing.
 - Worst case 2,000 items × 16 KB = 32 MB is refused by the GET's practical size: `ITEMS_MAX` × typical 0.5 KB
   = 1 MB; the GET streams one JSON array. The per-item cap bounds the row; D1's 1 MB row limit is never reached.
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
+- Changing many cards at once (`patches`) is one request per `ITEM_BULK_MAX` cards and one D1 batch, never a
+  request per card; a type with 2,000 cards is 10 requests.
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 

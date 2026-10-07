@@ -240,3 +240,73 @@ describe('storeAsCreates', () => {
     });
   });
 });
+
+describe('a write of many patches', () => {
+  const two: ItemStoreState = {
+    items: [item({ title: 'a' }, { id: 'a', key: 1 }), item({ title: 'b' }, { id: 'b', key: 2 })],
+    rev: 3,
+    nextKey: 3,
+  };
+  const trash = { set: { status: 'trash' } };
+
+  it('changes every item in one write, an item patched twice sent once as it ends', () => {
+    const s = ok(
+      applyItemWrite(
+        two,
+        {
+          kind: 'patches',
+          patches: [
+            { id: 'a', patch: trash },
+            { id: 'b', patch: trash },
+            { id: 'a', patch: { set: { title: 'A' } } },
+          ],
+        },
+        ctx,
+      ),
+    );
+    expect(s.rev).toBe(4);
+    expect(s.items.map((i) => [i.fields['title'], i.fields['status']])).toEqual([
+      ['A', 'trash'],
+      ['b', 'trash'],
+    ]);
+    expect((s.upserts as { id: string }[]).map((i) => i.id)).toEqual(['a', 'b']);
+  });
+
+  it('refuses the whole write when any item is gone', () => {
+    const r = applyItemWrite(
+      two,
+      {
+        kind: 'patches',
+        patches: [
+          { id: 'a', patch: trash },
+          { id: 'gone', patch: trash },
+        ],
+      },
+      ctx,
+    );
+    expect(r).toEqual({ ok: false, error: 'item_not_found' });
+  });
+
+  it('undoes as one write that puts every item back', () => {
+    const write = {
+      kind: 'patches' as const,
+      patches: [
+        { id: 'a', patch: trash },
+        { id: 'a', patch: { set: { title: 'A' } } },
+        { id: 'b', patch: trash },
+      ],
+    };
+    const undo = inverseItemWrites(two, write)!;
+    expect(undo).toHaveLength(1);
+    const after = ok(applyItemWrite(two, write, ctx));
+    const back = ok(applyItemWrite(after, undo[0]!, ctx));
+    expect(back.items.map((i) => [i.fields['title'], i.fields['status']])).toEqual([
+      ['a', undefined],
+      ['b', undefined],
+    ]);
+    expect(
+      inverseItemWrites(two, { kind: 'patches', patches: [{ id: 'gone', patch: trash }] }),
+    ).toBeNull();
+    expect(asUndoWrite(write)).toEqual({ ...write, undo: true });
+  });
+});

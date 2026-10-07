@@ -90,6 +90,24 @@ export async function writeItem(
     }
     case 'patch':
       return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
+    case 'patches': {
+      // One request per ITEM_BULK_MAX items (a type's or a removed column's cards to the Trash).
+      const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
+      for (let i = 0; i < write.patches.length; i += ITEM_BULK_MAX) {
+        const items = write.patches
+          .slice(i, i + ITEM_BULK_MAX)
+          .map(({ id: itemId, patch }) => ({ id: itemId, ...patch }));
+        const r = await post<ItemsResponse>(
+          scope,
+          '/patches',
+          undoBody({ items }, write.undo),
+          'items change',
+        );
+        answer.upserts.push(...r.items);
+        answer.rev = r.rev;
+      }
+      return answer;
+    }
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
     case 'vote':

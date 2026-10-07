@@ -80,6 +80,8 @@ export type PlanContextValue = {
   draggingItemId: string | null;
   // The Trash (docs/specs/026-plan/items.md "Trash").
   trashItem: (itemId: string) => void;
+  // Many cards to the Trash as one write and one undo step; answers how many went.
+  trashItems: (itemIds: readonly string[]) => number;
   restoreItem: (itemId: string) => void;
   emptyTrash: () => void;
   // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");
