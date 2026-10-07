@@ -4,7 +4,7 @@
 // Cards (the cards naming it as their Parent), and a section per Card field that links here ("Linked as Owner"),
 // each row opening that card in the panel, with a button to make a new one already linked. The host computes
 // the groups (linkedCardsOf in packages/items), so this only draws them.
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import {
   isArchived,
   itemAssignee,
@@ -14,7 +14,7 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { ChevronRightIcon, PlusIcon } from '@livediagram/ui';
+import { Button, ChevronRightIcon, PlusIcon, Select } from '@livediagram/ui';
 import type { LinkedGroup } from '@livediagram/items';
 import { PersonDisc } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -56,8 +56,110 @@ export function ItemChildCards({
           No cards sit under this project yet.
         </p>
       ) : (
+        <FilteredCards
+          cards={childCards}
+          types={types}
+          statusNames={statusNames}
+          onOpen={onOpen}
+          label="Child Cards"
+        />
+      )}
+    </section>
+  );
+}
+
+// A list of linked cards with, when it holds more than one type or state, a filter by Card Type and by State
+// (docs/specs/026-plan/item-types.md "Card fields"): each menu lists only what the list holds, both start at All,
+// and "N of M" says how many show. Nothing matching says so, with Clear Filters.
+const ALL = '';
+const NO_STATUS = '\u0000none';
+
+export function FilteredCards({
+  cards,
+  types,
+  statusNames,
+  onOpen,
+  label,
+}: {
+  cards: readonly Item[];
+  types: readonly ItemTypeDef[];
+  statusNames: ReadonlyMap<string, string>;
+  onOpen: (itemId: string) => void;
+  // The section's name, for the filters' accessible names.
+  label: string;
+}) {
+  const [typeId, setTypeId] = useState(ALL);
+  const [status, setStatus] = useState(ALL);
+  const typeIds = [...new Set(cards.map((c) => c.type))];
+  const statuses = [...new Set(cards.map((c) => itemStatus(c) ?? NO_STATUS))];
+  const filterable = typeIds.length > 1 || statuses.length > 1;
+  const shown = cards.filter(
+    (c) =>
+      (typeId === ALL || c.type === typeId) &&
+      (status === ALL || (itemStatus(c) ?? NO_STATUS) === status),
+  );
+  const filtering = typeId !== ALL || status !== ALL;
+  const statusName = (s: string) => (s === NO_STATUS ? 'No status' : (statusNames.get(s) ?? s));
+  return (
+    <div className="flex flex-col gap-1.5">
+      {filterable ? (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {typeIds.length > 1 ? (
+            <Select
+              aria-label={`${label}: Card Type`}
+              size="sm"
+              selectClassName="text-[12px]"
+              value={typeId}
+              onChange={(e) => setTypeId(e.target.value)}
+            >
+              <option value={ALL}>All card types</option>
+              {typeIds.map((id) => (
+                <option key={id} value={id}>
+                  {typeIn(types, id).label}
+                </option>
+              ))}
+            </Select>
+          ) : null}
+          {statuses.length > 1 ? (
+            <Select
+              aria-label={`${label}: State`}
+              size="sm"
+              selectClassName="text-[12px]"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value={ALL}>All states</option>
+              {statuses.map((s) => (
+                <option key={s} value={s}>
+                  {statusName(s)}
+                </option>
+              ))}
+            </Select>
+          ) : null}
+          {filtering ? (
+            <span className="text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+              {shown.length} of {cards.length}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {shown.length === 0 ? (
+        <p className="flex items-center gap-2 text-[13px] text-slate-500 dark:text-slate-400">
+          No cards match.
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              setTypeId(ALL);
+              setStatus(ALL);
+            }}
+          >
+            Clear Filters
+          </Button>
+        </p>
+      ) : (
         <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900/40">
-          {childCards.map((child) => (
+          {shown.map((child) => (
             <ChildRow
               key={child.id}
               child={child}
@@ -68,7 +170,7 @@ export function ItemChildCards({
           ))}
         </ul>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -161,17 +263,13 @@ export function LinkedCardGroup({
           No cards link here as {group.label} yet.
         </p>
       ) : (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900/40">
-          {group.cards.map((child) => (
-            <ChildRow
-              key={child.id}
-              child={child}
-              types={types}
-              statusNames={statusNames}
-              onOpen={onOpen}
-            />
-          ))}
-        </ul>
+        <FilteredCards
+          cards={group.cards}
+          types={types}
+          statusNames={statusNames}
+          onOpen={onOpen}
+          label={`Linked as ${group.label}`}
+        />
       )}
       {canAdd ? (
         <div className="mt-1.5 flex flex-wrap gap-1">

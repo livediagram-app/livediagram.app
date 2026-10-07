@@ -449,6 +449,45 @@ describe('documents and items', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "An item type": the Default State, for a card created without a status.
+describe('a type’s Default State', () => {
+  const withDefault = (extra: Record<string, unknown>) => ({
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['description'],
+        ...extra,
+      },
+    ],
+  });
+
+  it('gives a card made without a status its type’s Default State, never overriding a given one', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: withDefault({ defaultStatus: 'backlog' }) },
+    });
+    expect((await add({ title: 'A' })).body.item.fields['status']).toBe('backlog');
+    expect((await add({ title: 'B', status: 'done' })).body.item.fields['status']).toBe('done');
+    expect(
+      (await add({ title: 'C' }, { place: { status: 'doing' } })).body.item.fields['status'],
+    ).toBe('doing');
+  });
+
+  it('leaves a card unplaced when the type turns its Default State off', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: withDefault({ defaultStatus: 'backlog', excludedStatuses: ['backlog'] }) },
+    });
+    expect((await add({ title: 'A' })).body.item.fields['status']).toBeUndefined();
+  });
+});
+
 // docs/specs/026-plan/item-types.md "An item type": a type's left-out statuses refuse a card moving in.
 describe('statuses a type leaves out', () => {
   const noDone = {

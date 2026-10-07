@@ -149,7 +149,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         height: 720,
         setup: { columns: [SPRINT, DOING, BLOCKED, REVIEW, DONE], doneColumnId: 'done' },
       },
-      charts: ['workload', 'status-mix'],
+      charts: ['workload', 'priority-matrix'],
     },
     {
       name: 'Daily Standup',
@@ -240,7 +240,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
     {
       name: 'Flow',
       metrics: ['count', 'progress', 'stale', 'unassigned'],
-      charts: ['status-mix', 'workload', 'priority-matrix', 'calendar'],
+      charts: ['workload', 'priority-matrix', 'calendar'],
     },
   ],
 
@@ -304,7 +304,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
     {
       name: 'Health',
       metrics: ['count', 'priorities', 'stale', 'unassigned'],
-      charts: ['priority-matrix', 'workload', 'status-mix', 'calendar'],
+      charts: ['priority-matrix', 'workload', 'calendar'],
     },
   ],
 
@@ -570,7 +570,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           widgets: ['progress', 'due', 'stale'],
         },
       },
-      charts: ['status-mix'],
+      charts: ['workload'],
       rail: [
         {
           kind: 'sticky',

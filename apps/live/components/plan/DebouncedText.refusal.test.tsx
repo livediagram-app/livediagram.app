@@ -1,0 +1,48 @@
+// @vitest-environment jsdom
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DebouncedText } from './item-field-editors';
+
+// docs/specs/026-plan/items.md "Limits": a field stops at its limit and never keeps a value that was refused.
+afterEach(cleanup);
+
+describe('a debounced text field', () => {
+  it('goes back to what is saved when a save is refused', async () => {
+    const onSave = vi.fn(async () => false);
+    render(<DebouncedText id="t" label="Title" value="Old" disabled={false} onSave={onSave} />);
+    const box = screen.getByLabelText('Title') as HTMLInputElement;
+    fireEvent.change(box, { target: { value: 'New' } });
+    await act(async () => {
+      fireEvent.blur(box);
+    });
+    expect(onSave).toHaveBeenCalledWith('New');
+    expect(box.value).toBe('Old');
+  });
+
+  it('keeps a save that lands', async () => {
+    render(
+      <DebouncedText id="t" label="Title" value="Old" disabled={false} onSave={async () => true} />,
+    );
+    const box = screen.getByLabelText('Title') as HTMLInputElement;
+    fireEvent.change(box, { target: { value: 'New' } });
+    await act(async () => {
+      fireEvent.blur(box);
+    });
+    expect(box.value).toBe('New');
+  });
+
+  it('caps typing at its limit and counts down near it', () => {
+    render(
+      <DebouncedText
+        id="t"
+        label="Title"
+        value={'x'.repeat(9)}
+        maxLength={10}
+        disabled={false}
+        onSave={vi.fn()}
+      />,
+    );
+    expect((screen.getByLabelText('Title') as HTMLInputElement).maxLength).toBe(10);
+    expect(screen.getByText('1 character left')).toBeTruthy();
+  });
+});

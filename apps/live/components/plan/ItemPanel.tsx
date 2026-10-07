@@ -14,6 +14,7 @@ import {
   isArchived,
   isFlagged,
   itemTitle,
+  ITEM_TITLE_MAX,
   tabsOf,
   typeIn,
   type Item,
@@ -63,7 +64,8 @@ type ItemPanelProps = {
   // Every label the document's items carry (the labels field's suggestions).
   labels: readonly string[];
   canEdit: boolean;
-  onSave: (field: string, value: ItemFieldValue | undefined) => void;
+  // Whether the save landed (false: refused), so a field can go back to what is saved.
+  onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;
   // Several fields in one write (the description and its formatting).
   onPatch: (patch: ItemPatch) => void;
   onType: (type: string) => void;
@@ -330,6 +332,7 @@ function ItemPanelContent({
             id={fieldId(item, 'title')}
             label="Title"
             value={itemTitle(item)}
+            maxLength={ITEM_TITLE_MAX}
             required
             placeholder="Title"
             disabled={!canEdit}

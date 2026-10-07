@@ -13,6 +13,7 @@ import { usePlan } from './PlanContext';
 import { ITEM_TYPES, ITEM_TYPES_MAX } from '@livediagram/items';
 import { Button, DuplicateIcon, PencilIcon, PlusIcon, Tooltip } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { DASHED_ADD_BUTTON } from './ItemTypeFieldForms';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
 export function CardTypesPanel({
@@ -153,7 +154,10 @@ export function CardTypesPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-3 pb-3">
-        <TypeGroup title="Built-In Types">{builtIn.map(row)}</TypeGroup>
+        {/* Every built-in deleted: no heading over nothing; Restore built-in types brings them back. */}
+        {builtIn.length > 0 ? (
+          <TypeGroup title="Built-In Types">{builtIn.map(row)}</TypeGroup>
+        ) : null}
         <TypeGroup
           title="Your Types"
           empty={canEdit ? 'Types you add show here.' : 'No types of your own yet.'}
@@ -164,7 +168,7 @@ export function CardTypesPanel({
           <>
             <button
               type="button"
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 py-2 text-[13px] font-medium text-slate-600 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"
+              className={DASHED_ADD_BUTTON}
               onClick={() => plan.editType('new')}
             >
               <PlusIcon />
@@ -179,7 +183,7 @@ export function CardTypesPanel({
                   const ok = await confirm({
                     title: 'Restore Built-In Types?',
                     message:
-                      'The card types go back to the built-in five. Items of a type they lack keep their fields and show as a plain Item card.',
+                      'Project, Task, Note, Idea and Action go back to how they started. Your own types stay as they are.',
                     confirmLabel: 'Restore',
                   });
                   if (ok) itemTypes.restoreBuiltIns();

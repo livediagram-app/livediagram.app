@@ -43,4 +43,13 @@ describe('the Card Types panel’s groups', () => {
     expect(screen.queryByRole('list', { name: 'Your Types' })).toBeNull();
     expect(screen.getByText('Types you add show here.')).toBeTruthy();
   });
+
+  it('drops the built-in heading once every built-in type is deleted', () => {
+    const person = { ...ITEM_TYPES[1]!, id: 'person', label: 'Person' };
+    panel([person]);
+    expect(screen.queryByText('Built-In Types')).toBeNull();
+    expect(
+      within(screen.getByRole('list', { name: 'Your Types' })).getByText('Person'),
+    ).toBeTruthy();
+  });
 });

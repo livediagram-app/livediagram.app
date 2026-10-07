@@ -85,3 +85,22 @@ describe('the Card Finder', () => {
     expect(rows().some((r) => r.includes('Write copy'))).toBe(false);
   });
 });
+
+describe('the Card Finder’s filters', () => {
+  it('narrows by a field and value, and Clear Filters shows them all again', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Filter' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Add Filter' })).getByRole('button', {
+        name: 'State',
+      }),
+    );
+    const picker = within(screen.getByRole('dialog', { name: 'Add Filter' }));
+    fireEvent.click(picker.getByRole('button', { name: /No status/ }));
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0]).toContain('Sam Reed');
+    expect(screen.getByText('State:')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
+    expect(rows()).toHaveLength(3);
+  });
+});

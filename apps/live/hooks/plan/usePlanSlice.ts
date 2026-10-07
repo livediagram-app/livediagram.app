@@ -157,7 +157,7 @@ export function usePlanSlice(opts: {
   );
 
   const patchItem = useCallback(
-    (itemId: string, patch: ItemPatch) => void write({ kind: 'patch', id: itemId, patch }),
+    (itemId: string, patch: ItemPatch) => write({ kind: 'patch', id: itemId, patch }),
     [write],
   );
 

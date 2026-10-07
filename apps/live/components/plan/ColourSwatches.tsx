@@ -1,11 +1,12 @@
 'use client';
 
 // The twelve Plan swatches as one radio group (docs/specs/026-plan/items.md "Colour"): a card type's Colour in the
-// type editor, and an item's own Colour in the item panel, which adds None. ColourDot draws an item's colour
+// type editor, which adds + for a custom colour, and an item's own Colour in the item panel, which adds None. ColourDot draws an item's colour
 // beside its type colour (a Parent chip, a Project swimlane header, a Gantt row).
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { PLAN_TYPE_COLOURS } from '@livediagram/items';
-import { ChevronDownIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import { ChevronDownIcon, PlusIcon, Tooltip, useClickOutside, useEscape } from '@livediagram/ui';
+import { CustomColourEditor } from '@/components/canvas/whiteboard/CustomColourEditor';
 
 // The swatches' names, for their buttons.
 export const COLOUR_NAMES: Record<string, string> = {
@@ -46,6 +47,7 @@ export function ColourSwatches({
   onChange,
   label = 'Colour',
   allowNone = false,
+  allowCustom = false,
   disabled = false,
   size = 'md',
   id,
@@ -56,6 +58,9 @@ export function ColourSwatches({
   label?: string;
   // Offers None first, which clears the colour.
   allowNone?: boolean;
+  // Ends with + for a colour of one's own (the type editor; an item's own Colour stays a swatch): it opens the
+  // custom picker in place, and a custom colour in force shows as a picked swatch just before it.
+  allowCustom?: boolean;
   disabled?: boolean;
   // md for the type editor, sm for the item panel's narrower column.
   size?: 'sm' | 'md';
@@ -68,9 +73,12 @@ export function ColourSwatches({
     } disabled:cursor-not-allowed disabled:opacity-60`;
   // The swatches in order (None first when offered). The picked one is the group's one Tab stop (the first when
   // none listed is picked); the arrows move focus along them, and Enter or Space (a button's own keys) picks.
-  const options: (string | undefined)[] = allowNone
+  const stock: (string | undefined)[] = allowNone
     ? [undefined, ...PLAN_TYPE_COLOURS]
     : [...PLAN_TYPE_COLOURS];
+  const customValue = allowCustom && value && !stock.includes(value) ? value : undefined;
+  const options = customValue ? [...stock, customValue] : stock;
+  const [customOpen, setCustomOpen] = useState(false);
   const picked = options.indexOf(value);
   const tabStop = picked < 0 ? 0 : picked;
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -86,7 +94,7 @@ export function ColourSwatches({
     e.preventDefault();
     radios[next]?.focus();
   };
-  return (
+  const group = (
     <div
       id={id}
       role="radiogroup"
@@ -116,7 +124,7 @@ export function ColourSwatches({
             type="button"
             role="radio"
             aria-checked={value === c}
-            aria-label={COLOUR_NAMES[c] ?? c}
+            aria-label={COLOUR_NAMES[c] ?? `Custom ${c}`}
             tabIndex={i === tabStop ? 0 : -1}
             disabled={disabled}
             className={ring(value === c)}
@@ -125,6 +133,38 @@ export function ColourSwatches({
           />
         ),
       )}
+      {allowCustom ? (
+        <Tooltip label="Add a custom colour">
+          <button
+            type="button"
+            aria-label="Add a custom colour"
+            aria-expanded={customOpen}
+            disabled={disabled}
+            className={`${dim} flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-dashed border-slate-400 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-500 dark:text-slate-300 dark:hover:bg-slate-800`}
+            onClick={() => setCustomOpen((open) => !open)}
+          >
+            <PlusIcon size={14} />
+          </button>
+        </Tooltip>
+      ) : null}
+    </div>
+  );
+  if (!allowCustom) return group;
+  return (
+    <div className="flex flex-col">
+      {group}
+      {customOpen ? (
+        // The picker keeps a picker's width; the swatches above keep the row's.
+        <div className="max-w-xs">
+          <CustomColourEditor
+            start={customValue}
+            onUse={(hex) => {
+              setCustomOpen(false);
+              onChange(hex.toLowerCase());
+            }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

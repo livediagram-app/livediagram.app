@@ -14,6 +14,9 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { PLAN_VIEW_TILES } from './palette-plan-view-tiles';
 
 const GLYPH_PX = 18;
+// The one larger tile step (docs/specs/004-interface-design/iconography.md): a Plan card tile is a picture of a card with its type's glyph on the face, drawn bigger to
+// fill its tile and keep that glyph legible; 26 still fits the Rows layout's 28px chip.
+export const CARD_TILE_GLYPH_PX = 26;
 
 // The boards the palette offers, in the order they are reached for, with what each is for. One list for the palette's
 // Boards and Start with a Board; All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
@@ -112,6 +115,6 @@ export function planCardTile(t: ItemTypeDef): PaletteTileDef {
     description: `A new ${t.label}, dragged into a column on a board.`,
     noTint: true,
     action: { type: 'shape', kind: 'plan-card', plan: t.id },
-    icon: <PlanCardTileArt size={GLYPH_PX} color={t.color} />,
+    icon: <PlanCardTileArt size={CARD_TILE_GLYPH_PX} color={t.color} glyph={t.glyph} />,
   };
 }

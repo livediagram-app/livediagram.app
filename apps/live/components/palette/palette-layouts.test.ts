@@ -188,9 +188,9 @@ describe('palette layouts', () => {
     expect(charts.tiles!.map((t) => t.caption)).toEqual([
       'Gantt Chart',
       'Due Calendar',
-      'Workload',
-      'Status Breakdown',
+      'Cards by Field',
       'Priority Matrix',
+      'Card Search',
     ]);
     for (const t of [...widgets.tiles!, ...charts.tiles!]) {
       expect(t.action).toMatchObject({ type: 'shape', kind: 'plan-view' });

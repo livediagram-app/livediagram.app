@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 // One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
 // cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the type's glyph and
 // title over one row of pills) or Detailed (the type chip, number and priority signal; the title; the project;
@@ -21,6 +22,11 @@ import {
   type CardField,
   type CardSize,
   type Item,
+  typeCardDisplay,
+  type ItemTypeDef,
+  typeCardLayout,
+  cardLayoutFields,
+  type CardSlot,
 } from '@livediagram/items';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
@@ -56,6 +62,8 @@ export type PlanCardFaceProps = {
   presence?: PlanCardPresence;
   // Voting on the card's board: the viewer's own count, and whether they may vote.
   voting?: VotingProps;
+  // A type to draw it as instead of the catalogue's (the type editor's Display preview, a draft not yet saved).
+  typeOverride?: ItemTypeDef;
 };
 
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
@@ -72,12 +80,16 @@ export function PlanCardFace({
   muted,
   presence,
   voting,
+  typeOverride,
 }: PlanCardFaceProps) {
   const plan = usePlan();
-  const type = typeIn(plan?.types ?? ITEM_TYPES, item.type);
+  const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
   // Lifted on a dark card, so Project's black still shows.
   const accent = accentOn(type.color, palette);
-  const shown = cardFieldsAt(size, fields);
+  // What the board shows at this size, and what the card's type shows (docs/specs/026-plan/item-types.md "Card
+  // display"): both must allow a field.
+  const typeShows = typeCardDisplay(type, size);
+  const shown = cardFieldsAt(size, fields).filter((f) => typeShows.includes(f));
   const show = (f: CardField) => shown.includes(f);
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   if (faceDown) {
@@ -125,20 +137,87 @@ export function PlanCardFace({
     opacity: muted ? 0.7 : 1,
   };
   const presenceTag = presence ? <PresenceTag name={presence.name} color={presence.color} /> : null;
-  const votesBit = voting ? (
-    <VoteControl palette={palette} total={votes} voting={voting} />
-  ) : show('votes') && votes > 0 ? (
-    <MetaPill palette={palette} label={votes === 1 ? '1 vote' : `${votes} votes`}>
-      <span aria-hidden>▲ {votes}</span>
-    </MetaPill>
-  ) : null;
-  const commentsBit = show('comments') ? <CommentsPill item={item} palette={palette} /> : null;
-  const avatar =
-    show('assignee') && assignee ? (
-      <span className="ml-auto shrink-0">
-        <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
-      </span>
-    ) : null;
+  // One field's bit, as it draws in a row (a pill, a chip, a disc); null when the card has nothing for it. `big`
+  // is a Detailed header's larger chips.
+  const pill = (f: CardField, big = false): ReactNode => {
+    switch (f) {
+      case 'key':
+        return <KeyTag key={f} itemKey={item.key} accent={accent} />;
+      case 'type':
+        return (
+          <TypeChip key={f} glyph={type.glyph} label={type.label} accent={accent} compact={!big} />
+        );
+      case 'priority':
+        return isPriority(priority) ? (
+          <PrioritySignal key={f} priority={priority} label={big} />
+        ) : null;
+      case 'start':
+        return typeof start === 'string' ? (
+          <StartPill key={f} start={start} palette={palette} />
+        ) : null;
+      case 'due':
+        return typeof due === 'string' ? (
+          <DuePill key={f} due={due} done={!!muted} palette={palette} />
+        ) : null;
+      case 'estimate':
+        return typeof estimate === 'number' ? (
+          <MetaPill key={f} palette={palette} label={`Estimate ${estimate}`}>
+            <PlanTypeGlyph glyph="cube" size={11} />
+            <span aria-hidden>{estimate}</span>
+          </MetaPill>
+        ) : null;
+      case 'checklist':
+        return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
+      case 'comments':
+        return <CommentsPill key={f} item={item} palette={palette} />;
+      case 'votes':
+        return voting ? (
+          <VoteControl key={f} palette={palette} total={votes} voting={voting} />
+        ) : votes > 0 ? (
+          <MetaPill key={f} palette={palette} label={votes === 1 ? '1 vote' : `${votes} votes`}>
+            <span aria-hidden>▲ {votes}</span>
+          </MetaPill>
+        ) : null;
+      case 'assignee':
+        return assignee ? (
+          <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
+        ) : null;
+      case 'labels':
+        return labels.length > 0 ? <LabelChips key={f} labels={labels} /> : null;
+      case 'parent':
+        return parent ? (
+          <span key={f} className="flex min-w-0 items-center gap-1">
+            {parentColour ? (
+              <ColourDot colour={parentColour} />
+            ) : (
+              <PlanTypeGlyph glyph="project" size={11} />
+            )}
+            <span className="truncate">{itemTitle(parent)}</span>
+          </span>
+        ) : null;
+      case 'description':
+        return typeof description === 'string' && description.trim() ? (
+          <p
+            key={f}
+            className="line-clamp-2 w-full text-[12px] leading-snug"
+            style={{ color: palette.muted }}
+          >
+            {description}
+          </p>
+        ) : null;
+    }
+  };
+  // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card
+  // display"). A voting board's vote control always shows, at the end of the last row, when Votes has no slot.
+  const layout = typeCardLayout(type, size);
+  const slotBits = (slot: CardSlot, big = false) =>
+    (layout[slot] ?? [])
+      .filter(show)
+      .map((f) => pill(f, big))
+      .filter(Boolean);
+  const votePlaced = cardLayoutFields(size, layout).some((f) => f === 'votes' && show(f));
+  const loneVote =
+    voting && !votePlaced ? <VoteControl palette={palette} total={votes} voting={voting} /> : null;
   // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle.
   const titleText = (lines: 2 | 3, px: number, lineHeight?: number) => (
     <span
@@ -153,70 +232,56 @@ export function PlanCardFace({
     </span>
   );
 
-  // Minimal: the title alone, room to breathe (and the vote control on a voting board).
+  // Minimal: one line, the title between its Before and After slots (and the vote control on a voting board).
   if (size === 'minimal') {
     return (
       <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
         {presenceTag}
         <TypeDot accent={accent} />
+        {slotBits('lead')}
         {titleText(2, 13)}
         {flag}
-        {voting ? <VoteControl palette={palette} total={votes} voting={voting} /> : null}
+        <span
+          className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium"
+          style={{ color: palette.muted }}
+        >
+          {slotBits('trail')}
+          {loneVote}
+        </span>
       </div>
     );
   }
 
-  // Compact: the type's glyph and the title (two lines at most) over one row of what matters at a glance.
+  // Compact: the title with its Beside slot, over one row (Below the Title).
   if (size === 'compact') {
-    const pills =
-      (show('priority') && isPriority(priority)) ||
-      (show('due') && typeof due === 'string') ||
-      (show('start') && typeof start === 'string') ||
-      votesBit ||
-      commentsBit ||
-      (show('assignee') && assignee);
+    const row = slotBits('row');
     return (
       <div className={`${FRAME} flex-col gap-1.5 px-3 py-2`} style={frame}>
         {presenceTag}
         <div className="flex items-start gap-1.5">
-          {show('type') ? (
-            <span className="flex">
-              <TypeChip glyph={type.glyph} label={type.label} accent={accent} compact />
+          {slotBits('lead').map((bit, i) => (
+            <span key={i} className="flex">
+              {bit}
             </span>
-          ) : null}
-          {show('key') ? (
-            <span className="flex">
-              <KeyTag itemKey={item.key} accent={accent} />
-            </span>
-          ) : null}
+          ))}
           {ownColour ? <ColourDot colour={ownColour} className="mt-1.5" /> : null}
           {titleText(2, 13, 20)}
           {flag}
         </div>
-        {pills ? (
+        {row.length || loneVote ? (
           <div
-            className="flex items-center gap-1.5 text-[11px] font-medium"
+            className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
             style={{ color: palette.muted }}
           >
-            {show('priority') && isPriority(priority) ? (
-              <PrioritySignal priority={priority} />
-            ) : null}
-            {show('start') && typeof start === 'string' ? (
-              <StartPill start={start} palette={palette} />
-            ) : null}
-            {show('due') && typeof due === 'string' ? (
-              <DuePill due={due} done={!!muted} palette={palette} />
-            ) : null}
-            {votesBit}
-            {commentsBit}
-            {avatar}
+            {row}
+            {loneVote}
           </div>
         ) : null}
       </div>
     );
   }
 
-  // Detailed: everything the board shows, in reading order.
+  // Detailed: a header (start and end), the title, what sits under it, the type's on-card custom fields, a footer.
   // Custom fields marked Show on card, with a value (docs/specs/026-plan/item-types.md "An item type").
   const onCard = (type.custom ?? []).flatMap((f) => {
     const text = f.onCard ? customFieldText(f, item.fields[f.id], plan?.items) : null;
@@ -225,31 +290,22 @@ export function PlanCardFace({
       f.kind === 'card' && f.linkType ? typeIn(plan?.types ?? ITEM_TYPES, f.linkType) : undefined;
     return text ? [{ id: f.id, label: f.label, text, linkedType }] : [];
   });
-  const head =
-    show('key') || show('type') || !!ownColour || (show('priority') && isPriority(priority));
-  const footer =
-    (show('due') && typeof due === 'string') ||
-    (show('start') && typeof start === 'string') ||
-    (show('estimate') && typeof estimate === 'number') ||
-    (show('checklist') && progress) ||
-    votesBit ||
-    (show('comments') && commentsBit) ||
-    (show('assignee') && assignee);
+  const head = slotBits('head', true);
+  const headEnd = slotBits('headEnd', true);
+  const body = slotBits('body');
+  const foot = slotBits('foot');
   return (
     <div className={`${FRAME} flex-col gap-2 px-3 py-2.5`} style={frame}>
       {presenceTag}
-      {head ? (
+      {head.length || headEnd.length || ownColour ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {show('type') ? <TypeChip glyph={type.glyph} label={type.label} accent={accent} /> : null}
-          {show('key') ? <KeyTag itemKey={item.key} accent={accent} /> : null}
+          {head}
           {ownColour ? <ColourDot colour={ownColour} /> : null}
-          {show('priority') && isPriority(priority) ? (
-            <span className="ml-auto">
-              <PrioritySignal priority={priority} label />
-            </span>
+          {headEnd.length ? (
+            <span className="ml-auto flex items-center gap-1.5">{headEnd}</span>
           ) : null}
         </div>
       ) : null}
@@ -257,23 +313,13 @@ export function PlanCardFace({
         {titleText(3, 14)}
         {flag}
       </div>
-      {show('parent') && parent ? (
+      {body.length ? (
         <div
-          className="flex min-w-0 items-center gap-1 text-[11px] font-medium"
+          className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {parentColour ? (
-            <ColourDot colour={parentColour} />
-          ) : (
-            <PlanTypeGlyph glyph="project" size={11} />
-          )}
-          <span className="truncate">{itemTitle(parent)}</span>
+          {body}
         </div>
-      ) : null}
-      {show('description') && typeof description === 'string' && description.trim() ? (
-        <p className="line-clamp-2 text-[12px] leading-snug" style={{ color: palette.muted }}>
-          {description}
-        </p>
       ) : null}
       {onCard.length > 0 ? (
         <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
@@ -299,27 +345,10 @@ export function PlanCardFace({
           ))}
         </dl>
       ) : null}
-      {show('labels') && labels.length > 0 ? <LabelChips labels={labels} /> : null}
-      {footer ? (
+      {foot.length || loneVote ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
-          {show('start') && typeof start === 'string' ? (
-            <StartPill start={start} palette={palette} />
-          ) : null}
-          {show('due') && typeof due === 'string' ? (
-            <DuePill due={due} done={!!muted} palette={palette} />
-          ) : null}
-          {show('estimate') && typeof estimate === 'number' ? (
-            <MetaPill palette={palette} label={`Estimate ${estimate}`}>
-              <PlanTypeGlyph glyph="cube" size={11} />
-              <span aria-hidden>{estimate}</span>
-            </MetaPill>
-          ) : null}
-          {show('checklist') && progress ? (
-            <ChecklistPill progress={progress} palette={palette} />
-          ) : null}
-          {commentsBit}
-          {votesBit}
-          {avatar}
+          {foot}
+          {loneVote}
         </div>
       ) : null}
     </div>

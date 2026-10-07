@@ -6,6 +6,7 @@
 import { ChipField } from '@/components/primitives/ChipField';
 import { CheckIcon, CloseIcon, PlusIcon, Select, TextInput, TextArea } from '@livediagram/ui';
 import { useEffect, useRef, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import {
   ESTIMATE_POINTS,
   PRIORITIES,
@@ -18,7 +19,9 @@ import {
 // One undo step per pause in typing (blueprint DEFAULTS D8).
 export const ITEM_EDIT_DEBOUNCE_MS = 400;
 
-type Save = (value: ItemFieldValue | undefined) => void;
+// A save may report whether it landed: false (refused, by the store or the api) puts the field back to what is
+// saved, so it never shows a value nobody kept.
+type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
 // Text that saves when typing pauses, and when it loses focus.
 export function DebouncedText({
@@ -31,10 +34,13 @@ export function DebouncedText({
   onSave,
   className,
   label,
+  maxLength,
 }: {
   id: string;
   value: string;
   multiline?: boolean;
+  // The most characters the field takes: typing stops there, and a count shows near it.
+  maxLength?: number;
   placeholder?: string;
   required?: boolean;
   disabled: boolean;
@@ -46,6 +52,8 @@ export function DebouncedText({
 }) {
   const [draft, setDraft] = useState(value);
   const savedRef = useRef(value);
+  // The saved value as last received, to go back to when a save is refused.
+  const valueRef = useLatest(value);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Someone else's change lands when this field is not being typed in.
   useEffect(() => {
@@ -60,7 +68,12 @@ export function DebouncedText({
     const next = required ? text.trim() : text;
     if (next === savedRef.current || (required && !next)) return;
     savedRef.current = next;
-    onSave(next === '' ? undefined : next);
+    void Promise.resolve(onSave(next === '' ? undefined : next)).then((ok) => {
+      // Refused: back to what is saved, unless a newer edit is already on its way.
+      if (ok !== false || savedRef.current !== next) return;
+      savedRef.current = valueRef.current;
+      setDraft(valueRef.current);
+    });
   };
   useEffect(
     () => () => {
@@ -73,6 +86,7 @@ export function DebouncedText({
     value: draft,
     placeholder,
     disabled,
+    maxLength,
     'aria-label': label,
     onChange: (e: { target: { value: string } }) => {
       const text = e.target.value;
@@ -82,18 +96,38 @@ export function DebouncedText({
     },
     onBlur: () => flush(draft),
   };
+  // Near the limit, how many characters are left (from 90% of it), so the stop never surprises.
+  const left = maxLength === undefined ? null : maxLength - draft.length;
+  const count =
+    left !== null && maxLength !== undefined && draft.length >= maxLength * 0.9 ? (
+      <span
+        aria-live="polite"
+        className={`mt-1 block text-right text-[11px] tabular-nums ${left === 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-400 dark:text-slate-400'}`}
+      >
+        {left === 0
+          ? `${maxLength} characters, the most it takes`
+          : `${left} ${left === 1 ? 'character' : 'characters'} left`}
+      </span>
+    ) : null;
   // A caller's own look replaces the shared field (the item panel's large title).
-  if (className) {
-    return multiline ? (
+  const field = className ? (
+    multiline ? (
       <textarea {...common} className={className} />
     ) : (
       <input {...common} className={className} />
-    );
-  }
-  return multiline ? (
+    )
+  ) : multiline ? (
     <TextArea {...common} compact className="min-h-28 resize-y" />
   ) : (
     <TextInput {...common} compact />
+  );
+  return count ? (
+    <div>
+      {field}
+      {count}
+    </div>
+  ) : (
+    field
   );
 }
 

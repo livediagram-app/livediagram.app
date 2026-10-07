@@ -12,6 +12,7 @@ import {
 } from '@livediagram/document';
 import {
   EMPTY_ITEM_STORE,
+  ITEM_TITLE_MAX,
   applyItemWrite,
   asUndoWrite,
   inverseItemWrites,
@@ -64,6 +65,27 @@ export type PlanItems = {
 // "Editor slice"): loaded once the document is, written optimistically through the same pure
 // transitions the api applies, kept live by the room's `items` op, and refetched on a revision gap,
 // a reconnect or a resync. Every write but a vote is undoable through `pushUndo`.
+// What a refused change says, by its reason (the store's or the api's), so a too-long field is named, not a
+// generic failure.
+export function refusalMessage(code: string): string {
+  switch (code) {
+    case 'title_too_long':
+      return `That title is too long: a card title holds up to ${ITEM_TITLE_MAX} characters`;
+    case 'title_required':
+      return 'A card needs a title';
+    case 'fields_too_large':
+      return 'That card is too large to save: shorten its description or fields';
+    case 'fields_too_many':
+      return 'That card has too many fields to save';
+    case 'status_excluded':
+      return 'That card’s type doesn’t use that state';
+    case 'field_value_invalid':
+      return 'That value is too long or isn’t one this field takes';
+    default:
+      return "Couldn't save that change";
+  }
+}
+
 export function usePlanItems(opts: {
   documentId: string | null;
   // Loads once the document has hydrated.
@@ -192,7 +214,9 @@ export function usePlanItems(opts: {
       if (!s || !by) return { ok: false, made: [] };
       const local = applyItemWrite(storeRef.current, write, { now: Date.now(), by });
       if (!local.ok) {
+        // Refused before it is sent: nothing changes, and the person is told why (the field goes back).
         console.warn('[items] items.rejected', { error: local.error });
+        callbacks.current.onError(refusalMessage(local.error));
         return { ok: false, made: [] };
       }
       storeRef.current = local.state;
@@ -204,12 +228,15 @@ export function usePlanItems(opts: {
         return { ok: true, made: answer.upserts };
       } catch (err) {
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
+        const code = (err as { code?: string }).code;
         callbacks.current.onError(
-          (err as { code?: string }).code === 'items_full'
+          code === 'items_full'
             ? 'This document already holds the most items it can'
             : isVoteLimitError(err)
               ? VOTE_LIMIT_MESSAGE
-              : "Couldn't save that change",
+              : code
+                ? refusalMessage(code)
+                : "Couldn't save that change",
         );
         void load();
         return { ok: false, made: [] };

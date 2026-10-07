@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import {
   SWIMLANE_BY,
   laneFieldsOf,
+  swimlaneGroupingsFor,
   type ItemTypeDef,
   type LaneFieldKind,
   type SwimlaneBy,
@@ -62,22 +63,41 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   text: 'note',
 };
 
-// The Swimlanes grid: built in, then any field the document's types offer, in one grid (one grouping each).
+// The Swimlanes grid: built in, then any field the shown card types offer, in one grid (one grouping each).
 export function SwimlaneTiles({
   by,
   field,
   types,
+  allTypes,
+  noNone,
   onPick,
 }: {
   by: SwimlaneBy;
   field: string | undefined;
+  // The card types the board or chart shows: only what they offer is listed.
   types: readonly ItemTypeDef[];
+  // Every type of the document, to name a field in use that the shown types no longer offer.
+  allTypes?: readonly ItemTypeDef[];
+  // Leaves out None (Cards by Field always groups).
+  noNone?: boolean;
   // A built-in grouping (no field), or a field's id with `field`.
   onPick: (by: SwimlaneBy, field?: string) => void;
 }) {
+  // The fields the shown types offer, and the one in use (from every type) when they no longer offer it.
+  const lanes = laneFieldsOf(types);
+  if (by === 'field' && field && !lanes.some((f) => f.id === field)) {
+    const kept = laneFieldsOf(allTypes ?? types).find((f) => f.id === field);
+    if (kept) lanes.push(kept);
+  }
   return (
     <MenuTileGrid cols={3} fitRows>
-      {SWIMLANE_BY.filter((s) => s !== 'field').map((s) => (
+      {/* What the shown types offer, and the grouping in use even when they no longer offer it. */}
+      {SWIMLANE_BY.filter(
+        (s) =>
+          s !== 'field' &&
+          !(noNone && s === 'none') &&
+          (s === by || swimlaneGroupingsFor(types).includes(s)),
+      ).map((s) => (
         <MenuTile
           key={s}
           icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
@@ -86,7 +106,7 @@ export function SwimlaneTiles({
           onClick={() => onPick(s)}
         />
       ))}
-      {laneFieldsOf(types).map((f) => (
+      {lanes.map((f) => (
         <MenuTile
           key={f.id}
           icon={<PlanTypeGlyph glyph={LANE_KIND_GLYPHS[f.kind]} size={16} />}

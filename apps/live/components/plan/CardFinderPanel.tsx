@@ -8,8 +8,17 @@
 // Plan mode's bottom-right cluster, like Card Types and the Trash.
 import { useMemo, useState } from 'react';
 import {
+  CARD_SEARCH_FILTERS_MAX,
   findCards,
   isOffBoard,
+  isPriority,
+  itemAssignee,
+  searchCards,
+  searchFields,
+  searchFilterLabel,
+  searchValues,
+  type CardSearchFilter,
+  type SwimlaneBy,
   statusLabel,
   typeIn,
   itemTitle,
@@ -22,12 +31,26 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { usePlan } from './PlanContext';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { AddFilterPicker } from './AddFilterPicker';
+import { PersonDisc } from './PersonDisc';
+import { PrioritySignal } from './plan-card-parts';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
 // The most rows drawn at once; a search narrows the rest.
 const CARD_FINDER_ROWS_MAX = 200;
 
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
+
+const filterKey = (f: { by: SwimlaneBy; field?: string | undefined }) =>
+  f.by === 'field' ? `field:${f.field}` : f.by;
+
+// A due date as the row reads it: "12 Oct".
+const shortDate = (iso: string) => {
+  const d = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+};
 
 const SHOWS: { id: CardFinderShow; label: string }[] = [
   { id: 'all', label: 'All Cards' },
@@ -46,6 +69,8 @@ export function CardFinderPanel({
   const [show, setShow] = useState<CardFinderShow>('all');
   // The card types narrowed to: none is every type. The person's own, while the panel is open.
   const [types, setTypes] = useState<ReadonlySet<string>>(() => new Set());
+  // Field filters (a state, an assignee, a priority...), the person's own as the types are.
+  const [filters, setFilters] = useState<readonly CardSearchFilter[]>([]);
   // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
   const [finePointer] = useState(
     () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches,
@@ -63,7 +88,12 @@ export function CardFinderPanel({
     all: ofTypes.length,
     'off-board': ofTypes.filter((it) => isOffBoard(it, boardStatuses)).length,
   };
-  const found = findCards(ofTypes, { query, show, boardStatuses, typeLabel });
+  const searched = findCards(ofTypes, { query, show, boardStatuses, typeLabel });
+  // The field filters (docs/specs/026-plan/items.md "Finding a card"), as Card Search's: each must match.
+  const found = filters.length
+    ? searchCards(searched, filters, plan.types, plan.statusNames)
+    : searched;
+  const filterFields = searchFields(found, filters, plan.types).filter((f) => f.by !== 'type');
   const toggleType = (id: string) =>
     setTypes((prev) => {
       const next = new Set(prev);
@@ -77,12 +107,12 @@ export function CardFinderPanel({
       helpArticle="planCards"
       position={null}
       defaultCorner="bottom-right"
-      width="w-[calc(100vw-2rem)] sm:w-96"
+      width="w-[calc(100vw-2rem)] sm:w-[44rem]"
       onMoveTo={() => {}}
       popoverOpen
       popoverAnchor={popoverAnchor}
       asPopover
-      popoverWidth="w-[22rem]"
+      popoverWidth="w-[calc(100vw-2rem)] sm:w-[44rem]"
       dismissOnOutside
       onPopoverClose={onPopoverClose}
     >
@@ -168,18 +198,73 @@ export function CardFinderPanel({
             </button>
           ) : null}
         </div>
+        {/* Field filters: chips, each with a cross, and Add Filter (a field, then a value with its count). */}
+        <div role="group" aria-label="Filters" className="flex flex-wrap items-center gap-1.5">
+          {filters.map((f, i) => {
+            const label = searchFilterLabel(f, plan.items.values(), plan.types, plan.statusNames);
+            return (
+              <span
+                key={`${f.by}:${f.field ?? ''}:${f.key}`}
+                className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pl-2.5 pr-1 text-[12px] text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/10 dark:text-brand-100 dark:ring-brand-500/30"
+              >
+                <span className="font-medium">{label.field}:</span>
+                <span>{label.value}</span>
+                <button
+                  type="button"
+                  aria-label={`Remove ${label.field}: ${label.value}`}
+                  className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition hover:bg-brand-100 dark:hover:bg-brand-500/20"
+                  onClick={() => setFilters(filters.filter((_, j) => j !== i))}
+                >
+                  <CloseIcon size={10} />
+                </button>
+              </span>
+            );
+          })}
+          {filters.length < CARD_SEARCH_FILTERS_MAX && filterFields.length > 0 ? (
+            <AddFilterPicker
+              fields={filterFields.map((f) => ({ id: filterKey(f), label: f.label }))}
+              valuesOf={(id) => {
+                const f = filterFields.find((x) => filterKey(x) === id);
+                return f ? searchValues(found, f, plan.types, plan.statusNames) : [];
+              }}
+              onPick={(id, key) => {
+                const f = filterFields.find((x) => filterKey(x) === id);
+                if (f)
+                  setFilters([
+                    ...filters,
+                    { by: f.by, ...(f.field ? { field: f.field } : {}), key },
+                  ]);
+              }}
+            />
+          ) : null}
+          {filters.length > 0 ? (
+            <button
+              type="button"
+              className="ml-auto cursor-pointer rounded-md px-1.5 py-0.5 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              onClick={() => setFilters([])}
+            >
+              Clear Filters
+            </button>
+          ) : null}
+        </div>
         {found.length === 0 ? (
-          <p className="px-2 py-6 text-center text-[12px] leading-snug text-slate-500 dark:text-slate-400">
+          <p className="flex h-[min(60vh,32rem)] items-center justify-center px-2 text-center text-[12px] leading-snug text-slate-500 dark:text-slate-400">
             {live.length === 0
               ? 'No cards yet. Add one from a board, or drag one in from the palette.'
               : query.trim()
                 ? 'No cards match that search.'
-                : types.size > 0 && ofTypes.length === 0
-                  ? 'No cards of those types yet.'
-                  : 'Every card is on a board here.'}
+                : filters.length > 0
+                  ? 'No cards match these filters.'
+                  : types.size > 0 && ofTypes.length === 0
+                    ? 'No cards of those types yet.'
+                    : 'Every card is on a board here.'}
           </p>
         ) : (
-          <ul aria-label="Cards" className="flex max-h-80 flex-col gap-0.5 overflow-y-auto">
+          <ul
+            aria-label="Cards"
+            // The same height however many cards: the panel never shrinks as a search narrows it.
+            className="flex h-[min(60vh,32rem)] flex-col gap-0.5 overflow-y-auto"
+          >
             {found.slice(0, CARD_FINDER_ROWS_MAX).map((it) => {
               const type = typeIn(plan.types, it.type);
               const status = typeof it.fields['status'] === 'string' ? it.fields['status'] : null;
@@ -210,8 +295,26 @@ export function CardFinderPanel({
                       </span>
                       <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
                         {type.label} #{it.key}
-                        {status ? ` · ${statusLabel(status, plan.statusNames)}` : ''}
                       </span>
+                    </span>
+                    {/* The wide panel's extra columns: where it stands, how urgent, when due, and whose. */}
+                    <span className="hidden shrink-0 items-center gap-2 sm:flex">
+                      {isPriority(it.fields['priority']) ? (
+                        <PrioritySignal priority={it.fields['priority']} label />
+                      ) : null}
+                      {typeof it.fields['due'] === 'string' ? (
+                        <span className="text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                          Due {shortDate(it.fields['due'])}
+                        </span>
+                      ) : null}
+                      <span className="max-w-[9rem] truncate rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {status ? statusLabel(status, plan.statusNames) : 'No status'}
+                      </span>
+                      {itemAssignee(it) ? (
+                        <PersonDisc person={itemAssignee(it)!} />
+                      ) : (
+                        <span aria-hidden className="h-5 w-5" />
+                      )}
                     </span>
                   </button>
                   {plan.canEdit ? (

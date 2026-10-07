@@ -121,12 +121,18 @@ elements a team plans beside its boards come in Content and Tools:
 | Boards         | Board (Blank), Kanban, To-do List, Sprint, Retro, Roadmap, Bug triage, Week, Archive, All Cards (always last), each with its own picture |
 | Widgets        | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas                                           |
 | Metrics        | The read-out widgets free on the canvas, over every card ([Plan views](plan-views.md#metrics))                                           |
-| Visualisations | Gantt Chart, Due Calendar, Workload by Person, Status Breakdown, Priority by Status ([Plan views](plan-views.md#visualisations))         |
+| Visualisations | Gantt Chart, Due Calendar, Cards by Field, Priority by Status, Card Search ([Plan views](plan-views.md#visualisations))                  |
 | Content        | Sticky Note, Text, Image, Page                                                                                                           |
 | Tools          | Temperature, Estimate, Idea Box, Picker, Timer, Stopwatch                                                                                |
 
-- A **board tile** places a Plan board with that preset's set-up, empty: its columns have statuses of their own
-  ([Plan board](plan-board.md#the-board-set-up)).
+- A **board tile** places a Plan board with that preset's set-up: a column takes the status the tab already has of
+  its name, and any other column a status of its own, so it starts empty
+  ([Plan board](plan-board.md#the-board-set-up), "One name, one status").
+- **A preset brings its card types**: a Bug Triage board takes **Bug** cards (and Tasks), a Sprint board
+  **Story** cards (and Tasks and Actions). Placing one adds each such type the document lacks (by id) to its card
+  types, as one change: Bug (red, the bug glyph) and Story (violet, the story glyph), each with a Task's fields.
+  Only a board that appears while the document is open adds them (placed by this person, a template or a
+  collaborator); the boards a document opens with never do, so a type someone deleted stays deleted.
 - A **card tile** never puts anything on the canvas. Dragged and dropped (or pressed, then placed) into a board's
   column, it makes a new item of that type there (titled "New task", "New bug"...), at the drop point between
   cards and in the row it lands in (taking the row's field, its type kept); it opens at once in its panel, its title selected to be named ([Open an item](plan-board.md)).

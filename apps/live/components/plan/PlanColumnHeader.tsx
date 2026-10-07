@@ -21,6 +21,7 @@ export function PlanColumnHeader({
   canEdit,
   onChange,
   onMoveCards,
+  onTrashCards,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -28,6 +29,7 @@ export function PlanColumnHeader({
   canEdit: boolean;
   onChange: (next: PlanBoardSetup, part: string) => void;
   onMoveCards: (fromStatus: string, toStatus: string) => void;
+  onTrashCards: (status: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   // Opened for a column just added: its name is selected, ready to type over.
@@ -104,10 +106,10 @@ export function PlanColumnHeader({
           getAnchor={getAnchor}
           setup={setup}
           column={column}
-          cardCount={col.count}
           selectName={fresh}
           onChange={onChange}
           onMoveCards={onMoveCards}
+          onTrashCards={onTrashCards}
           onClose={(restoreFocus) => {
             setOpen(false);
             setFresh(false);

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item } from '@livediagram/items';
 import { ItemChildCards, LinkedCardGroup } from './ItemChildCards';
@@ -43,9 +43,9 @@ describe('ItemChildCards', () => {
       item('c3', 3, 'task', { status: 'review', archived: true }),
     ]);
     expect(screen.getByRole('heading', { name: /Child Cards/ }).textContent).toContain('2');
-    expect(screen.getByText('In Progress')).toBeTruthy();
+    expect(within(screen.getByRole('list')).getByText('In Progress')).toBeTruthy();
     // A status no board names reads as itself.
-    expect(screen.getByText('review')).toBeTruthy();
+    expect(within(screen.getByRole('list')).getByText('review')).toBeTruthy();
     expect(screen.getByText('Archived')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open #2 Card 2, In Progress' }));
     expect(onOpen).toHaveBeenCalledWith('c2');

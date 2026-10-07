@@ -31,8 +31,15 @@ Stored on the element, shared by everyone, undone like any element edit:
   has 1 to 12 columns. The first column is where new items land when no column is chosen.
 - **Done column**: optionally one column is marked done: its cards draw muted and count as finished in the
   header's progress.
-- **Swimlanes**: none, or grouped by assignee, type, priority, parent, status, or **any field** the document's
-  card types offer (see [Swimlanes by a field](#swimlanes-by-a-field)).
+- **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) left of Maximise,
+  for someone who may edit. It opens a popover under it holding the element menu's **Board** and **Cards** settings,
+  each under a heading that opens it, one at a time (Board when it opens; opening one closes the other); it scrolls when taller than the window. A press
+  outside or Escape closes it. Telemetry: `Plan` · `Opened` · `BoardSettings`.
+- **Swimlanes**: none, or grouped by assignee, type, priority, parent, status, or **any field** the card types the
+  board shows offer (see [Swimlanes by a field](#swimlanes-by-a-field)). The menu lists only what those types offer:
+  None and Status always, Type when it shows more than one type, Assignee, Priority, Parent and each field when one
+  of its types has it; a grouping already in use stays listed (and pressed) even once its types no longer offer it.
+  A Gantt chart's Swimlanes do the same for the card types it draws.
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
   checklist progress). Title always shows.
 - **Voting**: off, or on with an optional number of votes each person may spend on this board.
@@ -60,8 +67,14 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **A column's own settings** sit on the column: a cog at the far right of its head (shown on hover and focus,
   always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (none or
   one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After** and
-  **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
-  It**); the board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
+  **Remove Column**. Removing a column whose state holds cards (out of the Trash, on any board) first opens
+  a popover anchored to Remove Column: "Remove {Name}?", "Its N cards are in {Name}, on every board that shows it.
+  Where should they go?", and two option cards, one picked: **Move to Another Column** (a menu of the board's other
+  columns, the first picked; the default) or **Move to the Trash** ("You can restore them from the Trash."). **Remove
+  Column** in it (red, a bin) moves the cards as picked, then removes the column; **Cancel** or Escape keeps it.
+  Moving to the Trash moves every card of that state and announces "N cards moved to the Trash"; a card whose type
+  leaves out the target column's state stays, as a move does. A column whose state holds no card is removed at
+  once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
   opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
   moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
@@ -70,8 +83,10 @@ Where each is set, so a setting lives with what it changes, never in one central
   [Presentation mode](../012-collaboration/presentation-mode.md#board-slides); **Swimlanes**, one grid: None,
   Assignee, Type, Priority, Project, Status, then a tile per groupable field, named by the field and drawn
   with its kind's glyph) and **Cards** (**Card Types**, below; **Card Size**: Minimal, Compact or Detailed,
-  below; **Show on Cards**: what each card face shows besides its title, a tile per field pressed on or off, with
-  a one-line hint for Minimal and Compact). A field the chosen size cannot draw keeps its setting but its tile is
+  below; **Show on Cards**: what each card face shows besides its title, a tile per field the board's card types offer
+  (the card number and type always; a field already shown stays listed) pressed on or off, with
+  a one-line hint for Minimal and Compact; a card shows a field only when its type's Display also does,
+  [Card display](item-types.md#card-display)). A field the chosen size cannot draw keeps its setting but its tile is
   dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (at
   least one stays on; none named is every type). A board shows only cards of those types, and takes only those:
@@ -90,7 +105,8 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and the
   **column picker**; its first pick or name makes the first column.
 - **The column picker** is how every column is added (the empty board, and a column's **+ Add Column After**):
-  - **Use an Existing Status**: a chip per status the document's other boards use that this board lacks, named as
+  - **Use an Existing Status**: a chip per status the document's other boards use, or a card is in (out of the
+    Trash) though no board names it, that this board lacks, named as
     the first board that names it does, in the order the document's boards give them (the open tab's first),
     one chip per name (ignoring case and spacing). A chip adds a column for that status, so the cards already in
     it show there. With two or more chips, **Add All** adds them all, in order, as one change (up to the 12-column
@@ -110,9 +126,16 @@ Where each is set, so a setting lives with what it changes, never in one central
     settings). A chip or Add Column then moves the settings to the new column; Add All closes them.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
-- **A board placed from the palette starts empty**: its columns get statuses of their own (the column's status
-  and a short suffix, `todo~k3f9`), so no card the document already has lands on it. Boards from a template keep
-  the template's statuses, and come with no cards. A board starts wide enough for every column side by side at
+- **One name, one status**: a document never has two statuses of the same name (compared as the column picker
+  compares them, ignoring case, spacing and punctuation). A board placed from the palette gives a column the status
+  the tab's boards already have of that name, so its cards show there too, and a status of its own (the column's
+  status and a short suffix, `todo~k3f9`) only to a name no status has yet. A board's first column, typed on an
+  empty board, does the same. Renaming a column to a name another status has switches the column to that status
+  when its own status holds no cards (out of the Trash), the cards of that status then showing in it; when its own
+  status holds cards, or the board already has a column for that status, the rename is refused and the name put
+  back, with a note under it: "A {Name} state already exists. Add it from Add Column, so its cards show here."
+  Boards from a template keep the template's statuses, and come with no cards. A board starts wide enough for every
+  column side by side at
   its narrowest (220px a slot, with the gaps between), never narrower than its default, so no new board scrolls. Archive and All Cards boards show cards by what they are, not by
   status, and keep their columns.
 - **Voting** and **Hide writing** come with a board's template (the Retro's are on); they have no menu control.
@@ -317,6 +340,15 @@ In Plan mode:
   column's new name, a moved column, a widget added), so two people editing different columns or settings
   both keep their edits and everyone sees the same board ([Collaboration race
   hardening](../012-collaboration/collab-race-hardening.md#phase-6-shipped-a-plan-boards-set-up-travels-as-deltas)).
+
+### Cards move visibly
+
+- When a board's cards change place, by this person's move or reorder or a collaborator's change arriving, every
+  card that moved glides from where it was to where it now sits (260 ms, easing out) instead of jumping, so
+  everyone sees where a card went. A card that appears or goes does not glide; the card being dragged does not
+  (it is under the pointer); a change moving more than 40 cards at once (a filter, a swimlane change) snaps.
+- Positions are read within the board (layout units), so panning or zooming the canvas never reads as a move.
+  Reduced motion snaps. The measuring runs only when the board's arrangement of cards changes.
 
 ### Keyboard
 

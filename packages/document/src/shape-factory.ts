@@ -564,7 +564,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'plan-board') return { ...base, planBoard: presetSetup('blank') };
   if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
   // Plan view: Status Breakdown unless its caller names the view.
-  if (kind === 'plan-view') return { ...base, planView: { view: 'status-mix' } };
+  if (kind === 'plan-view') return { ...base, planView: { view: 'workload' } };
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the starting content each one shows on drop,
   // so a new one reads as what it is. Colours come from the caller
   // (createComponent maps the theme); without one the renderer's fallbacks

@@ -8,6 +8,7 @@ import {
   fileField,
   moveField,
   moveTab,
+  placeField,
   removeField,
   withoutEmptyTabs,
   type LayoutDraft,
@@ -109,5 +110,33 @@ describe('kept tabs', () => {
       { id: 't-x', label: 'X', fields: [] },
     ]);
     expect(kept.map((t) => t.id)).toEqual([OVERVIEW_TAB_ID]);
+  });
+});
+
+describe('placeField (a handle drag)', () => {
+  it('drops a Details field at a slot among the movable ones, Status staying first', () => {
+    expect(detailFields(placeField(draft, null, 'priority', 0))).toEqual([
+      'status',
+      'priority',
+      'assignee',
+    ]);
+  });
+
+  it('leaves tabbed fields where they are in the type order', () => {
+    const next = placeField(draft, null, 'assignee', 1);
+    expect(detailFields(next)).toEqual(['status', 'priority', 'assignee']);
+    expect(next.tabs).toBe(draft.tabs);
+    expect(next.fields.indexOf('description')).toBe(draft.fields.indexOf('description'));
+  });
+
+  it('reorders within a tab, clamping past the end', () => {
+    const next = placeField(draft, OVERVIEW_TAB_ID, 'description', 9);
+    expect(next.tabs[0]!.fields).toEqual(['due', 'description']);
+  });
+
+  it('leaves the draft alone for the same slot or a field not movable there', () => {
+    expect(placeField(draft, null, 'assignee', 0)).toBe(draft);
+    expect(placeField(draft, null, 'status', 1)).toBe(draft);
+    expect(placeField(draft, 't-x', 'priority', 0)).toBe(draft);
   });
 });

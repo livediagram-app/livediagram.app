@@ -1,19 +1,23 @@
 // The column picker's rules (docs/specs/026-plan/plan-board.md "The column picker"): which of the document's
 // statuses a board can still take as columns, whether a typed name is one of them, and the columns they make. A
 // column made for an existing status keeps that status, so the cards already in it show on this board too.
-import { PLAN_COLUMNS_MAX, type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
+import {
+  PLAN_COLUMNS_MAX,
+  isTrashed,
+  itemStatus,
+  statusKey,
+  statusLabel,
+  type Item,
+  statusNamed,
+  type PlanBoardSetup,
+  type PlanColumn,
+} from '@livediagram/items';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 
 export type StatusPick = { status: string; name: string };
 
-// A name as the picker compares it: case and spacing (and punctuation) aside, so "To do", "to-do" and "TO  DO" match.
-// Letters and digits of any script count ("完成", "Готово"), so a name in any language is matched, not dropped.
-export function statusKey(name: string): string {
-  return name
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '');
-}
+// A name as the picker compares it (case, spacing and punctuation aside): shared with board placement and renames.
+export { statusKey };
 
 // The statuses the document's boards use (in their order, the open tab's first) that this board has no column
 // for, one per name: the first board's name and status win.
@@ -32,6 +36,23 @@ export function missingStatuses(
     out.push({ status, name });
   }
   return out;
+}
+
+// The statuses a column can be made for: those the document's boards name, then any a card is in that no board names
+// (a board with no columns can still pick up its cards' statuses), named as a status with no column reads.
+export function pickableStatuses(
+  statusNames: ReadonlyMap<string, string>,
+  items: Iterable<Item>,
+): ReadonlyMap<string, string> {
+  let out: Map<string, string> | null = null;
+  for (const it of items) {
+    if (isTrashed(it)) continue;
+    const s = itemStatus(it);
+    if (!s || statusNames.has(s) || out?.has(s)) continue;
+    out ??= new Map(statusNames);
+    out.set(s, statusLabel(s));
+  }
+  return out ?? statusNames;
 }
 
 // What a typed name would do: use an existing status, clash with a column the board has, or make a new one.
@@ -85,4 +106,31 @@ export function addStatusColumns(
     after = added.column.id;
   }
   return next;
+}
+
+// What renaming a column to `name` does (docs/specs/026-plan/plan-board.md "The board set-up": one name, one
+// status). A name no other status has renames it. A name another status already has (`statusNames`, the
+// document's): when this board already has a column for that status, a clash (the name stays); when the column's
+// own status holds no cards (`hasCards` false), the column switches to that status, its cards showing here; when it
+// holds cards, a clash too, as switching would leave them on no column.
+export type ColumnRename =
+  | { kind: 'rename' }
+  | { kind: 'reuse'; status: string; name: string }
+  | { kind: 'clash'; name: string };
+
+export function columnRename(
+  setup: Pick<PlanBoardSetup, 'columns'>,
+  columnId: string,
+  name: string,
+  statusNames: ReadonlyMap<string, string>,
+  hasCards: boolean,
+): ColumnRename {
+  const column = setup.columns.find((c) => c.id === columnId);
+  if (!column) return { kind: 'rename' };
+  const others = [...statusNames].filter(([status]) => status !== column.status);
+  const named = statusNamed(name, others);
+  if (!named) return { kind: 'rename' };
+  if (setup.columns.some((c) => c.status === named.status) || hasCards)
+    return { kind: 'clash', name: named.name };
+  return { kind: 'reuse', status: named.status, name: named.name };
 }

@@ -14,6 +14,8 @@ import {
   ITEM_TYPE_CATALOGUE_VERSION,
   type ItemTypeCatalogue,
   type ItemTypeDef,
+  restoredCatalogue,
+  ITEM_TYPES_MAX,
 } from '@livediagram/items';
 import { saveItemTypes } from '@/lib/api/item-types';
 import { debugLog } from '@/lib/debug-log';
@@ -27,6 +29,9 @@ export type ItemTypesSlice = {
   // Adds or replaces a type (matched by id), keeping its place.
   saveType: (type: ItemTypeDef) => void;
   deleteType: (typeId: string) => void;
+  // Types added together, as one change; any whose id the catalogue already has is skipped, and the catalogue's
+  // cap holds.
+  addTypes: (defs: readonly ItemTypeDef[]) => void;
   restoreBuiltIns: () => void;
   receive: (op: ItemTypesRoomOp) => void;
 };
@@ -94,14 +99,26 @@ export function useItemTypes(opts: {
     (typeId: string) => withTypes((ts) => (ts.length > 1 ? ts.filter((t) => t.id !== typeId) : ts)),
     [withTypes],
   );
-  const restoreBuiltIns = useCallback(() => void save(null, true), [save]);
+  // The built-ins back as they started; the document's own types stay.
+  const addTypes = useCallback(
+    (defs: readonly ItemTypeDef[]) =>
+      withTypes((ts) => {
+        const fresh = defs.filter((d) => !ts.some((t) => t.id === d.id));
+        return [...ts, ...fresh].slice(0, Math.max(ts.length, ITEM_TYPES_MAX));
+      }),
+    [withTypes],
+  );
+  const restoreBuiltIns = useCallback(
+    () => void save(restoredCatalogue(latest.current.catalogue), true),
+    [latest, save],
+  );
   const receive = useCallback(
     (op: ItemTypesRoomOp) => setCatalogue(readItemTypeCatalogue(op.itemTypes)),
     [setCatalogue],
   );
 
   return useMemo(
-    () => ({ catalogue, types, saveType, deleteType, restoreBuiltIns, receive }),
-    [catalogue, types, saveType, deleteType, restoreBuiltIns, receive],
+    () => ({ catalogue, types, saveType, deleteType, addTypes, restoreBuiltIns, receive }),
+    [catalogue, types, saveType, deleteType, addTypes, restoreBuiltIns, receive],
   );
 }

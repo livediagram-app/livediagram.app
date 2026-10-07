@@ -28,6 +28,7 @@ import {
   typeAllowsStatus,
   typeIn,
   typesOf,
+  withDefaultStatuses,
   makeItem,
   newItemId,
   validateClear,
@@ -298,8 +299,11 @@ async function create(ctx: RouteContext, documentId: string): Promise<Response> 
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readCreate(body, caller.owner);
-  if (typeof input === 'string') return rejected(input);
+  const read = readCreate(body, caller.owner);
+  if (typeof read === 'string') return rejected(read);
+  // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
+  // the document is already read for the caller, so this costs no query.
+  const input = withDefaultStatuses([read], typesOf(caller.doc?.itemTypes))[0]!;
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, documentId, made.items, [], made.rev);

@@ -4,7 +4,7 @@
 export const ITEMS_MAX = 2000;
 export const ITEM_FIELDS_BYTES = 16_384;
 export const ITEM_FIELDS_MAX = 64;
-export const ITEM_TITLE_MAX = 200;
+export const ITEM_TITLE_MAX = 500;
 export const ITEM_DESCRIPTION_MAX = 10_000;
 export const ITEM_LABELS_MAX = 12;
 export const ITEM_LABEL_MAX = 32;

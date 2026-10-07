@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cardFieldsFor,
+  swimlaneGroupingsFor,
   laneDropPatch,
   laneFieldOf,
   laneFieldsOf,
@@ -200,5 +202,23 @@ describe('normalising a field lane', () => {
         swimlaneField: 'f-x',
       })?.swimlaneField,
     ).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Swimlanes" and "The board set-up": only what the shown card types offer.
+describe('options for the card types a board or chart shows', () => {
+  const note = ITEM_TYPES.find((t) => t.id === 'note')!;
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+
+  it('lists only the lane fields, groupings and card fields those types offer', () => {
+    const noDue = { ...note, fields: note.fields.filter((f) => f !== 'due' && f !== 'assignee') };
+    expect(laneFieldsOf([noDue]).some((f) => f.id === 'due')).toBe(false);
+    expect(swimlaneGroupingsFor([noDue])).not.toContain('assignee');
+    expect(swimlaneGroupingsFor([noDue])).not.toContain('type');
+    expect(swimlaneGroupingsFor([noDue, task])).toEqual(
+      expect.arrayContaining(['type', 'assignee']),
+    );
+    expect(cardFieldsFor([noDue])).not.toContain('assignee');
+    expect(cardFieldsFor([noDue])).toEqual(expect.arrayContaining(['key', 'type']));
   });
 });

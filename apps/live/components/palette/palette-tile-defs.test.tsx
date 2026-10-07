@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
+import { CARD_TILE_GLYPH_PX } from './palette-plan-tiles';
 import {
   PALETTE_TILES,
   TILE_GLYPH_PX,
@@ -285,8 +286,11 @@ describe('palette tile glyph size', () => {
     (t) => [t.id, renderToStaticMarkup(<>{t.icon}</>)] as const,
   ).filter(([, svg]) => svg.includes('lvd-glyph'));
 
-  it.each(glyphTiles)('%s renders at the tile step', (_id, svg) => {
-    expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(TILE_GLYPH_PX);
+  // Plan card tiles are the one larger step: a card picture with its type's glyph on the face.
+  it.each(glyphTiles)('%s renders at the tile step', (id, svg) => {
+    expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(
+      id.startsWith('plan:card-') ? CARD_TILE_GLYPH_PX : TILE_GLYPH_PX,
+    );
   });
 });
 

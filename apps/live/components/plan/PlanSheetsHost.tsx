@@ -6,8 +6,10 @@ import { useMemo } from 'react';
 import {
   ITEM_TYPES_MAX,
   PARENT_FIELD,
+  defaultStatusOf,
   duplicateItemType,
   isArchived,
+  isTrashed,
   itemLabels,
   linkedCardsOf,
   newItemId,
@@ -57,7 +59,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     const editing =
       plan.editingTypeId === 'new' ? null : ctx.types.find((t) => t.id === plan.editingTypeId);
     if (plan.editingTypeId === 'new' || editing) {
-      const ofType = editing ? [...ctx.items.values()].filter((i) => i.type === editing.id) : [];
+      // The type's cards out of the Trash: a delete moves them there with it.
+      const ofType = editing
+        ? [...ctx.items.values()].filter((i) => i.type === editing.id && !isTrashed(i))
+        : [];
       // Duplicate: a new type filled from another (docs/specs/026-plan/item-types.md "The Card Types panel").
       const from = plan.typeTemplateId
         ? ctx.types.find((t) => t.id === plan.typeTemplateId)
@@ -76,9 +81,9 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             track('Plan', editing ? 'Changed' : template ? 'Duplicated' : 'Added', 'CardType');
             plan.closeTypeEditor();
           }}
-          onDelete={(moveTo) => {
+          onDelete={() => {
             if (!editing) return;
-            if (moveTo) for (const it of ofType) ctx.patchItem(it.id, { type: moveTo });
+            for (const it of ofType) ctx.trashItem(it.id);
             ctx.itemTypes.deleteType(editing.id);
             track('Plan', 'Deleted', 'CardType');
             ctx.announce(`${editing.label} deleted`);
@@ -118,10 +123,13 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         childCards={childCards}
         linkedGroups={linkedGroups}
         onAddLinked={(group, typeId) => {
-          // A new card of that type, already linked here, in the first status its type uses; opened next.
+          // A new card of that type, already linked here, in its type's Default State, else the first status its
+          // type uses; opened next.
           const type = typeIn(ctx.types, typeId);
           const status =
-            [...ctx.statusNames.keys()].find((st) => typeAllowsStatus(type, st)) ?? 'todo';
+            defaultStatusOf(type) ??
+            [...ctx.statusNames.keys()].find((st) => typeAllowsStatus(type, st)) ??
+            'todo';
           const id = newItemId();
           ctx.addItem({
             type: typeId,

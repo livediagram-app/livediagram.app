@@ -15,6 +15,7 @@ import {
   type ItemFieldId,
 } from '@livediagram/items';
 import { Button, CloseIcon, PlusIcon, Select, TextArea, TextInput } from '@livediagram/ui';
+import { CustomFieldKindTiles, CustomFieldPreview } from './CustomFieldKindParts';
 import { usePlan } from './PlanContext';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
@@ -26,8 +27,8 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   color: 'Colour',
   labels: 'Labels',
   estimate: 'Estimate',
-  start: 'Start date',
-  due: 'Due date',
+  start: 'Start Date',
+  due: 'Due Date',
   checklist: 'Checklist',
   parent: 'Parent',
   votes: 'Votes',
@@ -38,14 +39,18 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
 
 export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   text: 'Text',
-  longtext: 'Long text',
+  longtext: 'Long Text',
   number: 'Number',
   date: 'Date',
   checkbox: 'Checkbox',
   link: 'Link',
   choice: 'Choice',
-  card: 'Card',
+  card: 'Link to Card',
 };
+
+// A full-width dashed "add" row (Add Type, Add Field, Add Tab): plain to spot, quiet until hovered.
+export const DASHED_ADD_BUTTON =
+  'flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 py-2 text-[13px] font-medium text-slate-600 transition enabled:hover:border-brand-400 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-600 dark:text-slate-300 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/10 dark:enabled:hover:text-brand-200';
 
 export const ICON_BUTTON =
   'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-800 disabled:opacity-30 dark:text-slate-400 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-100';
@@ -157,6 +162,7 @@ export function NewFieldForm({
   onCancel: () => void;
 }) {
   const [custom, setCustom] = useState<Omit<CustomFieldDef, 'id'>>({ label: '', kind: 'text' });
+  const types = usePlan()?.types ?? ITEM_TYPES;
   const ready =
     custom.label.trim().length > 0 &&
     (custom.kind !== 'choice' || (custom.options?.length ?? 0) > 0) &&
@@ -187,29 +193,19 @@ export function NewFieldForm({
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             New Custom Field
           </p>
-          <div className="flex gap-2">
-            <TextInput
-              aria-label="New field's name"
-              placeholder="Name"
-              compact
-              value={custom.label}
-              maxLength={CUSTOM_FIELD_LABEL_MAX}
-              onChange={(e) => setCustom({ ...custom, label: e.target.value })}
-            />
-            <Select
-              aria-label="New field's kind"
-              className="w-36 shrink-0"
-              selectClassName="text-[13px]"
-              value={custom.kind}
-              onChange={(e) => setCustom({ ...custom, kind: e.target.value as CustomFieldKind })}
-            >
-              {CUSTOM_FIELD_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {CUSTOM_KIND_LABELS[k]}
-                </option>
-              ))}
-            </Select>
-          </div>
+          <TextInput
+            aria-label="New field's name"
+            placeholder="Name"
+            compact
+            value={custom.label}
+            maxLength={CUSTOM_FIELD_LABEL_MAX}
+            onChange={(e) => setCustom({ ...custom, label: e.target.value })}
+          />
+          <CustomFieldKindTiles
+            kinds={CUSTOM_FIELD_KINDS}
+            value={custom.kind}
+            onChange={(kind) => setCustom({ ...custom, kind })}
+          />
           {custom.kind === 'choice' ? (
             <TextArea
               aria-label="Options, one a line"
@@ -225,6 +221,12 @@ export function NewFieldForm({
               onChange={(linkType) => setCustom({ ...custom, linkType })}
             />
           ) : null}
+          <CustomFieldPreview
+            label={custom.label}
+            kind={custom.kind}
+            options={custom.options ?? []}
+            linkLabel={types.find((t) => t.id === custom.linkType)?.label}
+          />
         </div>
       ) : null}
       <div className="flex justify-end gap-2">
