@@ -252,15 +252,18 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Under them, **Default State**: a menu of **None** and every state still on, in board order, with a line saying
     "Cards made outside a board start here; a card added to a board takes that column's state."
   - **Display**: the card sizes as a segmented control (**Minimal**, **Compact**, **Detailed**; Compact to start),
-    then the card itself, editable in place: a real card of this type at that size, drawn large (1.35 times a
-    board's) as a board draws it, from a sample card (its title "Example {Name}", a person, High priority, due in
+    then the card itself, editable in place: a real card of this type at that size, drawn large (1.4 times, and
+    wider than, a board's: 360 wide, so a long title has room) as a board draws it, across the tab, from a sample card (its title "Example {Name}", a person, High priority, due in
     three days, a label, an estimate, a checklist two of five done, a description, three votes, two comments), on a
     board column's colour. Each **part** of the card is a dotted box, drawn even when empty (then reading its name),
     and each field's bit in it (the due pill, the avatar...) is a chip: it drags (mouse, pen or touch) to any part
-    or another place in its own, the part under the pointer lit and a line marking the place; its cross (shown on
+    or another place in its own. While it drags, a copy of the field (its glyph and name) follows the pointer, the
+    chip stays faded where it was, every part that takes it is outlined, the part under the pointer lit, and a
+    brand bar marks the place it lands; dropped on **Available Fields** (lit, reading "Drop to take it off the
+    card") it comes off; dropped anywhere else nothing changes, and Escape cancels the drag. Its cross (shown on
     hover or focus, and always on a touch screen, which has no hover, with the chip's outline) takes it off; focused, the arrow keys move it (Left and Right within its part, Up and Down to
     the part before or after) and Delete takes it off. Any field may go in any part of a size that draws it.
-    Beside the card on desktop (under it on a phone), **Available Fields**: a chip per field the type has, that
+    Under the card, **Available Fields**: a chip per field the type has, that
     this size can draw, not yet on the card ("Drag one onto the card, or press it to choose where it goes."): it
     drags onto any part, or, pressed (or Enter), opens a menu "Add {Field} to" with a row per part. Under them,
     **Reset to Default** (shown once the size differs from its default), else "Showing the default for {Name}." A
