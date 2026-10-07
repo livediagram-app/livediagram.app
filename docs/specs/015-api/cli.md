@@ -156,6 +156,9 @@ In order of precedence:
   are pushed: a changed tab name, theme or background, and a tab gone from the file, are named as not pushed, and
   nothing on the server is deleted.
 - `export --all` writes every document, read-only, for backups and docs.
+- A repository keeps its diagrams through a [repository link](../027-repositories/repository-link.md)
+  (`link`, `sync`), whose mirror files are pull files; a developer tool frames the editor through
+  `workbench open` ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 ## Previews
 

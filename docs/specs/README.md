@@ -34,6 +34,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./025-community/README.md - when working on Community: publishing documents to the public gallery, the Community app, likes, copies, and reports (moderation by reports alone)
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
+- ./027-repositories/README.md - when linking a code repository to livediagram: `livediagram.toml`, mirrors, sync and merge, git, diagram-as-code sources
 
 ## Workflow
 

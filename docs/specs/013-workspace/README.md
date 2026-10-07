@@ -8,6 +8,7 @@ Follow the references below only as needed; never upfront.
 - ./share-password.md - when working on Share password: Optional per-document password gating share-link view + edit access; the visitor's per-share-code password cache in localStorage
 - ./teams.md - when working on Teams: Teams with Admin/Member roles, email invites, Explorer section
 - ./embeds.md - when working on Read-only embeds (`/embed`): Iframe-able `/embed` share view + Copy-embed-code in Share
+- ./workbench-embeds.md - when a developer tool (Spinner, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference
 - ./tab-scoped-share-links.md - when working on Tab-scoped share links: A share link scoped to one tab; other tabs locked, enforced server-side incl. the room
 - ./share-link-expiry.md - when working on Share-link expiry: Optional link lifetime (week/month/6 months); Inactive section
 - ./team-shared-documents.md - when working on Team shared documents: Per-team folder tree + documents every joined member can manage
