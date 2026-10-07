@@ -76,8 +76,8 @@ These are every table and key a link file holds; [Diagram sources](diagram-sourc
 
 ### `INDEX.md`
 
-Generated, and opening with a line that says so and where to edit. One section per document, in the folder's
-order: its name, its link, its folder path, each tab's name, kind, element count and revision, and (at `files`) the
+Generated, and opening with a line that says so and where to edit. One section per document, in a stable
+order (folder path, then name, then id, so a new document never reorders the rest): its name, its link, its folder path, each tab's name, kind, element count and revision, and (at `files`) the
 paths of its files. At `index` each tab also carries its outline's header line, so `rg` finds a document by its
 tab names and counts; at `files` the outlines are in the outline files.
 
@@ -128,9 +128,20 @@ the document now:
   untouched and is reported, never treated as `gone` or `unreadable`.
 - A file holding git's conflict markers is refused, naming `livediagram sync --resolve <file>`
   ([Git](#git)); nothing else in the sync waits for it.
+- **A rename is a change.** A document whose name or other envelope fields differ from its file is `behind` even
+  when no tab's revision moved, and its files are rewritten.
+- **Without mirror files** (`none`, `index`) a document's state comes from the revisions the local sync state
+  recorded at its last sync; a document never synced on this machine is `new`.
+- **A gone file with an unsent change stays.** A `gone` or level-lowered file whose hashes differ from its recorded
+  ones holds a local change nobody has sent; it is kept and refused, naming the file, never removed.
 
 Until the merge is built, `ahead` and `diverged` are refused per document, naming the file and the command that
-sends it (`livediagram push <file>`), and the rest of the sync proceeds.
+sends it (`livediagram push <file>`), and the rest of the sync proceeds. Until then too, `local-new` is reported
+and never created, and a conflicted file's refusal names the manual fix (keep one side with
+`git checkout --ours <file>` or `--theirs`, then sync) in place of `sync --resolve`.
+
+**Lowering the mirror level** (`files` to `index`, or to `none`) removes the files the new level does not write, as
+`gone` removes them; git history keeps them.
 
 ## Merging
 
@@ -171,15 +182,17 @@ report and the changeset's summary.
 
 ## Commands
 
-| Command                                             | Does                                                                   |
-| --------------------------------------------------- | ---------------------------------------------------------------------- |
-| `link init [--folder <f>] [--doc <d>]... [--level]` | Writes `livediagram.toml`; with no folder, offers the person's folders |
-| `link status`                                       | Every covered document with its state; exit 0 when all are `in-step`   |
-| `link ls`                                           | The covered documents, as `document ls` prints them                    |
-| `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted        |
-| `sync --resolve <file>`                             | A mirror file git left conflicted, resolved by the driver's table      |
-| `link hooks install\|uninstall`                     | The git hooks and the merge driver ([Git](#git))                       |
+| Command                                             | Does                                                                                 |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `link init [--folder <f>] [--doc <d>]... [--level]` | Writes `livediagram.toml`; with no folder, a picker of the person's folders          |
+| `link status`                                       | Every covered document with its state; exits 0 ([In CI](#in-ci) for `--fail-behind`) |
+| `link ls`                                           | The covered documents, as `document ls` prints them                                  |
+| `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted                      |
+| `sync --resolve <file>`                             | A mirror file git left conflicted, resolved by the driver's table                    |
+| `link hooks install\|uninstall`                     | The git hooks and the merge driver ([Git](#git))                                     |
 
+- `link init` without `--folder` or `--doc` shows a picker of the person's folders on a terminal; where stdin or
+  stdout is not a terminal it refuses, listing the folders as runnable `link init --folder <id>` commands.
 - Every other command takes a mirror file's path wherever it takes a document, as it takes a pulled file today.
 - `sync --watch` listens to each covered document's room through the CLI's [room stream](../015-api/cli.md) and
   writes a tab's snapshot after its burst of changes settles (the `wait --for change` rule), and watches the mirror
@@ -250,7 +263,7 @@ holds the base snapshots (the latest `SYNC_BASES_KEPT` per tab), the pending pro
   open; a teammate without access to a document finds it `unreadable`: its snapshot stays untouched and they are
   told so once per sync.
 - A view-level token syncs one way: snapshots are written, local changes are reported as not sent.
-- The mirror is as public as the repository: `link init` says so in one line when the repository has a public
+- The mirror is as public as the repository: `link init` says so in one line when the repository has any git
   remote. Document and folder ids in `livediagram.toml` grant nothing.
 
 ## Limits
