@@ -132,4 +132,22 @@ describe('useFocusTrap', () => {
     render(<AutoModal />);
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
   });
+
+  it('focuses the container when asked, and Shift+Tab from it wraps to the last control', () => {
+    function ContainerModal() {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref, true, 'container');
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <button type="button">Type</button>
+          <button type="button">Close</button>
+        </div>
+      );
+    }
+    render(<ContainerModal />);
+    const dialog = screen.getByRole('dialog');
+    expect(document.activeElement).toBe(dialog);
+    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Close' }));
+  });
 });

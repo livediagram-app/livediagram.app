@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Item } from '@livediagram/items';
-import { ITEM_TRAIL_MAX, childrenOf, liveTrail, stepTrail, visibleTrail } from './item-trail';
+import { ITEM_TRAIL_MAX, liveTrail, stepTrail, visibleTrail } from './item-trail';
 
-// docs/specs/026-plan/plan-board.md "Open an item": the Breadcrumb's trail and a parent's Child Cards.
+// docs/specs/026-plan/plan-board.md "Open an item": the Breadcrumb's trail (a parent's Child Cards: card-links.test.ts in packages/items).
 
 const PERSON = { id: 'p', name: 'Sam', color: '#2563eb' };
 const item = (id: string, key: number, fields: Item['fields'] = {}): Item => ({
@@ -58,18 +58,5 @@ describe('visibleTrail', () => {
     });
     expect(visibleTrail(['a', 'b'], 3)).toEqual({ folded: 0, crumbs: ['a', 'b'] });
     expect(visibleTrail(['a', 'b'], 1)).toEqual({ folded: 1, crumbs: ['b'] });
-  });
-});
-
-describe('childrenOf', () => {
-  it('lists the cards naming the parent, in key order, trashed ones left out', () => {
-    const items = mapOf(
-      item('t3', 3, { parent: 'p' }),
-      item('t1', 1, { parent: 'p' }),
-      item('t2', 2, { parent: 'p', status: 'trash' }),
-      item('other', 4, { parent: 'q' }),
-      item('p', 5),
-    );
-    expect(childrenOf(items, 'p').map((i) => i.id)).toEqual(['t1', 't3']);
   });
 });

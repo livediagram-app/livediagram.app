@@ -58,6 +58,12 @@ async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: s
 const one = (r: ItemResponse): ItemWriteAnswer => ({ upserts: [r.item], removed: [], rev: r.rev });
 
 // Sends one write. `by` signs an offline write; the api signs a cloud one itself.
+// A patch or move body, flagged `undo: true` when it is an undo or redo (the api then lets it into a status the
+// card's type leaves out, docs/specs/026-plan/item-types.md "An item type").
+function undoBody<T extends object>(body: T, undo: true | undefined): T | (T & { undo: true }) {
+  return undo ? { ...body, undo: true } : body;
+}
+
 export async function writeItem(
   scope: ItemsScope,
   write: ItemWrite,
@@ -83,9 +89,9 @@ export async function writeItem(
       return answer;
     }
     case 'patch':
-      return one(await post(scope, id, write.patch, 'item change'));
+      return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
     case 'move':
-      return one(await post(scope, `${id}/move`, write.move, 'item move'));
+      return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
     case 'vote':
       return one(await post(scope, `${id}/vote`, { delta: write.delta }, 'item vote'));
     case 'delete': {

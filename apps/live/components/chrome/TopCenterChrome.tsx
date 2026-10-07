@@ -6,6 +6,7 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
+import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
@@ -73,9 +74,23 @@ export function TopCenterChrome({
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
+  // The Toolbar layout's strip, when it is on screen: the mode banners hang from it as its tray
+  // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
+  const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
+  const modeBanner = canvasTool === 'format' || drawBanner;
+  const strip = usePaletteStripBox(modeBanner);
+  const tray = toolbarLayout === true && !readOnly && !dockOnTop ? strip : null;
   return (
     <TopCenterStack
-      below={dockOnTop ? 'dock' : toolbarLayout === true && !readOnly ? 'toolbar' : undefined}
+      below={
+        dockOnTop
+          ? 'dock'
+          : toolbarLayout === true && !readOnly
+            ? tray && modeBanner
+              ? 'tray'
+              : 'toolbar'
+            : undefined
+      }
     >
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
@@ -127,6 +142,7 @@ export function TopCenterChrome({
             }
             actionLabel="Done"
             onAction={onExitFormatTool}
+            tray={tray}
           />
         ) : null}
 
@@ -134,11 +150,12 @@ export function TopCenterChrome({
             drag one out", with a Cancel because the intent is transient. A
             held pen (a whiteboard pen, the Path tool) is excluded: a tool in
             the hand does not need telling you it is on every time you look up. */}
-        {pendingDraw && !isHeldPenIntent(pendingDraw) ? (
+        {pendingDraw && drawBanner ? (
           <ModeBanner
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync(), { hasPlanBoard })}
             onAction={onCancelDraw}
+            tray={tray}
           />
         ) : null}
 

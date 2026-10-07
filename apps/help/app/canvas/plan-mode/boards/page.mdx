@@ -9,7 +9,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Boards',
   description:
-    'Plan boards in livediagram: Kanban, sprint, bug triage, retro, roadmap, week, All Cards and Archive boards; columns, swimlanes, WIP limits, widgets, card sizes and the card types each board takes.',
+    'Plan boards in livediagram: Kanban, to-do list, sprint, bug triage, retro, roadmap, week, All Cards and Archive boards; columns, swimlanes, WIP limits, widgets, card sizes and the card types each board takes.',
   path: '/help/canvas/plan-mode/boards/',
 });
 
@@ -30,17 +30,18 @@ An empty Plan tab shows **Start with a Board** in the middle. Each choice is a s
   <PlanBoardPickerScene />
 </Figure>
 
-| Board                                        | For                                                                 |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| **Blank** (**Board** in the palette)         | A board with no columns: name the first one and build from there.   |
-| **Kanban**                                   | Flow from Backlog to Done, with WIP limits on the busy columns.     |
-| **Sprint**                                   | A sprint's tasks, a row per person, with estimates.                 |
-| **Retro**                                    | Notes hidden until you reveal them, then everyone votes.            |
-| **Roadmap**                                  | Projects on Now, Next and Later.                                    |
-| **Bug Triage**                               | Bugs from New to Fixed, a row per priority.                         |
-| **Weekly Planner** (**Week** in the palette) | A column a day, Monday to Friday.                                   |
-| **All Cards**                                | Every card in the document, a row per status, so nothing gets lost. |
-| **Archive** (palette only)                   | Every archived card, out of the way, ready to restore.              |
+| Board                                        | For                                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| **Blank** (**Board** in the palette)         | A board with no columns: pick or name the first one and build from there. |
+| **Kanban**                                   | Flow from Backlog to Done, with WIP limits on the busy columns.           |
+| **To-do List**                               | Actions to tick off, from To Do to Done.                                  |
+| **Sprint**                                   | A sprint's tasks, a row per person, with estimates.                       |
+| **Retro**                                    | Notes hidden until you reveal them, then everyone votes.                  |
+| **Roadmap**                                  | Projects on Now, Next and Later.                                          |
+| **Bug Triage**                               | Bugs from New to Fixed, a row per priority.                               |
+| **Weekly Planner** (**Week** in the palette) | A column a day, Monday to Friday.                                         |
+| **All Cards**                                | Every card in the document, a row per status, so nothing gets lost.       |
+| **Archive** (palette only)                   | Every archived card, out of the way, ready to restore.                    |
 
 A board placed from the palette or the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. Boards from a [Plan template](/help/canvas/plan-mode/#plan-templates) are set up for their job, share columns between tabs where the work hands over, and come with no cards either.
 
@@ -50,6 +51,8 @@ A board placed from the palette or the picker starts **empty**: its columns are 
   <PlanColumnSettingsScene />
 </Figure>
 
+When you add a column (on an empty board, or with a column's **+ Add Column After**), pick one of the statuses your other boards already use, or press **Add All** to bring them all in, so the cards already in them show straight away. Or type a new name: if it matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
+
 Hover a column's head and press its cog (always there on a touch screen) to:
 
 - **Rename** it and give it a **colour** (none, or one of eight).
@@ -58,18 +61,20 @@ Hover a column's head and press its cog (always there on a touch screen) to:
 - Set its **Width**: one, two or three slots across the board.
 - **Move Left** or **Move Right**, **Add Column After**, or **Remove Column** (it asks where its cards go: **Move and Remove**, or **Keep It**). A board's last column can't be removed.
 
-A board holds 1 to 12 columns. A board with no columns (a new Blank board) shows **No columns yet** and asks you to name the first.
+A board holds 1 to 12 columns. A board with no columns (a new Blank board) shows **No columns yet** and asks you to pick or name the first.
 
 ## The Board's Own Settings
 
 Right-click the board (or select it and press **⋯**):
 
-- **Board:** its **Title**, and its **Swimlanes**: **No Swimlanes**, **By Assignee**, **By Card Type**, **By Priority**, **By Project** or **By Status**. Under **By a Field**, pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. **Add to Slides** puts the whole board in the [Slide Deck](/help/selection-modes/slide-deck/).
-- **Cards:** which card types **New Cards Can Be** (a retro takes Notes and Ideas; a sprint takes Tasks and Actions; at least one stays on), the **Card Size** (**Minimal**, **Compact** or **Detailed**), and which fields each card shows. A field the chosen size can't show keeps its setting, with its tile dimmed.
+- **Board:** its **Title**, and its **Swimlanes**, one grid: **None**, **Assignee**, **Type**, **Priority**, **Project** or **Status**, then a tile per field: pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. **Add to Slides** puts the whole board in the [Slide Deck](/help/selection-modes/slide-deck/).
+- **Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Tasks and Actions; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again), the **Card Size** (**Minimal**, **Compact** or **Detailed**), and which fields each card shows. At least one card type stays on, and a board whose chosen types have all since been deleted shows every type again. A field the chosen size can't show keeps its setting, with its tile dimmed.
+
+A card type can leave statuses out ([Card types](/help/canvas/plan-mode/card-types/)). A column whose status the dragged card's type leaves out turns red and won't take it. A new card can still be added in any column; it just can't be moved into a left-out status afterwards.
 
 Each swimlane folds away on its own from its label, just for you. Several people can set up one board at once: each change travels on its own, so two people editing different columns both keep their work. Board settings are undone with **Undo** like any other edit.
 
-While a board is selected, the grip beside its title is where to take hold of it to move it. In Plan mode the header moves the board; the columns and cards don't.
+While a board is selected, the grip beside its title is where to take hold of it to move it. In Plan mode the header moves the board; the columns and cards don't. To rename a board, double-click its title, type the new name and press **Enter** (or **Escape** to leave it as it was).
 
 ## What the Board Shows
 
@@ -77,7 +82,7 @@ While a board is selected, the grip beside its title is where to take hold of it
   <PlanBoardScene />
 </Figure>
 
-- **Every board shows every card whose status is one of its columns.** There is no per-board filter by type or label.
+- **Every board shows every card whose status is one of its columns and whose type is one of its Card Types.** There is no per-board filter by label; a card of a type the board doesn't show is hidden there, never moved.
 - **Not on this board:** cards whose status no column holds are counted in the header ("3 not on this board"); open the count to move each to a column.
 - **Columns fill the board:** make a board taller and its columns run to the bottom edge. A column with more cards than fit scrolls inside itself; the board never grows on its own.
 - **Card sizes:** **Minimal** shows the title alone; **Compact** the title over a line of number, priority, due date, votes and assignee; **Detailed** (the default) everything, down to a description excerpt, custom fields shown on cards and checklist progress.

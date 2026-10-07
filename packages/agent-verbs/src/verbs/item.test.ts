@@ -187,4 +187,19 @@ describe('item edges', () => {
     ).catch((e: unknown) => e);
     expect((refusal as VerbRefusal).code).toBe('invalid');
   });
+
+  it('says plainly when the card type does not use the status', async () => {
+    const { ctx } = api({
+      [`${path}/itembbb111/move`]: () =>
+        Response.json({ error: 'status_excluded', field: 'status' }, { status: 400 }),
+    });
+    const refusal = await itemMove.run!(ctx, {
+      doc: DOC_A,
+      item: '#1',
+      status: 'done',
+      before: undefined,
+    }).catch((e: unknown) => e);
+    expect((refusal as VerbRefusal).code).toBe('status_excluded');
+    expect((refusal as VerbRefusal).message).toMatch(/card type does not use that status/);
+  });
 });

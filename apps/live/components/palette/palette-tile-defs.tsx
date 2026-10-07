@@ -251,6 +251,9 @@ export type PaletteTileDef = {
   // Tile only renders when the editor supplies onAddImage (image uploads
   // available) — the Image / Avatar / Hero / Header tiles.
   needsImage?: boolean;
+  // Greyed out with its reason (no press, no drag, the reason in its hover card). A card tile no board on the tab
+  // takes gets one at render (usePlanCardTileDisabled, docs/specs/026-plan/plan-mode.md "The palette").
+  disabled?: { reason: string };
   // Ends a group of related tiles in its category: a fixed divider follows it on the Toolbar
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
   // dividers"). Never more than two per category.

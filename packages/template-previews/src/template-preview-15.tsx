@@ -74,7 +74,7 @@ function TabStrip({ count }: { count: number }) {
   );
 }
 
-// A Project Gantt Chart under a board of projects: a bar per project, the first filling as it goes.
+// A Gantt Chart under a board of projects: a bar per project, the first filling as it goes.
 function GanttPanel({ bars }: { bars: { x: number; w: number }[] }) {
   return (
     <g>
@@ -193,6 +193,76 @@ function board({
   );
 }
 
+// Blank Plan: an empty tab showing Start with a Board, a 3 by 2 grid of small board tiles (each a few column
+// strips) under the picker's title; the hover story rings the first tile, as a pick.
+function boardPicker() {
+  const tiles = [0, 1, 2, 3, 4, 5];
+  const colsPer = [3, 4, 3, 4, 2, 3];
+  return (
+    <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
+      <rect
+        x="1"
+        y="1"
+        width="78"
+        height="48"
+        rx="3"
+        fill={BOARD}
+        stroke={BOARD_EDGE}
+        strokeWidth="0.8"
+      />
+      <rect x="6" y="5" width="26" height="2.6" rx="1" fill="rgb(51 65 85)" />
+      <rect x="6" y="9.4" width="40" height="1.2" rx="0.6" fill="rgb(148 163 184)" />
+      {tiles.map((t) => {
+        const x = 6 + (t % 3) * 23;
+        const y = 14 + Math.floor(t / 3) * 17;
+        const n = colsPer[t]!;
+        const cw = (17 - 1 * (n - 1)) / n;
+        return (
+          <g key={t}>
+            <rect
+              x={x}
+              y={y}
+              width="21"
+              height="15"
+              rx="1.6"
+              fill="white"
+              stroke={CARD_EDGE}
+              strokeWidth="0.5"
+            />
+            {Array.from({ length: n }, (_, c) => (
+              <rect
+                key={c}
+                x={x + 2 + c * (cw + 1)}
+                y={y + 2}
+                width={cw}
+                height="7"
+                rx="0.6"
+                fill={COLUMN}
+              />
+            ))}
+            <rect x={x + 2} y={y + 11} width="9" height="1.2" rx="0.6" fill={HEAD} />
+            {t === 0 ? (
+              <rect
+                className="pv-new"
+                opacity="0"
+                x={x - 0.6}
+                y={y - 0.6}
+                width="22.2"
+                height="16.2"
+                rx="2"
+                fill="none"
+                stroke={TASK}
+                strokeWidth="0.9"
+                style={pv({ '--pv-at': '700ms' })}
+              />
+            ) : null}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null {
   const step = (72 - 1.6 * 2) / 3 + 1.6;
   const w4 = (72 - 1.6 * 3) / 4 + 1.6;
@@ -200,14 +270,8 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
   const w6 = (72 - 1.6 * 5) / 6 + 1.6;
   switch (kind) {
     case 'blank-plan':
-      // Three empty-ish columns; the story drops a first card into To do.
-      return board({
-        columns: [
-          { cards: [{ stripe: TASK, moveTo: { dx: 0, dy: 0, at: 900 } }] },
-          { cards: [] },
-          { cards: [] },
-        ],
-      });
+      // An empty Plan tab: the Start with a Board picker, a tile per board; the story picks the first.
+      return boardPicker();
     case 'project-planner':
       // Roadmap: projects on Now, Next, Later, Shipped over their Gantt; the story ships a project.
       return board({

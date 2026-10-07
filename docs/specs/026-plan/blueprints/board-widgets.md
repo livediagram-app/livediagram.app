@@ -68,7 +68,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
   A tap on one it has returns `already`, said as "<Label> is already on this board".
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
-  carry their own `widgets` (presets.ts); Blank keeps the default set.
+  carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
+  Completion off any preset or template board without `doneColumnId` and WIP Alerts off any without a `wipLimit`.
 - Counts render through `CountBadge` from `@livediagram/ui` at `size="md"` (an 18 px pill with
   `text-optical-centre`) painted with the board's `background`/`color`, shared with column heads.
 
@@ -96,7 +97,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 - Pill: `h-7 rounded-md border px-2 text-[12px] font-medium`, border `palette.border`, text `palette.muted`,
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
 - Drop / reorder bar: 2 × 24 px, `palette.focus`. A zone under a palette drag: 1.5 px dashed `palette.focus`.
-- Empty zone copy for an editor: "Drag Widgets here from the palette".
+- Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Drag Widgets
+  here from the palette" and its **+**; unselected, the empty zone draws nothing but the palette drag's drop bar.
 - × : 16 px disc at the wrapper's top right, shown only while the board is selected (`selected`, from `PlanBoardHeader`), on any pointer; otherwise `display: none`, so it is out of the tab order too (Delete still removes a focused widget).
 
 ## Accessibility

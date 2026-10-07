@@ -8,10 +8,48 @@ import { createPortal } from 'react-dom';
 import { ITEM_TYPES, itemAccessibleName, type Item, type LaneHead } from '@livediagram/items';
 import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
+import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
+
+const REFUSED_COLOUR = '#dc2626';
+
+// The gap a held card would land in, dashed in the board's focus colour; or, for a palette card of a type the board
+// does not show (`refused`), a red dashed zone saying why (docs/specs/026-plan/plan-mode.md "The palette").
+export function DropGap({
+  height,
+  palette,
+  refused,
+}: {
+  height: number;
+  palette: PlanPalette;
+  refused?: string | undefined;
+}) {
+  if (!refused)
+    return (
+      <div
+        className="rounded-lg border-2 border-dashed"
+        style={{ height, borderColor: palette.focus }}
+        aria-hidden
+      />
+    );
+  return (
+    <div
+      role="status"
+      className="flex items-center justify-center rounded-lg border-2 border-dashed px-2 text-center text-[12px] font-medium leading-snug"
+      style={{
+        minHeight: height,
+        borderColor: REFUSED_COLOUR,
+        color: REFUSED_COLOUR,
+        backgroundColor: `color-mix(in srgb, ${REFUSED_COLOUR} 8%, transparent)`,
+      }}
+    >
+      {refused}
+    </div>
+  );
+}
 
 // A row of the board: with swimlanes, a labelled, collapsible band over its cells.
 export function LaneRow({
@@ -44,6 +82,7 @@ export function LaneRow({
       >
         <span aria-hidden>{shut ? '▸' : '▾'}</span>
         {lane.person ? <PersonDisc person={lane.person} /> : null}
+        {lane.colour ? <ColourDot colour={lane.colour} /> : null}
         <span style={{ color: palette.text }}>{lane.label}</span>
       </button>
       {children}
@@ -90,11 +129,7 @@ export function PlanBoardCard({
   return (
     <>
       {placeholderBefore !== undefined ? (
-        <div
-          className="rounded-lg border-2 border-dashed"
-          style={{ height: placeholderBefore, borderColor: palette.focus }}
-          aria-hidden
-        />
+        <DropGap height={placeholderBefore} palette={palette} />
       ) : null}
       <div
         role="listitem"

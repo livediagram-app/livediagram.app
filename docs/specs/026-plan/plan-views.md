@@ -10,7 +10,7 @@ a card is never dropped into one.
 | Term              | Meaning                                                                       | Not                   |
 | ----------------- | ----------------------------------------------------------------------------- | --------------------- |
 | **plan view**     | The element: one view of the document's cards, of one view kind               | chart, report         |
-| **view kind**     | What a plan view shows (Completion, Project Gantt Chart, ...)                 | view type             |
+| **view kind**     | What a plan view shows (Completion, Gantt Chart, ...)                         | view type             |
 | **metric**        | A plan view that is a board widget kind, free on the canvas                   | board widget (header) |
 | **visualisation** | A plan view that charts the cards (Gantt, calendar, workload, status, matrix) | dashboard             |
 | **status phase**  | Where a status sits in the work: Not Started, In Progress or Done             | stage, state          |
@@ -58,29 +58,143 @@ board ([Board widgets](board-widgets.md)), each free on the canvas:
 The **Visualisations** palette category charts the cards. Each is resizable (720 × 400 to start; the Gantt
 880 × 420), headed by its name and a count, and opens a card when its row, bar or entry is pressed.
 
-| Visualisation       | Shows                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------ |
-| Project Gantt Chart | A row per Project card on a time axis: a bar from its start to its due date                |
-| Due Calendar        | This month as a grid, each day listing the cards due that day                              |
-| Workload by Person  | A bar per assignee (and Unassigned), split Not Started, In Progress, Done, with counts     |
-| Status Breakdown    | A donut of the cards by status, with a legend of each status and its count                 |
-| Priority by Status  | A grid of priority (Urgent to Low, then None) by status phase, each cell the cards in both |
+| Visualisation      | Shows                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| Gantt Chart        | A row per card of its card types (Project by default) on a time axis: start to due as a bar |
+| Due Calendar       | This month as a grid, each day listing the cards due that day                               |
+| Workload by Person | A bar per assignee (and Unassigned), split Not Started, In Progress, Done, with counts      |
+| Status Breakdown   | A donut of the cards by status, with a legend of each status and its count                  |
+| Priority by Status | A grid of priority (Urgent to Low, then None) by status phase, each cell the cards in both  |
 
-### Project Gantt Chart
+### Maximised view
 
-- A row per Project card (type `project`), earliest start (or due date) first, then by number; the row names
-  it, `#12` and its title, with its child cards' progress `done/total` (cards whose `parent` is the project).
-- A project with a **start** and a **due date** is a bar between them, in the Project colour, the share of its
+- A visualisation can be maximised like a board ([Maximised board](plan-board.md#maximised-board)): in Plan mode
+  its header ends with **Maximise View** (a maximise icon, with a tooltip). Maximised, it fills the screen with
+  zen mode's chrome; everything in it works as on the canvas (the Gantt's scale, scrolling and date drags, the
+  calendar's months, opening a card). **Restore View** in the same place, or **Escape** when no dialog is open,
+  puts it back.
+- Maximised, the view lays itself out at the screen's size (the Gantt's names column limit and axis labels, the
+  calendar's fit), not the element's; restored, at the element's again. Maximising and restoring keep its state:
+  the Gantt's scale, window and collapsed lanes, and a drag in progress, carry over.
+- It is the person's own view: nothing is saved or sent, the element keeps its size and place, and it ends on its
+  own when the view leaves the screen or Plan mode. A metric is too small to need it and has no button.
+- Telemetry: `Plan` · `Toggled` · `ViewMaximised` and `ViewRestored`.
+
+### Gantt Chart
+
+- **Card types**: the chart draws the live cards of the card types it accepts, **Project** by default
+  (`planView.types`, a list of card type ids; absent is `['project']`). Any type can be accepted, a custom one
+  included: its cards' **Start** and **Due** draw the bar. The types are chosen in the chart's element menu (see
+  [Card types](#card-types)). A type the catalogue no longer has accepts nothing (its id stays in the list, so the
+  rows come back if the type does).
+- A row per accepted card, in the chart's own **row order** when one is set (see [Row order](#row-order)), else
+  earliest start (or due date) first, then by number; the row names it, its colour dot
+  when it has a Colour, `#12` and its title, with its child cards' progress `done/total` (cards whose `parent`
+  is the row's card).
+- A card with a **start** and a **due date** is a bar between them, in its own
+  [Colour](items.md#colour) when it has one, else its card type's colour, the share of its
   children done filled solid. One with only a due date is a milestone diamond on that day; only a start, a
-  hollow diamond there. Neither: **No dates**, muted. A start after the due date is drawn from the earlier date
+  hollow diamond there. Neither: the row's timeline is empty. A start after the due date is drawn from the earlier date
   to the later one (the item panel says **Starts after it is due**).
-- A row with a due date but no start, or with neither, offers a quiet **Add a start date** (to someone who may
-  edit) that opens the card, where Start sits before Due.
-- A project not done whose due date has passed draws its bar or diamond in red.
-- The axis runs from a week before the earliest date to a week after the latest (today included), at least 28
-  days; it ticks weeks (from Monday) up to 120 days, and months beyond. A line marks **today**.
-- The header counts the projects: `3 projects`.
-- Empty: **No projects yet. Add a Project card to a board to see it here.**
+- **Drawing dates** (to someone who may edit): on a card with neither date, its row's timeline draws them (no
+  words say so; the dashed week under the pointer does). A card of a type whose panel does not offer Start or Due
+  can still be drawn: the dates are stored on the card (any card may carry any built-in field) and drive its bar. Under the pointer a dashed week shows from the day it is over; a
+  click gives the project that week (start on the day, due six days later), and a drag gives the days it spans
+  (either way), named above it as it grows (**6 Oct → 12 Oct**). It is one change (start and due together), after
+  which the bar's ends and body drag as any bar's. A press on that row's timeline draws; it does not open the card
+  (its name does). Escape or a cancelled pointer drops the draw. Telemetry: `Plan` · `Changed` · `GanttDrawn`.
+- A project not done whose due date has passed draws its bar or diamond in red (its edge; red wins over a
+  project's Colour).
+- **Dragging dates** (to someone who may edit): each end of a bar is a handle. Dragged sideways it moves that
+  end's date (the start or the due date, whichever the end shows) by whole days, never past the other end; a
+  diamond drags its one date the same way. The bar's body, between its ends, drags the whole bar: both dates
+  move by the same days, so its length stays. While dragging, the bar or diamond follows the pointer and a label
+  above it names the day (**12 Mar**), or a moved bar's two days (**6 Oct → 25 Oct**); letting go applies it as one change, undone in one step, and a
+  drag that ends on the day it began changes nothing. A press without a drag still opens the card. The handles
+  show a resize cursor and a grip on hover, the bar's body a grab cursor; a person who may not edit gets
+  none of them.
+- **Scale**: the chart shows a window of time at one of three scales, picked in its header: **Month** (35 days),
+  **Quarter** (91 days) or **Year** (365 days). It opens on the smallest scale that holds every project's dates
+  (from a week before the earliest to a week after the latest, today included), else Year, starting a week
+  before the earliest date. The window ticks weeks (from Monday) up to 120 days, and months beyond; a line marks
+  **today**. A bar or diamond outside the window is cut off at its edge.
+- **Scrolling the timeline**: **‹** and **›** in the header step the window a third of its length earlier or
+  later; a sideways scroll (a trackpad swipe, or Shift with the wheel) over the timeline moves it day by day;
+  and dragging the axis (the dates strip) pans it. **Today** brings today back into view, a quarter of the way
+  in, at the current scale. Changing the scale keeps the window's middle where it was.
+- The scale and the window are the viewer's own, like the Due Calendar's month: never saved, never sent to
+  others, and back to the opening fit when the chart is next drawn fresh. They answer only while the chart takes
+  input (Plan mode); elsewhere the chart shows its opening fit and the canvas keeps the wheel.
+- **Status**: a row shows its project's status after the title, before `done/total`: a small pill naming the
+  status (as the boards name it), tinted by its status phase (Not Started, In Progress or Done, the phase colours
+  of the views' key). The title truncates first so the pill stays whole; where the names column is under 160 px
+  the pill is a dot of the phase colour with the status name in a tooltip. A project with no status shows none.
+  The row's accessible name includes the status ("#12 Launch, In Review, 1 of 3 done").
+- **Names column width**: the names column is at most 220 px and a third of the chart by default. Someone who
+  may edit resizes it by dragging its right edge (a 6 px strip with a resize cursor and a 2 px line on hover and
+  while dragging), or by focusing that edge (a vertical separator) and pressing **←** or **→** to step 16 px. It
+  stays between 120 px and 60 % of the chart's width, and never more than 2000 px (what a saved width may be). While dragging the columns follow the pointer; letting go
+  saves the width on the chart (`planView.namesWidth`, synced and undone as one change), and Escape drops the drag.
+  A chart without one keeps the default.
+- The header counts the rows: `3 cards`.
+- Empty: **No cards of these types yet.**
+- **Drags and draws pin the timeline**: from the moment a date drag or draw begins, the window and scale stay
+  where the viewer sees them (as though the viewer had picked them), so a change that moves the chart's dates
+  never shifts the timeline under the pointer. A drag that ends off its handle (the pointer ran past a clamped
+  end) never opens the card the release lands on.
+
+#### Swimlanes
+
+- A Gantt chart can group its rows into **swimlanes** with the same choices as a board
+  ([Swimlanes](plan-board.md#swimlanes-by-a-field)): **None** (the default), **Assignee**, **Type**,
+  **Priority**, **Project**, **Status**, then any field a board can lane by. Lanes are named, ordered and
+  coloured exactly as a board's (a person's avatar, a project's colour dot, Choice options in order, "No
+  _field_" last); rows keep the chart's order inside their lane.
+- The grouping belongs to the chart element (`planView.swimlaneBy`, and `swimlaneField` for a field): one
+  change, synced to everyone and undone like any element edit.
+- It is set from the chart's element menu: a **View** flyout (after Style) holding two collapsible rows,
+  **Card Types** ([Card types](#card-types)) and **Swimlanes**, a tile grid like the board's. Telemetry: `Plan` ·
+  `Changed` · `GanttSwimlanes`.
+- Each lane is a header row across the chart (24 px): in the names column a chevron, the lane's avatar, glyph or
+  colour dot, its name and its count of projects; the timeline side carries only the gridlines. A lane collapses
+  on its own, per person, like a board's. A lane with no projects is left out (nothing is dropped into a Gantt
+  lane). Everything else works inside a lane: dragging and drawing dates, opening a card, the scale and
+  scrolling.
+
+#### Row order
+
+- Someone who may edit can **drag a row to a new place**. Hovering a row's name (or focusing it) shows a six-dot
+  grip at its left edge (a grab cursor, a tooltip **Drag to Reorder**). Dragging the grip lifts the row: the name row
+  and its timeline row follow the pointer up and down, and a line marks the gap it would drop into. Letting go
+  places it there as one change, synced and undone like any element edit; letting go where it started, or
+  Escape, changes nothing. A press on the grip never moves the chart element, opens the card or starts a date
+  drag; the row's name still opens the card.
+- **Keyboard**: with a row's name focused, **Alt+↑** and **Alt+↓** move it one place, announced ("Moved #12
+  Launch to position 3 of 8").
+- With **swimlanes** on, a row moves only within its lane: dragging past the lane's first or last row stops
+  there, and the lanes keep their own order.
+- The order belongs to the chart (`planView.rowOrder`, a list of card ids, at most 2000): the cards it names come
+  first, in its order; cards it does not name (newly made, or newly accepted) follow in date order. A card that
+  leaves the chart (deleted, archived, its type no longer accepted) is ignored, and dropped from the list on the
+  next reorder.
+- **Sort by Date**, an action row in the chart's **View** flyout (shown while an order is set), clears the order:
+  the rows go back to date order.
+- It works the same maximised. The chart does not scroll its rows (a chart taller than its rows is clipped, as
+  before), so a drag never auto-scrolls.
+- Telemetry: `Plan` · `Changed` · `GanttRowOrder` (a drag, a keyboard move, or Sort by Date).
+
+#### Card types
+
+- **Only card types with both a Start and a Due field** can be on a Gantt chart, since every card is drawn as a bar
+  from one to the other. A Project always qualifies; another type does once both fields are added to it in Edit
+  Card Type. A type the chart names that loses either field is not drawn until it has both again (the setting
+  keeps naming it).
+- The chart's **View** flyout has a collapsible **Card Types** row: an info note ("Only card types with Start and Due fields show here."), then a tile per qualifying type (its glyph in its colour and its name),
+  pressed when the chart accepts it, as the board's **Card Types** tiles are. A press toggles it; the last one
+  pressed cannot be let go (at least one type stays on).
+- The choice belongs to the chart element (`planView.types`), one change, synced and undone like any element
+  edit; choosing exactly Project again leaves the default (the setting is dropped). Telemetry: `Plan` · `Changed` ·
+  `GanttTypes`.
 
 ### Due Calendar
 

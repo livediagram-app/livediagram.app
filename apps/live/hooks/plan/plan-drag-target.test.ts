@@ -28,6 +28,8 @@ describe('samePlanDragTarget', () => {
     expect(samePlanDragTarget(base, { ...base, slot: null })).toBe(false);
     expect(samePlanDragTarget(base, { ...base, outside: true })).toBe(false);
     expect(samePlanDragTarget(base, { ...base, overTrash: true })).toBe(false);
+    // A column whose status the card's type leaves out turns red (docs/specs/026-plan/item-types.md).
+    expect(samePlanDragTarget(base, { ...base, refused: "Task cards can't be Done" })).toBe(false);
     expect(samePlanDragTarget(base, { ...base, target: { boardId: 'x', accepts: true } })).toBe(
       false,
     );

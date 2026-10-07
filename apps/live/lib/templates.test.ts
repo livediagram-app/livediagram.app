@@ -182,7 +182,9 @@ describe('TEMPLATES catalogue', () => {
         kind === 'blank' ||
         kind === 'whiteboard' ||
         kind === 'article' ||
-        kind === 'blank-illustration';
+        kind === 'blank-illustration' ||
+        // An empty Plan tab, which opens on Start with a Board.
+        kind === 'blank-plan';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });

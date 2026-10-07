@@ -2,8 +2,10 @@
 // The board stores only its set-up; what it shows is computed here from the
 // item store, so every board (and the api's tab scoping) reads items the same way.
 
+import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
 import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
+import { statusTitleCase } from './status-title-case';
 import type { Item, ItemPerson } from './item';
 import { LANE_FIELD_BUILT_INS, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
 import type { ItemMove } from './item';
@@ -102,8 +104,8 @@ export interface PlanBoardSetup {
   archive?: boolean;
   // An All Cards board (docs/specs/026-plan/plan-board.md "All Cards"): every card, whatever its status.
   allCards?: boolean;
-  // The card types Add Card and the palette add to it (docs/specs/026-plan/plan-board.md "The board set-up");
-  // absent is every type. It shows any card that reaches it.
+  // The card types it shows and takes (docs/specs/026-plan/plan-board.md "Card types a board shows"): Add Card
+  // and the palette add only these, and cards of other types are hidden on it (never moved). Absent is every type.
   addTypes?: string[];
   // The header's widgets in order (docs/specs/026-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
@@ -161,17 +163,21 @@ export interface LaneHead {
   field: 'assignee' | 'type' | 'priority' | 'parent' | 'status' | 'field' | null;
   value: Item['fields'][string] | null;
   person?: ItemPerson;
+  // A Project lane's own colour (docs/specs/026-plan/items.md "Colour"), a dot before its name.
+  colour?: string;
   fieldId?: string;
   fieldKind?: LaneFieldKind;
 }
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
-export type LaneFieldKind = 'choice' | 'checkbox' | 'number' | 'date' | 'text' | 'labels';
+export type LaneFieldKind = 'choice' | 'checkbox' | 'number' | 'date' | 'text' | 'labels' | 'card';
 export interface LaneField {
   id: string;
   label: string;
   kind: LaneFieldKind;
   options?: readonly string[];
+  // A Card field's target type: a row per linked card (docs/specs/026-plan/item-types.md "Card fields").
+  linkType?: string;
 }
 
 const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
@@ -180,7 +186,7 @@ const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
   { id: 'start', label: 'Start Date', kind: 'date' },
   { id: 'due', label: 'Due Date', kind: 'date' },
 ];
-const GROUPING_KINDS = new Set<string>(['choice', 'checkbox', 'number', 'date', 'text']);
+const GROUPING_KINDS = new Set<string>(['choice', 'checkbox', 'number', 'date', 'text', 'card']);
 
 // The fields a board can lane by: the built-ins, then every grouping custom field in catalogue order, each
 // once (named as the first type that offers it names it).
@@ -195,6 +201,7 @@ export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
         label: c.label,
         kind: c.kind as LaneFieldKind,
         ...(c.options ? { options: c.options } : {}),
+        ...(c.linkType ? { linkType: c.linkType } : {}),
       });
     }
   return out;
@@ -298,9 +305,21 @@ function readAddTypes(input: unknown): string[] | undefined {
   return out.slice(0, 32);
 }
 
-// The types a board takes new cards of, in the catalogue's order: its own, or every one. Never empty while
+// Whether a board shows (and takes) cards of a type (docs/specs/026-plan/plan-board.md "Card types a board
+// shows"): every type when it names none. Given the catalogue, it follows boardAddTypes: a board whose every
+// named type has since been deleted shows and takes every type again.
+export function boardShowsType(
+  setup: Pick<PlanBoardSetup, 'addTypes'>,
+  type: string,
+  types?: readonly { id: string }[],
+): boolean {
+  if (!setup.addTypes) return true;
+  return types ? boardTakesType(setup, types, type) : setup.addTypes.includes(type);
+}
+
+// The types a board shows and takes, in the catalogue's order: its own, or every one. Never empty while
 // the catalogue is not: a board whose every named type has since been deleted takes every type again
-// (docs/specs/026-plan/plan-board.md "The board set-up").
+// (docs/specs/026-plan/plan-board.md "Card types a board shows").
 export function boardAddTypes<T extends { id: string }>(
   setup: Pick<PlanBoardSetup, 'addTypes'>,
   types: readonly T[],
@@ -310,7 +329,7 @@ export function boardAddTypes<T extends { id: string }>(
   return own.length ? own : [...types];
 }
 
-// Whether a board takes new cards of `typeId` (palette drops), by the same rule as boardAddTypes.
+// Whether a board shows and takes cards of `typeId` (palette drops, moves), by the same rule as boardAddTypes.
 export function boardTakesType(
   setup: Pick<PlanBoardSetup, 'addTypes'>,
   types: readonly { id: string }[],
@@ -344,8 +363,9 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
 export function statusLabel(status: string, names?: ReadonlyMap<string, string>): string {
   const named = names?.get(status);
   if (named) return named;
-  const words = status.split('~')[0]!.replace(/[-_]+/g, ' ').trim();
-  return words ? `${words[0]!.toUpperCase()}${words.slice(1)}` : status;
+  // An unnamed status reads as its id in Title Case ("in-review~ab12" is "In Review").
+  const words = statusTitleCase(status.split('~')[0]!.replace(/[-_]+/g, ' '));
+  return words || status;
 }
 
 function laneOf(
@@ -357,10 +377,16 @@ function laneOf(
   field?: LaneField,
 ): LaneHead {
   switch (by) {
-    case 'field':
-      return field
-        ? fieldLane(field, laneValue(field, item))
-        : { key: NO_LANE, label: '', field: null, value: null };
+    case 'field': {
+      if (!field) return { key: NO_LANE, label: '', field: null, value: null };
+      const lane = fieldLane(field, laneValue(field, item));
+      // A Card field's row is named by the linked card (docs/specs/026-plan/item-types.md "Card fields").
+      if (field.kind === 'card' && typeof lane.value === 'string') {
+        const linked = items.get(lane.value);
+        return { ...lane, label: linked ? itemTitle(linked) : 'Missing card' };
+      }
+      return lane;
+    }
     case 'status': {
       const s = itemStatus(item);
       return s
@@ -394,7 +420,13 @@ function laneOf(
       const id = item.fields['parent'];
       const parent = typeof id === 'string' ? items.get(id) : undefined;
       return parent
-        ? { key: `e:${parent.id}`, label: itemTitle(parent), field: 'parent', value: parent.id }
+        ? {
+            key: `e:${parent.id}`,
+            label: itemTitle(parent),
+            field: 'parent',
+            value: parent.id,
+            ...(itemColourOf(parent) ? { colour: itemColourOf(parent)! } : {}),
+          }
         : { key: NO_LANE, label: 'No parent', field: 'parent', value: null };
     }
   }
@@ -411,6 +443,9 @@ function laneSort(
   return (a, b) => {
     if (a.key === NO_LANE) return b.key === NO_LANE ? 0 : 1;
     if (b.key === NO_LANE) return -1;
+    // Card rows in the linked cards' number order, as Project rows are.
+    if (by === 'field' && field?.kind === 'card')
+      return (items.get(a.value as string)?.key ?? 0) - (items.get(b.value as string)?.key ?? 0);
     if (by === 'field' && field) return fieldLaneOrder(field, a.value, b.value);
     // Statuses in the order the tab's boards name them, then any other by name.
     if (by === 'status') {
@@ -451,48 +486,55 @@ function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
   return byText(a, b);
 }
 
-export function projectBoard(
-  setup: PlanBoardSetup,
-  items: ReadonlyMap<string, Item>,
-  quick?: QuickFilter,
-  // The document's type catalogue (docs/specs/026-plan/item-types.md): the order and names of type rows.
-  types: readonly ItemTypeDef[] = ITEM_TYPES,
-  // Status names from the tab's boards' columns, in order: an All Cards board's status rows.
-  statusNames?: ReadonlyMap<string, string>,
-): BoardProjection {
-  const byStatus = new Map<string, PlanColumn>(setup.columns.map((c) => [c.status, c]));
-  const scoped: Item[] = [];
-  const unplaced: Item[] = [];
-  // An Archive board shows the archived items, every one in its first column; any other board leaves
-  // them out altogether.
-  const archiveBoard = setup.archive === true;
-  // An All Cards board (docs/specs/026-plan/plan-board.md "All Cards") shows every card that is not
-  // archived, whatever its status, in its one column.
-  const allBoard = setup.allCards === true && !archiveBoard;
-  for (const it of items.values()) {
-    if (isTrashed(it)) continue;
-    if (isArchived(it) !== archiveBoard) continue;
-    if (archiveBoard || allBoard) {
-      scoped.push(it);
-      continue;
-    }
-    const status = itemStatus(it);
-    if (status === undefined || !byStatus.has(status)) unplaced.push(it);
-    else scoped.push(it);
-  }
-  scoped.sort(byRank);
-  unplaced.sort((a, b) => a.key - b.key);
+// Items grouped into swimlanes (docs/specs/026-plan/plan-board.md "Swimlanes"), shared by a board and the Gantt
+// chart (plan-views.md "Swimlanes"): the lanes the items fall in, named and ordered as a board orders them, and each
+// item's lane key. A field lane resolves against the document's types; a field no type offers any more is no lanes.
+export interface LaneGroups {
+  by: SwimlaneBy;
+  field: LaneField | undefined;
+  lanes: LaneHead[];
+  laneOfItem: Map<string, string>;
+}
 
-  // A field lane resolves against the document's types; a field no type offers any more is no rows.
-  const field = setup.swimlaneBy === 'field' ? laneFieldOf(setup.swimlaneField, types) : undefined;
-  const by: SwimlaneBy = setup.swimlaneBy === 'field' && !field ? 'none' : setup.swimlaneBy;
+export function laneGroups(
+  swimlaneBy: SwimlaneBy,
+  swimlaneField: string | undefined,
+  list: readonly Item[],
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+  statusNames?: ReadonlyMap<string, string>,
+): LaneGroups {
+  const field = swimlaneBy === 'field' ? laneFieldOf(swimlaneField, types) : undefined;
+  const by: SwimlaneBy = swimlaneBy === 'field' && !field ? 'none' : swimlaneBy;
   const laneMap = new Map<string, LaneHead>();
   const laneOfItem = new Map<string, string>();
-  for (const it of scoped) {
+  for (const it of list) {
     const lane = laneOf(by, it, items, types, statusNames, field);
     if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
     laneOfItem.set(it.id, lane.key);
   }
+  const lanes = [...laneMap.values()].sort(laneSort(by, items, types, statusNames, field));
+  return { by, field, lanes, laneOfItem };
+}
+
+// A board's lanes: the items' own, then the empty lanes a card can be dropped into.
+function boardLanes(
+  setup: PlanBoardSetup,
+  scoped: readonly Item[],
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+  statusNames?: ReadonlyMap<string, string>,
+): LaneGroups {
+  const groups = laneGroups(
+    setup.swimlaneBy,
+    setup.swimlaneField,
+    scoped,
+    items,
+    types,
+    statusNames,
+  );
+  const { by, field, laneOfItem } = groups;
+  const laneMap = new Map<string, LaneHead>(groups.lanes.map((l) => [l.key, l]));
   // A board with swimlanes always offers the empty group as a drop target (a checkbox has none).
   if (
     by !== 'none' &&
@@ -528,6 +570,46 @@ export function projectBoard(
   if (laneMap.size === 0)
     laneMap.set(NO_LANE, laneOf(by, { fields: {} } as Item, items, types, statusNames, field));
   const lanes = [...laneMap.values()].sort(laneSort(by, items, types, statusNames, field));
+  return { by, field, lanes, laneOfItem };
+}
+
+export function projectBoard(
+  setup: PlanBoardSetup,
+  items: ReadonlyMap<string, Item>,
+  quick?: QuickFilter,
+  // The document's type catalogue (docs/specs/026-plan/item-types.md): the order and names of type rows.
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+  // Status names from the tab's boards' columns, in order: an All Cards board's status rows.
+  statusNames?: ReadonlyMap<string, string>,
+): BoardProjection {
+  const byStatus = new Map<string, PlanColumn>(setup.columns.map((c) => [c.status, c]));
+  const scoped: Item[] = [];
+  const unplaced: Item[] = [];
+  // An Archive board shows the archived items, every one in its first column; any other board leaves
+  // them out altogether.
+  const archiveBoard = setup.archive === true;
+  // An All Cards board (docs/specs/026-plan/plan-board.md "All Cards") shows every card that is not
+  // archived, whatever its status, in its one column.
+  const allBoard = setup.allCards === true && !archiveBoard;
+  // A board that names its card types shows only those (every type again once none of them is left in the
+  // catalogue); the rest stay where they are, unseen here. Resolved once, not per card.
+  const shownTypes = setup.addTypes ? new Set(boardAddTypes(setup, types).map((t) => t.id)) : null;
+  for (const it of items.values()) {
+    if (isTrashed(it)) continue;
+    if (isArchived(it) !== archiveBoard) continue;
+    if (shownTypes && !shownTypes.has(it.type)) continue;
+    if (archiveBoard || allBoard) {
+      scoped.push(it);
+      continue;
+    }
+    const status = itemStatus(it);
+    if (status === undefined || !byStatus.has(status)) unplaced.push(it);
+    else scoped.push(it);
+  }
+  scoped.sort(byRank);
+  unplaced.sort((a, b) => a.key - b.key);
+
+  const { by, lanes, laneOfItem } = boardLanes(setup, scoped, items, types, statusNames);
 
   let doneCount = 0;
   const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;

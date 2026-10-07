@@ -85,6 +85,21 @@ motion is stricter still.
   tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
   on `transitionend`.
 
+## Dialogs
+
+A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (the Plan card
+panel, Settings, Share, confirms) enters the same way, and none waits on an exit animation to close,
+so focus returns at once.
+
+- **The dim** behind it fades in over `micro` (`fade-in`).
+- **A centred panel** settles into place over `long`: it fades up from 97% scale and 6px low, on the
+  ease-out curve `cubic-bezier(0.16, 1, 0.3, 1)` (`dialog-in`). The gentle rise keeps a large panel
+  (the 60rem card panel) from jumping.
+- **A phone sheet** rises its full height from the bottom edge over `long` (`sheet-up`).
+- **Under reduced motion** the panel only fades (no rise, no scale), and in the editor every entrance
+  collapses to about instant as above.
+- `fly-up-in`, the bolder 16px lift, stays for banners, search and the template picker.
+
 ## Editor arrival
 
 The editor's floating chrome (the Explorer, Palette and Map panels, the tab bar, the zoom cluster)

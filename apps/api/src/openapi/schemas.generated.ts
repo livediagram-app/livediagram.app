@@ -2690,6 +2690,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "linkType": {
+        "type": "string"
+      },
       "onCard": {
         "type": "boolean"
       },
@@ -2715,7 +2718,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "date",
       "checkbox",
       "link",
-      "choice"
+      "choice",
+      "card"
     ],
     "type": "string"
   },
@@ -6084,7 +6088,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
-  "ItemMove": {
+  "ItemMoveRequest": {
     "additionalProperties": false,
     "properties": {
       "after": {
@@ -6113,11 +6117,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "type": {
         "type": "string"
+      },
+      "undo": {
+        "const": true,
+        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
+        "type": "boolean"
       }
     },
     "type": "object"
   },
-  "ItemPatch": {
+  "ItemPatchRequest": {
     "additionalProperties": false,
     "properties": {
       "clear": {
@@ -6131,6 +6140,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "type": {
         "type": "string"
+      },
+      "undo": {
+        "const": true,
+        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
+        "type": "boolean"
       }
     },
     "type": "object"
@@ -6225,6 +6239,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "detailsLabel": {
         "type": "string"
+      },
+      "excludedStatuses": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "fields": {
         "items": {
@@ -7787,18 +7807,76 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "story",
       "bug",
       "project",
+      "action",
+      "epic",
+      "milestone",
+      "release",
+      "ticket",
+      "kanban",
+      "checklist",
+      "inbox",
+      "person",
+      "team",
+      "user-plus",
+      "user-check",
+      "contact",
+      "crown",
+      "chat",
+      "mail",
+      "phone",
+      "megaphone",
+      "bell",
+      "send",
+      "video",
+      "at",
+      "calendar",
+      "flag",
+      "clock",
+      "target",
+      "pin",
+      "hourglass",
+      "repeat",
       "note",
       "idea",
-      "action",
-      "risk",
-      "star",
-      "flag",
-      "heart",
       "bookmark",
-      "person",
-      "calendar",
-      "chat",
-      "cube"
+      "book",
+      "document",
+      "pencil",
+      "lightbulb",
+      "puzzle",
+      "quote",
+      "star",
+      "heart",
+      "risk",
+      "shield",
+      "lock",
+      "eye",
+      "fire",
+      "sparkle",
+      "info",
+      "question",
+      "ban",
+      "trophy",
+      "coin",
+      "chart",
+      "trend",
+      "briefcase",
+      "cart",
+      "building",
+      "percent",
+      "wallet",
+      "cube",
+      "gift",
+      "wrench",
+      "code",
+      "laptop",
+      "database",
+      "cloud",
+      "globe",
+      "home",
+      "key",
+      "leaf",
+      "link"
     ],
     "type": "string"
   },
@@ -7852,6 +7930,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PlanViewRef": {
     "additionalProperties": false,
     "properties": {
+      "namesWidth": {
+        "type": "number"
+      },
+      "rowOrder": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "swimlaneBy": {
+        "$ref": "#/components/schemas/SwimlaneBy"
+      },
+      "swimlaneField": {
+        "type": "string"
+      },
+      "types": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "view": {
         "$ref": "#/components/schemas/PlanViewId"
       }

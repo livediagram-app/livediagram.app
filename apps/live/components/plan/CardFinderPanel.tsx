@@ -1,9 +1,11 @@
 'use client';
 
-// The Cards panel (docs/specs/026-plan/items.md "Finding a card"): every live card in the document, newest
-// change first, searched by number, title or description; **Not on a Board** narrows it to the cards no
-// column on this tab's boards holds, so strays can be found and put somewhere. Choosing one opens it. A
-// popover above its button in Plan mode's bottom-right cluster, like Card Types and the Trash.
+// The Cards panel (docs/specs/026-plan/items.md "Finding a card"): every live card in the document, of every card
+// type (custom ones included), newest change first, searched by number, title, description or type name; **Not on
+// a Board** narrows it to the cards no board in the document shows (no column holds the status, or every board
+// naming it leaves the card's type out), so strays can be found and put
+// somewhere, and the card type chips to the pressed types. Choosing one opens it. A popover above its button in
+// Plan mode's bottom-right cluster, like Card Types and the Trash.
 import { useMemo, useState } from 'react';
 import {
   findCards,
@@ -11,9 +13,10 @@ import {
   statusLabel,
   typeIn,
   itemTitle,
+  type BoardStatusTypes,
   type CardFinderShow,
 } from '@livediagram/items';
-import { CountBadge, Tooltip, TrashIcon } from '@livediagram/ui';
+import { CloseIcon, CountBadge, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SearchInput } from '@/components/primitives/SearchInput';
@@ -23,6 +26,8 @@ import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
 // The most rows drawn at once; a search narrows the rest.
 const CARD_FINDER_ROWS_MAX = 200;
+
+const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 
 const SHOWS: { id: CardFinderShow; label: string }[] = [
   { id: 'all', label: 'All Cards' },
@@ -39,21 +44,33 @@ export function CardFinderPanel({
   const plan = usePlan();
   const [query, setQuery] = useState('');
   const [show, setShow] = useState<CardFinderShow>('all');
+  // The card types narrowed to: none is every type. The person's own, while the panel is open.
+  const [types, setTypes] = useState<ReadonlySet<string>>(() => new Set());
   // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
   const [finePointer] = useState(
     () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches,
   );
-  const boardStatuses = useMemo(() => new Set(plan?.statusNames.keys() ?? []), [plan?.statusNames]);
+  const boardStatuses = plan?.statusTypes ?? NO_STATUS_TYPES;
   const live = useMemo(
     () => findCards(plan?.items.values() ?? [], { query: '', show: 'all', boardStatuses }),
     [plan?.items, boardStatuses],
   );
   if (!plan) return null;
+  const typeLabel = (id: string) => typeIn(plan.types, id).label;
+  // The live cards of the pressed types (all when none is pressed): what the counts and the list read.
+  const ofTypes = types.size > 0 ? live.filter((it) => types.has(it.type)) : live;
   const counts = {
-    all: live.length,
-    'off-board': live.filter((it) => isOffBoard(it, boardStatuses)).length,
+    all: ofTypes.length,
+    'off-board': ofTypes.filter((it) => isOffBoard(it, boardStatuses)).length,
   };
-  const found = findCards(live, { query, show, boardStatuses });
+  const found = findCards(ofTypes, { query, show, boardStatuses, typeLabel });
+  const toggleType = (id: string) =>
+    setTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   return (
     <MovablePanel
       title="Cards"
@@ -74,7 +91,7 @@ export function CardFinderPanel({
           <SearchInput
             autoFocus={finePointer}
             ariaLabel="Search cards"
-            placeholder="Search by #, title or description"
+            placeholder="Search by #, title, description or type"
             value={query}
             onChange={setQuery}
             onKeyDown={(e) => e.stopPropagation()}
@@ -111,13 +128,55 @@ export function CardFinderPanel({
             </button>
           ))}
         </div>
+        {/* Card types: a chip per catalogue type, pressed to narrow the list to it (several may be). */}
+        <div className="flex items-start gap-1">
+          <div
+            role="group"
+            aria-label="Card types"
+            className="flex max-h-[4.25rem] min-w-0 flex-1 flex-wrap gap-1 overflow-y-auto"
+          >
+            {plan.types.map((t) => {
+              const on = types.has(t.id);
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleType(t.id)}
+                  className={`inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-[11px] font-medium transition ${
+                    on
+                      ? 'border-brand-300 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-100'
+                      : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600'
+                  }`}
+                >
+                  <span className={ACCENT_TEXT} style={accentVars(t.color)}>
+                    <PlanTypeGlyph glyph={t.glyph} size={12} />
+                  </span>
+                  <span className="text-optical-centre">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {types.size > 0 ? (
+            <button
+              type="button"
+              onClick={() => setTypes(new Set())}
+              className="inline-flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <CloseIcon size={10} />
+              <span className="text-optical-centre">Clear</span>
+            </button>
+          ) : null}
+        </div>
         {found.length === 0 ? (
           <p className="px-2 py-6 text-center text-[12px] leading-snug text-slate-500 dark:text-slate-400">
             {live.length === 0
               ? 'No cards yet. Add one from a board, or drag one in from the palette.'
               : query.trim()
                 ? 'No cards match that search.'
-                : 'Every card is on a board here.'}
+                : types.size > 0 && ofTypes.length === 0
+                  ? 'No cards of those types yet.'
+                  : 'Every card is on a board here.'}
           </p>
         ) : (
           <ul aria-label="Cards" className="flex max-h-80 flex-col gap-0.5 overflow-y-auto">

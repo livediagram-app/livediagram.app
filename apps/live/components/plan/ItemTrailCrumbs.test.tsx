@@ -45,17 +45,21 @@ describe('ItemTrailCrumbs', () => {
     expect(onBack).toHaveBeenCalledWith('i1');
   });
 
-  it('folds the crumbs past what fits, naming how many', () => {
-    draw([1, 2, 3, 4, 5, 6]);
-    expect(screen.getAllByRole('button')).toHaveLength(3);
-    expect(screen.getByText('2 earlier cards')).toBeTruthy();
+  it('folds the crumbs past what fits into a menu that names how many and steps back to each', () => {
+    const { onBack } = draw([1, 2, 3, 4, 5, 6]);
+    expect(
+      screen.getAllByRole('button', { name: /^Back to/ }).map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Back to #3 Card 3', 'Back to #4 Card 4', 'Back to #5 Card 5']);
+    fireEvent.click(screen.getByRole('button', { name: '2 earlier cards' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Back to #1 Card 1' }));
+    expect(onBack).toHaveBeenCalledWith('i1');
   });
 
   it('shows only the previous crumb on a phone', () => {
     draw([1, 2, 3], true);
-    expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Back to #2 Card 2',
-    ]);
-    expect(screen.getByText('1 earlier card')).toBeTruthy();
+    expect(
+      screen.getAllByRole('button', { name: /^Back to/ }).map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Back to #2 Card 2']);
+    expect(screen.getByRole('button', { name: '1 earlier card' })).toBeTruthy();
   });
 });

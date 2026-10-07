@@ -13,6 +13,7 @@ import {
 import {
   EMPTY_ITEM_STORE,
   applyItemWrite,
+  asUndoWrite,
   inverseItemWrites,
   itemPersonId,
   mergeItemChanges,
@@ -235,11 +236,12 @@ export function usePlanItems(opts: {
               })),
             }
           : w;
+      // Both sides are marked as an undo, so a card type's left-out statuses never refuse putting a change back.
       callbacks.current.pushUndo({
         undo: () => {
-          for (const back of inverse) void send(back);
+          for (const back of inverse) void send(asUndoWrite(back));
         },
-        redo: () => void send(redo),
+        redo: () => void send(asUndoWrite(redo)),
       });
       return true;
     },

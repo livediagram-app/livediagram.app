@@ -134,7 +134,11 @@ key between always exists. Ties (equal ranks after concurrent inserts) order by 
 - `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy;
 cardFields: CardField[]; voting: { on: boolean; budget?: number }; hideWriting: boolean }`.
 - `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'parent'`.
-- No scope: every board shows every item; a `scope` an older board stored is read past.
+- No scope: a `scope` an older board stored is read past. Types are the one filter: the types `boardAddTypes(setup, types)`
+  resolves (every type when `addTypes` is absent or names none still in the catalogue) drops an item of a type the board does not show, before columns, lanes,
+  unplaced and counts, on every board kind (All Cards and Archive included, when they name types). The board's
+  drop target refuses such a card (`accepts`) and such a palette type (`acceptsType`), refusal "This board shows
+  <types> cards".
 - Output: `{ columns: { column, count, overLimit, lanes: { laneKey, items[] }[] }[], lanes: LaneHead[],
 unplaced: Item[], doneCount, total }`. Items sorted by `compareRank`, then `key`. Lanes ordered: assignee by
   name, type by catalogue order, priority by `PRIORITIES`, parent by key; the empty group last.
@@ -152,6 +156,20 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
   `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
 
+### Colour
+
+- `color` is a known field of kind `colour`: one of `PLAN_TYPE_COLOURS` (compared lower-case, stored as given in
+  the palette), anything else is `field_value_invalid`; clearing removes the key. `itemColourOf(item)` returns the
+  stored swatch or `undefined`, so a value written before validation (or by hand) never draws.
+- Built-in Project fields: `title, description, status, assignee, priority, color, start, due, labels` (+
+  comments). `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
+- Editor: `ColourSwatches` (apps/live/components/plan/ColourSwatches.tsx) is the shared radio group of the twelve
+  swatches, used by the type editor's Colour and, with `allowNone`, by the panel's Colour field
+  (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).
+  `ColourDot` draws an item's colour (8 px, ringed) beside a Parent chip and a Project swimlane header; the
+  Gantt draws a project's bar and diamond in `itemColourOf(project)` else the Project type colour (overdue red
+  still edges it) and a dot in the row's name.
+
 ### Archive
 
 - `archived` is a known field of kind `flag`: `true` is stored, anything else is `field_value_invalid`; clearing
@@ -162,6 +180,10 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
 - Board drop: onto an Archive board patches `{ set: { archived: true } }` (status kept; its own cards do not
   reorder); off one onto another board moves, then patches `{ clear: ['archived'] }`. An Archive board refuses
   palette cards and has no Add Card.
+- Card Finder (`card-finder.ts`, items.md "Finding a card"): `findCards(items, { query, show, boardStatuses, types?,
+typeLabel? })` keeps live cards of any type id (no catalogue filter), narrowed to `types` when non-empty;
+  `cardMatches(item, query, typeLabel?)` also matches the type's name. `CardFinderPanel` holds the pressed types in
+  component state and counts from the type-narrowed list.
 
 ## Data and persistence: D1
 

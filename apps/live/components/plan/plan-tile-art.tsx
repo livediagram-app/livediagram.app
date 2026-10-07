@@ -38,6 +38,18 @@ const BOARD_ART: Record<string, React.ReactNode> = {
       <rect x="15.5" y="5.5" width="3.5" height="2.5" rx="0.6" />
     </>
   ),
+  // A checklist: two rows ticked, one still to do.
+  todo: (
+    <>
+      <rect x="1.5" y="3" width="19" height="16" rx="2" />
+      <rect x="4" y="6" width="3" height="3" rx="0.6" />
+      <path d="M4.6 7.5l.9.9 1.5-1.7M9.5 7.5h7" />
+      <rect x="4" y="10.5" width="3" height="3" rx="0.6" />
+      <path d="M4.6 12l.9.9 1.5-1.7M9.5 12h5" />
+      <rect x="4" y="15" width="3" height="3" rx="0.6" />
+      <path d="M9.5 16.5h6" />
+    </>
+  ),
   // Columns crossed by swimlane rows, a dot per person.
   sprint: (
     <>

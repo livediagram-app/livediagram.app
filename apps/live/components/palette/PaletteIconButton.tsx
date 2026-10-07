@@ -51,6 +51,9 @@ type IconButtonProps = {
   onClick: () => void;
   children: React.ReactNode;
   disabled?: boolean;
+  // Greyed out with a reason (docs/specs/026-plan/plan-mode.md "The palette"): dimmed, no press and no drag, but
+  // still focusable (aria-disabled), with the reason in its hover card.
+  disabledReason?: string | undefined;
   // Pressed-state styling. Used by the shape buttons during draw-to-
   // size mode so the user sees which shape is queued for the next
   // canvas drag (the cursor + the banner already say it, but a
@@ -113,7 +116,8 @@ export function IconButton({
   description,
   onClick,
   children,
-  disabled,
+  disabled: disabledProp,
+  disabledReason,
   active,
   shortcut,
   draggable,
@@ -128,13 +132,16 @@ export function IconButton({
   noTint,
   shortcutAlwaysVisible,
 }: IconButtonProps) {
+  // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
+  const refused = !!disabledReason && !disabledProp;
+  const disabled = disabledProp || refused;
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): icon only, named by a Tooltip.
   const minimalChrome = useMinimalChrome();
   const captionHidden = hideCaption || minimalChrome;
   const hintKind = minimalChrome ? (hint ?? 'tooltip') : tileHint(hint, hideCaption);
   // A dragKind tile is draggable and carries the palette DnD payload; an
   // explicit draggable/onDragStart (the icon grid) is used otherwise.
-  const effectiveDraggable = dragKind ? true : draggable;
+  const effectiveDraggable = refused ? false : dragKind ? true : draggable;
   const effectiveDragStart = dragKind
     ? (e: React.DragEvent) => {
         // `kind` alone, or `kind|choice` where the tile carries a
@@ -162,9 +169,11 @@ export function IconButton({
   const modHeld = useModKeyHeld();
   const showBadge = !disabled && !!shortcut && modHeld && !shortcutAlwaysVisible;
   const showCornerLetter = !disabled && !!shortcut && shortcutAlwaysVisible;
-  const tone = active
-    ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
-    : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
+  const tone = refused
+    ? 'cursor-not-allowed text-slate-600 opacity-50 dark:text-slate-100'
+    : active
+      ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
+      : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
   // Theme tint for the glyph. The active (queued) tile keeps the brand
   // pressed treatment so it still reads as "selected"; disabled + opted-out
   // tiles render plain. The stroke colour drives every `currentColor` glyph;
@@ -194,12 +203,17 @@ export function IconButton({
   const button = (
     <button
       type="button"
-      onClick={onClick}
+      onClick={refused ? undefined : onClick}
       aria-label={label}
       aria-pressed={active}
-      disabled={disabled}
+      aria-disabled={refused || undefined}
+      disabled={disabledProp}
       draggable={effectiveDraggable}
       onDragStart={(e) => {
+        if (refused) {
+          e.preventDefault();
+          return;
+        }
         // Hide the browser's tile-snapshot drag image for shape tiles so the
         // canvas ghost is the only preview (icons keep the native image until
         // they're wired to the ghost too).
@@ -254,6 +268,13 @@ export function IconButton({
       ) : null}
     </button>
   );
+  if (refused) {
+    return (
+      <HoverCard title={label} description={disabledReason}>
+        {button}
+      </HoverCard>
+    );
+  }
   if (disabled) return button;
   if (hintKind === 'tooltip') return <Tooltip label={label}>{button}</Tooltip>;
   return (

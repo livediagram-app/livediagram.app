@@ -2,7 +2,7 @@
 // rails, and the closed sets and bounded rows of the content-carrying and collaborative kinds. Each
 // check names its field and rule, so a refusal says which value to fix.
 
-import { isPlanViewId, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
+import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -258,9 +258,10 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   {
     field: 'planView',
-    valid: (v: unknown) =>
-      typeof v === 'object' && v !== null && isPlanViewId((v as { view?: unknown }).view),
-    rule: 'an object { view } naming a plan view',
+    // Called, not referenced: @livediagram/items imports this package too, so at module load the binding
+    // may not be initialised yet (a ReferenceError in the browser).
+    valid: (v: unknown) => isPlanViewSettings(v),
+    rule: 'an object { view } naming a plan view, with an optional swimlaneBy, swimlaneField, namesWidth (120 to 2000) and rowOrder (up to 2000 card ids)',
   },
   {
     field: 'legendItems',

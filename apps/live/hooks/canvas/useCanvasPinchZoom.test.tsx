@@ -88,3 +88,26 @@ describe('useCanvasPinchZoom view', () => {
     expect(viewport.get().offset).toEqual({ x: -20, y: -20 });
   });
 });
+
+// An element that scrolls sideways itself (the Gantt timeline) keeps a sideways or Shift wheel.
+describe('useCanvasPinchZoom and a sideways scroller', () => {
+  it('leaves a sideways or Shift wheel to it, and still pans on a vertical one', () => {
+    setup();
+    const timeline = document.createElement('div');
+    timeline.setAttribute('data-own-wheel-x', '');
+    canvas.append(timeline);
+    const on = (init: WheelEventInit) =>
+      act(() => {
+        timeline.dispatchEvent(
+          new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init }),
+        );
+      });
+    on({ deltaX: 30, deltaY: 0 });
+    on({ deltaY: 30, shiftKey: true });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
+    on({ deltaX: 0, deltaY: 30 });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: 0, y: -30 });
+  });
+});

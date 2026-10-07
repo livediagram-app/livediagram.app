@@ -9,9 +9,13 @@ import {
   isTrashed,
   normaliseBoardSetup,
   projectBoard,
+  SWIMLANE_BY,
   type BoardProjection,
   type PlanBoardSetup,
 } from './board';
+import { GANTT_NAMES_MAX_PX, GANTT_NAMES_MIN_PX } from './plan-view-gantt';
+import { isGanttRowOrder } from './gantt-row-order';
+import { ITEM_TYPE_PATTERN } from './limits';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 
 // The board widget kinds that read out rather than narrow a board or need its set-up
@@ -50,6 +54,75 @@ export function isPlanViewId(value: unknown): value is PlanViewId {
   return typeof value === 'string' && (PLAN_VIEW_IDS as readonly string[]).includes(value);
 }
 
+// The card types a Gantt chart draws when it names none (docs/specs/026-plan/plan-views.md "Gantt Chart").
+export const GANTT_DEFAULT_TYPES: readonly string[] = ['project'];
+// The most card types a chart can name: the catalogue's own limit (ITEM_TYPES_MAX in type-catalogue.ts).
+export const GANTT_TYPES_MAX = 32;
+
+// The card types a Gantt chart's settings accept: its own list, else Project.
+export function ganttTypesOf(
+  settings: { types?: readonly string[] } | undefined,
+): readonly string[] {
+  return settings?.types && settings.types.length > 0 ? settings.types : GANTT_DEFAULT_TYPES;
+}
+
+// The card types a Gantt chart can show (docs/specs/026-plan/plan-views.md "Card types"): those that offer both a
+// Start and a Due field, so every card of them can have a bar. A Project always can.
+export function ganttEligibleTypes(types: readonly ItemTypeDef[]): ItemTypeDef[] {
+  return types.filter((t) => t.fields.includes('start') && t.fields.includes('due'));
+}
+
+// What a chart draws: the types it accepts that can be drawn. A type that loses Start or Due drops out until
+// it has them again; the setting keeps naming it.
+export function ganttShownTypes(
+  settings: { types?: readonly string[] } | undefined,
+  types: readonly ItemTypeDef[],
+): string[] {
+  const eligible = new Set(ganttEligibleTypes(types).map((t) => t.id));
+  return ganttTypesOf(settings).filter((id) => eligible.has(id));
+}
+
+// A plan view element's settings (docs/specs/026-plan/plan-views.md): its view, and for the Gantt chart its
+// card types, swimlanes, names column width and row order. What validation accepts; anything else is refused.
+export function isPlanViewSettings(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  if (!isPlanViewId(v['view'])) return false;
+  if (
+    v['swimlaneBy'] !== undefined &&
+    !(SWIMLANE_BY as readonly unknown[]).includes(v['swimlaneBy'])
+  )
+    return false;
+  if (
+    v['swimlaneField'] !== undefined &&
+    (typeof v['swimlaneField'] !== 'string' ||
+      !v['swimlaneField'] ||
+      v['swimlaneField'].length > 64)
+  )
+    return false;
+  const types = v['types'];
+  if (
+    types !== undefined &&
+    (!Array.isArray(types) ||
+      types.length === 0 ||
+      types.length > GANTT_TYPES_MAX ||
+      types.some((t) => typeof t !== 'string' || !ITEM_TYPE_PATTERN.test(t)) ||
+      new Set(types).size !== types.length)
+  )
+    return false;
+  if (v['rowOrder'] !== undefined && !isGanttRowOrder(v['rowOrder'])) return false;
+  const w = v['namesWidth'];
+  if (
+    w !== undefined &&
+    (typeof w !== 'number' ||
+      !Number.isFinite(w) ||
+      w < GANTT_NAMES_MIN_PX ||
+      w > GANTT_NAMES_MAX_PX)
+  )
+    return false;
+  return true;
+}
+
 // The metric a view is, or null for a visualisation.
 export function planViewMetric(view: PlanViewId): MetricKind | null {
   return view.startsWith('metric:') ? (view.slice(7) as MetricKind) : null;
@@ -68,7 +141,7 @@ export function planViewSize(view: unknown): { width: number; height: number } {
 
 // A view's name, as its palette tile and header say it.
 export const PLAN_VISUALISATION_LABELS: Readonly<Record<PlanVisualisation, string>> = {
-  gantt: 'Project Gantt Chart',
+  gantt: 'Gantt Chart',
   calendar: 'Due Calendar',
   workload: 'Workload by Person',
   'status-mix': 'Status Breakdown',

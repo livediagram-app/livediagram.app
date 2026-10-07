@@ -3,9 +3,11 @@
 
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
+// All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
 export const PLAN_BOARD_PRESET_IDS = [
   'blank',
   'kanban',
+  'todo',
   'sprint',
   'bug-triage',
   'retro',
@@ -35,6 +37,8 @@ const WORK_FIELDS: CardField[] = [
   'comments',
 ];
 
+// Each preset's widgets are few, and only ones true on it from the start (docs/specs/026-plan/board-widgets.md
+// "Defaults"): Completion only with a done column, WIP Alerts only with WIP limits.
 export const PLAN_BOARD_PRESETS: Readonly<
   Record<PlanBoardPresetId, { label: string; setup: PlanBoardSetup }>
 > = {
@@ -47,7 +51,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: WORK_FIELDS,
       voting: { on: false },
-      widgets: ['count', 'progress', 'people', 'filter', 'mine'],
+      widgets: [],
       hideWriting: false,
     },
   },
@@ -57,8 +61,8 @@ export const PLAN_BOARD_PRESETS: Readonly<
       title: 'Kanban',
       columns: [
         statusColumn('backlog', 'Backlog'),
-        statusColumn('todo', 'To do'),
-        statusColumn('doing', 'In progress', { wipLimit: 3 }),
+        statusColumn('todo', 'To Do'),
+        statusColumn('doing', 'In Progress', { wipLimit: 3 }),
         statusColumn('review', 'Review', { wipLimit: 2 }),
         statusColumn('done', 'Done'),
       ],
@@ -66,8 +70,25 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: WORK_FIELDS,
       voting: { on: false },
-      widgets: ['count', 'progress', 'wip', 'stale', 'unplaced', 'filter', 'mine'],
+      widgets: ['progress', 'wip', 'filter'],
       addTypes: ['task', 'action', 'note'],
+      hideWriting: false,
+    },
+  },
+  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Compact
+  // cards (a dense list of short items) showing who has each and when it is due.
+  todo: {
+    label: 'To-do List',
+    setup: {
+      title: 'To-do list',
+      columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done')],
+      doneColumnId: 'done',
+      swimlaneBy: 'none',
+      cardFields: ['assignee', 'due', 'checklist'],
+      cardSize: 'compact',
+      voting: { on: false },
+      widgets: ['progress', 'due'],
+      addTypes: ['action'],
       hideWriting: false,
     },
   },
@@ -76,16 +97,16 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Sprint',
       columns: [
-        statusColumn('sprint-backlog', 'Sprint backlog'),
-        statusColumn('doing', 'In progress'),
-        statusColumn('review', 'In review'),
+        statusColumn('sprint-backlog', 'Sprint Backlog'),
+        statusColumn('doing', 'In Progress'),
+        statusColumn('review', 'In Review'),
         statusColumn('done', 'Done'),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'assignee',
       cardFields: ['key', 'type', 'priority', 'labels', 'estimate', 'checklist'],
       voting: { on: false },
-      widgets: ['points', 'progress', 'people', 'unassigned', 'filter', 'mine'],
+      widgets: ['points', 'progress', 'filter'],
       addTypes: ['task', 'action'],
       hideWriting: false,
     },
@@ -99,13 +120,13 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('confirmed', 'Confirmed'),
         statusColumn('fixing', 'Fixing', { wipLimit: 4 }),
         statusColumn('fixed', 'Fixed'),
-        statusColumn('wont-fix', "Won't fix"),
+        statusColumn('wont-fix', 'Won’t Fix'),
       ],
       doneColumnId: 'fixed',
       swimlaneBy: 'priority',
       cardFields: ['key', 'assignee', 'labels', 'due'],
       voting: { on: false },
-      widgets: ['count', 'priorities', 'unassigned', 'stale', 'filter'],
+      widgets: ['count', 'unassigned', 'filter'],
       addTypes: ['task'],
       hideWriting: false,
     },
@@ -115,14 +136,14 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Retro',
       columns: [
-        statusColumn('went-well', 'Went well', { color: '#16a34a' }),
-        statusColumn('to-improve', 'To improve', { color: '#dc2626' }),
+        statusColumn('went-well', 'Went Well', { color: '#16a34a' }),
+        statusColumn('to-improve', 'To Improve', { color: '#dc2626' }),
         statusColumn('ideas', 'Ideas', { color: '#0d9488' }),
       ],
       swimlaneBy: 'none',
       cardFields: ['assignee', 'votes'],
       voting: { on: true, budget: 5 },
-      widgets: ['votes', 'top-voted', 'types', 'people'],
+      widgets: ['votes', 'top-voted'],
       // Notes and ideas only: the actions a retro agrees are tracked on a board of their own
       // (docs/specs/026-plan/plan-templates.md "Team Retro").
       addTypes: ['note', 'idea'],
@@ -141,7 +162,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: ['key', 'assignee', 'labels', 'start', 'due'],
       voting: { on: false },
-      widgets: ['count', 'progress', 'due', 'people', 'filter'],
+      widgets: ['count', 'due', 'filter'],
       addTypes: ['project'],
       hideWriting: false,
     },
@@ -160,7 +181,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: ['type', 'due', 'checklist'],
       voting: { on: false },
-      widgets: ['due', 'count', 'people', 'mine', 'filter'],
+      widgets: ['count', 'due', 'filter'],
       addTypes: ['task', 'action', 'note'],
       hideWriting: false,
     },
@@ -175,7 +196,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       cardFields: ['key', 'type', 'assignee', 'priority', 'due'],
       cardSize: 'compact',
       allCards: true,
-      widgets: ['count', 'types', 'priorities', 'unassigned', 'filter'],
+      widgets: ['count', 'types', 'filter'],
       voting: { on: false },
       hideWriting: false,
     },
@@ -190,7 +211,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       cardFields: ['key', 'type', 'assignee', 'labels'],
       cardSize: 'compact',
       archive: true,
-      widgets: ['count', 'types', 'filter'],
+      widgets: ['count', 'filter'],
       voting: { on: false },
       hideWriting: false,
     },

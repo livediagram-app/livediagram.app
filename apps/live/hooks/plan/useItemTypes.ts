@@ -27,7 +27,6 @@ export type ItemTypesSlice = {
   // Adds or replaces a type (matched by id), keeping its place.
   saveType: (type: ItemTypeDef) => void;
   deleteType: (typeId: string) => void;
-  reorder: (typeIds: readonly string[]) => void;
   restoreBuiltIns: () => void;
   receive: (op: ItemTypesRoomOp) => void;
 };
@@ -95,15 +94,6 @@ export function useItemTypes(opts: {
     (typeId: string) => withTypes((ts) => (ts.length > 1 ? ts.filter((t) => t.id !== typeId) : ts)),
     [withTypes],
   );
-  const reorder = useCallback(
-    (typeIds: readonly string[]) =>
-      withTypes((ts) => {
-        const byId = new Map(ts.map((t) => [t.id, t]));
-        const ordered = typeIds.flatMap((id) => byId.get(id) ?? []);
-        return [...ordered, ...ts.filter((t) => !typeIds.includes(t.id))];
-      }),
-    [withTypes],
-  );
   const restoreBuiltIns = useCallback(() => void save(null, true), [save]);
   const receive = useCallback(
     (op: ItemTypesRoomOp) => setCatalogue(readItemTypeCatalogue(op.itemTypes)),
@@ -111,7 +101,7 @@ export function useItemTypes(opts: {
   );
 
   return useMemo(
-    () => ({ catalogue, types, saveType, deleteType, reorder, restoreBuiltIns, receive }),
-    [catalogue, types, saveType, deleteType, reorder, restoreBuiltIns, receive],
+    () => ({ catalogue, types, saveType, deleteType, restoreBuiltIns, receive }),
+    [catalogue, types, saveType, deleteType, restoreBuiltIns, receive],
   );
 }

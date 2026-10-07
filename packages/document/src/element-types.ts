@@ -3,7 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { PlanBoardSetup, PlanViewId } from '@livediagram/items';
+import type { PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livediagram/items';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
@@ -1343,4 +1343,14 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
 export type PlanCardRef = { itemId: string };
 
 // What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
-export type PlanViewRef = { view: PlanViewId };
+// The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.
+export type PlanViewRef = {
+  view: PlanViewId;
+  // The Gantt chart's card types (card type ids); absent is Project alone.
+  types?: string[];
+  swimlaneBy?: SwimlaneBy;
+  swimlaneField?: string;
+  namesWidth?: number;
+  // The Gantt chart's own row order (card ids); absent is date order (docs/specs/026-plan/plan-views.md "Row order").
+  rowOrder?: string[];
+};

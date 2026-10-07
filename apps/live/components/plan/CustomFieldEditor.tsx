@@ -110,5 +110,8 @@ export function CustomFieldEditor({
         </Select>
       );
     }
+    // A Card field is drawn by LinkedCardField (ItemFieldEditor), never here.
+    case 'card':
+      return null;
   }
 }

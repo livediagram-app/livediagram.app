@@ -18,6 +18,9 @@ import {
   type HintKind,
 } from './hint-constants';
 import { placeHint, type HintLayout, type HintPlacement } from './place-hint';
+
+// Still frames before an open hint stops following its trigger (about half a second), until input wakes it.
+export const HINT_FOLLOW_IDLE_FRAMES = 30;
 import type { HintSurfaceProps } from './useHint';
 
 // The two looks (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md): an inverse pill
@@ -43,8 +46,8 @@ const LOOK: Record<HintKind, { surface: string; arrow: string; gap: number; arro
 };
 
 // The portalled box both hints paint into. Measured off-screen and hidden
-// for its first frame, then placed beside the anchor; re-placed on scroll
-// and resize while open. Portalled to <body> so it is never clipped by a
+// for its first frame, then placed beside the anchor; re-placed on scroll,
+// resize, and whenever the anchor moves (a canvas pan or zoom) while open. Portalled to <body> so it is never clipped by a
 // panel and never moves the page (spec: no layout shift).
 export function HintSurface({
   kind,
@@ -81,7 +84,34 @@ export function HintSurface({
     place();
     window.addEventListener('scroll', place, true);
     window.addEventListener('resize', place);
+    // A trigger can move without a scroll or a resize (a control on the canvas, as the canvas pans or
+    // zooms): while open, the hint follows it, re-placing only on a frame where the trigger's box changed.
+    // The loop sleeps after HINT_FOLLOW_IDLE_FRAMES still frames, and any input that can move the canvas
+    // (a wheel, a pointer, a key) wakes it, so a hint left open costs nothing while nothing moves.
+    let last = '';
+    let idle = 0;
+    let frame = 0;
+    const follow = () => {
+      const box = anchor()?.getBoundingClientRect();
+      const key = box ? `${box.left},${box.top},${box.width},${box.height}` : '';
+      if (key !== last) {
+        if (last) place();
+        last = key;
+        idle = 0;
+      } else idle += 1;
+      frame = idle < HINT_FOLLOW_IDLE_FRAMES ? requestAnimationFrame(follow) : 0;
+    };
+    const wake = () => {
+      idle = 0;
+      if (!frame) frame = requestAnimationFrame(follow);
+    };
+    wake();
+    const WAKE_EVENTS = ['wheel', 'pointermove', 'pointerup', 'keydown'] as const;
+    for (const type of WAKE_EVENTS)
+      window.addEventListener(type, wake, { capture: true, passive: true });
     return () => {
+      if (frame) cancelAnimationFrame(frame);
+      for (const type of WAKE_EVENTS) window.removeEventListener(type, wake, { capture: true });
       window.removeEventListener('scroll', place, true);
       window.removeEventListener('resize', place);
     };

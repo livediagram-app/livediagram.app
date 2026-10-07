@@ -22,6 +22,12 @@ import {
   isValidItemType,
   itemIdsShownOnTab,
   itemPersonId,
+  itemStatus,
+  isTrashed,
+  TRASHED_FROM_FIELD,
+  typeAllowsStatus,
+  typeIn,
+  typesOf,
   makeItem,
   newItemId,
   validateClear,
@@ -87,6 +93,19 @@ function rejected(error: ItemRejection, field?: string): Response {
 }
 
 const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
+
+// An item moved into a status its card type leaves out (docs/specs/026-plan/item-types.md "An item type"). Only a
+// change of status into such a one is refused: making a card in any status is allowed (a type that leaves every
+// status out can still be made, it just never moves), a card already in one is never moved out by this, and a type
+// change that keeps its status is let through. Putting a change back is never refused either: a trashed card
+// restored to the status it was trashed from, and an undo or redo (`undo` set: the body's `undo: true`).
+function excludedStatus(caller: ItemCaller, next: Item, before: Item, undo: boolean): boolean {
+  const status = itemStatus(next);
+  if (undo || !status || itemStatus(before) === status) return false;
+  if (isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
+  const type = typeIn(typesOf(caller.doc?.itemTypes), next.type);
+  return !typeAllowsStatus(type, status);
+}
 const itemBusy = () => {
   console.warn('[items] items.write.busy');
   return json(
@@ -319,6 +338,8 @@ export async function writeItem(
   caller: ItemCaller,
   itemId: string,
   change: (item: Item, by: ItemPerson) => Item | Response,
+  // An undo or redo (the body's `undo: true`): a card type's left-out statuses do not refuse it.
+  opts: { undo?: boolean } = {},
 ): Promise<Response> {
   if (caller.scope && !caller.scope.has(itemId)) return itemNotFound();
   const by = await writer(ctx, caller.owner);
@@ -327,6 +348,8 @@ export async function writeItem(
     if (!item) return itemNotFound();
     const next = change(item, by);
     if (next instanceof Response) return next;
+    if (excludedStatus(caller, next, item, opts.undo === true))
+      return rejected('status_excluded', 'status');
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
     const rev = await updateItemAtRev(ctx.env, caller.documentId, next, item.rev);
@@ -364,8 +387,12 @@ async function patch(ctx: RouteContext, documentId: string, itemId: string): Pro
   if (body instanceof Response) return body;
   const input = readPatch(body);
   if (typeof input === 'string') return rejected(input);
-  return writeItem(ctx, caller, itemId, (item, by) =>
-    applyPatch(item, input, { now: Date.now(), by }),
+  return writeItem(
+    ctx,
+    caller,
+    itemId,
+    (item, by) => applyPatch(item, input, { now: Date.now(), by }),
+    { undo: body.undo === true },
   );
 }
 
@@ -393,8 +420,12 @@ async function move(ctx: RouteContext, documentId: string, itemId: string): Prom
   if (typeof input === 'string') return rejected(input);
   // The neighbours are read before the change runs (the change itself is synchronous).
   const items = await listItems(ctx.env, documentId);
-  return writeItem(ctx, caller, itemId, (item, by) =>
-    applyMove(item, input, items, { now: Date.now(), by }),
+  return writeItem(
+    ctx,
+    caller,
+    itemId,
+    (item, by) => applyMove(item, input, items, { now: Date.now(), by }),
+    { undo: body.undo === true },
   );
 }
 

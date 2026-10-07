@@ -4,6 +4,11 @@ import {
   PLAN_VIEW_IDS,
   metricBoard,
   isPlanViewId,
+  isPlanViewSettings,
+  GANTT_TYPES_MAX,
+  ganttEligibleTypes,
+  ganttShownTypes,
+  ganttTypesOf,
   liveCards,
   phaseOf,
   planViewSize,
@@ -11,6 +16,7 @@ import {
   statusPhasesOf,
 } from './plan-views';
 import { isBoardWidgetKind } from './board-widgets';
+import { ITEM_TYPES } from './item-types';
 import { presetSetup } from './presets';
 import { ALI, SAM, item } from './test-items';
 import { TRASH_STATUS } from './board';
@@ -102,5 +108,52 @@ describe('metric board', () => {
     const board = metricBoard([item({ title: 'a' })], new Map());
     expect(board.setup.doneColumnId).toBeUndefined();
     expect(board.projection.total).toBe(1);
+  });
+});
+
+describe('plan view settings', () => {
+  it('takes a view with the Gantt’s optional swimlanes and names width, and refuses the rest', () => {
+    expect(isPlanViewSettings({ view: 'gantt' })).toBe(true);
+    expect(
+      isPlanViewSettings({
+        view: 'gantt',
+        swimlaneBy: 'field',
+        swimlaneField: 'c-size',
+        namesWidth: 300,
+      }),
+    ).toBe(true);
+    expect(isPlanViewSettings({ view: 'nope' })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', swimlaneBy: 'colour' })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', swimlaneField: '' })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', namesWidth: 40 })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', namesWidth: Number.NaN })).toBe(false);
+    expect(isPlanViewSettings(null)).toBe(false);
+  });
+
+  it('takes the Gantt’s card types: a list of type ids, none repeated, never empty', () => {
+    expect(isPlanViewSettings({ view: 'gantt', types: ['project', 'campaign'] })).toBe(true);
+    expect(isPlanViewSettings({ view: 'gantt', types: [] })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', types: ['Project'] })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', types: ['task', 'task'] })).toBe(false);
+    expect(isPlanViewSettings({ view: 'gantt', types: 'project' })).toBe(false);
+    expect(
+      isPlanViewSettings({
+        view: 'gantt',
+        types: Array.from({ length: GANTT_TYPES_MAX + 1 }, (_, i) => `t${i}`),
+      }),
+    ).toBe(false);
+    expect(ganttTypesOf(undefined)).toEqual(['project']);
+    expect(ganttTypesOf({ types: ['task'] })).toEqual(['task']);
+  });
+
+  it('draws only card types offering Start and Due (docs/specs/026-plan/plan-views.md "Card types")', () => {
+    expect(ganttEligibleTypes(ITEM_TYPES).map((t) => t.id)).toEqual(['project']);
+    const dated = ITEM_TYPES.map((t) =>
+      t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
+    );
+    expect(ganttEligibleTypes(dated).map((t) => t.id)).toEqual(['project', 'task']);
+    // A named type without both fields drops out of what is drawn, and comes back when it has them.
+    expect(ganttShownTypes({ types: ['project', 'task'] }, ITEM_TYPES)).toEqual(['project']);
+    expect(ganttShownTypes({ types: ['project', 'task'] }, dated)).toEqual(['project', 'task']);
   });
 });

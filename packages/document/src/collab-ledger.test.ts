@@ -234,7 +234,7 @@ describe('board set-up in the ledger', () => {
     expect(names(mergeLedgerIntoTab(saved, ledger, 1))).toEqual([
       'Backlog',
       'Ready',
-      'In progress',
+      'In Progress',
       'Checking',
       'Done',
     ]);
@@ -253,8 +253,8 @@ describe('board set-up in the ledger', () => {
     const merged = mergeLedgerIntoTab(boardTab(), ledger, 0);
     const pb = (merged.elements[0] as ShapeElement).planBoard!;
     expect(pb.columns.map((c) => c.name)).toEqual([
-      'To do',
-      'In progress',
+      'To Do',
+      'In Progress',
       'Review',
       'Done',
       'Newer',

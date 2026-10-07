@@ -22,6 +22,7 @@ export {
 } from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
+export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { SnapCarousel } from './SnapCarousel';
@@ -37,7 +38,7 @@ export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './re
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
 export { useEscape } from './useEscape';
-export { useFocusTrap } from './useFocusTrap';
+export { useFocusTrap, type FocusTrapInitial } from './useFocusTrap';
 export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
 export {
   ACTIVE_SEGMENT,

@@ -43,11 +43,3 @@ export function visibleTrail<T>(
   const folded = Math.max(0, earlier.length - shown);
   return { folded, crumbs: earlier.slice(folded) };
 }
-
-// The cards that name `parentId` as their Parent, in key order; trashed ones left out.
-export function childrenOf(items: ReadonlyMap<string, Item>, parentId: string): Item[] {
-  const out: Item[] = [];
-  for (const item of items.values())
-    if (item.fields['parent'] === parentId && !isTrashed(item)) out.push(item);
-  return out.sort((a, b) => a.key - b.key);
-}

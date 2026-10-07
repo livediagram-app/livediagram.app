@@ -98,8 +98,8 @@ describe('plan shapes in exports', () => {
 
   it('draws columns and escaped card faces from the items', () => {
     const svg = svgBoxed(board, { items });
-    expect(svg).toContain('To do');
-    expect(svg).toContain('In progress');
+    expect(svg).toContain('To Do');
+    expect(svg).toContain('In Progress');
     expect(svg).toContain('Fix &lt;login&gt;');
     expect(svg).toContain('#7 · Task');
     expect(svg).toContain('#8 · Note');
@@ -196,12 +196,23 @@ describe('plan view shape', () => {
     });
   });
 
+  it('validates a Gantt chart’s swimlanes and names width', () => {
+    const view = createShape('plan-view', 0, 0);
+    const gantt = (extra: Record<string, unknown>) =>
+      elementValidationIssue({ ...view, planView: { view: 'gantt', ...extra } });
+    expect(gantt({ swimlaneBy: 'assignee', namesWidth: 260 })).toBeNull();
+    expect(gantt({ swimlaneBy: 'field', swimlaneField: 'c-size' })).toBeNull();
+    expect(gantt({ swimlaneBy: 'colour' })).toMatchObject({ field: 'planView' });
+    expect(gantt({ namesWidth: 20 })).toMatchObject({ field: 'planView' });
+    expect(gantt({ namesWidth: '300' })).toMatchObject({ field: 'planView' });
+  });
+
   it('exports as a labelled box', () => {
     const gantt = {
       ...createShape('plan-view', 0, 0),
       planView: { view: 'gantt' },
     } as BoxedElement;
-    expect(svgBoxed(gantt)).toContain('Project Gantt Chart');
+    expect(svgBoxed(gantt)).toContain('Gantt Chart');
     const widget = {
       ...createShape('plan-view', 0, 0),
       planView: { view: 'metric:count' },

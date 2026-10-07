@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item } from '@livediagram/items';
-import { ItemChildCards } from './ItemChildCards';
+import { ItemChildCards, LinkedCardGroup } from './ItemChildCards';
 
 // docs/specs/026-plan/plan-board.md "Open an item", Child Cards.
 
@@ -59,5 +59,50 @@ describe('ItemChildCards', () => {
   it('shows nothing on another type without children', () => {
     draw(item('t', 1, 'task'), []);
     expect(screen.queryByText('Child Cards')).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Card fields": a section per Card field linking here.
+describe('LinkedCardGroup', () => {
+  const group = (cards: Item[]) => ({
+    fieldId: 'f-owner',
+    label: 'Owner',
+    fromTypes: ['task'],
+    cards,
+  });
+
+  it('lists the cards linking here as the field, opens one, and makes a new one linked', () => {
+    const onOpen = vi.fn();
+    const onAdd = vi.fn();
+    render(
+      <LinkedCardGroup
+        group={group([item('o1', 4, 'task', { status: 'doing' })])}
+        types={ITEM_TYPES}
+        statusNames={STATUS_NAMES}
+        canAdd
+        onOpen={onOpen}
+        onAdd={onAdd}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: /Linked as Owner/ }).textContent).toContain('1');
+    fireEvent.click(screen.getByRole('button', { name: 'Open #4 Card 4, In Progress' }));
+    expect(onOpen).toHaveBeenCalledWith('o1');
+    fireEvent.click(screen.getByRole('button', { name: 'New Task' }));
+    expect(onAdd).toHaveBeenCalledWith('task');
+  });
+
+  it('says so when nothing links here yet, and offers no New to a viewer', () => {
+    render(
+      <LinkedCardGroup
+        group={group([])}
+        types={ITEM_TYPES}
+        statusNames={STATUS_NAMES}
+        canAdd={false}
+        onOpen={vi.fn()}
+        onAdd={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('No cards link here as Owner yet.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'New Task' })).toBeNull();
   });
 });

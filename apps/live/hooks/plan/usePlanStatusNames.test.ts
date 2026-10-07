@@ -89,6 +89,41 @@ describe('document-wide statuses', () => {
     on.rerender({ t: [...tabs] });
     expect(on.result.current.names).toBe(first.names);
     expect(on.result.current.phases).toBe(first.phases);
+    expect(on.result.current.types).toBe(first.types);
+  });
+
+  it('gives each status the card types its boards show: their union, or every type', () => {
+    const typed = (columns: string[], addTypes?: string[]) =>
+      ({
+        ...createShape('plan-board', 0, 0),
+        planBoard: {
+          ...presetSetup('blank'),
+          columns: columns.map((status) => ({ id: status, status, name: status })),
+          ...(addTypes ? { addTypes } : {}),
+        },
+      }) as Element;
+    const typedTabs: Tab[] = [
+      {
+        id: 't',
+        name: 'Typed',
+        elements: [
+          typed(['todo', 'doing'], ['bug']),
+          typed(['todo'], ['task']),
+          typed(['doing']),
+          { ...typed(['shelf']), planBoard: presetSetup('all-cards') } as Element,
+        ],
+      },
+    ];
+    const { result } = renderHook(() => usePlanStatuses(typedTabs, 't', true));
+    const types = result.current.types;
+    expect(types.get('todo')).toEqual(new Set(['bug', 'task']));
+    expect(types.get('doing')).toBe('all');
+    // An All Cards board names no status.
+    expect([...types.keys()]).toEqual(['todo', 'doing']);
+    // Once Bug is deleted from the catalogue, the board that named only Bug shows every type again.
+    const later = renderHook(() => usePlanStatuses(typedTabs, 't', true, ['task', 'note']));
+    expect(later.result.current.types.get('todo')).toBe('all');
+    expect(later.result.current.types.get('doing')).toBe('all');
   });
 
   it('reuses the signatures while every tab’s boards are the same, and keeps the cache bounded', () => {

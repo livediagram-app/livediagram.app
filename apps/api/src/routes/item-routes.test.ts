@@ -449,6 +449,99 @@ describe('documents and items', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "An item type": a type's left-out statuses refuse a card moving in.
+describe('statuses a type leaves out', () => {
+  const noDone = {
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['description'],
+        excludedStatuses: ['done'],
+      },
+    ],
+  };
+
+  it('refuses a move or a patch into one, for that type only, but never a make', async () => {
+    const put = await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    expect(put.status).toBe(200);
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    const moved = await call({ path: `/items/${t.id}/move`, body: { status: 'done' } });
+    expect(moved.status).toBe(400);
+    expect(moved.body).toEqual({ error: 'status_excluded', field: 'status' });
+    const patched = await call({
+      path: `/items/${t.id}`,
+      body: { set: { status: 'done' } },
+    });
+    expect(patched.body).toMatchObject({ error: 'status_excluded' });
+    // Made straight into it: allowed (it is only never moved there).
+    expect((await add({ title: 'U', status: 'done' })).status).toBe(201);
+    // Another type may still be Done.
+    expect((await add({ title: 'N', status: 'done' }, { type: 'note' })).status).toBe(201);
+  });
+
+  it('lets a card already in one stay, be reordered there, and move out', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    const a = (await add({ title: 'A', status: 'done' })).body.item;
+    const b = (await add({ title: 'B', status: 'done' })).body.item;
+    expect((await call({ path: `/items/${b.id}/move`, body: { before: a.id } })).status).toBe(200);
+    expect((await call({ path: `/items/${a.id}/move`, body: { status: 'todo' } })).status).toBe(
+      200,
+    );
+  });
+
+  it('restores a trashed card to the status it was trashed from, even a left-out one', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    const t = (await add({ title: 'T', status: 'done' })).body.item;
+    const trashed = await call({
+      path: `/items/${t.id}`,
+      body: { set: { status: 'trash', trashedFrom: 'done' } },
+    });
+    expect(trashed.status).toBe(200);
+    const restored = await call<{ item: { fields: Record<string, unknown> } }>({
+      path: `/items/${t.id}`,
+      body: { set: { status: 'done' }, clear: ['trashedFrom'] },
+    });
+    expect(restored.status).toBe(200);
+    expect(restored.body.item.fields['status']).toBe('done');
+    // Out of the Trash into another left-out status than the one it came from: still refused.
+    const other = (await add({ title: 'O', status: 'todo' })).body.item;
+    await call({
+      path: `/items/${other.id}`,
+      body: { set: { status: 'trash', trashedFrom: 'todo' } },
+    });
+    const sneaked = await call({ path: `/items/${other.id}`, body: { set: { status: 'done' } } });
+    expect(sneaked.body).toMatchObject({ error: 'status_excluded' });
+  });
+
+  it('lets an undo or redo put a card back into one', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    const t = (await add({ title: 'T', status: 'done' })).body.item;
+    expect((await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } })).status).toBe(
+      200,
+    );
+    // The undo of that move, and the same as a patch: let through.
+    const undone = await call<{ item: { fields: Record<string, unknown> } }>({
+      path: `/items/${t.id}/move`,
+      body: { status: 'done', undo: true },
+    });
+    expect(undone.status).toBe(200);
+    expect(undone.body.item.fields['status']).toBe('done');
+    await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } });
+    expect(
+      (await call({ path: `/items/${t.id}`, body: { set: { status: 'done' }, undo: true } }))
+        .status,
+    ).toBe(200);
+    // Without the flag the same move is refused.
+    await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } });
+    const plain = await call({ path: `/items/${t.id}/move`, body: { status: 'done' } });
+    expect(plain.body).toMatchObject({ error: 'status_excluded' });
+  });
+});
+
 // docs/specs/026-plan/item-types.md "Storage and sync".
 describe('the type catalogue', () => {
   const catalogue = {

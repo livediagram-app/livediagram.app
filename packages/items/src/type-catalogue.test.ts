@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { FALLBACK_ITEM_TYPE, ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { planGlyphPath, PLAN_GLYPH_FALLBACK, PLAN_GLYPHS } from './glyphs';
 import {
+  BUILT_IN_FIELD_IDS,
+  ITEM_TYPE_FIELDS_MAX,
   builtInCatalogue,
   customFieldOf,
   isBuiltInFieldId,
@@ -9,6 +11,10 @@ import {
   newCustomFieldId,
   newItemTypeId,
   readItemTypeCatalogue,
+  requiredFieldsOf,
+  statusRefusal,
+  typeAllowsStatus,
+  ITEM_TYPE_EXCLUDED_STATUSES_MAX,
   slugOf,
   typeIn,
   typesOf,
@@ -138,5 +144,70 @@ describe('reading a type', () => {
 
   it('starts a first change from the built-ins', () => {
     expect(builtInCatalogue()).toEqual({ version: 1, types: ITEM_TYPES });
+  });
+});
+
+// docs/specs/026-plan/item-types.md "An item type": a Project always keeps its Start and Due.
+describe('a Project’s dates', () => {
+  it('are always kept, and come back to a stored Project that lost them', () => {
+    expect(requiredFieldsOf('project')).toEqual(['title', 'status', 'start', 'due']);
+    expect(requiredFieldsOf('task')).toEqual(['title', 'status']);
+    expect(requiredFieldsOf(undefined)).toEqual(['title', 'status']);
+    const bare = { ...ITEM_TYPES[0], fields: ['title', 'status', 'description'] };
+    const read = readItemTypeCatalogue({ version: 1, types: [bare] });
+    expect(read?.types[0]?.fields).toEqual(['title', 'status', 'description', 'start', 'due']);
+  });
+
+  it('come back even to a stored Project already at the field cap', () => {
+    const builtIns = BUILT_IN_FIELD_IDS.filter((f) => f !== 'start' && f !== 'due');
+    const room = ITEM_TYPE_FIELDS_MAX - builtIns.length;
+    const custom = Array.from({ length: room }, (_, i) => ({
+      id: `f-x${i}`,
+      label: `X${i}`,
+      kind: 'text',
+    }));
+    const full = { ...ITEM_TYPES[0], fields: [...builtIns, ...custom.map((c) => c.id)], custom };
+    const read = readItemTypeCatalogue({ version: 1, types: [full] });
+    expect(read?.types[0]?.fields.slice(-2)).toEqual(['start', 'due']);
+  });
+
+  it('are not added to any other type', () => {
+    const read = readItemTypeCatalogue(withCall([call]));
+    expect(read?.types[0]?.fields).not.toContain('start');
+  });
+});
+
+// docs/specs/026-plan/item-types.md "An item type": the statuses a type leaves out.
+describe('a type’s left-out statuses', () => {
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+  const read = (excludedStatuses: unknown) =>
+    validateItemTypeCatalogue({ version: 1, types: [{ ...task, excludedStatuses }] });
+
+  it('are stored de-duplicated, kept when no board names them, and dropped when empty', () => {
+    const ok = read(['done', 'done', 'gone-status']);
+    expect(ok.ok && ok.catalogue.types[0]!.excludedStatuses).toEqual(['done', 'gone-status']);
+    const none = read([]);
+    expect(none.ok && 'excludedStatuses' in none.catalogue.types[0]!).toBe(false);
+  });
+
+  it('refuse anything but a list of short status ids', () => {
+    expect(read('done').ok).toBe(false);
+    expect(read([''])).toMatchObject({ ok: false });
+    expect(read([42])).toMatchObject({ ok: false });
+    expect(read(['x'.repeat(41)])).toMatchObject({ ok: false });
+    expect(
+      read(Array.from({ length: ITEM_TYPE_EXCLUDED_STATUSES_MAX + 1 }, (_, i) => `s${i}`)),
+    ).toMatchObject({ ok: false });
+  });
+
+  it('allow every status not left out, and no status at all', () => {
+    const t = { ...task, excludedStatuses: ['done'] };
+    expect(typeAllowsStatus(t, 'done')).toBe(false);
+    expect(typeAllowsStatus(t, 'todo')).toBe(true);
+    expect(typeAllowsStatus(t, null)).toBe(true);
+    // A status added later is open to every type: nothing names it.
+    expect(typeAllowsStatus(t, 'brand-new')).toBe(true);
+    expect(typeAllowsStatus(task as ItemTypeDef, 'done')).toBe(true);
+    expect(statusRefusal('Task', 'Done')).toBe("Task cards can't be Done");
   });
 });

@@ -97,7 +97,8 @@ describe('fresh boards and All Cards', () => {
     const p = projectBoard(presetSetup('all-cards'), map([a, b, c]), undefined, undefined, names);
     expect(p.total).toBe(2);
     expect(p.lanes.map((l) => l.label)).toEqual(['To do', 'In progress', 'Done']);
-    expect(statusLabel('in-review~ab12')).toBe('In review');
+    expect(statusLabel('in-review~ab12')).toBe('In Review');
+    expect(statusLabel('ready-for-qa')).toBe('Ready for Qa');
   });
 });
 

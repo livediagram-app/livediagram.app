@@ -1,7 +1,7 @@
 // The item store on the wire (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"). Item shapes come from @livediagram/items; these are the request and response bodies.
 
-import type { Item, ItemCreate, ItemTypeCatalogue } from '@livediagram/items';
+import type { Item, ItemCreate, ItemMove, ItemPatch, ItemTypeCatalogue } from '@livediagram/items';
 
 // The item shapes the api documents, re-exported so the OpenAPI generator finds them here.
 export type {
@@ -24,6 +24,19 @@ export type ItemsResponse = { items: Item[]; rev: number };
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
 export type ItemResponse = { item: Item; rev: number };
+
+// What a patch or a move may add to its change: the write is an undo or redo, so a card type's left-out
+// statuses do not refuse it (docs/specs/026-plan/item-types.md "An item type").
+type ItemUndoFlag = {
+  /** Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out. */
+  undo?: true;
+};
+
+// POST /api/documents/:id/items/:itemId: the change, optionally marked as an undo or redo.
+export type ItemPatchRequest = ItemPatch & ItemUndoFlag;
+
+// POST /api/documents/:id/items/:itemId/move: the move, optionally marked as an undo or redo.
+export type ItemMoveRequest = ItemMove & ItemUndoFlag;
 
 // POST /api/documents/:id/items/bulk: template seeds and an offline document's items.
 export type ItemsBulkRequest = { items: ItemCreate[] };

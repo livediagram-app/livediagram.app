@@ -174,7 +174,7 @@ describe('palette layouts', () => {
   it('offers a board per preset and a card per item type', () => {
     const boards = tileIds('plan', 'plan-boards');
     const cards = tileIds('plan', 'plan-cards');
-    expect(boards).toHaveLength(9);
+    expect(boards).toHaveLength(10);
     expect(boards.every((id) => id.startsWith('plan:board-'))).toBe(true);
     expect(cards).toHaveLength(5);
     expect(cards.every((id) => id.startsWith('plan:card-'))).toBe(true);

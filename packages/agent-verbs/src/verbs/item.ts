@@ -92,12 +92,20 @@ async function refused<T>(work: () => Promise<T>): Promise<T> {
   try {
     return await work();
   } catch (err) {
+    // A card type that leaves the status out (docs/specs/026-plan/item-types.md "An item type").
+    if (err instanceof ApiError && err.status === 400 && err.code === 'status_excluded')
+      throw new VerbRefusal({
+        status: 400,
+        code: 'status_excluded',
+        message: "the item's card type does not use that status",
+        hint: 'pick another status, or allow it on the card type (Edit Card Type, Statuses)',
+      });
     if (err instanceof ApiError && err.status === 400)
       throw new VerbRefusal({
         status: 400,
         code: err.code ?? 'invalid',
         message: `the api refused it: ${err.code ?? 'invalid'}`,
-        hint: 'fields: title, description, status, assignee, priority (urgent|high|medium|low), labels, estimate, due (YYYY-MM-DD)',
+        hint: 'fields: title, description, status, assignee, priority (urgent|high|medium|low), labels, estimate, start and due (YYYY-MM-DD), color (a Plan swatch, #2563eb...)',
       });
     throw err;
   }

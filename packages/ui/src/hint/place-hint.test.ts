@@ -60,4 +60,29 @@ describe('placeHint', () => {
     expect(layout.top).toBe(8);
     expect(layout.arrowOffset).toBe(392);
   });
+
+  it("tries the caller's order of sides, beside before below", () => {
+    const order = ['right', 'left', 'bottom', 'top'] as const;
+    const beside = placeHint({
+      trigger: rect(400, 300),
+      surface,
+      viewport,
+      gap: 8,
+      margin: 8,
+      order,
+    });
+    expect(beside.placement).toBe('right');
+    expect(beside.left).toBe(448);
+    // No room on the right: the left side.
+    const flipped = placeHint({
+      trigger: rect(930, 300),
+      surface,
+      viewport,
+      gap: 8,
+      margin: 8,
+      order,
+    });
+    expect(flipped.placement).toBe('left');
+    expect(flipped.left).toBe(930 - 100 - 8);
+  });
 });

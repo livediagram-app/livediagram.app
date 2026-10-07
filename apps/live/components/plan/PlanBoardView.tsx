@@ -17,15 +17,23 @@ import {
   type Item,
   type QuickFilter,
   boardAddTypes,
+  newItemId,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { cellStatus, laneMove } from './plan-board-moves';
-import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
+import { DropGap, LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
+import {
+  cardsMovingRefused,
+  cardsStayedMessage,
+  moveStatusRefusal,
+  typeStatusRefusal,
+} from '@/hooks/plan/status-refusal';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
 import { PlanFirstColumn } from './PlanFirstColumn';
+import { addStatusColumn, addStatusColumns } from './column-status-picks';
 import { addFirstColumn } from './board-setup-edits';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
@@ -36,6 +44,12 @@ import { myVotes } from './PlanCardFace';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
 import { planOwnColours, planPalette } from './plan-palette';
+import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
+import {
+  MaximisePlanButton,
+  MaximisableSlot,
+  useMaximisedPlanLifetime,
+} from './MaximisedPlanLayer';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
@@ -56,6 +70,7 @@ export function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
   e.stopPropagation();
 }
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
+const NO_STATUSES: ReadonlyMap<string, string> = new Map();
 
 export function PlanBoardView({
   element,
@@ -98,6 +113,9 @@ export function PlanBoardView({
     (s) => s.selectedId === element.id || s.multiSelectedIds.has(element.id),
   );
   const canEdit = !!plan?.canEdit;
+  // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
+  const maximised = useMaximisedPlanId() === element.id;
+  useMaximisedPlanLifetime(element.id, maximised, interactive);
 
   const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
     element,
@@ -171,6 +189,8 @@ export function PlanBoardView({
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
 
+  const columnName = (s: string) => setup.columns.find((c) => c.status === s)?.name ?? s;
+
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;
     const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEdit);
@@ -187,6 +207,12 @@ export function PlanBoardView({
       plan.announce(`#${item.key} moved to the Trash`);
     } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
     else {
+      // A column whose status the card's type leaves out (docs/specs/026-plan/item-types.md "An item type").
+      const refused = moveStatusRefusal(plan.types, item, action.move, columnName);
+      if (refused) {
+        plan.announce(refused);
+        return;
+      }
       focusNextRef.current = item.id;
       plan.moveItem(item.id, action.move);
       plan.announce(action.announce);
@@ -199,7 +225,7 @@ export function PlanBoardView({
     .map((c) => `minmax(${PLAN_COLUMN_MIN_PX * (c.width ?? 1)}px, ${c.width ?? 1}fr)`)
     .join(' ');
 
-  return (
+  const board = (
     <div
       ref={boardRef}
       data-plan-board={element.id}
@@ -224,6 +250,7 @@ export function PlanBoardView({
         widgetDropAt={widgetSlot}
         flashWidget={flashWidget}
         selected={selected}
+        canRename={canEdit && interactive}
         onOpenItem={(id) => plan?.openItem(id)}
         onSetup={(next, part) => {
           plan?.updateBoard(element.id, next);
@@ -245,7 +272,17 @@ export function PlanBoardView({
           plan?.announce('Every card turned face up');
           track('Plan', 'Revealed', 'Board');
         }}
-        onMoveUnplaced={(item, status) => plan?.moveItem(item.id, { status, before: null })}
+        onMoveUnplaced={(item, status) => {
+          if (!plan) return;
+          const refused = typeStatusRefusal(plan.types, item.type, status, columnName);
+          if (refused) plan.announce(refused);
+          else plan.moveItem(item.id, { status, before: null });
+        }}
+        end={
+          interactive ? (
+            <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
+          ) : null
+        }
       />
       <div
         ref={bodyRef}
@@ -258,10 +295,22 @@ export function PlanBoardView({
           <PlanFirstColumn
             palette={palette}
             canEdit={canEdit}
+            setup={setup}
+            statusNames={plan?.statusNames ?? NO_STATUSES}
             onAdd={(name) => {
               const next = addFirstColumn(setup, name);
               if (!next) return;
               plan?.updateBoard(element.id, next);
+              trackSetup('ColumnAdded');
+            }}
+            onPick={(pick) => {
+              const added = addStatusColumn(setup, null, pick);
+              if (!added) return;
+              plan?.updateBoard(element.id, added.setup);
+              trackSetup('ColumnAdded');
+            }}
+            onPickAll={(picks) => {
+              plan?.updateBoard(element.id, addStatusColumns(setup, null, picks));
               trackSetup('ColumnAdded');
             }}
           />
@@ -289,9 +338,13 @@ export function PlanBoardView({
                   trackSetup(part);
                 }}
                 onMoveCards={(from, to) => {
-                  for (const it of items.values())
-                    if (itemStatus(it) === from)
-                      plan?.moveItem(it.id, { status: to, before: null });
+                  if (!plan) return;
+                  const moving = [...items.values()].filter((it) => itemStatus(it) === from);
+                  const stay = cardsMovingRefused(moving, plan.types, to);
+                  for (const it of moving)
+                    if (!stay.has(it.id)) plan.moveItem(it.id, { status: to, before: null });
+                  // One announcement for the cards whose type leaves the status out, never one each.
+                  if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
                 }}
               />
             ))}
@@ -326,6 +379,7 @@ export function PlanBoardView({
                                 slot: dragging.slot,
                                 height: dragging.height,
                                 itemId: dragging.itemId,
+                                ...(dragging.refused ? { refused: dragging.refused } : {}),
                               }
                             : incoming;
                         const slotHere =
@@ -339,6 +393,9 @@ export function PlanBoardView({
                         const firstEmpty =
                           empty && canEdit && laneIndex === 0 && col === projection.columns[0];
                         const done = setup.doneColumnId === col.column.id;
+                        // Every type the board takes may be added in any cell: a type's left-out statuses only
+                        // stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
+                        const cellTypes = addTypes;
                         return (
                           <div
                             key={col.column.id}
@@ -392,21 +449,24 @@ export function PlanBoardView({
                               />
                             ))}
                             {slotHere && slotHere.beforeId === null ? (
-                              <div
-                                className="rounded-lg border-2 border-dashed"
-                                style={{ height: held!.height, borderColor: palette.focus }}
-                                aria-hidden
+                              <DropGap
+                                height={held!.height}
+                                palette={palette}
+                                refused={held?.refused}
                               />
                             ) : null}
-                            {canEdit && !loading && !setup.archive ? (
+                            {canEdit && !loading && !setup.archive && cellTypes.length ? (
                               <AddCardButton
                                 palette={palette}
-                                types={addTypes}
+                                types={cellTypes}
                                 label={firstEmpty ? 'Add your first card' : 'Add card'}
                                 open={isAdding}
                                 onClosed={closeAdding}
-                                onAdd={({ type, fields }) =>
+                                onAdd={({ type, fields }) => {
+                                  // Opened at once to be named (plan-board.md "Open an item").
+                                  const id = newItemId();
                                   plan?.addItem({
+                                    id,
                                     type,
                                     fields: {
                                       ...fields,
@@ -414,8 +474,9 @@ export function PlanBoardView({
                                     } as Item['fields'],
                                     status: cellStatus(setup, col.column.status, lane),
                                     after: cell[cell.length - 1]?.id ?? null,
-                                  })
-                                }
+                                  });
+                                  plan?.openNewItem(id);
+                                }}
                               />
                             ) : null}
                           </div>
@@ -447,5 +508,22 @@ export function PlanBoardView({
         />
       ) : null}
     </div>
+  );
+  // One stable tree whether maximised or not (MaximisableSlot), so the board keeps its state both ways; while it
+  // fills the screen, the canvas keeps its place, empty.
+  return (
+    <MaximisableSlot
+      id={element.id}
+      maximised={maximised}
+      placeholder={{
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        borderRadius: radius,
+        borderWidth: 1,
+        borderStyle: 'solid',
+      }}
+    >
+      {board}
+    </MaximisableSlot>
   );
 }

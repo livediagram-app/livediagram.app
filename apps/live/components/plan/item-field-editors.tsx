@@ -7,6 +7,7 @@ import { ChipField } from '@/components/primitives/ChipField';
 import { CheckIcon, CloseIcon, PlusIcon, Select, TextInput, TextArea } from '@livediagram/ui';
 import { useEffect, useRef, useState } from 'react';
 import {
+  ESTIMATE_POINTS,
   PRIORITIES,
   PRIORITY_LABELS,
   isItemPerson,
@@ -164,22 +165,9 @@ export function PriorityPicker({
   );
 }
 
-// A label's colour: one of the Plan swatches, the same for the same label everywhere.
-const LABEL_COLOURS = [
-  '#2563eb',
-  '#16a34a',
-  '#7c3aed',
-  '#d97706',
-  '#0d9488',
-  '#db2777',
-  '#ea580c',
-  '#0891b2',
-];
-export function labelColour(label: string): string {
-  let h = 0;
-  for (const ch of label) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return LABEL_COLOURS[h % LABEL_COLOURS.length]!;
-}
+// A label's colour: one of the Plan swatches, the same for the same label everywhere (label-colour.ts).
+export { labelColour } from './label-colour';
+import { labelColour } from './label-colour';
 
 export function LabelsEditor({
   id,
@@ -255,7 +243,9 @@ export function LabelsEditor({
   );
 }
 
-export function NumberField({
+// An Estimate (docs/specs/026-plan/items.md "Fields"): picked from the story-point sizes, or None. A value a card
+// already holds that is not a size (set before, or by an agent) stays offered, so opening the card loses nothing.
+export function EstimateSelect({
   id,
   value,
   disabled,
@@ -266,24 +256,32 @@ export function NumberField({
   disabled: boolean;
   onSave: Save;
 }) {
+  const current = typeof value === 'number' ? value : undefined;
+  const sizes: number[] = [...ESTIMATE_POINTS];
+  if (current !== undefined && !sizes.includes(current))
+    sizes.splice(
+      sizes.findIndex((s) => s > current) === -1
+        ? sizes.length
+        : sizes.findIndex((s) => s > current),
+      0,
+      current,
+    );
   return (
-    <TextInput
+    <Select
       id={id}
-      type="number"
-      min={0}
-      max={999}
-      step="any"
+      className="w-full"
+      selectClassName="text-[13px]"
       disabled={disabled}
-      compact
-      defaultValue={typeof value === 'number' ? value : ''}
-      key={typeof value === 'number' ? value : 'none'}
-      onBlur={(e) => {
-        const raw = e.target.value.trim();
-        const n = Number(raw);
-        if (raw === '') onSave(undefined);
-        else if (Number.isFinite(n) && n >= 0 && n <= 999 && n !== value) onSave(n);
-      }}
-    />
+      value={current === undefined ? '' : String(current)}
+      onChange={(e) => onSave(e.target.value === '' ? undefined : Number(e.target.value))}
+    >
+      <option value="">None</option>
+      {sizes.map((s) => (
+        <option key={s} value={String(s)}>
+          {s}
+        </option>
+      ))}
+    </Select>
   );
 }
 

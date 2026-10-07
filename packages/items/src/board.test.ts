@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  boardShowsType,
   cardIsFaceDown,
   columnForStatus,
   normaliseBoardSetup,
@@ -21,7 +22,9 @@ import type { Item } from './item';
 const map = (items: Item[]) => new Map(items.map((i) => [i.id, i]));
 
 describe('projectBoard', () => {
-  const setup: PlanBoardSetup = { ...presetSetup('kanban'), swimlaneBy: 'none' };
+  // A Kanban board naming no card types, so it shows every type (the type filter has its own test).
+  const { addTypes: _kanbanTypes, ...kanban } = presetSetup('kanban');
+  const setup: PlanBoardSetup = { ...kanban, swimlaneBy: 'none' };
 
   it('places items in columns by status and rank, counts WIP, lists unplaced', () => {
     const items = [
@@ -40,6 +43,52 @@ describe('projectBoard', () => {
     expect(p.unplaced.map((i) => i.fields['title'])).toEqual(['f', 'g']);
     expect(p.doneCount).toBe(1);
     expect(p.total).toBe(5);
+  });
+
+  // docs/specs/026-plan/plan-board.md "Card types a board shows".
+  it('shows only the card types it names, and a hidden card comes back with its type', () => {
+    const items = map([
+      item({ title: 'task', status: 'todo' }),
+      item({ title: 'bug', status: 'todo' }, { type: 'project' }),
+      item({ title: 'loose' }, { type: 'project' }),
+    ]);
+    const titles = (s: PlanBoardSetup) => {
+      const p = projectBoard(s, items);
+      return {
+        shown: p.columns
+          .flatMap((c) => c.lanes.flatMap((l) => l.items))
+          .map((i) => i.fields['title']),
+        unplaced: p.unplaced.map((i) => i.fields['title']),
+        total: p.total,
+      };
+    };
+    const only = { ...setup, addTypes: ['task'] };
+    expect(titles(only)).toEqual({ shown: ['task'], unplaced: [], total: 1 });
+    expect(boardShowsType(only, 'project')).toBe(false);
+    const again = { ...setup, addTypes: ['task', 'project'] };
+    expect(titles(again).shown).toEqual(['task', 'bug']);
+    const { addTypes: _all, ...every } = setup;
+    expect(boardShowsType(every as typeof setup, 'project')).toBe(true);
+    expect(titles(every).unplaced).toEqual(['loose']);
+  });
+
+  // docs/specs/026-plan/plan-board.md "Card types a board shows": a board whose named types were all deleted
+  // shows and takes every type again.
+  it('shows every type once none of its named types is left in the catalogue', () => {
+    const items = map([
+      item({ title: 'task', status: 'todo' }),
+      item({ title: 'proj', status: 'todo' }, { type: 'project' }),
+    ]);
+    const stale = { ...setup, addTypes: ['customer-call'] };
+    const shown = projectBoard(stale, items)
+      .columns.flatMap((c) => c.lanes.flatMap((l) => l.items))
+      .map((i) => i.fields['title']);
+    expect(shown).toEqual(['task', 'proj']);
+    const catalogue = [{ id: 'task' }, { id: 'project' }];
+    expect(boardShowsType(stale, 'task', catalogue)).toBe(true);
+    // Without the catalogue it can only read the names it stores.
+    expect(boardShowsType(stale, 'task')).toBe(false);
+    expect(boardShowsType({ addTypes: ['task'] }, 'project', catalogue)).toBe(false);
   });
 
   it('shows every card, and applies the quick filter (counts ignore it)', () => {
@@ -93,6 +142,20 @@ describe('projectBoard', () => {
     ).toEqual(['Epic', 'No parent']);
   });
 
+  it("gives a project's lane its own Colour, and no other lane one", () => {
+    const red = item({ title: 'Red', status: 'x', color: '#dc2626' }, { type: 'project' });
+    const plain = item({ title: 'Plain', status: 'x' }, { type: 'project' });
+    const items = [
+      red,
+      plain,
+      item({ title: 'a', status: 'todo', parent: red.id }),
+      item({ title: 'b', status: 'todo', parent: plain.id }),
+      item({ title: 'c', status: 'todo' }),
+    ];
+    const lanes = projectBoard({ ...setup, swimlaneBy: 'parent' }, map(items)).lanes;
+    expect(lanes.map((l) => l.colour)).toEqual(['#dc2626', undefined, undefined]);
+  });
+
   it('offers the empty lane on an empty board', () => {
     expect(
       projectBoard({ ...setup, swimlaneBy: 'assignee' }, new Map()).lanes.map((l) => l.label),
@@ -108,6 +171,18 @@ describe('projectBoard', () => {
     expect(cardIsFaceDown(a, retro, 'other')).toBe(true);
     expect(cardIsFaceDown(a, retro, a.createdBy.id)).toBe(false);
     expect(cardIsFaceDown(a, { hideWriting: false }, 'other')).toBe(false);
+  });
+});
+
+describe('the To-do List preset (docs/specs/026-plan/plan-board.md "The To-do List board")', () => {
+  it('runs Actions from To Do to Done, on Compact cards, with Completion and Due Soon', () => {
+    const todo = presetSetup('todo');
+    expect(todo.columns.map((c) => c.name)).toEqual(['To Do', 'Done']);
+    expect(todo.doneColumnId).toBe('done');
+    expect(todo.addTypes).toEqual(['action']);
+    expect(todo.cardSize).toBe('compact');
+    expect(todo.widgets).toEqual(['progress', 'due']);
+    expect(isPlanBoardPresetId('todo')).toBe(true);
   });
 });
 

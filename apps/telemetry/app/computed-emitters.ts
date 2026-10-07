@@ -323,6 +323,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: PLAN_TYPE_WHY,
   },
   'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
+  // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
+  'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
+    values: ['BoardMaximised', 'ViewMaximised', 'BoardRestored', 'ViewRestored'],
+  },
   // An item opened: `Item` from a board or a list, or how the item panel moved to it (item-trail.ts ItemOpenVia).
   'apps/live/hooks/plan/usePlanSlice.ts Plan·Opened': {
     values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],

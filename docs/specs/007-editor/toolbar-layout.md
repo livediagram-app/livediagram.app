@@ -260,8 +260,23 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 ## Layout details
 
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
-  (follow-me pill, mode banners, timer, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
+  (follow-me pill, timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
+- **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
+  mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
+  the format painter) and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
+  under it as pills:
+  - One shared look, the **palette tray**: the strip's own surface (white, hairline border, dark in dark mode),
+    no top border, so it joins the strip's bottom edge with no gap; its bottom corners round as the strip's do,
+    and a soft shadow falls below it.
+  - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
+    menu button).
+  - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
+    its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries.
+  - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
+  - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
+  - Without a strip (the floating palette, zen, read-only, the welcome flow) the messages stay the
+    top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the Palette's header; the strip
   hides both its pickers the same way and shows the notation's tiles, led by
   the board's **Add from photo** (an icon button with a hover card, the
