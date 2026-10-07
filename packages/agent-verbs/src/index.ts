@@ -66,3 +66,4 @@ export { tabListOf } from './verbs/tab';
 export { EXPORT_FORMATS } from './verbs/local';
 export { documentListText, documentRows, type ListedDocument } from './verbs/document';
 export { MIRROR_LEVELS, STATUS_ORDER, SYNC_WATCH_TYPE, type StatusRow } from './verbs/link';
+export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';

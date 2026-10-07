@@ -10,8 +10,15 @@ import {
   verbById,
   verbsOf,
 } from './catalogue';
-import { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
-import { renderSkill, SKILL_NAME } from './skill';
+import { estimateTokens } from '@livediagram/document-views';
+import { GUIDE_TOPIC_MAX_TOKENS, GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
+import {
+  renderSkill,
+  SKILL_BODY_MAX_TOKENS,
+  SKILL_DESCRIPTION,
+  SKILL_FRONTMATTER_MAX_TOKENS,
+  SKILL_NAME,
+} from './skill';
 import {
   authLogin,
   authLogout,
@@ -137,6 +144,38 @@ describe('the guides and the skill', () => {
   it('tells a topic from a stranger', () => {
     expect(isGuideTopic('edit')).toBe(true);
     expect(isGuideTopic('nope')).toBe(false);
+  });
+
+  it('keep each topic, the frontmatter and the skill body within their budgets (CLI49)', () => {
+    for (const topic of GUIDE_TOPIC_NAMES)
+      expect(estimateTokens(GUIDE_TOPICS[topic].text), topic).toBeLessThanOrEqual(
+        GUIDE_TOPIC_MAX_TOKENS,
+      );
+    const skill = renderSkill();
+    const body = skill.slice(skill.indexOf('\n---\n') + 5);
+    expect(
+      estimateTokens(`name: ${SKILL_NAME}\ndescription: ${SKILL_DESCRIPTION}`),
+    ).toBeLessThanOrEqual(SKILL_FRONTMATTER_MAX_TOKENS);
+    expect(estimateTokens(body)).toBeLessThanOrEqual(SKILL_BODY_MAX_TOKENS);
+  });
+
+  it('teach reading a selection reference from a workbench', () => {
+    const text = GUIDE_TOPICS.workbench.text;
+    expect(text).toContain('[livediagram] "Home screen" › tab "Wireframe"');
+    for (const command of [
+      'livediagram tab view',
+      'livediagram tab render',
+      'livediagram presence set',
+      'livediagram presence clear',
+    ])
+      expect(text, command).toContain(command);
+  });
+
+  it('send an agent to the workbench guide when a message carries [livediagram]', () => {
+    expect(SKILL_DESCRIPTION).toContain('[livediagram]');
+    expect(renderSkill()).toContain(
+      'A message carrying a `[livediagram]` line is a selection reference from a workbench: read `livediagram guide workbench` first.',
+    );
   });
 
   it('open the skill with its name in the frontmatter', () => {

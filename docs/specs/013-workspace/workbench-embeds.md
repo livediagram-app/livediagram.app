@@ -137,6 +137,9 @@ read: livediagram tab view 3h9x2a --tab 0b34 --view show --ref 146b
 - No selection gives the header and `whole tab`, so the person can talk about the picture as a whole.
 - The text is what the agent sees; there is no hidden field. The `selected` selector stays the way an agent in a plain
   terminal reads the live selection.
+- The CLI teaches an agent to read one in `livediagram guide workbench`: re-reading the refs, looking at the tab
+  with `tab render`, and showing presence while it works. The agent skill sends an agent there when a message
+  carries `[livediagram]`.
 
 ## Spinner as a workbench
 

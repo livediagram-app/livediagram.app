@@ -59,6 +59,16 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
     command: 'sync --watch',
     what: 'keeping a repository’s mirror of its documents current',
   },
+  {
+    type: 'WorkbenchOpen',
+    command: 'workbench open',
+    what: 'opening a document inside a developer tool',
+  },
+  {
+    type: 'WorkbenchPair',
+    command: 'workbench pair',
+    what: 'pairing a developer tool with their token',
+  },
   { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
   { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },
