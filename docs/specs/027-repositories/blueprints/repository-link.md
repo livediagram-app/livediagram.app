@@ -496,7 +496,8 @@ type CliIo = {
   // Writes `prompt` to stderr and reads one line from stdin (node:readline, the terminal's own line editing);
   // null at end of input.
   readLine(prompt: string): Promise<string | null>;
-  // Recursive change events under `dir` (node:fs watch, recursive); the returned function stops it.
+  // Change events under `dir`, its subdirectories included (one node:fs watch per directory: the recursive
+  // watch on Linux goes quiet once a file is replaced by a rename); the returned function stops it.
   watchTree(dir: string, onChange: (path: string) => void): () => void;
   pid: number;
   hostname: string;

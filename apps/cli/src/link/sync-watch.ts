@@ -130,16 +130,17 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
     stream.ended.then((end) => (end === 'trashed' ? drop() : undefined), drop);
   };
 
-  const onLocal = async (path: string) => {
+  // A file event settles first; then a file that holds what the watch itself wrote, or is gone as the watch removed
+  // it, is its own write (RL23). Judged once settled, since an event can come before its pass has said what it wrote.
+  const onLocal = (path: string) => {
     if (!path.endsWith(PULL_FILE_SUFFIX)) return;
-    const text = await io.files.read(path);
-    if (touched.has(path) && touched.get(path) === (text === null ? null : await sha256(text)))
-      return;
     settle(`local ${path}`, SYNC_LOCAL_SETTLE_MS, () => {
-      ctx.log('watch local settled');
-      const rel = posix.relative(base, path);
-      void io.files.read(path).then((now) => {
-        const parsed = now === null ? null : parsePullFile(now);
+      void io.files.read(path).then(async (text) => {
+        const hash = text === null ? null : await sha256(text);
+        if (touched.has(path) && touched.get(path) === hash) return;
+        ctx.log('watch local settled');
+        const rel = posix.relative(base, path);
+        const parsed = text === null ? null : parsePullFile(text);
         due({
           paths: new Set([rel]),
           documents: new Set(
@@ -196,7 +197,7 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
         if (link.mirror.level === 'none') return stop();
         coverage.documents.forEach((d) => listen(d.id));
         await io.files.mkdir(base);
-        cleanups.push(io.watchTree(base, (path) => void onLocal(path)));
+        cleanups.push(io.watchTree(base, onLocal));
         recover();
       },
       (err: unknown) => {

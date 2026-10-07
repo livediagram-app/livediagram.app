@@ -1,8 +1,9 @@
 // The real CliIo: the process's streams and environment, the file system, global fetch and the clock.
 
-import { watch } from 'node:fs';
+import { readdirSync, watch, type Dirent, type FSWatcher } from 'node:fs';
 import {
   chmod,
+  lstat,
   mkdir,
   readdir,
   readFile,
@@ -74,6 +75,54 @@ function readLine(prompt: string): Promise<string | null> {
   });
 }
 
+// Change events under `dir`: one non-recursive watch per directory, added as directories appear. Node's recursive
+// watch on Linux follows each file by its inode and goes quiet once a file is replaced by a rename, which is how
+// editors, formatters and the CLI itself save; a directory's own watch hears every name in it. Symbolic links are
+// never followed.
+function watchTree(dir: string, onChange: (path: string) => void): () => void {
+  const watchers = new Map<string, FSWatcher>();
+  const add = (at: string) => {
+    if (watchers.has(at)) return;
+    let watcher: FSWatcher;
+    try {
+      watcher = watch(at, (event, name) => {
+        if (!name) return;
+        const path = join(at, name.toString());
+        onChange(path);
+        if (event === 'rename') void follow(path);
+      });
+    } catch {
+      return;
+    }
+    watcher.on('error', () => drop(at));
+    watchers.set(at, watcher);
+    for (const entry of readdirSafe(at)) if (entry.isDirectory()) add(join(at, entry.name));
+  };
+  const drop = (at: string) => {
+    for (const [path, watcher] of watchers)
+      if (path === at || path.startsWith(`${at}/`)) {
+        watcher.close();
+        watchers.delete(path);
+      }
+  };
+  // A name that came or went: a new directory is watched, a gone one dropped.
+  const follow = async (path: string) => {
+    const kind = await lstat(path).catch(() => null);
+    if (kind?.isDirectory()) add(path);
+    else if (!kind) drop(path);
+  };
+  add(dir);
+  return () => drop(dir);
+}
+
+function readdirSafe(dir: string): Dirent[] {
+  try {
+    return readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+}
+
 function processAlive(pid: number): boolean {
   try {
     process.kill(pid, 0);
@@ -92,12 +141,7 @@ export function nodeIo(): CliIo {
     stdinIsTTY: Boolean(process.stdin.isTTY),
     stdoutIsTTY: Boolean(process.stdout.isTTY),
     readLine,
-    watchTree: (dir, onChange) => {
-      const watcher = watch(dir, { recursive: true }, (_event, name) => {
-        if (name) onChange(join(dir, name.toString()));
-      });
-      return () => watcher.close();
-    },
+    watchTree,
     pid: process.pid,
     hostname: hostname(),
     processAlive,

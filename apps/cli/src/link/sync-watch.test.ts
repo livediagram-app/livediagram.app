@@ -53,6 +53,12 @@ describe('sync --watch', () => {
       '08:00:00 + diagrams/home.livediagram.json  "Home" · 1 tab · rev 1 · ~ diagrams/INDEX.md',
     ]);
     socketOf(io, 'd-home').open();
+    // The file system tells of each write as it lands, before the pass has said what it wrote.
+    const write = io.files.write;
+    io.files.write = async (path, data, mode) => {
+      await write(path, data, mode);
+      io.touch(path);
+    };
     host.edit('d-home', 0, [box('b1', 'Play')]);
     socketOf(io, 'd-home').send(changed('d-home-t1'));
     await io.advance(WAIT_SETTLE_MS / 2);
@@ -64,6 +70,9 @@ describe('sync --watch', () => {
       '08:00:03 ~ diagrams/home.livediagram.json  "Home" · Main · rev 1→2 · ~ diagrams/INDEX.md',
     );
     expect(io.fileMap.get(MIRROR)!.data).toContain('"label":"Play"');
+    await io.advance(SYNC_LOCAL_SETTLE_MS);
+    await flush();
+    expect(lines(io)).toHaveLength(2);
     io.interrupt();
     expect(await done).toBe(0);
     expect(socketOf(io, 'd-home').closedWith).toBe(1000);
