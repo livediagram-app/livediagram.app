@@ -22,6 +22,7 @@ import { pushFile, type PushInput } from './commands/push';
 import { syncLinks, type SyncInput } from './commands/sync';
 import { waitFor, type WaitInput } from './commands/wait';
 import { watch, type WatchInput } from './commands/watch';
+import { pairWorkbench, type PairInput } from './commands/workbench-pair';
 import { loadCapabilities } from './config/capabilities';
 import { withTelemetry, type ConfigFile } from './config/config-file';
 import { configDir } from './config/paths';
@@ -165,6 +166,7 @@ async function runOnline(
   if (verb.id === 'link.status') return linkStatus(io, ctx, links, Boolean(input.all));
   if (verb.id === 'link.ls') return linkLs(io, ctx, links, input.limit as number);
   if (verb.id === 'sync') return syncLinks(io, ctx, caps.apiBase, links, input as SyncInput);
+  if (verb.id === 'workbench.pair') return pairWorkbench(io, api, input as PairInput, json, log);
   return verb.run!(ctx, input);
 }
 

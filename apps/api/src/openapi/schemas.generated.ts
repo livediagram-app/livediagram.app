@@ -9301,6 +9301,95 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ShowSelectedView": {
+    "additionalProperties": false,
+    "properties": {
+      "header": {
+        "$ref": "#/components/schemas/ViewHeader"
+      },
+      "selected": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "container": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "kind": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "kind",
+                    "label"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "fields": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "incoming": {
+              "items": {
+                "$ref": "#/components/schemas/ViewEdgeJson"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "omitted": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "outgoing": {
+              "items": {
+                "$ref": "#/components/schemas/ViewEdgeJson"
+              },
+              "type": "array"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ref",
+            "kind",
+            "container",
+            "fields",
+            "incoming",
+            "outgoing",
+            "omitted"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "header",
+      "selected"
+    ],
+    "type": "object"
+  },
   "ShowView": {
     "additionalProperties": false,
     "properties": {

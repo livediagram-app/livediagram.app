@@ -53,8 +53,10 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `link init [--folder <f>] [--doc <d>] [--level <l>]`                   | Writes `livediagram.toml`; with no folder or document, a picker of the folders       |
 | `link status\|ls [--all]`                                              | A [repository link](../027-repositories/repository-link.md)'s documents and states   |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`                      | Mirrors the link's documents into the repository; `--watch` keeps doing it           |
+| `workbench open <doc> [--tab <t>] --origin <origin>`                   | A single-use link that opens the document live in a paired workbench                 |
+| `workbench pair --origin <origin> [--name <name>]`                     | Pairs the token with a workbench, approved once in the browser                       |
 | `template ls\|view`, `icon search <text>`, `schema [kind]`             | The catalogues and the element format, from the api                                  |
-| `guide [topic]`                                                        | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`                         |
+| `guide [topic]`                                                        | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`            |
 | `skill print\|install --to <dir>`                                      | The agent skill file                                                                 |
 | `api <method> <path> [--body <file>\|-]`                               | Any api route, authenticated; the escape hatch                                       |
 | `auth login\|status\|logout`                                           | Credentials                                                                          |
@@ -88,8 +90,9 @@ an agent through the CLI is designing their own diagram.
 - `<resource> <verb> --help` gives usage, flags, two examples and what it prints, within `HELP_VERB_MAX_TOKENS`.
 - `guide <topic>` and `schema <kind>` carry the depth, so it is paid for only when needed.
 - `skill print` prints a `SKILL.md` whose frontmatter (about 60 tokens) says when to use the CLI and whose body
-  points at `guide`. `skill install --to <dir>` writes it into that agent skills directory; without `--to` it lists
-  the common ones.
+  points at `guide`, and at `guide workbench` when a message carries a `[livediagram]`
+  [selection reference](../013-workspace/workbench-embeds.md#the-selection-reference). `skill install --to <dir>`
+  writes it into that agent skills directory; without `--to` it lists the common ones.
 - Help, guides and the skill come from the verb catalogue; templates, icons and the element format (`schema`) come
   from the api. Tests hold each within its budget.
 

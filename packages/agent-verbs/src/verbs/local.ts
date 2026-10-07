@@ -10,7 +10,7 @@ import { columns } from './shared';
 export const guide = defineVerb({
   id: 'guide',
   offline: true,
-  summary: 'How-tos: build, edit, views, comments, collaborate',
+  summary: 'How-tos: build, edit, views, comments, collaborate, workbench',
   description: 'Prints the list of guide topics, or one topic.',
   behaviour: 'read',
   local: true,

@@ -46,6 +46,7 @@ import {
 import { tabLint, tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
+import { workbenchOpen, workbenchPair } from './verbs/workbench';
 
 export const VERBS: readonly Verb[] = [
   documentLs,
@@ -100,6 +101,8 @@ export const VERBS: readonly Verb[] = [
   linkStatus,
   linkLs,
   sync,
+  workbenchOpen,
+  workbenchPair,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -116,6 +119,10 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
   { name: 'link', summary: 'Repository links: livediagram.toml and what it covers' },
+  {
+    name: 'workbench',
+    summary: 'Workbenches: open a document in a developer tool, pair one',
+  },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },

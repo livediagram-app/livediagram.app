@@ -9,6 +9,7 @@ import type { ConfigFile } from './config/config-file';
 import { cacheDir } from './config/paths';
 import type { DebugLog } from './debug';
 import type { CliIo } from './io';
+import { isNetworkFailure } from './output/failure-of';
 
 export const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
 
@@ -81,8 +82,7 @@ export async function reportApiFailure(
   const verb = pascalToken(verbId);
   if (err instanceof ApiError && err.status >= 500)
     await report('Error', 'Api', `Http${err.status}.${verb}`, sink);
-  else if (err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name))
-    await report('Error', 'Api', `Internal.${verb}`, sink);
+  else if (isNetworkFailure(err)) await report('Error', 'Api', `Internal.${verb}`, sink);
 }
 
 // `telemetry on|off` (blueprint "Telemetry"): off tells the host first, then writes the setting; on writes it, then

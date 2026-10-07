@@ -282,12 +282,13 @@ export type RoomSelection = { elementIds: string[]; name: string; color: string;
 
 // Every selection on the tab (docs/specs/024-agents/agent-changesets.md "Held elements"). Null
 // when the room cannot answer within ROOM_SELECTIONS_TIMEOUT_MS: then nothing counts as held, and
-// the warning says so.
+// the warning, under the reader's own fingerprint, says so.
 export async function readRoomSelections(
   env: Env,
   documentId: string,
   tabId: string,
   personTag: string | null,
+  reader: 'changeset' | 'views' = 'changeset',
 ): Promise<RoomSelection[] | null> {
   const query = `tab=${encodeURIComponent(tabId)}&person=${encodeURIComponent(personTag ?? '')}`;
   try {
@@ -303,7 +304,7 @@ export async function readRoomSelections(
     if (!Array.isArray(body.selections)) throw new Error('no selections');
     return body.selections as RoomSelection[];
   } catch (err) {
-    console.warn('[changeset] selections-unreachable', { documentId, tabId, error: String(err) });
+    console.warn(`[${reader}] selections-unreachable`, { documentId, tabId, error: String(err) });
     return null;
   }
 }

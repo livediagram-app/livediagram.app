@@ -18,6 +18,8 @@ import { layoutView } from './layout';
 import { buildViewModel, type ViewContext, type ViewModel } from './model';
 import { outlineView } from './outline';
 import { showView } from './show';
+import { selectedElements, showSelectedView } from './show-selected';
+import { SELECTED_REF } from './constants';
 
 export type ViewRequest = {
   view: TabViewName;
@@ -90,6 +92,30 @@ function resolveElement(
   return { el };
 }
 
+// The selection could not be read, or names nothing printed here: refused as edit operations word it (EO16).
+const selectionRefusal = (message: string): RenderedView => ({
+  ok: false,
+  refusal: {
+    error: TARGET_NOT_FOUND_ERROR,
+    message,
+    input: SELECTED_REF,
+    candidates: [],
+    stale: false,
+  },
+});
+
+function showSelected(
+  model: ViewModel,
+  selected: readonly string[] | null | undefined,
+  done: (result: ViewResult<unknown>) => RenderedView,
+  { budget, door }: ViewRequest,
+): RenderedView {
+  if (selected == null) return selectionRefusal('the selection could not be read');
+  const elements = selectedElements(model, selected);
+  if (elements.length === 0) return selectionRefusal('nothing is selected');
+  return done(showSelectedView(model, elements, { budget, door }));
+}
+
 export function renderView(
   request: ViewRequest,
   tab: Tab,
@@ -129,6 +155,7 @@ export function renderView(
     case 'comments':
       return done(commentsView(model, { budget, door, all: request.all }));
     case 'show': {
+      if (request.ref === SELECTED_REF) return showSelected(model, context.selected, done, request);
       const resolved = resolveElement(model, request.ref ?? '');
       if ('refusal' in resolved) return { ok: false, refusal: resolved.refusal };
       return done(showView(model, resolved.el, { budget, door }));
