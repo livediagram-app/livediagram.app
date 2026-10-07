@@ -20,6 +20,7 @@ export const STATUS_ORDER = [
   'ahead',
   'diverged',
   'new',
+  'held',
   'local-new',
   'gone',
   'unreadable',

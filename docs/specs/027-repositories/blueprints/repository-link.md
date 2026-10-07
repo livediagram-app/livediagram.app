@@ -239,24 +239,25 @@ there; at `index` its `INDEX.md` section renders the same bytes, so nothing chan
 
 ### Actions (`SyncAction`)
 
-| State or class           | Action      | Effect                                                                                                                                                    | Exit |
-| ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| `in-step`                | `none`      | Nothing; the outline file is rewritten only when missing (RL12)                                                                                           | 0    |
-| `behind`, `new`          | `write`     | `readDocumentSnapshot`; the mirror file at its path (below) and its outline file                                                                          | 0    |
-| `ahead`                  | `refuse`    | Nothing written; `! <path>: changed here; send it: livediagram push <path>`                                                                               | 1    |
-| `diverged`               | `refuse`    | Nothing written; `! <path>: changed here and in livediagram; send it: livediagram push <path>`                                                            | 1    |
-| `gone`                   | `remove`    | The mirror file and its outline file removed; at `index` the section dropped; the record dropped                                                          | 0    |
-| `gone`, locally changed  | `refuse`    | Nothing; `! <path>: gone from the link, but changed here and not sent; kept. Send it: livediagram push <path>, or delete it`                              | 1    |
-| lowered, unchanged       | `lower`     | The mirror file and its outline file removed, as `gone` removes them                                                                                      | 0    |
-| lowered, locally changed | `refuse`    | Nothing; `! <path>: level <level> keeps no mirror files, but this one changed here and is not sent; kept. Send it: livediagram push <path>, or delete it` | 1    |
-| `unreadable`             | `report`    | Nothing; one line per file, once per pass                                                                                                                 | 0    |
-| `local-new`              | `report`    | Nothing; `? <path>: a document written by hand; this version of livediagram does not create it`                                                           | 0    |
-| `conflicted`             | `refuse`    | Nothing; `! <path>: holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`                           | 1    |
-| `invalid`                | `refuse`    | Nothing; `! <path>: <parsePullFile message>`                                                                                                              | 1    |
-| `foreign-host`           | `refuse`    | Nothing; `! <path>: synced from <host>, not this link's <link host>`                                                                                      | 1    |
-| `duplicate`              | `refuse`    | Nothing; `! <path>: names the same document as <other path>`                                                                                              | 1    |
-| transient                | `transient` | Nothing; `! "<name>": <failure>; files kept`                                                                                                              | 6, 7 |
-| a path that would differ | `relocate`  | Without `--relocate`: the line only; with it: moved before the pass writes                                                                                | 0    |
+| State or class           | Action      | Effect                                                                                                                                                                                                                                                                                                  | Exit |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| `in-step`                | `none`      | Nothing; the outline file is rewritten only when missing (RL12)                                                                                                                                                                                                                                         | 0    |
+| `behind`, `new`          | `write`     | `readDocumentSnapshot`; the mirror file at its path (below) and its outline file                                                                                                                                                                                                                        | 0    |
+| `ahead`                  | `refuse`    | Nothing written; `! <path>: changed here; send it: livediagram push <path>`                                                                                                                                                                                                                             | 1    |
+| `diverged`               | `refuse`    | Nothing written; `! <path>: changed here and in livediagram; send it: livediagram push <path>`                                                                                                                                                                                                          | 1    |
+| `gone`                   | `remove`    | The mirror file and its outline file removed; at `index` the section dropped; the record dropped                                                                                                                                                                                                        | 0    |
+| `gone`, locally changed  | `refuse`    | Nothing; `! <path>: gone from the link, but changed here and not sent; kept. Send it: livediagram push <path>, or delete it`                                                                                                                                                                            | 1    |
+| lowered, unchanged       | `lower`     | The mirror file and its outline file removed, as `gone` removes them                                                                                                                                                                                                                                    | 0    |
+| lowered, locally changed | `refuse`    | Nothing; `! <path>: level <level> keeps no mirror files, but this one changed here and is not sent; kept. Send it: livediagram push <path>, or delete it`                                                                                                                                               | 1    |
+| `unreadable`             | `report`    | Nothing; one line per file, once per pass                                                                                                                                                                                                                                                               | 0    |
+| `local-new`              | `report`    | Nothing; `? <path>: a document written by hand; this version of livediagram does not create it`                                                                                                                                                                                                         | 0    |
+| `conflicted`             | `refuse`    | Nothing; `! <path>: holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`                                                                                                                                                                         | 1    |
+| `invalid`                | `refuse`    | Nothing; `! <path>: <parsePullFile message>`                                                                                                                                                                                                                                                            | 1    |
+| `foreign-host`           | `refuse`    | Nothing; `! <path>: synced from <host>, not this link's <link host>`                                                                                                                                                                                                                                    | 1    |
+| `new`, its path held     | `refuse`    | Nothing; `! "<name>": not written while <path> holds git conflict markers. Keep one side: git checkout --ours <path> (or --theirs), then livediagram sync`, or for an invalid file `! "<name>": not written while <path> is invalid (<parsePullFile message>); fix or delete it, then livediagram sync` | 1    |
+| `duplicate`              | `refuse`    | Nothing; `! <path>: names the same document as <other path>`                                                                                                                                                                                                                                            | 1    |
+| transient                | `transient` | Nothing; `! "<name>": <failure>; files kept`                                                                                                                                                                                                                                                            | 6, 7 |
+| a path that would differ | `relocate`  | Without `--relocate`: the line only; with it: moved before the pass writes                                                                                                                                                                                                                              | 0    |
 
 A file that would be written is never also removed in one pass; a refused document's outline file is not
 rewritten.
@@ -266,6 +267,9 @@ rewritten.
 - **New file.** `mirrorPathFor(document, folderPath, taken)`: `<dir>/<folder path>/<slug>.livediagram.json` with
   `slug = fileSlug(document.name, document.id)`; when that path is held by a file naming another document (or a
   `local-new` file), `<slug>-<idSlug(id)>`, then the whole id (CLI27, CLI85).
+- **Held back.** Walking those candidates in order, one held by a `conflicted` or `invalid` file is the document's
+  mirror path, broken: the `new` document is not written at any path; its action is `refuse` with reason `held`
+  (spec "A broken file holds its document back").
 - **Stable.** A `tracked` file keeps its path on every later write. Its **expected path** is `mirrorPathFor` with
   the document's current name and folder path, its own path excluded from `taken`. A different expected path is a
   `relocate` action.
@@ -641,11 +645,13 @@ backtick (RL32).
 | index         | `~ <dir>/INDEX.md` when rewritten                                                                                                  |
 | totals        | `<n> in step · <n> written · <n> removed · <n> refused · <n> unreadable` (zero counts left out; `nothing to do` when all are zero) |
 
-`--dry-run` prints the same lines and then `dry run: nothing written`. `--all` prints `<link path>` before each
+`--dry-run` prints the same lines and then `dry run: nothing written`; its `INDEX.md` line is decided on the sections a
+real pass would write, each written or in-step document's tabs taken from the overview's facts at the path it would
+hold. `--all` prints `<link path>` before each
 link's lines and a blank line between links.
 
 `link status` rows, aligned with `columns`: `<state>  <ref>  "<name>"  <path>`; a file with no readable document
-prints `<state>  -  <path>`; then the totals line `<n> in-step · <n> behind · …` in state-table order, zero counts
+prints `<state>  -  <path>`; a document held back by a broken file prints `held` with that file's path; then the totals line `<n> in-step · <n> behind · …` in state-table order, zero counts
 left out.
 
 ## Data and persistence
@@ -686,6 +692,8 @@ No api change, no D1 table, no migration. Local files:
 - **E5** A mirror file edited into invalid JSON: `invalid`, refused, exit 1; the document's other files untouched.
 - **E6** A mirror file with git's conflict markers: `conflicted`, refused naming `git checkout --ours|--theirs`,
   exit 1; the rest of the pass proceeds.
+- **E6a** A covered document whose mirror path a conflicted or invalid file holds: `held`, refused naming the file
+  and its fix, exit 1; never written at a `-<id8>` path, so resolving the conflict leaves no duplicate.
 - **E7** A covered document whose mirror file was deleted: `new`, written again at a fresh path.
 - **E8** A document moved to the Trash: `410`, `gone`, files removed; restoring it makes it `new` again.
 - **E9** A document purged, or not this account's to open: `404`, `unreadable`, untouched, one line per pass.
@@ -795,24 +803,24 @@ for tab "<name>"`, exit 7 (as `pull`).
 Printed to stderr only under `LIVEDIAGRAM_DEBUG=1`, as `[sync] …` and `[link] …` (`debugLog(io, 'sync')`,
 `debugLog(io, 'link')`, RL33). Ids only.
 
-| Fingerprint                                                                                                                     | Where                     |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `[sync] link <link id> level <level> folder <id\|-> documents <n>`                                                              | pass start                |
-| `[sync] coverage <n> covered folder <found\|unreadable>`                                                                        | `readCoverage`            |
-| `[sync] state <documentId> <state>`                                                                                             | `planSync`, each document |
-| `[sync] wrote <documentId> <tabId> rev <n>`                                                                                     | each tab written          |
-| `[sync] gone <documentId> <trashed\|outside>`                                                                                   | each removal              |
-| `[sync] unreadable <documentId>`                                                                                                | each `404`                |
-| `[sync] refused <documentId\|-> <ahead\|diverged\|gone-changed\|lowered-changed\|conflicted\|invalid\|foreign-host\|duplicate>` | each refusal              |
-| `[sync] lowered <documentId>`                                                                                                   | each lowered file removed |
-| `[sync] local-new`                                                                                                              | each hand-written file    |
-| `[link] picker <shown <n>\|narrowed <n>\|chosen\|cancelled\|refused-not-tty>`                                                   | `pickFolder`              |
-| `[link] remote <yes\|no\|unknown>`                                                                                              | `link init` step 7        |
-| `[sync] transient <documentId> <status\|network>`                                                                               | each transient failure    |
-| `[sync] relocate <documentId> <moved\|pending> <git\|rename>`                                                                   | each relocation           |
-| `[sync] lock <taken\|released\|stale <pid>>`, `[sync] lock-wait <pid>`                                                          | the lock                  |
-| `[sync] watch <room <documentId>\|local\|coverage> settled`                                                                     | `watchLink`               |
-| `[sync] pass <n> actions exit <code> <ms> ms`                                                                                   | pass end                  |
+| Fingerprint                                                                                                                           | Where                     |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `[sync] link <link id> level <level> folder <id\|-> documents <n>`                                                                    | pass start                |
+| `[sync] coverage <n> covered folder <found\|unreadable>`                                                                              | `readCoverage`            |
+| `[sync] state <documentId> <state>`                                                                                                   | `planSync`, each document |
+| `[sync] wrote <documentId> <tabId> rev <n>`                                                                                           | each tab written          |
+| `[sync] gone <documentId> <trashed\|outside>`                                                                                         | each removal              |
+| `[sync] unreadable <documentId>`                                                                                                      | each `404`                |
+| `[sync] refused <documentId\|-> <ahead\|diverged\|gone-changed\|lowered-changed\|conflicted\|invalid\|foreign-host\|duplicate\|held>` | each refusal              |
+| `[sync] lowered <documentId>`                                                                                                         | each lowered file removed |
+| `[sync] local-new`                                                                                                                    | each hand-written file    |
+| `[link] picker <shown <n>\|narrowed <n>\|chosen\|cancelled\|refused-not-tty>`                                                         | `pickFolder`              |
+| `[link] remote <yes\|no\|unknown>`                                                                                                    | `link init` step 7        |
+| `[sync] transient <documentId> <status\|network>`                                                                                     | each transient failure    |
+| `[sync] relocate <documentId> <moved\|pending> <git\|rename>`                                                                         | each relocation           |
+| `[sync] lock <taken\|released\|stale <pid>>`, `[sync] lock-wait <pid>`                                                                | the lock                  |
+| `[sync] watch <room <documentId>\|local\|coverage> settled`                                                                           | `watchLink`               |
+| `[sync] pass <n> actions exit <code> <ms> ms`                                                                                         | pass end                  |
 
 The spec's `[sync] sent`, `merged`, `lost-local-value`, `pending` and `resolved` belong to the second slice. The
 room stream's own `[cli] room …` lines and each request's `[cli] request …` line print as today.
@@ -862,6 +870,7 @@ absent.
 | Only an envelope without sync data is `local-new`; a tracked file is never created               | `apps/cli/src/link/mirror-scan.test.ts`, `sync-plan.test.ts`                       |
 | Transient failures keep files and are reported, never `gone` or `unreadable`                     | `sync.test.ts` (429, 503, network; files byte-equal after)                         |
 | Conflict markers refused naming `git checkout --ours` or `--theirs`, then sync                   | `mirror-scan.test.ts`, `sync.test.ts`                                              |
+| A broken file at a document's mirror path holds that document back, never written elsewhere      | `sync-plan.test.ts`, `sync.test.ts`, `sync-lines.test.ts`                          |
 | `ahead` and `diverged` refused per document naming `push <file>`; the rest proceeds              | `sync.test.ts`                                                                     |
 | `--dry-run` writes nothing, takes no lock                                                        | `sync.test.ts` (file map and state dir unchanged)                                  |
 | Local sync state under the git dir, else the cache; link id from the path; each worktree its own | `apps/cli/src/link/local-state.test.ts`; `git.test.ts` (two worktrees)             |

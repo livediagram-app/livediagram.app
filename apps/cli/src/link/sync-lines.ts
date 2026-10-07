@@ -82,6 +82,12 @@ export function actionLine(action: SyncAction, lc: LineContext): string | null {
       return `! ${quoted(action.name)}: ${action.failure}; files kept`;
     case 'refuse':
       return refuseLine(action, lc);
+    case 'held': {
+      const p = lc.pathOf(action.path);
+      return action.broken === 'conflicted'
+        ? `! ${quoted(action.name)}: not written while ${p} holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livediagram sync`
+        : `! ${quoted(action.name)}: not written while ${p} is invalid (${action.message}); fix or delete it, then livediagram sync`;
+    }
   }
 }
 

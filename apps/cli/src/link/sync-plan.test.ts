@@ -357,3 +357,59 @@ describe('a listed document no library names', () => {
     expect(actions.map((a) => a.documentId)).toEqual(['d-home', 'd-listed']);
   });
 });
+
+describe('a broken file at a document’s mirror path', () => {
+  it('holds the new document back, never writing it at another path', async () => {
+    const twin = fixtureDoc('d-twin', 'Home', [2]);
+    const { actions, states } = plan({
+      scan: [
+        { class: 'conflicted', path: 'zeta.livediagram.json' },
+        await trackedFile(fixtureDoc('d-other', 'Home', [1]), 'home.livediagram.json'),
+        { class: 'invalid', path: 'home-d-twin.livediagram.json', message: 'not JSON' },
+      ],
+      coverage: coverageOf([zeta, twin]),
+      remote: facts(zeta, twin),
+    });
+    expect(actions.filter((a) => a.kind === 'held')).toEqual([
+      {
+        kind: 'held',
+        documentId: 'd-twin',
+        name: 'Home',
+        path: 'home-d-twin.livediagram.json',
+        broken: 'invalid',
+        message: 'not JSON',
+      },
+      {
+        kind: 'held',
+        documentId: 'd-zeta',
+        name: 'Zeta',
+        path: 'zeta.livediagram.json',
+        broken: 'conflicted',
+        message: null,
+      },
+    ]);
+    expect(actions.some((a) => a.kind === 'write')).toBe(false);
+    expect(states.get('d-zeta')).toBe('new');
+  });
+});
+
+describe('a new document whose every path another document holds', () => {
+  it('takes its whole id, as mirrorPathFor does', async () => {
+    const twin = fixtureDoc('d-twin', 'Home', [2]);
+    const { actions } = plan({
+      scan: [
+        await trackedFile(fixtureDoc('d-a', 'Home', [1]), 'home.livediagram.json'),
+        await trackedFile(fixtureDoc('d-b', 'Home', [1]), 'home-d-twin.livediagram.json'),
+      ],
+      coverage: coverageOf([twin]),
+      remote: facts(twin),
+    });
+    expect(actions).toContainEqual(
+      expect.objectContaining({
+        kind: 'write',
+        documentId: 'd-twin',
+        path: 'home-d-twin.livediagram.json',
+      }),
+    );
+  });
+});

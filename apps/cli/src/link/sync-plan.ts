@@ -8,7 +8,7 @@ import type { Coverage } from './coverage';
 import { isCovered } from './coverage';
 import type { MirrorLevel } from './link-file';
 import type { MirrorFile } from './mirror-file';
-import { mirrorPathFor } from './mirror-paths';
+import { mirrorPathCandidates, mirrorPathFor } from './mirror-paths';
 import type { ScannedFile, TabHashes } from './mirror-scan';
 import { recordedStateOf, type RecordedDocument } from './recorded-state';
 import { remoteTabsOf, type RemoteFact } from './remote';
@@ -41,6 +41,14 @@ export type SyncAction =
   | (Doc & { kind: 'lower'; path: string })
   | (Doc & { kind: 'transient'; failure: string; exit: 6 | 7; reason: string })
   | (Doc & { kind: 'relocate'; path: string; to: string })
+  // A new document whose mirror path a conflicted or invalid file holds: written nowhere until that file is fixed.
+  | (Doc & {
+      kind: 'held';
+      path: string;
+      broken: 'conflicted' | 'invalid';
+      // The parse failure of an invalid file.
+      message: string | null;
+    })
   | {
       kind: 'refuse';
       documentId: string | null;
@@ -113,6 +121,13 @@ export function planSync(input: PlanInput): Plan {
   const tracked = scan.filter((s): s is Tracked => s.class === 'tracked');
   const taken = new Set(scan.map((s) => s.path));
   const fileOf = new Map(level === 'files' ? tracked.map((t) => [t.file.document.id, t]) : []);
+  // The paths a conflicted or invalid file holds: a new document whose path one holds is held back.
+  type Broken = { broken: 'conflicted' | 'invalid'; message: string | null };
+  const broken = new Map<string, Broken>();
+  for (const s of scan) {
+    if (s.class === 'conflicted') broken.set(s.path, { broken: 'conflicted', message: null });
+    if (s.class === 'invalid') broken.set(s.path, { broken: 'invalid', message: s.message });
+  }
   // A document a duplicate file names is never written again beside them (RL11).
   const named = new Set(scan.flatMap((s) => (s.class === 'duplicate' ? [s.documentId] : [])));
 
@@ -214,7 +229,15 @@ export function planSync(input: PlanInput): Plan {
         );
     let target: string | null = path;
     if (level === 'files' && !file) {
-      target = mirrorPathFor({ id: documentId, name }, folderPath, taken);
+      const candidates = mirrorPathCandidates({ id: documentId, name }, folderPath);
+      // The first path no other document holds is the document's; a broken file there holds it back.
+      const own = candidates.find((c) => !taken.has(c) || broken.has(c)) ?? candidates.at(-1)!;
+      const holding = broken.get(own);
+      if (holding) {
+        documentActions.push({ kind: 'held', ...doc, path: own, ...holding });
+        continue;
+      }
+      target = own;
       taken.add(target);
     }
     documentActions.push({

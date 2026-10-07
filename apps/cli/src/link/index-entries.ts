@@ -22,6 +22,8 @@ export type PassOutcome = {
   remote: ReadonlyMap<string, RemoteFact>;
   // At `files`: each document's file, when it was written or found in step.
   mirrors: ReadonlyMap<string, MirrorHeld>;
+  // On a dry run at `files`: the path each document's mirror file would hold; its tabs come from the overview.
+  planned: ReadonlyMap<string, string>;
   // The names of the documents the pass decided, covered or not.
   names: ReadonlyMap<string, string>;
 };
@@ -41,7 +43,7 @@ function tabsOfFile({ tabs, revs }: MirrorHeld): IndexTab[] {
 }
 
 export function indexEntriesOf(outcome: PassOutcome): IndexEntry[] {
-  const { level, coverage, states, remote, mirrors, names } = outcome;
+  const { level, coverage, states, remote, mirrors, names, planned } = outcome;
   // A document out of sight this pass (unreadable, or failing) keeps its section though coverage no longer lists it.
   const unseen = [...states.keys()]
     .filter((id) => !coverage.documents.some((d) => d.id === id))
@@ -62,7 +64,9 @@ export function indexEntriesOf(outcome: PassOutcome): IndexEntry[] {
     const entry = { id: covered.id, name, folderPath: covered.folderPath };
     const fresh = state === 'in-step' || state === 'new' || state === 'behind';
     const mirror = mirrors.get(covered.id);
-    if (!fresh || !readable || (level === 'files' && !mirror)) return [{ ...entry, section: null }];
+    const at = mirror?.path ?? planned.get(covered.id) ?? null;
+    if (!fresh || !readable || (level === 'files' && at === null))
+      return [{ ...entry, section: null }];
     const section = mirror
       ? {
           indexFolder: covered.indexFolder,
@@ -71,13 +75,13 @@ export function indexEntriesOf(outcome: PassOutcome): IndexEntry[] {
         }
       : {
           indexFolder: covered.indexFolder,
-          files: null,
+          files: at === null ? null : { mirror: at, outline: outlinePathOf(at) },
           tabs: remoteTabsOf(readable.overview).map((f) => ({
             name: f.tab.name,
             kind: f.tab.kind,
             elements: f.elements,
             rev: f.rev!,
-            header: headerLine(f),
+            header: at === null ? headerLine(f) : null,
           })),
         };
     return [{ ...entry, section }];

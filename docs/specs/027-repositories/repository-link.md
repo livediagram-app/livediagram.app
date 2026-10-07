@@ -128,6 +128,9 @@ the document now:
   untouched and is reported, never treated as `gone` or `unreadable`.
 - A file holding git's conflict markers is refused, naming `livediagram sync --resolve <file>`
   ([Git](#git)); nothing else in the sync waits for it.
+- **A broken file holds its document back.** A conflicted or otherwise invalid file at a document's mirror path
+  holds that document's write back: the document is reported, naming the file and its fix, and never written again
+  at another path.
 - **A rename is a change.** A document whose name or other envelope fields differ from its file is `behind` even
   when no tab's revision moved, and its files are rewritten.
 - **Without mirror files** (`none`, `index`) a document's state comes from the revisions the local sync state

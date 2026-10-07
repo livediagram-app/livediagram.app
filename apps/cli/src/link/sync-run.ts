@@ -55,7 +55,11 @@ export type PassResult = {
 };
 
 const exitOf = (action: SyncAction): ExitCode =>
-  action.kind === 'transient' ? action.exit : action.kind === 'refuse' ? EXIT.rejected : EXIT.done;
+  action.kind === 'transient'
+    ? action.exit
+    : action.kind === 'refuse' || action.kind === 'held'
+      ? EXIT.rejected
+      : EXIT.done;
 
 const revsOf = (pulled: MirrorFile['livediagramSync']['tabs']) =>
   Object.fromEntries(Object.entries(pulled).map(([id, t]) => [id, t.rev]));
@@ -267,13 +271,45 @@ function linesOf(
     if (action.kind === 'none') totals.inStep += 1;
     if (action.kind === 'write') totals.written += 1;
     if (action.kind === 'remove' || action.kind === 'lower') totals.removed += 1;
-    if (action.kind === 'refuse') totals.refused += 1;
+    if (action.kind === 'refuse' || action.kind === 'held') totals.refused += 1;
     if (action.kind === 'report' && action.reason === 'unreadable') totals.unreadable += 1;
     if (action.kind === 'refuse')
       options.ctx.log(`refused ${action.documentId ?? '-'} ${action.reason}`);
+    if (action.kind === 'held') options.ctx.log(`refused ${action.documentId} held`);
     if (action.kind === 'report' && action.reason === 'local-new') options.ctx.log('local-new');
   }
   return { lines, totals };
+}
+
+// A dry run's actions as a real pass would report them: with --relocate, a document writes at the path it moves to.
+function dryRunOf(actions: readonly SyncAction[], relocate: boolean): SyncAction[] {
+  const to = new Map(
+    actions.flatMap((a) =>
+      relocate && a.kind === 'relocate' ? [[a.documentId, a.to] as const] : [],
+    ),
+  );
+  return actions.map((a) =>
+    a.kind === 'write' && to.has(a.documentId) ? { ...a, path: to.get(a.documentId)! } : a,
+  );
+}
+
+// The path each written or in-step document's mirror file would hold after a dry run's pass.
+function plannedPaths(
+  actions: readonly SyncAction[],
+  scan: readonly ScannedFile[],
+  relocate: boolean,
+): Map<string, string> {
+  const planned = new Map<string, string>();
+  for (const a of actions) {
+    if (a.kind === 'write') planned.set(a.documentId, a.path!);
+    if (a.kind === 'relocate' && relocate) planned.set(a.documentId, a.to);
+  }
+  for (const a of actions)
+    if (a.kind === 'none' && !planned.has(a.documentId)) {
+      const file = scan.find((s) => s.class === 'tracked' && s.file.document.id === a.documentId)!;
+      planned.set(a.documentId, file.path);
+    }
+  return planned;
 }
 
 async function pass(options: PassOptions, stateDir: string): Promise<PassResult> {
@@ -295,7 +331,9 @@ async function pass(options: PassOptions, stateDir: string): Promise<PassResult>
     pathOf,
     now: io.now(),
   };
-  const outcome = dryRun ? plan.actions : await act(acting, plan.actions);
+  const outcome = dryRun
+    ? dryRunOf(plan.actions, options.relocate)
+    : await act(acting, plan.actions);
   const { lines, totals } = linesOf(outcome, options, pathOf);
   const exit = Math.max(EXIT.done, ...outcome.map(exitOf)) as ExitCode;
 
@@ -321,6 +359,8 @@ async function pass(options: PassOptions, stateDir: string): Promise<PassResult>
         states,
         remote,
         mirrors: acting.mirrors,
+        planned:
+          dryRun && level === 'files' ? plannedPaths(outcome, scan, options.relocate) : new Map(),
         names: new Map(plan.names),
       }),
     });

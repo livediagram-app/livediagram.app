@@ -196,11 +196,22 @@ async function statusOf(io: CliIo, ctx: VerbContext, link: LinkFile): Promise<St
     const own = plan.actions.find(
       (a) =>
         a.documentId === id &&
-        (a.kind === 'transient' || (a.kind === 'refuse' && a.reason === 'gone-changed')),
+        (a.kind === 'transient' ||
+          a.kind === 'held' ||
+          (a.kind === 'refuse' && a.reason === 'gone-changed')),
     );
     if (own?.kind === 'transient') io.stderr(`${actionLine(own, lc)}\n`);
-    const state = own?.kind === 'transient' ? '?' : own?.kind === 'refuse' ? own.reason : decided;
-    rows.push({ state, ref: refs.get(id)!, name: plan.names.get(id)!, path: filePath(id) });
+    const state =
+      own?.kind === 'transient'
+        ? '?'
+        : own?.kind === 'refuse'
+          ? own.reason
+          : own?.kind === 'held'
+            ? 'held'
+            : decided;
+    // A held document is named by the broken file that holds it.
+    const path = own?.kind === 'held' ? pathOf(own.path) : filePath(id);
+    rows.push({ state, ref: refs.get(id)!, name: plan.names.get(id)!, path });
   }
   // Then each file a sync would refuse, report or remove for its level.
   for (const action of plan.actions) {

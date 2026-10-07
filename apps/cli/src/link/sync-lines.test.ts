@@ -152,3 +152,21 @@ describe('totalsLine', () => {
     );
   });
 });
+
+describe('a held document', () => {
+  it('names the broken file and its fix', () => {
+    const held = {
+      kind: 'held' as const,
+      documentId: 'd1',
+      name: 'Home screen',
+      path: 'h.livediagram.json',
+    };
+    const p = 'docs/diagrams/h.livediagram.json';
+    expect(actionLine({ ...held, broken: 'conflicted', message: null }, lc())).toBe(
+      `! "Home screen": not written while ${p} holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livediagram sync`,
+    );
+    expect(actionLine({ ...held, broken: 'invalid', message: 'not JSON' }, lc())).toBe(
+      `! "Home screen": not written while ${p} is invalid (not JSON); fix or delete it, then livediagram sync`,
+    );
+  });
+});

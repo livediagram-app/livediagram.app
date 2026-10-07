@@ -524,3 +524,54 @@ describe('sync, edges', () => {
     expect(io.fileMap.has(INDEX)).toBe(true);
   });
 });
+
+describe('a broken file at a document’s mirror path', () => {
+  it('holds the document back until it is fixed, leaving no duplicate', async () => {
+    const { io } = setup('files', [home()]);
+    await sync(io);
+    const good = file(io, MIRROR)!;
+    io.fileMap.set(MIRROR, {
+      data: `<<<<<<< HEAD\n${good}=======\n${good}>>>>>>> main\n`,
+      mode: 0o644,
+    });
+    const held = await sync(io);
+    expect(held).toMatchObject({
+      code: 1,
+      out: [
+        '! "Home screen": not written while diagrams/screens/home-screen.livediagram.json holds git conflict markers. Keep one side: git checkout --ours diagrams/screens/home-screen.livediagram.json (or --theirs), then livediagram sync',
+        '! diagrams/screens/home-screen.livediagram.json: holds git conflict markers. Keep one side: git checkout --ours diagrams/screens/home-screen.livediagram.json (or --theirs), then livediagram sync',
+        '2 refused',
+        '',
+      ].join('\n'),
+    });
+    expect([...io.fileMap.keys()].filter((k) => k.includes('home-screen-'))).toEqual([]);
+    expect(file(io, INDEX)).toContain('## Home screen');
+    await run(['link', 'status'], io);
+    expect(io.out()).toMatch(
+      /\nheld +\S+ +"Home screen" +diagrams\/screens\/home-screen\.livediagram\.json\n/,
+    );
+    expect(io.out()).toMatch(/\n1 held · 1 conflicted\n$/);
+    io.fileMap.set(MIRROR, { data: good, mode: 0o644 });
+    expect((await sync(io)).out).toBe('1 in step\n');
+  });
+});
+
+describe('a dry run', () => {
+  it('prints what a real sync would, INDEX.md included, with --relocate or without', async () => {
+    for (const flags of [[], ['--relocate']]) {
+      const { io, host } = setup('files', [
+        home(),
+        menu(),
+        hostDoc('d-z', 'Zed', { folderId: 'games' }),
+      ]);
+      await sync(io);
+      host.edit('d-home', 0, [box('b1', 'Play'), box('b2', 'Scores', 200)]);
+      host.doc('d-menu').name = 'Main menu';
+      host.docs.push(hostDoc('d-new', 'New one', { folderId: 'games' }));
+      const dry = await sync(io, '--dry-run', ...flags);
+      expect(dry.out).toContain('~ diagrams/INDEX.md\n');
+      const real = await sync(io, ...flags);
+      expect(dry.out).toBe(`${real.out}dry run: nothing written\n`);
+    }
+  });
+});

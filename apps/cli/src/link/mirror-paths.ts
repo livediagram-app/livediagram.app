@@ -24,14 +24,22 @@ export function folderPathSegments(
   return [];
 }
 
+// The paths a document's mirror file may take, in order: its slug, then its short id, then its whole id.
+export function mirrorPathCandidates(
+  document: { id: string; name: string },
+  folderPath: readonly string[],
+): string[] {
+  const slug = fileSlug(document.name, document.id);
+  const candidates = [slug, `${slug}-${idSlug(document.id)}`, `${slug}-${document.id}`];
+  return candidates.map((name) => posix.join(...folderPath, `${name}${PULL_FILE_SUFFIX}`));
+}
+
 export function mirrorPathFor(
   document: { id: string; name: string },
   folderPath: readonly string[],
   taken: ReadonlySet<string>,
 ): string {
-  const slug = fileSlug(document.name, document.id);
-  const candidates = [slug, `${slug}-${idSlug(document.id)}`, `${slug}-${document.id}`];
-  const paths = candidates.map((name) => posix.join(...folderPath, `${name}${PULL_FILE_SUFFIX}`));
+  const paths = mirrorPathCandidates(document, folderPath);
   return paths.find((path) => !taken.has(path)) ?? paths.at(-1)!;
 }
 
