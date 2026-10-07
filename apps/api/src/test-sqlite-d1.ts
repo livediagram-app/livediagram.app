@@ -94,20 +94,29 @@ export function sqliteD1(base: Partial<Env> = {}, opts: { before?: string } = {}
     };
   };
 
+  // D1 isolates each batch from every other. Each batch here awaits between its statements, so two run
+  // concurrently (the cron's sweeps, under waitUntil) would interleave inside one SQLite connection and the
+  // second BEGIN would fail. Batches therefore queue behind one another, as D1 serialises them.
+  let batches: Promise<unknown> = Promise.resolve();
+  const runBatch = async (statements: { batchResult: () => Promise<unknown> }[]) => {
+    sql.exec('BEGIN');
+    try {
+      const results = [];
+      for (const s of statements) results.push(await s.batchResult());
+      sql.exec('COMMIT');
+      return results;
+    } catch (err) {
+      sql.exec('ROLLBACK');
+      throw err;
+    }
+  };
   const db = {
     prepare: (query: string) => statement(query, []),
     // D1 runs a batch as one transaction: all of it lands or none of it does.
-    batch: async (statements: { batchResult: () => Promise<unknown> }[]) => {
-      sql.exec('BEGIN');
-      try {
-        const results = [];
-        for (const s of statements) results.push(await s.batchResult());
-        sql.exec('COMMIT');
-        return results;
-      } catch (err) {
-        sql.exec('ROLLBACK');
-        throw err;
-      }
+    batch: (statements: { batchResult: () => Promise<unknown> }[]) => {
+      const run = batches.then(() => runBatch(statements));
+      batches = run.catch(() => undefined);
+      return run;
     },
   };
 

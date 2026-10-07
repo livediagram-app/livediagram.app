@@ -253,10 +253,13 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const meta = await getImage(env, imageId);
     if (!meta) return notFound();
     const callerOwner = resolveOwner();
-    let allowed = callerOwner === meta.ownerId;
+    // A workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner shortcut and
+    // reads through its own document only, so it cannot walk its owner's gallery by id.
+    const workbench = ctx.workbench ?? null;
+    let allowed = !workbench && callerOwner === meta.ownerId;
     if (!allowed) {
       const d = url.searchParams.get('d');
-      if (d) {
+      if (d && (!workbench || d === workbench.documentId)) {
         // Reader must be able to read document `d` (owner OR
         // a valid share code that resolves to it), AND that
         // document must place this image AND may serve it: the

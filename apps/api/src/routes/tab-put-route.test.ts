@@ -122,6 +122,25 @@ describe('the tab PUT', () => {
     });
   });
 
+  // docs/specs/024-agents/agent-changesets.md: a workbench session is a person's editor, not a token, so its
+  // whole-tab save goes through as the owner's own.
+  it('saves a workbench session tab as a person editor would', async () => {
+    const db = await documentWith([box('a')]);
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+        env: db.env,
+        owner: OWNER,
+        clerkUserId: null,
+        verifiedUserId: OWNER,
+        token: null,
+        workbench: { sessionId: 's', ownerId: OWNER, documentId: 'D' } as never,
+        body: { id: 't1', name: 'Board', elements: [box('a'), box('b')] },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
+  });
+
   it('answers the new revision and strips record fields from the body', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await documentWith([box('a')]);

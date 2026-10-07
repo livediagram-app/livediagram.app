@@ -657,3 +657,5 @@ export * from './community-query';
 export * from './document-paths';
 export * from './http-errors';
 export * from './oauth-clients';
+// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
+export * from './workbench';

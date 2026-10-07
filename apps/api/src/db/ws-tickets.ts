@@ -29,6 +29,9 @@ export type WsAdmission = {
   // sessions apart (docs/specs/024-agents/agent-changesets.md "Held elements"). Null for a guest,
   // a share-link visitor without an account, or an API token.
   personTag: string | null;
+  // The workbench pairing a workbench session's ticket was minted under
+  // (docs/specs/013-workspace/workbench-embeds.md), so the room can close exactly its sockets. Null otherwise.
+  workbenchPairing: string | null;
 };
 
 export async function createWsTicket(
@@ -42,7 +45,7 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
@@ -53,6 +56,7 @@ export async function createWsTicket(
       admission.shareCode,
       admission.account ? 1 : 0,
       admission.personTag,
+      admission.workbenchPairing,
     )
     .run();
   return ticket;
@@ -69,7 +73,7 @@ export async function consumeWsTicket(
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing',
   )
     .bind(ticket, documentId, now)
     .first<{
@@ -78,6 +82,7 @@ export async function consumeWsTicket(
       share_code?: string | null;
       account?: number | null;
       person_tag?: string | null;
+      workbench_pairing?: string | null;
     }>();
   if (row?.role !== 'edit' && row?.role !== 'view') return null;
   return {
@@ -86,5 +91,6 @@ export async function consumeWsTicket(
     shareCode: row.share_code ?? null,
     account: row.account === 1,
     personTag: row.person_tag ?? null,
+    workbenchPairing: row.workbench_pairing ?? null,
   };
 }

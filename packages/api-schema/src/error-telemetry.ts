@@ -134,6 +134,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'guest-id',
   'participants',
   'drive',
+  'workbench',
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes

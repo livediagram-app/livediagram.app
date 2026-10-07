@@ -2156,6 +2156,27 @@ describe('DocumentRoom tab-scoped sessions', () => {
       expect(untagged.closed).toBeUndefined();
     });
 
+    it("closes only one workbench pairing's sockets, with 4006", async () => {
+      const PAIRING = '3f1c9a2e-7b4d-4c8e-9a1f-2b3c4d5e6f70';
+      const { room, state } = newRoom();
+      const frame = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const other = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const person = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, frame, presence('p-f', 'edit'), null);
+      scopedSession(state, other, presence('p-o', 'edit'), null);
+      scopedSession(state, person, presence('p-p', 'edit'), null);
+      Object.assign(frame.attachment as object, { personTag: TAG, workbenchPairing: PAIRING });
+      Object.assign(other.attachment as object, {
+        personTag: TAG,
+        workbenchPairing: '00000000-0000-4000-8000-000000000000',
+      });
+      Object.assign(person.attachment as object, { personTag: TAG });
+      await closeSessions(room, { match: 'workbench', pairingId: PAIRING });
+      expect(frame.closed).toEqual([4006, 'workbench-ended']);
+      expect(other.closed).toBeUndefined();
+      expect(person.closed).toBeUndefined();
+    });
+
     it('400s a match it does not know, closing nobody', async () => {
       const { room, state } = newRoom();
       const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
@@ -2174,6 +2195,15 @@ describe('DocumentRoom tab-scoped sessions', () => {
       () => {};
     room.acceptSession(asWs(ws), 'view', false, 't2', 'CODE2345');
     expect(ws.attachment).toMatchObject({ tabScope: 't2', shareCode: 'CODE2345' });
+  });
+
+  it('pins a workbench pairing on the session at admission', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    (room as unknown as { state: { acceptWebSocket: () => void } }).state.acceptWebSocket =
+      () => {};
+    room.acceptSession(asWs(ws), 'edit', true, null, null, true, 'a'.repeat(64), null, 'pair-1');
+    expect(ws.attachment).toMatchObject({ workbenchPairing: 'pair-1' });
   });
 });
 

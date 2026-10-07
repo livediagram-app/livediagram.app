@@ -43,6 +43,8 @@ vi.mock('../timeline', () => ({
 }));
 vi.mock('../email/client', () => ({ emailEnabled: () => false }));
 vi.mock('../email/notifications', () => ({ notifyFirstShare: vi.fn(async () => {}) }));
+// Revoking also ends the token's workbench access (routes/tokens.ts); that path is tested in workbench-end.test.ts.
+vi.mock('../workbench-end', () => ({ endWorkbenchAccess: vi.fn(async () => {}) }));
 
 import { makeTestRouteContext } from './test-route-context';
 import { handleTokens } from './tokens';

@@ -21,6 +21,9 @@ const { timeline } = vi.hoisted(() => ({
 }));
 vi.mock('../timeline', () => timeline);
 
+const { workbenchEnd } = vi.hoisted(() => ({ workbenchEnd: { endWorkbenchAccess: vi.fn() } }));
+vi.mock('../workbench-end', () => workbenchEnd);
+
 import type { RouteContext } from './context';
 import { handleTokens } from './tokens';
 
@@ -41,6 +44,7 @@ beforeEach(() => {
   db.revokeApiToken.mockResolvedValue(true);
   db.retractTimelineWarning.mockResolvedValue(undefined);
   for (const fn of Object.values(timeline)) fn.mockReset();
+  workbenchEnd.endWorkbenchAccess.mockReset();
 });
 
 // Collects what the route hands to waitUntil so a test can await the
@@ -108,6 +112,17 @@ describe('handleTokens — list / create / revoke', () => {
     db.revokeApiToken.mockResolvedValue(false);
     const miss = await handleTokens(makeCtx('DELETE', '/api/tokens/nope'));
     expect(miss.status).toBe(404);
+  });
+
+  // docs/specs/013-workspace/workbench-embeds.md: revoking a token ends every workbench pairing and session it
+  // opened, within the request.
+  it('ends the revoked token workbench access, and only when a token was revoked', async () => {
+    await handleTokens(makeCtx('DELETE', '/api/tokens/t1'));
+    expect(workbenchEnd.endWorkbenchAccess).toHaveBeenCalledWith({}, { tokenId: 't1' }, 'revoked');
+    workbenchEnd.endWorkbenchAccess.mockClear();
+    db.revokeApiToken.mockResolvedValue(false);
+    await handleTokens(makeCtx('DELETE', '/api/tokens/nope'));
+    expect(workbenchEnd.endWorkbenchAccess).not.toHaveBeenCalled();
   });
 
   it('withdraws the pending expiry warning before it says the token is gone', async () => {
@@ -252,6 +267,11 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
     expect(res.status).toBe(204);
     expect(db.revokeApiToken).toHaveBeenCalledWith(expect.anything(), 'user_1', 'tok_1');
+    expect(workbenchEnd.endWorkbenchAccess).toHaveBeenCalledWith(
+      expect.anything(),
+      { tokenId: 'tok_1' },
+      'revoked',
+    );
     await Promise.all(work);
     expect(timeline.recordTokenRevoked).toHaveBeenCalled();
     db.listApiTokensByOwner.mockResolvedValue([{ ...live, name: null }]);
