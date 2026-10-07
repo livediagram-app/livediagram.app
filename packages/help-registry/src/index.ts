@@ -134,7 +134,7 @@ export const categories: Category[] = [
     title: 'Troubleshooting',
     description:
       'Get unstuck fast with fixes for the most common editor and collaboration problems.',
-    articleCount: 5,
+    articleCount: 6,
   },
   {
     slug: 'supported-devices',
@@ -739,7 +739,17 @@ export const articles: Article[] = [
     slug: 'document-not-loading',
     title: 'A Document Will Not Load',
     description: 'What to check when a document is blank or stuck loading.',
-    keywords: 'blank stuck loading error broken empty spinner wont open 404 diagram',
+    keywords:
+      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others',
+    category: 'Troubleshooting',
+    categorySlug: 'troubleshooting',
+  },
+  {
+    slug: 'repair-this-browser',
+    title: 'Repair This Browser',
+    description: 'Clear stuck settings and caches, keeping your documents.',
+    keywords:
+      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },

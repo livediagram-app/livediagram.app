@@ -153,6 +153,38 @@ describe('useAutosave after a failed save', () => {
     expect(apiSaveTab).toHaveBeenCalledTimes(2);
   });
 
+  // docs/specs/007-editor/load-recovery.md "Offline": reconnecting saves at once.
+  it('retries as soon as the browser is back online, not after the backoff', async () => {
+    apiSaveTab.mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')));
+    const { useSubject } = setup();
+    renderHook(({ tabs }) => useSubject(tabs, 0), { initialProps: { tabs: [tab('mine')] } });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not save on reconnect when nothing is waiting to retry', async () => {
+    const { useSubject } = setup();
+    renderHook(({ tabs }) => useSubject(tabs, 0), { initialProps: { tabs: [tab('mine')] } });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      window.dispatchEvent(new Event('online'));
+      vi.advanceTimersByTime(600);
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+  });
+
   it('does not retry a refusal', async () => {
     const { ApiError } = await import('@/lib/api-client');
     const Refusal = ApiError as unknown as new (action: string, status: number) => Error;

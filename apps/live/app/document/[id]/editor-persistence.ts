@@ -1,4 +1,5 @@
 import type { ItemTypeCatalogue } from '@livediagram/items';
+import { getOnline } from '@/lib/online-status';
 import { useEffect, useState } from 'react';
 
 import { UNTITLED_DOCUMENT_NAME } from '@livediagram/templates';
@@ -79,7 +80,13 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // the toast layer dedupes a streak of retries while one is still on screen.
   useEffect(() => {
     if (saveStatus === 'error') {
-      toast.error('Couldn’t save your changes. Check your connection.');
+      // Offline, the cause is known and so is the way out (docs/specs/007-editor/load-recovery.md
+      // "Offline"): the changes are only in this tab until the connection is back.
+      toast.error(
+        getOnline()
+          ? 'Couldn’t save your changes. Check your connection.'
+          : 'You’re offline. Your changes will save when you reconnect. Keep this tab open.',
+      );
     }
     // The network is fine here: the server couldn't tie the save to the
     // signed-in account. Blaming the connection sent people checking a cable.

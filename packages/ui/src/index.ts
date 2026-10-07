@@ -94,3 +94,4 @@ export { DialogCloseButton } from './dialog/DialogCloseButton';
 export { Portal } from './Portal';
 export { useSwipeDownDismiss } from './useSwipeDownDismiss';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
+export * from './browser-repair';

@@ -16,7 +16,9 @@ import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
+import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livediagram/ui';
 import { DocumentTrashedError } from '../document-trashed';
+import { reportApiWarning } from '../api/error-report';
 
 // Sentinel owner id stamped on offline documents. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -214,16 +216,50 @@ function idbRequest<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
+// How long opening the store may take (docs/specs/007-editor/load-recovery.md "The load always ends").
+// Every document load asks the store first, so a browser whose IndexedDB never answers `open` used to
+// hold the load on the opening screen forever. Shared with the browser checks' probe so the
+// diagnostics report the same limit the load uses.
+export const OFFLINE_STORE_OPEN_TIMEOUT_MS = INDEXED_DB_PROBE_TIMEOUT_MS;
+
+// Thrown when the store did not open in time or reported `blocked`.
+export class OfflineStoreUnavailableError extends Error {
+  constructor(reason: 'timeout' | 'blocked') {
+    super(`offline store ${reason}`);
+    this.name = 'OfflineStoreUnavailableError';
+  }
+}
+
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new Error('IndexedDB unavailable'));
       return;
     }
+    let settled = false;
     const req = indexedDB.open(DB_NAME, DB_VERSION);
+    const giveUp = (reason: 'timeout' | 'blocked') => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(new OfflineStoreUnavailableError(reason));
+    };
+    const timer = setTimeout(() => giveUp('timeout'), OFFLINE_STORE_OPEN_TIMEOUT_MS);
     req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error ?? new Error('IndexedDB open failed'));
+    req.onblocked = () => giveUp('blocked');
+    req.onsuccess = () => {
+      // An open that lands after we gave up is closed at once, so it never holds a version lock.
+      if (settled) return req.result.close();
+      settled = true;
+      clearTimeout(timer);
+      resolve(req.result);
+    };
+    req.onerror = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(req.error ?? new Error('IndexedDB open failed'));
+    };
   });
 }
 
@@ -260,6 +296,7 @@ export function __setOfflineBackend(b: OfflineBackend | null): void {
   backend = b ?? indexedDbBackend;
   idCache = null;
   idCacheLoad = null;
+  storeUnavailable = false;
   pendingIds.clear();
 }
 
@@ -276,8 +313,13 @@ let idCacheLoad: Promise<Set<string>> | null = null;
 // bug the meta PUT's create-on-first-write used to turn that into).
 const pendingIds = new Set<string>();
 
+// Set once the store failed to open in time: the rest of the page load answers from the pending set
+// instead of waiting out the limit again on every check (two per document load).
+let storeUnavailable = false;
+
 async function loadIds(): Promise<Set<string>> {
   if (idCache) return idCache;
+  if (storeUnavailable) return new Set(pendingIds);
   if (!idCacheLoad) {
     idCacheLoad = backend
       .all()
@@ -285,11 +327,18 @@ async function loadIds(): Promise<Set<string>> {
         idCache = new Set([...recs.map((r) => r.id), ...pendingIds]);
         return idCache;
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         // No IndexedDB (SSR, private mode) or a transient open failure.
         // Do NOT pin an empty cache: clear the in-flight slot so the next
         // check retries, and answer THIS check from the pending set only.
+        // A store that would not open in time is the exception: it is not
+        // retried for the rest of the page load (see storeUnavailable).
         idCacheLoad = null;
+        if (err instanceof OfflineStoreUnavailableError) {
+          storeUnavailable = true;
+          console.warn(`[offline-store] unavailable: ${err.message}`);
+          reportApiWarning('OfflineStore.Unavailable');
+        }
         return new Set(pendingIds);
       });
   }

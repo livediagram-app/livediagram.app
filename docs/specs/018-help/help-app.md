@@ -69,6 +69,8 @@ Where a feature's name would equal its category slug, the landing slug is distin
 
 There is **no Presentation Mode guide**: [Presentation mode](../012-collaboration/presentation-mode.md) is a draft and the feature is not built, so the article was unpublished rather than ship documentation for a non-existent feature.
 
+**Troubleshooting tools.** One Troubleshooting article is a working tool, not only text: _Repair This Browser_ renders `BrowserRepairTool` (`apps/help/components/`), the shared `BrowserRepairPanel` from `@livediagram/ui` plus the browser checks, so a person whose editor will not start can still clear its stuck settings from the help centre, which shares the editor's origin ([Load recovery](../007-editor/load-recovery.md)).
+
 ## In-article illustrations
 
 Articles were text-heavy, so each section that benefits from a picture carries a

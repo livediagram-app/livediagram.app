@@ -72,6 +72,18 @@ describe('recoverFromChunkError', () => {
     expect(d.track).toHaveBeenCalledWith('Error', 'Client', 'StaleChunkReload');
   });
 
+  // docs/specs/007-editor/load-recovery.md "Offline".
+  it('does not reload while offline, and recovers the same failure once back online', async () => {
+    let online = false;
+    const d = deps({ online: () => online });
+    const err = named('ChunkLoadError');
+    await expect(recoverFromChunkError(err, d)).resolves.toBe('offline');
+    expect(d.load).not.toHaveBeenCalled();
+    online = true;
+    await expect(recoverFromChunkError(err, d)).resolves.toBe('reloading');
+    expect(d.load).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves any other error alone', async () => {
     const d = deps();
     await expect(recoverFromChunkError(new TypeError('x'), d)).resolves.toBe('not-a-chunk-error');

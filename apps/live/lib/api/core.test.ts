@@ -21,6 +21,7 @@ import {
   expectOkVoid,
   getLastKnownToken,
   identityHeaders,
+  SESSION_TOKEN_TIMEOUT_MS,
   SessionTokenUnavailableError,
   setSessionSharePassword,
   setTokenProvider,
@@ -28,6 +29,7 @@ import {
   tabForWire,
 } from './core';
 import { resetApiWriteListeners, subscribeApiWrites } from './write-signal';
+import { setApiWarningReporter } from './error-report';
 
 const H = (h: HeadersInit) => h as Record<string, string>;
 
@@ -106,6 +108,37 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     expect(H(await apiHeaders('g'))['X-Share-Password']).toBeUndefined();
     setSessionSharePassword('pw');
     expect(H(await apiHeaders('g'))['X-Share-Password']).toBe('pw');
+  });
+});
+
+// docs/specs/007-editor/load-recovery.md "The load always ends": a session that never hands out a
+// token must not hold the request (and the document load behind it) open forever.
+describe('session token limit', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    setApiWarningReporter(null);
+  });
+
+  it('gives up on a token that never comes, then refuses the signed-in request', async () => {
+    vi.useFakeTimers();
+    const warnings: string[] = [];
+    setApiWarningReporter((t) => warnings.push(t));
+    setTokenProvider(() => new Promise<string | null>(() => {}));
+    const headers = apiHeaders('user_abc').catch((e: unknown) => e);
+    // Two attempts, each bounded.
+    await vi.advanceTimersByTimeAsync(SESSION_TOKEN_TIMEOUT_MS * 2);
+    expect(await headers).toBeInstanceOf(SessionTokenUnavailableError);
+    expect(warnings).toContain('SessionToken.TimedOut');
+  });
+
+  it('uses the fresh token when only the cached one hangs', async () => {
+    vi.useFakeTimers();
+    setTokenProvider((opts) =>
+      opts?.skipCache ? Promise.resolve('jwt-fresh') : new Promise<string | null>(() => {}),
+    );
+    const headers = apiHeaders('user_abc');
+    await vi.advanceTimersByTimeAsync(SESSION_TOKEN_TIMEOUT_MS);
+    expect(H(await headers)['Authorization']).toBe('Bearer jwt-fresh');
   });
 });
 

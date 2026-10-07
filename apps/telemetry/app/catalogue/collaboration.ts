@@ -33,7 +33,9 @@ export const SHARE_LINKS_COPIED = chart(
   'Copied',
   'Share Links Copied',
   'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
-  { typeIn: (t) => t !== 'TeamInviteLink' },
+  {
+    typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
+  },
 );
 
 export const SHARE_SETTINGS = chart(

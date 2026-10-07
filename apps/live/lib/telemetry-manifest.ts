@@ -206,6 +206,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Restored',
   'UI·Added',
   'UI·Changed',
+  // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).
+  'UI·Cleared',
   'UI·Closed',
   'UI·Copied',
   // The power user mode offer turned down (docs/specs/007-editor/power-user-mode.md).

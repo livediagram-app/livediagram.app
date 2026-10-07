@@ -6,6 +6,7 @@
 // to drop into the same chrome as NotFound (EditorHeader above), and
 // renders as an absolute overlay so anything behind stays interactive.
 
+import type { ReactNode } from 'react';
 import { Button, Glyph } from '@livediagram/ui';
 
 type ApiErrorPageProps = {
@@ -19,6 +20,9 @@ type ApiErrorPageProps = {
   title?: string;
   message?: string;
   retryLabel?: string;
+  // Extra content under the Retry button: the load-error screen's recovery card
+  // (docs/specs/007-editor/load-recovery.md).
+  children?: ReactNode;
 };
 
 export function ApiErrorPage({
@@ -27,6 +31,7 @@ export function ApiErrorPage({
   title = 'Something went wrong',
   message = 'We couldn’t reach the server. Check your connection and try again.',
   retryLabel = 'Try again',
+  children,
 }: ApiErrorPageProps) {
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
@@ -47,6 +52,7 @@ export function ApiErrorPage({
           <RetryIcon />
           {retryLabel}
         </Button>
+        {children}
       </div>
     </div>
   );

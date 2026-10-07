@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Button, DiagramBuildAnimation, RefreshIcon } from '@livediagram/ui';
+import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
+import { track } from '@/lib/telemetry';
+import { useOnline } from '@/hooks/ui/useOnline';
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the
@@ -12,7 +15,9 @@ import { Button, DiagramBuildAnimation, RefreshIcon } from '@livediagram/ui';
 //
 // Dark-aware on purpose: it is a whole SCREEN, not a panel, so it honours
 // the appearance like every other route (docs/specs/007-editor/live-app.md).
-// If the wait passes 10 seconds, it offers a Refresh as a way out.
+// If the wait passes 10 seconds, it offers a Refresh as a way out. When the
+// load's watchdog runs its self-healing reload (docs/specs/007-editor/load-recovery.md),
+// the screen says so for the moment before the page reloads.
 
 export type DocumentLoadingStage = 'creating' | 'opening';
 
@@ -53,9 +58,20 @@ const CSS = `
 export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoadingStage }) {
   const [slow, setSlow] = useState(false);
   useEffect(() => {
-    const id = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS);
+    const id = window.setTimeout(() => {
+      setSlow(true);
+      if (stage === 'opening') track('Error', 'Warning', 'DocumentLoad.Slow');
+    }, SLOW_AFTER_MS);
     return () => window.clearTimeout(id);
-  }, []);
+  }, [stage]);
+  // Offline wins over both (docs/specs/007-editor/load-recovery.md "Offline"): a Refresh would only
+  // swap in the browser's own error page.
+  const online = useOnline();
+  const healing = useSyncExternalStore(
+    subscribeLoadProgress,
+    () => getLoadProgress().healing,
+    () => false,
+  );
   const copy = COPY[stage];
 
   return (
@@ -97,7 +113,15 @@ export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoading
           </div>
         </div>
 
-        {slow ? (
+        {!online ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            You&rsquo;re offline. Waiting for the connection&hellip;
+          </p>
+        ) : healing ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            Still working on it. Trying a fresh start.
+          </p>
+        ) : slow ? (
           <div className="ldl-enter mt-6 flex flex-col items-center gap-2">
             <p className="text-xs text-slate-500 dark:text-slate-400">
               This is taking longer than usual.

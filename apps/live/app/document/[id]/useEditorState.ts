@@ -148,7 +148,13 @@ import {
 } from '@/components/panels/CollaboratePanel';
 
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
-import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
+import {
+  autosaveReadOnly,
+  createTab,
+  deriveTabLoadState,
+  mergeAiElements,
+  patchTab,
+} from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
@@ -813,7 +819,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
     documentId,
-    isReadOnly,
+    isReadOnly: autosaveReadOnly({ canEdit, loadError, documentNotFound }),
     tabs,
     documentName,
     selfId: selfParticipant.id,

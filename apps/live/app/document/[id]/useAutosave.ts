@@ -146,6 +146,18 @@ export function useAutosave(opts: {
     },
     [],
   );
+  // Back online, a save waiting on its retry timer goes at once rather than up to a minute later
+  // (docs/specs/007-editor/load-recovery.md "Offline").
+  useEffect(() => {
+    const onOnline = () => {
+      if (retryTimerRef.current === null) return;
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+      setRetryTick((t) => t + 1);
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, []);
 
   // How many peer ops the `tabs` of THIS render already include. A peer's op
   // reaches the baseline at once but the screen only at the next render, so a
