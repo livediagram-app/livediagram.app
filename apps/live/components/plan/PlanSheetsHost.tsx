@@ -83,7 +83,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           }}
           onDelete={() => {
             if (!editing) return;
-            for (const it of ofType) ctx.trashItem(it.id);
+            ctx.trashItems(ofType.map((it) => it.id));
             ctx.itemTypes.deleteType(editing.id);
             track('Plan', 'Deleted', 'CardType');
             ctx.announce(`${editing.label} deleted`);

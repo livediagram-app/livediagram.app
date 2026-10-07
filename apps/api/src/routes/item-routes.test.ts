@@ -667,3 +667,117 @@ describe('a create carrying a type catalogue', () => {
     ]);
   });
 });
+
+describe('changing many items at once', () => {
+  const trash = { set: { status: 'trash', trashedFrom: 'todo' } };
+
+  it('changes every item in one write, one rev raise and one room op', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    const before = await db.getItemsRev(sql.env, 'd1');
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: b.id, ...trash },
+          { id: a.id, set: { title: 'A2' } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.rev).toBe(before + 1);
+    expect(res.body.items.map((i) => [i.id, i.fields['title'], i.fields['status']])).toEqual([
+      [a.id, 'A2', 'trash'],
+      [b.id, 'B', 'trash'],
+    ]);
+    expect(relayed).toHaveLength(1);
+    expect((relayed[0] as { op: { upserts: unknown[] } }).op.upserts).toHaveLength(2);
+    expect((await db.readItem(sql.env, 'd1', a.id))!.rev).toBeGreaterThan(a.rev);
+  });
+
+  it('refuses the whole request, naming the item, before writing anything', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const missing = await call({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: 'missing-id', ...trash },
+        ],
+      },
+    });
+    expect(missing).toEqual({ status: 404, body: { error: 'item_not_found' } });
+    const bad = await call({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: a.id, clear: ['title'] },
+        ],
+      },
+    });
+    expect(bad.body).toMatchObject({ error: 'title_required', id: a.id });
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['status']).toBe('todo');
+    for (const items of [[], 'x', Array.from({ length: 201 }, () => ({ id: a.id }))])
+      expect((await call({ path: '/items/patches', body: { items } })).status).toBe(400);
+    expect(
+      (await call({ path: '/items/patches', body: { items: [{ ...trash }] } })).body,
+    ).toMatchObject({ message: 'each item needs its id' });
+    expect((await call({ method: 'GET', path: '/items/patches' })).status).toBe(405);
+    expect(
+      (
+        await call({
+          path: '/items/patches',
+          code: 'VIEW',
+          owner: 'guest',
+          body: { items: [{ id: a.id, ...trash }] },
+        })
+      ).status,
+    ).toBe(403);
+  });
+
+  it('refuses a status the type leaves out, unless it is an undo', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: {
+        itemTypes: {
+          version: 1,
+          types: [
+            {
+              id: 'task',
+              label: 'Task',
+              color: '#71717a',
+              glyph: 'task',
+              fields: [],
+              excludedStatuses: ['done'],
+            },
+          ],
+        },
+      },
+    });
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    const items = [{ id: t.id, set: { status: 'done' } }];
+    expect((await call({ path: '/items/patches', body: { items } })).body).toEqual({
+      error: 'status_excluded',
+      field: 'status',
+      id: t.id,
+    });
+    expect((await call({ path: '/items/patches', body: { items, undo: true } })).status).toBe(200);
+  });
+
+  it('writes many at the revs read, reporting which landed', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    const b = (await add({ title: 'B' })).body.item;
+    expect((await db.readItems(sql.env, 'd1', [a.id, b.id, 'missing-id'])).length).toBe(2);
+    const written = await db.updateItemsAtRev(sql.env, 'd1', [
+      { next: { ...a, rev: 2, fields: { title: 'A2' } }, expectedRev: 1 },
+      { next: { ...b, rev: 2, fields: { title: 'B2' } }, expectedRev: 7 },
+    ]);
+    expect([...written.landed]).toEqual([a.id]);
+    expect(written.rev).toBe(await db.getItemsRev(sql.env, 'd1'));
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
+  });
+});

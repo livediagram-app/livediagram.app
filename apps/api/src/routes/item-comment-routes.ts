@@ -10,7 +10,8 @@ import { badRequest, forbidden, json, methodNotAllowed, noContent } from '../res
 import { recordCommentResolved } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';
 import { gateEdit, type RouteContext } from './context';
-import { itemCaller, writeItem, type ItemCaller } from './item-routes';
+import { itemCaller, type ItemCaller } from './item-route-kit';
+import { writeItem } from './item-routes';
 
 type Verb = 'resolve' | 'reopen';
 

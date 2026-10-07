@@ -26,9 +26,13 @@ export const EMPTY_ITEM_STORE: ItemStoreState = { items: [], rev: 0, nextKey: 1 
 export type ItemWrite =
   | { kind: 'create'; creates: ItemCreate[] }
   | { kind: 'patch'; id: string; patch: ItemPatch; undo?: true }
+  // Many items changed as one write (a card type's or a removed column's cards to the Trash).
+  | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
   | { kind: 'move'; id: string; move: ItemMove; undo?: true }
   | { kind: 'vote'; id: string; delta: 1 | -1 }
   | { kind: 'delete'; id: string };
+
+export type ItemPatchOf = { id: string; patch: ItemPatch };
 
 export type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full';
 
@@ -73,6 +77,21 @@ export function applyItemWrite(
       ok: true,
       state: { items: pool, rev: state.rev + 1, nextKey },
       upserts: made,
+      removed: [],
+    };
+  }
+  if (write.kind === 'patches') {
+    const byId = new Map(state.items.map((i) => [i.id, i]));
+    for (const { id, patch } of write.patches) {
+      const item = byId.get(id);
+      if (!item) return { ok: false, error: 'item_not_found' };
+      byId.set(id, applyPatch(item, patch, base));
+    }
+    return {
+      ok: true,
+      state: { ...state, items: state.items.map((i) => byId.get(i.id)!), rev: state.rev + 1 },
+      // An item patched twice is sent once, as it ends.
+      upserts: [...new Set(write.patches.map((p) => p.id))].map((id) => byId.get(id)!),
       removed: [],
     };
   }
@@ -128,6 +147,18 @@ export function mergeItemChanges(
 export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): ItemWrite[] | null {
   if (write.kind === 'vote') return null;
   if (write.kind === 'create') return write.creates.map((c) => ({ kind: 'delete', id: c.id! }));
+  if (write.kind === 'patches') {
+    // Each item's old values, last patch first, as one write.
+    const byId = new Map(before.items.map((i) => [i.id, i]));
+    const undo: ItemPatchOf[] = [];
+    for (const { id, patch } of write.patches) {
+      const item = byId.get(id);
+      if (!item) return null;
+      undo.unshift({ id, patch: inversePatch(item, patch) });
+      byId.set(id, applyPatch(item, patch, { now: item.updatedAt, by: item.updatedBy }));
+    }
+    return [{ kind: 'patches', patches: undo }];
+  }
   const item = before.items.find((i) => i.id === write.id);
   if (!item) return null;
   if (write.kind === 'delete') {
@@ -151,7 +182,9 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
 
 // A write marked as an undo or redo (`undo` above): a patch or a move; any other write is returned as it is.
 export function asUndoWrite(write: ItemWrite): ItemWrite {
-  return write.kind === 'patch' || write.kind === 'move' ? { ...write, undo: true } : write;
+  return write.kind === 'patch' || write.kind === 'patches' || write.kind === 'move'
+    ? { ...write, undo: true }
+    : write;
 }
 
 // A create made replayable: every create carries the id it was given, so redo makes the same item.

@@ -6552,6 +6552,47 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemsPatchRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "clear": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "id": {
+              "type": "string"
+            },
+            "set": {
+              "$ref": "#/components/schemas/ItemFields"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "undo": {
+        "const": true,
+        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "type": "object"
+  },
   "ItemsResponse": {
     "additionalProperties": false,
     "properties": {

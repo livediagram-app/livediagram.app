@@ -93,6 +93,16 @@ export async function readItem(env: Env, documentId: string, id: string): Promis
   return row ? itemFromRow(row) : null;
 }
 
+// The items of `ids` that exist, in no set order: one query however many (the ids as one JSON parameter).
+export async function readItems(env: Env, documentId: string, ids: string[]): Promise<Item[]> {
+  const res = await env.DB.prepare(
+    `SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id IN (SELECT value FROM json_each(?))`,
+  )
+    .bind(documentId, JSON.stringify(ids))
+    .all<ItemRow>();
+  return (res.results ?? []).map(itemFromRow);
+}
+
 export async function itemKeyTaken(env: Env, documentId: string, key: number): Promise<boolean> {
   const row = await env.DB.prepare(
     'SELECT 1 AS x FROM items WHERE document_id = ? AND item_key = ?',
@@ -156,20 +166,7 @@ export async function updateItemAtRev(
   expectedRev: number,
 ): Promise<number | null> {
   const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE items SET type = ?, rank = ?, fields = ?, rev = ?, updated_at = ?, updated_by = ?
-        WHERE document_id = ? AND id = ? AND rev = ?`,
-    ).bind(
-      next.type,
-      next.rank,
-      JSON.stringify(next.fields),
-      next.rev,
-      next.updatedAt,
-      JSON.stringify(next.updatedBy),
-      documentId,
-      next.id,
-      expectedRev,
-    ),
+    updateAtRevStatement(env, documentId, next, expectedRev),
     // Raises the store rev only when the guarded update landed.
     env.DB.prepare(
       `UPDATE documents SET items_rev = items_rev + 1
@@ -178,6 +175,46 @@ export async function updateItemAtRev(
   ]);
   if ((results[0]?.meta?.changes ?? 0) === 0) return null;
   return revOf(results[1]);
+}
+
+// Writes each `next` over its row stored at `expectedRev`, in one batch with one rev raise. Returns the store's
+// new rev and the ids that landed; an id missing from `landed` moved on (or went) since it was read. The rev is
+// raised even when none landed: the caller then retries, and a collaborator who saw the gap refetches.
+export async function updateItemsAtRev(
+  env: Env,
+  documentId: string,
+  writes: { next: Item; expectedRev: number }[],
+): Promise<{ rev: number; landed: Set<string> }> {
+  const results = await env.DB.batch([
+    ...writes.map((w) => updateAtRevStatement(env, documentId, w.next, w.expectedRev)),
+    bumpRev(env, documentId),
+  ]);
+  const landed = new Set(
+    writes.filter((_, i) => (results[i]?.meta?.changes ?? 0) > 0).map((w) => w.next.id),
+  );
+  return { rev: revOf(results[writes.length]), landed };
+}
+
+function updateAtRevStatement(
+  env: Env,
+  documentId: string,
+  next: Item,
+  expectedRev: number,
+): D1PreparedStatement {
+  return env.DB.prepare(
+    `UPDATE items SET type = ?, rank = ?, fields = ?, rev = ?, updated_at = ?, updated_by = ?
+      WHERE document_id = ? AND id = ? AND rev = ?`,
+  ).bind(
+    next.type,
+    next.rank,
+    JSON.stringify(next.fields),
+    next.rev,
+    next.updatedAt,
+    JSON.stringify(next.updatedBy),
+    documentId,
+    next.id,
+    expectedRev,
+  );
 }
 
 // Returns the store's new rev, or null when there was no such item.

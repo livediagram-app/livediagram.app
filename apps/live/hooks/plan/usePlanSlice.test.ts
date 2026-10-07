@@ -121,6 +121,52 @@ describe('usePlanSlice', () => {
     expect(result.current.context.ownerId).toBe('owner-me');
   });
 
+  // docs/specs/026-plan/items.md "Trash": many cards go as one write, one card as its own patch.
+  it('sends many cards to the Trash as one write, skipping trashed and missing ones', () => {
+    const write = vi.fn(async () => true);
+    const card = (id: string, status: string) => [
+      id,
+      { id, type: 'task', fields: { title: id, status } },
+    ];
+    const items = new Map([card('a', 'todo'), card('b', 'doing'), card('c', 'trash')] as never);
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems: { ...(planItems as object), items, write } as never,
+        itemTypes,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: () => {},
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    let went = 0;
+    act(() => {
+      went = result.current.context.trashItems(['a', 'b', 'c', 'gone']);
+    });
+    expect(went).toBe(2);
+    expect(write).toHaveBeenLastCalledWith({
+      kind: 'patches',
+      patches: [
+        { id: 'a', patch: { set: { status: 'trash', trashedFrom: 'todo' } } },
+        { id: 'b', patch: { set: { status: 'trash', trashedFrom: 'doing' } } },
+      ],
+    });
+    act(() => result.current.context.trashItem('a'));
+    expect(write).toHaveBeenLastCalledWith({
+      kind: 'patch',
+      id: 'a',
+      patch: { set: { status: 'trash', trashedFrom: 'todo' } },
+    });
+    write.mockClear();
+    expect(result.current.context.trashItems(['c', 'gone'])).toBe(0);
+    expect(write).not.toHaveBeenCalled();
+  });
+
   // docs/specs/026-plan/plan-board.md "Breadcrumb": a card opened from inside the panel steps the trail; one
   // opened any other way starts it afresh.
   it('steps the card trail from inside the panel and restarts it from a board', () => {

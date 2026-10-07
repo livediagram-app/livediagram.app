@@ -17,6 +17,7 @@ import {
   type Item,
   type ItemMove,
   type ItemPatch,
+  type ItemPatchOf,
   type ItemPerson,
   type BoardStatusTypes,
   type PlanBoardSetup,
@@ -171,24 +172,34 @@ export function usePlanSlice(opts: {
     [write, planItems.items],
   );
 
-  // The Trash (docs/specs/026-plan/items.md "Trash"): a status no board shows, the old one kept to restore.
-  const trashItem = useCallback(
-    (itemId: string) => {
-      const item = planItems.items.get(itemId);
-      if (!item || isTrashed(item)) return;
-      const from = itemStatus(item);
-      void write({
-        kind: 'patch',
-        id: itemId,
-        patch: {
-          set: { status: TRASH_STATUS, ...(from ? { [TRASHED_FROM_FIELD]: from } : {}) },
-        },
-      });
-      setOpenItemId((open) => (open === itemId ? null : open));
+  // The Trash (docs/specs/026-plan/items.md "Trash"): a status no board shows, the old one kept to restore. Many
+  // cards (a deleted type's, a removed column's) go as one write: one request per ITEM_BULK_MAX, one undo step.
+  const trashItems = useCallback(
+    (itemIds: readonly string[]) => {
+      const patches: ItemPatchOf[] = [];
+      for (const id of itemIds) {
+        const item = planItems.items.get(id);
+        if (!item || isTrashed(item)) continue;
+        const from = itemStatus(item);
+        patches.push({
+          id,
+          patch: { set: { status: TRASH_STATUS, ...(from ? { [TRASHED_FROM_FIELD]: from } : {}) } },
+        });
+      }
+      if (patches.length === 0) return 0;
+      void write(
+        patches.length === 1
+          ? { kind: 'patch', id: patches[0]!.id, patch: patches[0]!.patch }
+          : { kind: 'patches', patches },
+      );
+      const gone = new Set(patches.map((p) => p.id));
+      setOpenItemId((open) => (open && gone.has(open) ? null : open));
       track('Plan', 'Moved', 'Trash');
+      return patches.length;
     },
     [write, planItems.items],
   );
+  const trashItem = useCallback((itemId: string) => void trashItems([itemId]), [trashItems]);
   const restoreItem = useCallback(
     (itemId: string) => {
       const item = planItems.items.get(itemId);
@@ -385,6 +396,7 @@ export function usePlanSlice(opts: {
       setDragging,
       draggingItemId,
       trashItem,
+      trashItems,
       restoreItem,
       emptyTrash,
       statusNames: opts.statusNames,
@@ -422,6 +434,7 @@ export function usePlanSlice(opts: {
       setDragging,
       draggingItemId,
       trashItem,
+      trashItems,
       restoreItem,
       emptyTrash,
       addItemSlide,

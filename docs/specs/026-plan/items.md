@@ -174,6 +174,8 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   the workspace Trash does; **Empty Trash** deletes every one after a confirmation ("This can't be undone"), then the Trash
   panel closes.
 - An empty Trash shows the shared empty state: **The Trash is empty**, and how to put a card there.
+- Moving many cards to the Trash at once (a deleted card type's, a removed column's) is one change: one request
+  per 200 cards, one undo step, one update for everyone watching.
 - Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.
 
 ## Comments
