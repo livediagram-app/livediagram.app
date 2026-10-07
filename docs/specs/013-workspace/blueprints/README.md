@@ -12,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./explorer-home.md - when changing Home's data: recording opens, Jump back in's Within reach set, the `/api/home` read and its wire
 - ./explorer-home-view.md - when changing the Home page: its route, Jump back in (grid, phone strip, See more), What happened entries, local opens
 - ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor) or ownership powers: the expand-then-contract releases, migration 0067, the gates and token choke point, the room's op classes, derived collaboration keys, participation writes and the answers route, the Share dialog and role pill
+- ./workbench-embeds.md - when implementing or changing workbench embeds: pairing, tickets, `lvw_` sessions and their confinement, migration 0077, the `/embed/workbench` page and its messages, the selection reference, `/workbench/pair`, Settings pairings, `workbench open` and `pair`
 - ./DEFAULTS.md - when a workspace blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a workspace blueprint covers
 - ./empty-document-cleanup.md - when implementing or changing the daily move of empty documents to the Trash: the sweep, the trash reason, the restore restart
