@@ -58,7 +58,7 @@ votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`,
 only if the guest has already voted in this document from this network, or the network has fewer than
 `GUEST_VOTERS_PER_NETWORK` guest voters in it. Withdrawing is never refused.
 
-The ledger is `guest_voters (document_id, network_tag, person_tag)`, migration 0075, one row per guest voter per
+The ledger is `guest_voters (document_id, network_tag, person_tag)`, migration 0076, one row per guest voter per
 network per document, removed with the document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is
 stored. Admission is one D1 batch: a conditional insert, then a read of the caller's row.
 
