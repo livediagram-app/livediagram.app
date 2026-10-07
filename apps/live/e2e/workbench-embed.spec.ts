@@ -20,9 +20,8 @@ let workbench: FakeWorkbench;
 let elsewhere: FakeWorkbench;
 
 test.beforeAll(async () => {
-  const liveOrigin = new URL(test.info().project.use.baseURL!).origin;
-  workbench = await serveFakeWorkbench(liveOrigin);
-  elsewhere = await serveFakeWorkbench(liveOrigin);
+  workbench = await serveFakeWorkbench();
+  elsewhere = await serveFakeWorkbench();
 });
 
 test.afterAll(async () => {
@@ -57,7 +56,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   page.on('request', (req) => {
     if (req.url().includes('/api/workbench/sessions')) sessionCalls.push(req.method());
   });
-  await page.goto(workbench.urlFor(minted.body.url!));
+  await workbench.open(page, minted.body.url!);
   const frame = page.frameLocator('#frame');
   await frame.locator('[data-canvas-a11y-root]').waitFor();
   await expect(frame.locator('[data-element-id="el-play"]').first()).toBeVisible();
@@ -196,7 +195,7 @@ test('a page of another origin framing the URL mounts nothing', async ({
   const minted = await mintTicket(request, seeded, workbench.origin);
 
   // The URL minted for `workbench` lands in a page of `elsewhere`'s origin.
-  await page.goto(elsewhere.urlFor(minted.body.url!));
+  await elsewhere.open(page, minted.body.url!);
   const frame = page.frameLocator('#frame');
 
   await expect(
@@ -204,4 +203,21 @@ test('a page of another origin framing the URL mounts nothing', async ({
   ).toBeVisible({ timeout: 15_000 });
   await expect(frame.locator('[data-canvas-a11y-root]')).toHaveCount(0);
   expect(await received(page)).toEqual([]);
+});
+
+test('the fake workbench frames only an http(s) loopback address', async ({ page }) => {
+  await page.goto(`${workbench.origin}/`);
+  const open = (url: string) =>
+    page.evaluate(
+      (u) => (window as unknown as { openFrame: (v: string) => boolean }).openFrame(u),
+      url,
+    );
+
+  for (const url of ['javascript:alert(1)', 'https://example.com/embed/workbench', 'not a url']) {
+    expect(await open(url)).toBe(false);
+  }
+  await expect(page.getByRole('alert')).toHaveText(
+    'Refused: the fake workbench frames only an http(s) loopback address.',
+  );
+  expect(await page.locator('#frame').getAttribute('src')).toBeNull();
 });

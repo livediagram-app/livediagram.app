@@ -16,25 +16,29 @@ const E2E_SESSION_KEY = 'livediagram:e2e:session';
 
 export type FakeWorkbench = {
   origin: string;
-  // The fake workbench's address, framing `frameUrl`.
-  urlFor: (frameUrl: string, opts?: { silent?: boolean }) => string;
+  // Opens the fake workbench in `page` and hands it `frameUrl` to frame.
+  open: (page: Page, frameUrl: string, opts?: { silent?: boolean }) => Promise<void>;
   close: () => Promise<void>;
 };
 
-// Serves the fake workbench on 127.0.0.1 at a free port: another origin than the live app's localhost. It frames
-// only the live origin's workbench page.
-export async function serveFakeWorkbench(liveOrigin: string): Promise<FakeWorkbench> {
-  const html = FAKE_WORKBENCH_HTML.replaceAll('__LIVE_ORIGIN__', liveOrigin);
+// Serves the fake workbench on 127.0.0.1 at a free port: another origin than the live app's localhost.
+export async function serveFakeWorkbench(): Promise<FakeWorkbench> {
   const server: Server = createServer((_req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(html);
+    res.end(FAKE_WORKBENCH_HTML);
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   return {
     origin,
-    urlFor: (frameUrl, opts = {}) =>
-      `${origin}/?frame=${encodeURIComponent(frameUrl)}${opts.silent ? '&silent=1' : ''}`,
+    open: async (page, frameUrl, opts = {}) => {
+      await page.goto(`${origin}/${opts.silent ? '?silent=1' : ''}`);
+      const framed = await page.evaluate(
+        (url) => (window as unknown as { openFrame: (u: string) => boolean }).openFrame(url),
+        frameUrl,
+      );
+      if (!framed) throw new Error(`the fake workbench refused to frame ${frameUrl}`);
+    },
     close: () => new Promise((resolve) => server.close(() => resolve())),
   };
 }
@@ -104,8 +108,8 @@ export async function seedDocumentAndToken(
   request: APIRequestContext,
   person: Person,
 ): Promise<Seeded> {
-  const documentId = `wb-doc-${Date.now()}`;
-  const tabId = `wb-tab-${Date.now()}`;
+  const documentId = `wb-doc-${randomUUID()}`;
+  const tabId = `wb-tab-${randomUUID()}`;
   const created = await apiJson(request, 'POST', '/documents', person.jwt, {
     id: documentId,
     name: 'Home screen',

@@ -1,10 +1,11 @@
 <!doctype html>
 <!--
   A fake workbench for the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-  "Testing"): frames the URL in `?frame=` (only a workbench page on the live origin the serving test names in
-  place of __LIVE_ORIGIN__), answers `hello` with `hello-ack` (unless `?silent=1`),
-  answers `renew` with the ticket the test leaves in `window.nextTicket`, and records every message the
-  frame sends into `window.received`. `window.post(message)` sends one to the frame.
+  "Testing"). The test hands it the frame URL with `window.openFrame(url)` after load (never through its own
+  address): only http or https on a loopback host is framed, anything else is refused on the page. It answers
+  `hello` with `hello-ack` (unless `?silent=1`), answers `renew` with the ticket the test leaves in
+  `window.nextTicket`, and records every message the frame sends into `window.received`.
+  `window.post(message)` sends one to the frame.
 -->
 <html lang="en">
   <head>
@@ -27,22 +28,43 @@
   </head>
   <body>
     <iframe id="frame" title="livediagram"></iframe>
+    <p id="refused" role="alert" hidden></p>
     <script>
-      const liveOrigin = '__LIVE_ORIGIN__';
-      const params = new URLSearchParams(location.search);
-      const target = params.get('frame') ?? '';
-      if (!target.startsWith(liveOrigin + '/embed/workbench')) {
-        throw new Error('the fake workbench frames only the live workbench page');
-      }
+      const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+      const silent = new URLSearchParams(location.search).get('silent') === '1';
       const frame = document.getElementById('frame');
+      let liveOrigin = null;
       window.received = [];
       window.nextTicket = null;
       window.post = (message) => frame.contentWindow.postMessage(message, liveOrigin);
+      window.openFrame = (value) => {
+        let url;
+        try {
+          url = new URL(value);
+        } catch {
+          url = null;
+        }
+        const allowed =
+          url !== null &&
+          (url.protocol === 'http:' || url.protocol === 'https:') &&
+          LOOPBACK_HOSTS.includes(url.hostname);
+        if (!allowed) {
+          const refused = document.getElementById('refused');
+          refused.textContent =
+            'Refused: the fake workbench frames only an http(s) loopback address.';
+          refused.hidden = false;
+          return false;
+        }
+        liveOrigin = url.origin;
+        frame.src = url.href;
+        return true;
+      };
       addEventListener('message', (event) => {
-        if (event.origin !== liveOrigin || event.source !== frame.contentWindow) return;
+        if (liveOrigin === null || event.origin !== liveOrigin) return;
+        if (event.source !== frame.contentWindow) return;
         const message = event.data;
         window.received.push(message);
-        if (message.type === 'livediagram:hello' && params.get('silent') !== '1') {
+        if (message.type === 'livediagram:hello' && !silent) {
           window.post({ type: 'livediagram:hello-ack', v: 1, name: 'Fake Workbench' });
         }
         if (message.type === 'livediagram:renew' && window.nextTicket) {
@@ -50,7 +72,6 @@
           window.nextTicket = null;
         }
       });
-      frame.src = target;
     </script>
   </body>
 </html>
