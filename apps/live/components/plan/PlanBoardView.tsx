@@ -8,6 +8,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
 import {
+  CARD_FIELDS,
   ITEM_TYPES,
   itemStatus,
   cardIsFaceDown,
@@ -39,6 +40,7 @@ import { addFirstColumn } from './board-setup-edits';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
+import { BoardMoreMenu } from './BoardMoreMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { usePlan } from './PlanContext';
@@ -306,6 +308,7 @@ export function PlanBoardView({
           interactive ? (
             <>
               {/* The board's settings, the same as its element menu's Board and Cards, for an editor. */}
+              <BoardMoreMenu boardId={element.id} title={setup.title} />
               {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
               <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
             </>
@@ -467,7 +470,8 @@ export function PlanBoardView({
                                 }
                                 lifted={dragging?.itemId === item.id}
                                 done={done}
-                                setupFields={setup.cardFields}
+                                // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
+                                setupFields={CARD_FIELDS}
                                 cardSize={setup.cardSize}
                                 faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                 voting={
@@ -544,7 +548,7 @@ export function PlanBoardView({
           size={setup.cardSize}
           item={items.get(dragging.itemId)!}
           palette={palette}
-          fields={setup.cardFields}
+          fields={CARD_FIELDS}
         />
       ) : null}
     </div>

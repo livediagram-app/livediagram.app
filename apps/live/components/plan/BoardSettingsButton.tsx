@@ -112,9 +112,22 @@ function SettingsSection({
       >
         <span className="text-slate-400 dark:text-slate-400">{icon}</span>
         <span className="flex-1">{title}</span>
-        <ChevronDownIcon className={`transition ${open ? '' : '-rotate-90'}`} />
+        <ChevronDownIcon
+          className={`transition-transform duration-short motion-reduce:transition-none ${open ? '' : '-rotate-90'}`}
+        />
       </button>
-      {open ? <div className="pb-1">{children}</div> : null}
+      {/* Animated open and shut, as the menu's accordions are; shut, it leaves the focus order and the tree. */}
+      <div
+        inert={!open}
+        aria-hidden={!open || undefined}
+        className={`grid transition-all duration-short ease-out motion-reduce:transition-none ${
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="pb-1">{children}</div>
+        </div>
+      </div>
     </section>
   );
 }

@@ -69,7 +69,7 @@ describe('PlanViewMenuSection', () => {
     expect(screen.queryByRole('button', { name: 'Task' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Note' })).toBeNull();
     expect(screen.getByRole('note').textContent).toBe(
-      'iOnly card types with Start and Due fields show here.',
+      'iThe card types this view charts; only those with Start and Due fields are listed.',
     );
   });
 

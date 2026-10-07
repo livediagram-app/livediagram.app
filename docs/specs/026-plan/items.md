@@ -103,8 +103,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   Opening the popover (a click, Enter, Space or an arrow key on the field) moves focus to the picked swatch.
 - Where it shows:
   - **Card face**: a small dot beside the card's type label.
-  - **Parent**: a card's parent (the project it belongs to) shows that project's dot before its name, in the item
-    panel and on the card face.
+  - **Parent**: in the item panel, the Parent field (and the cards in its list) draws the linked card's type glyph in
+    the linked card's own colour instead of the type's, with no dot, to save space; on the card face, the project's
+    dot before its name.
   - **Swimlanes by Project**: each project row's header shows the project's dot.
   - **Gantt Chart**: a project's bar and diamond are drawn in its colour, else the Project type colour; the
     row's name carries its dot ([Gantt Chart](plan-views.md#gantt-chart)).
@@ -238,20 +239,15 @@ author redaction, and the same thread list, composer and resolve control the com
   newest change first.
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
   description or card type name ("person" finds every Person card), ignoring case.
-- **Card types**: under the switch below, a chip per catalogue type (its glyph in its colour and its name), wrapping
-  onto a second line and scrolling past two. None pressed is every type; pressing chips narrows the list, and both
-  counts, to the pressed types; **Clear** (shown while any is pressed) presses none. The choice is the person's own
-  while the panel is open, never saved. With types pressed and none of their cards: "No cards of those types yet".
-- **All Cards** and **Not on a Board** switch between every card and the cards no board in the document shows,
+- **All Cards** (the wider, three quarters) and **Not on a Board** switch between every card and the cards no board in the document shows,
   on any tab: those with no status, those whose status no column holds (the strays a renamed or removed column
   left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
   card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
   its type. Each carries a count.
-- **Filters**: under the card types, a chip per field filter ("State: Done", "Assignee: No assignee"), each with a
+- **Filters**: under the switch, a chip per field filter ("State: Done", "Assignee: No assignee"), each with a
   cross, and **Add Filter**, the picker Card Search uses ([Plan views](plan-views.md#card-search)): a field the
-  listed cards' types offer, then one of its values among them with its count, so no filter leaves nothing. Every
-  filter must match; **Clear Filters** removes them. Like the type chips they are the person's own while the panel
-  is open, never saved. Filters matching nothing: "No cards match these filters."
+  listed cards' types offer (Card Type among them while they hold more than one type), then one of its values among them with its count, so no filter leaves nothing. Every
+  filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: "No cards match these filters."
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row shows the type's glyph, the title, and the type and number under it; on desktop also its priority, its
   due date ("Due 12 Oct"), its state as a chip ("No status" without one) and its assignee. Choosing one closes the popover and

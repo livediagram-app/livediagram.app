@@ -21,7 +21,7 @@ import {
   viewNeeds,
   viewShownTypes,
 } from '@livediagram/items';
-import { SwimlaneTiles, TypeToggleTiles } from './plan-menu-parts';
+import { InfoNote, SwimlaneTiles, TypeToggleTiles } from './plan-menu-parts';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
@@ -80,6 +80,7 @@ export function PlanViewMenuSection({
           icon={<PlanIcon size={16} />}
           {...sectionProps('plan-view-grouping')}
         >
+          <InfoNote>The field this chart gives a bar to each value of.</InfoNote>
           <SwimlaneTiles
             by={grouping.by}
             field={grouping.field}
@@ -147,23 +148,10 @@ const NEED_LABELS: Record<string, string> = {
   votes: 'Votes',
 };
 
-// Why some card types are missing from the list: the view reads fields a type must offer.
+// Which card types the view charts, and why some are missing: the view reads fields a type must offer.
 function ViewTypesNote({ needs }: { needs: readonly string[] }) {
-  if (needs.length === 0) return null;
+  if (needs.length === 0) return <InfoNote>The card types this view charts.</InfoNote>;
   const names = needs.map((f) => NEED_LABELS[f] ?? f);
   const list = names.length === 1 ? `a ${names[0]} field` : `${names.join(' and ')} fields`;
-  return (
-    <p
-      role="note"
-      className="mx-3 mb-1 mt-1 flex gap-1.5 rounded-md bg-brand-50 px-2 py-1.5 text-[11px] leading-snug text-brand-800 dark:bg-brand-500/10 dark:text-brand-200"
-    >
-      <span
-        aria-hidden
-        className="mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-current text-[9px] font-bold"
-      >
-        <span className="text-optical-centre">i</span>
-      </span>
-      <span>Only card types with {list} show here.</span>
-    </p>
-  );
+  return <InfoNote>The card types this view charts; only those with {list} are listed.</InfoNote>;
 }

@@ -10,7 +10,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { itemColourOf, itemTitle, typeIn, type Item, type ItemTypeDef } from '@livediagram/items';
 import { ChevronDownIcon, ChevronRightIcon, Tooltip, useEscape } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
-import { ColourDot } from './ColourSwatches';
+import { COLOUR_NAMES } from './ColourSwatches';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // More candidates than this and the list opens with a filter.
@@ -141,12 +141,18 @@ export function LinkedCardField({
             }}
             className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-left text-[13px] outline-none enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-400"
           >
+            {/* The linked card's own colour, when it has one, tints its type's glyph: no dot beside it. */}
             {type ? (
-              <span className={`shrink-0 ${ACCENT_TEXT}`} style={accentVars(type.color)}>
+              <span
+                className={`shrink-0 ${ACCENT_TEXT}`}
+                style={accentVars(own ?? type.color)}
+                {...(own
+                  ? { role: 'img', 'aria-label': `${COLOUR_NAMES[own] ?? own} colour` }
+                  : {})}
+              >
                 <PlanTypeGlyph glyph={type.glyph} size={14} />
               </span>
             ) : null}
-            {own ? <ColourDot colour={own} /> : null}
             {linked ? (
               <>
                 <span className="shrink-0 rounded bg-slate-100 px-1 text-[11px] font-medium tabular-nums text-slate-500 dark:bg-slate-800">
@@ -225,7 +231,10 @@ export function LinkedCardField({
                 >
                   {card && t ? (
                     <>
-                      <span className={`shrink-0 ${ACCENT_TEXT}`} style={accentVars(t.color)}>
+                      <span
+                        className={`shrink-0 ${ACCENT_TEXT}`}
+                        style={accentVars(itemColourOf(card) ?? t.color)}
+                      >
                         <PlanTypeGlyph glyph={t.glyph} size={14} />
                       </span>
                       <span className="shrink-0 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">

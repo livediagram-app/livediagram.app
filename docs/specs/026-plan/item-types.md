@@ -159,16 +159,17 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 ## Card display
 
 - A card face is drawn at its board's **card size** (Minimal, Compact or Detailed; [Plan board](plan-board.md#the-board-set-up)).
-  What it shows at that size is its **type's Display** for that size, less any field its board's **Show on Cards**
-  turns off: a field shows only when both allow it, and only when the card has a value for it.
+  What it shows at that size, and where, is its **type's Display** for that size, each field only when the card has
+  a value for it. A board has no say over the fields (its old Show on Cards setting, kept in stored set-ups, is
+  ignored).
 - Each size draws its fields in **slots**, each holding fields in order:
   - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date
     and Assignee.
   - **Compact**: **Beside the Title** (before it) and **Below the Title** (one row); it can draw Number, Type,
     Assignee, Priority, Start Date, Due Date, Votes and Comments.
   - **Detailed**: **Header** and **Header End** (one row above the title, at its start and its end), **Under the
-    Title** (its own lines) and **Footer** (one row at the foot); it can draw every card field. Description fits only
-    Under the Title.
+    Title** (its own lines) and **Footer** (one row at the foot); it can draw every card field. Any field goes in any
+    part of a size that draws it; the person chooses where.
     A type's Display is, per size, which fields sit in which slot (`display: { compact: { lead: ['key'], row: ['due']
 } }`); a field in no slot is not shown.
 - **Defaults**, for a size a type has not set:
@@ -251,17 +252,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Under them, **Default State**: a menu of **None** and every state still on, in board order, with a line saying
     "Cards made outside a board start here; a card added to a board takes that column's state."
   - **Display**: the card sizes as a segmented control (**Minimal**, **Compact**, **Detailed**; Compact to start),
-    then the **card layout** of this type at that size: a card drawn large, its **slots** outlined (an empty one reads its
-    name) and holding the fields placed there as chips, in order. Under it, **Add a Field**: a row per field the
-    type has that this size can draw and is not yet on the card (its icon, its name, "Adds to {Slot}" and a plus) (a field the type lacks is not listed). Pressing one
-    adds it to its default slot; a placed chip drags (mouse, pen or touch) to another slot or another place in its
-    own, the slot under the pointer outlined, and its cross takes it off the card. A field only goes where it fits
-    (Description only Under the Title); a slot that will not take the dragged chip stays unlit. Beside it on
-    desktop (under it on a phone), the **Preview**: a real card of this type at that size, drawn as a board draws
-    it from a sample card (its title "Example {Name}", a person, High priority, due in three days, a label, an
-    estimate, a checklist two of five done, a description, three votes, two comments), updating as chips move.
-    Under them, **Reset to Default** (shown once the size differs from its default) and a note: "A board's Show on
-    Cards can still hide these on that board." A size equal to its default is stored as absent.
+    then the card itself, editable in place: a real card of this type at that size, drawn large (1.35 times a
+    board's) as a board draws it, from a sample card (its title "Example {Name}", a person, High priority, due in
+    three days, a label, an estimate, a checklist two of five done, a description, three votes, two comments), on a
+    board column's colour. Each **part** of the card is a dotted box, drawn even when empty (then reading its name),
+    and each field's bit in it (the due pill, the avatar...) is a chip: it drags (mouse, pen or touch) to any part
+    or another place in its own, the part under the pointer lit and a line marking the place; its cross (shown on
+    hover or focus, and always on a touch screen, which has no hover, with the chip's outline) takes it off; focused, the arrow keys move it (Left and Right within its part, Up and Down to
+    the part before or after) and Delete takes it off. Any field may go in any part of a size that draws it.
+    Beside the card on desktop (under it on a phone), **Available Fields**: a chip per field the type has, that
+    this size can draw, not yet on the card ("Drag one onto the card, or press it to choose where it goes."): it
+    drags onto any part, or, pressed (or Enter), opens a menu "Add {Field} to" with a row per part. Under them,
+    **Reset to Default** (shown once the size differs from its default), else "Showing the default for {Name}." A
+    size equal to its default is stored as absent.
   - A problem is named beside Save, which waits for it: no name, a name another type has, or a custom field
     without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 64
     statuses off (a type stored that way: "Too many states turned off: a type can turn off at most 64.", on the

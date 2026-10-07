@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { addCardField, moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
+import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
 
 // docs/specs/026-plan/item-types.md "Editing a type": Display's layout edits.
 describe('card layout edits', () => {
-  it('adds a field to its default slot, once', () => {
-    const one = addCardField('detailed', {}, 'due');
-    expect(one).toEqual({ foot: ['due'] });
-    expect(addCardField('detailed', one, 'due')).toBe(one);
-  });
-
   it('moves a field to a slot at a place, and refuses where it does not fit', () => {
     const layout = { head: ['type', 'key'] as const, foot: ['due'] as const };
     expect(moveCardField('detailed', layout, 'due', 'head', 1)).toEqual({
@@ -19,7 +13,10 @@ describe('card layout edits', () => {
       foot: ['due'],
     });
     const desc = { body: ['description'] as const };
-    expect(moveCardField('detailed', desc, 'description', 'foot', 0)).toBe(desc);
+    expect(moveCardField('detailed', desc, 'description', 'foot', 0)).toEqual({
+      foot: ['description'],
+    });
+    expect(moveCardField('compact', {}, 'labels', 'row', 0)).toEqual({});
   });
 
   it('takes a field off, dropping a slot left empty', () => {
@@ -28,7 +25,7 @@ describe('card layout edits', () => {
 
   it('finds the slot before or after that takes a field', () => {
     expect(neighbourSlot('detailed', 'foot', 'due', -1)).toBe('body');
-    expect(neighbourSlot('detailed', 'body', 'description', 1)).toBeNull();
+    expect(neighbourSlot('detailed', 'foot', 'description', 1)).toBeNull();
     expect(neighbourSlot('minimal', 'lead', 'due', -1)).toBeNull();
   });
 });

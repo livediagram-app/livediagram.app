@@ -32,11 +32,7 @@ export function MenuGroup({
       <h3 className="px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {title}
       </h3>
-      {hint ? (
-        <p className="px-3 pt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {hint}
-        </p>
-      ) : null}
+      {hint ? <InfoNote>{hint}</InfoNote> : null}
       {children}
     </section>
   );
@@ -157,5 +153,23 @@ export function TypeToggleTiles({
         );
       })}
     </MenuTileGrid>
+  );
+}
+
+// A small info block under a menu heading: what the choices below it do, in a line (an "i" in a circle, then the text).
+export function InfoNote({ children }: { children: ReactNode }) {
+  return (
+    <p
+      role="note"
+      className="mx-3 mb-1 mt-1 flex gap-1.5 rounded-md bg-brand-50 px-2 py-1.5 text-[11px] leading-snug text-brand-800 dark:bg-brand-500/10 dark:text-brand-200"
+    >
+      <span
+        aria-hidden
+        className="mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-current text-[9px] font-bold"
+      >
+        <span className="text-optical-centre">i</span>
+      </span>
+      <span>{children}</span>
+    </p>
   );
 }

@@ -31,6 +31,9 @@ Stored on the element, shared by everyone, undone like any element edit:
   has 1 to 12 columns. The first column is where new items land when no column is chosen.
 - **Done column**: optionally one column is marked done: its cards draw muted and count as finished in the
   header's progress.
+- **The board's ⋯ menu**: left of the cog, for a document with a slide deck, a **⋯** ("More for {Title}") opening
+  the board's actions as icon-left rows: **Add to Slides** (the board as a slide; announces "Board added to the
+  slides").
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) left of Maximise,
   for someone who may edit. It opens a popover under it holding the element menu's **Board** and **Cards** settings,
   each under a heading that opens it, one at a time (Board when it opens; opening one closes the other); it scrolls when taller than the window. A press
@@ -83,11 +86,9 @@ Where each is set, so a setting lives with what it changes, never in one central
   [Presentation mode](../012-collaboration/presentation-mode.md#board-slides); **Swimlanes**, one grid: None,
   Assignee, Type, Priority, Project, Status, then a tile per groupable field, named by the field and drawn
   with its kind's glyph) and **Cards** (**Card Types**, below; **Card Size**: Minimal, Compact or Detailed,
-  below; **Show on Cards**: what each card face shows besides its title, a tile per field the board's card types offer
-  (the card number and type always; a field already shown stays listed) pressed on or off, with
-  a one-line hint for Minimal and Compact; a card shows a field only when its type's Display also does,
-  [Card display](item-types.md#card-display)). A field the chosen size cannot draw keeps its setting but its tile is
-  dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.
+  below; what a card shows at each size is its type's Display, [Card display](item-types.md#card-display)). Each of
+  Swimlanes, Card Types and Card Size opens with a one-line info note (an "i" in a circle) saying what it does.
+  New columns come from a column's **+ Add Column After**.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (at
   least one stays on; none named is every type). A board shows only cards of those types, and takes only those:
   Add Card offers only them, a palette card of another type gets the red refused zone, and a card of another type
@@ -174,7 +175,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     same as in the card panel, "+2" for the rest); then a footer of **pills**: the start date ("From 1 Oct"), the
     due date, the estimate, checklist progress ("2/5", green when complete), comments and votes, with the
     assignee's avatar at the end.
-  - **Due date pill**: red once past (unless the card is done), amber when due within two days, otherwise quiet.
+  - **Due date pill**: "Due 10 Oct" (as the start pill reads "From 8 Oct"), red once past (unless the card is done), amber when due within two days, otherwise quiet.
   - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Start Date, Due Date, Votes, Checklist,
     Description and Project; Compact draws Number, Type, Assignee, Priority, Start Date, Due Date and Votes. A
     start date reads "From 1 Oct", muted.
@@ -273,7 +274,8 @@ In Plan mode:
   inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
-  closes with Escape or the close button, and follows the item if someone else moves it. On a desktop, opening
+  closes with Escape or the close button, and follows the item if someone else moves it. **Enter** in the title
+  saves it and closes the panel (a refused save leaves it open, the title put back, with the reason). On a desktop, opening
   it puts the caret at the end of its **title**; on a phone focus rests on the panel itself, so no keyboard rises.
   The type picker never takes the first focus. Tab moves on through the controls.
   - **A card just made opens at once**: one this person adds with **Add Card**, places from the palette into a

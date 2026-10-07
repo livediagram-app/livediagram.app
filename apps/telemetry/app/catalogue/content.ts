@@ -708,6 +708,14 @@ export const PLAN_ITEMS_RESTORED = chart(
   { rising: 'neutral' },
 );
 
+export const PLAN_REMOVED = chart(
+  'Plan',
+  'Removed',
+  'Filters Removed',
+  'A filter taken off a Card Search view.',
+  { rising: 'neutral' },
+);
+
 export const PLAN_ITEMS_OPENED = chart(
   'Plan',
   'Opened',
@@ -782,6 +790,7 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_VOTES,
     PLAN_ITEMS_DELETED,
     PLAN_ITEMS_RESTORED,
+    PLAN_REMOVED,
     PLAN_FLAGS,
     PLAN_MAXIMISED,
     PLAN_SETUP_CHANGED,

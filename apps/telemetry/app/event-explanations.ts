@@ -1393,6 +1393,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Moved':
     'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
+  'Plan|Removed': 'Someone took a filter off a Card Search view.',
   'Plan|Toggled':
     'Someone flagged a card for attention or took its flag off, or maximised a board or view or restored it (the value says which).',
   'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',

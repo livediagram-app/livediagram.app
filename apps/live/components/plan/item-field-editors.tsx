@@ -35,12 +35,16 @@ export function DebouncedText({
   className,
   label,
   maxLength,
+  onEnter,
 }: {
   id: string;
   value: string;
   multiline?: boolean;
   // The most characters the field takes: typing stops there, and a count shows near it.
   maxLength?: number;
+  // Enter on a one-line field: what follows once it has saved (the card's title closes the card). Not called when
+  // the save is refused, so the field (gone back to what is saved) stays to be fixed.
+  onEnter?: () => void;
   placeholder?: string;
   required?: boolean;
   disabled: boolean;
@@ -62,17 +66,19 @@ export function DebouncedText({
       setDraft(value);
     }
   }, [value]);
-  const flush = (text: string) => {
+  // Saves what is typed; resolves whether it landed (true when there was nothing to save).
+  const flush = (text: string): Promise<boolean> => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     const next = required ? text.trim() : text;
-    if (next === savedRef.current || (required && !next)) return;
+    if (next === savedRef.current || (required && !next)) return Promise.resolve(true);
     savedRef.current = next;
-    void Promise.resolve(onSave(next === '' ? undefined : next)).then((ok) => {
+    return Promise.resolve(onSave(next === '' ? undefined : next)).then((ok) => {
       // Refused: back to what is saved, unless a newer edit is already on its way.
-      if (ok !== false || savedRef.current !== next) return;
+      if (ok !== false || savedRef.current !== next) return true;
       savedRef.current = valueRef.current;
       setDraft(valueRef.current);
+      return false;
     });
   };
   useEffect(
@@ -94,7 +100,19 @@ export function DebouncedText({
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => flush(text), ITEM_EDIT_DEBOUNCE_MS);
     },
-    onBlur: () => flush(draft),
+    onBlur: () => void flush(draft),
+    onKeyDown:
+      onEnter && !multiline
+        ? (e: {
+            key: string;
+            preventDefault: () => void;
+            nativeEvent: { isComposing?: boolean };
+          }) => {
+            if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+            e.preventDefault();
+            void flush(draft).then((ok) => ok && onEnter());
+          }
+        : undefined,
   };
   // Near the limit, how many characters are left (from 90% of it), so the stop never surprises.
   const left = maxLength === undefined ? null : maxLength - draft.length;

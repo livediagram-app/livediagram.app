@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  cardFieldsFor,
   swimlaneGroupingsFor,
   laneDropPatch,
   laneFieldOf,
@@ -210,7 +209,7 @@ describe('options for the card types a board or chart shows', () => {
   const note = ITEM_TYPES.find((t) => t.id === 'note')!;
   const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
-  it('lists only the lane fields, groupings and card fields those types offer', () => {
+  it('lists only the lane fields and groupings those types offer', () => {
     const noDue = { ...note, fields: note.fields.filter((f) => f !== 'due' && f !== 'assignee') };
     expect(laneFieldsOf([noDue]).some((f) => f.id === 'due')).toBe(false);
     expect(swimlaneGroupingsFor([noDue])).not.toContain('assignee');
@@ -218,7 +217,5 @@ describe('options for the card types a board or chart shows', () => {
     expect(swimlaneGroupingsFor([noDue, task])).toEqual(
       expect.arrayContaining(['type', 'assignee']),
     );
-    expect(cardFieldsFor([noDue])).not.toContain('assignee');
-    expect(cardFieldsFor([noDue])).toEqual(expect.arrayContaining(['key', 'type']));
   });
 });

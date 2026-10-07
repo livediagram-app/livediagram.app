@@ -1,11 +1,9 @@
-// The Display tab's edits to a card layout (docs/specs/026-plan/item-types.md "Editing a type": Display): add a field
-// to its default slot, take one off, and move one to a slot at a place. Pure; each returns a new layout, or the same
+// The Display tab's edits to a card layout (docs/specs/026-plan/item-types.md "Editing a type": Display): take a
+// field off, and move one (or add one, by moving it in) to a slot at a place. Pure; each returns a new layout, or the same
 // one when the edit does nothing (a field that does not fit, one already placed).
 import {
   CARD_SLOTS,
-  cardLayoutFields,
   cardSlotFits,
-  defaultCardSlot,
   type CardField,
   type CardLayout,
   type CardSize,
@@ -20,13 +18,6 @@ const without = (layout: CardLayout, field: CardField): CardLayout => {
   }
   return out;
 };
-
-export function addCardField(size: CardSize, layout: CardLayout, field: CardField): CardLayout {
-  if (cardLayoutFields(size, layout).includes(field)) return layout;
-  const slot = defaultCardSlot(size, field);
-  if (!cardSlotFits(size, slot, field)) return layout;
-  return { ...layout, [slot]: [...(layout[slot] ?? []), field] };
-}
 
 export function removeCardField(layout: CardLayout, field: CardField): CardLayout {
   return without(layout, field);

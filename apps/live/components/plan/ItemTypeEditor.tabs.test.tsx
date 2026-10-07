@@ -148,13 +148,16 @@ describe('the Display tab', () => {
       />,
     );
     fireEvent.click(screen.getByRole('tab', { name: 'Display' }));
-    expect(screen.getByRole('figure', { name: 'Preview' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Compact card' })).toBeTruthy();
     fireEvent.click(screen.getByRole('radio', { name: 'Minimal' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add Due Date' }));
+    // An available field, pressed, asks where it goes.
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Due Date' }), { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'After the Title' }));
     expect(screen.getByRole('button', { name: 'Reset to Default' })).toBeTruthy();
-    // Added to its default slot, then moved with the keyboard to the slot before the title.
-    const chip = screen.getByRole('button', { name: /^Due Date, in After the Title/ });
-    fireEvent.keyDown(chip, { key: 'ArrowUp' });
+    // On the card, moved with the keyboard to the part before the title.
+    fireEvent.keyDown(screen.getByRole('button', { name: /^Due Date, in After the Title/ }), {
+      key: 'ArrowUp',
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSave.mock.lastCall![0].display).toEqual({ minimal: { lead: ['due'] } });
   });

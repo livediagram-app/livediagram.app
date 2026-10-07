@@ -4,7 +4,7 @@
 // type (custom ones included), newest change first, searched by number, title, description or type name; **Not on
 // a Board** narrows it to the cards no board in the document shows (no column holds the status, or every board
 // naming it leaves the card's type out), so strays can be found and put
-// somewhere, and the card type chips to the pressed types. Choosing one opens it. A popover above its button in
+// somewhere, and the field filters (Card Type among them) narrow it further. Choosing one opens it. A popover above its button in
 // Plan mode's bottom-right cluster, like Card Types and the Trash.
 import { useMemo, useState } from 'react';
 import {
@@ -67,8 +67,6 @@ export function CardFinderPanel({
   const plan = usePlan();
   const [query, setQuery] = useState('');
   const [show, setShow] = useState<CardFinderShow>('all');
-  // The card types narrowed to: none is every type. The person's own, while the panel is open.
-  const [types, setTypes] = useState<ReadonlySet<string>>(() => new Set());
   // Field filters (a state, an assignee, a priority...), the person's own as the types are.
   const [filters, setFilters] = useState<readonly CardSearchFilter[]>([]);
   // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
@@ -82,25 +80,15 @@ export function CardFinderPanel({
   );
   if (!plan) return null;
   const typeLabel = (id: string) => typeIn(plan.types, id).label;
-  // The live cards of the pressed types (all when none is pressed): what the counts and the list read.
-  const ofTypes = types.size > 0 ? live.filter((it) => types.has(it.type)) : live;
+  // The live cards the field filters keep (Card Type among them): what the counts and the list read.
+  const ofTypes = filters.length ? searchCards(live, filters, plan.types, plan.statusNames) : live;
   const counts = {
     all: ofTypes.length,
     'off-board': ofTypes.filter((it) => isOffBoard(it, boardStatuses)).length,
   };
-  const searched = findCards(ofTypes, { query, show, boardStatuses, typeLabel });
-  // The field filters (docs/specs/026-plan/items.md "Finding a card"), as Card Search's: each must match.
-  const found = filters.length
-    ? searchCards(searched, filters, plan.types, plan.statusNames)
-    : searched;
-  const filterFields = searchFields(found, filters, plan.types).filter((f) => f.by !== 'type');
-  const toggleType = (id: string) =>
-    setTypes((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const found = findCards(ofTypes, { query, show, boardStatuses, typeLabel });
+  // What Add Filter offers (docs/specs/026-plan/items.md "Finding a card"), as Card Search does: Card Type among them.
+  const filterFields = searchFields(found, filters, plan.types);
   return (
     <MovablePanel
       title="Cards"
@@ -141,7 +129,7 @@ export function CardFinderPanel({
               role="radio"
               aria-checked={show === s.id}
               onClick={() => setShow(s.id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition ${
+              className={`flex ${s.id === 'all' ? 'flex-[3]' : 'flex-1'} items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition ${
                 show === s.id
                   ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
@@ -157,46 +145,6 @@ export function CardFinderPanel({
               </CountBadge>
             </button>
           ))}
-        </div>
-        {/* Card types: a chip per catalogue type, pressed to narrow the list to it (several may be). */}
-        <div className="flex items-start gap-1">
-          <div
-            role="group"
-            aria-label="Card types"
-            className="flex max-h-[4.25rem] min-w-0 flex-1 flex-wrap gap-1 overflow-y-auto"
-          >
-            {plan.types.map((t) => {
-              const on = types.has(t.id);
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => toggleType(t.id)}
-                  className={`inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-[11px] font-medium transition ${
-                    on
-                      ? 'border-brand-300 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-brand-100'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600'
-                  }`}
-                >
-                  <span className={ACCENT_TEXT} style={accentVars(t.color)}>
-                    <PlanTypeGlyph glyph={t.glyph} size={12} />
-                  </span>
-                  <span className="text-optical-centre">{t.label}</span>
-                </button>
-              );
-            })}
-          </div>
-          {types.size > 0 ? (
-            <button
-              type="button"
-              onClick={() => setTypes(new Set())}
-              className="inline-flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <CloseIcon size={10} />
-              <span className="text-optical-centre">Clear</span>
-            </button>
-          ) : null}
         </div>
         {/* Field filters: chips, each with a cross, and Add Filter (a field, then a value with its count). */}
         <div role="group" aria-label="Filters" className="flex flex-wrap items-center gap-1.5">
@@ -255,9 +203,7 @@ export function CardFinderPanel({
                 ? 'No cards match that search.'
                 : filters.length > 0
                   ? 'No cards match these filters.'
-                  : types.size > 0 && ofTypes.length === 0
-                    ? 'No cards of those types yet.'
-                    : 'Every card is on a board here.'}
+                  : 'Every card is on a board here.'}
           </p>
         ) : (
           <ul

@@ -785,11 +785,3 @@ export function swimlaneGroupingsFor(types: readonly ItemTypeDef[]): SwimlaneBy[
     return offers(s);
   });
 }
-
-// The card fields a board's Show on Cards offers, for the types it shows: the card number and type always, the rest
-// when one of the types offers that field.
-export function cardFieldsFor(types: readonly ItemTypeDef[]): CardField[] {
-  return CARD_FIELDS.filter(
-    (f) => f === 'key' || f === 'type' || types.some((t) => t.fields.includes(f)),
-  );
-}

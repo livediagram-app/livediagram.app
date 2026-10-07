@@ -333,6 +333,8 @@ function ItemPanelContent({
             label="Title"
             value={itemTitle(item)}
             maxLength={ITEM_TITLE_MAX}
+            // Enter saves the title and closes the card.
+            onEnter={onClose}
             required
             placeholder="Title"
             disabled={!canEdit}

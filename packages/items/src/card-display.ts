@@ -2,8 +2,7 @@
 // each size draws its fields in slots (Minimal before and after its title; Compact beside and below it; Detailed a
 // header, a header end, under the title and a footer), each slot an ordered list of fields. A type's own layout for a
 // size, else its default: a built-in type's own field set, by id, or the generic one, each placed where a board drew
-// it before layouts existed. A card face shows a field only when its type's layout and its board's Show on Cards both
-// allow it.
+// it before layouts existed. A board has no say over the fields: the type's layout is what a card shows.
 //
 // board.ts reads the type catalogue, which reads this, so nothing here touches board.ts's values while the modules
 // load: they are read inside functions.
@@ -53,10 +52,9 @@ export function defaultCardSlot(size: CardSize, field: CardField): CardSlot {
   return CARD_SLOTS[size].at(-1)!;
 }
 
-// Whether a field may sit in a slot: one its size draws, and Description only Under the Title.
+// Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where).
 export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): boolean {
-  if (!CARD_SLOTS[size].includes(slot) || !CARD_SIZE_FIELDS[size].includes(field)) return false;
-  return field !== 'description' || slot === 'body';
+  return CARD_SLOTS[size].includes(slot) && CARD_SIZE_FIELDS[size].includes(field);
 }
 
 // A set of fields placed where a board drew them, in its order.

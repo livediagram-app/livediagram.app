@@ -29,11 +29,13 @@ describe('a board’s settings cog', () => {
     render(<BoardSettingsButton element={element} palette={planPalette('light')} />);
     const cog = screen.getByRole('button', { name: 'Board Settings' });
     fireEvent.click(cog);
-    expect(screen.getByLabelText('Board title')).toBeTruthy();
-    expect(screen.queryByText('Card Size')).toBeNull();
+    // A shut section stays in the page while it animates, hidden from everyone.
+    const shut = (text: string) => !!screen.getByText(text).closest('[aria-hidden="true"]');
+    expect(shut('Title')).toBe(false);
+    expect(shut('Card Size')).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Cards', expanded: false }));
-    expect(screen.getByText('Card Size')).toBeTruthy();
-    expect(screen.queryByLabelText('Board title')).toBeNull();
+    expect(shut('Card Size')).toBe(false);
+    expect(shut('Title')).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Board', expanded: false }));
     fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
     expect(screen.queryByLabelText('Board title')).toBeNull();

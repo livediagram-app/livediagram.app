@@ -64,6 +64,15 @@ export type PlanCardFaceProps = {
   voting?: VotingProps;
   // A type to draw it as instead of the catalogue's (the type editor's Display preview, a draft not yet saved).
   typeOverride?: ItemTypeDef;
+  // The type editor's Display (docs/specs/026-plan/item-types.md "Editing a type"): the card drawn as its own layout
+  // editor. Each slot is drawn even when empty, through `slot` (a dotted box to drop into), and each field's bit
+  // through `bit` (a chip that drags and comes off).
+  edit?: CardFaceEdit;
+};
+
+export type CardFaceEdit = {
+  slot: (slot: CardSlot, bits: ReactNode[]) => ReactNode;
+  bit: (field: CardField, node: ReactNode) => ReactNode;
 };
 
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
@@ -81,6 +90,7 @@ export function PlanCardFace({
   presence,
   voting,
   typeOverride,
+  edit,
 }: PlanCardFaceProps) {
   const plan = usePlan();
   const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
@@ -210,11 +220,13 @@ export function PlanCardFace({
   // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card
   // display"). A voting board's vote control always shows, at the end of the last row, when Votes has no slot.
   const layout = typeCardLayout(type, size);
-  const slotBits = (slot: CardSlot, big = false) =>
+  const slotBits = (slot: CardSlot, big = false): ReactNode[] =>
     (layout[slot] ?? [])
       .filter(show)
-      .map((f) => pill(f, big))
+      .map((f) => (edit ? edit.bit(f, pill(f, big)) : pill(f, big)))
       .filter(Boolean);
+  // A slot as drawn: its bits, or, in the editor, its dotted box (drawn even when empty).
+  const zone = (slot: CardSlot, bits: ReactNode[]) => (edit ? edit.slot(slot, bits) : bits);
   const votePlaced = cardLayoutFields(size, layout).some((f) => f === 'votes' && show(f));
   const loneVote =
     voting && !votePlaced ? <VoteControl palette={palette} total={votes} voting={voting} /> : null;
@@ -238,14 +250,14 @@ export function PlanCardFace({
       <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
         {presenceTag}
         <TypeDot accent={accent} />
-        {slotBits('lead')}
+        {zone('lead', slotBits('lead'))}
         {titleText(2, 13)}
         {flag}
         <span
           className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {slotBits('trail')}
+          {zone('trail', slotBits('trail'))}
           {loneVote}
         </span>
       </div>
@@ -259,21 +271,23 @@ export function PlanCardFace({
       <div className={`${FRAME} flex-col gap-1.5 px-3 py-2`} style={frame}>
         {presenceTag}
         <div className="flex items-start gap-1.5">
-          {slotBits('lead').map((bit, i) => (
-            <span key={i} className="flex">
-              {bit}
-            </span>
-          ))}
+          {edit
+            ? zone('lead', slotBits('lead'))
+            : slotBits('lead').map((bit, i) => (
+                <span key={i} className="flex">
+                  {bit}
+                </span>
+              ))}
           {ownColour ? <ColourDot colour={ownColour} className="mt-1.5" /> : null}
           {titleText(2, 13, 20)}
           {flag}
         </div>
-        {row.length || loneVote ? (
+        {row.length || loneVote || edit ? (
           <div
             className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
             style={{ color: palette.muted }}
           >
-            {row}
+            {zone('row', row)}
             {loneVote}
           </div>
         ) : null}
@@ -297,15 +311,15 @@ export function PlanCardFace({
   return (
     <div className={`${FRAME} flex-col gap-2 px-3 py-2.5`} style={frame}>
       {presenceTag}
-      {head.length || headEnd.length || ownColour ? (
+      {head.length || headEnd.length || ownColour || edit ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {head}
+          {zone('head', head)}
           {ownColour ? <ColourDot colour={ownColour} /> : null}
-          {headEnd.length ? (
-            <span className="ml-auto flex items-center gap-1.5">{headEnd}</span>
+          {headEnd.length || edit ? (
+            <span className="ml-auto flex items-center gap-1.5">{zone('headEnd', headEnd)}</span>
           ) : null}
         </div>
       ) : null}
@@ -313,12 +327,12 @@ export function PlanCardFace({
         {titleText(3, 14)}
         {flag}
       </div>
-      {body.length ? (
+      {body.length || edit ? (
         <div
           className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {body}
+          {zone('body', body)}
         </div>
       ) : null}
       {onCard.length > 0 ? (
@@ -345,9 +359,9 @@ export function PlanCardFace({
           ))}
         </dl>
       ) : null}
-      {foot.length || loneVote ? (
+      {foot.length || loneVote || edit ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
-          {foot}
+          {zone('foot', foot)}
           {loneVote}
         </div>
       ) : null}

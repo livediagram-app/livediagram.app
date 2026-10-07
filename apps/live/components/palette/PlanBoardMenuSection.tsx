@@ -2,19 +2,14 @@
 
 // A Plan board's settings in its element menu (docs/specs/026-plan/plan-board.md "The board set-up"):
 // two flyouts beside Style. **Board**: its title (with Add to Slides beside it) and its swimlanes, built in or by a
-// field, in one grid. **Cards**: the types new cards can be, the card size, and what each card face shows, a tile per
-// field, pressed on or off. Each group sits under a heading, a hairline apart. A column's own settings sit on the column, behind its cog. Each
+// field, in one grid. **Cards**: the types new cards can be and the card size (what a card shows is its type's Display). Each group sits under a heading, a hairline apart. A column's own settings sit on the column, behind its cog. Each
 // change is one element edit, through PlanContext.
 import { useState, type ComponentProps } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
-  CARD_FIELDS,
-  CARD_SIZE_FIELDS,
   CARD_SIZES,
   boardAddTypes,
-  cardFieldsFor,
   normaliseBoardSetup,
-  type CardField,
   type CardSize,
   type PlanBoardSetup,
 } from '@livediagram/items';
@@ -23,30 +18,11 @@ import { MenuTile, MenuTileGrid, MenuToolButton } from '@/components/primitives/
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
-import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { CardSizeArt } from '@/components/plan/plan-tile-art';
-import { CARD_FIELD_LABELS } from '@/components/plan/board-setup-edits';
 import { MenuGroup, SwimlaneTiles, TypeToggleTiles } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
-
-// A glyph per card field, from the Plan glyph set.
-export const FIELD_GLYPHS: Record<CardField, string> = {
-  key: 'bookmark',
-  type: 'task',
-  assignee: 'person',
-  priority: 'flag',
-  labels: 'bookmark',
-  estimate: 'cube',
-  start: 'calendar',
-  due: 'calendar',
-  votes: 'star',
-  checklist: 'action',
-  comments: 'chat',
-  description: 'note',
-  parent: 'project',
-};
 
 const SIZE_LABELS: Record<CardSize, string> = {
   minimal: 'Minimal',
@@ -75,7 +51,8 @@ export function PlanBoardMenuSection({
 }) {
   if (!useBoard(element)) return null;
   return (
-    <MenuFlyoutSection title="Board" icon={<PlanIcon size={16} />} {...flyoutProps}>
+    // One surface of settings, so a flyout row the menu keeps collapsible, never promoted inline.
+    <MenuFlyoutSection title="Board" icon={<PlanIcon size={16} />} panel {...flyoutProps}>
       <PlanBoardSettings element={element} />
     </MenuFlyoutSection>
   );
@@ -125,7 +102,10 @@ export function PlanBoardSettings({ element }: { element: ShapeElement }) {
       </MenuGroup>
       {/* Built in, then any field the document's types offer (docs/specs/026-plan/plan-board.md "Swimlanes by a
           field"), in one grid: a board has one grouping. */}
-      <MenuGroup title="Swimlanes">
+      <MenuGroup
+        title="Swimlanes"
+        hint="Rows across the board, one for each value of the field you pick."
+      >
         <SwimlaneTiles
           by={setup.swimlaneBy}
           field={setup.swimlaneField}
@@ -156,7 +136,7 @@ export function PlanCardsMenuSection({
 }) {
   if (!useBoard(element)) return null;
   return (
-    <MenuFlyoutSection title="Cards" icon={<PlanCardsIcon size={16} />} {...flyoutProps}>
+    <MenuFlyoutSection title="Cards" icon={<PlanCardsIcon size={16} />} panel {...flyoutProps}>
       <PlanCardsSettings element={element} />
     </MenuFlyoutSection>
   );
@@ -168,27 +148,13 @@ export function PlanCardsSettings({ element }: { element: ShapeElement }) {
   const plan = usePlan();
   if (!board) return null;
   const { setup, set } = board;
-  // The fields this card size can draw; the rest stay set but dimmed (docs/specs/026-plan/plan-board.md).
-  const sizeFields = CARD_SIZE_FIELDS[setup.cardSize ?? 'detailed'];
-  const toggle = (f: CardField) =>
-    set(
-      {
-        ...setup,
-        cardFields: setup.cardFields.includes(f)
-          ? setup.cardFields.filter((x) => x !== f)
-          : CARD_FIELDS.filter((x) => x === f || setup.cardFields.includes(x)),
-      },
-      'CardFields',
-    );
   // What the board shows and takes now (every type when its named ones were all deleted).
   const allowedTypes = plan?.types ? boardAddTypes(setup, plan.types) : [];
   const allowed = allowedTypes.map((x) => x.id);
-  // Show on Cards lists the fields those types offer (docs/specs/026-plan/plan-board.md "The board set-up").
-  const offered = cardFieldsFor(allowedTypes);
   return (
     <>
       {setup.archive || !plan ? null : (
-        <MenuGroup title="Card Types">
+        <MenuGroup title="Card Types" hint="The card types this board shows and lets you add.">
           <TypeToggleTiles
             types={plan.types}
             selected={allowed}
@@ -200,7 +166,10 @@ export function PlanCardsSettings({ element }: { element: ShapeElement }) {
           />
         </MenuGroup>
       )}
-      <MenuGroup title="Card Size">
+      <MenuGroup
+        title="Card Size"
+        hint="How much of each card shows. Each card type’s Display sets what shows at each size."
+      >
         <MenuTileGrid cols={3}>
           {CARD_SIZES.map((z) => (
             <MenuTile
@@ -214,38 +183,6 @@ export function PlanCardsSettings({ element }: { element: ShapeElement }) {
               }}
             />
           ))}
-        </MenuTileGrid>
-      </MenuGroup>
-      <MenuGroup
-        title="Show on Cards"
-        hint={
-          setup.cardSize === 'minimal'
-            ? 'Minimal cards show their title, and whatever each card type’s Display adds beside it.'
-            : setup.cardSize === 'compact'
-              ? 'Compact cards show these under the title; Detailed shows the rest.'
-              : undefined
-        }
-      >
-        <MenuTileGrid cols={3} fitRows>
-          {/* What the board's card types offer, and any field it already shows. */}
-          {CARD_FIELDS.filter((f) => offered.includes(f) || setup.cardFields.includes(f)).map(
-            (f) => (
-              <MenuTile
-                key={f}
-                icon={
-                  f === 'key' ? (
-                    <span className="text-[13px] font-semibold leading-none">#</span>
-                  ) : (
-                    <PlanTypeGlyph glyph={FIELD_GLYPHS[f]} size={16} />
-                  )
-                }
-                label={CARD_FIELD_LABELS[f]}
-                active={setup.cardFields.includes(f) && sizeFields.includes(f)}
-                disabled={!sizeFields.includes(f)}
-                onClick={() => toggle(f)}
-              />
-            ),
-          )}
         </MenuTileGrid>
       </MenuGroup>
     </>

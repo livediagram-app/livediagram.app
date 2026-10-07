@@ -1,20 +1,28 @@
 'use client';
 
 // The type editor's Display (docs/specs/026-plan/item-types.md "Editing a type": Display): where this type's cards
-// show each field, per card size. A size switch; the card's layout drawn large with its slots outlined, each
-// holding its fields as chips that drag (mouse, pen or touch) to another slot or place, or move with the arrow keys;
-// Add a Field, the type's fields not yet on the card, each saying where it lands; and a large Preview, a real card
-// drawn as a board draws it. Reset to Default puts a size back; a size equal to its default is stored as absent.
-import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+// show each field, per card size, edited on the card itself. The preview is a real card of this type, drawn large as
+// a board draws it, with each part of the card a dotted box (an empty one reads its name) and each field's bit in it
+// a chip that drags (mouse, pen or touch) to another part or place, moves with the arrow keys, and comes off with its
+// cross. Available Fields lists the type's fields not on the card: drag one onto any part, or press it to pick a part
+// from a menu. Reset to Default puts a size back; a size equal to its default is stored as absent.
+import {
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import {
   CARD_FIELDS,
   CARD_SIZES,
+  CARD_SLOTS,
   CARD_SLOT_LABELS,
   cardDisplayFields,
   cardLayoutFields,
   cardSlotFits,
   defaultCardLayout,
-  defaultCardSlot,
   sameCardLayout,
   typeCardLayout,
   typeOffersCardField,
@@ -28,10 +36,11 @@ import {
 } from '@livediagram/items';
 import { Button, CloseIcon, PlusIcon } from '@livediagram/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { FIELD_GLYPHS } from '@/components/palette/PlanBoardMenuSection';
+import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { FIELD_GLYPHS } from './card-field-glyphs';
 import { CARD_FIELD_LABELS } from './board-setup-edits';
-import { addCardField, moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
-import { PlanCardFace } from './PlanCardFace';
+import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
+import { PlanCardFace, type CardFaceEdit } from './PlanCardFace';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planPalette } from './plan-palette';
 
@@ -42,9 +51,9 @@ const SIZE_LABELS: Record<CardSize, string> = {
   compact: 'Compact',
   detailed: 'Detailed',
 };
-// The preview card's width on a board, and how much larger the preview draws it (CSS zoom, so its box grows too).
-const PREVIEW_PX = 260;
-const PREVIEW_ZOOM = 1.3;
+// The card's width on a board, and how much larger the editor draws it (CSS zoom, so its box grows too).
+const CARD_PX = 300;
+const CARD_ZOOM = 1.35;
 // How far a press travels before it is a drag (a shorter press is a click).
 const DRAG_START_PX = 4;
 
@@ -56,7 +65,7 @@ const dayFromToday = (days: number) => {
   return d.toISOString().slice(0, 10);
 };
 
-// A card with something in every field, so each placed field shows on the preview.
+// A card with something in every field, so each placed field shows.
 function sampleCard(type: ItemTypeDef): Item {
   return {
     id: 'sample-card',
@@ -105,7 +114,7 @@ export function ItemTypeDisplay({
   display,
   onChange,
 }: {
-  // The type as drafted (its fields, colour, glyph and name), for the layout and the preview.
+  // The type as drafted (its fields, colour, glyph and name), for the card and the list.
   type: ItemTypeDef;
   display: CardDisplayDraft;
   onChange: (next: CardDisplayDraft) => void;
@@ -114,7 +123,7 @@ export function ItemTypeDisplay({
   const drafted = useMemo(() => ({ ...type, display }), [type, display]);
   const layout = typeCardLayout(drafted, size);
   const placed = cardLayoutFields(size, layout);
-  const addable = cardDisplayFields(size).filter(
+  const available = cardDisplayFields(size).filter(
     (f) => typeOffersCardField(type, f) && !placed.includes(f),
   );
   const isDefault = sameCardLayout(size, layout, defaultCardLayout(type.id, size));
@@ -122,14 +131,17 @@ export function ItemTypeDisplay({
   const palette = planPalette(useCanvasSurface());
   const setLayout = (next: CardLayout) => onChange({ ...display, [size]: next });
 
-  // Dragging a placed chip: where it would land, from the slot under the pointer and the chip centres in it.
-  const editor = useRef<HTMLDivElement>(null);
+  // A drag, of a chip on the card or a field from Available Fields: where it would land, from the part of the card
+  // under the pointer and the chip centres in it.
+  const card = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [target, setTarget] = useState<Target | null>(null);
+  // The available field whose "where to?" menu is open, and the button it hangs from.
+  const [placing, setPlacing] = useState<{ field: CardField; anchor: HTMLElement } | null>(null);
   const targetAt = (field: CardField, x: number, y: number): Target | null => {
     const zone = (document.elementsFromPoint?.(x, y) ?? [])
       .map((el) => (el as HTMLElement).closest<HTMLElement>('[data-slot]'))
-      .find((el) => !!el && !!editor.current?.contains(el));
+      .find((el) => !!el && !!card.current?.contains(el));
     const slot = zone?.dataset.slot as CardSlot | undefined;
     if (!zone || !slot || !cardSlotFits(size, slot, field)) return null;
     let index = 0;
@@ -146,7 +158,8 @@ export function ItemTypeDisplay({
     setDrag(null);
     setTarget(null);
   };
-  const chipPointer = (field: CardField) => ({
+  // Pointer handlers for anything that drags a field; `onClick` runs for a press that never moved.
+  const dragProps = (field: CardField, onClick?: (el: HTMLElement) => void) => ({
     onPointerDown: (e: PointerEvent<HTMLElement>) => {
       if (e.button !== 0) return;
       try {
@@ -163,15 +176,16 @@ export function ItemTypeDisplay({
       if (moving !== drag.moving) setDrag({ ...drag, moving });
       if (moving) setTarget(targetAt(field, e.clientX, e.clientY));
     },
-    onPointerUp: () => {
-      if (drag?.moving && target)
-        setLayout(moveCardField(size, layout, field, target.slot, target.index));
+    onPointerUp: (e: PointerEvent<HTMLElement>) => {
+      if (drag?.moving) {
+        if (target) setLayout(moveCardField(size, layout, field, target.slot, target.index));
+      } else if (onClick) onClick(e.currentTarget);
       endDrag();
     },
     onPointerCancel: endDrag,
   });
-  // The keyboard's way: Left and Right move a chip within its slot, Up and Down to the slot before or after,
-  // Delete or Backspace takes it off.
+  // The keyboard's way on the card: Left and Right move a chip within its part, Up and Down to the part before or
+  // after, Delete or Backspace takes it off.
   const chipKeys = (field: CardField, slot: CardSlot) => (e: KeyboardEvent<HTMLElement>) => {
     const list = layout[slot] ?? [];
     const at = list.indexOf(field);
@@ -187,85 +201,83 @@ export function ItemTypeDisplay({
     e.preventDefault();
     e.stopPropagation();
     setLayout(next);
-    // Focus follows the chip to where it went.
     requestAnimationFrame(() =>
-      editor.current?.querySelector<HTMLElement>(`[data-chip="${field}"]`)?.focus(),
+      card.current?.querySelector<HTMLElement>(`[data-chip="${field}"]`)?.focus(),
     );
   };
+  const slotOf = (field: CardField) =>
+    CARD_SLOTS[size].find((s) => (layout[s] ?? []).includes(field))!;
 
-  const zone = (slot: CardSlot, extra = '') => {
-    const fields = layout[slot] ?? [];
-    const label = CARD_SLOT_LABELS[size][slot]!;
-    const lit = !!drag?.moving && target?.slot === slot;
-    const takes = !!drag?.moving && cardSlotFits(size, slot, drag.field);
-    const others = fields.filter((f) => f !== drag?.field);
-    return (
-      <div
-        data-slot={slot}
-        role="group"
-        aria-label={label}
-        className={`relative flex min-h-9 flex-wrap items-center gap-1 rounded-lg border border-dashed px-1.5 py-1 transition ${
-          lit
-            ? 'border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-500/10'
-            : takes
-              ? 'border-brand-300 dark:border-brand-500/50'
-              : 'border-slate-300 dark:border-slate-600'
-        } ${extra}`}
-      >
-        {fields.length === 0 ? (
-          <span className="px-1 text-[11px] text-slate-500 dark:text-slate-400">{label}</span>
-        ) : null}
-        {fields.map((f) => (
-          <span key={f} className="flex items-center">
-            {lit && target && others[target.index] === f ? (
-              <span aria-hidden className="mr-1 h-5 w-0.5 rounded bg-brand-500" />
-            ) : null}
-            <span
-              data-chip={f}
-              tabIndex={0}
-              role="button"
-              aria-label={`${CARD_FIELD_LABELS[f]}, in ${label}. Arrow keys move it, Delete takes it off.`}
-              {...chipPointer(f)}
-              onKeyDown={chipKeys(f, slot)}
-              className={`flex cursor-grab touch-none select-none items-center gap-1 rounded-md border bg-white py-0.5 pl-1.5 pr-0.5 text-[12px] font-medium text-slate-700 shadow-sm transition active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:bg-slate-900 dark:text-slate-200 ${
-                drag?.moving && drag.field === f
-                  ? 'border-brand-400 opacity-50'
-                  : 'border-slate-200 dark:border-slate-700'
-              }`}
-            >
-              <span className="text-slate-500 dark:text-slate-400">{fieldIcon(f, 12)}</span>
-              {CARD_FIELD_LABELS[f]}
-              <button
-                type="button"
-                aria-label={`Take ${CARD_FIELD_LABELS[f]} off the card`}
-                tabIndex={-1}
-                className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => setLayout(removeCardField(layout, f))}
-              >
-                <CloseIcon size={10} />
-              </button>
+  // How the card draws itself as its own editor: each part a dotted box, each bit a chip.
+  const edit: CardFaceEdit = {
+    slot: (slot, bits) => {
+      const label = CARD_SLOT_LABELS[size][slot]!;
+      const lit = !!drag?.moving && target?.slot === slot;
+      const takes = !!drag?.moving && cardSlotFits(size, slot, drag.field);
+      return (
+        <span
+          key={`slot-${slot}`}
+          data-slot={slot}
+          role="group"
+          aria-label={label}
+          className={`flex min-h-7 min-w-16 flex-wrap items-center gap-1 rounded-md border border-dashed px-1 py-0.5 transition ${
+            slot === 'head' || slot === 'body' || slot === 'foot' || slot === 'row' ? 'flex-1' : ''
+          } ${
+            lit
+              ? 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/15'
+              : takes
+                ? 'border-brand-300 dark:border-brand-500/60'
+                : 'border-slate-300 dark:border-slate-600'
+          }`}
+        >
+          {bits.length === 0 ? (
+            <span className="whitespace-nowrap px-0.5 text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {label}
             </span>
-          </span>
-        ))}
-        {lit && target && target.index >= others.length ? (
-          <span aria-hidden className="h-5 w-0.5 rounded bg-brand-500" />
-        ) : null}
-      </div>
-    );
+          ) : (
+            bits
+          )}
+        </span>
+      );
+    },
+    bit: (field, node) => {
+      const slot = slotOf(field);
+      const label = CARD_FIELD_LABELS[field];
+      return (
+        <span
+          key={field}
+          data-chip={field}
+          tabIndex={0}
+          role="button"
+          aria-label={`${label}, in ${CARD_SLOT_LABELS[size][slot]}. Drag or use the arrow keys to move it; Delete takes it off.`}
+          {...dragProps(field)}
+          onKeyDown={chipKeys(field, slot)}
+          className={`group/chip relative inline-flex cursor-grab touch-none select-none items-center rounded-md p-0.5 outline-none ring-1 ring-transparent transition hover:ring-brand-300 pointer-coarse:ring-brand-300 dark:pointer-coarse:ring-brand-500/60 focus-visible:ring-2 focus-visible:ring-brand-400 active:cursor-grabbing dark:hover:ring-brand-500/60 ${
+            drag?.moving && drag.field === field ? 'opacity-40' : ''
+          }`}
+        >
+          {node ?? <span className="text-[11px]">{label}</span>}
+          <button
+            type="button"
+            aria-label={`Take ${label} off the card`}
+            tabIndex={-1}
+            // A touch screen has no hover: there the cross always shows.
+            className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow group-hover/chip:flex group-focus-visible/chip:flex pointer-coarse:flex dark:bg-slate-200 dark:text-slate-900"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setLayout(removeCardField(layout, field))}
+          >
+            <CloseIcon size={8} />
+          </button>
+        </span>
+      );
+    },
   };
-  const titleBar = (
-    <span className="min-w-0 flex-1 truncate px-1 text-[14px] font-semibold text-slate-900 dark:text-slate-50">
-      {String(sample.fields['title'])}
-    </span>
-  );
 
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[12px] text-slate-500 dark:text-slate-400">
-        Place the fields where this type&apos;s cards show them at each card size: add one, then
-        drag it to the spot you want. A board&apos;s Show on Cards can still hide them on that
-        board.
+        Arrange this type&apos;s cards at each size, right on the card: drag a field to any part of
+        it, or take it off with its cross.
       </p>
       <div
         role="radiogroup"
@@ -289,77 +301,65 @@ export function ItemTypeDisplay({
           </button>
         ))}
       </div>
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-        <div className="flex min-w-0 flex-col gap-4">
-          {/* The card's layout: its slots where the card draws them. */}
+      <div className="grid gap-5 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start">
+        {/* The card, editable in place, on a board column's colour. */}
+        <div className="self-start rounded-xl p-4" style={{ backgroundColor: palette.column }}>
           <div
-            ref={editor}
+            ref={card}
             role="group"
-            aria-label={`${SIZE_LABELS[size]} card layout`}
-            className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            aria-label={`${SIZE_LABELS[size]} card`}
+            style={{ width: CARD_PX, zoom: CARD_ZOOM }}
           >
-            {size === 'minimal' ? (
-              <div className="flex flex-wrap items-center gap-2">
-                {zone('lead')}
-                {titleBar}
-                {zone('trail')}
-              </div>
-            ) : size === 'compact' ? (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  {zone('lead')}
-                  {titleBar}
-                </div>
-                {zone('row')}
-              </>
-            ) : (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  {zone('head', 'flex-1')}
-                  {zone('headEnd')}
-                </div>
-                {titleBar}
-                {zone('body')}
-                {zone('foot')}
-              </>
-            )}
+            <PlanCardFace
+              item={sample}
+              palette={palette}
+              fields={CARD_FIELDS}
+              size={size}
+              typeOverride={drafted}
+              edit={edit}
+            />
           </div>
-          <section aria-label="Add a Field" className="flex flex-col gap-1.5">
+        </div>
+        <div className="flex min-w-0 flex-col gap-3">
+          <section aria-label="Available Fields" className="flex flex-col gap-1.5">
             <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Add a Field
+              Available Fields
             </h4>
-            {addable.length === 0 ? (
+            {available.length === 0 ? (
               <p className="text-[12px] text-slate-500 dark:text-slate-400">
                 Every field this type has is on the card.
               </p>
             ) : (
-              <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                {addable.map((f) => (
-                  <li key={f}>
-                    <button
-                      type="button"
-                      aria-label={`Add ${CARD_FIELD_LABELS[f]}`}
-                      className="group flex w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-left transition hover:border-brand-300 hover:bg-brand-50/60 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10"
-                      onClick={() => setLayout(addCardField(size, layout, f))}
-                    >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        {fieldIcon(f)}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
-                          {CARD_FIELD_LABELS[f]}
+              <>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Drag one onto the card, or press it to choose where it goes.
+                </p>
+                <ul className="flex flex-wrap gap-1.5">
+                  {available.map((f) => (
+                    <li key={f}>
+                      <button
+                        type="button"
+                        aria-haspopup="dialog"
+                        aria-expanded={placing?.field === f}
+                        {...dragProps(f, (el) => setPlacing({ field: f, anchor: el }))}
+                        onKeyDown={(e) => {
+                          if (e.key !== 'Enter' && e.key !== ' ') return;
+                          e.preventDefault();
+                          setPlacing({ field: f, anchor: e.currentTarget });
+                        }}
+                        className={`inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/60 active:cursor-grabbing dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 ${
+                          drag?.moving && drag.field === f ? 'opacity-40' : ''
+                        }`}
+                      >
+                        <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          {fieldIcon(f, 12)}
                         </span>
-                        <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
-                          Adds to {CARD_SLOT_LABELS[size][defaultCardSlot(size, f)]}
-                        </span>
-                      </span>
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-brand-700 transition group-hover:bg-brand-100 dark:text-brand-300 dark:group-hover:bg-brand-500/20">
-                        <PlusIcon size={12} />
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                        {CARD_FIELD_LABELS[f]}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </section>
           <div className="flex items-center gap-2">
@@ -381,27 +381,59 @@ export function ItemTypeDisplay({
             )}
           </div>
         </div>
-        <figure aria-label="Preview" className="flex flex-col gap-1.5">
-          <figcaption className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Preview
-          </figcaption>
-          <div className="rounded-xl p-4" style={{ backgroundColor: palette.column }}>
-            <div
-              className="pointer-events-none"
-              style={{ width: PREVIEW_PX, zoom: PREVIEW_ZOOM }}
-              aria-hidden
-            >
-              <PlanCardFace
-                item={sample}
-                palette={palette}
-                fields={CARD_FIELDS}
-                size={size}
-                typeOverride={drafted}
-              />
-            </div>
-          </div>
-        </figure>
       </div>
+      {placing ? (
+        <AnchoredPopover
+          anchor={placing.anchor}
+          name={`Add ${CARD_FIELD_LABELS[placing.field]} to`}
+          width={220}
+          onClose={() => setPlacing(null)}
+        >
+          <PlaceMenu
+            title={`Add ${CARD_FIELD_LABELS[placing.field]} to`}
+            slots={CARD_SLOTS[size].filter((s) => cardSlotFits(size, s, placing.field))}
+            labelOf={(s) => CARD_SLOT_LABELS[size][s]!}
+            onPick={(slot) => {
+              setLayout(
+                moveCardField(size, layout, placing.field, slot, (layout[slot] ?? []).length),
+              );
+              setPlacing(null);
+            }}
+          />
+        </AnchoredPopover>
+      ) : null}
+    </div>
+  );
+}
+
+// Where an available field goes: a row per part of the card.
+function PlaceMenu({
+  title,
+  slots,
+  labelOf,
+  onPick,
+}: {
+  title: string;
+  slots: readonly CardSlot[];
+  labelOf: (slot: CardSlot) => string;
+  onPick: (slot: CardSlot) => void;
+}): ReactNode {
+  return (
+    <div className="flex flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1.5 dark:border-slate-700 dark:bg-slate-900">
+      <span className="px-2 pb-1 pt-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {title}
+      </span>
+      {slots.map((s) => (
+        <button
+          key={s}
+          type="button"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+          onClick={() => onPick(s)}
+        >
+          <PlusIcon size={12} />
+          {labelOf(s)}
+        </button>
+      ))}
     </div>
   );
 }

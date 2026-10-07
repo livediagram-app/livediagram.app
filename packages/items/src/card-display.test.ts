@@ -42,7 +42,7 @@ describe('card display', () => {
     });
     expect(readCardDisplay({ minimal: {} }, 'task')).toBeUndefined();
     expect(readCardDisplay({ minimal: { trail: ['labels'] } }, 'task')).toBeNull();
-    expect(readCardDisplay({ detailed: { foot: ['description'] } }, 'task')).toBeNull();
+    expect(readCardDisplay({ minimal: { lead: ['description'] } }, 'task')).toBeNull();
     expect(readCardDisplay({ detailed: { head: ['key'], foot: ['key'] } }, 'task')).toBeNull();
     expect(readCardDisplay({ compact: { nowhere: [] } }, 'task')).toBeNull();
     expect(readCardDisplay({ huge: {} }, 'task')).toBeNull();
@@ -60,7 +60,8 @@ describe('card display', () => {
       body: ['parent', 'description', 'labels'],
     });
     expect(defaultCardSlot('detailed', 'due')).toBe('foot');
-    expect(cardSlotFits('detailed', 'foot', 'description')).toBe(false);
+    expect(cardSlotFits('detailed', 'foot', 'description')).toBe(true);
+    expect(cardSlotFits('compact', 'row', 'description')).toBe(false);
   });
 
   it('says which fields a type can show', () => {

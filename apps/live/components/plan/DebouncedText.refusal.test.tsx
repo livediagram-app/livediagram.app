@@ -45,4 +45,39 @@ describe('a debounced text field', () => {
     expect((screen.getByLabelText('Title') as HTMLInputElement).maxLength).toBe(10);
     expect(screen.getByText('1 character left')).toBeTruthy();
   });
+
+  it('on Enter saves and then runs onEnter, but not when the save is refused', async () => {
+    const onEnter = vi.fn();
+    const { rerender } = render(
+      <DebouncedText
+        id="t"
+        label="Title"
+        value="Old"
+        disabled={false}
+        onSave={async () => true}
+        onEnter={onEnter}
+      />,
+    );
+    const box = screen.getByLabelText('Title') as HTMLInputElement;
+    fireEvent.change(box, { target: { value: 'New' } });
+    await act(async () => {
+      fireEvent.keyDown(box, { key: 'Enter' });
+    });
+    expect(onEnter).toHaveBeenCalledTimes(1);
+    rerender(
+      <DebouncedText
+        id="t"
+        label="Title"
+        value="New"
+        disabled={false}
+        onSave={async () => false}
+        onEnter={onEnter}
+      />,
+    );
+    fireEvent.change(box, { target: { value: 'Newer' } });
+    await act(async () => {
+      fireEvent.keyDown(box, { key: 'Enter' });
+    });
+    expect(onEnter).toHaveBeenCalledTimes(1);
+  });
 });
