@@ -79,6 +79,11 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
   { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
+  // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md): minted from a token, so account-only.
+  { table: 'workbench_pairing_requests', column: 'owner_id', migrate: { kind: 'account-only' } },
+  { table: 'workbench_pairings', column: 'owner_id', migrate: { kind: 'account-only' } },
+  { table: 'workbench_tickets', column: 'owner_id', migrate: { kind: 'account-only' } },
+  { table: 'workbench_sessions', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
@@ -277,6 +282,27 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
     });
   }
   liveDoc(sql, `d-team-${id}`, id, 'team-1');
+  // A workbench pairing of their token, its pending request, a ticket and an open session.
+  const workbenchRow = { owner_id: id, token_id: `tok-${id}`, origin: 'https://w.example' };
+  insert(sql, 'workbench_pairing_requests', {
+    ...workbenchRow,
+    id: `wr-${id}`,
+    code: `code-${id}`,
+    status: 'pending',
+    created_at: T0,
+    expires_at: T0 * 2,
+  });
+  insert(sql, 'workbench_pairings', { ...workbenchRow, id: `wp-${id}`, created_at: T0 });
+  const opened = {
+    ...workbenchRow,
+    pairing_id: `wp-${id}`,
+    document_id: `d-team-${id}`,
+    role: 'edit',
+    created_at: T0,
+    expires_at: T0 * 2,
+  };
+  insert(sql, 'workbench_tickets', { ...opened, ticket_hash: `th-${id}` });
+  insert(sql, 'workbench_sessions', { ...opened, id: `ws-${id}`, secret_hash: `sh-${id}` });
   // A folder in a team this user already left: it stays with the team.
   insert(sql, 'teams', { id: 'team-left', name: 'Old team', created_at: T0, updated_at: T0 });
   insert(sql, 'folders', {

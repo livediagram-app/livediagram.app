@@ -21,6 +21,7 @@ import {
 } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 import { recordTokenCreated, recordTokenRevoked } from '../timeline';
+import { endWorkbenchAccess } from '../workbench-end';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId } = ctx;
@@ -59,6 +60,8 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
     const doomed = (await listApiTokensByOwner(env, owner)).find((t) => t.id === tokenId);
     const revoked = await revokeApiToken(env, owner, tokenId);
     if (revoked) {
+      // docs/specs/013-workspace/workbench-embeds.md: its pairings and sessions end with it.
+      await endWorkbenchAccess(env, { tokenId }, 'revoked');
       ctx.waitUntil?.(
         // Withdraw the pending "expires soon" warning first: the token is gone,
         // so its deadline can't arrive, and leaving the future-dated row would
@@ -100,6 +103,7 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
   }
   // DELETE: the token revokes itself.
   await revokeApiToken(env, owner, token.id);
+  await endWorkbenchAccess(env, { tokenId: token.id }, 'revoked');
   console.info('[tokens] current revoked', { tokenId: token.id });
   ctx.waitUntil?.(
     retractTimelineWarning(env, 'account', token.id, 'token_expiring').then(() =>
