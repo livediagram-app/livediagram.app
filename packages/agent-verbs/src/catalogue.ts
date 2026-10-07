@@ -124,7 +124,16 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export', 'sync'] as const;
+export const TOP_LEVEL = [
+  'guide',
+  'api',
+  'wait',
+  'watch',
+  'pull',
+  'push',
+  'export',
+  'sync',
+] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',
