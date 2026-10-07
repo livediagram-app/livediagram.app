@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
   A fake workbench for the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-  "Testing"): frames the URL in `?frame=`, answers `hello` with `hello-ack` (unless `?silent=1`),
+  "Testing"): frames the URL in `?frame=` (only a workbench page on the live origin the serving test names in
+  place of __LIVE_ORIGIN__), answers `hello` with `hello-ack` (unless `?silent=1`),
   answers `renew` with the ticket the test leaves in `window.nextTicket`, and records every message the
   frame sends into `window.received`. `window.post(message)` sends one to the frame.
 -->
@@ -27,9 +28,12 @@
   <body>
     <iframe id="frame" title="livediagram"></iframe>
     <script>
+      const liveOrigin = '__LIVE_ORIGIN__';
       const params = new URLSearchParams(location.search);
-      const target = params.get('frame');
-      const liveOrigin = new URL(target).origin;
+      const target = params.get('frame') ?? '';
+      if (!target.startsWith(liveOrigin + '/embed/workbench')) {
+        throw new Error('the fake workbench frames only the live workbench page');
+      }
       const frame = document.getElementById('frame');
       window.received = [];
       window.nextTicket = null;

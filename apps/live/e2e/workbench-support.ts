@@ -2,6 +2,7 @@
 // "Testing"): the fake workbench served from its own loopback origin, the signed-in person the e2e
 // stack mints (E2E_WORKBENCH=1 makes it act as Clerk), and the api calls the CLI would make.
 
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -20,11 +21,13 @@ export type FakeWorkbench = {
   close: () => Promise<void>;
 };
 
-// Serves the fake workbench on 127.0.0.1 at a free port: another origin than the live app's localhost.
-export async function serveFakeWorkbench(): Promise<FakeWorkbench> {
+// Serves the fake workbench on 127.0.0.1 at a free port: another origin than the live app's localhost. It frames
+// only the live origin's workbench page.
+export async function serveFakeWorkbench(liveOrigin: string): Promise<FakeWorkbench> {
+  const html = FAKE_WORKBENCH_HTML.replaceAll('__LIVE_ORIGIN__', liveOrigin);
   const server: Server = createServer((_req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(FAKE_WORKBENCH_HTML);
+    res.end(html);
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -40,7 +43,7 @@ export type Person = { userId: string; jwt: string; name: string };
 
 // A signed-in person: a session token the stack mints and the api verifies.
 export async function newPerson(request: APIRequestContext, name: string): Promise<Person> {
-  const userId = `user_wb${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+  const userId = `user_wb${randomUUID().replaceAll('-', '')}`;
   const res = await request.get(`/e2e/token?sub=${userId}`);
   if (!res.ok()) throw new Error(`minting a session token failed: ${res.status()}`);
   return { userId, jwt: await res.text(), name };

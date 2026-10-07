@@ -20,8 +20,9 @@ let workbench: FakeWorkbench;
 let elsewhere: FakeWorkbench;
 
 test.beforeAll(async () => {
-  workbench = await serveFakeWorkbench();
-  elsewhere = await serveFakeWorkbench();
+  const liveOrigin = new URL(test.info().project.use.baseURL!).origin;
+  workbench = await serveFakeWorkbench(liveOrigin);
+  elsewhere = await serveFakeWorkbench(liveOrigin);
 });
 
 test.afterAll(async () => {
