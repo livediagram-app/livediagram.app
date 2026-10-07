@@ -50,8 +50,6 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `graph lint\|render <file>`                                            | Lint or preview a graph or Mermaid file locally, before writing anything             |
 | `pull <doc> [--to <dir>]` / `push <file>`                              | Sync one document to a file and back                                                 |
 | `export --all --to <dir> [--format json,svg,png,mermaid,md]`           | Every document to files                                                              |
-| `link init\|status\|ls\|adopt\|hooks` / `sync [--watch]`               | A [repository link](../027-repositories/repository-link.md) and its sync             |
-| `workbench open <doc> --origin <origin>` / `workbench pair`            | A signed-in [workbench embed](../013-workspace/workbench-embeds.md) URL              |
 | `template ls\|view`, `icon search <text>`, `schema [kind]`             | The catalogues and the element format, from the api                                  |
 | `guide [topic]`                                                        | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`                         |
 | `skill print\|install --to <dir>`                                      | The agent skill file                                                                 |
