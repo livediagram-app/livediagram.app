@@ -8,6 +8,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
 import {
+  CARD_FIELDS,
   ITEM_TYPES,
   itemStatus,
   cardIsFaceDown,
@@ -18,6 +19,7 @@ import {
   type QuickFilter,
   boardAddTypes,
   newItemId,
+  isTrashed,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -33,11 +35,14 @@ import {
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
 import { PlanFirstColumn } from './PlanFirstColumn';
-import { addStatusColumn, addStatusColumns } from './column-status-picks';
+import { addStatusColumn, addStatusColumns, pickableStatuses } from './column-status-picks';
 import { addFirstColumn } from './board-setup-edits';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
+import { BoardMoreMenu } from './BoardMoreMenu';
+import { BoardSettingsButton } from './BoardSettingsButton';
+import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { myVotes } from './PlanCardFace';
@@ -102,6 +107,12 @@ export function PlanBoardView({
     () => (setup ? projectBoard(setup, items, quick, types, statusNames) : null),
     [setup, items, quick, types, statusNames],
   );
+  // The statuses a column can be made for: the boards' and any a card is in (docs/specs/026-plan/plan-board.md "The
+  // column picker").
+  const pickable = useMemo(
+    () => pickableStatuses(statusNames ?? NO_STATUSES, items.values()),
+    [statusNames, items],
+  );
   // What the header's widgets count: the items the board shows, before the quick filter.
   const shownItems = useMemo(
     () => (setup ? boardItems(projectBoard(setup, items, undefined, types, statusNames)) : []),
@@ -160,6 +171,21 @@ export function PlanBoardView({
     focusNextRef.current = null;
     boardRef.current?.querySelector<HTMLElement>(`[data-plan-card="${CSS.escape(id)}"]`)?.focus();
   });
+
+  // Cards glide to where they now sit when the board's arrangement changes (usePlanCardFlip): the signature is each
+  // cell's cards in order, so a move, a reorder or a collaborator's change re-measures, and nothing else does.
+  const flipSignature = useMemo(
+    () =>
+      projection
+        ? projection.columns
+            .map((c) =>
+              c.lanes.map((l) => `${l.laneKey}:${l.items.map((i) => i.id).join(',')}`).join(';'),
+            )
+            .join('|') + `|${collapsed.size}`
+        : '',
+    [projection, collapsed],
+  );
+  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null);
 
   if (!setup || !projection) {
     return (
@@ -280,7 +306,12 @@ export function PlanBoardView({
         }}
         end={
           interactive ? (
-            <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
+            <>
+              {/* The board's settings, the same as its element menu's Board and Cards, for an editor. */}
+              <BoardMoreMenu boardId={element.id} title={setup.title} />
+              {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
+              <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
+            </>
           ) : null
         }
       />
@@ -296,9 +327,9 @@ export function PlanBoardView({
             palette={palette}
             canEdit={canEdit}
             setup={setup}
-            statusNames={plan?.statusNames ?? NO_STATUSES}
+            statusNames={pickable}
             onAdd={(name) => {
-              const next = addFirstColumn(setup, name);
+              const next = addFirstColumn(setup, name, pickable);
               if (!next) return;
               plan?.updateBoard(element.id, next);
               trackSetup('ColumnAdded');
@@ -345,6 +376,18 @@ export function PlanBoardView({
                     if (!stay.has(it.id)) plan.moveItem(it.id, { status: to, before: null });
                   // One announcement for the cards whose type leaves the status out, never one each.
                   if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
+                }}
+                onTrashCards={(status) => {
+                  if (!plan) return;
+                  // Every card in the state, whatever board shows it (the column's removal moves them all).
+                  const going = [...plan.items.values()].filter(
+                    (it) => itemStatus(it) === status && !isTrashed(it),
+                  );
+                  for (const it of going) plan.trashItem(it.id);
+                  if (going.length)
+                    plan.announce(
+                      `${going.length === 1 ? 'Card' : `${going.length} cards`} moved to the Trash`,
+                    );
                 }}
               />
             ))}
@@ -427,7 +470,8 @@ export function PlanBoardView({
                                 }
                                 lifted={dragging?.itemId === item.id}
                                 done={done}
-                                setupFields={setup.cardFields}
+                                // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
+                                setupFields={CARD_FIELDS}
                                 cardSize={setup.cardSize}
                                 faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                 voting={
@@ -504,7 +548,7 @@ export function PlanBoardView({
           size={setup.cardSize}
           item={items.get(dragging.itemId)!}
           palette={palette}
-          fields={setup.cardFields}
+          fields={CARD_FIELDS}
         />
       ) : null}
     </div>

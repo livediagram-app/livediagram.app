@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
+  breakdownModel,
   calendarModel,
   priorityMatrixModel,
   statusMixModel,
-  workloadModel,
 } from './plan-view-charts';
 import { shiftMonth } from './plan-view-dates';
+import { ITEM_TYPES } from './item-types';
+import {
+  breakdownGroupingOf,
+  viewChosenTypes,
+  viewEligibleTypes,
+  viewNeeds,
+  viewShownTypes,
+} from './plan-views';
 import { ALI, SAM, item } from './test-items';
 
 const phases = new Map([
@@ -44,8 +52,8 @@ describe('due calendar', () => {
   });
 });
 
-describe('workload', () => {
-  it('counts each person by phase, most first, Unassigned last', () => {
+describe('cards by field, by assignee', () => {
+  it('counts each person by phase, most first, No assignee last', () => {
     const cards = [
       item({ title: '1', assignee: ALI, status: 'doing' }),
       item({ title: '2', assignee: SAM, status: 'done' }),
@@ -53,7 +61,7 @@ describe('workload', () => {
       item({ title: '4' }),
       item({ title: '5', assignee: SAM, archived: true }),
     ];
-    const m = workloadModel(cards, phases);
+    const m = breakdownModel(cards, phases, { by: 'assignee' });
     expect(m.rows.map((r) => [r.person?.name ?? null, r.counts, r.total])).toEqual([
       ['Sam Lee', { todo: 1, doing: 0, done: 1 }, 2],
       ['Ali', { todo: 0, doing: 1, done: 0 }, 1],
@@ -61,7 +69,7 @@ describe('workload', () => {
     ]);
     expect(m.max).toBe(2);
     expect(m.total).toBe(4);
-    expect(workloadModel([], phases)).toEqual({ rows: [], max: 0, total: 0 });
+    expect(breakdownModel([], phases, { by: 'assignee' })).toEqual({ rows: [], max: 0, total: 0 });
   });
 });
 
@@ -104,5 +112,66 @@ describe('priority by status', () => {
     expect(m.rows[4]!.counts.todo).toBe(1);
     expect(m.max).toBe(2);
     expect(m.total).toBe(4);
+  });
+});
+
+// docs/specs/026-plan/plan-views.md "Cards by Field".
+describe('cards by field', () => {
+  it('groups by any field, the empty group last', () => {
+    const cards = [
+      item({ title: '1', priority: 'high' }),
+      item({ title: '2', priority: 'low' }),
+      item({ title: '3', priority: 'high' }),
+      item({ title: '4' }),
+    ];
+    const m = breakdownModel(cards, new Map(), { by: 'priority' });
+    expect(m.rows.map((r) => [r.label, r.total])).toEqual([
+      ['High', 2],
+      ['Low', 1],
+      ['No priority', 1],
+    ]);
+    expect(m.rows.at(-1)!.empty).toBe(true);
+    expect(m.total).toBe(4);
+  });
+
+  it('groups by assignee unless told otherwise, busiest first', () => {
+    expect(breakdownGroupingOf({})).toEqual({ by: 'assignee', field: undefined });
+    expect(breakdownGroupingOf({ swimlaneBy: 'none' })).toEqual({
+      by: 'assignee',
+      field: undefined,
+    });
+    expect(breakdownGroupingOf({ swimlaneBy: 'field', swimlaneField: 'c-size' })).toEqual({
+      by: 'field',
+      field: 'c-size',
+    });
+    const cards = [
+      item({ title: 'a', assignee: SAM }),
+      item({ title: 'b', assignee: ALI }),
+      item({ title: 'c', assignee: ALI }),
+    ];
+    expect(breakdownModel(cards, new Map(), { by: 'assignee' }).rows[0]!.person).toEqual(ALI);
+  });
+});
+
+// docs/specs/026-plan/plan-views.md "Card types for every view".
+describe('the card types a view shows', () => {
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+  const note = {
+    ...ITEM_TYPES.find((t) => t.id === 'note')!,
+    fields: ['title', 'status', 'description'],
+  };
+  const types = [task, note];
+
+  it('lists only the types offering what the view needs', () => {
+    expect(viewNeeds('calendar')).toEqual(['due']);
+    expect(viewEligibleTypes('calendar', types).map((t) => t.id)).toEqual(['task']);
+    expect(viewEligibleTypes('metric:count', types).map((t) => t.id)).toEqual(['task', 'note']);
+  });
+
+  it('shows every type it can until it names some, and the Gantt chart keeps Project', () => {
+    expect(viewShownTypes('metric:count', undefined, types)).toEqual(['task', 'note']);
+    expect(viewShownTypes('metric:count', { types: ['note'] }, types)).toEqual(['note']);
+    expect(viewShownTypes('calendar', { types: ['note', 'task'] }, types)).toEqual(['task']);
+    expect(viewChosenTypes('gantt', undefined, types)).toEqual(['project']);
   });
 });

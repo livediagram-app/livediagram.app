@@ -72,7 +72,7 @@ Projects on a roadmap and a timeline, broken into tasks, run in sprints and walk
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Gantt Chart under it. How this works                                                  |
 | Backlog       | Board **Backlog**: Backlog, Ready, This Sprint ⇄; a row per project; Tasks; estimates and priority                                                                        |
-| Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; points. Workload by Person and Status Breakdown under it  |
+| Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; points. Cards by Field and Priority by Status under it    |
 | Daily Standup | Board **Daily Standup**: In Progress ⇄, Blocked ⇄, In Review ⇄, Done ⇄; a row per person; Compact cards. How we run it, a 15 minute timer and a picker for who goes first |
 
 - How this works: add a Project for each piece of work on Roadmap and give it dates (the Gantt draws them);
@@ -88,7 +88,7 @@ the Kanban boards family.
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Board    | Board **Kanban**: Backlog ⇄, To Do, In Progress (WIP 3), Review (WIP 2), Done                                                              |
 | Requests | Board **Requests**: New, Needs Info (amber), Backlog ⇄ (green: accepted, it lands on the Board), Declined; Tasks and Ideas. How this works |
-| Flow     | Dashboard: Item Count, Completion, Stale Cards, Unassigned; Status Breakdown, Workload by Person, Priority by Status, Due Calendar         |
+| Flow     | Dashboard: Item Count, Completion, Stale Cards, Unassigned; Cards by Field, Priority by Status, Due Calendar                               |
 
 ### Bug Tracker
 
@@ -98,7 +98,7 @@ Bugs triaged by priority, then fixed, reviewed and released.
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Triage | Board **Triage**: New, Needs Info (amber), Confirmed ⇄, Won't Fix, Duplicate (no done column); a row per priority; Tasks. How we triage |
 | Fixing | Board **Fixing**: Confirmed ⇄, Fixing (WIP 4), In Review, Fixed (done), Released; a row per person                                      |
-| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status, Workload by Person, Status Breakdown, Due Calendar      |
+| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status, Cards by Field, Due Calendar                            |
 
 - How we triage: Urgent is broken for everyone (fix now), High blocks someone, Medium has a workaround, Low is
   polish; give each confirmed bug an owner.
@@ -139,7 +139,7 @@ Ideas voted on and approved, produced through review to published, and every pub
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Ideas; voting with 5 votes                                                          |
 | Production | Board **Production**: Approved ⇄, Drafting, In Review, Scheduled, Published (done); Tasks and Ideas; labels and due dates (the publish date) |
-| Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Workload by Person                                                                 |
+| Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Cards by Field                                                                     |
 
 ### Hiring Pipeline
 
@@ -155,10 +155,10 @@ Open roles, the candidates for each, and the new starter's first month.
 
 Objectives for the period and the key results that measure them, checked in on each week.
 
-| Tab         | Holds                                                                                                                                                                                           |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Projects (one per objective); start and due dates. Gantt Chart under it                                                        |
-| Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective; Tasks; checklist progress. Status Breakdown under it. How we check in |
+| Tab         | Holds                                                                                                                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Projects (one per objective); start and due dates. Gantt Chart under it                                                      |
+| Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective; Tasks; checklist progress. Cards by Field under it. How we check in |
 
 - How we check in: each week, move every key result to the column it is in and say why in a comment; anything
   At Risk or Off Track gets an Action.

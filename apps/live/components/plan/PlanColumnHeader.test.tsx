@@ -32,6 +32,7 @@ function Board({
             canEdit
             onChange={(next) => setSetup(next)}
             onMoveCards={() => {}}
+            onTrashCards={() => {}}
           />
         ))}
       </div>

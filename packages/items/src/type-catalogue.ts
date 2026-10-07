@@ -2,6 +2,7 @@
 // (null) means the built-in catalogue, read from code; once changed, the whole catalogue is stored
 // with the document. Validation here is the api's and the editor's both, so a catalogue the editor
 // saves is one the api keeps.
+import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import {
   CUSTOM_FIELD_KINDS,
@@ -304,6 +305,15 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!read) return `${at}.excludedStatuses`;
     if (read.length) excludedStatuses = read;
   }
+  let defaultStatus: string | undefined;
+  if (input['defaultStatus'] !== undefined) {
+    const d = input['defaultStatus'];
+    if (typeof d !== 'string' || !d.trim() || d.length > ITEM_STATUS_MAX)
+      return `${at}.defaultStatus`;
+    defaultStatus = d;
+  }
+  const display = readCardDisplay(input['display'], id);
+  if (display === null) return `${at}.display`;
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -319,6 +329,8 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(tabs ? { tabs } : {}),
     ...(detailsLabel ? { detailsLabel } : {}),
     ...(excludedStatuses ? { excludedStatuses } : {}),
+    ...(defaultStatus ? { defaultStatus } : {}),
+    ...(display ? { display } : {}),
   };
 }
 
@@ -343,6 +355,30 @@ export function typeAllowsStatus(
 ): boolean {
   if (!status || !type?.excludedStatuses) return true;
   return !type.excludedStatuses.includes(status);
+}
+
+// A type's Default State, or undefined: none set, or one the type has turned off (ignored, as if absent).
+export function defaultStatusOf(
+  type: Pick<ItemTypeDef, 'defaultStatus' | 'excludedStatuses'> | undefined,
+): string | undefined {
+  const d = type?.defaultStatus;
+  return d && typeAllowsStatus(type, d) ? d : undefined;
+}
+
+// Creates with no status of their own given their type's Default State (an API or MCP create); a create that
+// names a status, or whose type has none, is left as it is.
+export function withDefaultStatuses<
+  C extends {
+    type: string;
+    place?: { status?: string } | undefined;
+    fields?: Readonly<Record<string, unknown>>;
+  },
+>(creates: readonly C[], types: readonly ItemTypeDef[]): C[] {
+  return creates.map((c) => {
+    if (c.place?.status !== undefined || typeof c.fields?.['status'] === 'string') return c;
+    const status = defaultStatusOf(types.find((t) => t.id === c.type));
+    return status ? { ...c, place: { ...c.place, status } } : c;
+  });
 }
 
 // The refusal for a card moved into a status its type leaves out.
@@ -391,6 +427,18 @@ function safeParse(text: string): unknown {
 }
 
 // The catalogue a first change starts from: the built-ins, as a stored catalogue.
+// Restore Built-In Types (docs/specs/026-plan/item-types.md "The catalogue"): the five built-ins as they started,
+// then every type the document added, kept as it is. With none added, null: the stored catalogue goes and the
+// built-ins are read from code again.
+export function restoredCatalogue(
+  stored: ItemTypeCatalogue | null | undefined,
+): ItemTypeCatalogue | null {
+  const builtIn = new Set<string>(ITEM_TYPES.map((t) => t.id));
+  const own = (stored?.types ?? []).filter((t) => !builtIn.has(t.id));
+  if (own.length === 0) return null;
+  return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...ITEM_TYPES, ...own] };
+}
+
 export function builtInCatalogue(): ItemTypeCatalogue {
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: ITEM_TYPES };
 }

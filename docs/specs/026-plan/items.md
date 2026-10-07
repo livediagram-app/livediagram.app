@@ -42,7 +42,7 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 
 | Field             | Kind      | Holds                                                                                                                                                                 |
 | ----------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`           | text      | One line, required, up to 200 characters                                                                                                                              |
+| `title`           | text      | One line, required, up to 500 characters                                                                                                                              |
 | `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                  |
 | `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror     |
 | `status`          | status    | A status value, matched against a board's columns                                                                                                                     |
@@ -103,8 +103,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   Opening the popover (a click, Enter, Space or an arrow key on the field) moves focus to the picked swatch.
 - Where it shows:
   - **Card face**: a small dot beside the card's type label.
-  - **Parent**: a card's parent (the project it belongs to) shows that project's dot before its name, in the item
-    panel and on the card face.
+  - **Parent**: in the item panel, the Parent field (and the cards in its list) draws the linked card's type glyph in
+    the linked card's own colour instead of the type's, with no dot, to save space; on the card face, the project's
+    dot before its name.
   - **Swimlanes by Project**: each project row's header shows the project's dot.
   - **Gantt Chart**: a project's bar and diamond are drawn in its colour, else the Project type colour; the
     row's name carries its dot ([Gantt Chart](plan-views.md#gantt-chart)).
@@ -170,7 +171,8 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   first, with its type's stripe and glyph, its whole title, its type, number, the status it came from and when,
   and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own. **Delete** asks first
   in a confirm popover beside the button ("Delete #12 for good? This cannot be undone.", **Delete**), as
-  the workspace Trash does; **Empty Trash** deletes every one after a confirmation ("This can't be undone").
+  the workspace Trash does; **Empty Trash** deletes every one after a confirmation ("This can't be undone"), then the Trash
+  panel closes.
 - An empty Trash shows the shared empty state: **The Trash is empty**, and how to put a card there.
 - Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.
 
@@ -230,22 +232,25 @@ author redaction, and the same thread list, composer and resolve control the com
 ## Finding a card
 
 - **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
-  in the document that is neither archived nor in the Trash, of every card type the catalogue has (custom types
+  in the document that is neither archived nor in the Trash, 44 rem wide on desktop (the screen less a margin on
+  a phone) with a list 32 rem tall (less on a short screen) whatever it holds, so the panel keeps its size as a search
+  narrows it, of every card type the catalogue has (custom types
   included, each drawn with its own glyph and colour) and of a type it has lost (drawn as the fallback "Item"),
   newest change first.
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
   description or card type name ("person" finds every Person card), ignoring case.
-- **Card types**: under the switch below, a chip per catalogue type (its glyph in its colour and its name), wrapping
-  onto a second line and scrolling past two. None pressed is every type; pressing chips narrows the list, and both
-  counts, to the pressed types; **Clear** (shown while any is pressed) presses none. The choice is the person's own
-  while the panel is open, never saved. With types pressed and none of their cards: "No cards of those types yet".
-- **All Cards** and **Not on a Board** switch between every card and the cards no board in the document shows,
+- **All Cards** (the wider, three quarters) and **Not on a Board** switch between every card and the cards no board in the document shows,
   on any tab: those with no status, those whose status no column holds (the strays a renamed or removed column
   left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
   card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
   its type. Each carries a count.
+- **Filters**: under the switch, a chip per field filter ("State: Done", "Assignee: No assignee"), each with a
+  cross, and **Add Filter**, the picker Card Search uses ([Plan views](plan-views.md#card-search)): a field the
+  listed cards' types offer (Card Type among them while they hold more than one type), then one of its values among them with its count, so no filter leaves nothing. Every
+  filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: "No cards match these filters."
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
-- Each row shows the type's glyph, the title, and the type, number and status. Choosing one closes the popover and
+- Each row shows the type's glyph, the title, and the type and number under it; on desktop also its priority, its
+  due date ("Due 12 Oct"), its state as a chip ("No status" without one) and its assignee. Choosing one closes the popover and
   opens the card in the item panel.
 - Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
   puts that card in the Trash (restorable from there) without leaving the list.
@@ -303,6 +308,12 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - A **Community** copy leaves every card's comments out, as it leaves out the canvas's comment threads.
 
 ## Limits
+
+- **A field never shows a value nobody kept.** A card panel's text field stops taking characters at its limit (a
+  title at 500, a custom Text or Long Text at 2,000), showing how many are left from 90% of it ("12 characters
+  left", then "500 characters, the most it takes"). A change refused anyway (by the store before it is sent, or
+  by the api) is not kept: the field goes back to the saved value, and a toast names why ("That title is too
+  long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
 
 - Up to 2,000 items per document; a create past it is refused with `items_full`.
 - Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A

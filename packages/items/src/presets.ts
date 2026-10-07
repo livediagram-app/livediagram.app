@@ -1,6 +1,7 @@
 // Board presets: the set-ups a palette board tile or a template starts from
 // (docs/specs/026-plan/plan-mode.md "The palette", "Templates").
 
+import { statusNamed } from './status-names';
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
 // All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
@@ -107,7 +108,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       cardFields: ['key', 'type', 'priority', 'labels', 'estimate', 'checklist'],
       voting: { on: false },
       widgets: ['points', 'progress', 'filter'],
-      addTypes: ['task', 'action'],
+      addTypes: ['story', 'task', 'action'],
       hideWriting: false,
     },
   },
@@ -127,7 +128,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       cardFields: ['key', 'assignee', 'labels', 'due'],
       voting: { on: false },
       widgets: ['count', 'unassigned', 'filter'],
-      addTypes: ['task'],
+      addTypes: ['bug', 'task'],
       hideWriting: false,
     },
   },
@@ -232,15 +233,29 @@ export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
   return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
 }
 
-// A board placed on the canvas starts empty (docs/specs/026-plan/plan-mode.md "The palette"): its columns
-// get statuses of their own (`todo~k3f9`), so no card the document already has lands on it. An Archive
-// or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
-export function freshBoardSetup(id: unknown, random: () => number = Math.random): PlanBoardSetup {
+// A board placed on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): a column whose name a status the
+// document already has (`existing`: status id to name) takes that status, so one name is always one status and the
+// cards in it show here too; any other column gets a status of its own (`todo~k3f9`), so it starts empty. An
+// Archive or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
+export function freshBoardSetup(
+  id: unknown,
+  random: () => number = Math.random,
+  existing: Iterable<readonly [string, string]> = [],
+): PlanBoardSetup {
   const setup = presetSetupOrBlank(id);
   if (setup.archive || setup.allCards) return setup;
+  const names = [...existing];
   const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
+  const used = new Set<string>();
   return {
     ...setup,
-    columns: setup.columns.map((c) => ({ ...c, status: `${c.status}~${suffix}` })),
+    columns: setup.columns.map((c) => {
+      const named = statusNamed(c.name, names);
+      if (named && !used.has(named.status)) {
+        used.add(named.status);
+        return { ...c, status: named.status };
+      }
+      return { ...c, status: `${c.status}~${suffix}` };
+    }),
   };
 }

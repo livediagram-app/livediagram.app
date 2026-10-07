@@ -20,15 +20,14 @@ import {
 import {
   Button,
   CheckIcon,
-  ChevronLeftIcon,
   CloseIcon,
   DialogCloseButton,
   DuplicateIcon,
-  Select,
   TextInput,
   TrashIcon,
 } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { SheetRow } from './PlanModal';
@@ -37,13 +36,13 @@ import { ItemTypeLayoutEditor } from './ItemTypeLayoutEditor';
 import { GlyphPicker } from './GlyphPicker';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
+import { ItemTypeDisplay, type CardDisplayDraft } from './ItemTypeDisplay';
 import { usePlan } from './PlanContext';
 import { withoutEmptyTabs, type LayoutDraft } from './item-type-layout';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // Where a deleted type's items go: another type's id, or null to keep them (drawn as "Item").
-export type DeleteTarget = string | null;
 
 const NEW_TYPE: Omit<ItemTypeDef, 'id' | 'newTitle'> = {
   label: '',
@@ -68,11 +67,12 @@ export function ItemTypeEditor({
   // A new type's starting point (Duplicate): another type's copy, named "<Name> copy".
   template?: ItemTypeDef;
   types: readonly ItemTypeDef[];
-  // How many items have this type (a delete asks where they go when there are any).
+  // How many cards (out of the Trash) have this type: a delete says they go to the Trash with it.
   itemCount: number;
   canDelete: boolean;
   onSave: (type: ItemTypeDef) => void;
-  onDelete: (moveTo: DeleteTarget) => void;
+  // Deletes the type and moves its cards to the Trash, once confirmed.
+  onDelete: () => void;
   onClose: () => void;
   // Duplicate Type, for a type that exists while the catalogue has room.
   onDuplicate?: () => void;
@@ -95,16 +95,20 @@ export function ItemTypeEditor({
   const [detailsLabel, setDetailsLabel] = useState(detailsLabelOf(start));
   // The statuses it leaves out, edited as the rest is; the tab's boards name the statuses to choose from.
   const [excluded, setExcluded] = useState<string[]>(() => [...(start.excludedStatuses ?? [])]);
+  // What its cards show at each card size (the Display tab); a size absent takes its default.
+  const [display, setDisplay] = useState<CardDisplayDraft>(() => ({ ...start.display }));
+  // The Default State: the status a card made outside a board starts in (none: '').
+  const [defaultStatus, setDefaultStatus] = useState(start.defaultStatus ?? '');
   const statusNames = usePlan()?.statusNames;
   const statuses = useMemo(
     () =>
       [...(statusNames ?? new Map<string, string>())].map(([status, name]) => ({ status, name })),
     [statusNames],
   );
-  const [deleting, setDeleting] = useState(false);
+  // The Delete Type button while its confirmation is open.
+  const [confirmingAt, setConfirmingAt] = useState<HTMLElement | null>(null);
   const [tab, setTab] = useState<TypeEditorTab>('general');
   const others = types.filter((t) => t.id !== type?.id);
-  const [moveTo, setMoveTo] = useState<DeleteTarget>(others[0]?.id ?? null);
 
   const removedSome = start.fields.some((f) => !layout.fields.includes(f));
   const clash = others.some((t) => t.label.toLowerCase() === label.trim().toLowerCase());
@@ -123,8 +127,22 @@ export function ItemTypeEditor({
         ? { detailsLabel: detailsLabel.trim() }
         : {}),
       ...(excluded.length ? { excludedStatuses: excluded } : {}),
+      ...(defaultStatus && !excluded.includes(defaultStatus) ? { defaultStatus } : {}),
+      ...(Object.keys(display).length ? { display } : {}),
     };
-  }, [type, types, label, color, glyph, layout, tabs, detailsLabel, excluded]);
+  }, [
+    type,
+    types,
+    label,
+    color,
+    glyph,
+    layout,
+    tabs,
+    detailsLabel,
+    excluded,
+    defaultStatus,
+    display,
+  ]);
   const tabNames = withoutEmptyTabs(tabs).map((t) => t.label.trim().toLowerCase());
   const tabProblem = tabNames.some((n) => !n)
     ? 'Give every tab a name.'
@@ -145,17 +163,17 @@ export function ItemTypeEditor({
       : tabProblem
         ? tabProblem
         : statusesProblem
-          ? `Too many statuses turned off: a type can turn off at most ${ITEM_TYPE_EXCLUDED_STATUSES_MAX}.`
+          ? `Too many states turned off: a type can turn off at most ${ITEM_TYPE_EXCLUDED_STATUSES_MAX}.`
           : !check.ok
             ? 'A custom field needs a name, and a Choice field at least one option.'
             : null;
 
-  // The tab showing, and the tabs holding what stops Save (a name problem is General's; a left-out status problem
-  // is Statuses'; a tab or custom field problem is Fields').
+  // The tabs holding what stops Save (a clashing name is General's; a left-out status problem is States'; a tab or
+  // custom field problem is Fields'). A missing name is not flagged: a new type starts without one, and Save says so.
   const flagged = new Set<TypeEditorTab>(
-    !problem
+    !problem || !draft.label
       ? []
-      : !draft.label || clash
+      : clash
         ? ['general']
         : !tabProblem && statusesProblem
           ? ['statuses']
@@ -179,173 +197,141 @@ export function ItemTypeEditor({
           <span className={ACCENT_TEXT} style={accentVars(color)}>
             <PlanTypeGlyph glyph={glyph} size={18} />
           </span>
-          {type ? 'Edit Card Type' : 'New Card Type'}
+          {/* Named for the type as saved, so the title stays put while its Name is edited. */}
+          {type ? `Edit ${type.label} Card Type` : 'New Card Type'}
         </h2>
         {/* Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
         <HelpArticleLink article="planCardTypes" variant="labelled" />
         <DialogCloseButton compact onClick={onClose} />
       </div>
-      {deleting ? (
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 text-slate-800 dark:text-slate-100">
-          <DeleteStep
-            label={type?.label ?? ''}
-            itemCount={itemCount}
-            others={others}
-            moveTo={moveTo}
-            onMoveTo={setMoveTo}
-          />
-        </div>
-      ) : (
-        <ItemTypeEditorTabs
-          tab={tab}
-          onTab={setTab}
-          flagged={flagged}
-          panels={{
-            general: (
-              <>
-                <SheetRow label="Name" htmlFor={`${titleId}-name`}>
-                  <TextInput
-                    id={`${titleId}-name`}
-                    compact
-                    value={label}
-                    maxLength={ITEM_TYPE_LABEL_MAX}
-                    placeholder="Customer call"
-                    autoFocus={!type}
-                    onChange={(e) => setLabel(e.target.value)}
-                  />
-                </SheetRow>
-                <SheetRow label="Colour">
-                  <ColourSwatches value={color} onChange={(c) => c && setColor(c)} />
-                </SheetRow>
-                <SheetRow label="Glyph">
-                  <GlyphPicker value={glyph} colour={color} onChange={setGlyph} />
-                </SheetRow>
-              </>
-            ),
-            fields: (
-              <>
-                <SheetRow label="Fields and Tabs">
-                  <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
-                    Laid out as the card's panel shows them. Add, move or rename to change it.
-                  </p>
-                  <ItemTypeLayoutEditor
-                    typeId={type?.id}
-                    draft={layout}
-                    onChange={setLayout}
-                    detailsLabel={detailsLabel}
-                    onDetailsLabel={setDetailsLabel}
-                    removedSome={removedSome}
-                  />
-                </SheetRow>
-              </>
-            ),
-            statuses: (
-              <>
-                <SheetRow label="Statuses">
-                  <ItemTypeStatuses
-                    statuses={statuses}
-                    excluded={excluded}
-                    onChange={setExcluded}
-                  />
-                </SheetRow>
-              </>
-            ),
-          }}
-        />
-      )}
+      <ItemTypeEditorTabs
+        tab={tab}
+        onTab={setTab}
+        flagged={flagged}
+        panels={{
+          general: (
+            <>
+              <SheetRow label="Name" htmlFor={`${titleId}-name`}>
+                <TextInput
+                  id={`${titleId}-name`}
+                  compact
+                  value={label}
+                  maxLength={ITEM_TYPE_LABEL_MAX}
+                  placeholder="Customer call"
+                  autoFocus={!type}
+                  onChange={(e) => setLabel(e.target.value)}
+                />
+              </SheetRow>
+              <SheetRow label="Colour">
+                <ColourSwatches allowCustom value={color} onChange={(c) => c && setColor(c)} />
+              </SheetRow>
+              <SheetRow label="Glyph">
+                <GlyphPicker value={glyph} colour={color} onChange={setGlyph} />
+              </SheetRow>
+            </>
+          ),
+          fields: (
+            <>
+              <SheetRow label="Fields and Tabs">
+                <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
+                  Laid out as the card's panel shows them. Add, move or rename to change it.
+                </p>
+                <ItemTypeLayoutEditor
+                  typeId={type?.id}
+                  draft={layout}
+                  onChange={setLayout}
+                  detailsLabel={detailsLabel}
+                  onDetailsLabel={setDetailsLabel}
+                  removedSome={removedSome}
+                />
+              </SheetRow>
+            </>
+          ),
+          display: (
+            <SheetRow label="Display">
+              <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
+            </SheetRow>
+          ),
+          statuses: (
+            <>
+              <SheetRow label="States">
+                <ItemTypeStatuses
+                  statuses={statuses}
+                  excluded={excluded}
+                  onChange={(next) => {
+                    setExcluded(next);
+                    // Turning the Default State off clears it.
+                    if (next.includes(defaultStatus)) setDefaultStatus('');
+                  }}
+                  defaultStatus={defaultStatus}
+                  onDefaultStatus={setDefaultStatus}
+                />
+              </SheetRow>
+            </>
+          ),
+        }}
+      />
       <DialogFooter>
-        {deleting ? (
-          <>
-            <Button variant="secondary" onClick={() => setDeleting(false)}>
-              <ChevronLeftIcon size={14} />
-              Back
-            </Button>
-            <Button variant="danger" onClick={() => onDelete(itemCount > 0 ? moveTo : null)}>
+        <>
+          {type && canDelete ? (
+            <Button
+              variant="secondary"
+              // Duplicate Type, when there, sits beside it and ends the left group instead.
+              className={`text-rose-600 dark:text-rose-400 ${onDuplicate ? '' : 'mr-auto'}`}
+              aria-haspopup="dialog"
+              aria-expanded={confirmingAt !== null}
+              onClick={(e) => setConfirmingAt(e.currentTarget)}
+            >
               <TrashIcon size={14} />
               Delete Type
             </Button>
-          </>
-        ) : (
-          <>
-            {type && canDelete ? (
-              <Button
-                variant="secondary"
-                // Duplicate Type, when there, sits beside it and ends the left group instead.
-                className={`text-rose-600 dark:text-rose-400 ${onDuplicate ? '' : 'mr-auto'}`}
-                onClick={() => (itemCount > 0 ? setDeleting(true) : onDelete(null))}
-              >
-                <TrashIcon size={14} />
-                Delete Type
-              </Button>
-            ) : null}
-            {type && onDuplicate ? (
-              <Button variant="secondary" className="mr-auto" onClick={onDuplicate}>
-                <DuplicateIcon size={14} />
-                Duplicate Type
-              </Button>
-            ) : null}
-            {problem && draft.label ? (
-              <span className="self-center text-[12px] text-rose-600 dark:text-rose-400">
-                {problem}
-              </span>
-            ) : null}
-            <Button variant="secondary" onClick={onClose}>
-              <CloseIcon size={12} />
-              Cancel
+          ) : null}
+          {type && onDuplicate ? (
+            <Button variant="secondary" className="mr-auto" onClick={onDuplicate}>
+              <DuplicateIcon size={14} />
+              Duplicate Type
             </Button>
-            <Button
-              variant="primary"
-              disabled={!!problem}
-              onClick={() => check.ok && onSave(check.catalogue.types[0]!)}
-            >
-              <CheckIcon size={14} />
-              Save
-            </Button>
-          </>
-        )}
+          ) : null}
+          {problem && draft.label ? (
+            <span className="self-center text-[12px] text-rose-600 dark:text-rose-400">
+              {problem}
+            </span>
+          ) : null}
+          <Button variant="secondary" onClick={onClose}>
+            <CloseIcon size={12} />
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            disabled={!!problem}
+            onClick={() => check.ok && onSave(check.catalogue.types[0]!)}
+          >
+            <CheckIcon size={14} />
+            Save
+          </Button>
+        </>
       </DialogFooter>
+      {confirmingAt && type ? (
+        <ConfirmPopover
+          anchor={confirmingAt}
+          message={deleteMessage(type.label, itemCount)}
+          confirmLabel="Delete Type"
+          onConfirm={() => {
+            setConfirmingAt(null);
+            onDelete();
+          }}
+          onCancel={() => {
+            confirmingAt.focus();
+            setConfirmingAt(null);
+          }}
+        />
+      ) : null}
     </Dialog>
   );
 }
 
-// Deleting a type with items: where they go.
-function DeleteStep({
-  label,
-  itemCount,
-  others,
-  moveTo,
-  onMoveTo,
-}: {
-  label: string;
-  itemCount: number;
-  others: readonly ItemTypeDef[];
-  moveTo: DeleteTarget;
-  onMoveTo: (next: DeleteTarget) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-3 text-sm">
-      <p>
-        {itemCount === 1 ? 'One item is' : `${itemCount} items are`} a {label}. Where should{' '}
-        {itemCount === 1 ? 'it' : 'they'} go?
-      </p>
-      <Select
-        aria-label="Move the items to"
-        className="w-full"
-        selectClassName="text-[13px]"
-        value={moveTo ?? ''}
-        onChange={(e) => onMoveTo(e.target.value || null)}
-      >
-        {others.map((t) => (
-          <option key={t.id} value={t.id}>
-            Make {itemCount === 1 ? 'it a' : 'them'} {t.label}
-            {itemCount === 1 ? '' : ' items'}
-          </option>
-        ))}
-        <option value="">Keep as Item</option>
-      </Select>
-      <p className="text-[12px] text-slate-500 dark:text-slate-400">
-        Kept items keep their fields and show as a plain Item card.
-      </p>
-    </div>
-  );
+// The delete confirmation: the type, and its cards going to the Trash with it when it has any.
+export function deleteMessage(label: string, cards: number): string {
+  if (cards === 0) return `Delete the ${label} type?`;
+  return `Delete the ${label} type? Its ${cards === 1 ? 'card' : `${cards} cards`} will be moved to the Trash too.`;
 }

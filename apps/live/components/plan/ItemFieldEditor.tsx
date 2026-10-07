@@ -76,7 +76,8 @@ export type ItemFieldContext = {
   canEdit: boolean;
   // Every label the document's items carry, offered while a label is typed.
   labels: readonly string[];
-  onSave: (field: string, value: ItemFieldValue | undefined) => void;
+  // Whether the save landed (false: refused), so a text field can go back to what is saved.
+  onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;
   onPatch: (patch: ItemPatch) => void;
   // Opens another item in the panel (the parent), stepping the panel's card trail.
   onOpenItem: (itemId: string, via: ItemOpenVia) => void;

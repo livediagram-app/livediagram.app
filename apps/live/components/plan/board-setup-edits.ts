@@ -3,6 +3,7 @@
 // caller writes it as one element edit, undone like any other) and leaves the input untouched.
 import {
   PLAN_COLUMNS_MAX,
+  statusNamed,
   statusTitleCase,
   type CardField,
   type ColumnWidth,
@@ -173,9 +174,29 @@ export function setColumnWidth(
   };
 }
 
-// A board's first column, named as typed (a board with no columns asks for one).
-export function addFirstColumn(setup: PlanBoardSetup, name: string): PlanBoardSetup | null {
+// A board's first column, named as typed (a board with no columns asks for one): a name a status already has
+// (`statusNames`, the document's) takes that status, one name being one status.
+export function addFirstColumn(
+  setup: PlanBoardSetup,
+  name: string,
+  statusNames: ReadonlyMap<string, string> = new Map(),
+): PlanBoardSetup | null {
   const trimmed = columnName(name);
   if (!trimmed) return null;
+  const named = statusNamed(trimmed, statusNames);
+  if (named && setup.columns.length < PLAN_COLUMNS_MAX) {
+    const column: PlanColumn = { id: named.status, status: named.status, name: named.name };
+    return { ...setup, columns: [...setup.columns, column] };
+  }
   return addColumnAfter(setup, null, trimmed)?.setup ?? null;
+}
+
+// A column switched to another status of the name it was renamed to (columnRename's reuse).
+export function reuseColumnStatus(
+  setup: PlanBoardSetup,
+  id: string,
+  status: string,
+  name: string,
+): PlanBoardSetup {
+  return withColumn(setup, id, (c) => ({ ...c, status, name: columnName(name) || c.name }));
 }

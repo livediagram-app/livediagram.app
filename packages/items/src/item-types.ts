@@ -2,6 +2,8 @@
 // names the fields its item panel offers; any item may still carry others.
 // `glyph` is an id from the Plan glyph set (glyphs.ts). A document may replace this
 // catalogue with its own (type-catalogue.ts, docs/specs/026-plan/item-types.md).
+import type { CardField, CardSize } from './board';
+import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
 
 export type ItemFieldId =
@@ -80,6 +82,12 @@ export interface ItemTypeDef {
   // Statuses this type does not use (docs/specs/026-plan/item-types.md "An item type"): a card of it never moves
   // into one. An exclusion list, so a status added later is open to every type.
   excludedStatuses?: readonly string[];
+  // The Default State (docs/specs/026-plan/item-types.md "An item type"): the status a card of this type is made in
+  // when nothing else gives it one (a board's column always does). Absent: none.
+  defaultStatus?: string;
+  // What its cards show at each card size (docs/specs/026-plan/item-types.md "Card display"); a size left out takes
+  // the type's default (typeCardDisplay).
+  display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
 }
 
 // Parent right under Status and Assignee: what a piece of work belongs to is read with who has it.

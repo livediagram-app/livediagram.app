@@ -11,7 +11,19 @@ import { PlanBoardMenuSection, PlanCardsMenuSection } from './PlanBoardMenuSecti
 const plan: Record<string, unknown> = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 vi.mock('@/components/primitives/MenuFlyoutSection', () => ({
-  MenuFlyoutSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  MenuFlyoutSection: ({
+    title,
+    panel,
+    children,
+  }: {
+    title: string;
+    panel?: boolean;
+    children: ReactNode;
+  }) => (
+    <div data-flyout={title} data-panel={panel ? 'yes' : 'no'}>
+      {children}
+    </div>
+  ),
 }));
 
 afterEach(cleanup);
@@ -117,5 +129,24 @@ describe('Card Types after a type is deleted', () => {
     expect(updateBoard.mock.calls[0]![1].addTypes).toEqual(
       ITEM_TYPES.map((t) => t.id).filter((id) => id !== 'note'),
     );
+  });
+});
+
+// docs/specs/004-interface-design/menus.md: a menu's categories stay collapsible rows, never promoted inline.
+describe('the board menu’s Board and Cards rows', () => {
+  it('stay flyouts, never promoted into the menu', () => {
+    for (const k of Object.keys(plan)) delete plan[k];
+    Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types: [] });
+    const flyoutProps = {} as never;
+    render(
+      <>
+        <PlanBoardMenuSection element={board} flyoutProps={flyoutProps} />
+        <PlanCardsMenuSection element={board} flyoutProps={flyoutProps} />
+      </>,
+    );
+    for (const title of ['Board', 'Cards'])
+      expect(document.querySelector(`[data-flyout="${title}"]`)?.getAttribute('data-panel')).toBe(
+        'yes',
+      );
   });
 });

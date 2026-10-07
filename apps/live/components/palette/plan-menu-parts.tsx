@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import {
   SWIMLANE_BY,
   laneFieldsOf,
+  swimlaneGroupingsFor,
   type ItemTypeDef,
   type LaneFieldKind,
   type SwimlaneBy,
@@ -31,11 +32,7 @@ export function MenuGroup({
       <h3 className="px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {title}
       </h3>
-      {hint ? (
-        <p className="px-3 pt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {hint}
-        </p>
-      ) : null}
+      {hint ? <InfoNote>{hint}</InfoNote> : null}
       {children}
     </section>
   );
@@ -62,22 +59,41 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   text: 'note',
 };
 
-// The Swimlanes grid: built in, then any field the document's types offer, in one grid (one grouping each).
+// The Swimlanes grid: built in, then any field the shown card types offer, in one grid (one grouping each).
 export function SwimlaneTiles({
   by,
   field,
   types,
+  allTypes,
+  noNone,
   onPick,
 }: {
   by: SwimlaneBy;
   field: string | undefined;
+  // The card types the board or chart shows: only what they offer is listed.
   types: readonly ItemTypeDef[];
+  // Every type of the document, to name a field in use that the shown types no longer offer.
+  allTypes?: readonly ItemTypeDef[];
+  // Leaves out None (Cards by Field always groups).
+  noNone?: boolean;
   // A built-in grouping (no field), or a field's id with `field`.
   onPick: (by: SwimlaneBy, field?: string) => void;
 }) {
+  // The fields the shown types offer, and the one in use (from every type) when they no longer offer it.
+  const lanes = laneFieldsOf(types);
+  if (by === 'field' && field && !lanes.some((f) => f.id === field)) {
+    const kept = laneFieldsOf(allTypes ?? types).find((f) => f.id === field);
+    if (kept) lanes.push(kept);
+  }
   return (
     <MenuTileGrid cols={3} fitRows>
-      {SWIMLANE_BY.filter((s) => s !== 'field').map((s) => (
+      {/* What the shown types offer, and the grouping in use even when they no longer offer it. */}
+      {SWIMLANE_BY.filter(
+        (s) =>
+          s !== 'field' &&
+          !(noNone && s === 'none') &&
+          (s === by || swimlaneGroupingsFor(types).includes(s)),
+      ).map((s) => (
         <MenuTile
           key={s}
           icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
@@ -86,7 +102,7 @@ export function SwimlaneTiles({
           onClick={() => onPick(s)}
         />
       ))}
-      {laneFieldsOf(types).map((f) => (
+      {lanes.map((f) => (
         <MenuTile
           key={f.id}
           icon={<PlanTypeGlyph glyph={LANE_KIND_GLYPHS[f.kind]} size={16} />}
@@ -137,5 +153,23 @@ export function TypeToggleTiles({
         );
       })}
     </MenuTileGrid>
+  );
+}
+
+// A small info block under a menu heading: what the choices below it do, in a line (an "i" in a circle, then the text).
+export function InfoNote({ children }: { children: ReactNode }) {
+  return (
+    <p
+      role="note"
+      className="mx-3 mb-1 mt-1 flex gap-1.5 rounded-md bg-brand-50 px-2 py-1.5 text-[11px] leading-snug text-brand-800 dark:bg-brand-500/10 dark:text-brand-200"
+    >
+      <span
+        aria-hidden
+        className="mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-current text-[9px] font-bold"
+      >
+        <span className="text-optical-centre">i</span>
+      </span>
+      <span>{children}</span>
+    </p>
   );
 }

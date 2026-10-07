@@ -60,7 +60,8 @@ export type PlanContextValue = {
     id?: string;
   }) => void;
   moveItem: (itemId: string, move: ItemMove) => void;
-  patchItem: (itemId: string, patch: ItemPatch) => void;
+  // Whether the change landed (false: refused, and the store put back).
+  patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
   deleteItem: (itemId: string) => void;
   vote: (itemId: string, delta: 1 | -1) => void;
   // A card's comment change (docs/specs/026-plan/items.md "Comments"); comments need participate access, as votes.

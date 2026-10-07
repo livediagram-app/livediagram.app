@@ -1,3 +1,4 @@
+import { statusColumnsOf } from '@/hooks/plan/usePlanStatusNames';
 import {
   freshBoardSetup,
   isPlanViewId,
@@ -394,8 +395,12 @@ export function buildDrawnBoxed(
       : {}),
     // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
     // the item store as the card lands (docs/specs/026-plan/plan-mode.md "The palette").
+    // A column named as a status the tab's boards already have takes that status: one name, one status
+    // (docs/specs/026-plan/plan-board.md "The board set-up").
     ...(intent.type === 'shape' && intent.kind === 'plan-board'
-      ? { planBoard: freshBoardSetup(intent.plan) }
+      ? {
+          planBoard: freshBoardSetup(intent.plan, Math.random, statusColumnsOf(activeTab.elements)),
+        }
       : {}),
     // A tapped-in board starts wide enough for its columns; a board drawn to size keeps its size.
     ...(intent.type === 'shape' && intent.kind === 'plan-board' && isTap

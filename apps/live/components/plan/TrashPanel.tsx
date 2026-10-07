@@ -152,6 +152,8 @@ export function TrashPanel({
                   if (!ok) return;
                   plan.emptyTrash();
                   plan.announce('Trash emptied');
+                  // Nothing left to show: the panel closes.
+                  onPopoverClose();
                 }}
               >
                 <TrashIcon size={14} />

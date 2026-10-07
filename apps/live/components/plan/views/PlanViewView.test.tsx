@@ -73,7 +73,7 @@ describe('plan views', () => {
     cleanup();
     draw('workload', undefined);
     expect(
-      screen.getByText('No cards yet. Add cards to a board to see who has what.'),
+      screen.getByText('No cards yet. Add cards to a board to see how they split.'),
     ).toBeTruthy();
   });
 
@@ -157,7 +157,7 @@ describe('plan views', () => {
     ];
     draw('workload', planWith(cards));
     expect(screen.getByText('Sam')).toBeTruthy();
-    expect(screen.getByText('Unassigned')).toBeTruthy();
+    expect(screen.getByText('No assignee')).toBeTruthy();
     cleanup();
     draw('status-mix', planWith(cards));
     expect(screen.getByRole('img', { name: 'To do 1, Done 1' })).toBeTruthy();

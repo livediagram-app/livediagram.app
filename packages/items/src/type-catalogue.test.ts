@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { FALLBACK_ITEM_TYPE, ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { planGlyphPath, PLAN_GLYPH_FALLBACK, PLAN_GLYPHS } from './glyphs';
 import {
+  defaultStatusOf,
+  restoredCatalogue,
+  withDefaultStatuses,
   BUILT_IN_FIELD_IDS,
   ITEM_TYPE_FIELDS_MAX,
   builtInCatalogue,
@@ -209,5 +212,64 @@ describe('a type’s left-out statuses', () => {
     expect(typeAllowsStatus(t, 'brand-new')).toBe(true);
     expect(typeAllowsStatus(task as ItemTypeDef, 'done')).toBe(true);
     expect(statusRefusal('Task', 'Done')).toBe("Task cards can't be Done");
+  });
+});
+
+// docs/specs/026-plan/item-types.md "An item type": the Default State.
+describe('a type’s Default State', () => {
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+  const read = (extra: Record<string, unknown>) =>
+    validateItemTypeCatalogue({ version: 1, types: [{ ...task, ...extra }] });
+
+  it('is stored when given, and refused when not a short status id', () => {
+    const ok = read({ defaultStatus: 'backlog' });
+    expect(ok.ok && ok.catalogue.types[0]!.defaultStatus).toBe('backlog');
+    expect(read({ defaultStatus: '' }).ok).toBe(false);
+    expect(read({ defaultStatus: 7 }).ok).toBe(false);
+    expect(read({ defaultStatus: 'x'.repeat(41) }).ok).toBe(false);
+    const none = read({});
+    expect(none.ok && 'defaultStatus' in none.catalogue.types[0]!).toBe(false);
+  });
+
+  it('is ignored while the type turns it off', () => {
+    expect(defaultStatusOf({ defaultStatus: 'todo' })).toBe('todo');
+    expect(defaultStatusOf({ defaultStatus: 'todo', excludedStatuses: ['todo'] })).toBeUndefined();
+    expect(defaultStatusOf(undefined)).toBeUndefined();
+  });
+
+  it('fills only the creates that name no status', () => {
+    const types = [{ ...task, defaultStatus: 'backlog' }];
+    const [bare, placed, fielded, other] = withDefaultStatuses(
+      [
+        { type: 'task' },
+        { type: 'task', place: { status: 'done' } },
+        { type: 'task', fields: { status: 'doing' } },
+        { type: 'bug' },
+      ],
+      types,
+    );
+    expect(bare!.place).toEqual({ status: 'backlog' });
+    expect(placed!.place).toEqual({ status: 'done' });
+    expect(fielded!.place).toBeUndefined();
+    expect(other!.place).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/item-types.md "The catalogue": Restore Built-In Types keeps the document's own types.
+describe('restoring the built-in types', () => {
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+  const bug = { ...task, id: 'bug', label: 'Bug' };
+
+  it('puts the built-ins back as they started and keeps the document’s own, after them', () => {
+    const stored = { version: 1, types: [{ ...task, label: 'Chore' }, bug] };
+    const next = restoredCatalogue(stored)!;
+    expect(next.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
+    expect(next.types.find((t) => t.id === 'task')!.label).toBe('Task');
+    expect(next.types.at(-1)).toBe(bug);
+  });
+
+  it('removes the stored catalogue when the document added none', () => {
+    expect(restoredCatalogue({ version: 1, types: [{ ...task, label: 'Chore' }] })).toBeNull();
+    expect(restoredCatalogue(null)).toBeNull();
   });
 });

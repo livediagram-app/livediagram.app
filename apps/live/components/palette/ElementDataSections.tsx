@@ -250,7 +250,7 @@ export function ElementDataSections({
           <PlanCardsMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-cards')} />
         </>
       ) : null}
-      {shapeTarget?.shape === 'plan-view' && shapeTarget.planView?.view === 'gantt' ? (
+      {shapeTarget?.shape === 'plan-view' && shapeTarget.planView ? (
         <PlanViewMenuSection
           element={shapeTarget}
           flyoutProps={flyoutProps('plan-view')}

@@ -1577,3 +1577,14 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
     animation: lvd-slide-fade 380ms ease;
   }
 }
+
+/* A Plan card gliding to where it now sits (docs/specs/026-plan/plan-board.md "Cards move visibly"): set by
+   usePlanCardFlip after it puts the card back where it was, so it travels from there. */
+.plan-card-flip {
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-card-flip {
+    transition: none;
+  }
+}

@@ -1,7 +1,7 @@
 // The Boards and Cards tiles' glyphs (docs/specs/026-plan/plan-mode.md "The palette"): a board drawn
-// as a picture of its kind, and a card drawn with its item type's colour stripe, at the tile size.
+// as a picture of its kind, and a card drawn with its item type's colour stripe and glyph, at the tile size.
 import { Glyph } from '@livediagram/ui';
-import type { BoardWidgetKind, CardSize } from '@livediagram/items';
+import { planGlyphPath, type BoardWidgetKind, type CardSize } from '@livediagram/items';
 import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/026-plan/
@@ -114,21 +114,37 @@ export function PlanBoardTileArt({ size, preset }: { size: number; preset: strin
   );
 }
 
-export function PlanCardTileArt({ size, color }: { size: number; color: string }) {
+// The card's face carries its type's glyph (16-unit grid), scaled into the space right of the stripe; strokes
+// are non-scaling, so it keeps the palette's line weight.
+const CARD_GLYPH_UNITS = 10;
+const CARD_GLYPH_SCALE = CARD_GLYPH_UNITS / 16;
+
+export function PlanCardTileArt({
+  size,
+  color,
+  glyph,
+}: {
+  size: number;
+  color: string;
+  glyph: string | undefined;
+}) {
   return (
     <Glyph size={size} units={22}>
-      <rect x="3" y="5" width="16" height="12" rx="2" />
+      <rect x="1.5" y="3.5" width="19" height="15" rx="2" />
       <rect
-        x="3"
-        y="5"
+        x="1.5"
+        y="3.5"
         width="3"
-        height="12"
+        height="15"
         rx="1.2"
         stroke="none"
         className="fill-[var(--accent)] dark:fill-[var(--accent-lift)]"
         style={accentVars(color)}
       />
-      <path d="M9 9H16M9 13H14" />
+      <path
+        d={planGlyphPath(glyph)}
+        transform={`translate(${12.5 - CARD_GLYPH_UNITS / 2} ${11 - CARD_GLYPH_UNITS / 2}) scale(${CARD_GLYPH_SCALE})`}
+      />
     </Glyph>
   );
 }

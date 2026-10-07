@@ -416,7 +416,7 @@ include `fields` or comment text.
 | `ITEMS_MAX`                | 2000                      | Spec; a board past a few hundred cards stops being read |
 | `ITEM_FIELDS_BYTES`        | 16384                     | Spec; 4 KB–64 KB                                        |
 | `ITEM_FIELDS_MAX`          | 64                        | Spec                                                    |
-| `ITEM_TITLE_MAX`           | 200                       | Spec                                                    |
+| `ITEM_TITLE_MAX`           | 500                       | Spec; raised from 200 for long card titles              |
 | `ITEM_DESCRIPTION_MAX`     | 10000                     | Spec                                                    |
 | `ITEM_LABELS_MAX`          | 12                        | Spec                                                    |
 | `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |

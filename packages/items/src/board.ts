@@ -77,7 +77,8 @@ export type CardSize = (typeof CARD_SIZES)[number];
 // The fields each card size can draw (docs/specs/026-plan/plan-board.md "The board set-up"): a field the
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
-  minimal: [],
+  // Minimal's one line can carry these beside the title (a type's Display picks them; none by default).
+  minimal: ['key', 'priority', 'due', 'assignee'],
   compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'votes', 'comments'],
   detailed: CARD_FIELDS,
 };
@@ -188,9 +189,18 @@ const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
 ];
 const GROUPING_KINDS = new Set<string>(['choice', 'checkbox', 'number', 'date', 'text', 'card']);
 
-// The fields a board can lane by: the built-ins, then every grouping custom field in catalogue order, each
-// once (named as the first type that offers it names it).
+// The fields a board can lane by, of the types it shows: the built-ins those types offer, then every grouping
+// custom field in catalogue order, each once (named as the first type that offers it names it).
 export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
+  // A built-in lane field only when one of the types offers it (docs/specs/026-plan/plan-board.md "Swimlanes by a
+  // field"): a board or chart lanes by what its own cards can hold.
+  return everyLaneField(types).filter(
+    (f) => !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
+  );
+}
+
+// Every field a board could lane by, offered or not: what a board already laned by a field looks it up in.
+function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
   const out: LaneField[] = [...BUILT_IN_LANE_FIELDS];
   for (const t of types)
     for (const c of t.custom ?? []) {
@@ -211,7 +221,7 @@ export function laneFieldOf(
   id: string | undefined,
   types: readonly ItemTypeDef[],
 ): LaneField | undefined {
-  return id ? laneFieldsOf(types).find((f) => f.id === id) : undefined;
+  return id ? everyLaneField(types).find((f) => f.id === id) : undefined;
 }
 
 // An item's value for a field lane, or undefined for the No row (a checkbox is never undefined).
@@ -761,4 +771,17 @@ export function columnForStatus(
   status: string | undefined,
 ): PlanColumn | undefined {
   return setup.columns.find((c) => c.status === status);
+}
+
+// The built-in swimlane groupings a set of card types (a board's, or a chart's) can use: None and Status always,
+// Type when there is more than one, and Assignee, Priority and Parent when one of the types offers that field
+// (docs/specs/026-plan/plan-board.md "Swimlanes").
+export function swimlaneGroupingsFor(types: readonly ItemTypeDef[]): SwimlaneBy[] {
+  const offers = (f: string) => types.some((t) => t.fields.includes(f));
+  return SWIMLANE_BY.filter((s) => {
+    if (s === 'field') return false;
+    if (s === 'none' || s === 'status') return true;
+    if (s === 'type') return types.length > 1;
+    return offers(s);
+  });
 }

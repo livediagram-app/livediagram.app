@@ -102,7 +102,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Visualisations',
     group: 4,
     description:
-      'Charts of every card: a project Gantt chart, a due calendar, workload by person and more.',
+      'Charts of the cards: a project Gantt chart, a due calendar, cards by any field, priority by status and a card search.',
     icon: <PlanViewArt view="gantt" size={18} />,
   },
   {

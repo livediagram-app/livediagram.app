@@ -62,9 +62,25 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 | ------------------ | ------------------------------------------------------------------------------------------- |
 | Gantt Chart        | A row per card of its card types (Project by default) on a time axis: start to due as a bar |
 | Due Calendar       | This month as a grid, each day listing the cards due that day                               |
-| Workload by Person | A bar per assignee (and Unassigned), split Not Started, In Progress, Done, with counts      |
-| Status Breakdown   | A donut of the cards by status, with a legend of each status and its count                  |
+| Cards by Field     | A bar per value of a field (Assignee by default), split Not Started, In Progress, Done      |
 | Priority by Status | A grid of priority (Urgent to Low, then None) by status phase, each cell the cards in both  |
+| Card Search        | The cards matching the filters in its top bar, a row each                                   |
+
+- **Status Breakdown** (`status-mix`) is retired: the palette and the templates no longer offer it, and a new view
+  element starts as Cards by Field. One already placed in a document still draws, as it did.
+
+### Card types for every view
+
+- Every metric and visualisation charts only the card types it shows. Its element menu's **View** flyout has
+  **Card Types**, a tile per card type that can feed it (pressed while it shows that type), with a note saying
+  which fields a type needs to be listed: a Gantt chart needs Start and Due ("Only card types with Start and Due
+  fields show here."), a Due Calendar Due, Priority by Status and the Priorities metric Priority, the People and
+  Unassigned metrics Assignee, the Due Soon metric Due, the Points metric Estimate and the Top Voted metric Votes;
+  the rest list every type. At least one stays pressed.
+- A view other than the Gantt chart shows every type it can until told otherwise, stored as the `types` it names
+  only when that is not every listed type; the Gantt chart keeps its own default (Project). A named type that has
+  lost a needed field is not listed and drops out of the view, but stays named, so it comes back when the type has
+  the field again. Telemetry: `Plan` · `Changed` · `ViewTypes` (`GanttTypes` for a Gantt chart).
 
 ### Maximised view
 
@@ -204,16 +220,22 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   as fit and then **+N more**.
 - The header counts the cards due that month: `5 due`. No card due that month: **Nothing due this month.**
 
-### Workload by Person
+### Cards by Field
 
-- A row per assignee, most cards first, then **Unassigned** last; each bar is as long as the person's cards
-  against the busiest row, split into Not Started, In Progress and Done, with the total at its end.
+- Once **Workload by Person** (the same `workload` view, renamed). A row per value of the field it groups by, as a
+  board's swimlanes group ([Swimlanes](plan-board.md#the-board-set-up)): **Assignee** unless set (a person's disc and
+  name, most cards first), or Priority, Type, Status, Parent, Labels, Estimate, Start Date, Due Date or any grouping
+  custom field. The empty group ("No assignee", "No priority"...) is last. Each bar is as long as its cards against
+  the fullest row, split into Not Started, In Progress and Done, with the total at its end.
+- Its element menu's **View** flyout has **Group By**, the board's Swimlanes grid without None, listing what the
+  view's card types offer (stored as `swimlaneBy` and `swimlaneField`; Assignee is the default, not stored).
+  Telemetry: `Plan` · `Changed` · `ViewGrouping`.
 - A legend names the three phases. The header counts the cards: `14 cards`.
-- Empty: **No cards yet. Add cards to a board to see who has what.**
+- Empty: **No cards yet. Add cards to a board to see how they split.**
 
-### Status Breakdown
+### Status Breakdown (retired)
 
-- A donut of every live card by status, in the order the document's boards name them (the open tab's first), then any other status, then
+- Drawn only where one was placed before it was retired. A donut of every live card by status, in the order the document's boards name them (the open tab's first), then any other status, then
   **No status**; the legend gives each status its name (as a column calls it), colour and count. The donut's
   middle holds the total.
 - The statuses take the tab theme's chart colours in turn, as a pie chart's slices do
@@ -225,6 +247,26 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - Rows Urgent, High, Medium, Low and **No Priority**; columns Not Started, In Progress and Done; each cell the
   cards in both, shaded by how many against the fullest cell, an empty cell blank.
 - Empty: the Status Breakdown's copy.
+
+### Card Search
+
+- A filter bar along its top, then the matching cards, a row each (type glyph, number, title, state, assignee), in
+  the document's order; a row opens its card as any view's entry does. The header counts them: `12 cards`.
+- A **filter** is a field and a value, shown as a chip ("Card Type: Project", "State: Done", "Assignee: No
+  assignee") with a cross that removes it; a card must match every filter. A field is any of a board's groupings
+  (Card Type, State, Assignee, Priority, Parent) or lane fields (Labels, Estimate, Start Date, Due Date, any grouping
+  custom field), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
+  assignee") included. At most 8 filters.
+- **Add Filter** (a dashed pill with a plus) opens a popover drawn over the page, so it reads at its own size
+  whatever the canvas zoom: first the fields still worth filtering, those the matching cards' types offer (all
+  types when none match), Card Type only while they hold more than one type, less the fields already filtered;
+  picking one shows its values among the matching cards ("State is", with a back arrow), each with its count, so no
+  filter ever leaves nothing; picking a value adds the filter and closes it. A list longer than 8 has a box to
+  narrow it. **Clear All** removes every filter.
+- The filters are the view's own, saved with it (`filters`: `{ by, field?, key }`), so everyone sees the same
+  search. Someone who may only view, or a view outside Plan mode, shows the chips without crosses or Add Filter.
+- Empty: "No cards match these filters." (with filters), "No cards yet. Add cards to a board." (without).
+  Telemetry: `Plan` · `Added` / `Removed` · `SearchFilter`.
 
 ## On the canvas
 

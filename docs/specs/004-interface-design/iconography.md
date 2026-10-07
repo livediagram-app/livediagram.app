@@ -60,7 +60,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 
 - A glyph's drawn geometry (bounding-box centre, stroke included) sits within 0.5px of its viewBox centre at its rendered size. Glyphs asymmetric by design (the play triangle) carry a named, logged exception.
 - Unit tests enforce the centring rule over the shared icons, the Icons catalogue, the technology tiles, the context-menu icons and the Settings category glyphs.
-- Unit tests pin the size steps: every context-menu icon at its step, every palette tile glyph at 18px.
+- Unit tests pin the size steps: every context-menu icon at its step, every palette tile glyph at 18px, except the Plan card tiles (a card picture with its type's glyph on the face) at 26px.
 - A lint rule rejects raw `<svg>` outside the icon homes and the art allow-list.
 - A contact sheet of every icon (`pnpm icons:sheet`) renders each glyph at 1x and 4x for review on demand. It is not a CI snapshot: pixel output varies across machines, and the code diff already carries the drawing.
 

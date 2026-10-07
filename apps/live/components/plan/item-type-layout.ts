@@ -62,6 +62,28 @@ export function moveField(d: LayoutDraft, group: GroupId, field: string, by: -1 
   };
 }
 
+// A field dropped at `to` among its group's movable fields (a handle drag): the movable fields reordered,
+// written back into the slots they held, so Title and Status stay where they are. Out of range clamps; a field
+// not movable here leaves the draft as it is.
+export function placeField(d: LayoutDraft, group: GroupId, field: string, to: number): LayoutDraft {
+  const movable = movableIn(d, group);
+  const from = movable.indexOf(field);
+  if (from < 0) return d;
+  const at = Math.max(0, Math.min(movable.length - 1, to));
+  if (at === from) return d;
+  const next = movable.filter((f) => f !== field);
+  next.splice(at, 0, field);
+  const refill = (list: readonly string[]) => {
+    let i = 0;
+    return list.map((f) => (movable.includes(f) ? next[i++]! : f));
+  };
+  if (group === null) return { ...d, fields: refill(orderedFields(d.fields)) };
+  return {
+    ...d,
+    tabs: d.tabs.map((t) => (t.id === group ? { ...t, fields: refill(t.fields) } : t)),
+  };
+}
+
 // A field filed under a tab (or Details, `null`): taken out of every tab, then added to the chosen one.
 export function fileField(
   tabs: readonly ItemTypeTab[],

@@ -1598,6 +1598,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "CardSearchFilter": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "$ref": "#/components/schemas/SwimlaneBy"
+      },
+      "field": {
+        "type": "string"
+      },
+      "key": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "by",
+      "key"
+    ],
+    "type": "object"
+  },
   "CardSize": {
     "enum": [
       "minimal",
@@ -6237,8 +6256,161 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "defaultStatus": {
+        "type": "string"
+      },
       "detailsLabel": {
         "type": "string"
+      },
+      "display": {
+        "additionalProperties": false,
+        "properties": {
+          "compact": {
+            "additionalProperties": false,
+            "properties": {
+              "body": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "foot": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "head": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "headEnd": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "lead": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "row": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "trail": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "detailed": {
+            "additionalProperties": false,
+            "properties": {
+              "body": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "foot": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "head": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "headEnd": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "lead": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "row": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "trail": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "minimal": {
+            "additionalProperties": false,
+            "properties": {
+              "body": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "foot": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "head": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "headEnd": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "lead": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "row": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "trail": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
       },
       "excludedStatuses": {
         "items": {
@@ -7939,6 +8111,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PlanViewRef": {
     "additionalProperties": false,
     "properties": {
+      "filters": {
+        "items": {
+          "$ref": "#/components/schemas/CardSearchFilter"
+        },
+        "type": "array"
+      },
       "namesWidth": {
         "type": "number"
       },
@@ -7975,7 +8153,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "calendar",
       "workload",
       "status-mix",
-      "priority-matrix"
+      "priority-matrix",
+      "search"
     ],
     "type": "string"
   },

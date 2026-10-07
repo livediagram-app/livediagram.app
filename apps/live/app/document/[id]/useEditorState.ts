@@ -1,5 +1,6 @@
 'use client';
 
+import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
@@ -2002,6 +2003,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     planNeeded,
     itemTypes.types.map((t) => t.id),
   );
+  // A newly placed board brings its preset's card types (a Bug Triage board, Bug). See usePresetCardTypes.
+  usePresetCardTypes({
+    tabs,
+    activeId,
+    enabled: planNeeded && hydrated && !isReadOnly,
+    types: itemTypes.types,
+    addTypes: itemTypes.addTypes,
+  });
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded, !!clerkUserId);
   const plan = usePlanSlice({

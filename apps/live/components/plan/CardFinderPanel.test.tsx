@@ -63,17 +63,15 @@ describe('the Card Finder', () => {
     expect(rows()).toHaveLength(1);
   });
 
-  it('narrows to the pressed card types, counts them, and clears', () => {
+  it('narrows by Card Type from Add Filter, and counts what is left', () => {
     open();
-    const chips = screen.getByRole('group', { name: 'Card types' });
-    fireEvent.click(within(chips).getByRole('button', { name: 'Person' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Filter' }));
+    const picker = () => within(screen.getByRole('dialog', { name: 'Add Filter' }));
+    fireEvent.click(picker().getByRole('button', { name: 'Card Type' }));
+    fireEvent.click(picker().getByRole('button', { name: /Person/ }));
     expect(rows()).toHaveLength(1);
     expect(screen.getByRole('radio', { name: /All Cards/ }).textContent).toContain('1');
-    fireEvent.click(within(chips).getByRole('button', { name: 'Task' }));
-    expect(rows()).toHaveLength(2);
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
-    expect(rows()).toHaveLength(3);
-    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Card types' })).toBeNull();
   });
 
   it('counts a card as not on a board when the boards naming its status hide its type', () => {
@@ -83,5 +81,24 @@ describe('the Card Finder', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Not on a Board/ }));
     expect(rows().some((r) => r.includes('Launch'))).toBe(true);
     expect(rows().some((r) => r.includes('Write copy'))).toBe(false);
+  });
+});
+
+describe('the Card Finder’s filters', () => {
+  it('narrows by a field and value, and Clear Filters shows them all again', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Filter' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Add Filter' })).getByRole('button', {
+        name: 'State',
+      }),
+    );
+    const picker = within(screen.getByRole('dialog', { name: 'Add Filter' }));
+    fireEvent.click(picker.getByRole('button', { name: /No status/ }));
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0]).toContain('Sam Reed');
+    expect(screen.getByText('State:')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
+    expect(rows()).toHaveLength(3);
   });
 });

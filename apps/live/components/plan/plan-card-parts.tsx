@@ -97,7 +97,7 @@ export function DuePill({
     >
       <PlanTypeGlyph glyph="calendar" size={11} />
       <span aria-hidden className={state === 'late' ? 'font-semibold' : undefined}>
-        {dayLabel(due)}
+        Due {dayLabel(due)}
       </span>
     </MetaPill>
   );

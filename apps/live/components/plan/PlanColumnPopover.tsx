@@ -5,10 +5,9 @@
 // Done (a switch); move left or right; add a
 // column after it (the column picker: an existing status, or a new one); remove it, first asking where its cards go when it has any. Each change is one
 // element edit, made as it happens. Escape or an outside press closes it; on a phone it is a sheet.
-import { useLayoutEffect, useRef, useState } from 'react';
-import { COLUMN_WIDTHS, type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { COLUMN_WIDTHS, isTrashed, type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
 import {
-  Button,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -16,7 +15,6 @@ import {
   TrashIcon,
   useClickOutside,
   useEscape,
-  Select,
 } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { Portal } from '@livediagram/ui';
@@ -35,11 +33,18 @@ import {
   setDoneColumn,
   setColumnWidth,
   setWipLimit,
+  reuseColumnStatus,
 } from './board-setup-edits';
 import { requestColumnSettings } from './column-settings-request';
 import { AddColumnPickerPopover } from './AddColumnPickerPopover';
-import { addStatusColumn, addStatusColumns } from './column-status-picks';
+import {
+  addStatusColumn,
+  addStatusColumns,
+  columnRename,
+  pickableStatuses,
+} from './column-status-picks';
 import { usePlan } from './PlanContext';
+import { RemoveColumnPopover } from './RemoveColumnPopover';
 
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();
 
@@ -90,10 +95,10 @@ export function PlanColumnPopover({
   getAnchor,
   setup,
   column,
-  cardCount,
   selectName = false,
   onChange,
   onMoveCards,
+  onTrashCards,
   onClose,
 }: {
   getAnchor: () => HTMLElement | null;
@@ -101,24 +106,39 @@ export function PlanColumnPopover({
   selectName?: boolean;
   setup: PlanBoardSetup;
   column: PlanColumn;
-  // How many cards the board shows in the column (they move before it goes).
-  cardCount: number;
   // A new set-up, and the telemetry part it changed.
   onChange: (next: PlanBoardSetup, part: string) => void;
   onMoveCards: (fromStatus: string, toStatus: string) => void;
+  // Every card in the state to the Trash (a removed column's, when asked).
+  onTrashCards: (status: string) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
   const mobile = useIsMobileViewport();
   const box = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
-  const [removing, setRemoving] = useState(false);
+  // The Remove Column button while its popover is open.
+  const [removingAt, setRemovingAt] = useState<HTMLElement | null>(null);
   // + Add Column After opens the column picker as its own popover hung from the button
   // (docs/specs/026-plan/plan-board.md "The column picker"); this one stays open behind it.
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLButtonElement>(null);
-  const statusNames = usePlan()?.statusNames ?? NO_STATUSES;
+  const plan = usePlan();
+  // The statuses a column can take: the boards', and any a card is in.
+  const statusNames = useMemo(
+    () => pickableStatuses(plan?.statusNames ?? NO_STATUSES, plan?.items?.values() ?? []),
+    [plan?.statusNames, plan?.items],
+  );
+  // Whether any card (out of the Trash) is in this column's status anywhere: a rename never strands them.
+  const hasCards = [...(plan?.items?.values() ?? [])].some(
+    (it) => it.fields['status'] === column.status && !isTrashed(it),
+  );
+  // The cards in this column's state anywhere (out of the Trash): what a removal moves.
+  const stateCards = [...(plan?.items?.values() ?? [])].filter(
+    (it) => it.fields['status'] === column.status && !isTrashed(it),
+  ).length;
+  // The state a typed name already belongs to, when the rename was refused.
+  const [renameClash, setRenameClash] = useState<string | null>(null);
   const others = setup.columns.filter((c) => c.id !== column.id);
-  const [target, setTarget] = useState(others[0]?.status ?? '');
   const at = setup.columns.findIndex((c) => c.id === column.id);
   const done = setup.doneColumnId === column.id;
 
@@ -130,10 +150,19 @@ export function PlanColumnPopover({
     const below = a.bottom + GAP;
     const top = below + h + EDGE <= window.innerHeight ? below : Math.max(EDGE, a.top - GAP - h);
     setPos({ left, top });
-  }, [getAnchor, removing]);
+  }, [getAnchor]);
   // A press in the picker (portalled) is not outside, and Escape is the picker's while it is open.
-  useClickOutside(box, () => onClose(false), true, '[data-column-cog], [data-add-column-picker]');
-  useEscape(() => onClose(true), { capture: true, stopPropagation: true, enabled: !adding });
+  useClickOutside(
+    box,
+    () => onClose(false),
+    true,
+    '[data-column-cog], [data-add-column-picker], [data-anchored-popover]',
+  );
+  useEscape(() => onClose(true), {
+    capture: true,
+    stopPropagation: true,
+    enabled: !adding && !removingAt,
+  });
 
   const wip = column.wipLimit ?? null;
   const setWip = (n: number | null) => {
@@ -166,13 +195,33 @@ export function PlanColumnPopover({
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();
           }}
+          onChange={() => setRenameClash(null)}
           onBlur={(e) => {
-            const next = renameColumn(setup, column.id, e.target.value);
-            if (next !== setup && e.target.value.trim() !== column.name)
-              onChange(next, 'ColumnRenamed');
+            const typed = e.target.value;
+            if (typed.trim() === column.name) return;
+            // One name, one status: a name another status has switches an empty column to it, or is refused.
+            const outcome = columnRename(setup, column.id, typed, statusNames, hasCards);
+            if (outcome.kind === 'clash') {
+              setRenameClash(outcome.name);
+              e.target.value = column.name;
+              return;
+            }
+            const next =
+              outcome.kind === 'reuse'
+                ? reuseColumnStatus(setup, column.id, outcome.status, outcome.name)
+                : renameColumn(setup, column.id, typed);
+            if (next !== setup) onChange(next, 'ColumnRenamed');
           }}
         />
       </div>
+      {renameClash ? (
+        <p
+          role="alert"
+          className="border-b border-slate-100 px-3 py-2 text-[12px] text-amber-700 dark:border-slate-800 dark:text-amber-300"
+        >
+          A {renameClash} state already exists. Add it from Add Column, so its cards show here.
+        </p>
+      ) : null}
       <div className="flex flex-col gap-3 px-3 py-3">
         <div>
           <span className={LABEL}>Colour</span>
@@ -348,12 +397,14 @@ export function PlanColumnPopover({
             }}
           />
         ) : null}
-        {others.length > 0 && !removing ? (
+        {others.length > 0 ? (
           <button
             type="button"
             className={DANGER_ROW}
-            onClick={() => {
-              if (cardCount > 0) setRemoving(true);
+            aria-haspopup={stateCards > 0 ? 'dialog' : undefined}
+            aria-expanded={stateCards > 0 ? removingAt !== null : undefined}
+            onClick={(e) => {
+              if (stateCards > 0) setRemovingAt(e.currentTarget);
               else {
                 onChange(removeColumn(setup, column.id), 'ColumnRemoved');
                 onClose(false);
@@ -364,45 +415,21 @@ export function PlanColumnPopover({
             Remove Column
           </button>
         ) : null}
-        {others.length > 0 && removing ? (
-          <div
-            role="alertdialog"
-            aria-label={`Remove ${column.name}`}
-            className="m-1.5 flex flex-col gap-2 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-[12px] text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-100"
-          >
-            <p>
-              Move {cardCount === 1 ? 'its card' : `its ${cardCount} cards`} to another column first
-            </p>
-            <Select
-              aria-label="Move cards to"
-              className="w-full"
-              selectClassName="text-[13px]"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-            >
-              {others.map((c) => (
-                <option key={c.id} value={c.status}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" size="xs" onClick={() => setRemoving(false)}>
-                Keep It
-              </Button>
-              <Button
-                variant="danger"
-                size="xs"
-                onClick={() => {
-                  onMoveCards(column.status, target);
-                  onChange(removeColumn(setup, column.id), 'ColumnRemoved');
-                  onClose(false);
-                }}
-              >
-                Move and Remove
-              </Button>
-            </div>
-          </div>
+        {removingAt ? (
+          <RemoveColumnPopover
+            anchor={removingAt}
+            column={column}
+            others={others}
+            cardCount={stateCards}
+            onCancel={() => setRemovingAt(null)}
+            onRemove={(choice) => {
+              if (choice.kind === 'move') onMoveCards(column.status, choice.to);
+              else onTrashCards(column.status);
+              onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+              setRemovingAt(null);
+              onClose(false);
+            }}
+          />
         ) : null}
       </div>
     </div>

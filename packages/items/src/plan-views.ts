@@ -11,12 +11,14 @@ import {
   projectBoard,
   SWIMLANE_BY,
   type BoardProjection,
+  type SwimlaneBy,
   type PlanBoardSetup,
 } from './board';
 import { GANTT_NAMES_MAX_PX, GANTT_NAMES_MIN_PX } from './plan-view-gantt';
 import { isGanttRowOrder } from './gantt-row-order';
 import { ITEM_TYPE_PATTERN } from './limits';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import { isCardSearchFilters } from './card-search';
 
 // The board widget kinds that read out rather than narrow a board or need its set-up
 // (docs/specs/026-plan/plan-views.md "Metrics"), in the palette's order.
@@ -40,6 +42,7 @@ export const PLAN_VISUALISATIONS = [
   'workload',
   'status-mix',
   'priority-matrix',
+  'search',
 ] as const;
 export type PlanVisualisation = (typeof PLAN_VISUALISATIONS)[number];
 
@@ -111,6 +114,7 @@ export function isPlanViewSettings(value: unknown): boolean {
   )
     return false;
   if (v['rowOrder'] !== undefined && !isGanttRowOrder(v['rowOrder'])) return false;
+  if (v['filters'] !== undefined && !isCardSearchFilters(v['filters'])) return false;
   const w = v['namesWidth'];
   if (
     w !== undefined &&
@@ -121,6 +125,65 @@ export function isPlanViewSettings(value: unknown): boolean {
   )
     return false;
   return true;
+}
+
+// The fields a card type must offer to feed a view (docs/specs/026-plan/plan-views.md "Card types"): a Gantt
+// chart draws Start to Due, a Due Calendar places by Due, Priority by Status counts by Priority, and a metric reads
+// its own field. A view not listed takes every type.
+const VIEW_NEEDS: Partial<Record<PlanViewId, readonly string[]>> = {
+  gantt: ['start', 'due'],
+  calendar: ['due'],
+  'priority-matrix': ['priority'],
+  'metric:people': ['assignee'],
+  'metric:unassigned': ['assignee'],
+  'metric:priorities': ['priority'],
+  'metric:due': ['due'],
+  'metric:points': ['estimate'],
+  'metric:top-voted': ['votes'],
+};
+
+// The fields a view needs a type to offer, as its Card Types note names them.
+export function viewNeeds(view: PlanViewId): readonly string[] {
+  return VIEW_NEEDS[view] ?? [];
+}
+
+// The card types a view can show: those offering every field it needs.
+export function viewEligibleTypes(view: PlanViewId, types: readonly ItemTypeDef[]): ItemTypeDef[] {
+  const needs = viewNeeds(view);
+  return types.filter((t) => needs.every((f) => t.fields.includes(f)));
+}
+
+// The card types a view's settings name: a Gantt chart's own list (else Project); any other view's list, else
+// every type.
+export function viewChosenTypes(
+  view: PlanViewId,
+  settings: { types?: readonly string[] } | undefined,
+  types: readonly ItemTypeDef[],
+): readonly string[] {
+  if (view === 'gantt') return ganttTypesOf(settings);
+  return settings?.types && settings.types.length > 0 ? settings.types : types.map((t) => t.id);
+}
+
+// What a view shows: the types it names that can feed it. A named type that has lost a needed field drops out
+// until it has it again.
+export function viewShownTypes(
+  view: PlanViewId,
+  settings: { types?: readonly string[] } | undefined,
+  types: readonly ItemTypeDef[],
+): string[] {
+  const eligible = new Set(viewEligibleTypes(view, types).map((t) => t.id));
+  return viewChosenTypes(view, settings, types).filter((id) => eligible.has(id));
+}
+
+// What Cards by Field groups by (docs/specs/026-plan/plan-views.md "Cards by Field"): its own grouping, else
+// Assignee, as Workload by Person was.
+export function breakdownGroupingOf(settings: {
+  swimlaneBy?: SwimlaneBy;
+  swimlaneField?: string;
+}): { by: SwimlaneBy; field: string | undefined } {
+  const by =
+    settings.swimlaneBy && settings.swimlaneBy !== 'none' ? settings.swimlaneBy : 'assignee';
+  return { by, field: by === 'field' ? settings.swimlaneField : undefined };
 }
 
 // The metric a view is, or null for a visualisation.
@@ -139,13 +202,20 @@ export function planViewSize(view: unknown): { width: number; height: number } {
   return view === 'gantt' ? { ...PLAN_GANTT_SIZE } : { ...PLAN_CHART_SIZE };
 }
 
+// The visualisations the palette offers. Status Breakdown is retired: one already placed still draws, but no new
+// one is made (docs/specs/026-plan/plan-views.md "Visualisations").
+export const PLAN_PALETTE_VISUALISATIONS: readonly PlanVisualisation[] = PLAN_VISUALISATIONS.filter(
+  (v) => v !== 'status-mix',
+);
+
 // A view's name, as its palette tile and header say it.
 export const PLAN_VISUALISATION_LABELS: Readonly<Record<PlanVisualisation, string>> = {
   gantt: 'Gantt Chart',
   calendar: 'Due Calendar',
-  workload: 'Workload by Person',
+  workload: 'Cards by Field',
   'status-mix': 'Status Breakdown',
   'priority-matrix': 'Priority by Status',
+  search: 'Card Search',
 };
 
 // Every live card: not archived, not in the Trash.

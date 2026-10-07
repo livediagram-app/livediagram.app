@@ -1,17 +1,18 @@
 'use client';
 
-// The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"): General, Fields and Statuses, one
+// The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"): General, Fields, States and Display, one
 // panel showing at a time. A tab holding what stops Save carries a red dot. Arrow keys move between tabs, Home and
 // End go to the ends, as a tablist does.
 import { useId, type KeyboardEvent, type ReactNode } from 'react';
 
-export const TYPE_EDITOR_TABS = ['general', 'fields', 'statuses'] as const;
+export const TYPE_EDITOR_TABS = ['general', 'fields', 'statuses', 'display'] as const;
 export type TypeEditorTab = (typeof TYPE_EDITOR_TABS)[number];
 
 export const TYPE_EDITOR_TAB_LABELS: Record<TypeEditorTab, string> = {
   general: 'General',
   fields: 'Fields',
-  statuses: 'Statuses',
+  statuses: 'States',
+  display: 'Display',
 };
 
 export function ItemTypeEditorTabs({

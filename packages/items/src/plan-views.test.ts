@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   METRIC_KINDS,
+  PLAN_VISUALISATIONS,
   PLAN_VIEW_IDS,
   metricBoard,
   isPlanViewId,
@@ -38,7 +39,7 @@ const kanban = {
 
 describe('plan view ids', () => {
   it('names a widget view per metric kind, then the visualisations', () => {
-    expect(PLAN_VIEW_IDS).toHaveLength(METRIC_KINDS.length + 5);
+    expect(PLAN_VIEW_IDS).toHaveLength(METRIC_KINDS.length + PLAN_VISUALISATIONS.length);
     for (const k of METRIC_KINDS) expect(isBoardWidgetKind(k)).toBe(true);
     expect(METRIC_KINDS).not.toContain('filter');
     expect(METRIC_KINDS).not.toContain('mine');

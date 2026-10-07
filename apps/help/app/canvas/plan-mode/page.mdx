@@ -45,7 +45,7 @@ Plan is one of the four [editor modes](/help/canvas/editor-modes/), beside Diagr
 An empty Plan tab shows **Start with a Board** in the middle: pick a board type and it is placed, empty, ready to build. See [Boards](/help/canvas/plan-mode/boards/).
 
 - **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates. **Blank Plan** is one empty Plan tab, with no board, that opens on **Start with a Board**; every other Plan template sets up a way of working across several tabs, with no cards, so you start straight on your own work (see [Plan Templates](#plan-templates) below).
-- **On any tab:** in Plan mode, open the palette's **Boards** category and press a board (Kanban, To-do List, Sprint, Retro, Roadmap, Bug Triage, Week, All Cards, Archive or a blank board), then click the canvas, or drag it out to the size you want.
+- **On any tab:** in Plan mode, open the palette's **Boards** category and press a board (Kanban, To-do List, Sprint, Retro, Roadmap, Bug Triage, Week, All Cards, Archive or a blank board), then click the canvas, or drag it out to the size you want. A Bug Triage board brings a **Bug** card type, and a Sprint board a **Story** card type, if your document doesn't have one yet.
 
 ## Plan Templates
 
@@ -131,13 +131,13 @@ A board holds each widget once; adding one it already has makes it flash.
 
 **Metrics** are the read-out widgets, free on the canvas: place **Completion**, **Due Soon**, **People** or any other beside your boards, and each counts every card in the document, whatever board it is on. Archived cards and the Trash are left out. A metric only reads: pressing a person or a type in it narrows nothing.
 
-**Visualisations** chart every card:
+**Visualisations** chart the cards. Each one charts every card type it can to start with; pick which under **View**, **Card Types** in its right-click menu (only card types with the fields it reads are listed, a **Due** field for the **Due Calendar**, say). Metrics take a **Card Types** pick the same way.
 
 - **Gantt Chart**: a row per card of the card types it shows (**Project** to start with; pick others, your own included, under **View**, **Card Types** in its right-click menu: only card types with both a **Start** and a **Due** field are listed, so add both to a type to put it on the chart), a bar from its **Start** to its **Due** date in the card's **Colour** (or its type's colour), filled to the share of its cards done, with a line for today. A card with only a due date is a diamond. Drag either end of a bar (or a diamond) sideways to change that date, or drag the middle of a bar to move both dates together; the days show as you drag. A card with no dates can be drawn straight onto its row: click for a week, or drag across the days. Pick **Month**, **Quarter** or **Year** in its header to see more or less time, step with the arrows or scroll sideways (or drag the dates strip) to move along the timeline, and press **Today** to come back to now. The view is yours alone; others keep their own.
 - **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows, and **Today** comes back.
-- **Workload by Person**: a bar per person, split Not Started, In Progress and Done.
-- **Status Breakdown**: a donut of the cards by status.
+- **Cards by Field**: a bar per person to start with, split Not Started, In Progress and Done. Pick another field under **View**, **Group By**: a priority, a type, a state, labels or any field of your own.
 - **Priority by Status**: how many cards of each priority are not started, in progress and done.
+- **Card Search**: the cards matching filters you add along its top, such as **Card Type: Project**, **State: Done** or **Assignee: No assignee**. **Add Filter** offers only the fields the remaining cards have, and only the values some of them hold (with how many), so a filter never leaves you with nothing. The filters are saved with it, so everyone sees the same search; press a filter's cross to take it off.
 
 A card counts as done when its status is a board's done column. In Plan mode, press a row or entry to open its card; in other modes, double-click it. Resize a visualisation like any element. Exported images show a metric or visualisation as a labelled box rather than the live chart.
 

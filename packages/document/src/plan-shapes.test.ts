@@ -177,7 +177,7 @@ describe('plan shapes in exports', () => {
 describe('plan view shape', () => {
   it('is made with a view, named, self-drawing and self-painting', () => {
     const view = createShape('plan-view', 0, 0);
-    expect(view).toMatchObject({ width: 720, height: 400, planView: { view: 'status-mix' } });
+    expect(view).toMatchObject({ width: 720, height: 400, planView: { view: 'workload' } });
     expect(elementKindLabel(view)).toBe('Plan View');
     expect(isPlanShape('plan-view')).toBe(true);
     expect(isSelfDrawingShape('plan-view')).toBe(true);
