@@ -44,6 +44,10 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 - **Reuse over duplication**: shared code lives in [`packages/`](packages/), never copied across apps.
 - **No secrets in source**: the repo is public. Env vars, `wrangler secret put`, GitHub Actions secrets only. See [`docs/specs/002-project-scope/secrets-policy.md`](docs/specs/002-project-scope/secrets-policy.md).
 
+## Security
+
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://livediagram.app/help/policies/report-a-vulnerability/).
+
 ## License
 
 [MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.

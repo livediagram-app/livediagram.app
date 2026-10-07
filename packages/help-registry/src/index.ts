@@ -147,8 +147,8 @@ export const categories: Category[] = [
     slug: 'policies',
     title: 'Policies',
     description:
-      'The legal terms for the hosted livediagram service: the Terms of Service and the full Privacy Policy.',
-    articleCount: 2,
+      'The legal terms for the hosted livediagram service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
+    articleCount: 3,
   },
   {
     slug: 'contact',
@@ -617,6 +617,16 @@ export const articles: Article[] = [
     title: 'Privacy Policy',
     description: 'The full privacy policy for the hosted livediagram service.',
     keywords: 'legal privacy gdpr data protection personal information',
+    category: 'Policies',
+    categorySlug: 'policies',
+    parentSlug: 'policies',
+  },
+  {
+    slug: 'report-a-vulnerability',
+    title: 'Reporting a Vulnerability',
+    description: 'How to report a security issue privately, and our safe-harbour promise.',
+    keywords:
+      'security vulnerability disclosure bug exploit cve advisory responsible safe harbour harbor pentest researcher hacker report',
     category: 'Policies',
     categorySlug: 'policies',
     parentSlug: 'policies',

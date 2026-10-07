@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Policies',
   description:
-    'The legal terms for the hosted livediagram service: the Terms of Service and the full Privacy Policy.',
+    'The legal terms for the hosted livediagram service: the Terms of Service, the full Privacy Policy and how to report a vulnerability.',
   path: '/help/policies/',
 });
 
