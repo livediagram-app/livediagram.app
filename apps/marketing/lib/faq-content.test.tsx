@@ -1,4 +1,6 @@
-import { renderToStaticMarkup } from 'react-dom/server';
+// @vitest-environment jsdom
+import { render } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { TEMPLATES } from '@livediagram/templates';
@@ -11,15 +13,14 @@ import { filterFaq } from './faq-filter';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
 
-// The visible text of a rendered answer, as a reader (or a crawler) sees it.
-const visibleText = (node: Parameters<typeof renderToStaticMarkup>[0]) =>
-  renderToStaticMarkup(<>{node}</>)
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
+// The visible text of a rendered answer, as a reader (or a crawler) sees it: rendered into the DOM and read
+// back, so the browser does the parsing, not a hand-rolled tag strip.
+const visibleText = (node: ReactNode) => {
+  const { container, unmount } = render(<>{node}</>);
+  const text = (container.textContent ?? '').replace(/\s+/g, ' ').trim();
+  unmount();
+  return text;
+};
 
 describe('FAQ content', () => {
   it('gives every category a unique id and at least one question', () => {

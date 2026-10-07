@@ -83,7 +83,11 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
         </span>
       </span>
       <span className="block overflow-hidden rounded-lg border border-slate-200 bg-(--art-paper) shadow-sm transition duration-micro group-hover/frame:border-brand-400 group-hover/frame:shadow-md motion-safe:group-hover/frame:-translate-y-0.5 dark:border-slate-700 dark:group-hover/frame:border-brand-500/70">
+        {/* A drawn thumbnail of the scene, a third its window's size, not a glyph frame: its text snaps to
+            whole pixels at this scale, so the optical audit measures the scene in its own window instead
+            (docs/specs/004-interface-design/blueprints/DEFAULTS.md D45). */}
         <svg
+          data-optical-ignore=""
           className="block aspect-[3/2] w-full"
           viewBox={LANDSCAPE_VIEWBOX}
           preserveAspectRatio="xMidYMid meet"
