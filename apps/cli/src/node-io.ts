@@ -256,7 +256,12 @@ function listenLoopback(): Promise<LoopbackServer> {
           const ready = queued.shift();
           return ready ? Promise.resolve(ready) : new Promise((r) => waiting.push(r));
         },
-        close: () => server.close(),
+        // A browser keeps a preconnected or keep-alive socket open after the callback; end those too, or the
+        // process stays alive until the person closes the tab.
+        close: () => {
+          server.close();
+          server.closeAllConnections();
+        },
       });
     });
   });
