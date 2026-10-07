@@ -30,6 +30,7 @@ import { useCommunityState } from '@/lib/community-state-store';
 import { useCommunityEnabled } from '@livediagram/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
+import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
@@ -119,6 +120,10 @@ export function EditorView() {
     followMe,
     anyWelcomeOpen,
     embedMode,
+    // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
+    // workbench-embeds.md, Surface table).
+    appChrome,
+    workbench,
     quickStyleDeps,
     autoAlignTab,
     autoLayoutTab,
@@ -206,7 +211,7 @@ export function EditorView() {
   const communityState = useCommunityState(documentId);
   // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
   // Asked only while there is a listed post to badge, and never in an embed, so other opens make no request.
-  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && !embedMode);
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
   // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
   useAutoCopyParam({
     hydrated,
@@ -257,7 +262,7 @@ export function EditorView() {
   // doesn't restart the countdown; it only hides the card at render.
   const { dismissed: signInDismissed, dismiss: dismissSignIn } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = clerkEnabled && !clerkUserId && !embedMode && !signInDismissed;
+  const signInTimerEnabled = clerkEnabled && !clerkUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
   // Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a bottom banner while the active tab has no
@@ -338,7 +343,7 @@ export function EditorView() {
                     ) : null}
                     {/* Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides the header entirely so the
           canvas gets the full height. Embeds (docs/specs/013-workspace/embeds.md) never show it. */}
-                    {zenMode || embedMode ? null : (
+                    {zenMode || !appChrome ? null : (
                       <AreaErrorBoundary area="Header" fallback="panel">
                         <EditorHeader
                           documentName={documentName}
@@ -397,7 +402,7 @@ export function EditorView() {
                         />
                       </AreaErrorBoundary>
                     )}
-                    {sessionCommunity && !embedMode && hydrated ? (
+                    {sessionCommunity && appChrome && hydrated ? (
                       <CommunityBar
                         community={sessionCommunity}
                         onMakeCopy={makeCopy}
@@ -447,10 +452,24 @@ export function EditorView() {
                         onSelectTab={selectTab}
                       />
                     ) : null}
+                    {workbench ? (
+                      // The workbench's Reconnect line; its Open in livediagram sits in the tab bar.
+                      <WorkbenchReconnectLine
+                        workbenchName={workbench.workbenchName}
+                        ended={workbench.ended}
+                      />
+                    ) : null}
                     {anyWelcomeOpen || zenMode || embedMode ? null : (
                       <AreaErrorBoundary area="TabBar" fallback="panel">
                         <TabBar
                           powerUser={isPowerUserMode(userPreferences)}
+                          workbenchLink={
+                            workbench && documentId
+                              ? (labelled) => (
+                                  <WorkbenchOpenLink documentId={documentId} labelled={labelled} />
+                                )
+                              : undefined
+                          }
                           roleIcon={
                             minimalChrome ? (
                               <RoleStatusIcon role={role.role} onToggle={role.onToggle} />
@@ -506,7 +525,8 @@ export function EditorView() {
                             // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
                             // offline document's tabs nor an offline destination can take part
                             // (docs/specs/006-document/offline-mode.md) — empty list disables the menu entry.
-                            isOffline
+                            // Nor a workbench, which reaches its one document only.
+                            isOffline || workbench
                               ? []
                               : documentList.filter(
                                   (d) => d.id !== documentId && d.ownerId !== OFFLINE_OWNER_ID,
@@ -669,7 +689,7 @@ export function EditorView() {
           zen / embed like the other floating prompts, and yields the
           bottom-centre slot to the sign-in / empty-canvas banners. */}
                     {zenMode ||
-                    embedMode ||
+                    !appChrome ||
                     minimalChrome ||
                     drawMode ||
                     showSignInBanner ||

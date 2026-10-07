@@ -350,6 +350,25 @@ describe('connectRoom when the document is trashed', () => {
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
+  // A workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
+  // close 4006. The page turns read-only; the connector never reconnects.
+  it('reports a workbench end once and never reconnects', () => {
+    const onWorkbenchEnded = vi.fn();
+    const onAccessChanged = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onWorkbenchEnded, onAccessChanged },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4006 });
+    vi.runAllTimers();
+
+    expect(onWorkbenchEnded).toHaveBeenCalledTimes(1);
+    expect(onAccessChanged).not.toHaveBeenCalled();
+    expect(ClosingSocket.all).toHaveLength(1);
+  });
+
   it('still reconnects after an ordinary drop', () => {
     const onDocumentTrashed = vi.fn();
     connectRoom(

@@ -76,3 +76,22 @@ describe('CustomThemeProvider', () => {
     expect(result.current.loading).toBe(true);
   });
 });
+
+// A workbench reads the person's themes and writes none (docs/specs/013-workspace/blueprints/
+// workbench-embeds.md, Surface table).
+describe('CustomThemeProvider writes', () => {
+  it('are offered by default, withheld when read only, and never without a provider', () => {
+    list.mockResolvedValue([]);
+    expect(themes(null).result.current.writable).toBe(true);
+
+    const readOnly = renderHook(() => useCustomThemes(), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <CustomThemeProvider ownerId={null} readOnly>
+          {children}
+        </CustomThemeProvider>
+      ),
+    });
+    expect(readOnly.result.current.writable).toBe(false);
+    expect(renderHook(() => useCustomThemes()).result.current.writable).toBe(false);
+  });
+});

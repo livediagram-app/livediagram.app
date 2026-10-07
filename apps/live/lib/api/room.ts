@@ -9,6 +9,7 @@ import {
   ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
+  WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
   type FacilitatorReason,
@@ -48,6 +49,9 @@ export type RoomHandlers = {
   // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the
   // ordinary access path (a password prompt, a refusal page, or the editor again).
   onAccessChanged?: () => void;
+  // A workbench session's pairing or token ended (docs/specs/013-workspace/workbench-embeds.md): the
+  // room closed it with WORKBENCH_ENDED_CLOSE; the connector stops and the page turns read-only.
+  onWorkbenchEnded?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
   // REST, which names a trashed document (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
@@ -256,6 +260,11 @@ export function connectRoom(
       if (event?.code === ACCESS_CHANGED_CLOSE) {
         closed = true;
         handlers.onAccessChanged?.();
+        return;
+      }
+      if (event?.code === WORKBENCH_ENDED_CLOSE) {
+        closed = true;
+        handlers.onWorkbenchEnded?.();
         return;
       }
       if (!socketOpened) handlers.onRefused?.();

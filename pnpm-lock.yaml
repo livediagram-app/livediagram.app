@@ -363,6 +363,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../../packages/document
+      '@livediagram/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
       '@livediagram/explorer-lens':
         specifier: workspace:*
         version: link:../../packages/explorer-lens

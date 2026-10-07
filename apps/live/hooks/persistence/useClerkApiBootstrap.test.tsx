@@ -24,6 +24,7 @@ const { getToken } = vi.hoisted(() => ({
 }));
 vi.mock('@/components/providers/deferred-auth', () => {
   return {
+    DEFERRED_AUTH_PENDING: { authLoaded: false },
     useDeferredAuth: () => ({
       authLoaded: true,
       isSignedIn: true,

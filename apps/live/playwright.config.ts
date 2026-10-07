@@ -17,14 +17,21 @@ const STUB_PORTS = { live: '3015', api: '8788', marketing: '3016' };
 // (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
 const armed = process.env.E2E_GUEST_SIG_ENFORCE === '1';
 const ARMED_PORTS = { live: '3017', api: '8789', marketing: '3018' };
+// The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
+// NEXT_PUBLIC_E2E_AUTH export and the stack acting as Clerk, so it runs as its own invocation
+// (`pnpm test:e2e:workbench`) on its own ports.
+const workbench = process.env.E2E_WORKBENCH === '1';
+const WORKBENCH_PORTS = { live: '3021', api: '8791', marketing: '3022' };
 const BASE_URL =
   process.env.E2E_BASE_URL ??
   (clerkStub
     ? `http://localhost:${STUB_PORTS.live}`
     : armed
       ? `http://localhost:${ARMED_PORTS.live}`
-      : 'http://localhost:3002');
-const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : '';
+      : workbench
+        ? `http://localhost:${WORKBENCH_PORTS.live}`
+        : 'http://localhost:3002');
+const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : workbench ? '-workbench' : '';
 
 export default defineConfig({
   testDir: './e2e',
@@ -70,6 +77,7 @@ export default defineConfig({
         /armed\//,
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
+        /workbench-embed\.spec\.ts/,
       ],
     },
     // The optical audit of the help centre, telemetry dashboard, Community and marketing site: the one suite
@@ -96,6 +104,15 @@ export default defineConfig({
             name: 'drive-shots',
             use: { ...devices['Desktop Chrome'] },
             testMatch: /drive-shots\.spec\.ts/,
+          },
+        ]
+      : []),
+    ...(workbench
+      ? [
+          {
+            name: 'workbench',
+            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
+            testMatch: /workbench-embed\.spec\.ts/,
           },
         ]
       : []),
@@ -171,6 +188,12 @@ export default defineConfig({
             E2E_MARKETING_PORT: ARMED_PORTS.marketing,
             E2E_GUEST_SIG_ENFORCE: '1',
           }
-        : {},
+        : workbench
+          ? {
+              E2E_LIVE_PORT: WORKBENCH_PORTS.live,
+              E2E_API_PORT: WORKBENCH_PORTS.api,
+              E2E_MARKETING_PORT: WORKBENCH_PORTS.marketing,
+            }
+          : {},
   },
 });

@@ -125,8 +125,11 @@ export async function apiSaveTab(
     roomCursor?: { epoch: string; seq: number } | null;
     changesetSeen?: number;
   } = {},
-): Promise<void> {
-  if (await isOfflineId(documentId)) return offlineSaveTab(documentId, tab, Date.now());
+): Promise<number | null> {
+  if (await isOfflineId(documentId)) {
+    await offlineSaveTab(documentId, tab, Date.now());
+    return null;
+  }
   const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
   if (opts.allowEmpty) headers.set('X-Allow-Empty', '1');
   if (opts.roomCursor) {
@@ -141,6 +144,18 @@ export async function apiSaveTab(
     body: JSON.stringify(tabForWire(tab)),
   });
   await expectOkVoid(res, 'save tab');
+  return savedRevOf(res);
+}
+
+// The revision a save wrote, from the tab the api echoes; null when the answer names none.
+async function savedRevOf(res: Response): Promise<number | null> {
+  try {
+    const body = (await res.json()) as { tab?: { rev?: unknown } };
+    const rev = body.tab?.rev;
+    return typeof rev === 'number' ? rev : null;
+  } catch {
+    return null;
+  }
 }
 
 // Last-ditch `beforeunload` flush of pending tab/meta writes (docs/specs/006-document/per-tab-storage.md),

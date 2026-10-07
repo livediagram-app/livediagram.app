@@ -25,7 +25,9 @@ import {
   SessionTokenUnavailableError,
   setSessionSharePassword,
   setTokenProvider,
+  setWorkbenchConfinement,
   stripUiTabFields,
+  WorkbenchConfinedError,
   tabForWire,
 } from './core';
 import { resetApiWriteListeners, subscribeApiWrites } from './write-signal';
@@ -340,5 +342,28 @@ describe('apiFetch and the document format header', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
     await apiFetch(`${API_BASE}/documents`);
     expect(serverDocumentFormat()).toBeNull();
+  });
+});
+
+// Client confinement (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB16).
+describe('apiFetch under a workbench session', () => {
+  afterEach(() => {
+    setWorkbenchConfinement(null);
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('refuses a confined route without sending it or reporting a network error', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    setWorkbenchConfinement({ documentId: 'doc-1', ownerId: 'user_1' });
+
+    await expect(
+      apiFetch(`${API_BASE}/folders`, {
+        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}` },
+      }),
+    ).rejects.toBeInstanceOf(WorkbenchConfinedError);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

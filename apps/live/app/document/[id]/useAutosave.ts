@@ -72,6 +72,8 @@ export function useAutosave(opts: {
   // The changeset revision each tab holds, committed with the `tabs` of this render
   // (useChangesetSeen): sent with each save so the api merges only what the save lacks.
   changesetSeen: ReadonlyMap<string, number>;
+  // Told the revision each tab save wrote (useTabRevisions), for the selection reference.
+  noteTabRevision?: (tabId: string, rev: number) => void;
 }) {
   const {
     hydrated,
@@ -93,11 +95,16 @@ export function useAutosave(opts: {
     setDocumentList,
     onDocumentTrashed,
     changesetSeen,
+    noteTabRevision,
   } = opts;
 
   // The caller passes a fresh function each render; read it when a save is refused (an effect event), so
   // it never re-arms the debounced save.
   const reportTrashed = useEffectEvent(() => onDocumentTrashed());
+  // Read when a save answers, never a trigger of the debounced save.
+  const noteRevision = useEffectEvent((tabId: string, rev: number) =>
+    noteTabRevision?.(tabId, rev),
+  );
 
   // Set once the server has told us we may not write to this document at all
   // (403). Unlike a network failure that's worth another go on the next edit,
@@ -283,7 +290,8 @@ export function useAutosave(opts: {
             roomCursor,
             // From the same render as `t`, never ahead of it (useChangesetSeen).
             ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
-          }).then(() => {
+          }).then((rev) => {
+            if (rev !== null) noteRevision(t.id, rev);
             // Broadcast granular element ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0) derived from
             // the last state peers saw so concurrent different-element edits
             // merge instead of the whole tab clobbering. Falls back to a

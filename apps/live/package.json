@@ -22,7 +22,8 @@
     "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs",
     "icons:brand": "node scripts/brand-icons/render.mjs",
     "test:e2e:drive": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive",
-    "test:e2e:drive-shots": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive-shots"
+    "test:e2e:drive-shots": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive-shots",
+    "test:e2e:workbench": "NEXT_PUBLIC_E2E_AUTH=1 next build && E2E_WORKBENCH=1 playwright test --project=workbench"
   },
   "dependencies": {
     "@clerk/react": "^6.17.4",
@@ -30,6 +31,7 @@
     "@jsquash/webp": "1.5.0",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/document": "workspace:*",
+    "@livediagram/document-views": "workspace:*",
     "@livediagram/explorer-lens": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",

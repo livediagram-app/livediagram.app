@@ -13,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <EditorPage embed />;
+  return <EditorPage surface="embed" />;
 }

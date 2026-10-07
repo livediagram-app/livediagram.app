@@ -94,6 +94,19 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 });
 
+// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+describe('buildEditorCommands — in a workbench', () => {
+  it('offers neither Share nor Delete document, and keeps the rest', () => {
+    const inWorkbench = ids({ ...base, isOwner: true, workbench: true });
+    expect(inWorkbench).not.toContain('share');
+    expect(inWorkbench).not.toContain('delete-document');
+    expect(inWorkbench).toContain('rename-document');
+    expect(ids({ ...base, isOwner: true })).toEqual(
+      expect.arrayContaining(['share', 'delete-document']),
+    );
+  });
+});
+
 describe('buildEditorCommands — selection commands', () => {
   it('offers delete/duplicate/lock/reorder for any selection (incl. multi)', () => {
     const out = ids({ ...base, selectionCount: 3 });

@@ -3,10 +3,11 @@
 // One token (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
 // who it is, whether it is being used, and how much of its six months is
 // left, drawn as a bar so the tokens that need rotating stand out from a
-// glance down the list.
-import type { ApiToken } from '@livediagram/api-schema';
+// glance down the list, then the workbenches it is paired with.
+import type { ApiToken, WorkbenchPairing } from '@livediagram/api-schema';
 import { Tooltip } from '@livediagram/ui';
 import { KeyIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { SettingsTokenPairings } from './SettingsTokenPairings';
 import {
   STATUS_LABEL,
   formatTokenDate,
@@ -37,10 +38,14 @@ export function SettingsTokenCard({
   token,
   now,
   onRevoke,
+  pairings,
+  onUnpair,
 }: {
   token: ApiToken;
   now: number;
   onRevoke: (anchor: HTMLElement) => void;
+  pairings: readonly WorkbenchPairing[];
+  onUnpair: (pairingId: string) => void;
 }) {
   const status = tokenStatus(token, now);
   const name = token.name || 'Untitled token';
@@ -123,6 +128,7 @@ export function SettingsTokenCard({
           <span className={TEXT[status]}>{timeLeft}</span>
         </div>
       </div>
+      <SettingsTokenPairings pairings={pairings} now={now} onUnpair={onUnpair} />
     </li>
   );
 }

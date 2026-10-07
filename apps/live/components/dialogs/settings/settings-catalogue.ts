@@ -86,6 +86,8 @@ export type SettingsRowContext = {
   preferences?: UserPreferences;
   // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
   cloudProviders?: readonly CloudSyncProviderId[];
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+  workbench?: boolean;
 };
 
 type RowBase = {
@@ -1089,13 +1091,30 @@ export function visibleCategories(
   ctx: SettingsRowContext,
 ): SettingsCategorySpec[] {
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
+    .filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
     .map((c) => ({
       ...c,
       rows: c.rows.filter(
-        (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+        (r) =>
+          (!r.available || r.available(ctx)) &&
+          parentSwitchOn(c, r, ctx.preferences) &&
+          // The workbench sets the frame's scheme (WB15), so the frame offers no choice of its own.
+          !(ctx.workbench && r.kind === 'appearance'),
       ),
     }))
     .filter((c) => c.rows.length > 0);
+}
+
+// What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
+// Surface table): the account and everything beyond the one document. A category nested under one
+// goes with it, so nothing is left without its parent.
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+
+function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
+  return (
+    WORKBENCH_HIDDEN_CATEGORIES.has(category.id) ||
+    (category.parent !== undefined && WORKBENCH_HIDDEN_CATEGORIES.has(category.parent))
+  );
 }
 
 // A row nested under a switch (`parent`) is offered only while that switch is

@@ -1,6 +1,10 @@
 'use client';
 
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { DEFERRED_AUTH_PENDING, useDeferredAuth } from '@/components/providers/deferred-auth';
+import {
+  useWorkbenchSession,
+  type WorkbenchSession,
+} from '@/components/providers/workbench-session-context';
 import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
 import { sessionsEnabled } from '@/lib/clerk-config';
@@ -60,14 +64,32 @@ type BootstrapResult = {
   clerkDisplayName: string | null;
 };
 
+// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
+// workbench", I9) is the session's person, settled at once: no guest migration, no timeout, no token
+// provider here (WorkbenchAuthBridge registers the session's).
+function workbenchResult(session: WorkbenchSession): BootstrapResult {
+  return {
+    isSignedIn: true,
+    authLoaded: true,
+    clerkUserId: session.person.id,
+    clerkDisplayName: session.person.name,
+  };
+}
+
+// Above the workbench page's editor the auth is held (DEFERRED_AUTH_PENDING): never settled, never a
+// guest, however long it waits.
+const HELD: BootstrapResult = {
+  isSignedIn: false,
+  authLoaded: false,
+  clerkUserId: null,
+  clerkDisplayName: null,
+};
+
 function useClerkApiBootstrapEnabled(): BootstrapResult {
-  const {
-    getToken,
-    isSignedIn,
-    authLoaded: clerkLoaded,
-    userId: clerkUserId,
-    user,
-  } = useDeferredAuth();
+  const workbench = useWorkbenchSession();
+  const auth = useDeferredAuth();
+  const held = workbench !== null || auth === DEFERRED_AUTH_PENDING;
+  const { getToken, isSignedIn, authLoaded: clerkLoaded, userId: clerkUserId, user } = auth;
 
   // If Clerk hasn't reported its state within 5 s, treat the session as
   // guest rather than hanging the canvas indefinitely. Corporate proxies
@@ -79,23 +101,23 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   // below re-runs, switching subsequent API calls to the JWT path.
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
-    if (clerkLoaded) return;
+    if (clerkLoaded || held) return;
     const id = window.setTimeout(() => setTimedOut(true), 5000);
     return () => window.clearTimeout(id);
-  }, [clerkLoaded]);
+  }, [clerkLoaded, held]);
   // 2. Guest → authed migration. Read as an external store, so the very
   // first signed-in render already holds `authLoaded` and settling
   // releases it (see subscribeGuestMigration for why a re-render alone
   // is not enough under the React Compiler).
   const migrating = useSyncExternalStore(
     subscribeGuestMigration,
-    () => !!isSignedIn && !!clerkUserId && guestMigrationPending(clerkUserId),
+    () => !held && !!isSignedIn && !!clerkUserId && guestMigrationPending(clerkUserId),
     () => false,
   );
   useEffect(() => {
-    if (!isSignedIn || !clerkUserId) return;
+    if (held || !isSignedIn || !clerkUserId) return;
     void settleGuestMigration(clerkUserId);
-  }, [isSignedIn, clerkUserId]);
+  }, [held, isSignedIn, clerkUserId]);
   const authLoaded = (clerkLoaded || timedOut) && !migrating;
 
   // First+Last takes precedence so we always present the form the
@@ -126,14 +148,20 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   // mount this hook, and one of them unmounting must leave the others'
   // Bearer in place (see registerTokenProvider).
   useLayoutEffect(() => {
-    if (!isSignedIn) return;
+    if (held || !isSignedIn) return;
     return registerTokenProvider((opts) => getToken(opts));
-  }, [isSignedIn, getToken]);
+  }, [held, isSignedIn, getToken]);
 
+  if (workbench) return workbenchResult(workbench);
+  if (held) return HELD;
   return { isSignedIn, authLoaded, clerkUserId, clerkDisplayName };
 }
 
 function useClerkApiBootstrapDisabled(): BootstrapResult {
+  const workbench = useWorkbenchSession();
+  const auth = useDeferredAuth();
+  if (workbench) return workbenchResult(workbench);
+  if (auth === DEFERRED_AUTH_PENDING) return HELD;
   // Stable stub for Clerk-disabled deployments. `authLoaded: true`
   // so anything gated on "has Clerk reported its state yet?" doesn't
   // wait forever; `isSignedIn: false` / `clerkUserId: null` keep the

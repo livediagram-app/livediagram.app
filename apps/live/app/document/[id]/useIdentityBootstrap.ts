@@ -34,6 +34,8 @@ import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { armLoadWatchdog, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
+import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
+import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -52,6 +54,9 @@ export function useIdentityBootstrap(opts: {
   clerkDisplayName: string | null | undefined;
   // The read-only embed view (docs/specs/013-workspace/embeds.md): its reads are not opens.
   embed: boolean;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md): the session
+  // names the document and the person; see workbench-bootstrap.ts.
+  workbench: WorkbenchSession | null;
   activeId: string;
   selfParticipant: Participant;
   refreshDocumentList: (ownerId: string) => void;
@@ -108,6 +113,7 @@ export function useIdentityBootstrap(opts: {
     clerkUserId,
     clerkDisplayName,
     embed,
+    workbench,
     activeId,
     selfParticipant,
     refreshDocumentList,
@@ -161,8 +167,8 @@ export function useIdentityBootstrap(opts: {
   // see seed-fetched-document.ts.
   const seedFetchedDocument = makeSeedFetchedDocument({
     activeId,
-    // An embed's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
-    recordOpen: !embed,
+    // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
+    recordOpen: !embed && workbench === null,
     resetTabs,
     lastSavedTabsRef,
     lastSavedNameRef,
@@ -197,6 +203,58 @@ export function useIdentityBootstrap(opts: {
     // forget, gated to once per browser per UTC day inside the helper,
     // so it's safe to run on every editor mount.
     trackDailyReturn(!!clerkUserId);
+    // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
+    // the load-error screen (after one self-healing reload per tab), and a load that lands after it
+    // replaces that screen with the editor.
+    const armWatchdog = () =>
+      armLoadWatchdog(
+        () => {
+          setLoadError(true);
+          setLoadingDocument(false);
+        },
+        { warn: (type) => track('Error', 'Warning', type) },
+      );
+    const run = (watchdog: ReturnType<typeof armLoadWatchdog>, load: () => Promise<void>) =>
+      void (async () => {
+        try {
+          await load();
+        } catch (err) {
+          // Anything the load throws outside its handled branches ends on the load-error screen, never
+          // on the opening screen forever.
+          console.error('[load] the document load threw', err);
+          track('Error', 'Client', errorTypeToken('DocumentLoad', errorNameToken(err)));
+          setLoadError(true);
+          setLoadingDocument(false);
+        } finally {
+          watchdog.finish();
+        }
+      })();
+    if (workbench) {
+      const watchdog = armWatchdog();
+      run(watchdog, async () => {
+        await loadWorkbenchDocument({
+          workbench,
+          seed: seedFetchedDocument,
+          lastPersistedSelfRef,
+          set: {
+            setSelfParticipant,
+            setDocumentId,
+            setDocumentTrashed,
+            setLoadError,
+            setDocumentNotFound,
+            setDocumentServerStored,
+            setIsOwner,
+            setSessionRole,
+            setNameConfirmed,
+            setHydrated,
+            setLoadingDocument,
+          },
+        });
+        setLoadStep('done');
+        if (watchdog.finish()) setLoadError(false);
+      });
+      return;
+    }
     // The post-mount hydration is async (the API is HTTP) so we run it
     // inside an IIFE. UI stays at the placeholder during the fetch;
     // the welcome modal is gated on `hydrated` so it doesn't flash the
@@ -233,16 +291,7 @@ export function useIdentityBootstrap(opts: {
       window.location.assign(`${window.location.origin}/new`);
       return;
     }
-    // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
-    // the load-error screen (after one self-healing reload per tab), and a load that lands after it
-    // replaces that screen with the editor.
-    const watchdog = armLoadWatchdog(
-      () => {
-        setLoadError(true);
-        setLoadingDocument(false);
-      },
-      { warn: (type) => track('Error', 'Warning', type) },
-    );
+    const watchdog = armWatchdog();
     const load = async () => {
       const id = initialId;
       const shareCodeParam = initialShareCode;
@@ -549,20 +598,7 @@ export function useIdentityBootstrap(opts: {
       setLoadStep('done');
       if (watchdog.finish()) setLoadError(false);
     };
-    void (async () => {
-      try {
-        await load();
-      } catch (err) {
-        // Anything the load throws outside its handled branches ends on the load-error screen, never
-        // on the opening screen forever.
-        console.error('[load] the document load threw', err);
-        track('Error', 'Client', errorTypeToken('DocumentLoad', errorNameToken(err)));
-        setLoadError(true);
-        setLoadingDocument(false);
-      } finally {
-        watchdog.finish();
-      }
-    })();
+    run(watchdog, load);
   });
   useLayoutEffect(() => {
     bootstrap();

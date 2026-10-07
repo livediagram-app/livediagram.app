@@ -136,6 +136,14 @@ export const EMBEDS_VIEWED = chart(
   { types: ['Embed'] },
 );
 
+export const WORKBENCH_SESSIONS = chart(
+  'Session',
+  'Opened',
+  'Workbench Sessions',
+  'A document opened inside a developer tool’s frame, signed in.',
+  { types: ['Workbench'] },
+);
+
 export const TIMERS_RESUMED = chart(
   'Tab',
   'Toggled',
@@ -485,6 +493,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
+    WORKBENCH_SESSIONS,
     LIVE_IMAGE_TABS,
   ],
   headline: [COLLABORATORS_JOINED, VIEWERS_JOINED],

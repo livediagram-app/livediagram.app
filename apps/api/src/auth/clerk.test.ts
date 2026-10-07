@@ -225,3 +225,39 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
     expect(forThisUrl).toHaveLength(1);
   });
 });
+
+// An API token (`lvd_`) or a workbench session (`lvw_`) is never a Clerk session token: it is not
+// handed to the verifier, which would only fail it and log `[auth] clerk_jwt_rejected` on every token
+// request (docs/specs/015-api/api.md "Auth"). It falls through to the token paths exactly as a
+// failed verification did, with null.
+describe('getClerkIdentity (token-shaped bearers)', () => {
+  const env = makeEnv('https://clerk.example/.well-known/jwks.json');
+
+  beforeEach(() => {
+    jwtVerifyMock.mockReset();
+    jwtVerifyMock.mockRejectedValue(Object.assign(new Error('bad'), { code: 'ERR_JWS_INVALID' }));
+  });
+
+  it.each([
+    ['an API token', `lvd_${'a'.repeat(43)}`],
+    ['a workbench session', `lvw_${'w'.repeat(43)}`],
+  ])('passes %s through to the token paths without verifying or logging', async (_kind, bearer) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(await getClerkIdentity(env, makeRequest(`Bearer ${bearer}`))).toBeNull();
+
+    expect(jwtVerifyMock).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('still verifies, and logs a refusal of, anything else', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(await getClerkIdentity(env, makeRequest('Bearer lvd_short'))).toBeNull();
+
+    expect(jwtVerifyMock).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith('[auth] clerk_jwt_rejected reason=ERR_JWS_INVALID');
+    warn.mockRestore();
+  });
+});

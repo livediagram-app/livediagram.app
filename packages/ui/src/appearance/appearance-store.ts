@@ -102,8 +102,25 @@ export function getAppearanceSetting(): AppearanceSetting {
   return current;
 }
 
+// A setting that wins over the stored one and is never stored: a workbench frame paints the scheme its
+// workbench sends (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB15), and System until
+// one arrives, whatever the frame's partitioned storage holds. Null hands back to the setting.
+let override: AppearanceSetting | null = null;
+
+// What is painted from: the override when set, else the stored setting.
+function effectiveSetting(): AppearanceSetting {
+  return override ?? getAppearanceSetting();
+}
+
 export function getResolvedAppearance(): Appearance {
-  return resolveAppearance(getAppearanceSetting());
+  return resolveAppearance(effectiveSetting());
+}
+
+export function setAppearanceOverride(next: AppearanceSetting | null): void {
+  override = next;
+  watchSystem();
+  applyAppearance(getResolvedAppearance());
+  listeners.forEach((l) => l());
 }
 
 // Always light on the server: the pre-hydration script applies the real value
@@ -139,7 +156,7 @@ function watchSystem(): void {
   watching = true;
   media.addEventListener('change', () => {
     // An explicit Light / Dark ignores the OS entirely; only System repaints.
-    if (getAppearanceSetting() !== 'system') return;
+    if (effectiveSetting() !== 'system') return;
     applyAppearance(getResolvedAppearance());
     listeners.forEach((l) => l());
   });
@@ -152,13 +169,14 @@ export function setAppearance(next: AppearanceSetting): void {
   current = next;
   writeStored(next);
   watchSystem();
-  applyAppearance(resolveAppearance(next));
+  applyAppearance(getResolvedAppearance());
   listeners.forEach((l) => l());
 }
 
 /** Test seam: drop the lazily-seeded value so the next read hits storage. */
 export function resetAppearanceForTests(): void {
   current = null;
+  override = null;
   mediaQuery = undefined;
   mediaQueryChecked = false;
   watching = false;

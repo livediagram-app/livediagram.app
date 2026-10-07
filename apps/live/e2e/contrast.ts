@@ -114,6 +114,10 @@ function auditInPage(rootSelector: string | null): ContrastReport {
     const style = getComputedStyle(el);
     if (style.visibility !== 'visible') continue;
     if (el.closest('[inert]')) continue;
+    if (el.closest('[data-logotype]')) {
+      skip('logotype'); // WCAG 1.4.3 sets text that is part of a logo no contrast minimum
+      continue;
+    }
     if (el.closest(':disabled, [aria-disabled="true"]')) {
       skip('disabled control'); // WCAG 1.4.3 exempts inactive components
       continue;

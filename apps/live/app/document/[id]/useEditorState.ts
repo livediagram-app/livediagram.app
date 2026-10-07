@@ -2,6 +2,11 @@
 
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
+import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
+import { surfaceFlags, type EditorSurface } from './editor-surface';
+import { useTabRevisions } from './useTabRevisions';
+import { useWorkbenchEnd } from './useWorkbenchEnd';
+import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
@@ -199,13 +204,17 @@ import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcas
 // The open tab's elements before the tabs load.
 const NO_ELEMENTS: readonly Element[] = [];
 
-export function useEditorState(opts: { embed?: boolean } = {}) {
-  // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
-  // regardless of the share role, suppresses the visitor identity
-  // screen, and EditorView swaps the chrome for the embed badge +
-  // tab switcher. Constant for the lifetime of the page (it comes
-  // from which route mounted us), so it's safe in derived consts.
-  const embedMode = opts.embed === true;
+export function useEditorState(opts: { surface?: EditorSurface } = {}) {
+  // Where the editor runs (editor-surface.ts). The read-only embed view (docs/specs/013-workspace/
+  // embeds.md) forces view behaviour regardless of the share role, suppresses the visitor identity
+  // screen, and EditorView swaps the chrome for the embed badge + tab switcher. A workbench
+  // (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a workbench") is signed in
+  // by its session and drops the app's surroundings and everything beyond its one document.
+  // Constant for the lifetime of the page (it comes from which route mounted us), so it's safe in
+  // derived consts.
+  const surface = opts.surface ?? 'app';
+  const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
+  const workbench = useWorkbenchSession();
   const initialTabs: Tab[] = [createTab('Tab 1')];
 
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
@@ -217,7 +226,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // hook so the page has one source of truth.
   const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
   // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(clerkUserId);
+  usePublishPicture(workbenchMode ? null : clerkUserId);
 
   const {
     tabs,
@@ -587,7 +596,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Not for the pre-hydration placeholder id, like the folders and preferences
   // hooks: that fetched the stars once for "self" and again for the real id.
   const { favouriteIds, toggleFavourite } = useFavourites(
-    selfParticipant.id === 'self' ? null : selfParticipant.id,
+    selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id,
   );
 
   const toggleRecentExclusion = (documentId: string) => {
@@ -621,7 +630,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     createFolder,
     renameFolder,
     deleteFolder: hookDeleteFolder,
-  } = useFolders(selfParticipant.id === 'self' ? null : selfParticipant.id);
+  } = useFolders(selfParticipant.id === 'self' || workbenchMode ? null : selfParticipant.id);
   const confirm = useConfirm();
   const toast = useToast();
   // Persistence-facing state: autosave status pill + savedAt, document
@@ -747,7 +756,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useDriveFollow({
     ownerId: selfParticipant.id === 'self' ? null : selfParticipant.id,
     documentId,
-    enabled: sessionShareCode === null && !embedMode,
+    enabled: sessionShareCode === null && appChrome,
     refreshDocumentList,
     setDocumentName,
     setDocumentTrashed: documentTrashed.setDocumentTrashed,
@@ -758,8 +767,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/live-app.md#role-pill).
+  // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
   const { viewPreview, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
-    sessionRole,
+    workbench?.ended ? 'view' : sessionRole,
     () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -778,7 +788,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     prefs: userPreferences,
     settled: prefsSettled,
     editable: hydrated && !isReadOnly,
-    embed: embedMode,
+    embed: !appChrome,
     zen: panelLayout.zenMode,
     apply: (next) => {
       setUserPreferences(next);
@@ -818,6 +828,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Per-tab autosave (debounced + beforeunload flush). See useAutosave;
   // the last-saved mirror refs above are seeded by the hydration effect.
+  // The last revision known per tab, for the workbench's selection reference.
+  const tabRevisions = useTabRevisions(realtime.changesetSeen.seen);
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
     documentId,
@@ -838,6 +850,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setDocumentList,
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
+    noteTabRevision: tabRevisions.noteSaved,
   });
 
   // Persist self only when name or color actually changed. Without
@@ -857,6 +870,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     clerkUserId,
     clerkDisplayName,
     embed: embedMode,
+    workbench,
     activeId,
     selfParticipant,
     refreshDocumentList,
@@ -904,14 +918,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
   });
   useEffect(() => {
-    if (!hydrated) return;
+    // The editor in a workbench never writes the participant record (I9).
+    if (!hydrated || workbenchMode) return;
     const prev = lastPersistedSelfRef.current;
     if (prev && prev.name === selfParticipant.name && prev.color === selfParticipant.color) {
       return;
     }
     lastPersistedSelfRef.current = { name: selfParticipant.name, color: selfParticipant.color };
     apiSaveSelf(selfParticipant).catch(() => {});
-  }, [hydrated, selfParticipant]);
+  }, [hydrated, selfParticipant, workbenchMode]);
 
   const selfParticipantRef = useRef(selfParticipant);
   useEffect(() => {
@@ -1081,7 +1096,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
-    enabled: realtime.sessionCommunity === null,
+    // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
+    enabled: realtime.sessionCommunity === null && !workbench?.ended,
+    onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -1175,12 +1192,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // accordion, team rows in Recent, the current team document —
   // docs/specs/013-workspace/team-shared-documents.md), so the data has to be present whenever the panel is.
   const { teams } = useTeams(clerkUserId ?? null, {
-    enabled: !!clerkUserId,
+    enabled: !!clerkUserId && !workbenchMode,
   });
   // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the document team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
-    ownerId: clerkUserId ?? null,
+    // A workbench reads no team and notifies no one.
+    ownerId: workbenchMode ? null : (clerkUserId ?? null),
     teams,
     documentTeamId,
     documentId,
@@ -1194,7 +1212,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     teamDocuments,
     refresh: refreshTeamLibraries,
   } = useTeamLibrariesSweep(clerkUserId ?? null, teams, {
-    enabled: !!clerkUserId,
+    enabled: !!clerkUserId && !workbenchMode,
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
@@ -1583,7 +1601,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
-  const { aiEnabled: aiCapable, emailEnabled } = useCapabilities(sharePasswordGate === null);
+  const capabilities = useCapabilities(sharePasswordGate === null);
+  const { emailEnabled } = capabilities;
+  // A workbench offers no AI: the person's agent sits beside it.
+  const aiCapable = capabilities.aiEnabled && !workbenchMode;
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
@@ -1772,6 +1793,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // their default guest identity silently.
   const joinScreenOpen =
     !embedMode &&
+    !workbenchMode &&
     hydrated &&
     loadedExistingDocument &&
     !nameConfirmed &&
@@ -2012,7 +2034,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addTypes: itemTypes.addTypes,
   });
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded, !!clerkUserId);
+  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded && !workbenchMode, !!clerkUserId);
   const plan = usePlanSlice({
     planItems,
     itemTypes,
@@ -2493,6 +2515,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     editsBlocked,
     isReadOnly,
     embedMode,
+    // Upload only in a workbench: no gallery read.
+    galleryHidden: workbenchMode,
     getViewportCenter,
     commit,
     setSelectedId,
@@ -3274,7 +3298,28 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       : null,
   });
 
+  // The workbench's side of the conversation, and the ends the editor learns of.
+  useWorkbenchMessages({
+    workbench,
+    hydrated,
+    documentId,
+    documentName,
+    tabs,
+    activeId,
+    sessionRole,
+    selection: selectionStore,
+    revOf: tabRevisions.revOf,
+    revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
+    reveals: changesetFeed.reveals,
+    selfColor: selfParticipant.color,
+  });
+  useWorkbenchEnd(workbench, documentTrashed.trashed);
+
   return {
+    surface,
+    workbenchMode,
+    appChrome,
+    workbench,
     // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
     changesetReveals: changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.

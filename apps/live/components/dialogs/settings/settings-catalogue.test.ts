@@ -184,6 +184,23 @@ describe('settings catalogue', () => {
     expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
   });
 
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+  it('leaves the account, documents, AI and tokens, and the Appearance choice, out of a workbench', () => {
+    const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
+    const categories = visibleCategories(true, ctx);
+    const ids = categories.map((c) => c.id);
+
+    for (const hidden of ['ai', 'documents', 'account', 'notifications', 'tokens']) {
+      expect(ids).not.toContain(hidden);
+    }
+    expect(ids).toContain('editor');
+    const appearance = categories.find((c) => c.id === 'appearance')!;
+    expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
+    expect(appearance.rows.length).toBeGreaterThan(0);
+    const app = visibleCategories(true, { ...ctx, workbench: false }).map((c) => c.id);
+    expect(app).toEqual(expect.arrayContaining(['ai', 'documents', 'account', 'tokens']));
+  });
+
   it('nests Notifications and API Tokens under Account, directly after it', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const at = ids.indexOf('account');
