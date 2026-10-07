@@ -45,6 +45,31 @@ that acts as the person on one document only.
    posts `livediagram:ticket`. Unrenewed, the session ends and the frame turns read-only with the line "Reconnect in
    <workbench> to keep editing."
 
+## Pairing
+
+A token mints tickets only for a workbench it is **paired** with: a pairing is one token and one origin, approved once
+by the token's owner in their own signed-in browser. A token that leaks (into CI, a log, another machine) therefore
+opens no session anywhere its owner has not approved.
+
+1. **Unpaired.** `POST /api/workbench/tickets` for an origin the token is not paired with answers
+   `428 pairing_required { pairingUrl, expiresAt }`. The pairing request behind it is single use and valid for
+   `WORKBENCH_PAIRING_TTL_MS`; a second unpaired mint for the same token and origin returns the same request while
+   it lives.
+2. **Ask.** `livediagram workbench pair --origin <origin> [--name <workbench>]` opens `pairingUrl` in the browser
+   (or prints it when it cannot) and waits for the answer, as `auth login --device` waits. `workbench open` refused
+   for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in livediagram".
+3. **Approve.** `<live origin>/workbench/pair?code=<code>` is an ordinary editor page (never framed), for a signed-in
+   person only, and only the token's owner may answer. It reads: "Allow **Spinner** at `https://127.0.0.1:5175` to
+   open your documents with the token **livediagram CLI**?", with **Allow** and **Don't allow**. The workbench name
+   is the one the CLI sent, shown beside the origin, which is what is enforced.
+4. **Paired.** Allow records the pairing; the waiting command exits 0 and the workbench mints again. Don't allow, or
+   an expired request, ends the wait with exit 4 and records nothing.
+
+- A pairing lives as long as its token: revoking the token removes its pairings.
+- **Settings > API tokens** lists each token's paired workbenches (name, origin, when paired), each with
+  **Unpair**, which ends that pairing's open sessions as revoking does.
+- Pairing is per origin, so Spinner on a laptop and on a LAN address pair separately.
+
 ## What a workbench session may do
 
 - **Act as the person, on one document.** Every request with `Authorization: Bearer lvw_...` resolves to the
@@ -121,6 +146,8 @@ The contract Spinner builds against (its own specs hold the detail):
   opens live (with its JSON one toggle away), and so does a livediagram document link in a transcript. Spinner's
   server mints through the operator's own CLI (`livediagram workbench open ... --origin <dashboard origin> --json`),
   so Spinner never holds a livediagram credential. A missing CLI or sign-in shows the one command that fixes it.
+- **Pairing.** An unpaired Spinner runs `livediagram workbench pair --origin <dashboard origin> --name Spinner` and
+  shows its URL as the "Approve in livediagram" button in the diagram tab, then opens the frame once it is paired.
 - **The composer chip.** While a diagram tab is the session's active file, the composer shows a chip naming the
   document and what is selected ("Home screen · 3 selected", or "Home screen · whole tab"). Sending attaches the
   selection reference to the message as text; the chip's × leaves it off that message.
@@ -135,11 +162,13 @@ The contract Spinner builds against (its own specs hold the detail):
 | `WORKBENCH_HANDSHAKE_MS`        | 5000     | A workbench answers at once; a frame nobody answers is not a workbench |
 | `WORKBENCH_SELECTION_SETTLE_MS` | 250      | One message per gesture, quicker than a person moves to the composer   |
 | `WORKBENCH_SELECTION_MAX_REFS`  | 20       | Matches agent presence's focus cap; more is a selector, not a list     |
+| `WORKBENCH_PAIRING_TTL_MS`      | 600000   | Ten minutes: time to switch to the browser and read the question       |
 | `WORKBENCH_TICKETS_PER_MINUTE`  | 30       | Per token; a workbench opens a few documents, never a stream of them   |
 
 ## Security
 
-- **Minting needs a token**, so no page can obtain a ticket for someone else; this is what makes a frameable,
+- **Minting needs a paired token**: a token alone opens nothing until its owner approves the workbench
+  ([Pairing](#pairing)), and no page can obtain a ticket for someone else, so no page can obtain a ticket for someone else; this is what makes a frameable,
   signed-in page safe from clickjacking, as the share code is for [embeds](embeds.md#frame-headers).
 - **A ticket is a bearer credential.** Redemption cannot tell a browser from a script, so what protects a ticket is
   that it is single use, lives `WORKBENCH_TICKET_TTL_MS` and travels only in a fragment. The origin binding is the
@@ -155,8 +184,10 @@ The contract Spinner builds against (its own specs hold the detail):
 
 ## Observability and telemetry
 
-- Api logs: `[workbench] ticket-minted`, `[workbench] session-opened`, `[workbench] session-refused` (with the
+- Api logs: `[workbench] pairing-requested`, `[workbench] paired`, `[workbench] pairing-declined`,
+  `[workbench] unpaired`, `[workbench] ticket-minted`, `[workbench] session-opened`, `[workbench] session-refused` (with the
   reason: `expired`, `used`, `unknown`), `[workbench] session-ended`, each with the document id and the token id.
 - Page logs: `[workbench] handshake-ok`, `[workbench] handshake-failed`, `[workbench] renewed`,
   `[workbench] message-ignored` (the type).
-- Telemetry: `Session·Opened·Workbench` when a page mounts the editor; `Cli·Used·WorkbenchOpen` for the command.
+- Telemetry: `Session·Opened·Workbench` when a page mounts the editor; `Cli·Used·WorkbenchOpen` and
+  `Cli·Used·WorkbenchPair` for the commands; `Token·Linked·Workbench` when a pairing is approved.
