@@ -3,17 +3,19 @@
 // The type editor's Display (docs/specs/026-plan/item-types.md "Editing a type": Display): where this type's cards
 // show each field, per card size, edited on the card itself. The preview is a real card of this type, drawn large as
 // a board draws it, with each part of the card a dotted box (an empty one reads its name) and each field's bit in it
-// a chip that drags (mouse, pen or touch) to another part or place, moves with the arrow keys, and comes off with its
-// cross. Available Fields lists the type's fields not on the card: drag one onto any part, or press it to pick a part
-// from a menu. Reset to Default puts a size back; a size equal to its default is stored as absent.
+// a chip that drags (mouse, pen or touch, `useCardFieldDrag`) to another part or place, a copy following the pointer
+// and a bar marking where it lands, moves with the arrow keys, and comes off with its cross or dropped on Available
+// Fields. Available Fields lists the type's fields not on the card: drag one onto any part, or press it to pick a
+// part from a menu. Reset to Default puts a size back; a size equal to its default is stored as absent.
 import {
+  isValidElement,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
-  type PointerEvent,
   type ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
   CARD_FIELDS,
   CARD_SIZES,
@@ -43,6 +45,7 @@ import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edi
 import { PlanCardFace, type CardFaceEdit } from './PlanCardFace';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planPalette } from './plan-palette';
+import { useCardFieldDrag } from './useCardFieldDrag';
 
 export type CardDisplayDraft = CardDisplay;
 
@@ -51,11 +54,10 @@ const SIZE_LABELS: Record<CardSize, string> = {
   compact: 'Compact',
   detailed: 'Detailed',
 };
-// The card's width on a board, and how much larger the editor draws it (CSS zoom, so its box grows too).
-const CARD_PX = 300;
-const CARD_ZOOM = 1.35;
-// How far a press travels before it is a drag (a shorter press is a click).
-const DRAG_START_PX = 4;
+// The card's width in the editor (wider than a board's 300, so a long title has room), and how much larger it is
+// drawn (CSS zoom, so its box grows too).
+const CARD_PX = 360;
+const CARD_ZOOM = 1.4;
 
 const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
 
@@ -106,8 +108,15 @@ const fieldIcon = (f: CardField, size = 14) =>
     <PlanTypeGlyph glyph={FIELD_GLYPHS[f]} size={size} />
   );
 
-type Drag = { field: CardField; startX: number; startY: number; moving: boolean };
-type Target = { slot: CardSlot; index: number };
+// Where a dragged field lands: a bar between chips.
+const DROP_MARKER = (
+  <span
+    key="drop-marker"
+    data-drop-marker=""
+    aria-hidden
+    className="h-5 w-[3px] shrink-0 self-center rounded-full bg-brand-500 shadow-[0_0_0_2px_rgba(14,165,233,0.2)] dark:bg-brand-400"
+  />
+);
 
 export function ItemTypeDisplay({
   type,
@@ -131,59 +140,32 @@ export function ItemTypeDisplay({
   const palette = planPalette(useCanvasSurface());
   const setLayout = (next: CardLayout) => onChange({ ...display, [size]: next });
 
-  // A drag, of a chip on the card or a field from Available Fields: where it would land, from the part of the card
-  // under the pointer and the chip centres in it.
   const card = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<Drag | null>(null);
-  const [target, setTarget] = useState<Target | null>(null);
+  const tray = useRef<HTMLElement>(null);
+  const { drag, target, overTray, dragProps, ghost, pointer } = useCardFieldDrag({
+    size,
+    card,
+    tray,
+    onDrop: (field, at) => setLayout(moveCardField(size, layout, field, at.slot, at.index)),
+    onTakeOff: (field) => setLayout(removeCardField(layout, field)),
+  });
   // The available field whose "where to?" menu is open, and the button it hangs from.
   const [placing, setPlacing] = useState<{ field: CardField; anchor: HTMLElement } | null>(null);
-  const targetAt = (field: CardField, x: number, y: number): Target | null => {
-    const zone = (document.elementsFromPoint?.(x, y) ?? [])
-      .map((el) => (el as HTMLElement).closest<HTMLElement>('[data-slot]'))
-      .find((el) => !!el && !!card.current?.contains(el));
-    const slot = zone?.dataset.slot as CardSlot | undefined;
-    if (!zone || !slot || !cardSlotFits(size, slot, field)) return null;
-    let index = 0;
-    for (const chip of zone.querySelectorAll<HTMLElement>('[data-chip]')) {
-      if (chip.dataset.chip === field) continue;
-      const r = chip.getBoundingClientRect();
-      const cy = r.top + r.height / 2;
-      if (cy < y - r.height / 2 || (Math.abs(cy - y) <= r.height / 2 && r.left + r.width / 2 < x))
-        index += 1;
+  // A chip already on the card is being dragged (Available Fields then takes it off).
+  const draggingPlaced = !!drag?.moving && placed.includes(drag.field);
+  // The part's chips with the landing bar among them, counted past the dragged chip as the drop counts.
+  const withMarker = (slot: CardSlot, bits: ReactNode[]): ReactNode[] => {
+    if (!drag?.moving || target?.slot !== slot) return bits;
+    const out: ReactNode[] = [];
+    let seen = 0;
+    for (const bit of bits) {
+      const dragged = isValidElement(bit) && bit.key === drag.field;
+      if (!dragged && seen++ === target.index) out.push(DROP_MARKER);
+      out.push(bit);
     }
-    return { slot, index };
+    if (!out.includes(DROP_MARKER)) out.push(DROP_MARKER);
+    return out;
   };
-  const endDrag = () => {
-    setDrag(null);
-    setTarget(null);
-  };
-  // Pointer handlers for anything that drags a field; `onClick` runs for a press that never moved.
-  const dragProps = (field: CardField, onClick?: (el: HTMLElement) => void) => ({
-    onPointerDown: (e: PointerEvent<HTMLElement>) => {
-      if (e.button !== 0) return;
-      try {
-        e.currentTarget.setPointerCapture?.(e.pointerId);
-      } catch {
-        // Not capturable: the drag still follows while over the chip.
-      }
-      setDrag({ field, startX: e.clientX, startY: e.clientY, moving: false });
-    },
-    onPointerMove: (e: PointerEvent<HTMLElement>) => {
-      if (!drag || drag.field !== field) return;
-      const moving =
-        drag.moving || Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > DRAG_START_PX;
-      if (moving !== drag.moving) setDrag({ ...drag, moving });
-      if (moving) setTarget(targetAt(field, e.clientX, e.clientY));
-    },
-    onPointerUp: (e: PointerEvent<HTMLElement>) => {
-      if (drag?.moving) {
-        if (target) setLayout(moveCardField(size, layout, field, target.slot, target.index));
-      } else if (onClick) onClick(e.currentTarget);
-      endDrag();
-    },
-    onPointerCancel: endDrag,
-  });
   // The keyboard's way on the card: Left and Right move a chip within its part, Up and Down to the part before or
   // after, Delete or Backspace takes it off.
   const chipKeys = (field: CardField, slot: CardSlot) => (e: KeyboardEvent<HTMLElement>) => {
@@ -230,7 +212,9 @@ export function ItemTypeDisplay({
                 : 'border-slate-300 dark:border-slate-600'
           }`}
         >
-          {bits.length === 0 ? (
+          {lit ? (
+            withMarker(slot, bits)
+          ) : bits.length === 0 ? (
             <span className="whitespace-nowrap px-0.5 text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {label}
             </span>
@@ -262,11 +246,15 @@ export function ItemTypeDisplay({
             aria-label={`Take ${label} off the card`}
             tabIndex={-1}
             // A touch screen has no hover: there the cross always shows.
-            className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow group-hover/chip:flex group-focus-visible/chip:flex pointer-coarse:flex dark:bg-slate-200 dark:text-slate-900"
+            className={`absolute -right-2 -top-2 z-10 hidden h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow ring-2 ring-white hover:bg-red-600 dark:bg-slate-200 dark:text-slate-900 dark:ring-slate-900 dark:hover:bg-red-400 ${
+              drag?.moving
+                ? ''
+                : 'group-hover/chip:flex group-focus-visible/chip:flex pointer-coarse:flex'
+            }`}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setLayout(removeCardField(layout, field))}
           >
-            <CloseIcon size={8} />
+            <CloseIcon size={10} />
           </button>
         </span>
       );
@@ -277,7 +265,7 @@ export function ItemTypeDisplay({
     <div className="flex flex-col gap-3">
       <p className="text-[12px] text-slate-500 dark:text-slate-400">
         Arrange this type&apos;s cards at each size, right on the card: drag a field to any part of
-        it, or take it off with its cross.
+        it, or off it (onto Available Fields, or with its cross).
       </p>
       <div
         role="radiogroup"
@@ -301,13 +289,17 @@ export function ItemTypeDisplay({
           </button>
         ))}
       </div>
-      <div className="grid gap-5 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start">
-        {/* The card, editable in place, on a board column's colour. */}
-        <div className="self-start rounded-xl p-4" style={{ backgroundColor: palette.column }}>
+      <div className="flex flex-col gap-4">
+        {/* The card, editable in place, on a board column's colour; scrolls sideways on a narrow screen. */}
+        <div
+          className="flex justify-center overflow-x-auto rounded-xl px-4 py-6"
+          style={{ backgroundColor: palette.column }}
+        >
           <div
             ref={card}
             role="group"
             aria-label={`${SIZE_LABELS[size]} card`}
+            className="shrink-0"
             style={{ width: CARD_PX, zoom: CARD_ZOOM }}
           >
             <PlanCardFace
@@ -321,11 +313,25 @@ export function ItemTypeDisplay({
           </div>
         </div>
         <div className="flex min-w-0 flex-col gap-3">
-          <section aria-label="Available Fields" className="flex flex-col gap-1.5">
+          <section
+            ref={tray}
+            aria-label="Available Fields"
+            className={`flex flex-col gap-1.5 rounded-xl border border-dashed p-3 transition-colors ${
+              overTray && draggingPlaced
+                ? 'border-solid border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-500/15'
+                : draggingPlaced
+                  ? 'border-brand-300 dark:border-brand-500/60'
+                  : 'border-transparent'
+            }`}
+          >
             <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Available Fields
             </h4>
-            {available.length === 0 ? (
+            {draggingPlaced ? (
+              <p className="py-1 text-[12px] font-medium text-brand-700 dark:text-brand-300">
+                Drop to take it off the card
+              </p>
+            ) : available.length === 0 ? (
               <p className="text-[12px] text-slate-500 dark:text-slate-400">
                 Every field this type has is on the card.
               </p>
@@ -382,6 +388,25 @@ export function ItemTypeDisplay({
           </div>
         </div>
       </div>
+      {drag?.moving && typeof document !== 'undefined'
+        ? createPortal(
+            // The field under the pointer while it drags: its glyph and name, just below and right of the pointer, clear of where it lands.
+            <div
+              ref={ghost}
+              aria-hidden
+              className="pointer-events-none fixed left-0 top-0 z-[var(--z-toast)]"
+              style={{ transform: `translate(${pointer.current.x}px, ${pointer.current.y}px)` }}
+            >
+              <span className="ml-4 mt-4 inline-flex -rotate-2 items-center gap-1.5 rounded-lg border border-brand-300 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-800 shadow-lg dark:border-brand-500/60 dark:bg-slate-900 dark:text-slate-100">
+                <span className="flex h-5 w-5 items-center justify-center rounded bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+                  {fieldIcon(drag.field, 12)}
+                </span>
+                {CARD_FIELD_LABELS[drag.field]}
+              </span>
+            </div>,
+            document.body,
+          )
+        : null}
       {placing ? (
         <AnchoredPopover
           anchor={placing.anchor}
