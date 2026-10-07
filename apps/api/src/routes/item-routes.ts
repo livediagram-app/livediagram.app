@@ -99,15 +99,10 @@ const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
 // status out can still be made, it just never moves), a card already in one is never moved out by this, and a type
 // change that keeps its status is let through. Putting a change back is never refused either: a trashed card
 // restored to the status it was trashed from, and an undo or redo (`undo` set: the body's `undo: true`).
-function excludedStatus(
-  caller: ItemCaller,
-  next: Item,
-  before: Item | null,
-  undo: boolean,
-): boolean {
+function excludedStatus(caller: ItemCaller, next: Item, before: Item, undo: boolean): boolean {
   const status = itemStatus(next);
-  if (undo || !status || (before && itemStatus(before) === status)) return false;
-  if (before && isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
+  if (undo || !status || itemStatus(before) === status) return false;
+  if (isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
   const type = typeIn(typesOf(caller.doc?.itemTypes), next.type);
   return !typeAllowsStatus(type, status);
 }
