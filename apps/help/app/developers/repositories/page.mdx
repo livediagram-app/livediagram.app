@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Diagrams in Your Repository',
+  description:
+    'Link a code repository to livediagram with livediagram.toml, so coding agents find your diagrams with a search and read them through the CLI, with optional snapshots kept in git.',
+  path: '/help/developers/repositories/',
+});
+
+<ArticleLayout
+  title="Diagrams in Your Repository"
+  description="Link a repository to a folder or documents, so agents find your diagrams and git keeps snapshots of them."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+A **repository link** binds a directory in your code repository to documents in livediagram. Coding agents look for context by searching the files in front of them, and a diagram that only lives behind a link is invisible to them. Once a repository is linked, they find your diagrams by name, read them as text through the [CLI](/help/developers/cli/), and can change them while you watch.
+
+livediagram stays the home of every document. What the repository holds is a **snapshot** at a known revision, never a second copy you edit in parallel.
+
+## Link a Repository
+
+Run this in the repository (or in one package of a monorepo), signed in to the [CLI](/help/developers/cli/):
+
+```bash
+livediagram link init --folder "Minigames" --level files
+```
+
+It writes `livediagram.toml` beside you. In a terminal, leaving out `--folder` shows a list of your folders to pick from; in a script it lists them as commands instead. `--doc` links single documents, and you can repeat it or combine it with a folder.
+
+```toml
+host = "https://livediagram.app"
+
+[covers]
+folder = "fld_8k2m4q"          # this folder and its subfolders
+documents = ["doc_3h9x2a"]     # and these documents, wherever they live
+
+[mirror]
+level = "files"                # none | index | files
+dir = "docs/diagrams"
+```
+
+Commit `livediagram.toml`. It holds ids and settings, never a credential: someone without access to your documents gains nothing from it.
+
+## Choose How Much Lands in the Repository
+
+| Level   | A sync writes                                              | Good for                                      |
+| ------- | ---------------------------------------------------------- | --------------------------------------------- |
+| `none`  | Nothing                                                    | Projects that only use the CLI                |
+| `index` | `INDEX.md`: every document, its tabs and its link          | Agents finding diagrams by name (the default) |
+| `files` | `INDEX.md`, plus a snapshot and a text outline per diagram | Reading diagrams offline, in reviews and git  |
+
+At `files`, each document gets a `.livediagram.json` snapshot (one element per line, so a change is a one-line diff) and a `.md` outline that an agent reads at a fraction of the size. Both open with a line saying they are generated.
+
+## Sync
+
+```bash
+livediagram sync              # write what changed
+livediagram sync --watch      # keep the files in step until Ctrl-C
+livediagram link status       # each document and whether it is in step
+```
+
+A sync writes newer snapshots, adds documents that joined the folder and removes the files of documents that left it or went to the Trash. Git history keeps what was removed. With `--watch`, the files follow within a moment of each change in the editor.
+
+Snapshots are for reading. If a snapshot was changed by hand, the sync leaves it alone and names it, so nothing you wrote is lost; send it back with `livediagram push <file>`. A file that git left with conflict markers is held back the same way until you keep one side.
+
+A teammate syncing with their own sign-in only reaches what they can open. A document they cannot open stays exactly as committed.
+
+## Several Repositories
+
+A link can cover a team folder, so several repositories can link the same diagrams, or a single repository can hold your diagrams for everything else. Each repository keeps its own snapshot; livediagram keeps the one document.
+
+## Public Repositories
+
+Snapshots are as public as the repository they are committed to. `link init` reminds you when the repository has a remote. Choose `index` or `none` if the diagrams themselves should stay private.
+
+</ArticleLayout>

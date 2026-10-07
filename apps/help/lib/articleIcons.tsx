@@ -62,6 +62,24 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 15h5" />
     </Glyph>
   ),
+  // A branch splitting from a trunk: the article is about diagrams living in a git repository.
+  repositories: (
+    <Glyph>
+      <circle cx="6" cy="5" r="2" />
+      <circle cx="6" cy="19" r="2" />
+      <circle cx="18" cy="8" r="2" />
+      <path d="M6 7v10" />
+      <path d="M18 10c0 4-6 3-12 7" />
+    </Glyph>
+  ),
+  // A window with a smaller pane framed inside it: a diagram open inside another tool.
+  workbenches: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" />
+      <path d="M2.5 8h19" />
+      <rect x="10" y="11" width="8.5" height="6" rx="1" />
+    </Glyph>
+  ),
   // ---- Account and data ----
   // A ticket with the secret punched into it. The key belongs to
   // `authentication`, which is the article about using one.

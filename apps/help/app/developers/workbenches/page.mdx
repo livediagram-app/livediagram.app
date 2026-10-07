@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Diagrams in Your Developer Tools',
+  description:
+    'Open a livediagram document live inside a developer tool beside your coding agent, signed in as you: pair the tool once, then draw, select and talk to the agent about what you selected.',
+  path: '/help/developers/workbenches/',
+});
+
+<ArticleLayout
+  title="Diagrams in Your Developer Tools"
+  description="Draw in a document inside your developer tool, signed in, and talk to your agent about what you select."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+A **workbench** is a developer tool that shows a livediagram document live beside a coding agent, such as Spinner. You draw in the editor right there, everything reaches livediagram at once, and when you type a message to your agent, the tool attaches what you had selected so the agent reads exactly those elements.
+
+The editor in a workbench is signed in as you, for one document at a time. It has the canvas, the tab bar, the palette and the panels; account settings, sharing and your document library stay in livediagram itself, one click away through **Open in livediagram**.
+
+## Pair a Workbench Once
+
+A workbench opens your documents through your [CLI](/help/developers/cli/) sign-in, and only after you have allowed it. The first time, the tool asks you to approve it, or you can pair it yourself:
+
+```bash
+livediagram workbench pair --origin https://127.0.0.1:5175 --name Spinner
+```
+
+Your browser opens a page asking **Allow Spinner at `https://127.0.0.1:5175` to open your documents?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
+
+Pairing belongs to one CLI sign-in and one address. If someone obtained your token, it would still open nothing in a tool you never allowed.
+
+## Open a Document
+
+The workbench does this for you when you open a diagram in it. By hand:
+
+```bash
+livediagram workbench open "Home screen" --origin https://127.0.0.1:5175 --json
+```
+
+It prints a link that works once, within a minute, and only inside the workbench at that address. Opened anywhere else, the page shows **This view opens only inside** the workbench's address and does nothing.
+
+## Talk to Your Agent About a Selection
+
+Select elements, then type your message. The workbench adds a short block to it, naming the document, the tab and each selected element, for example:
+
+```text
+[livediagram] "Home screen" › tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
+selected: button 146b "Play", frame e4a8 "Game grid"
+read: livediagram tab view 3h9x2a --tab 0b34 --view show --ref 146b
+```
+
+With nothing selected, it names the whole tab. The block is plain text in your message, nothing hidden. Your agent reads the elements with the CLI and its changes appear in the editor as you watch, with an **Undo** on each.
+
+## Stop or Unpair
+
+A workbench session lasts a working day and renews itself while the tool is open. To stop a tool for good, go to **Settings**, then **API Tokens** under **Account**: each token lists its **Paired workbenches**, and **Unpair** turns their open diagrams read-only straight away. Revoking the token does the same for every tool it paired.
+
+</ArticleLayout>
