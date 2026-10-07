@@ -6,6 +6,7 @@ import {
   searchFilterLabel,
   searchValues,
 } from './card-search';
+import { ITEM_TYPES } from './item-types';
 import { ALI, item } from './test-items';
 
 // docs/specs/026-plan/plan-views.md "Card Search".
@@ -63,5 +64,29 @@ describe('card search', () => {
     expect(isCardSearchFilters([{ by: 'none', key: '' }])).toBe(false);
     expect(isCardSearchFilters([{ by: 'field', key: 'x' }])).toBe(false);
     expect(isCardSearchFilters('nope')).toBe(false);
+  });
+
+  it('names a custom field filter by its field, and an unknown value by its key', () => {
+    const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const sized = {
+      ...task,
+      fields: [...task.fields, 'c-size'],
+      custom: [{ id: 'c-size', label: 'Size', kind: 'choice' as const, options: ['S', 'M'] }],
+    };
+    const withSize = [item({ title: 'X', 'c-size': 'M' } as never)];
+    expect(
+      searchFilterLabel({ by: 'field', field: 'c-size', key: 'gone' }, withSize, [sized]),
+    ).toEqual({ field: 'Size', value: 'gone' });
+    expect(searchFilterLabel({ by: 'field', field: 'nope', key: '' }, [], [sized])).toEqual({
+      field: 'nope',
+      value: 'Empty',
+    });
+  });
+
+  it('refuses a stored filter with a malformed field or key', () => {
+    expect(isCardSearchFilters([{ by: 'field', field: '', key: 'x' }])).toBe(false);
+    expect(isCardSearchFilters([{ by: 'status', field: 7, key: 'x' }])).toBe(false);
+    expect(isCardSearchFilters([{ by: 'status', key: 'x'.repeat(201) }])).toBe(false);
+    expect(isCardSearchFilters([null])).toBe(false);
   });
 });

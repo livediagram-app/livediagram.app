@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cardDisplayFields,
   cardLayoutFields,
   cardSlotFits,
   defaultCardLayout,
-  defaultCardSlot,
   readCardDisplay,
+  sameCardLayout,
   typeCardDisplay,
   typeOffersCardField,
 } from './card-display';
@@ -53,13 +54,13 @@ describe('card display', () => {
     expect(ok.ok && ok.catalogue.types[0]!.display).toEqual({ compact: { row: ['key'] } });
   });
 
-  it('places a default where a board drew it, and adds a field to its default slot', () => {
+  it('places a default where a board drew it, and says what each size can draw', () => {
     expect(defaultCardLayout('task', 'detailed')).toMatchObject({
       head: ['type', 'key'],
       headEnd: ['priority'],
       body: ['parent', 'description', 'labels'],
     });
-    expect(defaultCardSlot('detailed', 'due')).toBe('foot');
+    expect(cardDisplayFields('minimal')).toEqual(['key', 'priority', 'due', 'assignee']);
     expect(cardSlotFits('detailed', 'foot', 'description')).toBe(true);
     expect(cardSlotFits('compact', 'row', 'description')).toBe(false);
   });
@@ -68,5 +69,14 @@ describe('card display', () => {
     const note = ITEM_TYPES.find((t) => t.id === 'note')!;
     expect(typeOffersCardField(note, 'key')).toBe(true);
     expect(typeOffersCardField(note, 'assignee')).toBe(false);
+  });
+
+  it('compares layouts slot by slot, order included', () => {
+    expect(sameCardLayout('compact', { row: ['due', 'votes'] }, { row: ['due', 'votes'] })).toBe(
+      true,
+    );
+    expect(sameCardLayout('compact', { row: ['due', 'votes'] }, { row: ['votes', 'due'] })).toBe(
+      false,
+    );
   });
 });

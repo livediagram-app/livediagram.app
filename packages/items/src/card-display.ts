@@ -46,12 +46,6 @@ export function cardDisplayFields(size: CardSize): readonly CardField[] {
   return CARD_SIZE_FIELDS[size];
 }
 
-// The slot a field goes to when added.
-export function defaultCardSlot(size: CardSize, field: CardField): CardSlot {
-  for (const slot of CARD_SLOTS[size]) if (DRAWN[size][slot]?.includes(field)) return slot;
-  return CARD_SLOTS[size].at(-1)!;
-}
-
 // Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where).
 export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): boolean {
   return CARD_SLOTS[size].includes(slot) && CARD_SIZE_FIELDS[size].includes(field);
