@@ -18,7 +18,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 What you do NOT need:
 
 - Clerk: auth is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With Clerk configured, the api worker reaches `CLERK_JWKS_URL` to verify Bearer tokens — an outbound call only on the auth path.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), OpenAI for the AI assistant ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the AI features ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -198,7 +198,7 @@ Turning telemetry on end-to-end takes BOTH the server gate above AND a build-tim
 
 If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret on both `apps/api` and `apps/mcp` (`wrangler secret put INTERNAL_EVENTS_KEY` in each). The MCP worker reaches the api over a service binding, which carries no `CF-Connecting-IP`, so without a matching key its telemetry lands in the anonymous per-IP rate-limit bucket and throttles itself. Leaving it unset is safe and needs no configuration — you just get the shared-bucket behaviour.
 
-## AI assistance: off by default, needs an OpenAI key
+## AI assistance: off by default, needs a model key
 
 The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
 
@@ -233,11 +233,11 @@ reader prefers Google, each falling back to whichever key exists, and
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your OpenAI budget. The hosted livediagram.app sets both; a private or Clerk-less fork can leave them unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets both; a private or Clerk-less fork can leave them unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
 
 ## Email (optional, Resend)
 
-The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in, week-1 (Explorer) and week-2 (Teams) onboarding tips off the daily cron, plus transactional team-invite and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
+The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
 
 To turn it on, verify a sending domain in Resend, then:
 

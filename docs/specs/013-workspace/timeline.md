@@ -138,7 +138,7 @@ existing `ExplorerPane` dispatch.
 ```
 
 **Day rail.** A dot and a connecting line down the left, one group per
-calendar day (UTC), newest first. Today's dot is brand-500 with a soft
+calendar day in the reader's local timezone (`dateKey`), newest first. Today's dot is brand-500 with a soft
 ring and its label carries a **Today** pill. Days in the future (a share
 link expiring, a token expiring) sit above Today with a violet-tinted
 dot and rail.
@@ -452,13 +452,12 @@ the mode buttons in §2.2.
   day-group into view and pulses it with a fading box-shadow — box-shadow
   only, never a transform, because transforming the group promotes it to its
   own compositing layer and tearing that layer down at animation end makes
-  the cards visibly blink. **Calendar** moves the grid to that day's month;
-  **week** moves it to the week containing it.
+  the cards visibly blink. **Calendar** moves the grid to that day's month.
 
   The mode split is not a nicety: the scroll target and the pulse are both
   rendered by the day groups, and only list mode renders those, so a
   scroll-and-pulse-only implementation left this control — offered in the
-  header in all three modes — doing nothing at all in two of them.
+  header in both modes — doing nothing at all in one of them.
 
 - **Show more** appends the next page when the read returns a cursor.
   Page size 50, capped server-side at 200.

@@ -25,12 +25,21 @@ Arrows are how a diagram turns a pile of shapes into a flow, a hierarchy, or a r
 
 ## Drawing and connecting
 
-An arrow links two points on the canvas. An arrow's endpoint can sit freely, pin to a shape's connection anchor (so it tracks the shape as it moves), or attach along another arrow. Drag from a shape's edge to quick-connect, or drop an arrow from the palette and position its ends by hand. The palette's **Arrow** has a pointer at its end; its **Line** has none.
+An arrow links two points on the canvas. An arrow's endpoint can sit freely, pin to one of a shape's connection points (so it tracks the shape as it moves), or attach along another arrow. On a selected arrow, a pinned end's handle is filled and a free end's is hollow.
+
+There are two ways to draw one:
+
+- **Quick-connect**: select a shape, click one of the **+** buttons on its sides, and press-drag the ring's **Arrow** option onto the target shape. On a touch screen, tap **Arrow** and then tap the target.
+- **From the palette**: add an **Arrow** (or press `A`) and drag its ends onto the shapes you want to join. The palette's **Arrow** has a pointer at its end; its **Line** has none.
+
+Drag an end near a shape and the shape's connection points light up; let go near one and the end pins there. Hold **Cmd** or **Ctrl** while dragging an end to place it freely, with no snapping.
 
 Two Shift tricks make fanning out fast:
 
 - **Shift-chain**: hold **Shift** while a quick-connect arrow's endpoint lands and a fresh arrow immediately starts from the same spot on the source, so a hub can point at several targets in one flow. A plain click places the last one.
-- **Shift-fork**: hold **Shift** and drag a selected arrow's **head** to peel a branch off its line, one trunk that splits toward a second target instead of a parallel near-duplicate arrow.
+- **Shift-fork**: hold **Shift** and drag a selected arrow's **head** to peel a branch off its line, one trunk that splits toward a second target instead of a parallel near-duplicate arrow. The branch takes the trunk's colour, weight and pattern.
+
+When a new arrow's straight line would cut through another shape, it lands with a gentle bow around it instead; see [Arrows That Curve Around Things](/help/palette/arrows/avoiding-elements/). As you move shapes later, [Auto-Attach Arrows](/help/palette/auto-attach-arrows/) keeps an arrow from running through the shapes it connects.
 
 <Figure caption="Arrows of different styles wiring shapes into a flow.">
   <ArrowsConnecting />
@@ -38,23 +47,29 @@ Two Shift tricks make fanning out fast:
 
 ## Styling the line
 
-From the arrow's context menu you can set its line style, thickness, dash pattern, and arrowheads, add a label, and choose whether it **passes behind boxes** it crosses (on by default). When several arrows connect to the same point on a box, they spread out a little so their ends don't pile up; turn on **Start at exact anchor** for an arrow to keep its start exactly where you connected it. The controls are independent, so you can mix any line with any head. See [Arrow styles](/help/palette/arrows/arrow-styles/) for the full set.
+From the arrow's right-click menu you can set its line style, thickness, dash pattern, colour and arrowheads, and choose whether it **passes behind boxes** it crosses (on by default). Double-click an arrow to give it a label. When several arrows connect to the same point on a box, they spread out a little so their ends don't pile up; turn on **Start at exact anchor** for an arrow to keep its start exactly where you connected it. The controls are independent, so you can mix any line with any head. See [Arrow styles](/help/palette/arrows/arrow-styles/) for the full set.
 
 ## Shaping the path
 
-Drag an arrow's line to bend it where you grabbed it, or use the handle on a curved or angled arrow to bow a curve or position an elbow exactly, without breaking the arrow's connections.
+Drag an arrow's line to bend it where you grabbed it, or use the handle on a curved or angled arrow to bow a curve or position an elbow exactly, without breaking the arrow's connections. An arrow attached to nothing at either end shows a selection frame instead: drag its edge to move the whole arrow, or a handle to scale it.
 
 <Figure caption="Dragging the handle on a curved arrow bows its path by hand.">
   <CurveElbowHandles />
 </Figure>
 
 <FeatureGrid>
-  <Feature slug="arrows" title="Curve and elbow handles">
-    Drag the handle on a curved or angled arrow to shape its path by hand.
+  <Feature slug="arrow-styles" title="Arrow Styles">
+    Line style, thickness, pattern, colour and arrowheads, all set independently.
   </Feature>
-  <Feature slug="arrows" title="Connecting arrows to arrows">
+  <Feature slug="curve-and-elbow-handles" title="Curve and Elbow Handles">
+    Drag the line, or the handle on a curved or angled arrow, to shape its path by hand.
+  </Feature>
+  <Feature slug="arrow-to-arrow" title="Connecting Arrows to Arrows">
     Snap an arrow endpoint to a point along another arrow, the sequence-diagram pattern, and it
     rides along as the line moves.
+  </Feature>
+  <Feature slug="avoiding-elements" title="Arrows That Curve Around Things">
+    Why a new arrow sometimes lands with a bow, and how to straighten it.
   </Feature>
 </FeatureGrid>
 

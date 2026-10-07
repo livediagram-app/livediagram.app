@@ -19,7 +19,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 ```
 src/glyphs.ts          PLAN_GLYPHS, PLAN_GLYPH_IDS, planGlyphPath, isPlanGlyphId
 src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FIELD_IDS, REQUIRED_TYPE_FIELDS,
-                       typesOf, typeIn, typeByNameIn, customFieldOf, isBuiltInFieldId, slugOf,
+                       typesOf, typeIn, customFieldOf, isBuiltInFieldId, slugOf,
                        newItemTypeId, newCustomFieldId, defaultNewTitle, validateItemTypeCatalogue,
                        readItemTypeCatalogue, builtInCatalogue
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
@@ -34,8 +34,7 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
 - `projectBoard(setup, items, quick?, types = ITEM_TYPES)`, `itemAccessibleName(item, types?)`,
-  `parseQuickAdd(text, people?, types?)`: the catalogue where they name or order types. Quick add's prefix is
-  `/^([A-Za-z][A-Za-z0-9 -]{0,31}):\s*/`, kept only when it names a type.
+  `boardAddTypes(setup, types)`: the catalogue where they name or order types.
 
 ## Data and persistence
 
@@ -127,7 +126,6 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 | Rule                                                     | Test                                                      |
 | -------------------------------------------------------- | --------------------------------------------------------- |
 | Catalogue checks, ids, read-back, glyphs                 | `packages/items/src/type-catalogue.test.ts`               |
-| Quick add's type names                                   | `packages/items/src/quick-add.test.ts`                    |
 | Route: store, relay, null, refusals, gates, copy, create | `apps/api/src/routes/item-routes.test.ts`                 |
 | Scoped sessions hear the op                              | `apps/api/src/room-scope.test.ts`                         |
 | Card tiles follow the catalogue                          | `apps/live/components/palette/palette-plan-tiles.test.ts` |

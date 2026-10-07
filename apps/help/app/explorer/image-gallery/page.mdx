@@ -1,11 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ImageGallery } from '@/components/illustrations/explorer';
+import { GalleryCards } from '@/components/illustrations/explorer-imports';
 
 export const metadata = helpMetadata({
   title: 'Image Gallery',
   description:
-    'The Image gallery in the Explorer Library holds every image you have uploaded, shows where each is used, and lets you delete the ones you no longer need.',
+    'The Image gallery in the Explorer Library holds every image you have uploaded, shows where each is used, and lets you upload new ones or delete the ones you no longer need.',
   path: '/help/explorer/image-gallery/',
 });
 
@@ -16,33 +16,39 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The **Image gallery** lives under **Library** in the Explorer sidebar's More group and collects every image you have uploaded. It is the companion to placing [images](/help/palette/tools/images/) on the canvas: the canvas is where you use them, and the gallery is where you manage them.
+The **Image gallery** lives under **Library** in the Explorer sidebar's More group and collects every image you have uploaded. It is the companion to placing [images](/help/palette/tools/images/) on the canvas: the canvas is where you use them, and the gallery is where you manage them. Images you bring in with an import (draw.io, Microsoft Whiteboard, Excalidraw) land here too.
 
 ## What it shows
 
-Each uploaded image appears as a thumbnail with a **Used in** badge derived from where it is referenced, so you can tell at a glance which images are doing work and which are orphaned bytes safe to remove. You can upload a new image straight from the gallery, the same way you would from the canvas.
+Each image appears as a card with its name, its size in pixels and on disk, and a badge saying where it is used:
 
-<Figure caption="Each thumbnail carries a used-in badge and a delete control, so unused uploads are easy to spot and clear.">
-  <ImageGallery />
+- **Used in 2 documents** (or however many) means a document of yours still shows it. Click the badge to list those documents, each a link that opens it.
+- **Not used** means none of your documents points at it, so it is usually safe to delete.
+
+<Figure caption="Each card shows the image, its size, a delete button and a badge saying where it is used.">
+  <GalleryCards />
 </Figure>
+
+To add an image, drop it, paste it, or click the **Drop, paste, or click to upload an image** area at the top. It uses the same checks as uploading from the canvas: one image can be up to 10 MB, and an image you already have is not stored twice.
 
 ## Deleting images
 
-Delete an image you no longer need to reclaim the space. If an image is still used in one or more documents, the delete confirmation warns you first: those tiles will show as broken images afterwards, and the removal cannot be undone. Images nothing references can be cleared without that risk.
+Press the bin on a card to delete an image and reclaim the space. The confirmation tells you what will happen: if the image is still used in one or more documents, it warns that those images will show as broken afterwards; otherwise it says the image will be removed for good. Either way, a deleted image cannot be brought back.
 
 ## Automatic cleanup of unused images
 
 You do not have to keep on top of this by hand. Once a day, livediagram removes uploads that are **both** more than **30 days old** and **used in no document**, freeing the storage automatically. The 30-day window is deliberately generous: an image you uploaded recently, or one any document still references, is always left alone, so a picture you have not placed on the canvas yet is never swept out from under you. An image in use stays put no matter how old it is.
 
-## Signed-in feature
+## Who has a gallery
 
-The gallery is tied to your account, so it is available when you are signed in and on deployments where image uploads are enabled. If uploads are turned off for a deployment, the gallery says so rather than failing silently.
+Everyone does, signed in or not. A guest's gallery belongs to their browser, like their documents, and moves to their account when they [sign up](/help/account-and-data/signing-in/). The gallery is also reachable from the editor's Explorer panel, under the same **Library** row.
+
+On livediagram.app a gallery holds up to 100 images and 100 MB in total; a self-hosted copy sets its own limits, or none. If image uploads are turned off for a deployment, the gallery says "Image uploads are not enabled on this deployment." rather than failing silently.
 
 <Tip>
-  Anything with no **Used in** badge is an upload none of your own documents points at, so it is
-  usually safe to delete; the badge only scans your documents. The daily cleanup will eventually
-  clear unused uploads for you, but removing one yourself reclaims the space straight away rather
-  than waiting out the 30-day window.
+  The **Not used** badge only checks your own documents. The daily cleanup will eventually clear
+  unused uploads for you, but deleting one yourself reclaims the space straight away rather than
+  waiting out the 30-day window.
 </Tip>
 
 </ArticleLayout>

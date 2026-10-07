@@ -6,58 +6,69 @@ import { SessionButtons } from '@/components/illustrations/palette-behaviour';
 export const metadata = helpMetadata({
   title: 'Session Buttons',
   description:
-    'Put a Timer, Dot vote or Poll button on the canvas so anyone can start that session tool for the whole room with one press.',
+    'Put a Timer, Stopwatch, Dot vote or Poll on the canvas so anyone can start that session tool for the whole room with one press.',
   path: '/help/palette/behaviour/session-buttons/',
 });
 
 <ArticleLayout
   title="Session Buttons"
-  description="A button on the canvas that starts a timer, a dot vote or a poll for everyone."
+  description="An element on the canvas that starts a timer, a stopwatch, a dot vote or a poll for everyone."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate', slug: 'behaviour' }}
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'session-buttons')}
 >
 
-A session button starts one of the [session tools](/help/collaboration/session-tools/) for everyone in the room: a countdown [timer](/help/collaboration/session-tools/timer/), a [dot vote](/help/collaboration/session-tools/voting/), or a [poll](/help/collaboration/session-tools/polls/) you write in advance.
+A session button starts one of the [session tools](/help/collaboration/session-tools/) for everyone in the room: a countdown [timer](/help/collaboration/session-tools/timer/), a stopwatch that counts up, a [dot vote](/help/collaboration/session-tools/voting/), or a [poll](/help/collaboration/session-tools/polls/) you write in advance.
 
 ## Adding one
 
-The **Session** row of the [Collaborate](/help/palette/behaviour/) category opens into three buttons, one per tool: **Timer**, **Dot vote** and **Poll**. Pick the one you want and it drops ready to press, rather than dropping a generic button you then have to point at a tool.
+There is one tile per tool in the [Collaborate](/help/palette/behaviour/) category, so the element drops as the tool you picked rather than as a generic button you then have to point at one:
 
-<Figure caption="Each session button is labelled from its own setting, so the canvas reads as a running order.">
+- **Timer** and **Stopwatch** are in the **Tools** group, with the Reveal zone, the Done check and the Picker.
+- **Dot vote** and **Poll** are in the **Ask** group, with the other ways of putting a question to the room.
+
+In Plan mode, the Timer and Stopwatch are in the palette's **Tools** category.
+
+<Figure caption="A Timer is the clock itself; the other three are labelled from their own setting.">
   <SessionButtons />
 </Figure>
 
-It is how a canvas carries its own running order: put "5 minutes" over the writing column and "Vote — 3 dots each" over the results, and anyone can run the session.
+It is how a canvas carries its own running order: put a 5 minute Timer over the writing column and a Dot vote reading "3 dots each" over the results, and anyone can run the session.
 
 ## A Timer becomes the clock
 
-A **Timer** goes further than starting something elsewhere: it counts down on the canvas itself, with its own **pause**, **resume**, **reset** and **remove** controls. It is the same timer as the pill in the top bar, so pause it on the canvas and it pauses there too.
+A **Timer** goes further than starting something elsewhere: it shows the countdown on the canvas itself. Before it starts it shows its length with a start button; once running it has its own **pause**, **resume**, **reset** and **remove** controls. It is the same timer as the pill in the top bar, so pause it on the canvas and it pauses there too.
+
+A **Stopwatch** is a button: press it to start counting up from zero for everyone, press again to pause, and again to continue. It has nothing to set, since a stopwatch has no length.
+
+A tab runs one clock at a time, so a Timer and a Stopwatch on the same tab share it.
 
 ## Changing the setting
 
-Each button carries a **…** menu on its own face for the setting you change most: length presets on a Timer, dots each on a Dot vote, and the question and answers on a Poll.
+Each button carries a **…** menu on its own face for the setting you change most: the length on a Timer (a dial plus presets of 1, 3, 5, 10, 15 and 30 minutes), the dots each on a Dot vote, and the question and answers on a Poll. The menu ends with **All settings…** for the full element menu.
 
 Changing a Timer's length **while it is counting restarts it** at the new one, keeping it running (or paused) as it was. Extend a timer between rounds rather than mid-round.
 
 For the full range, right-click and open **Session**, which has room for a proper number input.
 
-A button stays the tool you picked it as. If you want a countdown where you put a vote, drag a **Timer** out of the palette instead — the palette has one tile per tool, so choosing there is the whole decision.
+A button stays the tool you picked it as. If you want a countdown where you put a vote, drag a **Timer** out of the palette instead: the palette has one tile per tool, so choosing there is the whole decision.
+
+Pressing a Dot vote button while a vote is already running does nothing, because starting again would wipe the dots already cast.
 
 ## How a Poll button asks
 
-A Poll button carries its **answers** as well as its question, and you pick the shape they take — the same five the [poll](/help/collaboration/session-tools/polls/) composer offers:
+A Poll button carries its **answers** as well as its question, and you pick the shape they take, the same five the [poll](/help/collaboration/session-tools/polls/) composer offers:
 
 - **Yes / No**, and **+ Abstain** for the version with a way out.
-- **Choices** — the answers you write yourself, two to six of them.
+- **Choices**: the answers you write yourself, two to ten of them.
 - **Rating 1-5**.
 - **Free text**, for answers people type.
 
-Only **Choices** reads a written list. Switch to Yes / No and the list is left alone but unused, so you can try a shape and come back without retyping anything. A Choices button with fewer than two answers has nothing to press, so it shows as not set up until you add a second one — every other shape is ready as soon as it has a question.
+Only **Choices** reads a written list. Switch to Yes / No and the list is left alone but unused, so you can try a shape and come back without retyping anything. A Choices button with fewer than two answers has nothing to press, so it shows as not set up until you add a second one; every other shape is ready as soon as it has a question.
 
 ## Who can start one
 
-Starting a tool needs edit access, so on a view-only link the button shows as unavailable, though you can still take part once somebody starts it.
+Starting a tool needs edit access, so on a view-only link the button shows as unavailable (a Timer shows its clock without the controls), though you can still take part once somebody starts it. While somebody holds the [facilitator](/help/collaboration/facilitator/) role, pressing session buttons and changing them is theirs to do.
 
 </ArticleLayout>

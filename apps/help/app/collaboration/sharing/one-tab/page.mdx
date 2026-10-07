@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { OneTabShare } from '@/components/illustrations/collaboration';
+import { ShareOpensRow } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Sharing One Tab',
@@ -16,19 +17,29 @@ A share link normally opens the whole document, every tab of it. Sometimes you o
 
 ## Scoping a new link
 
-When a document has more than one tab, the **Share** dialog gains an **Opens** dropdown under **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share, then **Create Pass**. The role still applies: a one-tab link can be an **Editor** or a **Viewer** pass.
+When a document has more than one tab, the **Share** dialog gains an **Opens** dropdown just above **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share (tabs are listed in tab bar order), then **Create Pass**. The role still applies: a one-tab link can be an **Editor** or a **Viewer** pass.
 
-You can make as many links as you like, each scoped differently: one tab to one person, another tab to someone else, and an All-tabs link for your team.
+<Figure caption="On a document with several tabs, Opens picks which tab a new pass opens, or All tabs.">
+  <ShareOpensRow />
+</Figure>
+
+You can make as many links as you like, each scoped differently: one tab to one person, another tab to someone else, and an All-tabs link for your team. A link opens one tab or all of them; it can't open a chosen handful.
 
 ## What the visitor sees
 
-Someone opening a one-tab link lands straight on that tab. The other tabs stay in their tab bar as **Not shared** pills, so they know the document has more, but without names, and nothing happens when they press one. An element link or search result that points at another tab only tells them that tab isn't shared.
+Someone opening a one-tab link lands straight on that tab, whichever tab the document was last left on. The other tabs stay in their tab bar as **Not shared** pills, so they know the document has more, but without names or folders, and nothing happens when they press one (hovering says "This tab isn't shared with you"). An element link, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
 
 <Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest of the document shown as Not shared pills.">
   <OneTabShare />
 </Figure>
 
-The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their shapes, not their names, not their live edits. With an **Edit** link the visitor can change their tab, but not rename, add, reorder or delete tabs, rename the document, or build a slide deck (a deck spans tabs).
+The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their shapes, not their names, not their comments, not their live edits. With an **Editor** pass the visitor can change their tab, but not rename, add, reorder, lock or delete tabs, use tab folders, rename the document, or open the slide deck (a deck spans tabs).
+
+The scope follows the link everywhere it goes:
+
+- The **Copy** button in the header makes the visitor a copy of their tab only.
+- An [embed](/help/collaboration/sharing/embeds/) of the link shows its tab only.
+- A [live image](/help/collaboration/sharing/live-image/) of the link always shows its tab, so its menu has no **Tab** picker.
 
 ## Changing a link's tabs
 

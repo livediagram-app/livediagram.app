@@ -125,8 +125,8 @@ export function SpotlightPanel({
           />
         </div>
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
-          Only you see the shroud — everyone else sees the whole canvas. Click the canvas to grow
-          the light, right-click to shrink it.
+          Only you see the shroud; everyone else sees the whole canvas. Click the canvas to grow the
+          light, right-click to shrink it.
         </p>
       </div>
     </ModePanel>

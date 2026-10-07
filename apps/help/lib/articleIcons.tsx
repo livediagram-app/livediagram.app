@@ -54,6 +54,14 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 17.5h.01" />
     </Glyph>
   ),
+  // A terminal prompt in a window: the article is about the command line.
+  cli: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" />
+      <path d="M6.5 9.5l3 2.5-3 2.5" />
+      <path d="M12 15h5" />
+    </Glyph>
+  ),
   // ---- Account and data ----
   // A ticket with the secret punched into it. The key belongs to
   // `authentication`, which is the article about using one.

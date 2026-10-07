@@ -73,11 +73,10 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     return () => window.clearTimeout(id);
   }, [importError]);
 
-  // Surface a toast when an autosave fails (network / 5xx). The header
-  // pill already shows the 'error' status, but a failed save risks lost
-  // work — the kind of critical update that warrants the louder bottom-
-  // centre toast too. Fires on the transition into 'error'; the toast
-  // layer dedupes a streak of retries while one is still on screen.
+  // Surface a toast when an autosave fails (network / 5xx). Nothing else
+  // shows the 'error' status, and a failed save risks lost work, so it
+  // gets the bottom-centre toast. Fires on the transition into 'error';
+  // the toast layer dedupes a streak of retries while one is still on screen.
   useEffect(() => {
     if (saveStatus === 'error') {
       toast.error('Couldn’t save your changes. Check your connection.');

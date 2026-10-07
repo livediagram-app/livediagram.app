@@ -5,24 +5,32 @@ import { LightDarkToggle } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'Appearance: Light, Dark, System',
   description:
-    'Set livediagram to Light, Dark, or System with the toggle on the tab bar or in the site header. New visitors start on System, so it matches their device. One choice covers the editor, the website and this help centre, it is remembered, and the Default theme follows it.',
+    'Set livediagram to Light, Dark, or System with the Appearance button on the tab bar, in Settings, or on the right-hand rail of the website. New visitors start on System, so it matches their device. One choice covers the editor, the website and this help centre, it is remembered, and the Default theme follows it.',
   path: '/help/tools/dark-mode/',
 });
 
 <ArticleLayout
   title="Appearance: Light, Dark, System"
-  description="Three settings for livediagram's own look — Light, Dark, or follow your device — kept separate from the theme each tab is saved with."
+  description="Three settings for livediagram's own look (Light, Dark, or follow your device), kept separate from the theme each tab is saved with."
   categoryTitle="Tools"
   categorySlug="tools"
 >
 
-**Appearance** is how livediagram itself looks, just for you. In the editor it is the small sun / moon / monitor button on the right edge of the tab bar; on the website, this help centre and the telemetry dashboard it is the same button in the header, next to the call-to-action buttons. Clicking it walks through three settings in turn: **Light**, **Dark**, then **System**. The glyph shows where you are, and the button's name tells you where the next click takes you.
+**Appearance** is how livediagram itself looks, just for you. It has three settings, **Light**, **Dark** and **System**, and one button that steps through them in that order.
 
 **One choice covers everything.** Pick Dark in the help centre and the editor opens dark too, and the other way round.
 
-<Figure caption="The toggle on the tab bar cycles the editor's appearance between Light, Dark, and System.">
+## Where to change it
+
+- **In the editor:** the Appearance button sits in the right-hand cluster of the tab bar, beside **Search** and **Settings**. It shows the setting you are on (a sun for Light, a moon for Dark, a monitor for System) and, on a wider screen, its name. Each click moves to the next setting; hover it to see which one is current. On a phone it is icon-only.
+- **In Settings:** the **Appearance** category has a **Theme** row with all three settings side by side, if you would rather pick one directly than cycle.
+- **On the website, this help centre and the telemetry dashboard:** a small sun / moon / monitor button on a rail at the right-hand edge of the page. It only shows on wide screens, where there is room beside the content; on a narrower screen the page follows your saved choice, or your device.
+
+<Figure caption="The Appearance button on the tab bar steps through Light, Dark and System, one setting per click.">
   <LightDarkToggle />
 </Figure>
+
+With [Power User Mode](/help/user-interface/power-user-mode/) on, the editor's button becomes a quick switch: a click flips straight between Light and Dark, and a right-click sets System.
 
 ## The three settings
 
@@ -30,13 +38,13 @@ export const metadata = helpMetadata({
 - **Dark.** The editor's chrome stays dark, whatever your device is set to.
 - **System.** The editor follows your operating system, so a machine that turns dark at sunset takes the editor with it, live, without a reload.
 
-**System is where everyone starts.** Open livediagram on a machine set to dark and the editor is dark from the first paint, canvas included. Pick Light or Dark yourself and that choice outranks your device from then on, in both directions — a light editor on a dark machine is perfectly allowed.
+**System is where everyone starts.** Open livediagram on a machine set to dark and the editor is dark from the first paint, canvas included. Pick Light or Dark yourself and that choice outranks your device from then on, in both directions: a light editor on a dark machine is perfectly allowed.
 
 ## Appearance is yours; a theme is the tab's
 
 The distinction worth holding on to is _who_ each setting belongs to.
 
-Appearance belongs to **you and this browser**. It recolours the editor's interface — the tab bar, header, panels, and the backdrop around your work — and it is never saved into the document, so nobody you share with is affected by it.
+Appearance belongs to **you and this browser**. It recolours the editor's interface (the tab bar, header, panels, and the backdrop around your work) and it is never saved into the document, so nobody you share with is affected by it.
 
 A [theme](/help/canvas/themes/) belongs to **the tab**. It sets the canvas backdrop and the colours of your elements, it is stored on the tab, and everyone who opens that tab sees it.
 
@@ -46,20 +54,20 @@ So a light, pastel diagram can sit in a dark editor late at night, and a dark ar
 
 The **Default** theme is the exception, deliberately. It is the scheme every new tab starts on, and it has a light half and a dark half: your appearance decides which one you see. Work in Dark and its canvas is charcoal with grey elements; switch to Light and the same tab is white with the familiar blue ones.
 
-Nothing is written to the document when you switch — the tab is not edited, and there is nothing to save. A colleague reading the same tab in light chrome sees the light half at the same moment you are looking at the dark one.
+Nothing is written to the document when you switch: the tab is not edited, and there is nothing to save. A colleague reading the same tab in light chrome sees the light half at the same moment you are looking at the dark one.
 
 Every other theme is a decision somebody made and stored, so it looks the same for everyone, in either appearance.
 
 ## The match nudge
 
-Because the two are independent, they can end up mismatched: a dark-backdrop diagram in a light editor, or the reverse. When that happens, a small dismissible prompt appears above the tab bar offering to switch the editor to match in one click. It works out "light" or "dark" from the scheme's background brightness, so it is right for built-in and custom themes alike. Dismiss it and it stays gone for that pairing, but it can still offer again on a differently styled tab. The colour-scheme picker offers the same one-click switch inline.
+Because the two are independent, they can end up mismatched: a dark-backdrop diagram in a light editor, or the reverse. When that happens, a small card appears at the bottom of the screen, just above the tab bar, saying **This tab uses a dark theme** (or a light one) with a button that switches the editor to match in one click. It works out "light" or "dark" from the theme's background brightness, so it is right for built-in and custom themes alike. Dismiss it with its close button and it stays away for that pairing until you reload, though it can still offer again on a differently styled tab. The theme picker offers the same one-click switch inline. The card never appears in zen mode or in an embedded diagram.
 
-Tabs on the Default scheme never trigger it. They already match — that is the point of them.
+Tabs on the Default theme never trigger it. They already match, which is the point of them.
 
 ## Your choice sticks
 
-- **Remembered.** Your pick is saved in your browser, so a refresh, or your next visit, keeps the appearance you chose, on every livediagram page.
-- **No flash.** It is worked out before the page first paints — your saved pick, or your device setting if you have not made one — on every screen including the website, this help centre and the welcome and new-document flows, so you never see a flash of the wrong one.
+- **Remembered.** Your pick is saved in this browser, so a refresh, or your next visit, keeps the appearance you chose, on every livediagram page. It is not tied to your account, so another browser or device starts on System until you pick there too.
+- **No flash.** It is worked out before the page first paints (your saved pick, or your device setting if you have not made one) on every screen including the website, this help centre and the welcome and new-document flows, so you never see a flash of the wrong one.
 
 <Tip>
   Prefer a dark workspace? Set it once and forget it. Leave your tabs on the Default theme and the

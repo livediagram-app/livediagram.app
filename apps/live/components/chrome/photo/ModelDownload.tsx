@@ -17,7 +17,7 @@ export function ModelDownload({ download }: { download: Download }) {
       className="pointer-events-auto flex w-[min(26rem,80vw)] flex-col gap-1.5 rounded-2xl bg-slate-900/90 px-3 py-2 text-xs text-white shadow-lg backdrop-blur"
     >
       <p className="flex justify-between gap-3">
-        <span>Downloading the reading model — only the first time</span>
+        <span>Downloading the reading model (only the first time)</span>
         <span className="tabular-nums text-slate-300">
           {Math.round(download.loaded / MB)} of {Math.round(download.total / MB)} MB
         </span>

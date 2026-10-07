@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { NotePopoverScene } from '@/components/illustrations/canvas-links-notes';
 
 export const metadata = helpMetadata({
   title: 'Notes',
@@ -10,11 +11,11 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Notes" description="Park the detail behind an element instead of crowding the canvas with it." categoryTitle="Canvas" categorySlug="canvas">
 
-A diagram works because it is short. But almost every box has more behind it than its label admits — the caveat, the decision you already argued out, the link to the source material. A **note** is where that goes: attached to the element, out of sight until someone asks for it.
+A diagram works because it is short. But almost every box has more behind it than its label admits: the caveat, the decision you already argued out, the link to the source material. A **note** is where that goes: attached to the element, out of sight until someone asks for it.
 
 Every boxed element can carry one: shapes, text, sticky notes, images, tables, link cards, and [annotations](/help/canvas/annotations/). Arrows cannot.
 
-## Adding a note
+## Adding a Note
 
 <Step n={1}>Right-click the element to open its menu and go to **Resources**.</Step>
 
@@ -24,15 +25,20 @@ Every boxed element can carry one: shapes, text, sticky notes, images, tables, l
 </Step>
 
 <Step n={3}>
-  Write, then press **Cmd-Enter** to save or **Esc** to cancel. An element with a note shows a small
-  badge you can click to reopen it.
+  Write, then press **Cmd-Enter** (Ctrl-Enter on Windows and Linux) to save, or **Esc** to cancel.
+  Clicking anywhere outside the popover saves too. An element with a note shows a small note icon
+  you can click to reopen it (see [Element Indicators](/help/canvas/element-indicators/)).
 </Step>
+
+<Figure caption="The note popover beside its element: the toolbar over the writing, then the save hint and Delete note.">
+  <NotePopoverScene />
+</Figure>
 
 ## Formatting
 
-The toolbar sits above the writing area and is **always visible** — a note is read at least as often as it is written, and a toolbar that appeared only on focus would make the popover jump the moment you clicked into it.
+The toolbar sits above the writing area and is **always visible**: a note is read at least as often as it is written, and a toolbar that appeared only on focus would make the popover jump the moment you clicked into it.
 
-- **Bold**, **Italic**, **Underline** — also on `Cmd/Ctrl+B`, `I`, and `U`.
+- **Bold**, **Italic**, **Underline**, also on `Cmd/Ctrl+B`, `I`, and `U`.
 - **Block type**, a single dropdown holding **Paragraph**, **Heading 1**, **Heading 2**, **Heading 3**, **Bullet point**, and **Numbered point**. It shows what the current line already is, and picking an entry makes it that: choosing a heading clears a bullet, choosing a bullet clears a heading, and **Paragraph** is how you go back to plain text.
 - **Link**, which opens a one-line address field under the toolbar.
 
@@ -44,22 +50,22 @@ The writing area starts at a comfortable few lines and can be **dragged taller**
   what you'd expect instead.
 </Tip>
 
-## Links inside a note
+## Links Inside a Note
 
 The **Link** button turns the selected text into a link, and pre-fills the address field if the cursor is already sitting on one, so editing an existing link is the same gesture as making one. **Remove** takes the link off and leaves the text.
 
-Type a bare host like `example.com` and it becomes `https://example.com`. Only web and email addresses are accepted — `http`, `https`, and `mailto` — and links open in a new tab so a note never navigates you away from your document.
+Type a bare host like `example.com` and it becomes `https://example.com`. Only web and email addresses are accepted (`http`, `https`, and `mailto`), and links open in a new tab so a note never navigates you away from your document.
 
-## Reading a note
+## Reading a Note
 
 Anyone who can see the document can read a note, including **view-only** visitors. They get the formatted note and no toolbar at all, so nothing suggests an edit they cannot make.
 
 On an [annotation](/help/canvas/annotations/), simply hovering the marker floats the note above everything else on the canvas, which is what makes annotations the right choice for review comments you want available at a glance. On every other element, the note opens from the badge or the menu.
 
-## What a note is not
+## What a Note Is Not
 
 - **Not a conversation.** A note is one body of text on the element, edited in place. For a thread with replies and a resolved state, use [comments](/help/collaboration/comments/); to put a task on someone's plate, use [assigned actions](/help/collaboration/assigned-actions/).
-- **Not visible in image exports.** Notes are left out of PNG and SVG exports on purpose — they are an on-demand affordance, not page content. They do travel in the JSON export, so a note survives a round trip.
+- **Not visible in image exports.** Notes are left out of PNG and SVG exports on purpose: they are an on-demand affordance, not page content. They do travel in the JSON export, so a note survives a round trip.
 - **Not a separate undo stream.** Saving a note goes through history like any other edit, so [undo](/help/canvas/undo/) treats it the same as moving a box.
 
 <Note>

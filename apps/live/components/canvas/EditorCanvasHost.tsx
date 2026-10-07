@@ -144,7 +144,6 @@ export function EditorCanvasHost() {
     beginEdit,
     beginEndpointDrag,
     beginErase,
-    beginFormatPainter,
     beginFreehand,
     beginHighlighter,
     beginMarker,
@@ -210,7 +209,6 @@ export function EditorCanvasHost() {
     effectiveTemplatePickerMode,
     embedMode,
     endVote,
-    exitFormatPainter,
     exitFormatTool,
     explorerPosition,
     fitToScreen,
@@ -1080,8 +1078,6 @@ export function EditorCanvasHost() {
         onBeginArrowLabelDrag={beginArrowLabelDrag}
         onBeginArrowElbowDrag={beginArrowElbowDrag}
         onShiftSelect={toggleInMultiSelect}
-        onBeginFormatPainter={beginFormatPainter}
-        onCancelFormatPainter={exitFormatPainter}
         onExitFormatTool={exitFormatTool}
         onSetTextAlign={setTextAlignSelected}
         onFollowLink={followLink}

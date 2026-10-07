@@ -1,11 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { UseAsDefaultScene } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Default Folders',
   description:
-    'Send new diagrams, whiteboards, Event Storming boards, retrospectives and Kanban boards to a folder of your choice automatically, from the folder menu, the New Document wizard or Settings.',
+    'Send new diagrams, whiteboards, Illustrate pages, Plan boards, Event Storming boards, retrospectives and Kanban boards to a folder of your choice automatically, from the folder menu, the New Document wizard or Settings.',
   path: '/help/explorer/folders/default-folders/',
 });
 
@@ -22,15 +23,21 @@ A **default folder** is where your new documents go when you create one without 
 
 - **Diagrams**: documents that open in Diagram mode.
 - **Whiteboards**: documents that open in Draw mode.
+- **Illustrate pages**: documents that open in Illustrate mode.
+- **Plan boards**: documents that open in Plan mode.
 - **Event Storming boards**.
 - **Retrospectives**: documents made from any retrospective template.
 - **Kanban boards**: documents made from the Kanban template.
 
-A document goes to the most specific default that fits it: an Event Storming board's default first, then a retrospective's or a Kanban board's, then the one for the mode it opens in. With none set, it lands in My documents. Your defaults are your own: teammates choose theirs.
+A document goes to the most specific default that fits it: an Event Storming board's default first, then a retrospective's or a Kanban board's, then the one for the mode it opens in. So a retrospective goes to your Retrospectives folder even if you also have one for Diagrams. With none set, it lands in My documents. Your defaults are your own: teammates choose theirs. Default folders are stored with your account or guest identity, not in the browser.
 
 ## Setting a default from a folder
 
-Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as default for**. Tick the kinds of document that should land there. Each kind points at one folder, so ticking it here moves it from wherever it was; unticking it sends those documents back to My documents.
+Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as default for**. Under **New documents that open as**, tick the kinds of document that should land there; the list stays open so you can tick several in one go. Each kind points at one folder, so ticking it here moves it from wherever it was; unticking it sends those documents back to My documents.
+
+<Figure caption="Use as default for, in a folder's menu: tick each kind of new document that should land in this folder.">
+  <UseAsDefaultScene />
+</Figure>
 
 **My documents** has the same menu: a ticked entry there means those documents land in My documents. Choosing an unticked one clears its default folder.
 

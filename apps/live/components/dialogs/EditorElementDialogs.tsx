@@ -108,7 +108,7 @@ export function EditorElementDialogs() {
           validate: (url: string) =>
             embedTargetFor(url)
               ? null
-              : "That isn't a link we can embed. Check it starts with https:// — or, for a named service, that it is a link to a real file.",
+              : "That isn't a link we can embed. Check it starts with https://, or, for a named service, that it is a link to a real file.",
         }
       : undefined;
 

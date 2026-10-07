@@ -17,9 +17,9 @@ A self-hosted livediagram is configured entirely through environment variables, 
 
 Secrets and settings never live in source code, since the repository is public. Instead, each Worker reads them at runtime.
 
-- **Local development** uses a gitignored `.env.local` file per app or Worker.
-- **Workers** receive secret values via `wrangler secret put`, and non-secret variables via the Worker's configuration.
-- **Static frontends** only ever bundle values explicitly marked as publishable, prefixed so it is obvious they are safe to ship to the browser. Server-only secrets stay on the Worker side and never reach client code.
+- **Local development** uses a gitignored `.env.local` file per frontend app and a gitignored `.dev.vars` file per Worker.
+- **Workers** receive secret values via `wrangler secret put`, and non-secret settings as `[vars]` in the Worker's `wrangler.toml`. Set plain settings in the file rather than the Cloudflare dashboard: every deploy replaces them with what the file declares.
+- **Static frontends** only ever bundle values explicitly marked as publishable, prefixed `NEXT_PUBLIC_` so it is obvious they are safe to ship to the browser, and baked in at build time. Server-only secrets stay on the Worker side and never reach client code.
 
 Each app that needs configuration ships an example file documenting which variables it expects, so you can see at a glance what to set.
 
@@ -31,11 +31,13 @@ Each app that needs configuration ships an example file documenting which variab
 
 Authentication is provided by an optional integration with Clerk, and the app supports three modes depending on what you configure.
 
-1. **Hybrid**, the production setup: both the frontend publishable key and the API's verification URL are set, so guests and signed-in users coexist.
-2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes show a friendly "not enabled" notice, and the editor is unchanged.
-3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production.
+1. **Hybrid**, the production setup: both the frontend publishable key (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`) and the API's verification URL (`CLERK_JWKS_URL`) are set, so guests and signed-in users coexist.
+2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
+3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: people can sign in, but the API treats everyone as a guest.
 
-This is what lets a self-hoster run with zero outbound runtime traffic beyond their own hosting if they want to.
+With sign-in on, also set `GUEST_ID_HMAC_SECRET` so guest ids are signed and nobody can claim another guest's documents when they sign up. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email, the Google Drive mirror and the MCP server.
+
+Guest-only is what lets a self-hoster run with zero outbound runtime traffic beyond their own hosting if they want to.
 
 ## Guest-only fallback
 
@@ -45,15 +47,26 @@ The API identifies the owner of a request in one of two equivalent ways: a verif
   <GuestFallback />
 </Figure>
 
-<Note>
-  Other optional toggles follow the same pattern: telemetry is off unless explicitly enabled, and AI
-  assistance only appears when an AI key is configured on the API Worker. Unset means off, every
-  time.
-</Note>
+## Other optional features
+
+Every other optional feature follows the same pattern: unset means off, and the editor hides what it cannot use.
+
+| Feature                    | Turn it on with                                                                                                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Image uploads, thumbnails  | An R2 bucket bound to the api Worker. Optional per-owner caps: `IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`                                                       |
+| AI assistant, photo import | One AI key on the api Worker: `OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`, or `AI_API_KEY` with `AI_BASE_URL` and `AI_MODEL`                                           |
+| Email                      | `RESEND_API_KEY` on the api Worker (needs sign-in)                                                                                                                      |
+| Google Drive mirror        | `GOOGLE_CLIENT_ID` on the api Worker and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on the live build; `GOOGLE_CLIENT_SECRET` and `DRIVE_TOKEN_KEY` keep it syncing (needs sign-in) |
+| MCP server for AI tools    | Deploy the mcp Worker with its own KV namespace and hostname (needs sign-in)                                                                                            |
+| Telemetry                  | `TELEMETRY_ENABLED` on the api Worker and `NEXT_PUBLIC_TELEMETRY_ENABLED` on every frontend build                                                                       |
+| Continue with Google       | `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` on the live build, with Google enabled in Clerk                                                                                      |
+
+The Community is the one feature that is on by default; set `COMMUNITY_ENABLED` to `false` on the api Worker to switch it off.
 
 <Tip>
-  For the exact variable names and where each one lives, follow the repository's
-  `docs/operations/self-hosting.md` and each app's example configuration file.
+  For every variable, where it lives and the steps around it (OAuth redirect URIs, KV namespaces,
+  the AI model knobs), follow the repository's `docs/operations/self-hosting.md` and each app's
+  `.env.example` file.
 </Tip>
 
 </ArticleLayout>

@@ -43,14 +43,17 @@ Contents, top to bottom:
   - **Hair** — fourteen styles: Short / Buzz / Curly / Long / Ponytail / Bun / Mohawk / Bald / Pigtails / Afro / Spiky / Bob / Braid / Top knot, each drawn per view (the bun, the plait, and the tail read from behind; the mohawk shaves the sides to stubble; the afro sits proud of the head on every side).
   - **Size** — Small / Regular / Tall, a scale on the whole sprite (**1.15 / 1.5 / 1.95**). Every step sits above the base 40x56 sprite: at 1x the character read as a detail on the canvas rather than someone standing in the room, and the costume details (a tie, a bun, a pocket) were too small to see. Size scales the right-click hit box and the name chip's offset with it, so a small character isn't clickable well outside itself.
 
-- **Reactions**, below the accordion and deliberately NOT in one: they are actions, not settings, so mid-presentation they are one click rather than a click plus a disclosure. Five of them, each a short one-shot performance:
+- Two **action rows** below the settings, behind the same single-open disclosure: **Behaviour** (what the character does with its body) and **Reactions** (a burst thrown around the character).
+- **Behaviour** holds five short one-shot performances:
   - **Jumping jacks** — five hops, arms out and legs splayed at the top of each.
   - **Wave** — a raised hand crossing back and forth for about a second and a half.
   - **Spin** — two full turns on the spot through all four facings.
   - **Cheer** — both arms up and two bounces.
   - **Dance** — a side-to-side sway with the arms alternating.
 
-  A reaction performs **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and clicking again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function — a kind and a clock on the wire rather than a pose.
+  A Behaviour performance plays **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and clicking again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function: a kind and a clock on the wire rather than a pose.
+
+- **Reactions** holds the same five bursts a [Reaction Pad](../009-elements/reaction-pad.md) throws (Confetti, Sparkles, Hearts, Applause, Fireworks), played around the character instead of around a pad. Unlike a Behaviour performance, a Reactions burst plays **on your own screen only**: the room's `reaction` op is keyed to a pad's element id (the character has none), and the avatar presence packet carries no burst. Showing it to peers would mean a burst field on `AvatarPresence` and a peer-side burst layer; it is not built.
 
 **No colour picker**, deliberately — see above.
 
@@ -124,6 +127,6 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 - Collision or pathfinding around elements (walk-around-the-box, walkable frames).
 - Avatar customisation beyond the four choices and the presence-coloured shirt (hats, accessories, skin tones, a picked photo, a colour picker — the shirt colour is load-bearing).
-- Emotes beyond the five reactions and the flag wave: sitting, speech bubbles, a reaction someone else can trigger on your character.
+- Emotes beyond the five Behaviour performances and the flag wave: sitting, speech bubbles, a reaction someone else can trigger on your character.
 - A mobile on-screen direction pad (touch gets tap-to-walk only — no arrow keys, no Space).
 - Any persistence of where the avatar was left (only the costume persists), or syncing the costume to an account across devices.

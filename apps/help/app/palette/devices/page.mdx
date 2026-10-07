@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { DevicesCatalogue } from '@/components/illustrations/palette-catalogues';
+import { DevicesCategory } from '@/components/illustrations/palette-illustrate-categories';
 
 export const metadata = helpMetadata({
   title: 'Devices',
@@ -20,27 +20,36 @@ export const metadata = helpMetadata({
 
 The **Devices** category holds device frames for wireframing and UI mockups. Each is a realistic outline of a screen you can build a design inside.
 
-<Figure caption="The Devices category offers wireframe frames such as a browser window, a phone, and a laptop.">
-  <DevicesCatalogue />
+## Finding them
+
+Devices are part of the [Illustrate mode](/help/canvas/illustrate/) palette: open the category dropdown and pick **Devices** under **Structure**. Tap a frame to add it, or drag it to where you want it. The Diagram mode palette doesn't offer the category, but the frames still work there: search for one by name in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and add it from **Add to canvas**.
+
+<Figure caption="The Devices category lists each frame with a line on what it is for.">
+  <DevicesCategory />
 </Figure>
 
-## What the tab contains
+## What the category contains
 
-- **Web Browser** for a desktop web page with a browser window frame.
-- **Computer Monitor** for a full-screen desktop layout.
+- **Browser** for a desktop web page, with a tab strip and an address bar.
+- **Monitor** for a full-screen desktop layout, on a stand.
 - **Laptop** for a portable-screen view.
 - **Phone** for a mobile app or page.
 - **Tablet** for a larger touch layout.
-- **Foldable** for a book-style phone, opened out to its inner screen.
-- **Smartwatch** for a compact wearable screen.
+- **Foldable** for a book-style phone, opened out to its inner screen with the fold down the middle.
+- **Watch** for a compact smartwatch screen.
+
+Frames pick up the tab theme's colours when you drop them, like any other shape.
 
 ## How to use a device frame
 
-Drop a frame onto the canvas, then build your mockup inside or on top of it using shapes, text, images, and icons. The frame gives your design a true-to-life boundary so the proportions read correctly to anyone reviewing the work. This is especially useful for product and design work: sketch a flow across several phone frames to show a journey, or pair a monitor with a phone to show a responsive layout side by side.
+Drop a frame onto the canvas, then build your mockup inside or on top of it using shapes, text, images, and icons. The frame gives your design a true-to-life boundary so the proportions read correctly to anyone reviewing the work. Sketch a flow across several phone frames to show a journey, or pair a monitor with a phone to show a responsive layout side by side.
+
+A device frame is an ordinary element, not a container: dragging it does not carry what you have drawn on it.
 
 <Tip>
   Draw a [frame](/help/palette/build/frames/) around your finished mockup and its device, so the
-  screen and its contents move together when you rearrange the diagram.
+  screen and its contents move together when you rearrange the canvas. Illustrate mode's palette
+  leaves frames out, so add one from the Search panel there.
 </Tip>
 
 </ArticleLayout>

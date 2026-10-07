@@ -6,7 +6,7 @@ import { BehaviourGroups } from '@/components/illustrations/palette-behaviour';
 export const metadata = helpMetadata({
   title: 'Collaborate',
   description:
-    'The palette Collaborate category holds every element that comes alive with the room: comment and action panels, estimate cards, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, Pickers, Session buttons (timer, stopwatch, dot vote, poll), agendas, decision records, roll calls, Reaction pads, Selection Mode buttons, Portals, Chairs and Bring Focus.',
+    'The palette Collaborate category holds every element that comes alive with the room: comment and action panels, estimate cards, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, Pickers, Reveal zones, Session buttons (timer, stopwatch, dot vote, poll), agendas, decision records, roll calls, Reaction pads, Selection Mode buttons, Portals, Chairs, Bring Focus and Link cards.',
   path: '/help/palette/behaviour/',
 });
 
@@ -22,9 +22,13 @@ The **Collaborate** category (under **Dynamic** in the palette's category picker
 
 This page is the map. Each element has its own short article, so you can link somebody straight to the one they need.
 
+## Where to find it
+
+Collaborate is in the palette in **Diagram** and **Draw** mode. **Illustrate** mode has no Collaborate category, and [Plan mode](/help/canvas/plan-mode/) has a smaller **Tools** category instead, holding the temperature check, estimate card, idea box, Picker, Timer and Stopwatch.
+
 ## What the category contains
 
-The category browses by group the way Icons and Technology do: a grid of category tiles that you click to open, with a breadcrumb back to the grid and a search box above that cuts across all of them at once.
+The category browses by group the way Icons and Technology do: a grid of group tiles that you click to open, with a breadcrumb back to the grid and a **Search collaboration** box above that cuts across all of them at once.
 
 <Figure caption="Collaborate browses as group tiles, with one search box across all of them.">
   <BehaviourGroups />
@@ -34,30 +38,32 @@ Inside a group, each element is a row with its name and a one-line description o
 
 The groups, room-first:
 
-- **Ask** — [estimate cards](/help/palette/collaborate/estimate-cards/), the [quiz](/help/palette/collaborate/quizzes/), the [temperature check](/help/palette/collaborate/temperature-checks/), the [idea box](/help/palette/collaborate/idea-boxes/), the [Q&A board](/help/palette/collaborate/qa-boards/), and the dot vote and poll [session buttons](/help/palette/behaviour/session-buttons/).
-- **Tools** — the [Reveal zone](/help/palette/behaviour/reveal-zones/), the [Done check](/help/palette/behaviour/done-checks/), the [Picker](/help/palette/behaviour/pickers/) and the timer [session button](/help/palette/behaviour/session-buttons/).
-- **Record** — [comment panels](/help/palette/collaborate/comment-panels/), [action panels](/help/palette/collaborate/action-panels/), the [agenda](/help/palette/collaborate/agendas/), the [decision record](/help/palette/collaborate/decision-records/) and the [roll call](/help/palette/collaborate/roll-calls/).
-- **Reactions** — the five [Reaction pads](/help/palette/behaviour/reaction-pads/).
-- **Selection Mode** — [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool.
-- **Navigate** — the [Portal](/help/palette/tools/portals/), the [Chair](/help/palette/chairs/) and the [Link card](/help/canvas/links/link-cards/).
+- **Ask**: the [quiz](/help/palette/collaborate/quizzes/), [estimate cards](/help/palette/collaborate/estimate-cards/), the [temperature check](/help/palette/collaborate/temperature-checks/), the [idea box](/help/palette/collaborate/idea-boxes/), the [Q&A board](/help/palette/collaborate/qa-boards/), and the **Dot vote** and **Poll** [session buttons](/help/palette/behaviour/session-buttons/).
+- **Tools**: the **Timer** and **Stopwatch** [session buttons](/help/palette/behaviour/session-buttons/), the [Reveal zone](/help/palette/behaviour/reveal-zones/), the [Done check](/help/palette/behaviour/done-checks/) and the [Picker](/help/palette/behaviour/pickers/).
+- **Record**: [comment panels](/help/palette/collaborate/comment-panels/), [action panels](/help/palette/collaborate/action-panels/), the [agenda](/help/palette/collaborate/agendas/), the [decision record](/help/palette/collaborate/decision-records/) and the [roll call](/help/palette/collaborate/roll-calls/).
+- **React**: the five [Reaction pads](/help/palette/behaviour/reaction-pads/).
+- **Selection Mode**: [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool.
+- **Navigate**: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Chair](/help/palette/chairs/) and the [Link card](/help/canvas/links/link-cards/).
 
-They are grouped by what the element does with the room rather than by what it looks like. That is why the Portal sits beside the Chair and the Link card — all three take you somewhere, whether that is another tab, a seat, or the page the card points at — and why the poll and dot vote sit with the estimate card rather than in a group of their own: putting a question to everybody is one job however it is asked.
+They are grouped by what the element does with the room rather than by what it looks like. That is why the Portal sits beside the Chair, Bring Focus and the Link card (each takes somebody somewhere: another tab, a seat, one spot on the canvas, or the page the card points at), and why the poll and dot vote sit with the estimate card rather than in a group of their own: putting a question to everybody is one job however it is asked.
 
-**Collaborate used to be a separate category**, holding the Ask and Record sets. It is now these two groups. The split was real — "pressing this does something" against "the canvas is collecting an answer" — but it was no help to navigate by: you reach for both while running a session, and nothing told you why the Done check lived apart from the estimate card.
+**Collaborate used to be two categories**: Behaviour (elements that do something when pressed) and Collaborate (elements that collect an answer). The split was real, but it was no help to navigate by: you reach for both while running a session, and nothing told you why the Done check lived apart from the estimate card.
 
 ## Changing one
 
-Every element here carries a **…** in its top corner, which opens that element's own menu beside it. It is the same menu a right-click gives you, in the place you are already looking.
+Most elements here carry a **…** in their top corner, which opens that element's own menu beside it. It is the same menu a right-click gives you, in the place you are already looking. The Chair and Bring Focus have no **…**, because they hold nothing to set beyond a label and colours: right-click them instead.
 
 A few draw a richer **…** of their own, with the settings you change mid-session right in it: a Timer's length, a dot vote's dots, a poll's question, a Done check's reset. Those end with **All settings…**, which takes you to the full menu.
 
 ## Working with them
 
-Each behaves like any other element once placed: select, restyle, and move it freely. They keep working while you are in a selection mode that makes the rest of the canvas read-only, which is the point of a control bar made of them.
+Each behaves like any other element once placed: select, restyle, and move it freely. A click presses it and a drag moves it, so you can arrange a row of them without setting one off. They keep working while you are in a selection mode that makes the rest of the canvas read-only (Avatar, Spotlight or Isometric), which is the point of a control bar made of them.
+
+On a view-only link, the elements that change what everyone sees (Session buttons, Done checks, Reaction pads and the answer cards) are read-only. Selection Mode buttons, Bring Focus and uncovering a Reveal zone for yourself still work, a Picker rolls on your own screen only, and you can still answer a poll somebody with edit access has started.
 
 <Tip>
-  Put a row of these along the top of a canvas and it carries its own running order: a Session
-  button for the timer, a Reveal zone over the answers, and a Picker for who goes next.
+  Put a row of these along the top of a canvas and it carries its own running order: a Timer for the
+  writing block, a Reveal zone over the answers, and a Picker for who goes next.
 </Tip>
 
 </ArticleLayout>

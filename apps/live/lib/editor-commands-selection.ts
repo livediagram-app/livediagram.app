@@ -62,8 +62,8 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
-  // Rotation / note / comment / animation are single boxed-element actions.
-  if (isSingle && ctx.singleIsBoxed) {
+  // Rotation is for a single element that can turn (an annotation marker cannot).
+  if (isSingle && ctx.singleRotates) {
     for (const deg of [90, 180, 270] as const) {
       out.push({
         id: `rotate-${deg}`,
@@ -78,6 +78,10 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
       keywords: 'rotate reset clear angle rotation straighten upright 0',
       run: () => h.rotate(0),
     });
+  }
+
+  // Note / comment / animation are single boxed-element actions.
+  if (isSingle && ctx.singleIsBoxed) {
     out.push({
       id: 'note',
       name: 'Add / edit note',

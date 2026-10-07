@@ -23,7 +23,7 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
 
   Turning them all off leaves nothing to paint, so the panel says so and the brush goes inert rather than silently doing nothing on every tap.
 
-- **After painting** — **Keep the brush** (today: paint target after target until you leave the tool) or **Paint once** (the brush empties after one apply, like the single-shot painter in the selection toolbar).
+- **After painting**: **Keep the brush** (today: paint target after target until you leave the tool) or **Paint once** (the brush empties after one apply and the banner asks for a new base).
 
 ## Which field belongs to which toggle
 

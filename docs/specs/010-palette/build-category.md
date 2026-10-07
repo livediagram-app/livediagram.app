@@ -1,6 +1,6 @@
 # The Build palette category
 
-A top-level palette category in the **Common** band holding the elements you
+A top-level palette category in the **Structure** band holding the elements you
 lay a diagram _out_ with, as opposed to the ones you draw _on_ it:
 
 | Tile          | Came from     |
@@ -26,9 +26,9 @@ hangs children off itself. You reach for them at the same moment — when you
 have decided how the diagram is arranged, before you have decided what goes in
 it — and that moment deserves one place to look.
 
-It sits in **Common** because structuring a canvas is ordinary work, not a
-decoration or a dynamic behaviour, and second in the band (after Shapes)
-because the two are the same kind of act: putting a thing on the canvas.
+It sits in **Structure**, first in the band, because structuring a canvas is
+its own act, distinct from the everyday shapes and text in Common and from
+decoration or a dynamic behaviour.
 
 ## Rendering
 

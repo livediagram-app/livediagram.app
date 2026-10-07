@@ -14,8 +14,6 @@ import {
   Tile,
   Label,
   TextBar,
-  Button,
-  Menu,
 } from './primitives';
 
 /** A compact palette panel reused by several canvas scenes. */
@@ -168,58 +166,6 @@ export function PanAndZoom() {
   );
 }
 
-/** The Tab Appearance dialog set to the canvas-background controls: a grid of
- *  background swatches with one selected. */
-export function CanvasBackground() {
-  const swatches = [
-    'fill-white',
-    'fill-slate-100',
-    'fill-brand-50',
-    'fill-amber-50',
-    'fill-emerald-50',
-    'fill-rose-50',
-  ];
-  return (
-    <Scene w={420} h={240} bg="plain">
-      <Dialog
-        x={96}
-        y={20}
-        w={228}
-        h={200}
-        title="Tab Appearance"
-        sceneW={420}
-        sceneH={240}
-        scrim={false}
-      >
-        <Label x={112} y={56} size={8} weight={700} tone="muted">
-          BACKGROUND
-        </Label>
-        {swatches.map((cls, i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          const sx = 112 + col * 68;
-          const sy = 68 + row * 56;
-          const sel = i === 2;
-          return (
-            <g key={i}>
-              <rect
-                x={sx}
-                y={sy}
-                width={56}
-                height={42}
-                rx={7}
-                className={`${cls} ${sel ? 'stroke-brand-500' : 'stroke-slate-200'}`}
-                strokeWidth={sel ? 2.5 : 1.5}
-              />
-            </g>
-          );
-        })}
-        <Button x={244} y={184} w={64} label="Done" variant="primary" />
-      </Dialog>
-    </Scene>
-  );
-}
-
 /** A marquee drag selecting several elements at once. */
 export function MultiSelect() {
   return (
@@ -311,7 +257,16 @@ export function ThemePicker() {
 export function MulticolourTheme() {
   return (
     <Scene w={420} h={220}>
-      <Shape x={172} y={92} w={76} h={40} accent label="Root" />
+      <Shape
+        x={172}
+        y={92}
+        w={76}
+        h={40}
+        fill="fill-slate-100"
+        stroke="stroke-slate-400"
+        label="Root"
+        labelTone="strong"
+      />
       <Shape
         x={40}
         y={28}
@@ -356,137 +311,6 @@ export function MulticolourTheme() {
       <Arrow from={[172, 120]} to={[110, 170]} tone="muted" />
       <Arrow from={[248, 104]} to={[310, 50]} tone="muted" />
       <Arrow from={[248, 120]} to={[310, 170]} tone="muted" />
-    </Scene>
-  );
-}
-
-/** The custom-theme builder: colour wells for fill, border, text, background. */
-export function CustomTheme() {
-  const wells: [string, string][] = [
-    ['Fill', 'fill-brand-500'],
-    ['Border', 'fill-brand-700'],
-    ['Text', 'fill-slate-800'],
-    ['Canvas', 'fill-brand-50'],
-  ];
-  return (
-    <Scene w={420} h={220} bg="plain">
-      <Dialog
-        x={96}
-        y={16}
-        w={228}
-        h={188}
-        title="Custom Theme"
-        sceneW={420}
-        sceneH={220}
-        scrim={false}
-      >
-        {wells.map(([name, cls], i) => {
-          const wy = 60 + i * 28;
-          return (
-            <g key={i}>
-              <Label x={112} y={wy + 9} size={10} tone="body">
-                {name}
-              </Label>
-              <rect
-                x={250}
-                y={wy}
-                width={56}
-                height={18}
-                rx={5}
-                className={`${cls} stroke-slate-300`}
-                strokeWidth={1}
-              />
-            </g>
-          );
-        })}
-        <Button x={206} y={170} w={100} label="Save theme" variant="primary" />
-      </Dialog>
-    </Scene>
-  );
-}
-
-/** Starting from a template: a grid of ready-made diagram thumbnails. */
-export function Templates() {
-  return (
-    <Scene w={420} h={236} bg="plain">
-      <Dialog
-        x={56}
-        y={16}
-        w={308}
-        h={204}
-        title="Templates"
-        sceneW={420}
-        sceneH={236}
-        scrim={false}
-      >
-        {[0, 1, 2, 3, 4, 5].map((i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          const sx = 74 + col * 96;
-          const sy = 64 + row * 76;
-          return (
-            <g key={i}>
-              <rect
-                x={sx}
-                y={sy}
-                width={84}
-                height={62}
-                rx={8}
-                className="fill-white stroke-slate-200"
-                strokeWidth={1.5}
-              />
-              <rect
-                x={sx + 12}
-                y={sy + 14}
-                width={24}
-                height={16}
-                rx={3}
-                className="fill-brand-200"
-              />
-              <rect
-                x={sx + 48}
-                y={sy + 14}
-                width={24}
-                height={16}
-                rx={3}
-                className="fill-brand-400"
-              />
-              <line
-                x1={sx + 36}
-                y1={sy + 22}
-                x2={sx + 48}
-                y2={sy + 22}
-                className="stroke-slate-300"
-                strokeWidth={2}
-              />
-              <rect
-                x={sx + 24}
-                y={sy + 40}
-                width={36}
-                height={12}
-                rx={3}
-                className="fill-brand-300"
-              />
-            </g>
-          );
-        })}
-      </Dialog>
-    </Scene>
-  );
-}
-
-/** A selected shape with an open font dropdown, one typeface highlighted. */
-export function FontPicker() {
-  const fonts = ['Inter', 'Roboto', 'Poppins', 'Nunito', 'Lora', 'Caveat'];
-  return (
-    <Scene w={420} h={230}>
-      <Shape x={40} y={84} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
-      <SelectionBox x={40} y={84} w={120} h={56} />
-      <Menu x={196} y={44} w={150} items={fonts} active={2} rowH={24} />
-      <Label x={206} y={36} size={8} weight={700} tone="muted">
-        FONT
-      </Label>
-      <Arrow from={[160, 96]} to={[196, 80]} kind="curved" tone="muted" dashed />
     </Scene>
   );
 }

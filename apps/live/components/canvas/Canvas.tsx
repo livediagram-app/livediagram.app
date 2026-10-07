@@ -131,7 +131,6 @@ function CanvasView(props: CanvasProps) {
     canvasTool,
     onCanvasPointerMove,
     editingId,
-    formatSourceId,
     pendingDraw,
     onCommitDraw,
     onCommitFreehand,
@@ -159,11 +158,10 @@ function CanvasView(props: CanvasProps) {
     viewportZoom,
   );
 
-  // Paint mode covers BOTH painter entry points: a single-shot armed source
-  // (toolbar) and the persistent Format canvas tool — the tool must read as
-  // paint mode from its first click (copy cursor, handles/label-drag/dblclick
-  // suppressed on boxed elements AND arrows), not only once a source is armed.
-  const isPaintMode = formatSourceId !== null || canvasTool === 'format';
+  // Paint mode is the Format canvas tool: it reads as paint mode from its
+  // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
+  // elements AND arrows), not only once a source is armed.
+  const isPaintMode = canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
@@ -979,7 +977,6 @@ function CanvasView(props: CanvasProps) {
               onRedo: pathTool.history.redo,
             }
           : null)}
-        isPaintMode={isPaintMode}
         mainSize={mainSize}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}

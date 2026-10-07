@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { ShiftDragDuplicate } from '@/components/illustrations/tips-gestures';
 
 export const metadata = helpMetadata({
   title: 'Duplicating Elements',
@@ -15,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="tips-and-tricks"
 >
 
-Most diagrams repeat themselves: the same card three times, a row of identical steps, one styled box that wants to become five. livediagram gives you three ways to duplicate, and the fastest one places the copy in a single gesture.
+Most diagrams repeat themselves: the same card three times, a row of identical steps, one styled box that wants to become five. livediagram gives you several ways to duplicate, and the fastest one places the copy in a single gesture.
 
 ## The Duplicate action
 
@@ -25,7 +26,11 @@ Duplicates are complete copies: styling, text and size all come along, and arrow
 
 ## Copy and paste
 
-**⌘C** then **⌘V** does the classic version, pasting an offset copy. It goes further than Duplicate in one way: the clipboard survives switching tabs, so you can copy elements on one tab and paste them onto another. **⌘X** cuts, removing the originals on paste.
+**⌘C** then **⌘V** does the classic version, pasting an offset copy. It goes further than Duplicate in one way: it uses your system clipboard, so you can copy elements on one tab and paste them onto another, into another document, or into a second window. **⌘X** cuts, removing the originals straight away. See [Copy and Paste](/help/tips-and-tricks/copy-and-paste/).
+
+## Duplicate and connect
+
+To grow a flow one step at a time, select a shape and click one of the **+** buttons on its sides, then pick **Duplicate**: a copy lands beside it on that side, already joined to the original by an arrow. See [Adding Shapes and Arrows](/help/getting-started/adding-shapes-and-arrows/).
 
 ## Shift-drag: duplicate and place in one gesture
 
@@ -43,9 +48,14 @@ The quickest way to duplicate is to hold **Shift** and drag a selected element:
   right away.
 </Step>
 
+<Figure caption="Hold Shift and drag: the original stays put while a ghost of the copy, connecting arrow included, follows the pointer.">
+  <ShiftDragDuplicate />
+</Figure>
+
 A few details worth knowing:
 
-- **Change your mind mid-drag**: release Shift while still dragging and the ghost dissolves, turning the gesture back into a plain move. Press Shift again to re-summon the copy.
+- **Change your mind mid-drag**: release Shift while still dragging and the ghost dissolves, turning the gesture back into a plain move. Press Shift again to re-summon the copy. You can also start a plain drag and press Shift partway through.
+- **Dropping it back where it started** makes no copy.
 - **Connections are copied sensibly**: an arrow linking the dragged set to the rest of the canvas is duplicated too, so the copy arrives wired the same way the original is.
 - **One undo step**: a single undo removes the whole gesture, copy and move together. Escape cancels it entirely.
 - Shift keeps its other jobs: Shift-clicking an unselected element still adds it to the selection, and Shift while resizing still constrains proportions. Only a real drag on an already-selected element duplicates.

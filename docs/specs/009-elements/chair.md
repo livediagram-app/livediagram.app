@@ -20,8 +20,8 @@ portal ([Portal element](portal-element.md)) works.
 
 ## The element
 
-A **shape kind**, `chair`, in the palette's **Behaviour** band beside the mode
-button, portal, session button, reveal zone and picker.
+A **shape kind**, `chair`, in the palette's **Collaborate** category under
+**Navigate**, beside the portal, the bring focus button and the link card.
 
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
   reads as furniture rather than as a box with a label.

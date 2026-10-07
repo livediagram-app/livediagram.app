@@ -159,11 +159,11 @@ function BoxedElementViewImpl({
   // cursor so two people don't fight over the same element. Distinct
   // from `isLocked` above, which is the persisted user-set padlock.
   const remotelyLocked = remoteSelectors.length > 0;
-  // Clockwise rotation about the element centre. `isRotated` gates the
-  // resize handles off while rotated: the resize math runs in canvas-
-  // axis space, so dragging a corner of a spun box would make it
-  // "swim". Setting it back to 0° (the Rotation menu / search palette's
-  // reset) restores resize.
+  // Clockwise rotation about the element centre. The resize handles stay
+  // while rotated, turned with the box: resolveBoxedResize projects the drag
+  // into the element's own frame and anchors the opposite side, it just
+  // skips the axis-aligned snap. `isRotated` drives the wrapper transform and
+  // the zone clip below.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
   // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).

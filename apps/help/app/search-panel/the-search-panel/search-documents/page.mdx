@@ -6,7 +6,7 @@ import { SearchDocuments } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'Finding Documents and Folders',
   description:
-    'Search across all your documents and folders, and the documents shared with you, from one box.',
+    'Search across all your documents and folders, and the documents shared with you, from one box in the editor or the Explorer.',
   path: '/help/search-panel/the-search-panel/search-documents/',
 });
 
@@ -19,27 +19,37 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-documents')}
 >
 
-Wherever you open the [search panel](/help/search-panel/the-search-panel/), it always covers your own library, so you never have to remember which folder a document is in.
+Wherever you open the [search panel](/help/search-panel/the-search-panel/), it always covers your own library, so you never have to remember which folder a document is in. Matching is on the name only, and any part of it will do: `board` finds "Sprint board" and "Onboarding".
 
-<Figure caption="The always-on scope: your documents, your folders, and documents shared with you.">
+<Figure caption="The always-on scope: your documents, documents shared with you, and your folders.">
   <SearchDocuments />
 </Figure>
 
 ## Documents
 
-The **Documents** group matches your documents by name. Pick one and it opens, the quickest way back into a document without scrolling the Explorer. This group is in scope from anywhere, the editor, the Explorer, or the new-document flow.
+The **Documents** group matches your own documents by name (a document you never named is listed as "Untitled document"). Pick one and it opens, the quickest way back into a document without scrolling the [Explorer](/help/explorer/explorer-page/). This group is in scope from anywhere: the editor and the Explorer page alike.
 
-## Folders
+A document saved only in this browser (see [Offline Mode](/help/privacy-and-security/offline-mode/)) carries a **Local only** label in the results, so you can tell it apart from one saved to your account.
 
-The **My documents** group matches your folders by name. Picking a folder takes you to it in the Explorer, so search doubles as a way to jump around your folder tree without expanding it by hand.
+Documents in a team's library are not in this group: they are listed under **Teams**, tagged with their team. See [Searching Teams](/help/search-panel/the-search-panel/search-teams/).
 
-## Shared with you
+## Shared with You
 
-If anyone has shared a document with you, a **Shared with You** group matches those too. Picking one opens it on its share link, with whatever access the owner granted. This keeps shared work findable alongside your own, without it cluttering your folders.
+Once you have opened someone else's document through a share link, a **Shared with You** group matches it too, marked with a share icon. (It is the same list as [Shared with me](/help/explorer/shared-with-you/) in the Explorer, so a link you were sent but never opened is not in it yet.) Picking one opens it on its share link, with whatever access the owner granted. This keeps shared work findable alongside your own, without it cluttering your folders. If the owner turns sharing off, the link expires, or the document goes to the Trash, it drops out of the results.
+
+## My documents (your folders)
+
+The **My documents** group matches the folders in your personal [folder tree](/help/explorer/folders/) by name. Picking a folder opens it on the Explorer page (from the editor, search takes you there), so search doubles as a way to jump around your folder tree without expanding it by hand. Team folders are listed under **Teams** instead.
+
+## Limits
+
+Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the panel lists your documents and folders to browse, so you can open it and arrow straight down to one.
 
 <Tip>
   Search is owner-scoped: a guest finds the documents their own browser owns, and signing in brings
-  your account's documents (and anything shared with you) into scope.
+  your account's documents (and anything shared with you) into scope. Search only looks at names: it
+  does not look inside other documents, so to find a word on a canvas, open that document and search
+  there.
 </Tip>
 
 </ArticleLayout>

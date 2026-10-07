@@ -21,6 +21,8 @@ export const metadata = helpMetadata({
 
 A deck is built from the **Slide Deck** panel, one slide per point you mean to make. Each row shows the slide's position, its name, which tab it draws from, and how many elements are on it, plus a marker when it has notes or is hidden.
 
+Building a deck needs edit access. On a view-only link the panel lists the deck and offers **Present**, but no menus, notes or reordering.
+
 **A row does one thing: press it to open that slide.** The editor switches to that slide's tab and selects its elements, which is how you check a slide without presenting it. Everything you can _do_ to a slide lives in its `…` menu instead, so a panel the width of the palette never has to carry five controls per row.
 
 ## The slide menu
@@ -39,7 +41,7 @@ The quick actions are **Rename**, notes (**Add notes**, or **Edit notes** once t
 
 A slide's membership is editable for the life of the deck, not just at the moment you made it. Open the menu's **Selection** category and it tells you what the two buttons will act on and how many elements the slide holds now:
 
-- **Add** puts the elements you have selected onto the slide.
+- **Add** puts the elements you have selected onto the slide. With several selected it counts them, as in **Add 3**.
 - **Remove** takes them off again. Only the slide changes; nothing leaves the canvas.
 
 Both are offered only while you are on **that slide's own tab**, and the category says so when you are not. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.

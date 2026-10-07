@@ -90,18 +90,6 @@ export function typeIn(types: readonly ItemTypeDef[], id: string): ItemTypeDef {
   return types.find((t) => t.id === id) ?? FALLBACK_ITEM_TYPE;
 }
 
-// Matches "bug", "Bug", "bugs", "customer call" to a type, for quick add's leading `name:`.
-export function typeByNameIn(types: readonly ItemTypeDef[], name: string): ItemTypeDef | undefined {
-  const n = name.trim().toLowerCase();
-  return types.find(
-    (t) =>
-      t.id === n ||
-      `${t.id}s` === n ||
-      t.label.toLowerCase() === n ||
-      `${t.label.toLowerCase()}s` === n,
-  );
-}
-
 export function customFieldOf(type: ItemTypeDef, fieldId: string): CustomFieldDef | undefined {
   return type.custom?.find((f) => f.id === fieldId);
 }

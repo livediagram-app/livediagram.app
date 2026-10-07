@@ -63,7 +63,9 @@ export function useCleanupPreview(deps: {
     if (snapshot.elements.length === 0) return;
     originalsRef.current = snapshot;
     previewingRef.current = true;
-    writeElements(cleanupElements(snapshot.elements, kind));
+    // Layers are read live: a preview never changes them, and their locks decide what stays put.
+    const layers = tabsRef.current.find((t) => t.id === activeId)?.layers;
+    writeElements(cleanupElements(snapshot.elements, kind, layers));
   };
 
   const endCleanupPreview = () => {

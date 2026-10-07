@@ -16,15 +16,15 @@ A team is a named group of signed-in people, managed from the Explorer. Each mem
 
 ## What a team is
 
-A team has a name and an optional organisation, plus a list of members. The person who creates a team becomes its first Admin. A team is not tied to a single owner, so it carries on even if its creator later leaves.
+A team has a name (up to 80 characters) and an optional organisation, plus a list of members. To create one, choose **New team** at the bottom of the Explorer sidebar's **Spaces** group, fill in the **New Team** dialog and choose **Create team**. The person who creates a team becomes its first Admin. A team is not tied to a single owner, so it carries on even if its creator later leaves.
 
-Teams need a signed-in account because they are keyed to your account identity and invites are matched by email. This is the one part of livediagram that asks you to sign in. The canvas itself always works without an account, and a share link can still be handed to a guest who edits without signing in.
+Teams need a signed-in account because they are keyed to your account identity and invites are matched by email. The canvas itself always works without an account, and a share link can still be handed to a guest who edits without signing in. On a self-hosted instance running without accounts, teams aren't available at all.
 
-In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My documents, with **New team** as the last row to create one and an **Invites** row while invitations are waiting for you.
+In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My documents, with **New team** as the last row and an **Invites** row while invitations are waiting for you. Open a team to see its page: the member list, the invite controls (for Admins), and the shared library. The **⋯** button at the top (**Team actions**) holds **Edit team**, **Leave team** and **Delete team**, depending on your role.
 
 ## Roles and invites
 
-There are two roles. **Admins** can invite people, change roles, edit the team, remove members, and delete the team. **Members** can see the team and its members and work in the shared library. The last remaining Admin cannot leave or be demoted, so a team always has someone in charge. Promote another member first, or delete the team.
+There are two roles. **Admins** can invite people, change roles, edit the team, remove members, and delete the team. **Members** can see the team and its members, work in the shared library, and leave. The last remaining Admin cannot leave or be demoted, so a team always has someone in charge. Promote another member first, or delete the team.
 
 <Figure caption="A team's member list, each row tagged with an Admin or Member role badge.">
   <TeamMembers />
@@ -34,11 +34,18 @@ You can add people by email address or by turning on a shareable invite link. Se
 
 ## The shared library
 
-Every team has its own folder tree of documents, shown as a **Team documents** card on the team page. Any joined member can create, rename, duplicate, move, and delete documents there, so the work belongs to the whole team rather than to one person. See [Team Shared Documents](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+Every team has its own folder tree of documents, shown as a **Team documents** card on the team page. Any joined member can create, rename, duplicate, move, and delete documents there, so the work belongs to the whole team rather than to one person. Team documents also turn up in your Recent list, marked **Team**. See [Team Shared Documents](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+
+Inside a team document, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
 
 <Figure caption="The Team documents card holds a shared folder tree every member can manage.">
   <TeamSharedTree />
 </Figure>
+
+## Leaving or deleting a team
+
+- **Leave team** in the **⋯** menu takes you out. Documents you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its documents open, you lose access straight away.
+- **Delete team** (Admins only) asks you to confirm, then removes the team and its member list for everyone. Its documents are not lost: each one moves back to the root of its owner's My documents.
 
 <Tip>
   If your invite does not appear, make sure you are signed in with the same email address it was

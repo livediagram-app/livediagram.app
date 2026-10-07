@@ -1,7 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { PaletteSettings, AutoAttachArrows } from '@/components/illustrations/palette-modes';
+import { AutoAttachArrows } from '@/components/illustrations/palette-modes';
+import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Auto-Attach Arrows',
@@ -18,24 +19,25 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("auto-attach-arrows")}
 >
 
-Auto-Attach Arrows is a toggle, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**.
+Auto-Attach Arrows is a switch, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**. It is your own preference: it applies to every document you open and changes nothing for anyone else.
 
-<Figure caption="The Editor settings, with Auto-attach arrows highlighted and switched on.">
-  <PaletteSettings highlight="auto-attach" />
+<Figure caption="Settings open on Editor, with Auto-Attach Arrows highlighted and switched on.">
+  <SettingsEditorPane highlight="auto-attach" />
 </Figure>
 
 ## Where an arrow can attach
 
-Most shapes have sixteen points an arrow end can snap to: the four corners, the middle of each edge, and a quarter point between each corner and its middle. A few shapes have their own set: a circle, a diamond and a person have eight (no quarter points), a triangle has nine (three on each of its faces, none at the tip), and a document has fourteen (its wavy bottom edge has no corner points). On a hexagon, parallelogram or trapezoid the points follow the faces you see. On round, slanted and wavy shapes (a circle, a diamond, a person, a cloud) the points sit on the outline you see. Drag an arrow end near a shape and its points light up.
+Most shapes have sixteen points an arrow end can snap to: the four corners, the middle of each edge, and a quarter point between each corner and its middle. A few shapes have their own set: a circle, a diamond and a person have eight (no quarter points), a triangle has nine (three on each of its faces, none at the tip), and a document has fourteen (its wavy bottom edge has no corner points). On a hexagon, parallelogram or trapezoid the points follow the faces you see. On round, slanted and wavy shapes (a circle, a diamond, a person, a cloud) the points sit on the outline you see. Drag an arrow end near a shape and its points light up as small dots, with the one it will snap to drawn larger.
 
 ## What it does
 
-As you move shapes, an arrow end stays exactly where you put it, with one exception: when the move leaves the arrow running **through** one of the shapes it connects. Then its ends move to the sides that face each other.
+As you move shapes, an arrow end stays exactly where you put it, with one exception: when the move leaves the arrow running **through** one of the shapes it connects. Then its ends move to the sides that face each other. A line that only touches or runs along an edge doesn't count.
 
 - An end keeps its kind of spot: a corner stays a corner, a quarter point a quarter point, a middle a middle. Only the side changes.
 - A quarter point moves to the quarter on the new side nearer the other end, unless another arrow already sits there.
 - Curved and angled arrows count by the line as drawn, not a straight line between their ends.
-- It happens live while you drag, and there is no going back: once an end has moved, its new spot is where it stays.
+- It happens live while you drag, and on every arrow-key nudge. Resizing or rotating a shape never moves an arrow end.
+- There is no going back: once an end has moved, its new spot is where it stays, even if you move the shape back.
 - Ends you placed by hand follow the same rule, and so does the attached end of an arrow whose other end is free.
 
 When two arrows leave the same side of a shape and cross each other, they swap their spots, so the lines untangle without changing sides.
@@ -48,8 +50,10 @@ When two arrows leave the same side of a shape and cross each other, they swap t
 
 When several arrows pin to the same spot on a shape, say a hub with every child pointing at its bottom edge, the arrowheads fan out side by side along that edge instead of piling onto one point. The fan is purely visual and automatic: the pins themselves don't change, the heads just stay readable however many connectors converge.
 
+To keep one arrow's start exactly on the spot it is pinned to, right-click it and turn on **Start at exact anchor** in its **Line** category; the other arrows there keep fanning among themselves. See [Arrow Styles](/help/palette/arrows/arrow-styles/).
+
 ## When to turn it off
 
-Switch it off when you want every arrow end to hold exactly where you put it, even when a move makes an arrow cross a shape. With it off, moving shapes never changes where an arrow is attached.
+Switch it off when you want every arrow end to hold exactly where you put it, even when a move makes an arrow cross a shape. With it off, moving shapes never changes where an arrow is attached; you can still move an end yourself by dragging it to another point.
 
 </ArticleLayout>

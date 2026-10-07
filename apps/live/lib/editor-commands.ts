@@ -37,6 +37,9 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
+  // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
+  // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
+  singleRotates: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation

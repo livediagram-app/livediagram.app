@@ -2,34 +2,53 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { IsometricMode } from '@/components/illustrations/palette-modes';
+import { IsometricOrbit } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Isometric Mode',
   description:
-    'Use Isometric Mode in livediagram to toggle the current tab into a tilted, three-dimensional perspective.',
+    'Use Isometric Mode in livediagram to look at the current tab as a tilted, three-dimensional scene, orbit the camera, and export it that way.',
   path: '/help/selection-modes/isometric-mode/',
 });
 
 <ArticleLayout
   title="Isometric Mode"
-  description="Toggle the current tab into a tilted, isometric perspective."
+  description="Look at the current tab as a tilted, three-dimensional scene."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   subArticles={getSubArticles("isometric-mode")}
 >
 
-Isometric Mode toggles the current tab into a tilted, isometric (3D-looking) perspective, giving a flat canvas a sense of depth. Choose it from the mode picker at the top of the floating palette, or press **`I`**.
+Isometric Mode shows the current tab as a tilted, three-dimensional scene: the canvas is laid onto an isometric plane and each box is raised into a solid block, giving a flat diagram a sense of depth. It is a way to look at a diagram (for an architecture walkthrough or a screenshot), not a way to edit one. Choose **Isometric** from the tool picker at the top of the floating palette, or press **`I`**.
 
 ## How it works
 
-The mode restyles how the whole tab is rendered, tilting it into the isometric view. Toggle it again to return to the flat view. It is a toggle for the current tab, so it affects everything on that tab at once.
+The whole tab tilts at once. Shapes, sticky notes, tables, images and cards become raised blocks with sides in their own colour; arrows, text, icons and frames stay flat on the floor.
 
-<Figure caption="Isometric Mode is lit in the mode picker, tilting the tab's shapes into a three-dimensional view.">
+<Figure caption="The palette's tool picker set to Isometric, tilting the tab's shapes into a three-dimensional view.">
   <IsometricMode />
 </Figure>
 
-## When it is unavailable
+It is purely a view, and it is yours alone. Nothing about the document changes, nobody else's view tilts, and the angle is not saved: other people stay on the flat canvas unless they pick Isometric themselves.
 
-Isometric Mode is disabled on an empty canvas. Add an element and the mode becomes available again.
+## Moving around
+
+- **Drag** to pan, as with the [Hand](/help/selection-modes/hand/) tool. Pinch or use the zoom controls to zoom.
+- **Shift-drag, or drag with the right mouse button**, to orbit the camera: sideways spins the scene round, up and down tilts it between top-down and edge-on.
+- **The orbit button** appears in the zoom controls at the bottom right while the view is on. Drag it to orbit without holding a key, or click it to snap back to the default angle.
+
+<Figure caption="The orbit button in the zoom controls: drag it to orbit the scene, click it to reset the angle.">
+  <IsometricOrbit />
+</Figure>
+
+Nothing can be selected, moved or edited while the view is on. Press `Esc`, or pick another tool, to go back to the flat canvas (`Esc` lands on Select, or on Hand on a phone).
+
+## Exporting in isometric
+
+To keep the picture, turn on **Isometric view** in the Export dialog's image options. PNG, SVG and PDF exports then come out tilted and raised the same way. See [Exporting a Tab](/help/tabs/export-tabs/).
+
+## Availability
+
+Isometric Mode is greyed out on an empty canvas; add an element and it becomes available. It works on desktop and touch, and view-only visitors can use it too (press `I`), since looking changes nothing.
 
 </ArticleLayout>

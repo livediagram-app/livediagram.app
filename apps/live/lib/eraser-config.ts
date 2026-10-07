@@ -31,7 +31,7 @@ export const DEFAULT_ERASER_CONFIG: EraserConfig = {
 
 export const ERASER_MODES: readonly { id: EraserMode; label: string; hint: string }[] = [
   { id: 'sweep', label: 'Sweep', hint: 'Drag across things to erase them' },
-  { id: 'tap', label: 'Tap', hint: 'One press, one thing — for a crowded canvas' },
+  { id: 'tap', label: 'Tap', hint: 'One press, one thing, for a crowded canvas' },
 ];
 
 export const ERASER_SIZES: readonly { id: EraserSize; label: string }[] = [
@@ -44,7 +44,7 @@ export const ERASER_SIZES: readonly { id: EraserSize; label: string }[] = [
 export const ERASER_TARGETS: readonly { id: EraserTarget; label: string; hint: string }[] = [
   { id: 'anything', label: 'Anything', hint: 'Every element the brush touches' },
   { id: 'drawings', label: 'Drawings', hint: 'Only pencil and highlighter strokes' },
-  { id: 'arrows', label: 'Arrows', hint: 'Only connectors — the boxes stay put' },
+  { id: 'arrows', label: 'Arrows', hint: 'Only connectors; the boxes stay put' },
 ];
 
 // --- What the gesture uses --------------------------------------------------

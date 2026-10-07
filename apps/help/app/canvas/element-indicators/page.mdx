@@ -1,0 +1,121 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  IndicatorStylesScene,
+  IndicatorPlacementScene,
+  MindRootCommandsScene,
+} from '@/components/illustrations/element-indicators';
+
+export const metadata = helpMetadata({
+  title: 'Element Indicators',
+  description:
+    'The small icons on an element that show it has a link, a note, an open action or comments, and the Edit Outline and Tidy Map commands on a mind map root. Choose Top, Footer or Off in Settings, and learn how each one behaves.',
+  path: '/help/canvas/element-indicators/',
+});
+
+<ArticleLayout title="Element Indicators" description="The quiet marks that tell you an element carries something you can't otherwise see, and how to change or hide them." categoryTitle="Canvas" categorySlug="canvas">
+
+Plenty of what an element carries is invisible on the canvas: the [link](/help/canvas/links/) it jumps to, the [note](/help/canvas/notes/) behind it, an [action](/help/collaboration/assigned-actions/) waiting on someone, a [comment](/help/collaboration/comments/) thread. **Element indicators** are the small icons that give these away. They read like metadata printed on a card: quiet until you look for them, and one click opens whatever they point to.
+
+## What They Show
+
+An element shows an indicator for each of these it has, always in this order:
+
+- **Link**: the element links to another tab, another document or a web address. Hovering it shows a card naming the destination.
+- **Note**: the element has a note.
+- **Action**: the element has an open assigned action. Hovering it reads **Assigned to** and the person's name. A completed action stops showing.
+- **Comments**: the element has unresolved comments, with the count beside the icon. Resolving the last thread clears it.
+
+Comments come last because they are the most frequent and the most urgent, and the far end is the first place your eye lands.
+
+A few elements show these things on their own face instead, so they carry no indicator for them: an [annotation](/help/canvas/annotations/)'s marker is its note, a link card is its link, a comment pin or comment panel shows its own comments, and an action panel its own action.
+
+A **mind map root** can also carry two commands, **Edit Outline** and **Tidy Map**. They work a little differently; see [Mind Map Commands](#mind-map-commands) below.
+
+## Choosing a Style
+
+Open [Settings](/help/user-interface/settings/), go to **Editor** and pick an option for **Element Indicators**. It is your own preference, so it changes what you see and nobody else's view.
+
+- **Top** (the default) prints the icons inside the element along its top, in the element's own text colour at half strength, so they suit any fill, theme or style.
+- **Footer** puts a row along the inside of the element's bottom edge, the way a task card shows its details, with a word beside each icon: **Link**, **Note**, the assignee's initials on a small coloured disc with **Action**, and the comment count. When the words don't fit, the row drops them and keeps the icons, disc and count.
+- **Off** draws no indicators at all. Everything they open is still in the element's menu (see [With Indicators Off](#with-indicators-off)).
+
+<Figure caption="The same element with a link, a note and two comments, in Top, Footer and Off.">
+  <IndicatorStylesScene />
+</Figure>
+
+## Where They Sit
+
+Indicators always sit **inside** the element's outline, never across it:
+
+- On a box-like element (a rectangle, rounded rectangle, pill, mind node, card or panel), Top sits at the **top-right**.
+- On a round or pointed shape (a circle, diamond, hexagon, cloud, triangle, trapezoid, star or actor), Top is **centred** along the top, since there is no corner for it.
+- Footer starts at the bottom-left of a box, and is centred on the same round or pointed shapes.
+
+They look for a spot clear of the element's label and icon first. When there isn't one, the label shifts just far enough to make room (down under Top, up over Footer), and a label set to scale to fit shrinks a little instead.
+
+On an element too small, thin or spiky to hold them (a small pill, a progress bar, a star, an actor, a small diamond), the icons gather in a small **chip on the element's edge** instead, half in and half out, drawn in the element's own fill.
+
+<Figure caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it.">
+  <IndicatorPlacementScene />
+</Figure>
+
+## Using Them
+
+Each indicator is a button. Click it to:
+
+- **Link**: follow the link, to the other tab, the other document, or the web page in a new tab.
+- **Note**: open the note.
+- **Action**: open the action, showing who it is assigned to.
+- **Comments**: open the comment thread.
+
+Hovering the element brings its indicators up a little, and the one under the pointer to full strength. From the keyboard, each indicator is reachable with **Tab** and shows a focus ring.
+
+## While an Element Is Selected
+
+Selecting an element brings its own handles, **+** buttons and toolbar onto the same edges, so its indicators **shrink and fade away** while it is selected and come back when you deselect it. Nothing else moves: the label stays exactly where it was. To reach a link, note, action or comments on a selected element, deselect it or use its menu.
+
+## Mind Map Commands
+
+A mind map root with at least one child carries **Edit Outline** (edit the whole map as a list) and **Tidy Map** (lay the map out neatly again). These are things you **do**, not things the root **has**, so they stay hidden until you **hover** the root. Their space is kept free so nothing shifts when they appear. In Top they lead the cluster, and in Footer they end the row.
+
+They aren't shown while the root is selected, on a root with no children, on a [locked tab](/help/tabs/locking-tabs/), or to someone who can only view the document. Both are always in the root's **Mind Map** menu section too, which is the way in from the keyboard or on a touch screen. See [Edit Outline](/help/palette/mind-maps/edit-outline/).
+
+<Figure caption="Hovering a mind map root shows Edit Outline and Tidy Map ahead of its note indicator.">
+  <MindRootCommandsScene />
+</Figure>
+
+## With Indicators Off
+
+Turning indicators **Off** hides them on every element, and a mind map root's commands no longer appear on hover. Nothing becomes unreachable:
+
+- Links and notes are in the element's menu under **Resources**.
+- Actions and comments are in the element's menu under **Collaborate**, and every open thread and action is listed in the **Collaborate** panel.
+- **Edit Outline** and **Tidy Map** are in the root's **Mind Map** section.
+
+## When They Don't Show
+
+- **Zoomed far out**: below 40% zoom, indicators hide, along with the padlock on locked elements and the avatars of collaborators who have an element selected. An overview is for shape, not detail. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+- **Exports**: indicators are editor chrome, so PNG and SVG exports and document thumbnails never include them.
+- **View-only**: someone who can only view the document still sees links, notes, actions and comments, and can open each one to read it. They don't get the mind map commands.
+- **Embeds**: a document [embedded](/help/collaboration/sharing/embeds/) in another page shows no indicators at all, whether the embed is for viewing or editing and whatever style you chose. Open it in livediagram to see them.
+- **Community**: a visitor viewing a document in the [Community](/help/collaboration/sharing/community/) sees no comment counts, since there is no comments panel for them to open. The other indicators still show.
+
+<Tip>
+  [Zen mode](/help/tools/zen-mode/) hides the editor's panels and bars, but indicators are part of
+  the elements, so they stay. Set **Element Indicators** to **Off** too for the cleanest possible
+  canvas.
+</Tip>
+
+## On a Phone or Tablet
+
+Indicators work the same on a touch screen: tap one to open what it points to. There is no pointer to hover with, so a mind map root's commands don't appear; long-press the root and use its **Mind Map** section instead. See [Mobile](/help/supported-devices/mobile/).
+
+<Note>
+  Element indicators are separate from the other marks an element can wear. The padlock on a [locked
+  element](/help/canvas/locking/), the avatars of collaborators who have it selected, and the tally
+  on an element during a [vote](/help/collaboration/session-tools/voting/) are not affected by this
+  setting.
+</Note>
+
+</ArticleLayout>

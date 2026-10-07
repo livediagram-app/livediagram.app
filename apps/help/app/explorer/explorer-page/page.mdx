@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ExplorerOverview, MyDocumentsTree } from '@/components/illustrations/explorer';
+import { MyDocumentsTree } from '@/components/illustrations/explorer';
+import { ExplorerPageLayout } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Explorer Page',
@@ -16,28 +17,28 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The full-page [Explorer](/explorer) is the complete library view, modelled on a desktop file browser: a sidebar on the left to navigate, and a breadcrumb plus a list of folders and documents on the right. It is where all your documents live, organised into folders by project, customer, or topic. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
+The full-page [Explorer](/explorer) is the complete library view, modelled on a desktop file browser: a sidebar on the left to navigate, and the page you picked on the right, with its folders and documents. Opening `/explorer` takes you to **Home**. It is where all your documents live, organised into folders by project, customer, or topic. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
 
-The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My documents**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter documents](/help/explorer/filters/)). New folder and New document sit at the top of the page you are on.
+The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My documents**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter documents](/help/explorer/filters/)). Making things happens in the page header: **New document** is there on every page, and on My documents and inside a folder it becomes a **Create** button offering **New document** and **New Folder** (**New Subfolder** inside a folder).
 
-<Figure caption="The full-page Explorer: the sidebar's groups on the left, and the chosen view's documents on the right.">
-  <ExplorerOverview />
+<Figure caption="The full-page Explorer: the sidebar's three groups on the left, and My documents in the card view on the right.">
+  <ExplorerPageLayout />
 </Figure>
 
 ## Overview
 
-- **Home** is what the Explorer opens on ([Home](/help/explorer/timeline/)): the documents you use most and last, and what other people did while you were away. Its **See all activity** link opens All activity, the full feed. The row carries a badge when something has happened since you last looked.
-- **Activity** lists the open [actions and comment threads](/help/explorer/activity/) waiting on you.
+- **Home** is what the Explorer opens on ([Home](/help/explorer/timeline/)): the documents you use most and last, and what other people did while you were away. Its **See more** link opens [Recent](/help/explorer/recent/) and its **See all activity** link opens All activity, the full feed; neither has a sidebar row of its own. The row carries a badge when something has happened since you last looked.
+- **Activity** lists the open [actions and comment threads](/help/explorer/activity/) waiting on you, with a badge counting the actions assigned to you.
 - **Shared with me** gathers every document other people have [shared with you](/help/explorer/shared-with-you/) into one list, kept apart from your own library so collaborator work and your own never get mixed up.
 
 ## Spaces
 
 Your spaces are the top-level folders of the tree.
 
-- **My documents** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the documents you have not filed. This is where you do the actual filing: dragging documents into folders, renaming, and nesting folders inside folders.
-- **Each team** you belong to sits beside it, and expands to the team's shared folders ([Team spaces](/help/explorer/team-spaces/)).
+- **My documents** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the documents you have not filed. This is where you do the filing: moving documents into folders with **Change Folder**, renaming, and nesting folders inside folders. Its own menu (its **⋯** button or a right-click) holds **Use as default for** ([Default folders](/help/explorer/folders/default-folders/)).
+- **Each team** you belong to sits beside it, and expands to the team's shared folders ([Team spaces](/help/explorer/team-spaces/)). Its badge counts the members once there is more than one.
 - **Invites** appears while a team invite is waiting for you.
-- **New team** creates a team. If you are not signed in, a **Sign in to access Teams** card sits here instead.
+- **New team** creates a team. If you are not signed in, a **Sign in to access Teams** card sits here instead (a self-hosted copy without sign-in shows neither).
 
 <Figure caption="My documents is a folder tree: folders you can nest as deep as you like, and the documents at its root.">
   <MyDocumentsTree />
@@ -46,12 +47,14 @@ Your spaces are the top-level folders of the tree.
 ## More
 
 - **This browser** lists the documents saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). It shows only while there is at least one. They are yours, like everything in My documents, and every row and card of one carries a **Local only** pill: hover or focus it to read that it lives only in this browser, and click it for the Offline Mode guide. Their menus offer **Sync Document** to move one to your account, while a cloud document's menu offers **Take Offline** to do the reverse.
-- **Library** opens to the [Image gallery](/help/explorer/image-gallery/) (every image you have uploaded, with where each is used), [Themes](/help/explorer/themes-library/) (your custom themes, ready to edit or reuse) and [Shape libraries](/help/explorer/shape-libraries/).
+- **Library** expands (it has no page of its own) to the [Image gallery](/help/explorer/image-gallery/) (every image you have uploaded, with where each is used), [Themes](/help/explorer/themes-library/) (your custom themes, ready to edit or reuse) and [Shape libraries](/help/explorer/shape-libraries/).
 - **Trash** holds deleted documents for 30 days, ready to restore.
 
 ## Moving around with the keyboard
 
-The sidebar is a single stop when you press Tab. Then the **arrow keys** move up and down, **Right** opens a row and **Left** closes it (or moves to its parent), **Home** and **End** jump to the first and last rows, **Enter** opens the row, and typing a letter jumps to the next row starting with it. On a folder, **Shift+F10** opens its menu.
+The sidebar is a single stop when you press Tab. Then the **arrow keys** move up and down, **Right** opens a row and **Left** closes it (or moves to its parent), **Home** and **End** jump to the first and last rows, **Enter** or **Space** opens the row, and typing a letter jumps to the next row starting with it. On a folder, or on My documents, **Shift+F10** (or the **Menu** key) opens its menu.
+
+My documents starts expanded and Library starts closed (it opens by itself when you are on one of its pages). Teams and folders start closed, and what you expand lasts until you reload.
 
 With [power user mode](/help/user-interface/power-user-mode/) and Minimal chrome on, the group titles give way to thin lines between the groups, with nothing above Home.
 
@@ -59,16 +62,16 @@ Each page is named after its row: **Home**, **Shared with me**, **My documents**
 
 ## List or card view
 
-Every browse view, My documents, your folders, Recent, Search results, and a team's shared library, can be shown two ways, switched with the **List / Card** toggle at the top-right of the pane:
+Every browse view (My documents, your folders, Recent, Favourites, Search results, This browser, and a team's shared library) can be shown two ways, switched with the **List view** / **Card view** toggle at the top-right of the pane:
 
 - **List** packs documents into compact rows, best for scanning a long library by name and date.
 - **Card** shows each document as a tile with a thumbnail of its first tab, best for recognising a document by its shape at a glance.
 
-The choice is remembered on your device, so the Explorer always opens the way you left it. [List and Card Views](/help/explorer/list-and-card-views/) covers the two layouts and the snapshot previews in detail.
+Cards are the starting view. Your choice is remembered on this device, so the Explorer always opens the way you left it. [List and Card Views](/help/explorer/list-and-card-views/) covers the two layouts and the snapshot previews in detail.
 
 ## Finding your way around
 
-Whichever row you pick, the main pane on the right shows its contents, and a breadcrumb across the top traces the folder path so you can click any step to jump back up. On a phone, the menu button at the top of the page opens the same sidebar as a drawer. Everything works whether or not you are signed in: a guest sees the documents and folders their own browser owns, and can sign in later to carry that work into an account.
+Whichever row you pick, the main pane on the right shows its contents. Inside a folder, a breadcrumb under the title traces the folder path so you can click any step to jump back up. On a phone, the menu button beside the page title opens the same sidebar as a drawer from the left; picking a page closes it. Everything works whether or not you are signed in: a guest sees the documents and folders their own browser owns, and can sign in later to carry that work into an account.
 
 <Tip>
   New here? Start with [My documents](/help/explorer/personal-space/) to learn folders, then let

@@ -89,7 +89,8 @@ type SearchPanelProps = {
   // Editor-only: the contextual command catalogue (delete / lock / rotate /
   // share / rename / ...) surfaced as "Actions" results, plus the dispatcher
   // that runs the picked command's id. The editor builds the list selection-
-  // aware (useEditorCommands) and withholds it from view-only sessions.
+  // aware (useEditorCommands); view-only sessions get the view-safe subset
+  // (zen / fit / export) rather than nothing.
   commandItems?: CommandSearchItem[];
   onRunCommand?: (id: string) => void;
   onClose: () => void;

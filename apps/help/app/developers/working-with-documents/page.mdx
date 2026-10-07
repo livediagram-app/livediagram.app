@@ -199,6 +199,24 @@ curl -X PUT https://livediagram.app/api/documents/svc-map/folder \
   -d '{ "folderId": "infra" }'
 ```
 
+## Delete and restore
+
+`DELETE /documents/svc-map` moves the document to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 document_trashed`. Add `?permanent=true` to delete it for good straight away.
+
+```bash
+curl -X DELETE https://livediagram.app/api/documents/svc-map \
+  -H "Authorization: Bearer $TOKEN"
+
+# What you can restore: your own Trash and every team's you belong to
+curl https://livediagram.app/api/trash \
+  -H "Authorization: Bearer $TOKEN"
+
+curl -X POST https://livediagram.app/api/trash/svc-map/restore \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+`DELETE /trash/svc-map` deletes one trashed document for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+
 ## Share a document
 
 Create a share link with a role of `view` or `edit`:

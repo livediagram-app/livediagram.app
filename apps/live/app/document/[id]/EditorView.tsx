@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
+import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
@@ -418,7 +419,10 @@ export function EditorView() {
                           <CommentBadgesContext.Provider
                             value={!(embedMode && isReadOnly) && !sessionCommunity}
                           >
-                            <EditorCanvasHost />
+                            {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                            <SuppressElementIndicators when={embedMode}>
+                              <EditorCanvasHost />
+                            </SuppressElementIndicators>
                           </CommentBadgesContext.Provider>
                         </AgentFocusContext.Provider>
                       </ChangesetRevealContext.Provider>

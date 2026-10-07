@@ -10,13 +10,13 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Privacy Policy" description="What the hosted livediagram service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
 
-_Last updated: 5 October 2026._
+_Last updated: 7 October 2026._
 
 livediagram is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **livediagram.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/). If you self-host livediagram, you are responsible for your own deployment and this policy does not apply to it.
 
 ## What we store
 
-- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare.
+- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers.
 - **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
 - **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
 - **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
@@ -26,6 +26,7 @@ livediagram is built to need as little of your data as possible, and the whole c
 - **Google Drive, if you connect it.** If you [mirror your documents to Google Drive](/help/account-and-data/google-drive/), we store an encrypted refresh token from Google, the ids of the files and folders livediagram created in your Drive, and the state livediagram last wrote to them. See **Google user data** below.
 - **Community posts, if you share to the Community.** A post holds the title, description, category and tags you write, which document it shows, when you shared it, and its like and copy counts. Your account id is stored with it so you can manage it, but it is never shown: the post appears as Anonymous, or, if you turn that off, with your display name and profile picture. Removing the post, or deleting the document or your account, deletes it.
 - **Community likes and reports.** A like is stored against a random key your browser keeps for the Community, not against you. When someone copies a Community post we record that their account or browser id copied it, so each person counts once; this is deleted with their account. A report stores its reason, the optional note, the same random key, and a one-way hash of the reporter's internet address combined with the post's id, so that reports from one network can't hide a post on their own. The hash is not used for anything else, and a post's reports are deleted when the post is removed or its document is deleted. Reports are counted automatically; nobody reads them by hand.
+- **Document activity.** Your [Timeline](/help/explorer/timeline/) records what happened to your documents (created, renamed, shared, commented on) and which ones you opened, so the Explorer can show you. These records are kept for a year.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
 ## Google user data
@@ -39,13 +40,25 @@ If you connect Google Drive, livediagram asks Google for access to **only the fi
 
 livediagram's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
+## AI features
+
+The AI features run only when you use them, and only on a deployment that has an AI provider configured.
+
+- **The AI assistant.** When you ask the assistant something, your prompt and the elements on the current tab (their text, shapes and positions) are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant can be switched off in Settings.
+- **Reading sticky notes from a photo.** When you import a photo of sticky notes, the notes are found in your browser, and crops of them are sent through our API to **Google** (Gemini) to read the handwriting. We do not store the crops.
+- **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your documents through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
+
+We do not use your documents to train AI models. The providers above process what is sent to them under their own API terms.
+
 ## What we do not do
 
 We do not use tracking pixels, advertising, or third-party analytics SDKs. We do not sell your data, and we do not build advertising profiles. The repository is public, so what runs is what you can read.
 
 ## Anonymous product analytics
 
-To understand which features actually help, we record anonymous, first-party product events, for example "a document was created" or "a square was added". Each event is just three fixed labels: a category, an action, and an optional type like "Square" or "Edit". They never include anything that identifies you or your work: no names, no document or element content, no account id, no IP address. Page views are counted the same way: which page was opened, with ids and anything after a `?` or `#` removed in your browser before it is sent. When one of our own buttons opens the New Document page, we count which button it was (from a fixed list, like the landing page's hero) and whether a document followed; the label is removed from the address straight away. Error health is counted the same way too: a failed request or a browser-side exception is recorded only as a generic status or kind, never a message or stack trace.
+To understand which features actually help, we record anonymous, first-party product events, for example "a document was created" or "a square was added". Each event is just three fixed labels: a category, an action, and an optional type like "Square" or "Edit". They never include anything that identifies you or your work: no names, no document or element content, no account id, no IP address. Page views are counted the same way: which page was opened, with ids and anything after a `?` or `#` removed in your browser before it is sent. When one of our own buttons opens the New Document page, we count which button it was (from a fixed list, like the landing page's hero) and whether a document followed; the label is removed from the address straight away. Error health is counted the same way too: a failed request or a browser-side exception is recorded only as a generic status or kind, never a message or stack trace. Events are deleted after 60 days.
+
+To count sign-ups and sign-ins once each, our server also remembers which sign-in sessions it has already counted, for 90 days, and that an account has been seen before (deleted when you delete your account). These records are never published; only the totals are.
 
 We collect this ourselves, store it in our own database, and use no third-party analytics vendors. The data is never sold or shared, and the only place it goes beyond our own use is our public [telemetry dashboard](/telemetry), where you can see exactly the same anonymous totals we do. You can turn it off for your browser at any time from Settings (see [What We Collect](/help/privacy-and-security/what-we-collect/)).
 
@@ -57,10 +70,11 @@ We use local storage to keep your browser id, your preferences, and, in the Comm
 
 If you have an account, we use your email address to send you a small number of emails:
 
-- **Account and service emails**, for example, a notification when someone invites you to a team, and a confirmation when you delete your account.
-- **A short onboarding series**: a welcome message and a couple of follow-up tips during your first two weeks, to help you get started.
+- **Account and service emails**: an invitation when someone invites you to a team, a confirmation when you delete your account, and a one-time reminder a week before an API token expires.
+- **Notifications about your work**: when someone opens a document you shared for the first time, comments on a document you own, responds to a team invite you sent, assigns you an action, or mentions you in a comment. A mention email quotes the comment (up to about 280 characters) and an assigned-action email includes the action's name and the start of its description; the others name the document but not its contents.
+- **A short onboarding series**: a welcome message, a few tips during your first two weeks, a nudge if you have not made a document after a few days or have been away for about four weeks, and the occasional milestone.
 
-We do not send advertising or marketing beyond these, and we never share your address other than with our email provider for the sole purpose of delivering them. People who use livediagram without an account are never emailed.
+You can turn off every notification, tip and milestone email in **Settings**, under **Account**, then **Notifications**, or from the link at the bottom of each one (see [Email Notifications](/help/account-and-data/email-notifications/)). We do not send advertising or marketing beyond these, and we never share your address other than with our email provider for the sole purpose of delivering them. People who use livediagram without an account are never emailed.
 
 ## Service providers
 
@@ -69,7 +83,8 @@ We rely on a small number of providers to run the service:
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (only if you sign in).
 - **Google**, for the Google Drive mirror (only if you connect it); your browser talks to Google directly.
-- **Resend**, for delivering the account and onboarding emails described above (only if you have an account).
+- **Resend**, for delivering the emails described above (only if you have an account).
+- **OpenAI**, for the AI assistant, and **Google** (Gemini), for reading sticky notes from a photo (only when you use them; see **AI features** above).
 
 These providers process data on our behalf so that we can run the service.
 
@@ -83,7 +98,15 @@ Anything you put in a document you share becomes visible to people who have the 
 
 ## Keeping and deleting your data
 
-You can delete any document you own at any time. You can also delete your account, and the data associated with it, yourself from your account settings. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. A document left empty and untouched for 30 days moves to the Trash on its own.
+
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash included), folders, images, themes, preferences and API tokens straight away, revokes the Google Drive connection, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+
+Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
+
+## Security
+
+We protect your data with authentication and access controls on every request, and the code is public so the controls can be checked. If you find a security vulnerability, please report it privately as described in [Reporting a Vulnerability](/help/policies/report-a-vulnerability/).
 
 ## Children
 

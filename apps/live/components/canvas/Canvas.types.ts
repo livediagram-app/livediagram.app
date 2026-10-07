@@ -679,11 +679,8 @@ export type CanvasProps = {
   onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onShiftSelect: (id: string) => void;
-  onBeginFormatPainter: () => void;
-  onCancelFormatPainter: () => void;
-  // Wrap up the persistent Format canvas tool (the palette tool, not the
-  // single-shot painter): drops back to the Select tool. Drives the
-  // format-tool mode banner's "Done" button.
+  // Wrap up the Format canvas tool (the palette tool): drops back to the
+  // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
   onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;

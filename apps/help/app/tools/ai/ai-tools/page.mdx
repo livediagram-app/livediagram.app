@@ -5,34 +5,44 @@ import { AiPanel } from '@/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Ask and Clean',
-  description: 'The two AI modes in livediagram and when to reach for each one.',
+  description: 'The two AI Assistant modes in livediagram, what each one does, and when to use it.',
   path: '/help/tools/ai/ai-tools/',
 });
 
 <ArticleLayout title="Ask and Clean" description="The two AI modes, what each one does, and when to use it." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "AI Assistance", slug: "ai" }} subArticles={getSubArticles("ai").filter((a) => a.slug !== "ai-tools")}>
 
-The AI panel has two modes, picked from tabs at the top: **Ask** and **Clean**. Both take the same prompt box, but they treat the diagram differently. Ask only reads the diagram; Clean changes it.
+The AI Assistant panel has two modes, picked from the buttons at the top: **Ask** and **Clean**. Both use the same prompt box, but they treat the diagram differently: Ask only reads the diagram, Clean changes it. If the panel isn't on your canvas, see [AI Assistance](/help/tools/ai/) for how to turn it on.
 
-<Figure caption="Both modes share one prompt box; the tabs at the top switch between them.">
+<Figure caption="Both modes share one prompt box; the buttons at the top switch between them.">
   <AiPanel />
 </Figure>
 
-## Ask — questions, no changes
+## Sending a request
+
+Type into the prompt box and press **Send**, or press ⌘Enter (Ctrl+Enter on Windows and Linux). With **Suggested Prompts** on, each mode also offers a few one-click prompts, such as "Summarise this diagram" for Ask or "Fix spelling" for Clean, which send straight away.
+
+## Ask: questions, no changes
 
 **Ask** answers questions about the diagram without touching it. Use it to get your bearings on a diagram someone else made, or to check your own: "what happens if the payment fails?" or "which steps have no outgoing arrow?". The answer streams into the panel as text, and nothing on the canvas changes.
 
-## Clean — tidy what's there
+Ask remembers the last few exchanges, so you can follow up ("and which of those is the riskiest?") without repeating yourself. **Clear context** forgets them, and switching to another tab starts afresh.
 
-**Clean** works on what is already on the tab. It fixes label typos and normalises sizes, positions, and styles so a diagram that grew messily reads consistently. Clean respects your layout rather than re-flowing it, so it is the safe choice once a diagram is arranged the way you like. It applies as a single block, so one **Undo** (Ctrl+Z) reverses the whole operation.
+## Clean: tidy what's there
+
+**Clean** works on what is already on the tab. It fixes label typos and normalises sizes, positions, and styles so a diagram that grew messily reads consistently. The prompt is optional: leave it blank for a general tidy, or say what you want ("Normalise colours"). Clean respects your layout rather than re-flowing it, and it never changes what an element is (a checklist stays a checklist, a diamond stays a diamond), so it is the safe choice once a diagram is arranged the way you like.
+
+While it works, the panel shows how many elements it has processed so far. When it finishes, the changes land in a single step, so one **Undo** (⌘Z / Ctrl+Z) reverses the whole operation.
+
+If you want the layout itself recomputed from the arrows, use [Auto Layout](/help/tools/layout-cleanup/auto-layout/) instead: it is instant, works offline and needs no AI.
 
 ## Focus and context
 
-Whatever the mode, the assistant only ever sees the **active tab**. If you have elements selected when you send a request, those are marked as the focus: Clean concentrates its edits there while still seeing the rest of the tab, so an arrow whose other end sits outside the selection stays connected correctly, and Ask answers about the selection in context. With nothing selected, the whole tab is fair game.
+Whatever the mode, the assistant only ever sees the **active tab**. If you have elements selected when you send a request, those are marked as the focus: Clean concentrates its edits there while still seeing the rest of the tab, so an arrow whose other end sits outside the selection stays connected correctly, and Ask answers about the selection in context. With nothing selected, the whole tab is fair game. The **Context** line above the prompt box shows which it will use.
 
 <Note>
-  Prompts are kept short by design, so think of each request as one clear instruction. If a result
-  is not quite right, adjust the prompt and send again rather than stacking corrections into one
-  long message.
+  Prompts are capped at 1,000 characters, so think of each request as one clear instruction. If a
+  result is not quite right, undo it, adjust the prompt and send again rather than stacking
+  corrections into one long message.
 </Note>
 
 </ArticleLayout>

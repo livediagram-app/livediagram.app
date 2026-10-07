@@ -21,10 +21,10 @@ import { debugLog } from '@/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// Selection-editing handlers, lifted out of editor-page.tsx: enter
-// format painter, begin / commit / cancel inline label
-// edits (incl. the first-label -> document/tab auto-rename), type-to-edit,
-// single-select (with format-paint interception), and
+// Selection-editing handlers, lifted out of editor-page.tsx: begin /
+// commit / cancel inline label edits (incl. the first-label ->
+// document/tab auto-rename), type-to-edit, single-select (with the
+// Format tool's arm-then-paint interception), and
 // shift-click multi-select toggling. applyFormatFromSource comes from
 // useElementHelpers and is passed in.
 export function useSelectionEditing(opts: {
@@ -54,7 +54,7 @@ export function useSelectionEditing(opts: {
   // history frame made Cmd+Z look like a no-op (it undid only the
   // invisible rename) and needed two undos for one action.
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
+  applyFormatFromSource: (targetId: string) => void;
   // True when ANOTHER participant currently has this element selected
   // (concurrent-selection lock, docs/specs/007-editor/live-app.md). Blocks select / edit so two
   // people don't fight over the same element. Advisory + presence-only.
@@ -104,12 +104,6 @@ export function useSelectionEditing(opts: {
     setDocumentName,
     setContextMenu,
   } = set;
-
-  const beginFormatPainter = () => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
-    setFormatSourceId(selectedId);
-  };
 
   const beginEdit = (elementId: string) => {
     // Viewers may select to inspect, but never enter text-edit mode.
@@ -283,15 +277,7 @@ export function useSelectionEditing(opts: {
     // Format tool simply couldn't arm from or paint onto an arrow.
     if (formatToolActive) {
       if (formatSourceId === null) setFormatSourceId(id);
-      else applyFormatFromSource(id, { keepSource: true });
-      return;
-    }
-    if (formatSourceId !== null) {
-      // Format-paint mode: apply the source's formatting to the
-      // clicked target instead of selecting it. applyFormatFromSource
-      // clears formatSourceId itself; it handles boxed→boxed and
-      // arrow→arrow, no-ops cross-kind.
-      applyFormatFromSource(id);
+      else applyFormatFromSource(id);
       return;
     }
     setSelectedId(id);
@@ -326,7 +312,6 @@ export function useSelectionEditing(opts: {
   };
 
   return {
-    beginFormatPainter,
     beginEdit,
     commitLabel,
     commitTable,

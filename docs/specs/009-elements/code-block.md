@@ -51,7 +51,7 @@ shared thumbnail shows the same amount of code the canvas does.
 ## Editing
 
 - **Double-click** opens an **Edit code dialog** (`apps/live/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces, never moves focus) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
-- The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): an "Edit code" row opening the same dialog, and a language picker.
+- The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): a summary of the line count and language, an "Edit code" row opening the same dialog, and a Wrap toggle. The language is chosen in the dialog only; the menu has no language picker.
 
 ## Headless render (share thumbnails, MCP, exports)
 

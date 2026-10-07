@@ -253,7 +253,7 @@ export function drawBannerMessage(
       // The shape pen says what it will do, since that is the whole
       // difference between it and Freehand (docs/specs/008-canvas/two-pens.md).
       if (intent.variant === 'shape-pen')
-        return isMobile ? 'Draw a shape' : 'Draw a rough shape — it snaps to the real one';
+        return isMobile ? 'Draw a shape' : 'Draw a rough shape; it snaps to the real one';
       // A whiteboard pen is held and never closes (docs/specs/023-draw-mode/draw-mode.md); its dock
       // button says it is in hand, so this copy only reaches a screen reader.
       if (intent.variant === 'whiteboard') return 'Drag to draw';
@@ -266,7 +266,7 @@ export function drawBannerMessage(
       // same trade-off as the freehand close hint above.
       return isMobile
         ? 'Tap to place points'
-        : 'Click to place points — click the start to close, double-click to finish';
+        : 'Click to place points, click the start to close, double-click to finish';
   }
 }
 

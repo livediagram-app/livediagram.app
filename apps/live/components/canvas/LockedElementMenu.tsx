@@ -109,7 +109,7 @@ export function LockedElementMenu({
             </button>
           ))}
           <p id={noteId} aria-hidden className="px-3 pt-1 text-[10px] leading-snug text-slate-400">
-            They keep their work — it just stops being theirs to edit.
+            They keep their work; it just stops being theirs to edit.
           </p>
         </div>
       </MenuTreeContext.Provider>

@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { QuizRoundCard } from '@/components/illustrations/palette-collaborate';
 
 export const metadata = helpMetadata({
   title: 'Quizzes',
@@ -22,9 +23,11 @@ A quiz is one multiple-choice question on the canvas. The facilitator starts it,
 
 ## Setting one up
 
-Drop a **Quiz** from the **Ask** group in [Collaborate](/help/palette/behaviour/). It arrives with a sample question so you can see what it does. To write your own, press the **…** on the card and choose **Edit Question…**: type the question, give it two to six answers, mark the **Correct** one, and pick a **Time Limit**.
+Drop a **Quiz** from the **Ask** group in [Collaborate](/help/palette/collaborate/). It arrives with a sample question so you can see what it does. To write your own, press the **…** at the top of the circle and choose **Edit Question…**. The **Edit Quiz** dialog takes the question, two to six answers (up to 80 characters each, with **Add Answer** for more), the **Correct** one, and a **Time Limit** from 10 seconds to 2 minutes (20 seconds unless you change it). Press **Save**.
 
-Nobody else sees the question or the answers until you press **Start**, so the room cannot read ahead while you are still talking.
+Double-clicking the quiz never edits its text: the dialog is the only way in, so nobody can reword the question mid-round. Editing isn't offered while a round is running.
+
+Nobody sees the question or the answers until you press **Start**: the closed circle shows only a question mark, how many answers there are and the time limit, so the room cannot read ahead while you are still talking.
 
 ## Running a round
 
@@ -34,13 +37,17 @@ Press **Start**. The question moves into the middle of the circle, the answers f
 - The circle shows how many people have answered, never what they picked.
 - **Lock Now** closes the round early, for when everyone is in.
 
-When the time is up the answers stop taking presses and the card says **Time's up**.
+<Figure caption="Mid-round: the question in the circle, the ring counting down, and your own pick raised and marked You.">
+  <QuizRoundCard />
+</Figure>
+
+When the time is up the answers stop taking presses and the circle says **Time's up**.
 
 ## The reveal
 
-Press **Reveal Answer**. The right answer pops out in green, the others fade back, and every answer shows how many people picked it, with their avatars beside it, so you can see at a glance who got it right. The middle of the circle keeps the score. **Run Again** clears the picks and closes the card for another round.
+Press **Reveal Answer** (you can also reveal straight from an open round). The right answer pops out in green, the others fade back, and every answer shows how many people picked it, with their avatars beside it (up to five, then "+N"), so you can see at a glance who got it right. The middle of the circle keeps the score ("3 of 5 correct"). **Run Again** clears the picks and closes the card for another round. The **…** menu also has **Reset**, which does the same at any point once a round has started.
 
-If somebody is [facilitating](/help/collaboration/facilitator/), editing, starting, locking, revealing and resetting are theirs; everybody else can still answer.
+If somebody is [facilitating](/help/collaboration/facilitator/), editing, starting, locking, revealing and resetting are theirs; everybody else can still answer. When nobody is, any editor can run it.
 
 ## Worth knowing
 
@@ -48,5 +55,7 @@ If somebody is [facilitating](/help/collaboration/facilitator/), editing, starti
 - The countdown runs on each person's own clock, so a computer whose clock is a few seconds out locks a few seconds early or late.
 - Visitors on a view-only link can watch the round and the reveal but cannot answer.
 - Saving an edit resets the round, because picks made against the old answers no longer mean anything.
+- Picks aren't undoable, and somebody else's Ctrl+Z can't un-start your round.
+- Only the circle is the element's body: drag it to move the quiz. The empty corners of its square behave like bare canvas, and pressing an answer only ever picks it.
 
 </ArticleLayout>

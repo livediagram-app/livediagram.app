@@ -176,9 +176,10 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.
-4. **Copy.** While the poll runs, the host can **copy the results** to the
-   clipboard as plain text. Keeping the outcome is a deliberate act, which is
-   what lets the panel vanish completely at the end without anyone losing work.
+4. **Keep Results.** While the poll runs, the host can drop a chart of the
+   tallies so far onto the canvas ([Keeping a poll's results](poll-result-capture.md)).
+   Keeping the outcome is a deliberate act, which is what lets the panel vanish
+   completely at the end without anyone losing work.
 5. **End.** Host only. Removes the question, the answers, and the panel for
    everyone. Non-hosts additionally get a local **Dismiss** that hides their
    own panel without ending the poll (and rescues them if the host vanished).
@@ -215,10 +216,8 @@ answer content is ever emitted; `type` stays the fixed `'Poll'` token.
 ## Out of scope (v1)
 
 - **Wire-level anonymity** (stripping the sender id in the DO) — see above.
-- **Late-joiner prompting and reload survival**, both consequences of the
-  no-persistence rule, not oversights.
 - **A saved history of past polls.** Nothing is stored, so there is nothing to
-  browse; the clipboard copy is the export path.
+  browse; Keep Results is the export path.
 - **Multiple concurrent polls.** One poll at a time per document; starting a
   second replaces the first, matching the one-timer-per-tab rule in [Session tools (timer + voting)](session-tools.md).
 - **Per-tab scoping.** A poll goes to everyone on the document, not just the

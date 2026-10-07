@@ -178,7 +178,7 @@ export function FormatPanel({
           }`}
         >
           {paintsAnything
-            ? 'Labels, links and comments are never copied — only the look.'
+            ? 'Labels, links and comments are never copied, only the look.'
             : 'Nothing is turned on, so the brush has nothing to paint.'}
         </p>
       </div>

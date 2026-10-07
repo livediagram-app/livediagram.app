@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { EsMakeRoomScene } from '@/components/illustrations/canvas-links-notes';
 
 export const metadata = helpMetadata({
   title: 'Event Storming Boards',
@@ -15,46 +16,51 @@ export const metadata = helpMetadata({
   categorySlug="canvas"
 >
 
-Event storming is a workshop method for exploring a business domain together. A group puts sticky notes on a wall — things that happened, the commands that caused them, the people and systems involved — until the story of the domain is visible end to end. Alberto Brandolini's notation gives each colour a fixed meaning, so a wall of paper reads the same to everyone who knows the method.
+Event storming is a workshop method for exploring a business domain together. A group puts sticky notes on a wall (things that happened, the commands that caused them, the people and systems involved) until the story of the domain is visible end to end. Alberto Brandolini's notation gives each colour a fixed meaning, so a wall of paper reads the same to everyone who knows the method.
 
 Starting a document from the **Event storming** [template](/help/canvas/templates/) gives you a board built for that, rather than a blank canvas you have to shape yourself. It starts with a single orange domain event, **Board Created**, the first thing that happened, and nothing else on the wall.
 
-## What makes it a board, not just a diagram
+## What Makes It a Board, Not Just a Diagram
 
 The board knows what it is, and the editor adapts around it:
 
 - **The notation is the palette.** The [Event Storming category](/help/palette/event-storming/) opens first and fills the panel, so the eight note kinds are one click away instead of buried behind a dropdown.
 - **Notes behave like paper.** Each kind has a fixed size and a slight tilt, and the text scales to fit rather than the note growing to fit the text. You cannot resize a note, the same way you cannot resize a sticky you have already peeled off the pad.
-- **Notes are written in marker, in capitals.** Type however you like — the board paints it in a marker face, in caps, the way a pen on paper does. It stays readable from across the room and the wall reads as one hand rather than eight. Your typed wording is what is saved, so a note you export or search for keeps the capitals you actually used.
-- **Dropping a note starts typing.** Drag one out and the cursor is already in it — the drag said where and what, so all that is left is the words.
-- **Right-click offers verbs, not styling.** Cut, copy, duplicate, bring to front, send to back, remove. A note's colour, shape and text treatment _are_ the notation, so controls that could only break the grammar are not offered.
+- **Notes are written in marker, in capitals.** Type however you like: the board paints it in a marker face, in caps, the way a pen on paper does. It stays readable from across the room and the wall reads as one hand rather than eight. Your typed wording is what is saved, so a note you export or search for keeps the capitals you actually used.
+- **Dropping a note starts typing.** Drag one out and the cursor is already in it: the drag said where and what, so all that is left is the words.
+- **Right-click offers verbs, not styling.** **Cut**, **Copy**, **Duplicate**, **Bring to Front**, **Send to Back**, **Change kind** and **Remove**. A note's colour, shape and text treatment _are_ the notation, so controls that could only break the grammar are not offered. **Change kind** is the one exception, because on this board a note's kind is what it means: pick another and the note is repainted in place.
+- **One mode.** An event storming board always works in Diagram mode and has no mode switch; its tools are its own.
 
-## Adding a step in the middle
+## Adding a Step in the Middle
 
 The left-to-right order of the wall is the story: this happened, then that. So when a step turns out to be missing, you should not have to shuffle everything after it by hand.
 
 Start dragging a note, hold it over the **gap between two notes**, and **press Alt** (Option on a Mac). The board makes room: everything from that gap onwards slides right to open a slot, and the note you are dragging sits in it. Drop, and the note lands exactly there.
 
+<Figure caption="Alt held over the gap between two events: the rest of the wall slides right, command and all, and the dragged note drops into the slot.">
+  <EsMakeRoomScene />
+</Figure>
+
 It works two ways round, which is the point:
 
-- **A new note from the palette** — it lands in the slot, ready to type into.
-- **A note already on the wall** — drag it to where it should have been all along. This is the one you will reach for most.
+- **A new note from the palette**: it lands in the slot, ready to type into.
+- **A note already on the wall**: drag it to where it should have been all along. This is the one you will reach for most.
 
 <Tip>
   Press Alt **after** you have started dragging, not before. Some desktops treat Alt-and-click as
   "move the window", so a drag that begins with Alt already down never reaches the page.
 </Tip>
 
-- **Nothing happens unless you press Alt.** An ordinary drag is an ordinary drag — drop a note next to a row and nothing else on the board stirs. Let go of Alt mid-drag and the board closes up again, there and then.
+- **Nothing happens unless you press Alt.** An ordinary drag is an ordinary drag: drop a note next to a row and nothing else on the board stirs. Let go of Alt mid-drag and the board closes up again, there and then.
 - **Nothing moves until you drop.** The opening slot is a preview. Nobody else sees it and nothing is saved until you let go.
-- **One undo puts it all back.** The note and everything that moved aside are a single step in the history — including where a moved note started out.
+- **One undo puts it all back.** The note and everything that moved aside are a single step in the history, including where a moved note started out.
 - **The whole board makes room, not just the row.** A command sitting above its event, or a policy below it, moves with the event it belongs to, so the columns stay lined up.
 - **A moved note leaves its gap behind.** The wall opens up where the note is going; where it came from is left as it is, for you to tidy or fill as you like.
 - **A note you have locked stays put** and the board opens around it. Arrows between notes stay attached: one that spans the new note simply stretches.
 
-This only happens on an event storming board, where left-to-right means time, and only for notes — a shape or an icon is dropped where you drop it. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
+This only happens on an event storming board, where left-to-right means time, and only for notes: a shape or an icon is dropped where you drop it. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
 
-## Timeline lanes
+## Timeline Lanes
 
 An event-storming board has a rhythm built in: every note of the notation sits
 in one of its evenly spaced rows, called lanes, and lines itself up with the
@@ -71,15 +77,15 @@ notes already on the board. There is nothing to switch on.
   nudge it a pixel at a time (ten with Shift).
 - **Nothing on the board ever moves to make room.** Only the note you are
   placing moves; to open a gap, press **Alt** while dragging (above).
-- **You see them only while you are dragging** — the lane a note is about to
+- **You see them only while you are dragging**: the lane a note is about to
   land in lights up, with its neighbours fainter either side, and everything
   disappears again when you let go.
 - **In the same row, the board offers you the rhythm.** The next place along is
   one gap from your neighbour, and the one after that leaves a sticky's worth of
-  wall empty in between — room for the event nobody has written yet. Nothing
+  wall empty in between, room for the event nobody has written yet. Nothing
   touching, nothing half-way.
 - **In the row above or below, edges line up.** Squarely above or below a note,
-  or one place along from it either way — the diagonal. Same size of sticky also
+  or one place along from it either way (the diagonal). Same size of sticky also
   gets the brick position, centred under the gap between two squares; different
   sizes line up on the left edge or the right edge. That is all of it.
 - **Push a note right up against another** and it takes the next place in the
@@ -109,7 +115,7 @@ notes already on the board. There is nothing to switch on.
 Lanes are never exported: they are there to help you place a note, not to be
 part of the picture.
 
-## Adding the next note
+## Adding the Next Note
 
 The notation reads left to right, and some notes have an obvious neighbour:
 
@@ -123,7 +129,7 @@ exactly where it will land. Click it and the note is added right beside, one
 gap away, open for typing. If something is already there, the board makes room. The new note is an
 ordinary note: move it, delete it or change its kind like any other.
 
-## Adding notes from a photo of the wall
+## Adding Notes From a Photo of the Wall
 
 Most sessions happen on a real wall first. **Add from photo** at the top of the
 Event Storming palette reads that wall in:
@@ -142,7 +148,7 @@ Event Storming palette reads that wall in:
    mouse button** to move around (or hold **Space** and drag). **Fit** shows
    the whole photo again.
 4. **Add** puts the notes **on the board, as a draft**: outlined, laid out where they
-   were on the wall, with the rest of the board faded behind them — the second look, at
+   were on the wall, with the rest of the board faded behind them: the second look, at
    the notes in place and at the size they will really be.
 5. Fix anything from right there: double-click to correct a word it misread,
    drag one that landed awkwardly, delete what you do not want, or right-click
@@ -155,7 +161,7 @@ on a lane of its own, in the same order, even when the photo squeezes two rows
 closer than one lane. Notes roughly above one another line up in one column,
 and notes lapped over each other in a row are spread along their lane.
 
-A note your board already has is marked **"already here"** and left alone —
+A note your board already has is marked **"already here"** and left alone:
 never moved, never re-worded, even if the photo reads it differently. That is
 what makes the next photo of the next piece of wall safe to import: only what
 is new is added.
@@ -169,34 +175,34 @@ is new is added.
 
 <Note>
   It will not get a whole wall in one go. Handwriting in pen, a note half-covered by another, a
-  colour your team uses differently, the far side of a corner — expect to fix some and add a few
+  colour your team uses differently, the far side of a corner: expect to fix some and add a few
   yourself. It is a head start on the typing, not a replacement for reading your own wall.
 </Note>
 
-## One wall of paper
+## One Wall of Paper
 
 The board is a single [layer](/help/canvas/layers/). Every note lands on it, whichever colour it is, so any two notes can be stacked in front of or behind each other and nothing is filed away on a plane you cannot see.
 
 One thing is always true of the stack: **actors sit in front of every other note, and hotspots in front of actors**, the way a person or a red flag is stuck on top of the note it belongs to. Bring to front and send to back still reorder notes of the same kind.
 
 <Tip>
-  Add your own layers if you want them — an ES board is an ordinary tab underneath, and the Layers
+  Add your own layers if you want them: an ES board is an ordinary tab underneath, and the Layers
   panel works exactly as it does anywhere else.
 </Tip>
 
-## How a session usually runs
+## How a Session Usually Runs
 
 The method works in passes, and the note kinds are named for them:
 
-1. **Big picture** — orange domain events only, past tense, left to right in time order. Arguments about wording are the point; that is where the domain knowledge comes out.
-2. **Process modelling** — add the commands that cause events, the actors issuing them, the policies reacting, the read models people decide on, and the external systems the flow touches.
-3. **Software design** — add aggregates, the things commands act on, once the story is stable enough to draw boundaries around.
+1. **Big picture**: orange domain events only, past tense, left to right in time order. Arguments about wording are the point; that is where the domain knowledge comes out.
+2. **Process modelling**: add the commands that cause events, the actors issuing them, the policies reacting, the read models people decide on, and the external systems the flow touches.
+3. **Software design**: add aggregates, the things commands act on, once the story is stable enough to draw boundaries around.
 
 Red **hotspots** belong at any stage: a conflict, a question, or a risk nobody can resolve in the room.
 
-Nothing in the editor enforces the passes. They are a way of running the session, not a mode you have to switch — the board is one surface throughout, and you can work whichever way the room does.
+Nothing in the editor enforces the passes. They are a way of running the session, not a mode you have to switch; the board is one surface throughout, and you can work whichever way the room does.
 
-## Everything else still works
+## Everything Else Still Works
 
 An event storming board is a normal tab with a specialised presentation, so the rest of the product applies unchanged: [live presence](/help/collaboration/live-presence/), [comments](/help/collaboration/comments/), [exporting the tab](/help/tabs/export-tabs/), [themes](/help/canvas/themes/), and [offline mode](/help/privacy-and-security/offline-mode/). Export a board and import it elsewhere and it arrives still knowing it is a board.
 

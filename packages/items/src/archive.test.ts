@@ -151,6 +151,23 @@ describe('add types', () => {
   });
 });
 
+describe('add types after a type is deleted', () => {
+  it('fall back to every type when none the board names is left, never an empty Add Card', async () => {
+    const { boardAddTypes, boardTakesType } = await import('./board');
+    const types = [{ id: 'project' }, { id: 'task' }, { id: 'note' }];
+    // The board took only `customer-call` new cards; that type has since been deleted.
+    const stale = { addTypes: ['customer-call'] };
+    expect(boardAddTypes(stale, types).map((t) => t.id)).toEqual(['project', 'task', 'note']);
+    expect(boardTakesType(stale, types, 'task')).toBe(true);
+    // One named type left: only it, and the deleted id is ignored.
+    const partial = { addTypes: ['customer-call', 'note'] };
+    expect(boardAddTypes(partial, types).map((t) => t.id)).toEqual(['note']);
+    expect(boardTakesType(partial, types, 'note')).toBe(true);
+    expect(boardTakesType(partial, types, 'task')).toBe(false);
+    expect(boardTakesType({}, types, 'project')).toBe(true);
+  });
+});
+
 describe('board widths', () => {
   it('fit every column side by side', async () => {
     const { planBoardWidthFor, PLAN_COLUMN_MIN_PX } = await import('./board');

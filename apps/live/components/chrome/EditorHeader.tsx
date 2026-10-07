@@ -13,10 +13,10 @@ import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
 
-// Sync state surfaced as a small pill next to the document title. The
-// editor is autosave-driven, so silent failures (offline, API down,
-// wrong env var pointing at unreachable host) used to look identical
-// to a successful save. Now they don't.
+// The autosave's sync state. No header pill shows it any more: the failure
+// states each raise a toast (editor-persistence.ts), so silent failures
+// (offline, API down, wrong env var pointing at unreachable host) never
+// look identical to a successful save.
 // 'error' is a save that FAILED and may well work next time (offline, a
 // blip, a 5xx). 'forbidden' is a save the server refused outright — the
 // share link was revoked, we were removed from the team — which no amount

@@ -18,6 +18,7 @@ const ctx: CommandContext = {
   zenMode: false,
   selectionCount: 0,
   singleIsBoxed: false,
+  singleRotates: false,
   singleIsShape: false,
   hasAnimation: false,
   marker: null,

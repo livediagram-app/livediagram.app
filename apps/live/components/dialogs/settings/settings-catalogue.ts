@@ -530,8 +530,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     // The shortcuts master switch first, then every binding it gates. This
     // replaced the Keyboard Shortcuts window and its tab-bar button: the
-    // list and the switch that turns it off belong on one screen, and the
-    // `?` key now opens Settings here.
+    // list and the switch that turns it off belong on one screen. No key
+    // opens it: reach it through Settings.
     id: 'keyboard',
     label: 'Keyboard',
     rows: [
@@ -637,7 +637,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'highlight hover layer preview',
         label: 'Preview Layer on Hover',
         description:
-          'Highlights a layer’s elements on the canvas while you hover its row, so you can find what a layer holds without selecting it.',
+          'Shows only that layer on the canvas while you rest on its row, so you can see what a layer holds without selecting it.',
         read: (p) => p.layerHoverPreview !== false,
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
@@ -799,8 +799,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'starter questions prompts suggestions ai',
         section: 'Assistant',
         label: 'Suggested Prompts',
-        description:
-          'Offers a few starter questions in the AI panel when you have not typed anything yet.',
+        description: 'Shows a row of one-click starter prompts under the AI panel’s mode buttons.',
         read: (p) => p.aiSuggestedPrompts !== false,
         write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
         event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },

@@ -25,6 +25,7 @@ import {
   arrowThicknessOf,
   isBoxed,
   isSelfDrawingShape,
+  supportsRotation,
 } from '@livediagram/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
@@ -315,8 +316,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         ) : null}
         {/* Rotation — fixed snap angles. Each tile previews the orientation
             (an upright marker rotated by the angle) so the effect is legible
-            before clicking; 0° resets to upright. */}
-        {boxed && !esNote ? (
+            before clicking; 0° resets to upright. Not on an annotation marker
+            (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
+        {supportsRotation(target) && !esNote ? (
           <MenuAccordionSection
             title="Rotation"
             icon={<RotationMenuIcon />}

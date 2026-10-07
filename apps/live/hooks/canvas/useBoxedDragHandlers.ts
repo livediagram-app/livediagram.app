@@ -33,23 +33,18 @@ export function useBoxedDragHandlers({
   const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
     const d = depsRef.current;
     // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): same "armed source, next click
-    // is the action" shape as format-paint below. Draws a
+    // is the action" shape as the Format tool below. Draws a
     // pinned connector to the clicked shape instead of selecting it.
     if (d.connectSourceId !== null && mode === 'move') {
       d.connectArrowTo(elementId);
       return;
     }
     // Persistent Format tool: first click arms the source, each later
-    // click paints onto the target and KEEPS the source armed so the
-    // user can format many elements in a row. Checked before the
-    // single-shot painter branch below so it owns both phases.
+    // click paints onto the target and (in Keep painting) KEEPS the
+    // source armed so the user can format many elements in a row.
     if (d.formatToolActive && mode === 'move') {
       if (d.formatSourceId === null) d.setFormatSourceId(elementId);
-      else d.applyFormatFromSource(elementId, { keepSource: true });
-      return;
-    }
-    if (d.formatSourceId !== null && mode === 'move') {
-      d.applyFormatFromSource(elementId);
+      else d.applyFormatFromSource(elementId);
       return;
     }
     if (d.editingId === elementId) return;

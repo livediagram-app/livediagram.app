@@ -40,7 +40,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | Band           | Categories                                                                                                 |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
 | _(no heading)_ | Popular, full width                                                                                        |
-| **Plan**       | Boards, Cards ([Plan mode](../026-plan/plan-mode.md#the-palette) only, and its only categories)            |
+| **Plan**       | Cards, Boards, Widgets, Metrics, Visualisations ([Plan mode](../026-plan/plan-mode.md#the-palette) only)   |
 | **Common**     | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
 | **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                               |
 | **Decorate**   | Icons, Stickers, Technology, Media                                                                         |

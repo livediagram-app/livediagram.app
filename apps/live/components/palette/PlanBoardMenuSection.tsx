@@ -11,6 +11,7 @@ import {
   CARD_SIZE_FIELDS,
   CARD_SIZES,
   SWIMLANE_BY,
+  boardAddTypes,
   laneFieldsOf,
   normaliseBoardSetup,
   type LaneFieldKind,
@@ -192,6 +193,8 @@ export function PlanCardsMenuSection({
       },
       'CardFields',
     );
+  // What the board takes new cards of now (every type when its named ones were all deleted).
+  const allowed = plan ? boardAddTypes(setup, plan.types).map((x) => x.id) : [];
   return (
     <MenuFlyoutSection title="Cards" icon={<PlanCardsIcon size={16} />} {...flyoutProps}>
       {setup.archive || !plan ? null : (
@@ -199,8 +202,7 @@ export function PlanCardsMenuSection({
           <p className={captionClass}>New Cards Can Be</p>
           <MenuTileGrid cols={3}>
             {plan.types.map((t) => {
-              const on = !setup.addTypes || setup.addTypes.includes(t.id);
-              const allowed = setup.addTypes ?? plan.types.map((x) => x.id);
+              const on = allowed.includes(t.id);
               return (
                 <MenuTile
                   key={t.id}

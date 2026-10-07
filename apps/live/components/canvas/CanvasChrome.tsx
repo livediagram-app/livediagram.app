@@ -65,7 +65,6 @@ import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
-  isPaintMode: boolean;
   // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
   mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
@@ -676,11 +675,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of
-                the Layers dock opens the CanvasThemeDialog — the same modal
-                the canvas right-click menu reaches, one click from the
-                chrome. All viewports, mobile included — the canvas menu's
-                long-press entry isn't discoverable there (read-only
-                sessions pass no handler). */}
+                the Layers dock opens the CanvasThemeDialog. It is the one
+                entry point: the canvas and tab menus no longer carry the
+                theme and canvas controls. All viewports, mobile included
+                (read-only sessions pass no handler). */}
             {!zenMode && onOpenCanvasTheme && !whiteboard ? (
               <div
                 data-tour-id="canvas-theme"

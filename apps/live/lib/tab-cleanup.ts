@@ -10,7 +10,15 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import { autoLayoutElements, isBoxed, unionRects, type Element } from '@livediagram/document';
+import {
+  autoLayoutElements,
+  isBoxed,
+  lockedLayerElementIds,
+  unionRects,
+  type Element,
+  type ElementId,
+  type Layer,
+} from '@livediagram/document';
 import { autoAlignElements } from '@/lib/auto-align';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 
@@ -29,12 +37,29 @@ export type CleanupKind = 'align' | AutoLayoutChoice;
  * than from the tab in state, which is what makes it safe to run against a
  * snapshot.
  */
-export function cleanupElements(elements: Element[], kind: CleanupKind): Element[] {
+export function cleanupElements(
+  elements: Element[],
+  kind: CleanupKind,
+  layers?: Layer[],
+): Element[] {
   if (elements.length === 0) return elements;
-  if (kind === 'align') return autoAlignElements(elements);
+  // Locked elements, and everything on a locked layer, stay exactly where they are
+  // (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
+  const lockedIds = lockedElementIds(elements, layers);
+  if (kind === 'align') return autoAlignElements(elements, lockedIds);
   const block = unionRects(elements.filter(isBoxed));
   if (!block) return elements;
   const { x: originX, y: originY } = block;
   const { options } = AUTO_LAYOUT_CHOICES[kind];
-  return autoAlignElements(autoLayoutElements(elements, { ...options, originX, originY }));
+  return autoAlignElements(
+    autoLayoutElements(elements, { ...options, originX, originY, lockedIds }),
+    lockedIds,
+  );
+}
+
+/** Ids a cleanup must not move: each element's own lock plus its layer's. O(n). */
+export function lockedElementIds(elements: Element[], layers?: Layer[]): Set<ElementId> {
+  const ids = lockedLayerElementIds(elements, layers);
+  for (const el of elements) if (el.locked === true) ids.add(el.id);
+  return ids;
 }
