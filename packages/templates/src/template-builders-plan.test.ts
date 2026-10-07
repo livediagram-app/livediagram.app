@@ -1,4 +1,10 @@
-import { isPlanViewId, normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import {
+  PLAN_BOARD_PRESET_IDS,
+  isPlanViewId,
+  normaliseBoardSetup,
+  presetSetup,
+  type PlanBoardSetup,
+} from '@livediagram/items';
 import type { Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
@@ -19,8 +25,9 @@ const COLUMN_MIN_PX = 220;
 const GAP_PX = 12;
 const SIDE_PADDING_PX = 12;
 
+// Every tab with something on it: Blank Plan's one tab is empty by design (its own test below).
 const everyTab = () =>
-  PLAN_TEMPLATE_KINDS.flatMap((kind) =>
+  PLAN_TEMPLATE_KINDS.filter((kind) => kind !== 'blank-plan').flatMap((kind) =>
     PLAN_TEMPLATE_TABS[kind].map((spec) => ({ kind, spec, label: `${kind} › ${spec.name}` })),
   );
 
@@ -162,6 +169,11 @@ describe('plan templates', () => {
     }
   });
 
+  it('leaves Blank Plan’s one tab empty, so the tab shows Start with a Board', () => {
+    expect(PLAN_TEMPLATE_TABS['blank-plan']).toHaveLength(1);
+    expect(buildPlanTab(PLAN_TEMPLATE_TABS['blank-plan'][0]!, 100, -50)).toEqual([]);
+  });
+
   it('gives a dashboard tab views only, and every other tab exactly one board', () => {
     for (const { spec, label } of everyTab()) {
       const els = buildPlanTab(spec, 0, 0);
@@ -214,5 +226,39 @@ describe('plan templates', () => {
     expect(boardSetup(spec).columns).toHaveLength(6);
     expect(isPlanTemplateKind('okrs')).toBe(true);
     expect(isPlanTemplateKind('daily-standup')).toBe(false);
+  });
+});
+
+// A board's default widgets read true from the start (docs/specs/026-plan/board-widgets.md "Defaults").
+describe('default widgets', () => {
+  const setups = [
+    ...PLAN_BOARD_PRESET_IDS.map((id) => ({ label: `preset ${id}`, setup: presetSetup(id) })),
+    ...everyTab().flatMap(({ spec, label }) =>
+      spec.board ? [{ label, setup: boardSetup(spec.board) }] : [],
+    ),
+  ];
+
+  it('put Completion only on a board with a done column', () => {
+    for (const { label, setup } of setups)
+      if (setup.widgets?.includes('progress')) expect(setup.doneColumnId, label).toBeTruthy();
+  });
+
+  it('put WIP Alerts only on a board with a WIP limit', () => {
+    for (const { label, setup } of setups)
+      if (setup.widgets?.includes('wip'))
+        expect(
+          setup.columns.some((c) => c.wipLimit),
+          label,
+        ).toBe(true);
+  });
+
+  it('never repeat the rows or default Only Mine, and stay few', () => {
+    for (const { label, setup } of setups) {
+      const widgets = setup.widgets ?? [];
+      if (setup.swimlaneBy === 'assignee') expect(widgets, label).not.toContain('people');
+      if (setup.swimlaneBy === 'priority') expect(widgets, label).not.toContain('priorities');
+      expect(widgets, label).not.toContain('mine');
+      expect(widgets.length, label).toBeLessThanOrEqual(3);
+    }
   });
 });

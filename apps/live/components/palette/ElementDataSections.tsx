@@ -116,6 +116,12 @@ const PlanBoardMenuSection = dynamic(
   { ssr: false },
 );
 
+// A Gantt chart's View flyout (docs/specs/026-plan/plan-views.md "Swimlanes"), loaded with the rest of Plan.
+const PlanViewMenuSection = dynamic(
+  () => import('./PlanViewMenuSection').then((m) => m.PlanViewMenuSection),
+  { ssr: false },
+);
+
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The element menu's data-shape sections: Progress, Timeline Rail, Rating, and
@@ -243,6 +249,13 @@ export function ElementDataSections({
           <PlanBoardMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-board')} />
           <PlanCardsMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-cards')} />
         </>
+      ) : null}
+      {shapeTarget?.shape === 'plan-view' && shapeTarget.planView?.view === 'gantt' ? (
+        <PlanViewMenuSection
+          element={shapeTarget}
+          flyoutProps={flyoutProps('plan-view')}
+          sectionProps={sectionProps}
+        />
       ) : null}
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>

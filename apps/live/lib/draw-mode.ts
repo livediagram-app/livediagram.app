@@ -197,6 +197,14 @@ export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean
   return (intent?.type === 'freehand' && intent.variant === 'whiteboard') || isPathIntent(intent);
 }
 
+// A Plan card tile pressed: it goes into a board's column, never onto the canvas
+// (docs/specs/026-plan/plan-mode.md "The palette").
+export function isPlanCardIntent(
+  intent: PendingDraw | null | undefined,
+): intent is Extract<PendingDraw, { type: 'shape' }> {
+  return intent?.type === 'shape' && intent.kind === 'plan-card';
+}
+
 // The Path tool in hand (docs/specs/023-draw-mode/path-tool.md).
 export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
   return intent?.type === 'path';

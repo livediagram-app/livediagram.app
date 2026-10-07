@@ -118,3 +118,18 @@ describe('renaming a column', () => {
     expect(renamed.columns[1]).toMatchObject({ name: 'Building', status: 'doing' });
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Column names": a typed name is saved in Title Case.
+describe('typed column names', () => {
+  it('saves a rename, a new column and a first column in Title Case, keeping acronyms', () => {
+    expect(renameColumn(threeColumns(), 'doing', '  ready for QA ').columns[1]!.name).toBe(
+      'Ready for QA',
+    );
+    expect(addColumnAfter(threeColumns(), 'todo', 'in review', () => 0)?.column.name).toBe(
+      'In Review',
+    );
+    expect(addFirstColumn(presetSetup('blank'), 'to do')?.columns[0]!.name).toBe('To Do');
+    // A rename to nothing changes nothing.
+    expect(renameColumn(threeColumns(), 'doing', '   ').columns[1]!.name).toBe('In progress');
+  });
+});

@@ -182,6 +182,8 @@ export function buildPlanTab(spec: PlanTabSpec, cx: number, cy: number): Element
   y += metricsH;
   out.push(...chartGrid(spec.charts ?? [], y, width));
   out.push(...rail(spec.rail ?? [], width + GAP));
+  // An empty tab (Blank Plan): nothing to place.
+  if (out.length === 0) return [];
   const b = bounds(out);
   const dx = Math.round(cx - (b.minX + b.maxX) / 2);
   const dy = Math.round(cy - (b.minY + b.maxY) / 2);

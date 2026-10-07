@@ -60,8 +60,9 @@ Colours: **green** `#16a34a`, **amber** `#d97706`, **red** `#dc2626`. Card types
 
 ### Blank Plan
 
-One tab (named as any new tab is): one board, **Our board**, with no columns yet; it asks for its first. The mode's blank, as Blank Diagram is
-Diagram's.
+One tab (named as any new tab is), empty: no board, so the tab shows Plan's **Start with a Board** picker
+([Plan mode](plan-mode.md#starting-a-board)), where the person picks the board that fits (or opens the Quick Start).
+The mode's blank, as Blank Diagram is Diagram's.
 
 ### Project Planner
 
@@ -69,7 +70,7 @@ Projects on a roadmap and a timeline, broken into tasks, run in sprints and walk
 
 | Tab           | Holds                                                                                                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Project Gantt Chart under it. How this works                                          |
+| Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Gantt Chart under it. How this works                                                  |
 | Backlog       | Board **Backlog**: Backlog, Ready, This Sprint ⇄; a row per project; Tasks; estimates and priority                                                                        |
 | Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; points. Workload by Person and Status Breakdown under it  |
 | Daily Standup | Board **Daily Standup**: In Progress ⇄, Blocked ⇄, In Review ⇄, Done ⇄; a row per person; Compact cards. How we run it, a 15 minute timer and a picker for who goes first |
@@ -144,11 +145,11 @@ Ideas voted on and approved, produced through review to published, and every pub
 
 Open roles, the candidates for each, and the new starter's first month.
 
-| Tab        | Holds                                                                                                                                     |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Roles      | Board **Roles**: Opening Soon, Open, Offer Out, Filled (done); Projects (one per role); start and due dates. Project Gantt Chart under it |
-| Pipeline   | Board **Pipeline**: Applied, Screen, Interview, Offer, Hired (done), Not Progressing; a row per role; Tasks and Notes; stale cards        |
-| Onboarding | Board **Onboarding**: Before Day One, First Week, First Month, Done (done); a row per person; Tasks and Actions; due dates                |
+| Tab        | Holds                                                                                                                              |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Roles      | Board **Roles**: Opening Soon, Open, Offer Out, Filled (done); Projects (one per role); start and due dates. Gantt Chart under it  |
+| Pipeline   | Board **Pipeline**: Applied, Screen, Interview, Offer, Hired (done), Not Progressing; a row per role; Tasks and Notes; stale cards |
+| Onboarding | Board **Onboarding**: Before Day One, First Week, First Month, Done (done); a row per person; Tasks and Actions; due dates         |
 
 ### OKRs
 
@@ -156,7 +157,7 @@ Objectives for the period and the key results that measure them, checked in on e
 
 | Tab         | Holds                                                                                                                                                                                           |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Projects (one per objective); start and due dates. Project Gantt Chart under it                                                |
+| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Projects (one per objective); start and due dates. Gantt Chart under it                                                        |
 | Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective; Tasks; checklist progress. Status Breakdown under it. How we check in |
 
 - How we check in: each week, move every key result to the column it is in and say why in a comment; anything
@@ -166,11 +167,11 @@ Objectives for the period and the key results that measure them, checked in on e
 
 Workstreams on a timeline, a checklist per workstream, and the go/no-go on launch day.
 
-| Tab        | Holds                                                                                                                            |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Timeline   | Board **Workstreams**: Planned, In Progress, Ready, Launched (done); Projects (one per workstream). Project Gantt Chart under it |
-| Checklist  | Board **Checklist**: To Do, Doing, Blocked (red), Done (done); a row per workstream; Tasks and Actions; due dates                |
-| Launch Day | Board **Go / No-Go**: Not Checked, Go (green), No-Go (red); Tasks; a row per person. How we call it and a 30 minute timer        |
+| Tab        | Holds                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Timeline   | Board **Workstreams**: Planned, In Progress, Ready, Launched (done); Projects (one per workstream). Gantt Chart under it  |
+| Checklist  | Board **Checklist**: To Do, Doing, Blocked (red), Done (done); a row per workstream; Tasks and Actions; due dates         |
+| Launch Day | Board **Go / No-Go**: Not Checked, Go (green), No-Go (red); Tasks; a row per person. How we call it and a 30 minute timer |
 
 - How we call it: each owner checks their item and moves it to Go or No-Go; any No-Go is talked through; launch
   when every card is Go.

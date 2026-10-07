@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { createShape, hasPlanInput, type EditorMode, type Element } from '@livediagram/document';
+import {
+  createShape,
+  hasPlanInput,
+  type EditorMode,
+  type Element,
+  type PlanViewRef,
+} from '@livediagram/document';
 import {
   TRASHED_FROM_FIELD,
   TRASH_STATUS,
@@ -12,17 +18,21 @@ import {
   type ItemMove,
   type ItemPatch,
   type ItemPerson,
+  type BoardStatusTypes,
   type PlanBoardSetup,
   type StatusPhase,
 } from '@livediagram/items';
 
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
+const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 import { stepTrail, type ItemOpenVia } from '@/components/plan/item-trail';
 import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
+import { planBoardTarget } from './plan-board-targets';
+import { moveStatusRefusal } from './status-refusal';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
 // open item panel and board set-up, and the actions boards and cards take, composed into the value
@@ -50,8 +60,12 @@ export function usePlanSlice(opts: {
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status (the plan views).
   statusPhases?: ReadonlyMap<string, StatusPhase>;
+  // The card types the document's boards show under each status (the Cards panel's Not on a Board).
+  statusTypes?: BoardStatusTypes;
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
+  // Shows a refusal on screen (a toast): a canvas Plan card dropped where it cannot go.
+  notify?: (message: string) => void;
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
@@ -79,12 +93,19 @@ export function usePlanSlice(opts: {
     [boardSlideRef],
   );
   const [openItemId, setOpenItemId] = useState<string | null>(null);
+  // The card this person just made and opened (openNewItem): its panel selects its title so typing names it.
+  const [freshItemId, setFreshItemId] = useState<string | null>(null);
   // The cards opened from inside the item panel, ending on the open one (docs/specs/026-plan/plan-board.md
   // "Breadcrumb"): a card opened any other way starts it afresh.
   const [itemTrail, setItemTrail] = useState<readonly string[]>([]);
   // The type the type editor is open on, or 'new' (docs/specs/026-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
-  const editType = useCallback((typeId: string | 'new') => setEditingTypeId(typeId), []);
+  // A new type filled from this one (Duplicate), or none.
+  const [typeTemplateId, setTypeTemplateId] = useState<string | null>(null);
+  const editType = useCallback((typeId: string | 'new', fromId?: string) => {
+    setEditingTypeId(typeId);
+    setTypeTemplateId(typeId === 'new' && fromId ? fromId : null);
+  }, []);
 
   const people = useMemo(() => {
     const byId = new Map<string, ItemPerson>();
@@ -226,6 +247,19 @@ export function usePlanSlice(opts: {
     [commit],
   );
 
+  const updateView = useCallback(
+    (viewId: string, settings: PlanViewRef) => {
+      commit((els) =>
+        els.map((el) =>
+          el.id === viewId && el.type === 'shape' && el.shape === 'plan-view'
+            ? { ...el, planView: settings }
+            : el,
+        ),
+      );
+    },
+    [commit],
+  );
+
   const placeCardOut = useCallback(
     (itemId: string, x: number, y: number) => {
       const card = createShape('plan-card', 0, 0);
@@ -249,21 +283,59 @@ export function usePlanSlice(opts: {
 
   const openItem = useCallback((itemId: string, via?: ItemOpenVia) => {
     setOpenItemId(itemId);
+    setFreshItemId(null);
     setItemTrail((trail) => (via ? stepTrail(trail, itemId) : [itemId]));
     track('Plan', 'Opened', via ?? 'Item');
   }, []);
 
-  // A Plan card dropped on a board: its item moves into the column under the drop, and the card,
-  // now on the board, leaves the canvas (docs/specs/026-plan/plan-board.md "Working on a board").
-  const dropPlanCardOnBoard = useCallback(
-    (card: Element, status: string) => {
-      const itemId = card.type === 'shape' ? card.planCard?.itemId : undefined;
-      if (!itemId || !planItems.items.has(itemId)) return;
-      moveItem(itemId, { status, before: null });
-      removeCard(card.id);
-      announce('Card filed on the board');
+  // A card this person just made (Add Card, a palette card placed in a column, New {Type} on a card): opened at
+  // once, its title selected to be named (docs/specs/026-plan/plan-board.md "Open an item"). Never for a card
+  // made by someone else, an undo or redo, a duplicate, a template or an agent: only these callers open one.
+  const openNewItem = useCallback(
+    (itemId: string, via?: ItemOpenVia) => {
+      openItem(itemId, via);
+      setFreshItemId(itemId);
     },
-    [planItems.items, moveItem, removeCard, announce],
+    [openItem],
+  );
+
+  // A Plan card dropped on a board: its item moves into the column under the drop, and the card,
+  // now on the board, leaves the canvas (docs/specs/026-plan/plan-board.md "Working on a board"). Checked first:
+  // a board that does not show the card's type, or a status its type leaves out
+  // (docs/specs/026-plan/item-types.md "An item type"), moves nothing; the refusal is shown and 'refused' is
+  // answered, so the drag puts the canvas card back where it started. The canvas card goes only once the move
+  // has landed.
+  const statusNamesRef = useLatest(opts.statusNames);
+  const notifyRef = useLatest(opts.notify);
+  const dropPlanCardOnBoard = useCallback(
+    (card: Element, status: string, boardId?: string): 'refused' | undefined => {
+      const itemId = card.type === 'shape' ? card.planCard?.itemId : undefined;
+      const item = itemId ? planItems.items.get(itemId) : undefined;
+      if (!itemId || !item) return undefined;
+      const target = boardId ? planBoardTarget(boardId) : undefined;
+      const refused =
+        target && !target.accepts(itemId)
+          ? target.refusal()
+          : moveStatusRefusal(
+              itemTypes.types,
+              item,
+              { status },
+              (s) => statusNamesRef.current.get(s) ?? s,
+            );
+      if (refused) {
+        announce(refused);
+        notifyRef.current?.(refused);
+        return 'refused';
+      }
+      track('Plan', 'Moved', 'Board');
+      void write({ kind: 'move', id: itemId, move: { status, before: null } }).then((ok) => {
+        if (!ok) return;
+        removeCard(card.id);
+        announce('Card filed on the board');
+      });
+      return undefined;
+    },
+    [planItems.items, itemTypes.types, write, removeCard, announce, statusNamesRef, notifyRef],
   );
 
   // Dragging outranks reading; letting go goes back to the open item, if any.
@@ -296,6 +368,7 @@ export function usePlanSlice(opts: {
       presence,
       retry: planItems.refetch,
       openItem,
+      openNewItem,
       openItemId,
       addItem,
       moveItem,
@@ -305,6 +378,7 @@ export function usePlanSlice(opts: {
       commentItem,
       ownerId: planItems.ownerId,
       updateBoard,
+      updateView,
       placeCardOut,
       removeCard,
       announce,
@@ -315,6 +389,7 @@ export function usePlanSlice(opts: {
       emptyTrash,
       statusNames: opts.statusNames,
       statusPhases: opts.statusPhases ?? NO_PHASES,
+      statusTypes: opts.statusTypes ?? NO_STATUS_TYPES,
       ...(hasSlides ? { addItemSlide, addBoardSlide } : {}),
     }),
     [
@@ -330,6 +405,7 @@ export function usePlanSlice(opts: {
       canVote,
       presence,
       openItem,
+      openNewItem,
       openItemId,
       addItem,
       moveItem,
@@ -339,6 +415,7 @@ export function usePlanSlice(opts: {
       commentItem,
       planItems.ownerId,
       updateBoard,
+      updateView,
       placeCardOut,
       removeCard,
       announce,
@@ -352,18 +429,27 @@ export function usePlanSlice(opts: {
       hasSlides,
       opts.statusNames,
       opts.statusPhases,
+      opts.statusTypes,
     ],
   );
 
   return {
     context,
     openItemId,
+    freshItemId,
     itemTrail,
-    closeItem: () => setOpenItemId(null),
+    closeItem: () => {
+      setOpenItemId(null);
+      setFreshItemId(null);
+    },
     // Opens an item without counting it as the person's (the Plan tour's card panel step).
     showItem: setOpenItemId,
     editingTypeId,
-    closeTypeEditor: () => setEditingTypeId(null),
+    typeTemplateId,
+    closeTypeEditor: () => {
+      setEditingTypeId(null);
+      setTypeTemplateId(null);
+    },
     dropPlanCardOnBoard,
   };
 }

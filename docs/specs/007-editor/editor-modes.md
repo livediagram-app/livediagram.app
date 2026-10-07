@@ -100,7 +100,10 @@ where it is and changes only how the next mark is made.
   opens). A visitor's switch, a locked tab and an event-storming board leave it be.
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
   is in, a new document or a tab added from the tab bar (or Quick Start)
-  opens in Diagram. Only the template chosen for it changes that: the
+  opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
+  (its `opensIn` is Plan, for everyone) with no Quick Start, showing Plan's own **Start with a Board**
+  picker ([Plan mode](../026-plan/plan-mode.md#starting-a-board)), whose **Open Quick Start** button
+  brings the Quick Start back for another kind of tab. Only the template chosen for it changes that: the
   **Whiteboard** opens in Draw (switching its maker there too), an
   **Event Storming** board is always Diagram, and every other template,
   Blank included, opens in Diagram. An import that sets its own opening

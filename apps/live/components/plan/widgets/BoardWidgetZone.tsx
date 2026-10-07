@@ -31,7 +31,7 @@ export function BoardWidgetZone({
 }: {
   widgets: readonly BoardWidgetKind[];
   canEdit: boolean;
-  // The board is selected: only then do the widgets show their ×.
+  // The board is selected: only then do the widgets show their ×, and an empty zone its hint.
   selected?: boolean;
   palette: PlanPalette;
   // Where a widget dragged from the palette would land, while one is over this zone.
@@ -100,7 +100,8 @@ export function BoardWidgetZone({
       >
         {dropAt !== null ? (
           bar('drop')
-        ) : canEdit ? (
+        ) : canEdit && selected ? (
+          // The hint only while the board is selected, so an unselected header stays clean.
           <span className="inline-flex items-center gap-1.5">
             <InfoArt />
             Drag Widgets here from the palette

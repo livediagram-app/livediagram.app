@@ -110,7 +110,9 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 | `pop-in`                    | 360ms  | `micro` | Cluster bars, zoom menu, strip tiles, cards  |
 | `pop-out`                   | 220ms  | `micro` | Presence avatars, strip tiles                |
 | `fade-in`                   | 260ms  | `micro` | Moved to the shared theme                    |
-| `fly-up-in`                 | 420ms  | `long`  | Dialogs, banners, search, template picker    |
+| `fly-up-in`                 | 420ms  | `long`  | Banners, search, template picker             |
+| `dialog-in` (new)           |        | `long`  | The shared Dialog shell's centred panel      |
+| `fade-in` on the backdrop   |        | `micro` | The shared Dialog shell's dim                |
 | `sheet-up`                  | 340ms  | `long`  | Poll prompt sheet                            |
 | `slide-row-in` / `-out`     | 220ms  | `micro` | Explorer rows, back bar, placement list (D4) |
 | `slide-in-left`             | 240ms  | `short` | Mobile Explorer drawer                       |

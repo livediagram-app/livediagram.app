@@ -18,6 +18,8 @@ const POPOVER_WIDTH = 256;
 export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
   'plan-cards': 352,
+  // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
+  'card-types': 544,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card

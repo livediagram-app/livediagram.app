@@ -5,6 +5,7 @@ import {
   drawIntentCursor,
   isHeldPenIntent,
   isPathIntent,
+  isPlanCardIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -294,5 +295,14 @@ describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('has its own cursor and screen-reader copy', () => {
     expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
     expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
+  });
+});
+
+describe('a pressed Plan card (docs/specs/026-plan/plan-mode.md "The palette")', () => {
+  it('is told apart from every other shape in hand', () => {
+    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-card', plan: 'task' })).toBe(true);
+    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-board' })).toBe(false);
+    expect(isPlanCardIntent({ type: 'text' })).toBe(false);
+    expect(isPlanCardIntent(null)).toBe(false);
   });
 });

@@ -49,13 +49,18 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                            |
 | `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                   |
 | `labels`          | labels    | Up to 12 short strings                                                                                                                                                |
-| `estimate`        | number    | Points or hours, 0 to 999                                                                                                                                             |
-| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#project-gantt-chart))                                         |
+| `estimate`        | number    | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds           |
+| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#gantt-chart))                                                 |
 | `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                         |
+| `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                |
 | `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                        |
-| `parent`          | item ref  | Another item's id (a Project), resolved within the same document                                                                                                      |
+| `parent`          | item ref  | Another item's id (a Project), resolved within the same document; edited and listed as a link field (item-types.md "Card fields")                                     |
 | `votes`           | votes     | Per-person counts `{ [personId]: n }`, written only through voting                                                                                                    |
 | `comments`        | comments  | The card's conversation: the same comment thread a canvas element carries (`{ comments, resolved }`), written only through the comment writes ([Comments](#comments)) |
+
+A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
+refused (`status_excluded`), from the editor, the api and agents alike. A card already in one is never moved out
+by it, and putting a change back (a restore from the Trash, an undo or redo) is never refused.
 
 ## Item types
 
@@ -63,23 +68,48 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 
 | Type    | Accent | For                                    | Offers                                                                                   |
 | ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, start, due, labels                       |
+| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, color, start, due, labels                |
 | Task    | Gray   | A piece of work                        | title, description, status, assignee, parent, priority, estimate, due, checklist, labels |
 | Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                        |
 | Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
 | Action  | Red    | Something agreed to do                 | title, description, status, assignee, due, checklist                                     |
 
 - **Start** sits right before Due, on Projects only by default (so they map onto the
-  [Gantt chart](plan-views.md#project-gantt-chart)); any other type can add it in the type editor. It is edited
+  [Gantt chart](plan-views.md#gantt-chart)); any other type can add it in the type editor. It is edited
   with the same date picker as Due. A start after the due date is kept, and the item panel
   says **Starts after it is due** under it, gently. Start is a card field like Due; the Roadmap board and the
   Project Planner's Roadmap tab show it on their cards.
+- **Colour** (`color`) sits before Start on Projects by default, so projects can be colour coded; any other type
+  can add it in the type editor. See [Colour](#colour).
 - **Parent** sits right under Status and Assignee on a Task, and in that place in the type editor's list of
   built-in fields: what a piece of work belongs to is read alongside who has it.
 - Every built-in type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A document whose
   own catalogue predates it adds it in the type editor, like any built-in field.
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
+
+## Colour
+
+- An item's **Colour** is one of the twelve swatches a card type is given from (the type editor's Colour), or none.
+  Any other value is refused, like any invalid field value.
+- It is an **addition** to the type colour, never a replacement: a card keeps its type's stripe and glyph colour,
+  and the item's colour shows as a small dot beside them.
+- It is set in the item panel from one compact dropdown showing the colour's dot and name (or **None**); it opens
+  the same swatches as the type editor, plus **None**, which clears it, in a small popover under the field, inside
+  the item panel (so the panel's focus trap holds it). A pick closes it, as do Escape (which leaves the card open
+  and returns focus to the field), Tab out of it and a press outside.
+- The swatches are one radio group with one Tab stop, the picked swatch (or None, or the first when nothing is
+  picked): the arrow keys move along them (wrapping), Home and End jump to the ends, and Enter or Space picks.
+  Opening the popover (a click, Enter, Space or an arrow key on the field) moves focus to the picked swatch.
+- Where it shows:
+  - **Card face**: a small dot beside the card's type label.
+  - **Parent**: a card's parent (the project it belongs to) shows that project's dot before its name, in the item
+    panel and on the card face.
+  - **Swimlanes by Project**: each project row's header shows the project's dot.
+  - **Gantt Chart**: a project's bar and diamond are drawn in its colour, else the Project type colour; the
+    row's name carries its dot ([Gantt Chart](plan-views.md#gantt-chart)).
+- A document whose own catalogue predates it keeps its Project type as saved; Colour is added in the type editor
+  like any built-in field.
 
 ## Changing items
 
@@ -152,19 +182,29 @@ same `Comment` and `CommentThread` values, the same rules for who may write, del
 author redaction, and the same thread list, composer and resolve control the comment popover draws.
 
 - **Where it shows**: `comments` is a built-in field. In the item panel it is the last field of the Overview tab,
-  under its label **Comments**: the thread (author disc, name, relative time, text with @-mention chips), then the
-  composer (**Add a comment…**, ⌘↵ or **Comment** sends), all in one bordered box. Once there is a comment, a row
-  above the thread says how many (**1 comment**, **3 comments**) beside a **Resolve** chip (**Resolved** while
-  resolved, which hides the composer; pressing it reopens). Empty, it reads **No comments yet.** Someone who may
-  not comment reads the thread with no composer and no chip. A type that stops offering comments keeps the
-  card's thread stored, unshown, like votes.
+  under its label **Comments**, drawn as a feed with no surrounding box:
+  - Once there is a comment, a quiet header row says how many (**1 comment**, **3 comments**) with **Resolve** (a
+    check icon and the word) at its end. While resolved, the header shows a green **Resolved** badge with
+    **Reopen** beside it, and the composer is hidden.
+  - Each comment is a row: the author's avatar (28 px, their picture where the canvas has one, else initials on
+    their colour), their name in medium weight, the relative time muted ("2m ago"; the full date and time in a
+    tooltip), and the text below at 13 px with relaxed line height, line breaks kept and @-mentions as chips.
+    Rows sit a hairline apart. Delete is a quiet trash icon (with a tooltip) that shows on the row's hover or
+    focus, to whoever may delete it.
+  - The composer sits under the thread beside your own avatar: a one-line field that grows with its text (to
+    about eight lines, then scrolls), a soft border taking the brand ring on focus, placeholder **Add a
+    comment…**. **Comment** stays disabled until there is text. While the field has focus a hint names the
+    shortcut, **⌘ Enter to send** on Apple devices and **Ctrl Enter to send** elsewhere; a plain Enter adds a line.
+  - Empty, it reads **No comments yet. Start the conversation.** as a quiet line. Someone who may not comment
+    reads the thread with no composer and no Resolve. A type that stops offering comments keeps the card's thread
+    stored, unshown, like votes.
 - **On the card**: a `comments` card field (a speech-bubble glyph and the count of comments in an open thread,
   drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it. Exports and
   thumbnails draw it too, after the votes, by the same rule (a board's card fields; a Plan card always).
 - **Writes**: add (text up to 2,000 characters, optional mentions), delete, resolve, reopen. Each is applied by the
   api to the item as stored, so concurrent comments, deletes and resolves all land. A comment's author name,
   colour and id are stamped by the server from the caller, never taken from the request. Adding to a resolved
-  thread reopens it, as on the canvas. A comment change counts as a change to the item (its `rev`, **Changed by**).
+  thread reopens it, as on the canvas. A comment change counts as a change to the item (its `rev`, **Edited by**).
 - **Who may**: anyone who may comment on the document (participate access) may add a comment and resolve or
   reopen the thread; they may delete their own comments, and someone with edit access may delete any.
 - **Author ids**: a comment's author id never leaves the api except to its own author (as on the canvas): every
@@ -190,11 +230,20 @@ author redaction, and the same thread list, composer and resolve control the com
 ## Finding a card
 
 - **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
-  in the document that is neither archived nor in the Trash, newest change first.
-- A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title or description, ignoring case.
-- **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of the
-  document's boards holds, on any tab (or that have no status): the strays a renamed or removed column left
-  behind. Each carries a count.
+  in the document that is neither archived nor in the Trash, of every card type the catalogue has (custom types
+  included, each drawn with its own glyph and colour) and of a type it has lost (drawn as the fallback "Item"),
+  newest change first.
+- A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
+  description or card type name ("person" finds every Person card), ignoring case.
+- **Card types**: under the switch below, a chip per catalogue type (its glyph in its colour and its name), wrapping
+  onto a second line and scrolling past two. None pressed is every type; pressing chips narrows the list, and both
+  counts, to the pressed types; **Clear** (shown while any is pressed) presses none. The choice is the person's own
+  while the panel is open, never saved. With types pressed and none of their cards: "No cards of those types yet".
+- **All Cards** and **Not on a Board** switch between every card and the cards no board in the document shows,
+  on any tab: those with no status, those whose status no column holds (the strays a renamed or removed column
+  left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
+  card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
+  its type. Each carries a count.
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row shows the type's glyph, the title, and the type, number and status. Choosing one closes the popover and
   opens the card in the item panel.

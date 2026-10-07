@@ -654,6 +654,7 @@ export function EditorView() {
                           const c = ctx.getViewportCenter();
                           ctx.dropPaletteItem('plan-board', c.x, c.y, { choice: preset });
                         }}
+                        onQuickStart={openTemplatePicker}
                       />
                     ) : null}
                     {showEmptyCanvasBanner ? (

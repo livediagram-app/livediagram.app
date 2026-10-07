@@ -150,9 +150,23 @@ export function MenuTile({
 }
 
 // Grid wrapper for MenuTile rows (2 / 3 / 4 equal columns).
-export function MenuTileGrid({ cols = 3, children }: { cols?: 2 | 3 | 4; children: ReactNode }) {
+export function MenuTileGrid({
+  cols = 3,
+  fitRows = false,
+  children,
+}: {
+  cols?: 2 | 3 | 4;
+  // Each row as tall as its own tiles, for a long grid where one wrapped label would otherwise
+  // stretch every row.
+  fitRows?: boolean;
+  children: ReactNode;
+}) {
   const colClass = cols === 2 ? 'grid-cols-2' : cols === 4 ? 'grid-cols-4' : 'grid-cols-3';
   // `auto-rows-fr` so a row with one wrapped label doesn't leave its
   // neighbours shorter: every tile in a row is the row's height.
-  return <div className={`grid auto-rows-fr gap-1 px-2 py-1.5 ${colClass}`}>{children}</div>;
+  return (
+    <div className={`grid gap-1 px-2 py-1.5 ${fitRows ? '' : 'auto-rows-fr'} ${colClass}`}>
+      {children}
+    </div>
+  );
 }

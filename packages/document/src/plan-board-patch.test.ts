@@ -70,7 +70,7 @@ describe('applyPlanBoardPatch', () => {
     expect(onA.columns.map((c) => c.name)).toEqual([
       'Backlog',
       'Ready',
-      'In progress',
+      'In Progress',
       'Checking',
       'Done',
     ]);

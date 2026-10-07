@@ -32,6 +32,7 @@ import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButt
 import { TrashClusterButton } from '@/components/canvas/TrashClusterButton';
 import { CardFinderClusterButton } from '@/components/canvas/CardFinderClusterButton';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
+import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -350,6 +351,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
     [elements],
   );
+  // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
+  usePublishCardTypesTaken(elements);
   // Floating panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,

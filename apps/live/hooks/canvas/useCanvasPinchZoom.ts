@@ -171,6 +171,15 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // their own scroll — don't hijack their wheel to pan/zoom the canvas
       // (the canvas pointer handlers guard the same way).
       if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+      // An element that scrolls sideways itself (the Gantt chart's timeline, data-own-wheel-x) keeps a
+      // sideways or Shift wheel; a plain vertical wheel over it still pans the canvas.
+      if (
+        !e.ctrlKey &&
+        !e.metaKey &&
+        (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) &&
+        (e.target as Element | null)?.closest?.('[data-own-wheel-x]')
+      )
+        return;
       // Belt-and-braces: also bail if the cursor is over ANY element that
       // can scroll on its own (a panel's icon list, a dropdown, a menu),
       // so the wheel scrolls THAT rather than panning the canvas behind it.

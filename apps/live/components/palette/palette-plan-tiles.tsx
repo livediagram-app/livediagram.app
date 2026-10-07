@@ -15,7 +15,8 @@ import { PLAN_VIEW_TILES } from './palette-plan-view-tiles';
 
 const GLYPH_PX = 18;
 
-// The boards the palette offers, in the order they are reached for, with what each is for.
+// The boards the palette offers, in the order they are reached for, with what each is for. One list for the palette's
+// Boards and Start with a Board; All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
 export const PLAN_BOARD_TILES: {
   preset: PlanBoardPresetId;
   caption: string;
@@ -30,6 +31,11 @@ export const PLAN_BOARD_TILES: {
     preset: 'kanban',
     caption: 'Kanban',
     description: 'A Kanban Board: Backlog to Done, with WIP limits on the busy columns.',
+  },
+  {
+    preset: 'todo',
+    caption: 'To-do List',
+    description: 'Actions to tick off, from To Do to Done.',
   },
   {
     preset: 'sprint',
@@ -57,14 +63,14 @@ export const PLAN_BOARD_TILES: {
     description: 'A column a day, Monday to Friday.',
   },
   {
-    preset: 'all-cards',
-    caption: 'All Cards',
-    description: 'Every card in the document, a row per status: nothing lost between boards.',
-  },
-  {
     preset: 'archive',
     caption: 'Archive',
     description: 'Every archived card, out of the way of the other boards, ready to restore.',
+  },
+  {
+    preset: 'all-cards',
+    caption: 'All Cards',
+    description: 'Every card in the document, a row per status: nothing lost between boards.',
   },
 ];
 

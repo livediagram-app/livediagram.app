@@ -74,16 +74,32 @@ describe('Swimlanes by a field', () => {
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types });
     render(<PlanBoardMenuSection element={laned} flyoutProps={{} as never} />);
-    fireEvent.click(screen.getByRole('button', { name: 'By Assignee' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Assignee' }));
     const next = updateBoard.mock.calls[0]![1];
     expect(next.swimlaneBy).toBe('assignee');
     expect(next.swimlaneField).toBeUndefined();
   });
 });
 
-// docs/specs/026-plan/plan-board.md "The board set-up": a board whose chosen types were all deleted takes
-// every type again, and its New Cards Can Be says so.
-describe('New Cards Can Be after a type is deleted', () => {
+// docs/specs/026-plan/plan-board.md "Card types a board shows": the Cards flyout's Card Types tiles filter the board.
+describe('Card Types', () => {
+  it('names the group Card Types and turns a hidden type back on', () => {
+    const updateBoard = vi.fn();
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types: ITEM_TYPES });
+    render(<PlanCardsMenuSection element={board} flyoutProps={{} as never} />);
+    expect(screen.getByRole('heading', { name: 'Card Types' })).toBeTruthy();
+    expect(screen.queryByText('New Cards Can Be')).toBeNull();
+    // Kanban shows Task, Action and Note: pressing Project shows Projects too.
+    // The first Project tile is the type's (the Show on Cards group has a Project field tile too).
+    fireEvent.click(screen.getAllByRole('button', { name: 'Project' })[0]!);
+    expect(updateBoard.mock.calls[0]![1].addTypes).toContain('project');
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Card types a board shows": a board whose chosen types were all deleted
+// shows and takes every type again, and its Card Types tiles say so.
+describe('Card Types after a type is deleted', () => {
   it('shows every type pressed, and a change stores only current types', () => {
     const updateBoard = vi.fn();
     cleanup();
@@ -94,7 +110,7 @@ describe('New Cards Can Be after a type is deleted', () => {
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types: ITEM_TYPES });
     render(<PlanCardsMenuSection element={stale} flyoutProps={{} as never} />);
-    // The New Cards Can Be tiles come first (a card field such as Project shares a name).
+    // The Card Types tiles come first (a card field such as Project shares a name).
     const tile = (name: string) => screen.getAllByRole('button', { name })[0]!;
     for (const t of ITEM_TYPES) expect(tile(t.label).getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(tile('Note'));

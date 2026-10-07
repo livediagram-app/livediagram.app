@@ -1,7 +1,7 @@
 'use client';
 
 // An item's description in the item panel (docs/specs/026-plan/plan-board.md "Working on a board"). It reads
-// as text until clicked (an empty one is a dashed invitation to add it); then it is the note editor (the
+// as text until clicked (an empty one is a quiet "Add a description…" line); then it is the note editor (the
 // same runs, toolbar and shortcuts) on a raised surface, with shortcut hints and a Saving / Saved line,
 // until focus leaves it or Escape. Saved as `descriptionRich` with `description` as its plain-text mirror,
 // in one write: a moment after typing stops, when focus leaves, and when the panel closes.
@@ -67,7 +67,7 @@ export function ItemDescription({
 
   if (!canEdit) {
     return empty ? (
-      <p className="text-[13px] text-slate-500 dark:text-slate-400">No description</p>
+      <p className="text-[13px] text-slate-500">No description</p>
     ) : (
       <NoteRichText
         note={undefined}
@@ -82,19 +82,10 @@ export function ItemDescription({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="block w-full rounded-xl border-2 border-dashed border-slate-200 px-4 py-6 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/5"
+        className="group -mx-3 flex w-[calc(100%+1.5rem)] cursor-text items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
       >
-        <span className="flex flex-col items-center gap-1.5 text-center">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-            <PencilIcon size={16} />
-          </span>
-          <span className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
-            Add a description
-          </span>
-          <span className="text-[12px] text-slate-500 dark:text-slate-400">
-            The why and the what. Lists, links and headings welcome.
-          </span>
-        </span>
+        <PencilIcon size={14} />
+        Add a description…
       </button>
     );
   }

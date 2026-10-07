@@ -120,7 +120,7 @@ test('two people renaming different columns of one board both keep their rename'
   await expect.poll(() => heads(b)).toContain('Review');
 
   // Both rename at once, each a different column.
-  const onA = await startRename(a, 'To do', 'Ready');
+  const onA = await startRename(a, 'To Do', 'Ready');
   const onB = await startRename(b, 'Review', 'Checking');
   await Promise.all([onA.press('Enter'), onB.press('Enter')]);
   await a.keyboard.press('Escape');
@@ -129,7 +129,7 @@ test('two people renaming different columns of one board both keep their rename'
   for (const p of [a, b]) {
     await expect
       .poll(() => heads(p))
-      .toEqual(['Backlog', 'Ready', 'In progress', 'Checking', 'Done']);
+      .toEqual(['Backlog', 'Ready', 'In Progress', 'Checking', 'Done']);
   }
   // D1 keeps both: a reload shows them.
   await expect
@@ -139,7 +139,7 @@ test('two people renaming different columns of one board both keep their rename'
       await toPlan(a);
       return heads(a);
     })
-    .toEqual(['Backlog', 'Ready', 'In progress', 'Checking', 'Done']);
+    .toEqual(['Backlog', 'Ready', 'In Progress', 'Checking', 'Done']);
 
   await a.context().close();
   await b.context().close();

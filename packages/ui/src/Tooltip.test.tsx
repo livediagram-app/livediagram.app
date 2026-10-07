@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Tooltip } from './Tooltip';
 import { HINT_CLOSE_GRACE_MS, TOOLTIP_OPEN_DELAY_MS } from './hint/hint-constants';
 import { resetHintRegistry } from './hint/hint-registry';
+import { HINT_FOLLOW_IDLE_FRAMES } from './hint/HintSurface';
 
 const mouse = { pointerType: 'mouse' };
 const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
@@ -44,6 +45,41 @@ describe('Tooltip', () => {
       ]),
     );
     expect(classes.filter((c) => /^dark:bg-slate-[1-7]00$/.test(c))).toEqual([]);
+  });
+
+  it('follows its control when it moves without a scroll (a canvas pan)', () => {
+    render(
+      <Tooltip label="Today">
+        <button type="button" aria-label="Today" />
+      </Tooltip>,
+    );
+    const button = screen.getByRole('button');
+    const at = (left: number) =>
+      vi.spyOn(button, 'getBoundingClientRect').mockReturnValue(new DOMRect(left, 300, 40, 20));
+    at(400);
+    fireEvent.pointerEnter(button, mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS);
+    advance(32);
+    const before = hint()?.style.left;
+    // A pan comes with input (here a pointer move), which keeps the follow loop awake however long the hint
+    // has been open.
+    at(100);
+    act(() => {
+      window.dispatchEvent(new Event('pointermove'));
+    });
+    advance(32);
+    const moved = hint()?.style.left;
+    expect(moved).not.toBe(before);
+    // Still for a while, the loop sleeps; a move then waits for input (a wheel, a pointer) to wake it.
+    advance(16 * (HINT_FOLLOW_IDLE_FRAMES + 2));
+    at(250);
+    advance(64);
+    expect(hint()?.style.left).toBe(moved);
+    act(() => {
+      window.dispatchEvent(new WheelEvent('wheel'));
+    });
+    advance(32);
+    expect(hint()?.style.left).not.toBe(moved);
   });
 
   it('adds no box to the layout around its control', () => {

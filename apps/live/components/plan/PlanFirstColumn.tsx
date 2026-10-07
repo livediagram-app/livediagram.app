@@ -1,12 +1,12 @@
 'use client';
 
-// A board with no columns (docs/specs/026-plan/plan-board.md "The board set-up"): in place of its columns, a
-// field to name the first one. Enter (or Add Column) makes it; the board then grows from its cog's
-// + Add Column After. Someone who may only view reads that the board has no columns yet.
+// A board with no columns (docs/specs/026-plan/plan-board.md "The board set-up"): in place of its columns, the
+// column picker (AddColumnPicker): an existing status to use, or a new one to name. The board then grows from its
+// cog's + Add Column After. Someone who may only view reads that the board has no columns yet.
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useState } from 'react';
-import { Button, PlusIcon } from '@livediagram/ui';
-import { COLUMN_NAME_MAX } from './board-setup-edits';
+import type { PlanBoardSetup } from '@livediagram/items';
+import { AddColumnPicker } from './AddColumnPicker';
+import type { StatusPick } from './column-status-picks';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -14,18 +14,21 @@ const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 export function PlanFirstColumn({
   palette,
   canEdit,
+  setup,
+  statusNames,
   onAdd,
+  onPick,
+  onPickAll,
 }: {
   palette: PlanPalette;
   canEdit: boolean;
+  setup: Pick<PlanBoardSetup, 'columns'>;
+  // The document's statuses, offered as picks (docs/specs/026-plan/plan-board.md "The column picker").
+  statusNames: ReadonlyMap<string, string>;
   onAdd: (name: string) => void;
+  onPick: (pick: StatusPick) => void;
+  onPickAll: (picks: StatusPick[]) => void;
 }) {
-  const [name, setName] = useState('');
-  const add = () => {
-    if (!name.trim()) return;
-    onAdd(name);
-    setName('');
-  };
   return (
     <div className="flex h-full items-center justify-center p-6">
       <div
@@ -40,37 +43,15 @@ export function PlanFirstColumn({
         </div>
         {canEdit ? (
           <>
-            <p className="text-[12px]">Name the first stage your cards move through.</p>
-            <div className="flex w-full gap-2" onPointerDown={stop}>
-              <input
-                aria-label="First column name"
-                placeholder="To do"
-                maxLength={COLUMN_NAME_MAX}
-                value={name}
-                className="h-9 min-w-0 flex-1 rounded-md border bg-transparent px-2.5 text-[13px] outline-none focus:ring-2"
-                style={{
-                  borderColor: palette.border,
-                  color: palette.text,
-                  ['--tw-ring-color' as string]: palette.focus,
-                }}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => {
-                  stop(e);
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    add();
-                  }
-                }}
-              />
-              <Button
-                disabled={!name.trim()}
-                onClick={add}
-                className="h-9 shrink-0 gap-1 px-3 text-[13px] font-semibold"
-              >
-                <PlusIcon size={14} />
-                Add Column
-              </Button>
-            </div>
+            <p className="text-[12px]">Pick or name the first stage your cards move through.</p>
+            <AddColumnPicker
+              setup={setup}
+              statusNames={statusNames}
+              palette={palette}
+              onPick={onPick}
+              onPickAll={onPickAll}
+              onName={onAdd}
+            />
           </>
         ) : (
           <p className="text-[12px]">Someone who can edit the board names its first column.</p>

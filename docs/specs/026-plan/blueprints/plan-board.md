@@ -46,12 +46,26 @@ PlanContext.tsx          context: items, types, item types slice, status, self, 
 PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
                          columns and rows grid, cards, keyboard, Add card per cell, the card menu
 PlanColumnHeader.tsx     a column's head: colour bar, name, count, and the cog (PlanColumnPopover)
-PlanColumnPopover.tsx    a column's settings popover
+AddColumnPicker.tsx      the column picker (existing-status chips, Add All, the new-status field and its match note), used by
+                         PlanFirstColumn and the popover's + Add Column After; its pure part is column-status-picks.ts
+AddColumnPickerPopover.tsx the picker hung from + Add Column After: a portal at z-popover (`data-add-column-picker`), placed by
+                         @livediagram/ui `placeHint` with order right, left, bottom, top (8px gap, 8px margin) and an
+                         arrow at its `arrowOffset`; its own capture Escape and outside press close it and refocus the
+                         button. PlanColumnPopover's Escape is disabled while it is open, and its outside press treats
+                         `[data-add-column-picker]` as inside
+                         (statusKey, missingStatuses, matchStatus, addStatusColumn, addStatusColumns)
+PlanColumnPopover.tsx    a column's settings popover; + Add Column After asks the new column's head to open its own
+                         (column-settings-request.ts, a one-shot module request read on the head's mount) and
+                         closes, and the new popover selects its name (`selectName`)
 board-setup-edits.ts     the set-up's edits as pure functions (rename, recolour, WIP, done, move, add, remove)
 track-board-setup.ts     Plan · Changed · <part>
 PlanBoardCells.tsx       a row's band, one card in a cell (right-click → onMenu), and the drag ghost
 PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
-                         mine, Reveal
+                         mine, Reveal; a double-click on the title or its own empty space (not a widget or
+                         button) renames when `canRename` (`canEdit && planInput`), stopping the event
+BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX` 80, selected on open);
+                         Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
+                         Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
@@ -64,6 +78,10 @@ PlanSheetsHost.tsx       renders the open item panel or type editor
 ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
+ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG + accentVars of the type colour),
+                         ItemPanelSection (13px semibold heading, mb-8), ItemDetailsRow (grid 6.5rem/1fr, min-h-9,
+                         rounded hover), ItemMeta (11px slate-400 created/edited lines); the aside is m-3 rounded-xl
+                         bg-slate-50 ring-1; title 22px semibold tracking-tight
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
 ItemChildCards.tsx       a parent's Child Cards section: childrenOf rows (glyph, #key, title, status, Archived chip)
 ItemTrailCrumbs.tsx      the breadcrumb of earlier cards (visibleTrail, folded "…"): in the header on a wide screen,
@@ -75,6 +93,9 @@ item-field-editors.tsx   editors for text (debounced), person, priority, labels,
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
 plan-palette.ts          re-exports planPalette from @livediagram/document (shared with the SVG export) and
                          planOwnColours(element)
+MaximisedPlanLayer.tsx  MaximisableSlot (a board's or view's body through a portal into its own host element,
+                         moved between the canvas slot and the overlay), the overlay (portal to document.body,
+                         fixed inset-0, z-40, the FLIP open/close), the lifetime hook and the header button
 plan-type-glyph.tsx      a type's glyph from the Plan glyph set
 plan-tile-art.tsx        a picture per board preset, and the card tile glyph
 ```
@@ -85,7 +106,10 @@ drop, and the board as a target for cards from other boards through `plan-board-
 boards on screen by element id), `usePlanCardDrag` (pointer drag
 within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
 under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
-`plan-card-drop.ts` (a palette card into the column under the pointer). `PlanProvider` wraps the editor view, so the export dialog reads
+`plan-card-drop.ts` (a palette card into the column under the pointer). `maximised-plan.ts` is the maximised board or view, a module store
+(`{ id, kind: 'Board' | 'View' } | null`, `maximisePlanElement` / `restorePlanElement` / `releasePlanElement` /
+`useMaximisedPlanId`; `kind` names the telemetry), read once by `useEditorState` to
+add zen chrome while a board is maximised. `PlanProvider` wraps the editor view, so the export dialog reads
 the items too.
 
 ## Card sizes
@@ -93,10 +117,17 @@ the items too.
 - `CARD_SIZE_FIELDS`: minimal `[]`; compact key, type, assignee, priority, due, votes; detailed every field.
   `cardFieldsAt(size, fields)` is what a face draws. `CARD_FIELDS` adds `description` (two lines) and `parent`
   (the project's title). The Cards flyout dims a field tile outside the size's set (`disabled`), its setting kept.
-- `PlanCardFace`: Minimal py-2.5, title 13 px semibold, two lines; Compact title two lines over a 11 px meta row
-  (`DueTag` red when past and not done, `PriorityDot`, avatar right); Detailed header row with a priority chip,
-  title three lines, parent, description, custom fields, ≤ 4 labels, checklist bar (green when complete), and a
-  bordered footer (due, estimate, votes, first name and avatar).
+- `PlanCardFace` lays out the parts in `plan-card-parts.tsx`: frame `rounded-xl` with a hairline border, rest shadow
+  `0 1px 2px / 0 1px 3px` slate at 6 % / 4 %, hover `shadow-md` and `-translate-y-px` (150 ms; none under reduced
+  motion); no stripe: the type colour fills `KeyTag` (the #key, text white or `#18181b`, whichever
+  `contrastRatio` favours: `keyTextOn`), and Minimal draws `TypeDot` before the title. Minimal: title 13 px semibold, two lines.
+  Compact: `TypeChip` (glyph only) beside a two-line title, over an 11 px row (#key, `PrioritySignal`,
+  `StartPill`, `DuePill`, votes, `CommentsPill`, avatar right). Detailed: header (`TypeChip`, `KeyTag`, `ColourDot` when the item has its own colour,
+  `PrioritySignal` with its name at the end), title 14 px three lines, parent, description two lines, custom
+  fields as a name/value grid, `LabelChips` (≤ 4, `labelColour` tints, "+n"), then a footer of `MetaPill`s
+  (start, due, estimate, `ChecklistPill`, comments, votes) with the avatar at the end. `DuePill`: `LATE_COLOUR`
+  when past and not done, `SOON_COLOUR` within `DUE_SOON_DAYS` (2), else quiet. Pills tint their tone at 14 %
+  (`tint`, `color-mix`).
 
 ## Behaviour and state
 
@@ -114,11 +145,13 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - **Plan card onto a board**: in `useEditorDrag`'s drag end, a moved `plan-card` released over a board cell
   (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
   that column and the card element is removed (two undo steps: the removal, then the move).
-- **New card types**: `boardAddTypes(setup, types)` (`packages/items/src/board.ts`) is what Add Card offers and
-  what the Cards menu's New Cards Can Be shows pressed: `setup.addTypes` filtered to the catalogue, in its order,
-  or every type when it is unset or names none still in the catalogue. `boardTakesType(setup, types, id)` is the
-  same rule for a palette card's drop. Deleting a type never rewrites a board's `addTypes`; the next New Cards
-  Can Be change stores only current ids.
+- **Card types a board shows**: `boardAddTypes(setup, types)` (`packages/items/src/board.ts`) is what Add Card
+  offers and what the Cards menu's Card Types shows pressed: `setup.addTypes` filtered to the catalogue, in its
+  order, or every type when it is unset or names none still in the catalogue. `boardTakesType(setup, types, id)`
+  is the same rule for one type, and `boardShowsType(setup, type, types?)` applies it (or, without a catalogue,
+  plain membership) to a palette card's drop and a card dragged from another board. `projectBoard` resolves the
+  shown set once per projection, not per card. Deleting a type never rewrites a board's `addTypes`; the next Card
+  Types change stores only current ids.
 - **Item panel**: `openItemId` in `usePlanSlice`; opening broadcasts presence `viewing`; edits debounce 400 ms
   per field (`ITEM_EDIT_DEBOUNCE_MS`), flushed on close; each flush is one undo step.
 - **Card trail**: `itemTrail: string[]` in `usePlanSlice`, beside `openItemId`. `openItem(id)` resets it to
@@ -131,6 +164,22 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   between cards keeps the Dialog mounted (no entrance animation again) while each card's tab and clock reset.
 - **Child cards**: `childrenOf(items, parentId)` = items whose `fields.parent === parentId`, status not `trash`,
   sorted by `key`; computed in `PlanSheetsHost` for the open item only (one pass over the document's items).
+- **Maximised board**: `maximised-plan.ts` holds `{ id, kind } | null` (a visualisation maximises through it too,
+  `PlanViewView` putting `MaximisePlanButton kind="View"` in every view header through `ViewHeaderEnd`), never synced, saved or journalled.
+  `PlanBoardView` with `interactive` shows the header's Maximise Board button; pressed, `maximisePlanElement(id)` and
+  `Plan · Toggled · BoardMaximised`. The board always renders inside `MaximisableSlot`: its body goes
+  through `createPortal` into one host `div` the slot owns (made once), and only that host moves (`appendChild`):
+  into the slot on the canvas, or into `MaximisedPlanLayer`'s box while maximised. The React tree never changes
+  shape, so nothing remounts; `PlanContext` and the canvas surface still reach the body. While maximised the slot
+  stops the body's pointer, double-click, context-menu and wheel events (they reach it through the portal) and draws
+  an empty placeholder of the board's surface. The layer reports its box's untransformed size (`offsetWidth` /
+  `offsetHeight`, a `ResizeObserver`) through `onMaximisedSize`, which `PlanViewView` lays a view out at. Restore
+  Board, or Escape (a capture-phase `window` listener, so it runs before the editor's deselect, then
+  `preventDefault` + `stopPropagation`) with no `[aria-modal="true"]` open, calls `restorePlanElement()` and
+  `Plan · Toggled · BoardRestored`. The board unmounting (tab switch, deletion,
+  culling) or `interactive` turning false (leaving Plan mode, losing edit input) restores without telemetry.
+  `useEditorState` ORs `useMaximisedPlanId() !== null` into the exposed `zenMode`, as presenting does, so zen the
+  person had is untouched.
 - **Reveal**: sets `planBoard.hideWriting = false` (element commit).
 - **Set-up edits**: element commits via `updateElement`; removing a column with items opens a choice "Move
   N items to …" (another column) before the commit, the moves pushed with it.
@@ -156,15 +205,15 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   "Child Cards", "No cards sit under this project yet.", "Archived", "Card trail".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
-  input, field rows in the type's order, description textarea, checklist, footer "Made by X · Changed by Y, 2m".
+  input, field rows in the type's order, description textarea, checklist, footer "Created by (disc) X" and "Edited by (disc) Y, 2m", the disc `PersonDisc`.
 
 ## Accessibility
 
-- Board is a `region` named by its title; each column a `list` labelled "In progress, 3 items, WIP limit 4";
+- Board is a `region` named by its title; each column a `list` labelled "In Progress, 3 items, WIP limit 4";
   each card a `listitem` containing a `button` named "#12 Fix login, Bug, assigned to Sam, high priority".
 - Keyboard per spec (`usePlanBoardKeyboard`); moves announced in a polite live region.
 - Drag has the keyboard equivalent (Shift+arrows). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
-  type colour stripe (stripe is decorative).
+  type colour key fill (the #key text meets 4.5:1 on it).
 - Reduced motion: no placeholder animation, no card lift shadow transition.
 - Breadcrumb: `nav aria-label="Card trail"` holding an `ol`; each crumb a `button` named "Back to #12 Website
   relaunch"; separators and the fold are `aria-hidden` except the fold's sr-only "3 earlier cards". Child Cards: a
@@ -214,6 +263,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | Card trail steps, cut-back, cap; children   | `apps/live/components/plan/item-trail.test.ts`                |
 | Child Cards rows, empty state, open         | `apps/live/components/plan/ItemChildCards.test.tsx`           |
 | Breadcrumb crumbs, fold, step back          | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`          |
+| Maximise, restore, Escape, unmount ends it  | `apps/live/hooks/plan/maximised-plan.test.ts`                 |
+| No remount, maximised size, one Escape      | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`       |
 | Drag, Add card, card menu, item panel       | checked by hand against the dev stack (screenshots in the PR) |
 
 ## Constants and configuration
@@ -227,3 +278,10 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | `ITEM_TRAIL_MAX`         | 8     | Spec; bounds the trail's memory; 2–20    |
 | `ITEM_TRAIL_SHOWN`       | 3     | Earlier crumbs that fit a 60rem header   |
 | `ITEM_TRAIL_SHOWN_PHONE` | 1     | Spec                                     |
+
+- New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
+  `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to
+  `addItem`: Add Card (PlanBoardView), a palette card's `addCard` (usePlanBoardDrop), New {Type}
+  (PlanSheetsHost `onAddLinked`). PlanSheetsHost passes `fresh={freshItemId === item.id}` to ItemPanel, whose
+  `useTitleFocus` (desktop and `canEdit` only, a frame after the Dialog's `initialFocus="container"` trap)
+  focuses the title input with the caret at its end, or selects it when `fresh`.

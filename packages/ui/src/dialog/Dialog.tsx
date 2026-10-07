@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
-import { useFocusTrap } from '../useFocusTrap';
+import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
 import { useSwipeDownDismiss } from '../useSwipeDownDismiss';
 import { safeInset } from '../safe-area';
 
@@ -70,6 +70,9 @@ export type DialogProps = {
   // it down to close, instead of filling the screen (docs/specs/007-editor/live-app.md "Working
   // dialogs rise as sheets on a phone"). A centred card from sm up either way.
   phoneSheet?: boolean;
+  // Where focus lands on open: the first control (default), or the panel itself ('container') when the
+  // first control is not where anyone starts (the Plan card panel, whose header opens on its type picker).
+  initialFocus?: FocusTrapInitial;
   children: ReactNode;
 };
 
@@ -93,6 +96,7 @@ export function Dialog({
   className,
   backdrop = 'dim',
   phoneSheet = false,
+  initialFocus = 'first',
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -115,7 +119,7 @@ export function Dialog({
   // Trap focus inside the modal while open and hand it back on close — keeps
   // keyboard / screen-reader users out of the inert background. Re-engages on
   // `open` because the dialog stays mounted and toggles rather than unmounting.
-  useFocusTrap(panelRef, open);
+  useFocusTrap(panelRef, open, initialFocus);
 
   if (!open) return null;
 
@@ -133,7 +137,9 @@ export function Dialog({
           e.preventDefault();
           e.stopPropagation();
         }}
-        className={`fixed inset-0 z-[var(--z-modal)] flex items-center justify-center ${
+        // The dim fades in (fade-in, micro) while the panel settles (dialog-in, long), so the modal
+        // arrives rather than appearing (docs/specs/004-interface-design/motion.md "Dialogs").
+        className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center ${
           phoneSheet ? 'max-sm:items-end ' : ''
         }${BACKDROPS[backdrop]}`}
         onClick={(e) => {
@@ -165,7 +171,7 @@ export function Dialog({
           // a short/landscape screen never pushes its footer off the bottom.
           // Dialogs that set their own max-h (e.g. ShareDialog, Export) opt out
           // of the default and manage their own scroll region.
-          className={`flex ${WIDTHS[size]} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
+          className={`flex ${WIDTHS[size]} max-w-[92%] animate-dialog-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
             phoneSheet
               ? PHONE_SHEET
               : EDGE_TO_EDGE_SIZES.has(size)

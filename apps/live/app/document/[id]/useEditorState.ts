@@ -5,6 +5,7 @@ import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
+import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
@@ -1427,6 +1428,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // slide needed — often 250% on one box — and had to hunt around the canvas.
   const [preShowView, setPreShowView] = useState<{ tabId: string } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
+  // A maximised Plan board or view wears zen's chrome too (docs/specs/026-plan/plan-board.md "Maximised board").
+  const planMaximised = useMaximisedPlanId() !== null;
   // Captured on the way in, restored on the way out: state adjusted during render on the transition
   // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
   // commit as the exit instead of one frame later.
@@ -1989,10 +1992,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Plan boards and cards (docs/specs/026-plan/): the item panel, board set-up and every action a board
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
   // The tab's status names, read only where Plan is in play (docs/specs/026-plan/plan-mode.md "Cost").
-  const { names: planStatusNames, phases: planStatusPhases } = usePlanStatuses(
+  const {
+    names: planStatusNames,
+    phases: planStatusPhases,
+    types: planStatusTypes,
+  } = usePlanStatuses(
     tabs,
     activeId,
     planNeeded,
+    itemTypes.types.map((t) => t.id),
   );
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded, !!clerkUserId);
@@ -2012,6 +2020,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addBoardSlide: slideDeck.newBoardSlide,
     statusNames: planStatusNames,
     statusPhases: planStatusPhases,
+    statusTypes: planStatusTypes,
+    notify: toast.info,
   });
   // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
   const planTour = usePlanTourContent({
@@ -3302,7 +3312,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // rather than the workbench. An OVERRIDE of the spread above rather than a
     // write to zen state, so exiting a presentation restores whatever zen the
     // user actually had.
-    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null,
+    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null || planMaximised,
     ...dialogs,
     ...uiState,
     ...persistence,

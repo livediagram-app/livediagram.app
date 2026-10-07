@@ -39,29 +39,75 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Hide writing**: off, or on: each person's cards on this board are face-down to everyone else until the board
   is revealed. It hides the face, not the data; it is a facilitation aid, not a privacy boundary.
 
+### Column names
+
+- A column's (and so its status's) name is **Title Case**: every word capitalised, except a short article,
+  conjunction or preposition in the middle (a, an, the, and, but, or, nor, for, so, yet, as, at, by, in, of, on,
+  per, to, up, via, vs), so "Ready for Review"; the first and last words are always capitalised ("To Do",
+  "Waiting On"). A word that already has a capital after its first letter is kept as typed (QA, MVP, iOS), as is
+  anything that is not a letter; each part of a hyphenated word is capitalised ("No-Go"), a letter after an
+  apostrophe is not ("Won't Fix"). One rule (`statusTitleCase`, packages/items) does it.
+- Every board preset and Plan template names its columns this way (Kanban's **To Do**, **In Progress**,
+  **Review**; Sprint's **Sprint Backlog**, **In Progress**, **In Review**; Bug Triage's **Won't Fix**; Retro's
+  **Went Well**, **To Improve**). Status ids are unchanged, so cards already in them stay put.
+- A name the person types (renaming a column, naming a new status in the column picker, the empty board's first
+  column) is saved in Title Case. A status picked from the ones the document already has keeps its name as it
+  is. A status with no name on the tab reads as its id in Title Case ("in-review~ab12" is "In Review").
+- Names already stored in documents are not rewritten: an older board keeps "To do" until someone renames it.
+
 Where each is set, so a setting lives with what it changes, never in one central panel:
 
 - **A column's own settings** sit on the column: a cog at the far right of its head (shown on hover and focus,
   always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (none or
   one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After** and
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
-  It**); the board's last column cannot be removed. Each change applies as it is made.
+  It**); the board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
+  opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
+  moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
-  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project, By Status,
-  then **By a Field**, a tile per groupable field, named by the field and drawn with its kind's glyph;
-  **Add to Slides**, the whole board as a slide, [Presentation mode](../012-collaboration/presentation-mode.md#board-slides)) and
-  **Cards**: the **Card Size** (Minimal, Compact or Detailed, below) and what each card face shows besides its
-  title, a tile per field pressed on or off. A field the chosen size cannot draw keeps its setting but its tile is
+  flyouts, each a stack of groups under the menu's small uppercase headings, a hairline apart: **Board**
+  (**Title**, with **Add to Slides** as an icon button beside it, the whole board as a slide,
+  [Presentation mode](../012-collaboration/presentation-mode.md#board-slides); **Swimlanes**, one grid: None,
+  Assignee, Type, Priority, Project, Status, then a tile per groupable field, named by the field and drawn
+  with its kind's glyph) and **Cards** (**Card Types**, below; **Card Size**: Minimal, Compact or Detailed,
+  below; **Show on Cards**: what each card face shows besides its title, a tile per field pressed on or off, with
+  a one-line hint for Minimal and Compact). A field the chosen size cannot draw keeps its setting but its tile is
   dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.
-- **New cards a board takes**: the Cards menu's **New Cards Can Be** row, a tile per card type pressed on or off
-  (at least one stays on). Add Card offers only those types, and the palette refuses another ("This board takes
-  Note, Idea and Action cards"). A card of another type that reaches the board (dragged, or by status) still shows.
-  A board whose chosen types have all since been deleted takes every type again, so Add Card is never empty.
+- **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (at
+  least one stays on; none named is every type). A board shows only cards of those types, and takes only those:
+  Add Card offers only them, a palette card of another type gets the red refused zone, and a card of another type
+  dragged from another board is refused, each saying so ("This board shows Note, Idea and Action cards"). A card it
+  hides is never moved, changed or deleted: it keeps its status and shows again the moment its type is turned back
+  on. A board whose chosen types have all since been deleted shows and takes every type again, so Add Card is
+  never empty. The board's count, widgets and quick filter count only the cards it shows. All Cards and Archive boards show
+  every type unless their types are set. (Stored as `addTypes`; before this rule it limited new cards only, so a
+  board that already named types now hides the others, which is what it says.)
   Defaults: Retro, Note and Idea (an action is tracked on a board of its own); Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
-  Week, Task, Action and Note; Blank and All Cards, every type.
-- **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and a
-  field to name the first; Enter or **Add Column** makes it. Every new column gets a status of its own (its name
-  and a short suffix), so it starts empty.
+  Week, Task, Action and Note; To-do List, Action; Blank and All Cards, every type.
+- **The To-do List board** (preset `todo`, after Kanban in the lists): two columns, **To Do** and **Done** (the done
+  column), for Action cards only, Compact cards showing who has each action and when it is due (a to-do list is a
+  dense list of short items, so Compact; its checklist is in the card), and the Completion and Due Soon widgets.
+- **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and the
+  **column picker**; its first pick or name makes the first column.
+- **The column picker** is how every column is added (the empty board, and a column's **+ Add Column After**):
+  - **Use an Existing Status**: a chip per status the document's other boards use that this board lacks, named as
+    the first board that names it does, in the order the document's boards give them (the open tab's first),
+    one chip per name (ignoring case and spacing). A chip adds a column for that status, so the cards already in
+    it show there. With two or more chips, **Add All** adds them all, in order, as one change (up to the 12-column
+    limit). Without any, the heading and chips are absent.
+  - **Or Name a New Status**: a field and **Add Column** (or Enter). A name that matches an existing status
+    (ignoring case and spacing) uses that status rather than making a near-duplicate, and says so under the field
+    as it is typed ("Uses the existing To Do status"); a name this board already has as a column says "This board
+    already has To Do" and adds nothing. Any other name makes a column with a status of its own (its name and a
+    short suffix), so it starts empty. On + Add Column After the popover then moves to the new column with its name
+    selected.
+  - Each add is one board change, undone in one step.
+  - **Where it shows**: on an empty board, inline in the board's body. From a column's settings, **+ Add Column
+    After** opens it as its own small popover hung beside the button (to its right, else left, below or above,
+    whichever fits on screen) with an arrow pointing at it, over the settings popover, which stays open behind it.
+    The picker takes focus as it opens and gives it back to the button when it closes. It closes on a chip, Add All
+    or Add Column, on a press outside it, or on Escape, which closes only the picker (a second Escape closes the
+    settings). A chip or Add Column then moves the settings to the new column; Add All closes them.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
 - **A board placed from the palette starts empty**: its columns get statuses of their own (the column's status
@@ -75,6 +121,12 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 - **Header**: title, the count of items shown, a progress bar (done of all, when a done column is set), the
   avatars of people on the board and the quick filter.
+- **Renaming in place**: in Plan mode, someone who may edit double-clicks the board's title (or the header's
+  empty space) and the title becomes a text field, its text selected. **Enter** or leaving the field saves the
+  trimmed name (up to 80 characters, as the Board menu's **Title** takes it), one change; an empty name changes
+  nothing; **Escape** puts the old name back. The double-click goes no further (it never reaches the canvas), and
+  the field's own presses never move the board. A double-click on a widget or a button in the header does not
+  rename. Outside Plan mode, or to someone who may only view, a double-click does what it did before.
 - **Move handle**: while a board is selected, a grip before its title shows where to take hold of it: the
   header (and the empty part of its widget row) moves the board; columns and cards do not.
 - **Columns**: name, count, and the WIP limit as `3 / 4`. Over the limit, the count turns to a warning colour and
@@ -83,19 +135,28 @@ Where each is set, so a setting lives with what it changes, never in one central
   width, so a wide column suits a busy stage.
 - **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
   swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
-- **Cards** in rank order, at the board's **card size**. Every card carries the item type's colour stripe; a card
-  being dragged or opened by someone else carries their colour ring and name. Of the fields the set-up shows:
+- **Cards** in rank order, at the board's **card size**. A card is a rounded tile with a hairline border and a soft
+  shadow that lifts a little under the pointer (still under reduced motion, it does not move). Every card carries
+  the item type's colour as the fill behind its **number** (white or near-black text, whichever reads better on it); a
+  Minimal card, which shows no number, has a small dot of it before the title. A card being dragged or opened by
+  someone else carries their colour ring and name. Of the fields the set-up shows:
   - **Minimal**: the title (two lines at most) and nothing else, but the vote control on a voting board.
-  - **Compact**: the type's glyph beside the title (two lines at most), over one line of the number, the
-    priority (a dot), the due date, votes and the assignee's avatar.
-  - **Detailed** (the default): the type and number with a priority chip, the title (three lines), the project it
-    sits under, two lines of its description, custom fields shown on cards, up to four labels, a checklist
-    progress bar, then a footer of the due date (red once past, unless done), the estimate, votes and the
-    assignee's first name and avatar.
+  - **Compact**: the type's glyph on a tint of its colour and the number, top left, beside the title (two lines at
+    most), over one row of the priority's signal bars, the start and due dates, votes, comments and the assignee's
+    avatar.
+  - **Detailed** (the default): a header of the **type chip** (its glyph and name on a tint of its colour), the
+    number on its type's colour, the item's own colour dot (when it has one) and, at the end, the **priority** as signal bars with its name (Low one bar, Medium two, High three,
+    Urgent three in its red); the title (three lines); the project it sits under; two lines of its description;
+    custom fields shown on cards, as name and value; up to four **label chips** (each in its label's colour, the
+    same as in the card panel, "+2" for the rest); then a footer of **pills**: the start date ("From 1 Oct"), the
+    due date, the estimate, checklist progress ("2/5", green when complete), comments and votes, with the
+    assignee's avatar at the end.
+  - **Due date pill**: red once past (unless the card is done), amber when due within two days, otherwise quiet.
   - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Start Date, Due Date, Votes, Checklist,
     Description and Project; Compact draws Number, Type, Assignee, Priority, Start Date, Due Date and Votes. A
     start date reads "From 1 Oct", muted.
-- **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph), "No assignee" last.
+- **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph, a project's
+  [Colour](items.md#colour) dot before its name), "No assignee" last.
   Each swimlane collapses on its own, per person.
 
 ### Swimlanes by a field
@@ -103,10 +164,12 @@ Where each is set, so a setting lives with what it changes, never in one central
 A board can group its rows by one field of its cards (`swimlaneBy: 'field'` with `swimlaneField`, the field's
 id), so a field added to a type (a Project's **Customer**) can set the rows straight away.
 
-- **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text) on any type in
+- **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text, Card) on any type in
   the document's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
   text and Link never group (each value is its own row), nor do Description, Checklist, Votes and Title.
-  Assignee, Type, Priority, Project and Status keep their own tiles.
+  Assignee, Type, Priority, Project and Status keep their own tiles. A **Card** field gives a row per linked card,
+  named by its title, in the linked cards' number order ("Missing card" for a link whose card is gone), then
+  **No {Field}**; a drop into a row sets the link (item-types.md "Card fields").
 - **Its name** is the field's label on the first type in the catalogue that offers it (a custom field id is
   unique within a type; two types sharing an id read as one field).
 - **Rows and their order**, each named by its value, then a **No _field_** row last (where every card without a
@@ -145,6 +208,10 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
 - With no cards and no statuses yet it shows a single "No status" row, never a nameless one; with every row shut,
   the spare height goes to an empty row after them.
 - Dragging a card to another row gives it that row's status; Add Card in a row adds a card with that status.
+- A card never moves into a status its type leaves out ([Item types](item-types.md#an-item-type)): on any board a
+  column with such a status shows the red refused zone while the card is dragged over it ("Task cards can't be
+  Done"), and a drop or a Shift+Arrow move there is refused. A new card (Add Card, a palette card) is still made in
+  any column.
 - It is the place to find cards no board shows (orphans) and give them a status a board has.
 
 ## Working on a board
@@ -173,8 +240,8 @@ In Plan mode:
   Illustrate's + opens "Add a page": a tile per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the tiles as in every menu; Escape or an outside press
-  closes it and focus goes back to the button. There is no typed title: the card is titled in place or in its
-  panel.
+  closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
+  typing names it (see **Open an item**).
 - **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** in red, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
@@ -183,7 +250,22 @@ In Plan mode:
   inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
-  closes with Escape or the close button, and follows the item if someone else moves it.
+  closes with Escape or the close button, and follows the item if someone else moves it. On a desktop, opening
+  it puts the caret at the end of its **title**; on a phone focus rests on the panel itself, so no keyboard rises.
+  The type picker never takes the first focus. Tab moves on through the controls.
+  - **A card just made opens at once**: one this person adds with **Add Card**, places from the palette into a
+    column, or makes with **New {Type}** in a card's Child Cards or Linked as sections opens in its panel, its
+    title ("New task") selected on a desktop so typing replaces it. A card made by someone else, brought back by
+    undo or redo, duplicated, or made by a template or an agent is not opened. The card stays where it was
+    placed.
+  - **Look**: a thin band of the card type's colour across the panel's top edge (lifted on the dark chrome as
+    the type stripes are), then a slim header with no rule under it, then the title, large (22 px, semibold),
+    a click away from editing. The main column's sections (Description, Checklist, Child Cards, Comments...)
+    sit under 13 px semibold headings with generous space between them. An empty description is one quiet
+    line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
+    modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
+    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Child Cards** and **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
+    quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
   - **Header**: the type (a picker, with its glyph), the key, **Help** (the `?` with a small label), a **⋯** menu
     of **Duplicate** (a copy right after it, without its votes, as the card menu's), **Archive** (or **Restore**)
     and **Trash** (to the Trash), as icon-left rows, then the close button. Someone who may only view gets no ⋯.
@@ -194,14 +276,21 @@ In Plan mode:
     left out; an archived one stays, with an **Archived** chip. A Project with none says **No cards sit under this
     project yet.**; any other type with none shows no section.
   - **Breadcrumb**: the panel remembers the cards opened from inside it (a Parent's Open, a child row, a crumb).
-    Once it holds more than one, the header starts with a breadcrumb of the earlier ones, each its type glyph,
-    key and title, before the current card's type picker. A crumb opens its card and drops the crumbs after it,
-    and opening a card already in the trail goes back to it rather than repeating it. Opening a card any other
-    way (from a board, the Cards finder, a link) starts a new trail. It holds at most 8 cards, dropping the oldest;
-    a card trashed or deleted meanwhile leaves it. The header shows the 3 crumbs nearest the current card (1 on a
-    phone), earlier ones folded into a **…** that names how many; stepping back brings them into view. A crumb's
-    title is cut to fit, whole on hover and to assistive technology. On a phone the breadcrumb takes a row of its
-    own above the header, its crumb pointing back, so the type picker keeps its room.
+    Once it holds more than one, the header starts with a breadcrumb of the earlier ones. A crumb opens its card and
+    drops the crumbs after it, and opening a card already in the trail goes back to it rather than repeating it.
+    Opening a card any other way (from a board, the Cards finder, a link) starts a new trail. It holds at most 8
+    cards, dropping the oldest; a card trashed or deleted meanwhile leaves it. The header shows the 3 crumbs nearest
+    the current card (1 on a phone); earlier ones fold into a **…** button that names how many and opens a menu of
+    them, each a step back. On a phone the breadcrumb takes a row of its own above the header, its crumb pointing
+    back, so the type picker keeps its room.
+  - **The header reads part by part**, each looking like what it does:
+    - a **crumb** is a link: its type glyph in its type colour and its title (cut to fit; the full "Back to #3
+      Title" on hover and to assistive technology), muted, darkening with a soft background and an underline on
+      hover; crumbs are parted by a muted chevron.
+    - the **current card** ends the trail and is not a link: its **Card Type** picker, a bordered pill with the
+      type's glyph and a chevron (a plain label for someone who may not edit), then its number as a quiet
+      monospace **#12** tag; pressing the tag copies "#12" and its tooltip says **Copied**.
+    - after a gap, **Help**, the **⋯** menu and **Close**, each named by a tooltip.
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
@@ -212,11 +301,11 @@ In Plan mode:
     of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
     headings and links, and **bullet** and **numbered lists** from their own toolbar buttons, from a toolbar over
     it or the usual shortcuts. Enter on a list item starts the next one; Enter on an empty item ends the list.
-    It reads as text until clicked (hovering shows **Edit**); an empty one is a dashed **Add a description**
-    invitation. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
+    It reads as text until clicked (hovering shows **Edit**); an empty one is a quiet **Add a description…** line (a pencil before it), not a box. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
     focus leaving it, or Escape, returns it to reading.
   - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
-    picker), then who made the item and who last changed it.
+    picker), then **Created by** and **Edited by** (with when), each with the person's disc (initials on
+    their colour) beside their name.
   - **On a phone** it is a sheet of one column, as tall as a sheet goes (85% of the screen): the title, then a tab bar whose first tab is
     **Details** (the side panel's fields), then the type's tabs.
 - **Vote**: on a voting board each card has a vote control; a person sees their own votes and the total. With a
@@ -233,8 +322,37 @@ In Plan mode:
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
 card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete moves it to the
-Trash; **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In progress,
+Trash; **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In Progress,
 position 2 of 4").
+
+## Maximised board
+
+A board can be maximised to work on it without the rest of the canvas around it.
+
+- In Plan mode, the board's header ends with **Maximise Board** (a maximise icon, with a tooltip) at its top
+  right.
+- Maximised, the board fills the canvas: it is drawn over everything else, at its full screen size, and the
+  editor wears [zen mode](../007-editor/zen-mode.md)'s chrome (no header, tab bar, palette or panels).
+  Everything on the board works as it does on the canvas: cards drag, open and add, and widgets filter. The
+  header does not move the board while it is maximised.
+- **Restore Board** (a minimise icon, in the same place) or **Escape** puts it back. Escape restores only when
+  no dialog (the item panel, a confirm) is open over the board; Escape in a dialog closes the dialog first. One
+  Escape restores even with something selected: it restores and does nothing else (it does not also deselect).
+- **Nothing is lost either way**: maximising and restoring move the board, they never redraw it from scratch, so
+  its collapsed rows, an open popover and a drag in progress carry over.
+- **It animates both ways**: maximising, the board grows from its place on the canvas to fill the screen;
+  restoring, it shrinks back into its place, and only then is it on the canvas again (250 ms, the dialogs' `long`
+  token and ease-out). Growing, its content fades in over the grow's last moments, so the whole maximise settles
+  within those 250 ms. Under reduced motion it switches at once. Restoring before it has finished growing goes
+  straight to shrinking back: the board is on the canvas again from that moment and never returns to the overlay.
+  Maximising it again while it shrinks back keeps it maximised, and it grows afresh. A view (plan-views.md "Maximised view") animates the same way.
+- It is a view for the person alone, like zen mode: the board element keeps its size and place, nothing is
+  saved or sent to anyone else, and nothing enters undo. Collaborators see the board as it is on the canvas.
+- It ends on its own when the board leaves the screen: switching tab, the board being deleted (by anyone), or
+  leaving Plan mode. A zen mode the person had on before stays on after Restore.
+- One board at a time: maximising another board (there is no way to reach one while maximised) is not offered.
+- It works the same on a phone and a tablet: the board fills the screen, and its body scrolls.
+- Telemetry: `Plan / Toggled / BoardMaximised` and `Plan / Toggled / BoardRestored`.
 
 ## The Plan card
 

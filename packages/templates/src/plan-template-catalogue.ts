@@ -83,7 +83,7 @@ function projectBoard(title: string, columns: PlanColumn[], doneColumnId: string
       swimlaneBy: 'none',
       cardFields: PROJECT,
       addTypes: ['project'],
-      widgets: ['count', 'progress', 'due', 'people', 'filter'],
+      widgets: ['progress', 'due', 'filter'],
     },
   };
 }
@@ -99,10 +99,9 @@ const REVIEW = col('review', 'In Review');
 const DONE = col('done', 'Done');
 
 export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly PlanTabSpec[]>> = {
-  // One tab, so it keeps the name the caller gives a new tab.
-  'blank-plan': [
-    { name: 'Board', board: { preset: 'blank', width: 900, height: 560, title: 'Our board' } },
-  ],
+  // One tab, so it keeps the name the caller gives a new tab, and empty: the tab shows Plan's own Start with a
+  // Board picker (docs/specs/026-plan/plan-mode.md "Starting a board").
+  'blank-plan': [{ name: 'Board' }],
 
   'project-planner': [
     {
@@ -137,7 +136,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'parent',
           cardFields: ['key', 'type', 'assignee', 'priority', 'estimate', 'labels'],
           addTypes: ['task'],
-          widgets: ['count', 'priorities', 'unassigned', 'unplaced', 'filter'],
+          widgets: ['count', 'priorities', 'filter'],
         },
       },
     },
@@ -166,7 +165,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           cardSize: 'compact',
           cardFields: ['key', 'type', 'priority', 'due'],
           addTypes: ['task', 'action'],
-          widgets: ['people', 'due', 'stale', 'mine', 'filter'],
+          widgets: ['stale', 'due', 'filter'],
         },
       },
       rail: [
@@ -223,7 +222,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'none',
           cardFields: ['key', 'type', 'assignee', 'priority', 'labels'],
           addTypes: ['task', 'idea'],
-          widgets: ['count', 'unassigned', 'stale', 'filter'],
+          widgets: ['count', 'unassigned', 'filter'],
         },
       },
       rail: [
@@ -298,7 +297,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'assignee',
           cardFields: ['key', 'priority', 'labels', 'due'],
           addTypes: ['task'],
-          widgets: ['count', 'progress', 'people', 'unassigned', 'filter', 'mine'],
+          widgets: ['progress', 'unassigned', 'filter'],
         },
       },
     },
@@ -355,7 +354,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'assignee',
           cardFields: ['key', 'assignee', 'due'],
           addTypes: ['action'],
-          widgets: ['count', 'progress', 'due', 'people'],
+          widgets: ['progress', 'due'],
         },
       },
     },
@@ -383,7 +382,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('done', 'Done'),
           ],
           doneColumnId: 'done',
-          widgets: ['due', 'count', 'progress', 'mine', 'filter'],
+          widgets: ['progress', 'due', 'filter'],
         },
       },
     },
@@ -441,7 +440,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           cardFields: ['assignee', 'labels', 'votes'],
           voting: { on: true, budget: 5 },
           addTypes: ['idea'],
-          widgets: ['votes', 'top-voted', 'count', 'filter'],
+          widgets: ['votes', 'top-voted'],
         },
       },
     },
@@ -464,7 +463,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'none',
           cardFields: ['key', 'type', 'assignee', 'labels', 'due'],
           addTypes: ['task', 'idea'],
-          widgets: ['count', 'progress', 'due', 'people', 'filter'],
+          widgets: ['progress', 'due', 'filter'],
         },
       },
     },
@@ -506,7 +505,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'parent',
           cardFields: ['assignee', 'labels', 'due', 'parent'],
           addTypes: ['task', 'note'],
-          widgets: ['count', 'progress', 'stale', 'people', 'filter'],
+          widgets: ['count', 'stale', 'filter'],
         },
       },
     },
@@ -528,7 +527,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'assignee',
           cardFields: ['key', 'type', 'due', 'checklist'],
           addTypes: ['task', 'action'],
-          widgets: ['progress', 'due', 'people', 'filter'],
+          widgets: ['progress', 'due', 'filter'],
         },
       },
     },
@@ -568,7 +567,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'parent',
           cardFields: ['key', 'assignee', 'due', 'checklist'],
           addTypes: ['task', 'action'],
-          widgets: ['progress', 'people', 'due', 'stale', 'filter'],
+          widgets: ['progress', 'due', 'stale'],
         },
       },
       charts: ['status-mix'],
@@ -618,7 +617,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'parent',
           cardFields: [...WORK, 'due'],
           addTypes: ['task', 'action'],
-          widgets: ['progress', 'due', 'unassigned', 'people', 'filter'],
+          widgets: ['progress', 'due', 'unassigned'],
         },
       },
     },
@@ -639,7 +638,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           cardSize: 'compact',
           cardFields: ['key', 'priority'],
           addTypes: ['task'],
-          widgets: ['count', 'people', 'unassigned'],
+          widgets: ['count', 'unassigned'],
         },
       },
       rail: [
@@ -677,7 +676,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           cardFields: ['labels', 'votes'],
           voting: { on: true },
           addTypes: ['idea'],
-          widgets: ['top-voted', 'count', 'types', 'filter'],
+          widgets: ['top-voted', 'types', 'filter'],
         },
       },
       rail: [
@@ -709,7 +708,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'assignee',
           cardFields: ['key', 'type', 'labels', 'votes', 'due'],
           addTypes: ['idea', 'task'],
-          widgets: ['count', 'progress', 'people', 'filter'],
+          widgets: ['progress', 'filter'],
         },
       },
     },

@@ -122,7 +122,10 @@ tab.locked }`. `setOpensIn` refuses a missing or locked tab (or `!canEdit`). Oth
   nothing. An unchanged opening mode then stops there; else one `commitTabs` (one undo step,
   synced). `OpensInMenuSection` passes a press on the checked row through to `onChange` for this.
 - **New tab** (`useTabActions.addTab`): `newTabSeed(activeTab)` copies the source tab's look
-  and never an `opensIn`, so the tab opens in Diagram whatever its creator's mode. A template
+  and never an `opensIn`, so the tab opens in Diagram whatever its creator's mode, except Plan:
+  `newTabOpening(editorMode)` (new-tab-seed.ts) gives `{ opensIn: 'plan', quickStart: false }` from
+  Plan (the tab is made with `opensIn: 'plan'` and `setTemplatePickerMode` is not called), else
+  `{ quickStart: true }` (the Quick Start opens, as before). A template
   chosen for it then decides (`useTemplateFlow`): `templateOpensIn(overrides)` is
   `overrides.opensIn` when set (`'draw'` for `whiteboard`), else `undefined` for an
   event-storming template (`overrides.kind` set), else `'diagram'` (Blank included). When

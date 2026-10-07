@@ -20,8 +20,9 @@ type Box = {
   height: number;
 };
 
-// Top, then bottom, right, left: the first side whose box fits inside the
-// viewport less `margin`; top when none does. The surface centres on the
+// Top, then bottom, right, left (or the caller's `order`): the first side whose
+// box fits inside the viewport less `margin`; the first in the order when none
+// does. The surface centres on the
 // trigger and is clamped into the viewport, and the arrow keeps pointing at
 // the trigger's centre when the surface slides.
 export function placeHint({
@@ -30,12 +31,15 @@ export function placeHint({
   viewport,
   gap,
   margin,
+  order = ['top', 'bottom', 'right', 'left'],
 }: {
   trigger: Box;
   surface: { width: number; height: number };
   viewport: { width: number; height: number };
   gap: number;
   margin: number;
+  // The sides tried, in turn (a popover hung beside its row tries right first).
+  order?: readonly HintPlacement[];
 }): HintLayout {
   const fits: Record<HintPlacement, boolean> = {
     top: trigger.top - surface.height - gap >= margin,
@@ -43,8 +47,7 @@ export function placeHint({
     right: trigger.right + surface.width + gap <= viewport.width - margin,
     left: trigger.left - surface.width - gap >= margin,
   };
-  const order: HintPlacement[] = ['top', 'bottom', 'right', 'left'];
-  const placement = order.find((side) => fits[side]) ?? 'top';
+  const placement = order.find((side) => fits[side]) ?? order[0] ?? 'top';
   const centreX = trigger.left + trigger.width / 2;
   const centreY = trigger.top + trigger.height / 2;
 

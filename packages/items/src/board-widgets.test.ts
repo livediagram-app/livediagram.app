@@ -73,9 +73,11 @@ describe('preset widgets', () => {
   it('give each board type widgets that suit it', async () => {
     const { presetSetup } = await import('./presets');
     expect(presetSetup('sprint').widgets).toContain('points');
-    expect(presetSetup('bug-triage').widgets).toContain('priorities');
-    expect(presetSetup('retro').widgets).toContain('top-voted');
-    expect(presetSetup('blank').widgets).toEqual(['count', 'progress', 'people', 'filter', 'mine']);
+    expect(presetSetup('bug-triage').widgets).toContain('unassigned');
+    expect(presetSetup('retro').widgets).toEqual(['votes', 'top-voted']);
+    // No columns, so no done column: nothing to measure yet (docs/specs/026-plan/board-widgets.md "Defaults").
+    expect(presetSetup('blank').widgets).toEqual([]);
+    expect(presetSetup('roadmap').widgets).not.toContain('progress');
   });
 
   it('narrow to the unassigned and to a priority', async () => {

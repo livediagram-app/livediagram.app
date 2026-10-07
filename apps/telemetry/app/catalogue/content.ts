@@ -735,6 +735,26 @@ export const PLAN_FLAGS = chart(
   'Toggled',
   'Cards Flagged',
   'A card flagged for attention, or its flag taken off, from its menu or the item panel.',
+  { types: ['FlagOn', 'FlagOff'] },
+);
+
+export const PLAN_MAXIMISED = chart(
+  'Plan',
+  'Toggled',
+  'Boards Maximised',
+  'A board or a view maximised to fill the screen from its header, or restored to the canvas.',
+  {
+    types: ['BoardMaximised', 'ViewMaximised', 'BoardRestored', 'ViewRestored'],
+    rising: 'neutral',
+  },
+);
+
+export const PLAN_CARD_TYPES_DUPLICATED = chart(
+  'Plan',
+  'Duplicated',
+  'Card Types Duplicated',
+  'A new card type made by duplicating an existing one in the Card Types panel.',
+  { rising: 'neutral' },
 );
 
 export const PLAN_SETUP_CHANGED = chart(
@@ -763,7 +783,9 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_ITEMS_DELETED,
     PLAN_ITEMS_RESTORED,
     PLAN_FLAGS,
+    PLAN_MAXIMISED,
     PLAN_SETUP_CHANGED,
+    PLAN_CARD_TYPES_DUPLICATED,
     PLAN_REVEALED,
   ],
 };

@@ -10,6 +10,8 @@ export type ItemFieldId =
   | 'status'
   | 'assignee'
   | 'priority'
+  // The item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside its type colour, a Project's bar.
+  | 'color'
   | 'labels'
   | 'estimate'
   // When the work begins (docs/specs/026-plan/items.md "Fields"): a Project's bar on the Gantt chart.
@@ -36,6 +38,8 @@ export const CUSTOM_FIELD_KINDS = [
   'checkbox',
   'link',
   'choice',
+  // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
+  'card',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
 
@@ -45,6 +49,8 @@ export interface CustomFieldDef {
   kind: CustomFieldKind;
   // Choice's options, in order.
   options?: readonly string[];
+  // A Card field's target card type id: its value is the id of one card of that type.
+  linkType?: string;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
 }
@@ -71,6 +77,9 @@ export interface ItemTypeDef {
   detailsLabel?: string;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
+  // Statuses this type does not use (docs/specs/026-plan/item-types.md "An item type"): a card of it never moves
+  // into one. An exclusion list, so a status added later is open to every type.
+  excludedStatuses?: readonly string[];
 }
 
 // Parent right under Status and Assignee: what a piece of work belongs to is read with who has it.
@@ -95,7 +104,17 @@ const BUILT_IN_TYPES = [
     newTitle: 'New project',
     glyph: 'project',
     color: '#18181b',
-    fields: ['title', 'description', 'status', 'assignee', 'priority', 'start', 'due', 'labels'],
+    fields: [
+      'title',
+      'description',
+      'status',
+      'assignee',
+      'priority',
+      'color',
+      'start',
+      'due',
+      'labels',
+    ],
   },
   {
     id: 'task',

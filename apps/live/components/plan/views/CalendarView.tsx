@@ -13,9 +13,9 @@ import {
   todayNumber,
   typeIn,
 } from '@livediagram/items';
-import { ChevronLeftIcon, ChevronRightIcon, Tooltip } from '@livediagram/ui';
+import { ChevronLeftIcon, ChevronRightIcon } from '@livediagram/ui';
 import { accentOn, type PlanPalette } from '../plan-palette';
-import { ViewFrame, openProps, viewState } from './view-frame';
+import { ViewFrame, ViewStepButton, openProps, viewState } from './view-frame';
 import type { PlanViewProps } from './PlanViewView';
 
 const NO_PHASES = new Map();
@@ -25,36 +25,6 @@ const DATE_H = 18;
 // The frame's header and the weekday row above the grid.
 const FRAME_HEAD_H = 40;
 const WEEKDAY_H = 22;
-
-function StepButton({
-  label,
-  onPress,
-  palette,
-  children,
-}: {
-  label: string;
-  onPress: () => void;
-  palette: PlanPalette;
-  children: React.ReactNode;
-}) {
-  return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        aria-label={label}
-        className="flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-md px-1 text-[11px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
-        style={{ color: palette.muted }}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          onPress();
-        }}
-      >
-        {children}
-      </button>
-    </Tooltip>
-  );
-}
 
 export function CalendarView({ plan, items, palette, fontFamily, height }: PlanViewProps) {
   const phases = plan?.statusPhases ?? NO_PHASES;
@@ -86,20 +56,24 @@ export function CalendarView({ plan, items, palette, fontFamily, height }: PlanV
       aside={
         <>
           {offset !== 0 ? (
-            <StepButton label="Today" onPress={() => setOffset(0)} palette={palette}>
+            <ViewStepButton label="Today" onPress={() => setOffset(0)} palette={palette}>
               Today
-            </StepButton>
+            </ViewStepButton>
           ) : null}
-          <StepButton
+          <ViewStepButton
             label="Previous Month"
             onPress={() => setOffset((o) => o - 1)}
             palette={palette}
           >
             <ChevronLeftIcon size={14} />
-          </StepButton>
-          <StepButton label="Next Month" onPress={() => setOffset((o) => o + 1)} palette={palette}>
+          </ViewStepButton>
+          <ViewStepButton
+            label="Next Month"
+            onPress={() => setOffset((o) => o + 1)}
+            palette={palette}
+          >
             <ChevronRightIcon size={14} />
-          </StepButton>
+          </ViewStepButton>
         </>
       }
     >

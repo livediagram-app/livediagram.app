@@ -24,7 +24,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { apiLinkTab } from '@/lib/api-client';
-import { newTabSeed } from '@/lib/new-tab-seed';
+import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintElementIds, useTabImport } from './useTabImport';
@@ -107,7 +107,13 @@ export function useTabActions(deps: TabActionsDeps) {
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
+    // From Plan the tab opens in Plan with no Quick Start (newTabOpening).
+    const opening = newTabOpening(deps.editorMode);
+    const tab: Tab = {
+      ...createTab(`Tab ${tabs.length + 1}`),
+      ...seed,
+      ...('opensIn' in opening ? { opensIn: opening.opensIn } : {}),
+    };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
     track('Tab', 'Created');
@@ -117,8 +123,8 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
     // New tabs jump straight into the lighter template picker (just the
     // template grid). The welcome flow is first-run only, the user
-    // already has an identity + theme by this point.
-    setTemplatePickerMode('templates');
+    // already has an identity + theme by this point. From Plan, Plan's board picker is the start instead.
+    if (opening.quickStart) setTemplatePickerMode('templates');
   };
 
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)

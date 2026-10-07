@@ -65,14 +65,22 @@ Plan must cost nothing to a document that does not use it:
 
 ## Starting a board
 
-- A Plan tab with no board shows, in the middle of the canvas, **Start with a Board**: a tile per board type, Blank
-  first and the Archive board left out, each a small picture of the board (its columns, its rows, cards in the
+- A Plan tab with no board shows, in the middle of the canvas, **Start with a Board**: a tile per board type, in the
+  palette's order (Blank first, All Cards always last) and the Archive board left out, each a small picture of the board (its columns, its rows, cards in the
   colours of the types it takes) over its name and its full description, in the tab's light or dark look, as a new
   infographic page offers its layouts. Choosing one places that board,
   empty, in the middle of the view. It is gone once the tab has a board, and never shown to someone who may only
   view. It keeps clear of the toolbar above and the bottom-right buttons below, scrolling inside itself when the
   tiles run taller than the room; on a phone it shows two tiles a row with shorter pictures.
-- Plan mode has no empty-canvas Quick Start banner: the board picker is its start.
+- Every list of board types (the palette's Boards, Start with a Board) is one list (`PLAN_BOARD_TILES`), and **All
+  Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
+  All Cards in the palette).
+- Plan mode has no empty-canvas Quick Start banner: the board picker is its start. Its foot holds a quiet
+  **Open Quick Start** button (the sparkle icon) that opens the regular Quick Start for this tab, for a diagram
+  template or another kind of tab instead.
+- **A new tab from Plan stays Plan**: adding a tab (the tab bar's **+**) while in Plan mode opens it in Plan
+  (`opensIn` Plan, for everyone), straight to **Start with a Board**, with no Quick Start
+  ([Editor modes](../007-editor/editor-modes.md)). In any other mode a new tab opens as before.
 
 ## Switching modes keeps the tab
 
@@ -110,10 +118,10 @@ elements a team plans beside its boards come in Content and Tools:
 | Category       | Holds                                                                                                                                    |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Cards          | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added                               |
-| Boards         | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, All Cards, Archive, Blank, each with its own picture                                   |
+| Boards         | Board (Blank), Kanban, To-do List, Sprint, Retro, Roadmap, Bug triage, Week, Archive, All Cards (always last), each with its own picture |
 | Widgets        | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas                                           |
 | Metrics        | The read-out widgets free on the canvas, over every card ([Plan views](plan-views.md#metrics))                                           |
-| Visualisations | Project Gantt Chart, Due Calendar, Workload by Person, Status Breakdown, Priority by Status ([Plan views](plan-views.md#visualisations)) |
+| Visualisations | Gantt Chart, Due Calendar, Workload by Person, Status Breakdown, Priority by Status ([Plan views](plan-views.md#visualisations))         |
 | Content        | Sticky Note, Text, Image, Page                                                                                                           |
 | Tools          | Temperature, Estimate, Idea Box, Picker, Timer, Stopwatch                                                                                |
 
@@ -121,7 +129,7 @@ elements a team plans beside its boards come in Content and Tools:
   ([Plan board](plan-board.md#the-board-set-up)).
 - A **card tile** never puts anything on the canvas. Dragged and dropped (or pressed, then placed) into a board's
   column, it makes a new item of that type there (titled "New task", "New bug"...), at the drop point between
-  cards and in the row it lands in (taking the row's field, its type kept); it is not opened, a click opens it.
+  cards and in the row it lands in (taking the row's field, its type kept); it opens at once in its panel, its title selected to be named ([Open an item](plan-board.md)).
   While it is dragged, the column under the pointer opens a dashed gap where it would land (the gap a card from
   another board opens), and no ghost is drawn on the canvas. Over no
   column, or over a board that does not show the type, nothing is made and the reason is said ("Drop a card into a
@@ -129,6 +137,17 @@ elements a team plans beside its boards come in Content and Tools:
   board's card off it.
 - **Pressed**, a card tile's hint at the top of the canvas says where it goes: **Select the board column you want
   this card to appear in**, or, on a tab with no board, **Add a board first in order to use cards**.
+  While it is in hand, the column under the pointer opens the same dashed gap a dragged card does, and a press
+  puts the card exactly there (no snapping to nearby edges, no drag to size).
+- Over a board that does not show the card's type (held or dragged), the column under the pointer shows a **red
+  dashed zone** at its foot saying why ("This board takes Task, Note and Action cards"), instead of the gap; a
+  press or drop there makes nothing and says the same.
+- **A card tile no board on the tab would take is greyed out and does nothing**: no press, no drag. That is every
+  card tile on a tab with no board ("Add a board first in order to use cards"), and a type no board on the tab
+  shows ("No board on this tab takes Bug cards"), its hover card saying which. A board takes a type when its
+  **Card Types** show it (all types when it names none); an **Archive** board takes none. The tile stays
+  focusable (`aria-disabled`), so the reason is reachable from the keyboard. The tiles follow the open tab's
+  boards as they are added, removed or their Card Types change.
 - Content and Tools hold the same tiles as their home categories (Write, Media, Behaviours), placing
   the same elements.
 - Draw mode's shape dock leaves the Plan categories out: they frame items, not ink.
@@ -137,7 +156,8 @@ elements a team plans beside its boards come in Content and Tools:
 
 Templates that open in Plan mode set up a way of working across several tabs, with **no cards**:
 [Plan templates](plan-templates.md) holds the catalogue, how a template's tabs are made and how their boards
-hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Diagram's: one empty board.
+hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Diagram's: an empty Plan tab, no board, so it opens on **Start
+with a Board**.
 
 ## Collaboration
 

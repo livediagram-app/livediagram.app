@@ -96,7 +96,7 @@ each idempotent; placing and adding are no-ops while edits are blocked or there 
   with `tickTabs` (no history), records the content, writes the leftover record.
 - `ensureCards`: waits for the item store (`status === 'ready'`, up to 3000 ms), then one `writeQuiet`
   create of `exampleCards(setup)` with fresh ids, records them, rewrites the leftover record.
-- `moveFirstCard`: `writeQuiet` move of "Plan the launch" to the board's In progress status, end of column;
+- `moveFirstCard`: `writeQuiet` move of "Plan the launch" to the board's In Progress status, end of column;
   a no-op once it is there.
 - `removeAll`: `writeQuiet` delete of each recorded item, `tickTabs` filtering the board out of every tab,
   clears the record and the leftover record.
@@ -201,7 +201,7 @@ surface is fixed-position over the canvas.
 | Constant                | Value                                | Provenance                                | Safe range   |
 | ----------------------- | ------------------------------------ | ----------------------------------------- | ------------ |
 | `OFFER_DELAY_MS`        | 800                                  | The welcome tour's settle delay           | 300 to 2000  |
-| `EXAMPLE_MOVE_TO`       | `'doing'`                            | Spec: the first card moves to In progress | fixed        |
+| `EXAMPLE_MOVE_TO`       | `'doing'`                            | Spec: the first card moves to In Progress | fixed        |
 | `TARGET_WAIT_MS`        | 3500                                 | The welcome tour's target wait            | 1000 to 6000 |
 | `ITEMS_READY_WAIT_MS`   | 3000                                 | Default D28                               | 1000 to 6000 |
 | `EXAMPLE_BOARD_TITLE`   | `'Example Board'`                    | Spec                                      | fixed        |

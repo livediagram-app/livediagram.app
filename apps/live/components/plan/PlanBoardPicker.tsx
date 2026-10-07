@@ -7,6 +7,7 @@
 // left to the palette. Choosing one places that board, empty, in the
 // middle of the view. Gone once the tab has a board; never shown to someone who may only view.
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { SparkleIcon } from '@livediagram/ui';
 import {
   ITEM_TYPES,
   PLAN_BOARD_PRESETS,
@@ -89,7 +90,14 @@ function BoardPreview({ preset, palette }: { preset: PlanBoardPresetId; palette:
   );
 }
 
-export function PlanBoardPicker({ onPick }: { onPick: (preset: string) => void }) {
+export function PlanBoardPicker({
+  onPick,
+  onQuickStart,
+}: {
+  onPick: (preset: string) => void;
+  // Opens the regular Quick Start for this tab (a diagram template or another kind of tab instead).
+  onQuickStart?: () => void;
+}) {
   const palette = planPalette(useCanvasSurface(), {});
   return (
     <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-40 pt-24 max-sm:px-3 max-sm:pb-28 max-sm:pt-32">
@@ -137,6 +145,24 @@ export function PlanBoardPicker({ onPick }: { onPick: (preset: string) => void }
             </button>
           ))}
         </div>
+        {onQuickStart ? (
+          <div className="mt-4 flex justify-center sm:mt-5">
+            <button
+              type="button"
+              onClick={onQuickStart}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition hover:shadow-sm focus-visible:outline-none focus-visible:ring-2"
+              style={{
+                borderColor: palette.border,
+                backgroundColor: palette.surface,
+                color: palette.muted,
+                ['--tw-ring-color' as string]: palette.focus,
+              }}
+            >
+              <SparkleIcon size={14} />
+              Open Quick Start
+            </button>
+          </div>
+        ) : null}
       </section>
     </div>
   );

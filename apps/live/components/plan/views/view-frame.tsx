@@ -3,11 +3,11 @@
 // What every visualisation shares (docs/specs/026-plan/plan-views.md "Visualisations"): the card it sits
 // on in the board's theme colours, a header of its name and count, its loading and empty states, and the
 // press rules for an entry that opens a card.
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { STATUS_PHASES, STATUS_PHASE_LABELS } from '@livediagram/items';
 import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge, Tooltip } from '@livediagram/ui';
 
 // The phase colours, the same on either surface: they read as status, not as theme.
 export const PHASE_COLOURS = {
@@ -46,6 +46,10 @@ export function viewState(
   return hasData ? 'ready' : 'empty';
 }
 
+// What ends every view's header after its own controls (the Maximise View button), set once by PlanViewView so
+// each view needs no wiring.
+export const ViewHeaderEnd = createContext<ReactNode>(null);
+
 export function ViewFrame({
   title,
   count,
@@ -70,6 +74,7 @@ export function ViewFrame({
   aside?: ReactNode;
   children?: ReactNode;
 }) {
+  const end = useContext(ViewHeaderEnd);
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden rounded-xl border"
@@ -90,7 +95,12 @@ export function ViewFrame({
             {count}
           </CountBadge>
         ) : null}
-        {aside ? <span className="ml-auto flex shrink-0 items-center gap-1">{aside}</span> : null}
+        {aside || end ? (
+          <span className="ml-auto flex shrink-0 items-center gap-1">
+            {aside}
+            {end}
+          </span>
+        ) : null}
       </div>
       {state === 'ready' ? (
         <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
@@ -124,5 +134,44 @@ export function PhaseLegend({ palette }: { palette: PlanPalette }) {
         </span>
       ))}
     </div>
+  );
+}
+
+// A small header control (the calendar's month steps, the Gantt's scale and window): a quiet text or icon button
+// that keeps its press from the canvas, named by a tooltip. `active` presses it (the Gantt's scale).
+export function ViewStepButton({
+  label,
+  onPress,
+  palette,
+  active = false,
+  children,
+}: {
+  label: string;
+  onPress: () => void;
+  palette: PlanPalette;
+  active?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={active || undefined}
+        className="flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-md px-1.5 text-[11px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+        style={
+          active
+            ? { color: palette.text, backgroundColor: palette.column }
+            : { color: palette.muted }
+        }
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPress();
+        }}
+      >
+        {children}
+      </button>
+    </Tooltip>
   );
 }

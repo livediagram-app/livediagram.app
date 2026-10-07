@@ -2,7 +2,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@livediagram/document';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
-import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from './plan-card-drop';
+import {
+  boardClientPoint,
+  dropPlanCardAt,
+  planCardHoverAt,
+  PLAN_CARD_MISSED,
+} from './plan-card-drop';
 
 // docs/specs/026-plan/plan-mode.md "The palette": a palette card lands only in a board's column.
 function boardDom(id: string) {
@@ -25,6 +30,7 @@ function target(patch: Partial<PlanBoardTarget> = {}): PlanBoardTarget {
     hover: vi.fn(),
     acceptsType: () => true,
     addCard: vi.fn(),
+    refuseAt: () => null,
     canEditWidgets: () => true,
     widgetHover: vi.fn(),
     placeWidget: vi.fn(),
@@ -76,6 +82,36 @@ describe('a palette card', () => {
       message: PLAN_CARD_MISSED,
     });
     expect(t.addCard).not.toHaveBeenCalled();
+    off();
+  });
+
+  it('opens a red zone saying why over a board that does not show the type', () => {
+    const { root, cell } = boardDom('b1');
+    const t = target({ acceptsType: (type) => type === 'bug' });
+    const off = registerPlanBoardTarget('b1', t);
+    document.elementsFromPoint = () => [cell, root];
+    expect(planCardHoverAt('note', 10, 10)).toBe(false);
+    expect(t.hover).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        refused: 'This board shows Bug items only',
+        slot: expect.objectContaining({ beforeId: null }),
+      }),
+    );
+    expect(planCardHoverAt('bug', 10, 10)).toBe(true);
+    expect(vi.mocked(t.hover).mock.lastCall?.[0]).not.toHaveProperty('refused');
+    off();
+  });
+
+  // docs/specs/026-plan/item-types.md "An item type": left-out statuses stop moves, never a new card.
+  it('still makes a new card in a column whose status the type leaves out', () => {
+    const { root, cell } = boardDom('b1');
+    const t = target({ refuseAt: () => "Task cards can't be Done" });
+    const off = registerPlanBoardTarget('b1', t);
+    document.elementsFromPoint = () => [cell, root];
+    expect(planCardHoverAt('task', 10, 10)).toBe(true);
+    expect(vi.mocked(t.hover).mock.lastCall?.[0]).not.toHaveProperty('refused');
+    expect(dropPlanCardAt('task', 10, 10)).toEqual({ outcome: 'added' });
+    expect(t.addCard).toHaveBeenCalled();
     off();
   });
 });

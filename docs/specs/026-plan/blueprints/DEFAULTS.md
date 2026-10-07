@@ -32,3 +32,5 @@ One row per default applied where a spec is silent or qualitative.
 | D26 | plan-views    | Which statuses are not started, in progress      | A board's first column, then the columns before its done column       |
 | D27 | plan-views    | Gantt axis padding and tick spacing              | A week each side, 28 days at least; weeks up to 120 days, then months |
 | D28 | plan-tour     | How long to wait for items before the card steps | 3000 ms, then the card steps are skipped                              |
+| D29 | plan-views    | Gantt names column when resized                  | 120 px at least, 60 % of the chart at most, 16 px a key step          |
+| D30 | plan-views    | Gantt swimlane header and empty lanes            | 24 px headers; a lane with no projects is left out                    |

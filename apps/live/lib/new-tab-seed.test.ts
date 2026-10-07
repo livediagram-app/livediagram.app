@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { newTabSeed } from './new-tab-seed';
+import { newTabOpening, newTabSeed } from './new-tab-seed';
+
+// docs/specs/007-editor/editor-modes.md: a tab added from Plan opens in Plan with no Quick Start.
+describe('newTabOpening', () => {
+  it('opens a tab added from Plan in Plan, with no Quick Start', () => {
+    expect(newTabOpening('plan')).toEqual({ opensIn: 'plan', quickStart: false });
+  });
+
+  it('leaves every other mode as before: Diagram, with the Quick Start', () => {
+    for (const mode of ['diagram', 'draw', 'illustrate'] as const)
+      expect(newTabOpening(mode)).toEqual({ quickStart: true });
+  });
+});
 
 const source: Tab = {
   id: 's',

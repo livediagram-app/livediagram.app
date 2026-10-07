@@ -4,11 +4,11 @@
 // picks its own cards up, the drop that files a card in one of its cells, and the board as a target
 // for cards dragged over from another board (plan-board-targets.ts). A card dropped on the canvas
 // leaves a Plan card there.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
   boardAddTypes,
-  boardTakesType,
+  boardShowsType,
   isArchived,
   placeWidget,
   typeIn,
@@ -17,12 +17,15 @@ import {
   type BoardWidgetKind,
   type Item,
   type PlanBoardSetup,
+  newItemId,
 } from '@livediagram/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
+import { moveStatusRefusal } from './status-refusal';
 import { useLatest } from '@/hooks/ui/useLatest';
 import {
   registerPlanBoardTarget,
+  sameIncoming,
   type PlanIncoming,
   type WidgetPlaced,
 } from './plan-board-targets';
@@ -54,6 +57,9 @@ export function usePlanBoardDrop(opts: {
   const { element, boardRef, plan, setup, projection, items, interactive, canEdit } = opts;
   // A card dragged here from another board, and the slot it would land in.
   const [incoming, setIncoming] = useState<PlanIncoming | null>(null);
+  // The gap last asked for: a hover drawing the same one is dropped before it reaches React, so a card held
+  // over a slot does not re-render the board on every pointermove (a same-value setState can still render once).
+  const lastIncoming = useRef<PlanIncoming | null>(null);
 
   const drop = (itemId: string, slot: PlanDropSlot) => {
     if (!plan || !setup || !projection) return;
@@ -103,50 +109,63 @@ export function usePlanBoardDrop(opts: {
       plan.announce('Card moved to the Trash');
     },
     onDragging: (id) => plan?.setDragging(id),
+    item: (id) => items.get(id),
   });
 
   // The handlers read this render's board; the registration lasts as long as the board's element.
   const target = useLatest({
+    // A card it would hide (a type it does not show) is refused, as a palette card of that type is.
     accepts: (itemId: string) => {
       const item = items.get(itemId);
-      return !!setup && !!item && canEdit;
+      return !!setup && !!item && canEdit && boardShowsType(setup, item.type, plan?.types);
     },
     refusal: () => {
       if (setup?.archive) return 'An Archive board takes cards moved to it';
       if (setup?.addTypes && plan) {
         const names = boardAddTypes(setup, plan.types).map((t) => t.label);
         return names.length
-          ? `This board takes ${listOf(names)} cards`
-          : 'This board takes no new cards';
+          ? `This board shows ${listOf(names)} cards`
+          : 'This board shows no cards';
       }
       return 'This board can’t be changed';
     },
     drop,
-    // Every board shows every card type (docs/specs/026-plan/plan-board.md).
-    // An Archive board takes cards moved to it, never a new one.
-    // The types it takes new cards of (docs/specs/026-plan/plan-board.md "The board set-up").
+    // An Archive board takes cards moved to it, never a new one; any other board takes the types it shows
+    // (docs/specs/026-plan/plan-board.md "Card types a board shows").
     acceptsType: (type: string) =>
-      !!setup &&
-      canEdit &&
-      !setup.archive &&
-      (!setup.addTypes ||
-        (plan ? boardTakesType(setup, plan.types, type) : setup.addTypes.includes(type))),
-    // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
-    // there to see, and a click opens it.
+      !!setup && canEdit && !setup.archive && boardShowsType(setup, type, plan?.types),
+    // A palette card: a new item of the type at the slot, its row's field set, opened at once to be named
+    // (docs/specs/026-plan/plan-mode.md "The palette").
     addCard: (type: string, slot: PlanDropSlot) => {
       if (!plan || !setup || !projection) return;
       const def = typeIn(plan.types, type);
       const lane = projection.lanes.find((l) => l.key === slot.laneKey);
       const set = projection.swimlanes ? laneMove(lane) : {};
+      const id = newItemId();
       plan.addItem({
+        id,
         type: def.id,
         fields: { title: def.newTitle, ...(set.set ?? {}) },
         status: cellStatus(setup, slot.status, lane),
         after: null,
         before: slot.beforeId,
       });
+      plan.openNewItem(id);
       const column = setup.columns.find((c) => c.status === slot.status);
       plan.announce(`${def.label} added to ${column?.name ?? slot.status}`);
+    },
+    // The card's own status is never refused (it may be reordered there or change lanes); a swimlane by type
+    // checks the lane's type, the one the card would have.
+    refuseAt: (item: Pick<Item, 'type' | 'fields'>, slot: PlanDropSlot) => {
+      if (!plan || !setup || !projection || setup.archive) return null;
+      const lane = projection.lanes.find((l) => l.key === slot.laneKey);
+      const laneType = projection.swimlanes ? laneMove(lane, item).type : undefined;
+      return moveStatusRefusal(
+        plan.types,
+        item,
+        { status: cellStatus(setup, slot.status, lane), ...(laneType ? { type: laneType } : {}) },
+        (s) => setup.columns.find((c) => c.status === s)?.name ?? plan.statusNames.get(s) ?? s,
+      );
     },
     canEditWidgets: () => !!setup && canEdit,
     // A palette widget placed in the header (docs/specs/026-plan/board-widgets.md): one board edit.
@@ -182,9 +201,14 @@ export function usePlanBoardDrop(opts: {
         accepts: (id) => target.current.accepts(id),
         refusal: () => target.current.refusal(),
         drop: (id, slot) => target.current.drop(id, slot),
-        hover: setIncoming,
+        hover: (next) => {
+          if (sameIncoming(lastIncoming.current, next)) return;
+          lastIncoming.current = next;
+          setIncoming(next);
+        },
         acceptsType: (type) => target.current.acceptsType(type),
         addCard: (type, slot) => target.current.addCard(type, slot),
+        refuseAt: (type, slot) => target.current.refuseAt(type, slot),
         canEditWidgets: () => target.current.canEditWidgets(),
         widgetHover: setWidgetSlot,
         placeWidget: (kind, slot, opts) => target.current.placeWidget(kind, slot, opts),

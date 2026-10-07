@@ -3,11 +3,15 @@
 // One field of an item, as the item panel edits it (docs/specs/026-plan/plan-board.md "Working on a
 // board"): a built-in field by its kind, a custom field by its kind, and the description as rich text.
 // Each saves as it changes.
-import { ChevronRightIcon, Select } from '@livediagram/ui';
+import { Select } from '@livediagram/ui';
 import {
+  ITEM_TYPES,
+  PARENT_LINK_TYPE,
   customFieldOf,
   isBuiltInFieldId,
-  itemTitle,
+  linkCandidates,
+  typeAllowsStatus,
+  itemColourValue,
   type Item,
   type ItemFieldId,
   type ItemFieldValue,
@@ -19,11 +23,16 @@ import {
   ChecklistEditor,
   DateField,
   LabelsEditor,
-  NumberField,
+  EstimateSelect,
   PersonPicker,
   PriorityPicker,
 } from './item-field-editors';
 import { CustomFieldEditor } from './CustomFieldEditor';
+import { LinkedCardField } from './LinkedCardField';
+import { usePlan } from './PlanContext';
+import { ColourSelect } from './ColourSwatches';
+import { PHASE_COLOURS } from './views/view-frame';
+import { track } from '@/lib/telemetry';
 import { ItemDescription } from './ItemDescription';
 import { ItemComments, type ItemCommentsContext } from './ItemComments';
 import type { ItemOpenVia } from './item-trail';
@@ -32,6 +41,7 @@ export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   status: 'Status',
   assignee: 'Assignee',
   priority: 'Priority',
+  color: 'Colour',
   labels: 'Labels',
   estimate: 'Estimate',
   start: 'Start',
@@ -50,6 +60,7 @@ export function fieldLabel(type: ItemTypeDef, f: string): string {
 export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
   return (
     f !== 'checklist' &&
+    f !== 'color' &&
     f !== 'description' &&
     f !== 'comments' &&
     customFieldOf(type, f)?.kind !== 'checkbox'
@@ -75,12 +86,33 @@ export type ItemFieldContext = {
 
 export const fieldId = (item: Item, f: string) => `item-${item.id}-${f}`;
 
+const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
+
 export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }) {
   const { item, type, canEdit, onSave } = ctx;
+  const plan = usePlan();
+  const items = plan?.items ?? NO_ITEMS;
+  const types = plan?.types ?? ITEM_TYPES;
   const id = fieldId(item, f);
   const disabled = !canEdit;
   const value = item.fields[f];
   const custom = customFieldOf(type, f);
+  // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of the type it links to.
+  if (custom?.kind === 'card' && custom.linkType) {
+    return (
+      <LinkedCardField
+        id={id}
+        label={custom.label}
+        value={value}
+        candidates={linkCandidates(items.values(), custom.linkType, item.id)}
+        items={items}
+        types={types}
+        disabled={disabled}
+        onSave={(v) => onSave(f, v)}
+        onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
+      />
+    );
+  }
   if (custom) {
     return (
       <CustomFieldEditor
@@ -96,26 +128,46 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
   switch (f) {
     case 'status': {
       const status = typeof value === 'string' ? value : '';
-      const options =
+      const known =
         status && !ctx.statuses.some((s) => s.status === status)
           ? [{ status, name: status }, ...ctx.statuses]
           : ctx.statuses;
+      // Only the statuses this card type uses (docs/specs/026-plan/item-types.md "An item type"); a card already
+      // in one it leaves out shows it, marked, and can move out of it but never back in.
+      const options = known
+        .filter((s) => typeAllowsStatus(type, s.status) || s.status === status)
+        .map((s) =>
+          typeAllowsStatus(type, s.status)
+            ? s
+            : { ...s, name: `${s.name} (not used by ${type.label})`, excluded: true },
+        );
+      // The status reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name.
+      const phase = status ? (plan?.statusPhases?.get(status) ?? 'todo') : null;
       return (
-        <Select
-          id={id}
-          className="w-full"
-          selectClassName="text-[13px]"
-          disabled={disabled}
-          value={status}
-          onChange={(e) => onSave('status', e.target.value || undefined)}
-        >
-          <option value="">No status</option>
-          {options.map((s) => (
-            <option key={s.status} value={s.status}>
-              {s.name}
-            </option>
-          ))}
-        </Select>
+        <div className="relative">
+          {phase ? (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-2.5 top-1/2 z-10 h-2 w-2 -translate-y-1/2 rounded-full"
+              style={{ backgroundColor: PHASE_COLOURS[phase] }}
+            />
+          ) : null}
+          <Select
+            id={id}
+            className="w-full"
+            selectClassName={`text-[13px] font-medium ${phase ? 'pl-6' : ''}`}
+            disabled={disabled}
+            value={status}
+            onChange={(e) => onSave('status', e.target.value || undefined)}
+          >
+            <option value="">No status</option>
+            {options.map((s) => (
+              <option key={s.status} value={s.status} disabled={'excluded' in s}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
+        </div>
       );
     }
     case 'assignee':
@@ -142,8 +194,23 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           onSave={(v) => onSave(f, v)}
         />
       );
+    case 'color':
+      // The item's own colour, beside its type's (docs/specs/026-plan/items.md "Colour").
+      return (
+        <ColourSelect
+          id={id}
+          disabled={disabled}
+          value={itemColourValue(value)}
+          onChange={(c) => {
+            onSave(f, c);
+            track('Plan', 'Changed', 'ProjectColour');
+          }}
+        />
+      );
     case 'estimate':
-      return <NumberField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
+      return (
+        <EstimateSelect id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />
+      );
     case 'start': {
       // A start after its due date is kept, and said gently (docs/specs/026-plan/items.md "Fields").
       const due = item.fields['due'];
@@ -163,43 +230,25 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       return <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
     case 'checklist':
       return <ChecklistEditor value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
-    case 'parent': {
-      const parentId = typeof value === 'string' ? value : '';
-      const parent = parentId ? ctx.projects.find((p) => p.id === parentId) : undefined;
+    case 'parent':
+      // A Project the card sits under: the same control as every Card field (LinkedCardField).
       return (
-        <div className="flex items-center gap-1.5">
-          <Select
-            id={id}
-            className="min-w-0 flex-1"
-            selectClassName="text-[13px]"
-            disabled={disabled}
-            value={parentId}
-            onChange={(e) => onSave(f, e.target.value || undefined)}
-          >
-            <option value="">None</option>
-            {ctx.projects
-              .filter((e) => e.id !== item.id)
-              .map((e) => (
-                <option key={e.id} value={e.id}>
-                  #{e.key} {itemTitle(e)}
-                </option>
-              ))}
-          </Select>
-          {/* The parent opens in this panel, so it can be read or changed and come back from. */}
-          {parent ? (
-            <button
-              type="button"
-              aria-label={`Open #${parent.key} ${itemTitle(parent)}`}
-              className="flex h-[34px] shrink-0 items-center gap-1 rounded-md border border-slate-200 px-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              onClick={() => ctx.onOpenItem(parent.id, 'Parent')}
-            >
-              Open
-              <ChevronRightIcon size={12} />
-            </button>
-          ) : null}
-        </div>
+        <LinkedCardField
+          id={id}
+          label="Parent"
+          value={value}
+          candidates={
+            ctx.projects.length > 0
+              ? ctx.projects.filter((e) => e.id !== item.id)
+              : linkCandidates(items.values(), PARENT_LINK_TYPE, item.id)
+          }
+          items={items}
+          types={types}
+          disabled={disabled}
+          onSave={(v) => onSave(f, v)}
+          onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
+        />
       );
-    }
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':

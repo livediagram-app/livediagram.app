@@ -3,7 +3,7 @@
 // A column's settings (docs/specs/026-plan/plan-board.md "The board set-up"): the popover a column's cog
 // opens, hanging under the cog. Its name as the header; colour, WIP limit (a stepper) and Counts as
 // Done (a switch); move left or right; add a
-// column after it; remove it, first asking where its cards go when it has any. Each change is one
+// column after it (the column picker: an existing status, or a new one); remove it, first asking where its cards go when it has any. Each change is one
 // element edit, made as it happens. Escape or an outside press closes it; on a phone it is a sheet.
 import { useLayoutEffect, useRef, useState } from 'react';
 import { COLUMN_WIDTHS, type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
@@ -36,6 +36,12 @@ import {
   setColumnWidth,
   setWipLimit,
 } from './board-setup-edits';
+import { requestColumnSettings } from './column-settings-request';
+import { AddColumnPickerPopover } from './AddColumnPickerPopover';
+import { addStatusColumn, addStatusColumns } from './column-status-picks';
+import { usePlan } from './PlanContext';
+
+const NO_STATUSES: ReadonlyMap<string, string> = new Map();
 
 const WIDTH = 280;
 const GAP = 6;
@@ -85,11 +91,14 @@ export function PlanColumnPopover({
   setup,
   column,
   cardCount,
+  selectName = false,
   onChange,
   onMoveCards,
   onClose,
 }: {
   getAnchor: () => HTMLElement | null;
+  // A column just added: its name opens selected, ready to type over.
+  selectName?: boolean;
   setup: PlanBoardSetup;
   column: PlanColumn;
   // How many cards the board shows in the column (they move before it goes).
@@ -103,6 +112,11 @@ export function PlanColumnPopover({
   const box = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [removing, setRemoving] = useState(false);
+  // + Add Column After opens the column picker as its own popover hung from the button
+  // (docs/specs/026-plan/plan-board.md "The column picker"); this one stays open behind it.
+  const [adding, setAdding] = useState(false);
+  const addButton = useRef<HTMLButtonElement>(null);
+  const statusNames = usePlan()?.statusNames ?? NO_STATUSES;
   const others = setup.columns.filter((c) => c.id !== column.id);
   const [target, setTarget] = useState(others[0]?.status ?? '');
   const at = setup.columns.findIndex((c) => c.id === column.id);
@@ -117,8 +131,9 @@ export function PlanColumnPopover({
     const top = below + h + EDGE <= window.innerHeight ? below : Math.max(EDGE, a.top - GAP - h);
     setPos({ left, top });
   }, [getAnchor, removing]);
-  useClickOutside(box, () => onClose(false), true, '[data-column-cog]');
-  useEscape(() => onClose(true), { capture: true, stopPropagation: true });
+  // A press in the picker (portalled) is not outside, and Escape is the picker's while it is open.
+  useClickOutside(box, () => onClose(false), true, '[data-column-cog], [data-add-column-picker]');
+  useEscape(() => onClose(true), { capture: true, stopPropagation: true, enabled: !adding });
 
   const wip = column.wipLimit ?? null;
   const setWip = (n: number | null) => {
@@ -147,6 +162,7 @@ export function PlanColumnPopover({
           defaultValue={column.name}
           maxLength={COLUMN_NAME_MAX}
           autoFocus
+          onFocus={selectName ? (e) => e.currentTarget.select() : undefined}
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();
           }}
@@ -293,16 +309,45 @@ export function PlanColumnPopover({
           </button>
         </div>
         <button
+          ref={addButton}
           type="button"
+          data-add-column-after=""
           className={ROW}
           disabled={!added}
-          onClick={() => {
-            if (added) onChange(added.setup, 'ColumnAdded');
-          }}
+          aria-haspopup="dialog"
+          aria-expanded={adding}
+          onClick={() => setAdding((a) => !a)}
         >
           <PlusIcon size={16} className="text-slate-400" />
           Add Column After
         </button>
+        {adding && added ? (
+          <AddColumnPickerPopover
+            anchor={addButton}
+            onClose={() => setAdding(false)}
+            setup={setup}
+            statusNames={statusNames}
+            onPick={(pick) => {
+              const made = addStatusColumn(setup, column.id, pick);
+              if (!made) return;
+              // The settings move to the new column: this popover closes, and the new column's head opens its own.
+              requestColumnSettings(made.column.id);
+              onChange(made.setup, 'ColumnAdded');
+              onClose(false);
+            }}
+            onPickAll={(picks) => {
+              onChange(addStatusColumns(setup, column.id, picks), 'ColumnAdded');
+              onClose(false);
+            }}
+            onName={(name) => {
+              const made = addColumnAfter(setup, column.id, name);
+              if (!made) return;
+              requestColumnSettings(made.column.id);
+              onChange(made.setup, 'ColumnAdded');
+              onClose(false);
+            }}
+          />
+        ) : null}
         {others.length > 0 && !removing ? (
           <button
             type="button"

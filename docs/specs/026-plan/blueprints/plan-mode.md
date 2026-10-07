@@ -29,12 +29,20 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
   `PlanCardsIcon`). Tile sections of the same ids.
 - Tiles (`palette-plan-tiles.tsx`, spread into `PALETTE_TILES`), a `shape` action whose creation-time choice
   `plan` is the preset or the item type (threaded like `estimateScale` through the tile grid, drag payload, search,
-  draw intent and drop): `plan:board-<preset>` for the 7 presets, `plan:card-<type>` (caption "<Type> card") for the
+  draw intent and drop): `plan:board-<preset>` for the 10 presets (`PLAN_BOARD_TILES` order, All Cards last, asserted by a test), `plan:card-<type>` (caption "<Type> card") for the
   8 item types, in `plan-cards`; boards in `plan-boards`.
 - `PLAN` layout: `plan-cards`, `plan-boards`, landing on `plan-cards`; no Popular. The Cards body is
   `PalettePlanCardsTab` (the document's types, then Edit Cards); the Toolbar strip draws the same tiles and ends
   with `EditCardsStripButton`. Both call `openCardTypes()` (`hooks/plan/card-types-opener.ts`), which
   `useCardTypesOpener` in `CanvasChrome` registers against the Card Types cluster button. Draw's shape dock excludes both categories.
+- Card tiles no board takes: `cardTypesTakenOnTab(setups)` (`packages/items/src/board-card-types.ts`) reads the
+  open tab's board set-ups (`normaliseBoardSetup`) to `{ kind: 'none' }` (no board), `{ kind: 'all' }` (a
+  non-Archive board naming no Card Types) or `{ kind: 'some', types }` (the union of the non-Archive boards'
+  `addTypes`); `cardTileRefusal(taken, type, label)` gives the reason or null. `CanvasChrome` publishes it for the
+  active tab into the `card-types-taken` module store (`hooks/plan/card-types-taken.ts`, set only when it
+  changes); `PaletteTile` reads it (`usePlanCardTileDisabled`) for `plan-card` tiles, and any tile can carry a
+  static `disabled: { reason }` in its def. `IconButton`'s `disabledReason` keeps the button focusable with
+  `aria-disabled`, dims it, drops press and drag, and names the reason in its hover card.
 - A palette card drag: `PaletteIconButton` publishes `planType` on the drag preview; `usePaletteDrop.onDragOver`
   calls `planCardDragOver(x, y)` (`plan-card-drop.ts`), which has the board under the pointer `hover` a gap of
   `PLAN_PALETTE_GAP_PX` (56) at the slot, cleared on leaving, on drop and when the preview clears;
@@ -86,6 +94,7 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
 | Mode catalogue order, cycle    | `editor-mode.test.ts`                                                                         |
 | Plan palette layout            | `palette-layouts.test.ts`                                                                     |
+| Card tiles no board takes      | `board-card-types.test.ts`, `PaletteTile.disabled.test.tsx`                                   |
 | Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts`                                              |
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |
 | Hand-offs, tab layout          | `template-builders-plan.test.ts`                                                              |

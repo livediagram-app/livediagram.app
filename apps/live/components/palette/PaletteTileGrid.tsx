@@ -12,6 +12,7 @@ import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
+import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
@@ -210,8 +211,12 @@ export function PaletteTile({
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
+  // Greyed out with a reason: the def's own, or a card tile no board on the tab takes.
+  const cardRefusal = usePlanCardTileDisabled(a);
+  const disabledReason = (def.disabled ?? cardRefusal)?.reason;
   return (
     <IconButton
+      disabledReason={disabledReason}
       label={def.label}
       caption={def.caption}
       description={def.description}

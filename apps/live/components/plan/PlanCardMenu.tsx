@@ -16,6 +16,7 @@ import { duplicateItem } from './duplicate-item';
 import { toggleFlag } from './item-flag';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { track } from '@/lib/telemetry';
+import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanContextValue } from './PlanContext';
 
 // A portal's events still bubble up the React tree to the board and canvas.
@@ -158,8 +159,13 @@ export function PlanCardMenuHost({
       at={menu.at}
       title={itemTitle(item) || 'Card'}
       canEdit={canEdit}
+      // The other columns, but none whose status the card's type leaves out (docs/specs/026-plan/item-types.md).
       columns={setup.columns
-        .filter((c) => c.status !== status)
+        .filter(
+          (c) =>
+            c.status !== status &&
+            typeStatusRefusal(plan.types, item.type, c.status, () => c.name) === null,
+        )
         .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
       {...(plan.addItemSlide

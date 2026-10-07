@@ -6,6 +6,7 @@ import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import type { Selection } from '@/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
 import { useInsertionDragInHand } from '@/lib/insertion-preview';
 import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
@@ -83,13 +84,24 @@ export function ModifierHint({
   return <ModifierHintBanner {...banner} selectedKind={selectedKind} />;
 }
 
+const KEY_CHIP =
+  'rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300';
+
+// In the Toolbar layout the hint hangs from the strip as its tray (docs/specs/007-editor/toolbar-layout.md);
+// elsewhere it is a top-centre pill.
 function Hint({ modifier, children }: { modifier: string; children: React.ReactNode }) {
+  const strip = usePaletteStripBox();
+  if (strip) {
+    return (
+      <PaletteTray box={strip} lead={<kbd className={KEY_CHIP}>{modifier}</kbd>}>
+        <span className="font-medium">{children}</span>
+      </PaletteTray>
+    );
+  }
   return (
     <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
       <TopCenterBanner tone="neutral" className="gap-2 px-3 py-1.5 text-xs">
-        <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          {modifier}
-        </kbd>
+        <kbd className={KEY_CHIP}>{modifier}</kbd>
         <span className="font-medium">{children}</span>
       </TopCenterBanner>
     </div>

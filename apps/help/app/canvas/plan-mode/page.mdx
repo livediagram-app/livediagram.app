@@ -44,8 +44,8 @@ Plan is one of the four [editor modes](/help/canvas/editor-modes/), beside Diagr
 
 An empty Plan tab shows **Start with a Board** in the middle: pick a board type and it is placed, empty, ready to build. See [Boards](/help/canvas/plan-mode/boards/).
 
-- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates. Each sets up a way of working across several tabs, with no cards, so you start straight on your own work (see [Plan Templates](#plan-templates) below).
-- **On any tab:** in Plan mode, open the palette's **Boards** category and press a board (Kanban, Sprint, Retro, Roadmap, Bug Triage, Week, All Cards, Archive or a blank board), then click the canvas, or drag it out to the size you want.
+- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates. **Blank Plan** is one empty Plan tab, with no board, that opens on **Start with a Board**; every other Plan template sets up a way of working across several tabs, with no cards, so you start straight on your own work (see [Plan Templates](#plan-templates) below).
+- **On any tab:** in Plan mode, open the palette's **Boards** category and press a board (Kanban, To-do List, Sprint, Retro, Roadmap, Bug Triage, Week, All Cards, Archive or a blank board), then click the canvas, or drag it out to the size you want.
 
 ## Plan Templates
 
@@ -74,16 +74,17 @@ Every Plan template but **Blank Plan** makes several tabs, each with its board s
   <PlanBoardScene />
 </Figure>
 
-- **Add a card:** every column ends in **+ Add card**. It opens **Add a Card**: press a type (**Project**, **Task**, **Note**, **Idea**, **Action**, or any your document adds) to add a card of it ("New task"), then click it to give it a title in its panel. See [Cards](/help/canvas/plan-mode/cards/).
+- **Add a card:** every column ends in **+ Add card**. It opens **Add a Card**: press a type (**Project**, **Task**, **Note**, **Idea**, **Action**, or any your document adds) to add a card of it. The new card opens straight away with its title selected, so just type to name it. A card you place from the palette opens the same way. See [Cards](/help/canvas/plan-mode/cards/).
 - **From the palette:** drag a card from the **Cards** category into a column. While you drag, the column opens a gap where it will land. Cards from the palette always go onto a board, never loose on the canvas. Or press a card in the palette, then click the column it belongs in; the hint at the top says so, or reminds you to add a board first.
 - **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type, project or any field), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
 - **Open a card:** click it. Its panel opens over the canvas, with the title and the card's tabs on the left and **Details** (status, assignee, priority and the rest) on the right. Every change saves as you make it. On a phone the panel rises from the bottom, with Details as its first tab.
+- **Colour code a project:** a Project has a **Colour** in its Details: pick one of twelve swatches, or **None**. It never replaces the Project colour on the card; it shows as a small dot beside it, before the project's name on its cards' **Parent**, in a board's rows by parent, and on the [Gantt Chart](#metrics-and-visualisations), where the project's bar takes its colour. Any other card type can add Colour in [Card Types](/help/canvas/plan-mode/card-types/).
 - **Right-click a card** to **Open** or **Duplicate** it, **Add to Slides**, **Move to** another column, **Flag** it, **Archive** it, or move it to the **Trash**.
 - **Trash a card:** drag it onto the **Trash** button beside Undo (it opens out as you drag), choose **Trash** from its menu, or press **Delete** with it focused. Open the Trash to restore a card or delete it for good.
 - **Find any card:** the **Cards** button in the bottom-right corner lists every card in the document, with a search, and a **Not on a Board** view for cards no board shows.
 - **Assign a card:** pick yourself or a teammate as its **Assignee**. Until it is done, the card shows up on that person's [Activity](/help/explorer/activity/) page in the Explorer, under **Assigned to You**, so they can find it without knowing which document it is in. They need to be able to open the document, so assign cards on a team document or one shared with them.
 - **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in. Drag a card from one board onto another to move it there.
-- **Present a whole board:** right-click the board, open **Board** and choose **Add to Slides**. The slide frames the live board, so it shows the cards as they stand when you present. See [Slide Deck](/help/selection-modes/slide-deck/).
+- **Present a whole board:** right-click the board, open **Board** and choose **Add to Slides** beside the title. The slide frames the live board, so it shows the cards as they stand when you present. See [Slide Deck](/help/selection-modes/slide-deck/).
 - **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your item changes in the same order as your canvas edits: a moved card goes back, a trashed card comes back. Votes and comments are not undone.
 
 ### On a Phone or Tablet
@@ -100,7 +101,7 @@ Tab to a card, then:
 - **N** opens **Add a Card** for the card's column.
 - **Delete** moves the card to the Trash, where you can restore it.
 
-Screen readers hear every move ("#12 moved to In progress, position 2 of 4").
+Screen readers hear every move ("#12 moved to In Progress, position 2 of 4").
 
 ## Setting Up a Board
 
@@ -108,14 +109,14 @@ Screen readers hear every move ("#12 moved to In progress, position 2 of 4").
 
 **The board** is set up from its own menu: right-click the board (or select it and press **⋯**):
 
-- **Board:** its **Title**, its **Swimlanes** (none, or one per assignee, card type, priority, project or status, or **By a Field**: any field your card types have, your own included) and **Add to Slides**.
-- **Cards:** which card types **New Cards Can Be**, the **Card Size** (**Minimal**, **Compact** or **Detailed**) and which fields each card face shows, a tile each to press on or off. Tiles the chosen size can't show are dimmed.
+- **Board:** its **Title**, its **Swimlanes** (none, or one per assignee, card type, priority, project or status, or any field your card types have, your own included) and **Add to Slides**.
+- **Cards:** its **Card Types**, the types the board shows and takes (a card of a type you turn off is hidden there, not deleted), the **Card Size** (**Minimal**, **Compact** or **Detailed**) and which fields each card face shows, a tile each to press on or off. Tiles the chosen size can't show are dimmed.
 
-Every board shows every card whose status is one of its columns. Items whose status matches none of the board's columns are counted in the header ("3 not on this board"); open the count to move them to a column. A **Retro** board comes with voting and hidden writing on: everyone else's cards show face down until someone presses **Reveal** in the header, so people write without reading each other. More in [Boards](/help/canvas/plan-mode/boards/).
+Every board shows every card whose status is one of its columns, of the card types it shows. Items whose status matches none of the board's columns are counted in the header ("3 not on this board"); open the count to move them to a column. A **Retro** board comes with voting and hidden writing on: everyone else's cards show face down until someone presses **Reveal** in the header, so people write without reading each other. More in [Boards](/help/canvas/plan-mode/boards/).
 
 ## Widgets in the Header
 
-A board's header holds **widgets**: small read-outs and controls such as **Completion**, **Filter**, **People**, **Card Types**, **WIP Alerts**, **Due Soon**, **Points**, **Priorities**, **Unassigned**, **Top Voted** and **Stale Cards**. Each board type starts with the ones that suit it (Points on a sprint, Priorities on a bug triage, Top Voted on a retro). Find them all in the palette's **Widgets** category:
+A board's header holds **widgets**: small read-outs and controls such as **Completion**, **Filter**, **People**, **Card Types**, **WIP Alerts**, **Due Soon**, **Points**, **Priorities**, **Unassigned**, **Top Voted** and **Stale Cards**. Each board type starts with a few that suit it (Points on a sprint, Unassigned on a bug triage, Top Voted on a retro), and Completion only where the board has a done column. Find them all in the palette's **Widgets** category:
 
 - **Drag a widget** into a board's header. A bar shows where it will go.
 - **Tap a widget** to add it to the end of the selected board's header (or the tab's only board).
@@ -132,7 +133,7 @@ A board holds each widget once; adding one it already has makes it flash.
 
 **Visualisations** chart every card:
 
-- **Project Gantt Chart**: a row per Project card, a bar from its **Start** to its **Due** date, filled to the share of its cards done, with a line for today. A project with only a due date is a diamond; press **Add a start date** to open it and set one.
+- **Gantt Chart**: a row per card of the card types it shows (**Project** to start with; pick others, your own included, under **View**, **Card Types** in its right-click menu: only card types with both a **Start** and a **Due** field are listed, so add both to a type to put it on the chart), a bar from its **Start** to its **Due** date in the card's **Colour** (or its type's colour), filled to the share of its cards done, with a line for today. A card with only a due date is a diamond. Drag either end of a bar (or a diamond) sideways to change that date, or drag the middle of a bar to move both dates together; the days show as you drag. A card with no dates can be drawn straight onto its row: click for a week, or drag across the days. Pick **Month**, **Quarter** or **Year** in its header to see more or less time, step with the arrows or scroll sideways (or drag the dates strip) to move along the timeline, and press **Today** to come back to now. The view is yours alone; others keep their own.
 - **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows, and **Today** comes back.
 - **Workload by Person**: a bar per person, split Not Started, In Progress and Done.
 - **Status Breakdown**: a donut of the cards by status.

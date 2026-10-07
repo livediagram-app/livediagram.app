@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   EMPTY_ITEM_STORE,
   applyItemWrite,
+  asUndoWrite,
   inverseItemWrites,
   mergeItemChanges,
   storeAsCreates,
@@ -201,6 +202,21 @@ describe('inverseItemWrites', () => {
     expect(w.kind === 'create' && w.creates.map((c) => c.id)).toEqual(['madeid1', 'keepme1']);
     const d = { kind: 'delete' as const, id: 'x' };
     expect(withCreateIds(d)).toBe(d);
+  });
+
+  // docs/specs/026-plan/item-types.md "An item type": an undo or redo is not refused for a left-out status.
+  it('marks a patch or a move as an undo, any other write as it is', () => {
+    expect(asUndoWrite({ kind: 'move', id: 'x', move: { status: 'done' } })).toEqual({
+      kind: 'move',
+      id: 'x',
+      move: { status: 'done' },
+      undo: true,
+    });
+    expect(asUndoWrite({ kind: 'patch', id: 'x', patch: { clear: ['status'] } })).toMatchObject({
+      undo: true,
+    });
+    const d = { kind: 'delete' as const, id: 'x' };
+    expect(asUndoWrite(d)).toBe(d);
   });
 });
 

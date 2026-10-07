@@ -7,7 +7,9 @@
 // then draws read-only from nothing.
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
+import type { PlanViewRef } from '@livediagram/document';
 import type {
+  BoardStatusTypes,
   Item,
   ItemMove,
   ItemPatch,
@@ -29,8 +31,8 @@ export type PlanContextValue = {
   types: readonly ItemTypeDef[];
   // Their changes (the Card Types panel and the type editor).
   itemTypes: ItemTypesSlice;
-  // Opens the type editor on a type, or on a new one.
-  editType: (typeId: string | 'new') => void;
+  // Opens the type editor on a type, or on a new one (filled from `fromId` when duplicating).
+  editType: (typeId: string | 'new', fromId?: string) => void;
   status: PlanItemsStatus;
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).
@@ -44,6 +46,8 @@ export type PlanContextValue = {
   retry: () => void;
   // `via`: opened from inside the item panel, which steps its card trail (item-trail.ts) instead of starting one.
   openItem: (itemId: string, via?: ItemOpenVia) => void;
+  // A card this person just made, opened at once with its title selected (never for others' or undone cards).
+  openNewItem: (itemId: string, via?: ItemOpenVia) => void;
   openItemId: string | null;
   addItem: (input: {
     type: string;
@@ -64,6 +68,8 @@ export type PlanContextValue = {
   // This person's owner id: the author id on their own comments, for the delete-own control.
   ownerId: string;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
+  // A plan view's settings (the Gantt's swimlanes and names width): one element edit, synced and undoable.
+  updateView: (viewId: string, settings: PlanViewRef) => void;
   // A card dragged off a board onto the canvas, at a canvas point: a Plan card is left there.
   placeCardOut: (itemId: string, x: number, y: number) => void;
   removeCard: (cardElementId: string) => void;
@@ -85,6 +91,9 @@ export type PlanContextValue = {
   // The phase the tab's boards give each status: what the plan views count as done
   // (docs/specs/026-plan/plan-views.md "What a plan view reads").
   statusPhases: ReadonlyMap<string, StatusPhase>;
+  // The card types the document's boards show under each status they name: what Not on a Board reads
+  // (docs/specs/026-plan/items.md "Finding a card").
+  statusTypes: BoardStatusTypes;
 };
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);

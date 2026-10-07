@@ -20,3 +20,4 @@ Follow the references below only as needed; never upfront.
 - ./counts.md - when a label shows how many of something: a count is a badge (CountBadge, or AccentBar's count on the canvas), never a number in brackets
 - ./touch-targets.md - when adding a small control: the 44px tap area on touch screens, `touch-target` / `touch-target-y`, and which shared controls carry it
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule
+- ./date-fields.md - when adding or styling a date or time input: it fits its column on phones and iPads, the shared theme rule, and the touch WebKit look

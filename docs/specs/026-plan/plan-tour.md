@@ -39,7 +39,7 @@ The tour shows Plan working on real elements and real items, then takes them awa
 - **It never touches the person's own work.** It places its own example board (a Kanban board, with statuses of
   its own like any board placed from the palette, so no existing card lands on it and no example card lands on
   another board) in the middle of the view, and adds its example cards to that board only.
-- **The example cards**: "Plan the launch" (a Task) and "Write the release notes" (a Task) in To do, and "Agree
+- **The example cards**: "Plan the launch" (a Task) and "Write the release notes" (a Task) in To Do, and "Agree
   the launch date" (an Action) in Backlog.
 - **It leaves no history.** Placing, moving and removing tour content is never an undo step, so Undo after the
   tour never brings it back, and Undo during the tour skips over it to the person's own last change.
@@ -59,9 +59,9 @@ one or two short sentences per step; the exact strings live in `apps/live/compon
    board), then **Show me around** / **No thanks**.
 1. **Your board**: places the example board and highlights it. Columns are the stages work moves through;
    the palette's Boards category has a board for sprints, retros, roadmaps and more.
-2. **Add cards**: adds the example cards and highlights the To do column. Each column ends in Add card, or a
+2. **Add cards**: adds the example cards and highlights the To Do column. Each column ends in Add card, or a
    card tile from the palette's Cards category can be dropped where it should go.
-3. **Move work along**: moves "Plan the launch" to In progress and highlights it there. Drag a card to the
+3. **Move work along**: moves "Plan the launch" to In Progress and highlights it there. Drag a card to the
    next column as the work moves on, or Shift and an arrow key with it focused.
 4. **The card panel**: opens "Plan the launch" in the item panel and highlights it. Everything about a piece
    of work is here, saved as it is typed.

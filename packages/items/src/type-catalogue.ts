@@ -13,7 +13,7 @@ import {
   type ItemTypeDef,
   type ItemTypeTab,
 } from './item-types';
-import { ITEM_TYPE_PATTERN } from './limits';
+import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import { HEX_COLOUR, isObj } from './validate';
 
@@ -30,6 +30,8 @@ export const ITEM_TYPE_CATALOGUE_VERSION = 1;
 export const ITEM_TYPE_TABS_MAX = 6;
 export const ITEM_TYPE_TAB_LABEL_MAX = 24;
 export const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
+// The most statuses a type can leave out (a board holds far fewer columns than this).
+export const ITEM_TYPE_EXCLUDED_STATUSES_MAX = 64;
 // The one tab a type without its own shows.
 export const OVERVIEW_TAB_ID = 't-overview';
 
@@ -58,6 +60,7 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'assignee',
   'parent',
   'priority',
+  'color',
   'labels',
   'estimate',
   'start',
@@ -69,6 +72,18 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
 
 // Every type offers these, first, and they cannot be removed.
 export const REQUIRED_TYPE_FIELDS: readonly ItemFieldId[] = ['title', 'status'];
+
+// What a particular type always offers besides (docs/specs/026-plan/item-types.md "An item type"): a Project
+// is drawn on the Gantt chart from its Start and Due, so it always has both. They can move, never come off.
+export const TYPE_REQUIRED_FIELDS: Readonly<Record<string, readonly ItemFieldId[]>> = {
+  project: ['start', 'due'],
+};
+
+// Every field a type can never lose: Title and Status, then the type's own.
+export function requiredFieldsOf(typeId: string | undefined): readonly string[] {
+  const own = typeId ? TYPE_REQUIRED_FIELDS[typeId] : undefined;
+  return own ? [...REQUIRED_TYPE_FIELDS, ...own] : REQUIRED_TYPE_FIELDS;
+}
 
 export const CUSTOM_FIELD_ID_PATTERN = /^f-[a-z0-9-]{1,30}$/;
 
@@ -229,6 +244,12 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
       return `${at}.options`;
     field.options = options;
   }
+  if (kind === 'card') {
+    // The type it links to; one the catalogue lacks is kept (the type may come back), never refused.
+    const linkType = input['linkType'];
+    if (typeof linkType !== 'string' || !ITEM_TYPE_PATTERN.test(linkType)) return `${at}.linkType`;
+    field.linkType = linkType;
+  }
   if (input['onCard'] === true) field.onCard = true;
   return field;
 }
@@ -262,6 +283,9 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!fields.includes(f)) fields.push(f);
   }
   if (fields.length > ITEM_TYPE_FIELDS_MAX) return `${at}.fields`;
+  // A stored type that lost one of its own required fields (saved before they were) gets it back, last. After the
+  // cap: putting them back may take a full type past it, and must never make a stored catalogue unreadable.
+  for (const f of TYPE_REQUIRED_FIELDS[id] ?? []) if (!fields.includes(f)) fields.push(f);
   let tabs: ItemTypeTab[] | undefined;
   if (input['tabs'] !== undefined) {
     const read = readTabs(input['tabs'], fields, at);
@@ -273,6 +297,12 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     const d = typeof input['detailsLabel'] === 'string' ? input['detailsLabel'].trim() : '';
     if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
     if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
+  }
+  let excludedStatuses: string[] | undefined;
+  if (input['excludedStatuses'] !== undefined) {
+    const read = readExcludedStatuses(input['excludedStatuses']);
+    if (!read) return `${at}.excludedStatuses`;
+    if (read.length) excludedStatuses = read;
   }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
@@ -288,7 +318,36 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
     ...(detailsLabel ? { detailsLabel } : {}),
+    ...(excludedStatuses ? { excludedStatuses } : {}),
   };
+}
+
+// A type's left-out statuses as stored: status ids (trimmed, de-duplicated, in order), at most
+// ITEM_TYPE_EXCLUDED_STATUSES_MAX. An id no board names any more is kept, so the status keeps its exclusion if it
+// comes back. Null for anything else.
+function readExcludedStatuses(input: unknown): string[] | null {
+  if (!Array.isArray(input) || input.length > ITEM_TYPE_EXCLUDED_STATUSES_MAX) return null;
+  const out: string[] = [];
+  for (const s of input) {
+    if (typeof s !== 'string' || !s.trim() || s.length > ITEM_STATUS_MAX) return null;
+    if (!out.includes(s)) out.push(s);
+  }
+  return out;
+}
+
+// Whether a card of `type` may be in `status` (docs/specs/026-plan/item-types.md "An item type"). No status (an
+// unplaced card) is always allowed.
+export function typeAllowsStatus(
+  type: Pick<ItemTypeDef, 'excludedStatuses'> | undefined,
+  status: string | null | undefined,
+): boolean {
+  if (!status || !type?.excludedStatuses) return true;
+  return !type.excludedStatuses.includes(status);
+}
+
+// The refusal for a card moved into a status its type leaves out.
+export function statusRefusal(typeLabel: string, statusName: string): string {
+  return `${typeLabel} cards can't be ${statusName}`;
 }
 
 // The api's and the editor's check of a whole catalogue: its shape, ids, counts and lengths. Title

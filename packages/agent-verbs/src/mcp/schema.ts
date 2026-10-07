@@ -554,7 +554,10 @@ const fieldsArg = z
   .record(z.string(), z.unknown())
   .describe(
     'Fields to set: title, description, status, assignee {id,name,color}, priority (urgent|high|medium|low), ' +
-      'labels [..], estimate (0-999), due (YYYY-MM-DD), checklist [{text,done}], parent (an item id), or any other key.',
+      'labels [..], estimate (0-999), start and due (YYYY-MM-DD), color (one of the twelve Plan swatches: ' +
+      '#18181b #71717a #2563eb #eab308 #dc2626 #16a34a #7c3aed #d97706 #0d9488 #db2777 #ea580c #0891b2), ' +
+      "checklist [{text,done}], parent (a Project item id), a card type's Card field (its f-… id, set to the " +
+      'id of one card of the type it links to), or any other key.',
   );
 
 export const listItemsShape = {
