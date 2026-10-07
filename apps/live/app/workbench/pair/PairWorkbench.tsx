@@ -15,7 +15,7 @@ import {
   apiReadPairingRequest,
   type PairingAnswerOutcome,
 } from '@/lib/api-client';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { OauthShell } from '../../oauth/oauth-shell';
@@ -121,7 +121,7 @@ export function PairWorkbench() {
 
   // The page's one read, once auth has settled on a signed-in person.
   useEffect(() => {
-    if (!clerkEnabled || !ownerId || !code) return;
+    if (!sessionsEnabled || !ownerId || !code) return;
     let live = true;
     apiReadPairingRequest(ownerId, code)
       .then((request) => {
@@ -136,7 +136,7 @@ export function PairWorkbench() {
     };
   }, [ownerId, code]);
 
-  if (!clerkEnabled)
+  if (!sessionsEnabled)
     return (
       <Message
         state="off"

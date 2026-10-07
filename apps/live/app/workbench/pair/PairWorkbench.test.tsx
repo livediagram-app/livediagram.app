@@ -12,7 +12,7 @@ const env = vi.hoisted(() => ({
   query: 'code=AAAAAAAAAAAAAAAAAAAAAA',
 }));
 vi.mock('@/lib/clerk-config', () => ({
-  get clerkEnabled() {
+  get sessionsEnabled() {
     return env.clerk;
   },
 }));

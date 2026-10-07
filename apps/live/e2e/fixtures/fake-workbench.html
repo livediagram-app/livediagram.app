@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  A fake workbench for the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
+  "Testing"): frames the URL in `?frame=`, answers `hello` with `hello-ack` (unless `?silent=1`),
+  answers `renew` with the ticket the test leaves in `window.nextTicket`, and records every message the
+  frame sends into `window.received`. `window.post(message)` sends one to the frame.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fake Workbench</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0f172a;
+      }
+      iframe {
+        display: block;
+        border: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="frame" title="livediagram"></iframe>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const target = params.get('frame');
+      const liveOrigin = new URL(target).origin;
+      const frame = document.getElementById('frame');
+      window.received = [];
+      window.nextTicket = null;
+      window.post = (message) => frame.contentWindow.postMessage(message, liveOrigin);
+      addEventListener('message', (event) => {
+        if (event.origin !== liveOrigin || event.source !== frame.contentWindow) return;
+        const message = event.data;
+        window.received.push(message);
+        if (message.type === 'livediagram:hello' && params.get('silent') !== '1') {
+          window.post({ type: 'livediagram:hello-ack', v: 1, name: 'Fake Workbench' });
+        }
+        if (message.type === 'livediagram:renew' && window.nextTicket) {
+          window.post({ type: 'livediagram:ticket', v: 1, ticket: window.nextTicket });
+          window.nextTicket = null;
+        }
+      });
+      frame.src = target;
+    </script>
+  </body>
+</html>

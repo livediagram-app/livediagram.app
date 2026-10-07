@@ -185,6 +185,8 @@ The Google Drive mirror has an opt-in end-to-end run against the fake Google ([G
 
 `pnpm --filter @livediagram/live test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
 
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as Clerk (as under `E2E_CLERK_JWKS`, minting session tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it.
+
 ## Enabling the Google Drive mirror locally (optional)
 
 The mirror needs a Google Cloud OAuth client (web application) with `http://localhost:3000/drive/connected` as an authorised redirect URI and `http://localhost:3000` as a JavaScript origin, and the Drive API enabled:
