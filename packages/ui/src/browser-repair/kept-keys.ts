@@ -19,8 +19,11 @@ export const GUEST_IDENTITY_KEYS = {
 export const REPAIR_KEPT_KEYS: readonly string[] = [
   // Guest identity.
   ...Object.values(GUEST_IDENTITY_KEYS),
-  // Per-browser keys that recorded answers and likes are matched against.
+  // Per-browser keys that recorded answers and likes are matched against, and the collab key's
+  // secret half (vote integrity, #443): a new secret under the same key would no longer prove this
+  // browser's answers.
   'livediagram:v2:collab-key',
+  'livediagram:v2:collab-secret',
   'livediagram:v2:community-key',
 ];
 

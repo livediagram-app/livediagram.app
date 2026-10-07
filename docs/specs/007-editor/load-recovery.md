@@ -124,7 +124,8 @@ cache, cached share passwords, and the stale-build reload guards.
 - the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
   `name-confirmed` (all under `livediagram:v2:`). Losing the guest id loses
   every document a guest owns;
-- `collab-key` and `community-key`, the per-browser keys that past answers and
+- `collab-key`, its secret half `collab-secret`, and `community-key`, the
+  per-browser keys that past answers, votes and
   likes are matched against;
 - Google Drive mirror state (`livediagram:v2:drive-*`,
   `livediagram:drive-mirror*`);

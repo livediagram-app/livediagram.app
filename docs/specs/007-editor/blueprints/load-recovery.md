@@ -98,7 +98,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - Writes one sessionStorage key, `AUTO_RELOAD_KEY` (page → time map, entries older than the window
   dropped by `claimReloadIn`).
 - A repair removes keys; it never writes. Scope: keys starting `livediagram:` or `livediagram-`.
-  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `community-key`) and
+  Kept: `REPAIR_KEPT_KEYS` (the four guest-identity keys, `collab-key`, `collab-secret`, `community-key`) and
   `REPAIR_KEPT_PREFIXES` (`livediagram:v2:drive-`, `livediagram:drive-mirror`). IndexedDB and cookies
   are never touched.
 - The browser probe opens and deletes its own database, `livediagram-probe`.
