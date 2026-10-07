@@ -5,6 +5,7 @@ import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
+import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
@@ -22,7 +23,6 @@ type TopCenterChromeProps = Pick<
   | 'readOnly'
   | 'pendingDraw'
   | 'onCancelDraw'
-  | 'onCancelFormatPainter'
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
@@ -37,8 +37,6 @@ type TopCenterChromeProps = Pick<
   | 'onPrevVoteResult'
   | 'onDoneVoteReview'
 > & {
-  // From CanvasChrome's computed ChromeExtras, not CanvasProps.
-  isPaintMode: boolean;
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
   dockOnTop?: boolean;
@@ -58,11 +56,9 @@ export function TopCenterChrome({
   pendingDraw,
   hasPlanBoard = false,
   onCancelDraw,
-  onCancelFormatPainter,
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  isPaintMode,
   dockOnTop = false,
   tabTimer,
   tabVote,
@@ -81,6 +77,9 @@ export function TopCenterChrome({
     <TopCenterStack
       below={dockOnTop ? 'dock' : toolbarLayout === true && !readOnly ? 'toolbar' : undefined}
     >
+      {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
+          anything else on screen is being saved. */}
+      <OfflineBanner readOnly={readOnly === true} />
       {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}
@@ -115,12 +114,9 @@ export function TopCenterChrome({
       {/* The multi-selection toolbar used to sit here; it now floats over the
           selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
-        {/* Persistent Format tool (the palette tool): a two-phase guided
-            banner. Phase 1 (no source armed) asks the user to pick a base;
-            phase 2 (source armed) invites them to tap as many targets as
-            they like. Checked before the single-shot painter banner below
-            so the format tool owns the banner even once a source is armed
-            (which also flips isPaintMode true). */}
+        {/* The Format tool (the palette tool): a two-phase guided banner.
+            Phase 1 (no source armed) asks the user to pick a base; phase 2
+            (source armed) invites them to tap as many targets as they like. */}
         {canvasTool === 'format' ? (
           <ModeBanner
             icon={<FormatPainterIcon />}
@@ -131,12 +127,6 @@ export function TopCenterChrome({
             }
             actionLabel="Done"
             onAction={onExitFormatTool}
-          />
-        ) : isPaintMode ? (
-          <ModeBanner
-            icon={<FormatPainterIcon />}
-            message="Click an element to apply formatting"
-            onAction={onCancelFormatPainter}
           />
         ) : null}
 

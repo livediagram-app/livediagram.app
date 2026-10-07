@@ -157,7 +157,7 @@ export function AssigneePicker({
               </div>
               {moveFailed ? (
                 <p className="text-rose-600 dark:text-rose-400">
-                  Couldn&apos;t move the document — check your connection and try again.
+                  Couldn&apos;t move the document. Check your connection and try again.
                 </p>
               ) : null}
             </>
@@ -182,7 +182,7 @@ export function AssigneePicker({
         </p>
       ) : signedIn && members !== null && members.length === 0 ? (
         <p className="px-1 text-xs text-slate-400">
-          No other members in this team yet — invite teammates from the team page and they become
+          No other members in this team yet. Invite teammates from the team page and they become
           assignable here, even before they accept.
         </p>
       ) : null}

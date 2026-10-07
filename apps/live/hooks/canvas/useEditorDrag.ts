@@ -457,6 +457,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             shiftHeld: e.shiftKey,
             dragAspectLocked: drag.aspectLocked,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+            noSnap,
             pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
           });
           if (!resize) return;

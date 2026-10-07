@@ -1,29 +1,29 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CustomTheme } from '@/components/illustrations/canvas';
+import { CustomThemeBuilderScene } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Custom Themes',
   description:
-    'Build your own theme from a few colours, save it to your account, reuse it across documents, and edit it later.',
+    'Build your own theme from a few colours, save it, reuse it across documents, and edit it later.',
   path: '/help/canvas/themes/custom-themes/',
 });
 
 <ArticleLayout
   title="Custom Themes"
-  description="Author your own theme, save it to your account, and apply it on any diagram exactly like a built-in one."
+  description="Author your own theme, save it, and apply it on any diagram exactly like a built-in one."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: "Themes", slug: "themes" }}
   subArticles={getSubArticles("themes").filter((a) => a.slug !== "custom-themes")}
 >
 
-The built-in catalogue covers a lot of ground, but sometimes you want your own palette: brand colours, a house diagram style, or a notation of your own. Custom themes let you author exactly that, save it, and reuse it. A saved custom theme behaves just like a built-in one: pick it on a tab and new elements adopt its colours. Custom themes work for everyone, signed in or not, so the canvas keeps working without a sign-in.
+The built-in catalogue covers a lot of ground, but sometimes you want your own palette: brand colours, a house diagram style, or a notation of your own. Custom themes let you author exactly that, save it, and reuse it. A saved custom theme behaves just like a built-in one: pick it on a tab and the tab takes its colours. Custom themes work for everyone, signed in or not.
 
-## Building a theme
+## Building a Theme
 
-You build a theme from the **Custom** category in the Tab Look & Feel Theme tab. Choose **+ New theme** to open the theme builder. It is fast by default and deep on demand:
+Open the **Tab Look & Feel** dialog from the paintbrush button in the bottom-right corner of the editor. On its **Theme** tab, open the **Custom** category and choose the **New theme** card to open the theme builder in place of the theme grid. (To start from a built-in theme instead, hover its card and press **Copy**: the builder opens with that theme's colours filled in.) The builder is fast by default and deep on demand:
 
 <Step n={1}>
   Give the theme a name, then set the **Base colours**: **Background** for the canvas, **Fill** for
@@ -32,41 +32,44 @@ You build a theme from the **Custom** category in the Tab Look & Feel Theme tab.
 </Step>
 
 <Step n={2}>
-  **Text** sits beside them in the same row. It follows the colours above until you set it, so touch
-  it only when the derived one is not what you want.
+  **Text** sits beside them in the same row. It follows the **Fill** colour, staying readable
+  against it, until you set it yourself, so touch it only when the derived one is not what you want.
 </Step>
 
 <Step n={3}>
-  Expand **Pattern** to pick the backdrop pattern, choose an animated one, and set its opacity.
-  There is no pattern colour to pick: it tints itself from your background.
+  The **Pattern** section (open to start with) picks the backdrop pattern, static or animated, and
+  sets its opacity. There is no pattern colour to pick: it tints itself from your background.
 </Step>
 
 <Step n={4}>
-  Expand **Per-shape colours**, an advanced option, to give each shape kind its own fill, border,
-  and text, which is how you reproduce a notation like "diamonds are amber".
+  Expand **Per-shape colours**, an advanced option, to give each shape kind its own fill, outline,
+  and text, which is how you reproduce a notation like "diamonds are amber". A shape kind you leave
+  alone uses the base colours, and its reset button puts it back.
 </Step>
 
-A live preview shows a few sample shapes in your in-progress theme, rendered the same way the canvas would, so you see the result before saving. **Save** stores the theme and applies it to the active tab.
+A live preview across the top shows a small diagram in your in-progress theme, with the real pattern behind it, so you see the result before saving. Every colour box can also copy its colour and paste it into another, which saves retyping a brand colour. **Save theme** stores the theme and applies it to the active tab; **Cancel** (or **Back**) leaves without saving.
 
-<Figure caption="The theme builder's colour wells for fill, border, text, and canvas, with a Save action.">
-  <CustomTheme />
+<Figure caption="The theme builder: a live preview, the name, the four base colours, the Pattern and Per-shape colours sections, and Save theme.">
+  <CustomThemeBuilderScene />
 </Figure>
 
-## Saving and reusing
+## Saving and Reusing
 
-Custom themes are tied to your account and listed under the **Custom** category in the Tab Look & Feel dialog, so you can apply or author one on any tab. If you sign up after creating themes as a guest, they carry over to your account.
+Custom themes belong to you, not to a document, so they are listed under the **Custom** category in the Tab Look & Feel dialog on every tab and every document you open. As a guest they are kept with your browser's guest identity, and if you sign up after creating themes as a guest, they carry over to your account.
 
-## Managing your themes
+Applying a custom theme saves its colours on the tab and its elements, so collaborators see the same look; only you see the theme itself in your Custom category.
 
-The [Explorer](/help/explorer/explorer-page/) has a **Themes** entry under **Library** in its sidebar where you can manage them all in one place: each is shown as a preview card you can **Edit**, **Duplicate**, or **Delete**.
+## Managing Your Themes
 
-## Editing and deleting
+The [Explorer](/help/explorer/explorer-page/) has a **Themes** entry under **Library** in its sidebar where you can manage them all in one place (see [Themes Library](/help/explorer/themes-library/)). Each is shown as a preview card you can **Edit**, **Duplicate**, or **Delete**, beside a **New theme** card. In the dialog's Custom category, hovering a theme's card offers Edit and Delete too.
 
-Editing a theme opens the same builder again. Deleting one is safe for documents that still reference it: they fall back to the default look and keep rendering rather than breaking. If you delete a theme that the document you have open is using, that tab reverts to the default theme straight away so the change is visible.
+## Editing and Deleting
+
+Editing a theme opens the same builder again, and **Save changes** updates it. Deleting one asks you to confirm first, and is safe for documents that still reference it: they fall back to the default look and keep rendering rather than breaking. If you delete a theme that the document you have open is using, the tabs using it revert to the default theme straight away so the change is visible.
 
 <Tip>
-  To tweak a built-in theme, start a new custom theme from the same colours and edit from there. The
-  shipped catalogue stays read-only, so your edits never touch the originals.
+  To tweak a built-in theme, press **Copy** on its card and edit from there. The shipped catalogue
+  stays read-only, so your edits never touch the originals.
 </Tip>
 
 </ArticleLayout>

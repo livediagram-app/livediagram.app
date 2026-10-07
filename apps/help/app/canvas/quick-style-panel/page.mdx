@@ -1,10 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { QuickStylePanelScene } from '@/components/illustrations/style-panels';
 
 export const metadata = helpMetadata({
   title: 'Quick Style Panel',
   description:
-    'Restyle selected shapes, arrows and text in one click from the panel on the left edge: stroke, background and text colours, width, line style, text and icon alignment, and Clear styles. The next shape of the same kind remembers the style.',
+    'Restyle selected shapes, arrows and text in one click from the panel on the left edge: stroke, background and text colours, width, line style, corners, text and icon alignment, and Clear styles. The next shape of the same kind remembers the style.',
   path: '/help/canvas/quick-style-panel/',
 });
 
@@ -15,23 +16,28 @@ export const metadata = helpMetadata({
   categorySlug="canvas"
 >
 
-Select one or more shapes, arrows or text elements and a small **quick style** panel appears on the left edge of the canvas, halfway down, clear of the Palette on the right. It holds the handful of style choices people make most often, so restyling is one click rather than a trip through the right-click menu. The right-click menu is still the home of every setting; the panel only repeats the favourites.
+Select one or more shapes, arrows or text elements and a small **Quick style** panel appears on the left edge of the canvas, halfway down, clear of the Palette on the right. It holds the handful of style choices people make most often, so restyling is one click rather than a trip through the right-click menu. The right-click menu is still the home of every setting; the panel only repeats the favourites.
+
+<Figure caption="The Quick style panel on the left edge, styling the selected shape beside it.">
+  <QuickStylePanelScene />
+</Figure>
 
 ## What's in it
 
 From top to bottom:
 
-- **Stroke**: seven colours for the outline or line. The first is the theme's own default.
+- **Highlighter colour** and **Highlighter width**, for highlights: the marker's five colours and three widths. They also show, captioned Highlighter, when you pick the [Highlighter](/help/palette/tools/highlighter/) tile with nothing selected, and set the stroke you are about to draw. In [Draw mode](/help/canvas/draw-mode/) a selected marker stroke gets **Marker colour** and **Marker width** in the same place.
+- **Stroke**: seven colours for the outline or line, then **Ink**. The first is the theme's own default.
 - **Background**: seven colours for a shape's fill.
-- **Text colour**, for text elements: seven colours for the words. The first is the theme's own text colour. (A shape's label colour is in the right-click menu's Colours section.)
+- **Text colour**, for text elements: seven colours for the words, then **Ink**. The first is the theme's own text colour. (A shape's label colour is in the right-click menu's Colours section.)
 - **Stroke width**: thin, medium or thick.
-- **Stroke style**: solid, dashed or dotted for shapes. For arrows it is solid, dashed or **flowing**, a dashed line that marches along its direction, so an animated connector is a single click.
-- **Text alignment**: left, centre or right.
+- **Stroke style**: solid, dashed or dotted for shapes. For arrows it is solid, dashed or **flowing**, a dashed line that marches along its direction, so an animated connector is a single click. A selection mixing shapes and arrows gets the shape set.
+- **Corners**, in Draw mode only: none, small, medium or large, for rectangles and the other shapes with square corners.
+- **Text alignment**: left, centre or right. It shows once a shape has a label to align.
 - **Icon alignment**, when a shape carries an icon: before, above or after its label.
-- **Highlighter colour** and **Highlighter width**, for highlights: the marker's five colours and three widths. They also show, under the name Highlighter, when you pick the [Highlighter](/help/palette/tools/highlighter/) tile with nothing selected, and set the stroke you are about to draw.
 - **Clear styles**, at the bottom.
 
-A section only shows when something in the selection can use it, so an arrow on its own shows stroke, width and style, a text element on its own shows text colour, and a shape with an icon gains icon alignment.
+A section only shows when something in the selection can use it, so an arrow on its own shows stroke, width and style, a text element on its own shows text colour, and a shape with an icon gains icon alignment. Sticky notes, tables, images and other non-shape elements are not styled here; select only those and the panel stays away.
 
 ## Colours that follow the theme
 
@@ -39,35 +45,43 @@ The seven colours come from the tab's theme. A multi-colour theme offers its own
 
 Switch the theme later and colours picked here move with it: a shape you made green stays green, in the new theme's green.
 
+**Ink** is different: it is the same drawing colour on every theme, dark on a light canvas and light on a dark one. In Draw mode the Stroke and Text colour rows offer Draw mode's stock colours instead of the theme's.
+
 ## Your own colours
 
 Right-click any of the six theme colours in a row (or focus it and press **Shift+F10** or the context-menu key) to open a small colour picker. The colour you pick is saved into that swatch, replacing the theme's colour there, and a small dot in its corner marks it as yours. Screen readers and the tooltip name it too, for example "Custom orange, in place of Green".
 
-Picking a colour only changes the swatch; click it afterwards to use it. **Clear override** in the same popover brings the theme's colour back. Your swatches belong to you and to the theme you made them in: they follow you to other documents and devices, and switching to another theme shows that theme's own colours (and any you changed there). The first swatch, the theme default, always stays the theme's. For colours a whole diagram should share, make a [custom theme](/help/canvas/themes/).
+Picking a colour only changes the swatch; click it afterwards to use it. **Clear override** in the same popover brings the theme's colour back, and anything you already painted keeps its colour. Your swatches belong to you and to the theme you made them in: they follow you to other documents and devices, and switching to another theme shows that theme's own colours (and any you changed there). The first swatch, the theme default, always stays the theme's, and so does Ink. A custom colour does not follow later theme changes. For colours a whole diagram should share, make a [custom theme](/help/canvas/themes/).
 
 ## Styling many at once
 
-Select several shapes and arrows, even of different kinds, and a choice applies to every one that supports it. A highlighted option means every selected element shares it; when they differ, nothing is highlighted. Each choice is one undo step.
+Select several shapes and arrows, even of different kinds, and a choice applies to every one that supports it. A highlighted option means every selected element shares it; when they differ, nothing is highlighted. Locked elements are left alone. Each choice is one undo step.
 
 ## The next shape remembers
 
-When you change a shape's colours, width, style or alignment, from this panel or from the right-click menu, the next shape **of the same kind** you draw arrives the same way. Make a circle green and the next circle is green; the next square is not. Arrows remember their own style, separately from shapes, and text elements remember their colour.
+When you change a shape's colours, width, style or alignment, from this panel or from the right-click menu, the next shape **of the same kind** you draw arrives the same way. Make a circle green and the next circle is green; the next square is not. Arrows remember their own style, separately from shapes, and text elements remember their colour. Picking the theme default again forgets that choice.
 
 This only applies to shapes and arrows you draw yourself, from the palette, a tool or a quick-connect plus. Pasted, duplicated and templated elements keep their own looks. The memory belongs to the document and stays in this browser.
 
 ## Clear styles
 
-**Clear styles** returns the selection to the theme's defaults and forgets the remembered style for those kinds, so the next shape is plain again. Use it when a style was meant as a one-off.
+**Clear styles** returns the selection to the theme's defaults and forgets the remembered style for those kinds, so the next shape is plain again. Use it when a style was meant as a one-off. It is one undo step.
 
 <Tip>
   Building a flowchart? Style the first decision diamond, the first step box and the first arrow the
   way you want, then keep drawing: every new diamond, box and arrow follows on its own.
 </Tip>
 
+## Turning it off
+
+Open **Settings**, then **Panels**, **Quick Style**, and switch off **Enable Quick Style Panel**. Every style is still in the element's right-click menu, and the next shape still remembers its style. See [Settings](/help/user-interface/settings/).
+
 ## Good to know
 
-- The panel is there on desktop layouts only. On a phone the long-press menu has the same options.
+- The panel is not shown on phones. On a phone the long-press menu has the same options.
 - It never covers the [palette](/help/palette/) or other panels: with a panel already on the left edge it moves below, above or beside it. It hides while a right-click menu is open.
+- It also stands aside in zen mode, while presenting, in Plan mode, for people who can only view the document, and on a locked tab.
+- In the Floating layout it wears a panel header titled Quick style; in the [Toolbar layout](/help/palette/toolbar-layout/) it is a compact strip without one.
 - Every option has a name for screen readers and a tooltip; each row is a group you move through with the arrow keys.
 
 </ArticleLayout>

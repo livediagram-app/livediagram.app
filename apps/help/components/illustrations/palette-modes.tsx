@@ -4,37 +4,36 @@
 // Palette Position). Composed only from the shared primitives so the house style
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
-import { useId } from 'react';
 import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label } from './primitives';
 import {
   EraserGlyph,
   HandGlyph,
   IsoCard,
   LaserGlyph,
-  ModeRow,
   SelectGlyph,
   iso,
 } from './palette-modes-parts';
+import { PickerTrigger, PixelCharacter } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
 
-/** Select mode: the picker with Select lit and a shape selected with handles. */
+/** Select mode: the picker set to Select and a shape selected with handles. */
 export function SelectMode() {
   return (
     <Scene w={420} h={230}>
-      <ModeRow active="select" />
+      <PickerTrigger tool="select" />
       <Shape x={140} y={132} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
       <SelectionBox x={140} y={132} w={120} h={56} />
     </Scene>
   );
 }
 
-/** Hand mode: the picker with Hand lit and a grabbing-hand cursor panning the
+/** Hand mode: the picker set to Hand and a grabbing-hand cursor panning the
  *  canvas (a faint drag trail behind it). */
 export function HandMode() {
   return (
     <Scene w={420} h={230}>
-      <ModeRow active="hand" />
+      <PickerTrigger tool="hand" />
       <Shape x={84} y={108} w={72} h={42} label="A" />
       <Shape x={252} y={150} w={72} h={42} accent label="B" />
       <Arrow from={[156, 129]} to={[252, 171]} kind="elbow" tone="muted" />
@@ -61,12 +60,12 @@ export function HandMode() {
   );
 }
 
-/** Eraser mode: the picker with Eraser lit and a drag across shapes, the ones
+/** Eraser mode: the picker set to Eraser and a drag across shapes, the ones
  *  already swept fading away. */
 export function EraserMode() {
   return (
     <Scene w={420} h={230}>
-      <ModeRow active="eraser" />
+      <PickerTrigger tool="eraser" />
       {/* Erased (fading) */}
       <Shape x={70} y={118} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
       <Shape x={150} y={150} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
@@ -109,12 +108,12 @@ export function EraserMode() {
   );
 }
 
-/** Format Painter mode: the picker with Painter lit, copying one shape's style
+/** Format Painter mode: the picker set to Format, copying one shape's style
  *  onto another via a brush cursor. */
 export function FormatPainterMode() {
   return (
     <Scene w={420} h={220}>
-      <ModeRow active="painter" />
+      <PickerTrigger tool="format" />
       <Shape x={48} y={120} w={88} h={52} accent label="Source" />
       <Arrow from={[140, 146]} to={[252, 146]} kind="curved" tone="muted" dashed />
       <Shape x={262} y={120} w={88} h={52} accent label="Painted" />
@@ -132,12 +131,12 @@ export function FormatPainterMode() {
   );
 }
 
-/** Laser mode: the picker with Laser lit and a fading laser trail across the
+/** Laser mode: the picker set to Laser and a fading laser trail across the
  *  canvas, brightening towards the cursor. */
 export function LaserMode() {
   return (
     <Scene w={420} h={230}>
-      <ModeRow active="laser" />
+      <PickerTrigger tool="laser" />
       <Shape x={84} y={120} w={76} h={44} label="A" />
       <Shape x={264} y={150} w={76} h={44} accent label="B" />
       {/* Fading laser trail: faint tail to bright head */}
@@ -162,56 +161,13 @@ export function LaserMode() {
   );
 }
 
-/** Spotlight mode: the picker with Spotlight lit, the canvas dimmed except a
- *  bright circle around the cursor over one shape. */
-export function SpotlightMode() {
-  const hole = `spotlight-hole-${useId().replace(/:/g, '')}`;
-  return (
-    <Scene w={420} h={230}>
-      <defs>
-        <mask id={hole}>
-          <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={232} cy={150} r={52} fill="black" />
-        </mask>
-      </defs>
-      <ModeRow active="spotlight" />
-      {/* Shapes underneath */}
-      <Shape x={80} y={120} w={72} h={42} label="A" />
-      <Shape x={196} y={128} w={72} h={42} accent label="B" />
-      <Shape x={312} y={160} w={72} h={42} kind="circle" label="C" />
-      {/* Dimming veil with a hole over the focused shape */}
-      <rect
-        x={0}
-        y={96}
-        width={420}
-        height={134}
-        className="fill-slate-900/55"
-        mask={`url(#${hole})`}
-      />
-      {/* Bright ring around the cursor */}
-      <circle cx={232} cy={150} r={52} className="fill-none stroke-amber-300" strokeWidth={2} />
-      {/* Cursor at the centre of the spotlight */}
-      <g transform="translate(238 156)">
-        <path
-          d="M0 0 L0 14 L4 10.6 L6.2 15.6 L8.8 14.4 L6.6 9.4 L11.4 9 Z"
-          className="fill-white stroke-slate-700"
-          strokeWidth={1}
-        />
-      </g>
-    </Scene>
-  );
-}
-
-/** Avatar mode: the picker with Walk lit, the pixel character standing on the
+/** Avatar mode: the picker set to Avatar, the pixel character standing on the
  *  shape being talked about (ringed), and the dashed path it walked from the
  *  previous shape. */
 export function AvatarMode() {
-  // The sprite, at 3x the editor's pixel grid so it reads at article size.
-  const px = 3;
-  const p = (n: number) => n * px;
   return (
     <Scene w={420} h={230}>
-      <ModeRow active="avatar" />
+      <PickerTrigger tool="avatar" />
       <Shape x={68} y={150} w={76} h={44} label="A" />
       <Shape x={248} y={128} w={88} h={50} accent label="B" />
       {/* Walked path + the click that started it */}
@@ -235,35 +191,19 @@ export function AvatarMode() {
         strokeWidth={2}
       />
       {/* The character, standing on the ringed shape (feet on its lower edge) */}
-      <g transform={`translate(${272 - p(8)} ${182 - p(23)})`} shapeRendering="crispEdges">
-        <ellipse cx={p(8)} cy={p(23)} rx={p(5)} ry={p(1.2)} className="fill-slate-900/25" />
-        {/* legs + shoes */}
-        <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
-        <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
-        <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
-        <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
-        {/* torso + sleeves */}
-        <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} className="fill-brand-500" />
-        <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} className="fill-brand-500" />
-        <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} className="fill-brand-600" />
-        {/* head + hair + eyes */}
-        <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} className="fill-amber-200" />
-        <rect x={p(3)} y={0} width={p(10)} height={p(3)} className="fill-amber-900" />
-        <rect x={p(6)} y={p(5)} width={px} height={px} className="fill-slate-800" />
-        <rect x={p(9)} y={p(5)} width={px} height={px} className="fill-slate-800" />
-      </g>
+      <PixelCharacter fx={272} fy={182} />
     </Scene>
   );
 }
 
-/** Isometric mode: the picker with Iso lit and the same shapes tilted into an
+/** Isometric mode: the picker set to Isometric and the same shapes tilted into an
  *  isometric, three-dimensional view. */
 export function IsometricMode() {
   const a = iso(-70, -30);
   const b = iso(70, 30);
   return (
     <Scene w={420} h={264}>
-      <ModeRow active="isometric" />
+      <PickerTrigger tool="isometric" />
       <line
         x1={a[0]}
         y1={a[1] + 6}
@@ -283,135 +223,6 @@ export function IsometricMode() {
 /** The palette gear (settings) popover: a small menu of toggle rows and the
  *  reset action. `highlight` brand-tints one row so an article can point at its
  *  own setting. Reused across the settings articles. */
-// The Settings dialog's rows for the canvas-behaviour preferences. It drew
-// the Palette's own gear popover until that popover was removed and every
-// preference moved to Settings (docs/specs/007-editor/user-preferences.md): the rows and their controls are
-// the same, so only the frame and the title changed.
-export function PaletteSettings({
-  highlight,
-}: {
-  highlight?: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity';
-}) {
-  // `slider` rows draw a mini opacity track instead of a toggle (Panel
-  // opacity); the order mirrors the dialog.
-  const rows: {
-    key: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity';
-    label: string;
-    slider: boolean;
-    on: boolean;
-  }[] = [
-    { key: 'auto-attach', label: 'Auto-attach arrows', slider: false, on: true },
-    { key: 'guides', label: 'Alignment guides', slider: false, on: true },
-    { key: 'quick-add', label: 'Quick-add on hover', slider: false, on: true },
-    { key: 'panel-opacity', label: 'Panel opacity', slider: true, on: true },
-  ];
-  return (
-    <Scene w={400} h={228} bg="plain">
-      <Panel x={92} y={26} w={216} h={176} title="SETTINGS">
-        {rows.map((r, i) => {
-          const ry = 70 + i * 34;
-          const hot = highlight === r.key;
-          return (
-            <g key={r.key}>
-              {hot && (
-                <rect
-                  x={100}
-                  y={ry - 12}
-                  width={200}
-                  height={28}
-                  rx={7}
-                  className="fill-brand-50"
-                />
-              )}
-              <Label
-                x={108}
-                y={ry + 2}
-                size={10}
-                weight={hot ? 600 : 400}
-                tone={hot ? 'accent' : 'body'}
-              >
-                {r.label}
-              </Label>
-              {r.slider ? (
-                // Mini opacity slider, filled ~70%.
-                <g transform={`translate(224 ${ry + 2})`}>
-                  <rect x={0} y={-2} width={68} height={4} rx={2} className="fill-slate-200" />
-                  <rect x={0} y={-2} width={47} height={4} rx={2} className="fill-brand-500" />
-                  <circle
-                    cx={47}
-                    cy={0}
-                    r={6}
-                    className="fill-white stroke-brand-500"
-                    strokeWidth={2}
-                  />
-                </g>
-              ) : (
-                // Toggle switch
-                <g transform={`translate(${262} ${ry - 6})`}>
-                  <rect
-                    width={30}
-                    height={16}
-                    rx={8}
-                    className={r.on ? 'fill-brand-500' : 'fill-slate-300'}
-                  />
-                  <circle cx={r.on ? 22 : 8} cy={8} r={6} className="fill-white" />
-                </g>
-              )}
-            </g>
-          );
-        })}
-      </Panel>
-    </Scene>
-  );
-}
-
-/** Quick-add on hover: hovering an element's "+" opens its quick-add menu
- *  (Duplicate / Arrow / Pencil / Text) without a click. A cursor rests on the
- *  + with the menu unfolded beside it. */
-export function QuickAddOnHover() {
-  return (
-    <Scene w={400} h={216}>
-      <Shape x={56} y={82} w={104} h={58} accent label="Idea" />
-      {/* The menu unfolded to the right of the + (four option tiles). */}
-      <rect
-        x={210}
-        y={92}
-        width={150}
-        height={40}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={2}
-      />
-      {[0, 1, 2, 3].map((i) => (
-        <rect
-          key={i}
-          x={222 + i * 34}
-          y={104}
-          width={26}
-          height={16}
-          rx={4}
-          className="fill-slate-100"
-        />
-      ))}
-      {/* The + button on the shape's right edge. */}
-      <circle cx={184} cy={112} r={13} className="fill-white stroke-slate-200" strokeWidth={2} />
-      <path
-        d="M184 105.5v13M177.5 112h13"
-        className="stroke-brand-500"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      {/* Cursor resting on the + (hovering, no click). */}
-      <g transform="translate(186 112)">
-        <path
-          d="M0 0 L0 15 L4.2 11 L6.6 16.2 L9.2 15 L6.8 9.8 L12 9.4 Z"
-          className="fill-white stroke-slate-700"
-          strokeWidth={1}
-        />
-      </g>
-    </Scene>
-  );
-}
 
 /** Panel opacity: a floating panel rendered translucent so the canvas content
  *  behind it stays visible. Pairs with the settings popover illustration to
@@ -460,50 +271,6 @@ export function AutoAttachArrows() {
         fill="none"
         strokeDasharray="5 5"
         strokeLinecap="round"
-      />
-    </Scene>
-  );
-}
-
-/** Alignment guides: snap lines appearing while a shape is dragged into line
- *  with the edges and centres of its neighbours. */
-export function AlignmentGuides() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape x={60} y={48} w={72} h={40} label="A" />
-      <Shape x={60} y={148} w={72} h={40} label="B" />
-      {/* Dragged shape, lining up */}
-      <Shape x={240} y={98} w={72} h={40} accent label="C" />
-      <SelectionBox x={240} y={98} w={72} h={40} />
-      {/* Vertical centre guide (aligns left-edge column) */}
-      <line
-        x1={96}
-        y1={20}
-        x2={96}
-        y2={200}
-        className="stroke-rose-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-      />
-      {/* Horizontal centre guide through the dragged shape */}
-      <line
-        x1={20}
-        y1={118}
-        x2={400}
-        y2={118}
-        className="stroke-rose-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-      />
-      {/* Left-edge alignment guide for the dragged shape */}
-      <line
-        x1={240}
-        y1={20}
-        x2={240}
-        y2={200}
-        className="stroke-rose-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
       />
     </Scene>
   );

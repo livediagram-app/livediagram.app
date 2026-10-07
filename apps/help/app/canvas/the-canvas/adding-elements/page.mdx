@@ -6,55 +6,71 @@ import { AddingElements } from '@/components/illustrations/canvas';
 export const metadata = helpMetadata({
   title: 'Adding Elements',
   description:
-    'Add shapes, text, arrows and more from the floating palette, dropping or drawing them on the canvas.',
+    'Add shapes, text, arrows and more from the floating palette or a single key, dropping them with a tap or drawing them to size.',
   path: '/help/canvas/the-canvas/adding-elements/',
 });
 
 <ArticleLayout
   title="Adding Elements"
-  description="Drop shapes from the palette with a tap, or drag to draw them at the size you want."
+  description="Drop elements from the palette with a tap, drag to draw them at the size you want, or add them with a single key."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: "The Canvas", slug: "the-canvas" }}
   subArticles={getSubArticles("the-canvas").filter((a) => a.slug !== "adding-elements")}
 >
 
-Every element on the canvas starts from the floating palette. The palette organises its contents into category tabs so it stays compact however much it holds, and adding an element is usually a single tap.
+Every element on the canvas starts from the palette. The palette organises its contents into categories so it stays compact however much it holds, and adding an element is usually a single tap.
 
-## Picking a category
+## Picking a Category
 
-The palette's tabs (Shapes, Tools, Components, Devices, Icons, and Technology) work as a joined segmented control: click a tab to open its panel, click the active tab again to collapse it, or click another to switch. Only one is open at a time. Shapes is open by default.
+The palette's category dropdown, at the right of the panel under its title, lists every category the current mode offers, grouped under headings. The palette opens on **Popular**, twelve tiles drawn from across the categories, and you can switch to any other category from the dropdown. In Diagram mode the categories are:
 
-- **Shapes** holds the common nodes: square, circle, diamond, cylinder, parallelogram, hexagon, document, stadium, and more.
-- **Tools** carries the other kinds, including text, arrows, sticky notes, tables, and frames.
-- **Components** drops themed composites like Banner, Hero, and Header, each landing as a group that follows the tab theme.
-- **Devices** offers UI device frames (browser window, monitor, laptop, phone, tablet, smartwatch) for wireframing.
-- **Icons** is a searchable grid of single-colour icons you can drop on the canvas or onto a shape.
-- **Technology** holds full-colour cloud and infrastructure marks for system-architecture diagrams.
+- **Shapes**: the common nodes, such as square, circle, diamond, cylinder, parallelogram, hexagon, document and stadium.
+- **Write**: the wordy elements, such as text, sticky notes, pages and annotations.
+- **Draw**: the gesture tools, such as the pencil, shape pen, highlighter, polygon and arrows.
+- **Build**: the structural elements, such as mind nodes, lanes, frames, timelines and tables.
+- **Icons**: a searchable grid of single-colour icons you can drop on the canvas or onto a shape.
+- **Stickers**: colour emoji and word badges for reacting to work and marking status.
+- **Tech**: full-colour cloud and infrastructure marks for system-architecture diagrams.
+- **Media**: an uploaded image, or a circular avatar.
+- **Collaborate**: elements that come alive with the room, such as estimates, temperature checks, quizzes, comments and actions, timers, votes, polls and agendas.
 
-## Dropping or drawing a shape
+Other modes arrange their own set. [Illustrate mode](/help/canvas/illustrate/) adds **Components** (themed composites such as Banner, Hero and Header), **Devices** (browser, laptop, phone and other frames for wireframing) and **Data** (charts), and [Plan mode](/help/canvas/plan-mode/) leads with its cards and boards. If you have imported a [shape library](/help/explorer/shape-libraries/), its shapes appear under **My shapes**.
 
-The draw-capable tiles (shapes, text, sticky notes, arrows and similar) arm a combined gesture when you click them.
+## Dropping or Drawing an Element
 
-<Step n={1}>Click a tile in the palette. It stays pressed to show it is armed.</Step>
+Almost every tile arms a combined gesture when you click it.
+
+<Step n={1}>
+  Click a tile in the palette. It stays pressed to show it is armed, and a banner along the top of
+  the canvas says what comes next (for a shape, "Tap to drop or drag to draw" and the shape's name),
+  with a Cancel button.
+</Step>
 <Step n={2}>
   Tap an empty spot on the canvas to drop the element at its natural size on that point.
 </Step>
 <Step n={3}>
-  Or, instead of a single tap, drag out a box and release to create the element at that size.
+  Or, instead of a single tap, drag out a box and release to create the element at that size. Both
+  corners snap to nearby shapes as you drag.
 </Step>
 
-If a boxed element is already selected when you add another, the new one inherits its width and height, so you can chain together similarly-sized nodes quickly. Circles and diamonds are an exception: they are inherently square, so they snap back to a square using the larger inherited dimension.
+While a tile is armed you can even start the drag on top of another element: the new one is drawn over it rather than selecting it. Press Escape (or Cancel on the banner) to disarm a tile without adding anything. Text lands ready for typing; everything else lands selected, ready to move or restyle. Choosing **Image** opens the image picker once you have placed it.
 
-You can also **drag a tile straight from the palette onto the canvas** instead of tapping. As you drag, a translucent preview of the shape follows your cursor at its real size, so you can see exactly where, and how big, it will land before you let go.
+If a boxed element is already selected when you pick a tile, the new one inherits its width and height, so you can chain together similarly sized nodes quickly. Circles and diamonds are an exception: they are inherently square, so they snap back to a square using the larger inherited dimension.
+
+You can also **drag a tile straight from the palette onto the canvas** instead of tapping. As you drag, a translucent preview of the element follows your cursor at its real size, so you can see exactly where, and how big, it will land before you let go.
 
 <Figure caption="Click a shape tile, then drop it on the canvas; it lands selected, ready to move or resize.">
   <AddingElements />
 </Figure>
 
-## Centre-placed elements
+## Adding from the Keyboard
 
-A few kinds skip the draw gesture and simply land at the centre of the visible canvas, already selected, so you can drag them where you want. Icons and tables work this way: consecutive adds stack at the same centre point, and the selection moves to the newest one so you can nudge it off or undo without guesswork.
+Single keys arm the most common elements without opening the palette: `R` for a rectangle, `O` for an oval, `D` for a diamond, `C` for a cylinder, `G` for a parallelogram, `T` for text, `N` for a sticky note, `A` for an arrow, `F` for a frame and `9` for an image. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) for the full list. You can also **double-click empty canvas** to drop a text element and start typing straight away.
+
+## Annotations Land in the Middle
+
+An [annotation](/help/canvas/annotations/) is the one element without the draw gesture. It is a fixed-size marker, so there is no size to choose: it lands at the centre of the visible canvas, already selected, so you can drag it where you want.
 
 <Tip>
   Icons can be added to a shape rather than as standalone elements: drag an icon tile onto a shape,

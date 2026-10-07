@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { ShapeLibraryCards } from '@/components/illustrations/explorer-imports';
 
 export const metadata = helpMetadata({
   title: 'Shape libraries',
@@ -26,25 +27,35 @@ Shape libraries come from draw.io. In draw.io, a library is the set of shapes yo
 - Shapes keep their order, titles and look, connections included. Pictures inside them are saved to your [image gallery](/help/explorer/image-gallery/).
 - Shapes that can't be read are left out, and the report says how many.
 
-You can have up to 100 shape libraries, each holding up to 1,000 shapes.
+You can have up to 100 shape libraries, each holding up to 1,000 shapes (a bigger draw.io library keeps its first 1,000). A library must also fit in the same space as one tab, just under 2 MB; a larger one is left out and named in the report. You can't make a library from shapes on the canvas yet: only an import makes one.
 
 ## Placing a shape
 
-Open the palette's category picker and choose **My shapes**. It appears once you have a library with at least one shape. Each library has its own section, newest first; the search box at the top finds shapes by their title or by the library's name.
+Open the palette's category picker and choose **My shapes**, which sits right after Shapes. It appears once you have a library with at least one shape. Each library has its own section, newest first, and each shape shows a small preview with its title (or "Shape 1", "Shape 2" when it has none). The **Search my shapes** box at the top finds shapes by their title or by the library's name.
 
-- **Click a shape** to place it in the middle of the view, or **drag it** to where you want it.
+- **Click a shape** to place it in the middle of the view, or **drag it** to where you want it. Clicking again places the next one beside the last instead of on top of it, so a run of clicks lines up left to right.
 - It arrives selected, ready to move, and one undo takes it back.
 - What you place is ordinary shapes and connections: edit them like anything else.
 
 With the keyboard, Tab to a shape and press Enter or Space to place it in the middle of the view.
 
+My shapes isn't offered where the palette isn't: on a view-only tab, or in [Draw mode](/help/canvas/draw-mode/), whose dock replaces the palette. The palette loads your libraries when the editor opens, so after importing or changing a library, reopen the document to see the change.
+
 ## Managing your libraries
 
-The Explorer's **Shape libraries** page, under **Library** in the sidebar, lists your libraries with how many shapes each holds and a preview of the first ones.
+The Explorer's **Shape libraries** page, under **Library** in the sidebar's More group, lists your libraries, newest first, with how many shapes each holds and a preview of the first eight.
 
-- **Rename** a library in place: type the new name and press Enter, or Escape to keep the old one.
+<Figure caption="Each library is a card with its shape count, a preview of its first shapes, and Rename, Delete and Show shapes.">
+  <ShapeLibraryCards />
+</Figure>
+
+- **Rename** a library in place: type the new name and press Enter, or Escape (or click away) to keep the old one. Names must be unique among your libraries, up to 120 characters.
 - **Delete** a library after confirming. Its shapes leave My shapes; documents where you placed them keep them.
-- **Show shapes** lists every shape in a library, each with its own **Delete**.
+- **Show shapes** lists every shape in a library, each with its own **Delete**. Deleting a single shape takes effect straight away, without a confirmation; deleting the last shape leaves an empty library until you delete that too.
+
+Deleting a library or a shape never changes a document: what you placed is ordinary elements.
+
+To add more libraries, use the draw.io button in **Import from** at the top right of this page, or of any page that offers it (such as Recent or My documents). Diagrams picked alongside libraries here land at the root of My documents.
 
 <Tip>
   Shape libraries belong to you, signed in or not. If you start as a guest and later sign up, your

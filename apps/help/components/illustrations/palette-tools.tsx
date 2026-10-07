@@ -16,21 +16,22 @@ import {
   TextBar,
 } from './primitives';
 
-// The category picker's four bands and the categories in each, in the order
-// PALETTE_CATEGORIES declares them. The picker replaced the two-tab palette
-// this file used to draw: there is no Tools tab any more, and a figure showing
-// one under an article that opens "There is no longer a Tools tab" was the
-// single most misleading picture in the help centre.
+// The category picker in Diagram mode, the default: Popular across the top,
+// then each band with the categories Diagram offers, in PALETTE_CATEGORIES
+// order (apps/live/components/palette/palette-layouts.ts). My shapes joins
+// Common once you have imported a shape library, and Event Storming joins
+// Structure on an event-storming board; Illustrate and Plan offer their own
+// sets, which the article lists.
 const CATEGORY_BANDS: [string, string[]][] = [
   ['COMMON', ['Shapes', 'Write', 'Draw']],
-  ['STRUCTURE', ['Build', 'Components', 'Devices']],
+  ['STRUCTURE', ['Build']],
   ['DECORATE', ['Icons', 'Stickers', 'Tech', 'Media']],
-  ['DYNAMIC', ['Data', 'Collaborate']],
+  ['DYNAMIC', ['Collaborate']],
 ];
 
 /** One category chip: the picker's tile, reduced to its label. The real tile
- *  carries an icon above the label, but thirteen invented glyphs would say
- *  less about the picker than its shape does. */
+ *  carries an icon above the label, but invented glyphs would say less about
+ *  the picker than its shape does. */
 function CategoryChip({
   x,
   y,
@@ -47,17 +48,17 @@ function CategoryChip({
       <rect
         x={x}
         y={y}
-        width={64}
-        height={22}
+        width={72}
+        height={24}
         rx={6}
         className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-50 stroke-slate-200'}
         strokeWidth={1.4}
       />
       <Label
-        x={x + 32}
-        y={y + 12}
+        x={x + 36}
+        y={y + 13}
         anchor="middle"
-        size={9}
+        size={10}
         weight={600}
         tone={active ? 'onAccent' : 'body'}
       >
@@ -67,15 +68,15 @@ function CategoryChip({
   );
 }
 
-/** The palette's category picker: Popular across the top, then the four
- *  bands the thirteen categories fall into. */
+/** The palette's category picker in Diagram mode: Popular across the top,
+ *  then the four bands its categories fall into. */
 export function CategoryPicker() {
-  const px = 48;
-  let y = 78;
+  const px = 52;
+  let y = 84;
   const rows: React.ReactNode[] = [];
   for (const [band, categories] of CATEGORY_BANDS) {
     rows.push(
-      <Label key={band} x={px} y={y} size={8} weight={700} tone="muted">
+      <Label key={band} x={px} y={y} size={10} weight={700} tone="muted">
         {band}
       </Label>,
     );
@@ -83,29 +84,29 @@ export function CategoryPicker() {
       rows.push(
         <CategoryChip
           key={label}
-          x={px + (i % 3) * 70}
-          y={y + 10 + Math.floor(i / 3) * 28}
+          x={px + (i % 3) * 78}
+          y={y + 10 + Math.floor(i / 3) * 30}
           label={label}
-          active={label === 'Build'}
+          active={label === 'Draw'}
         />,
       );
     });
-    y += 10 + Math.ceil(categories.length / 3) * 28 + 12;
+    y += 10 + Math.ceil(categories.length / 3) * 30 + 14;
   }
   return (
-    <Scene w={300} h={330} bg="plain">
-      <Panel x={36} y={20} w={228} h={294} title="PALETTE">
+    <Scene w={340} h={340} bg="plain">
+      <Panel x={36} y={20} w={268} h={304} title="PALETTE">
         <rect
           x={px}
-          y={50}
-          width={204}
-          height={20}
+          y={52}
+          width={228}
+          height={22}
           rx={6}
           className="fill-brand-50 stroke-brand-200"
           strokeWidth={1.4}
         />
-        <Label x={px + 102} y={61} anchor="middle" size={9} weight={600} tone="accent">
-          ⚡ Popular
+        <Label x={px + 114} y={64} anchor="middle" size={10} weight={600} tone="accent">
+          Popular
         </Label>
         {rows}
       </Panel>
@@ -119,12 +120,12 @@ export function PencilStroke() {
   return (
     <Scene w={420} h={220}>
       {/* Mode banner */}
-      <Panel x={120} y={20} w={180} h={30}>
-        <circle cx={138} cy={35} r={6} className="fill-brand-500" />
-        <Label x={152} y={36} size={11} weight={600} tone="body">
-          Drag to draw
+      <Panel x={20} y={20} w={380} h={30}>
+        <circle cx={38} cy={35} r={6} className="fill-brand-500" />
+        <Label x={52} y={36} size={11} weight={600} tone="body">
+          Drag to draw (release near the start to close)
         </Label>
-        <Label x={262} y={36} size={11} weight={600} tone="muted">
+        <Label x={388} y={36} anchor="end" size={11} weight={600} tone="muted">
           Cancel
         </Label>
       </Panel>
@@ -156,27 +157,15 @@ export function PencilStroke() {
   );
 }
 
-/** Before / after of shape recognition: a wobbly hand-drawn square snapping into
- *  a clean square (with the magic-wand toggle on in the banner). */
+/** Before / after of shape recognition: a wobbly square drawn with the Shape
+ *  Pen snapping into a clean one on release. (The magic-wand toggle this
+ *  figure once showed is gone: the Shape Pen IS the setting.) */
 export function ShapeRecognition() {
   return (
     <Scene w={420} h={230}>
-      {/* Banner with the magic-wand toggle on */}
-      <Panel x={110} y={18} w={200} h={30}>
-        <g transform="translate(128 33)">
-          <path
-            d="M-6 6 L4 -4 M3 -5 l2 2 M-7 -5 l1 -1 M6 4 l1 1"
-            className="stroke-brand-500"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-          />
-        </g>
-        <Label x={142} y={34} size={11} weight={600} tone="accent">
-          Recognise shapes
-        </Label>
-        <rect x={278} y={26} width={22} height={14} rx={7} className="fill-brand-500" />
-        <circle cx={293} cy={33} r={5} className="fill-white" />
-      </Panel>
+      <Label x={210} y={34} anchor="middle" size={12} weight={600} tone="muted">
+        Drawn with the Shape Pen
+      </Label>
       {/* Before: rough sketch */}
       <path
         d="M60 88 L150 82 L154 168 L66 172 L60 92"
@@ -227,22 +216,13 @@ export function ImageElement() {
   );
 }
 
-/** The image picker dialog open on its Gallery tab: a grid of reusable
- *  thumbnails plus an upload drop-zone. */
+/** The image picker open on its Gallery tab (beside Upload and Search): a
+ *  grid of reusable thumbnails. */
 export function ImagePicker() {
   return (
     <Scene w={420} h={246} bg="plain">
-      <Dialog
-        x={70}
-        y={20}
-        w={280}
-        h={206}
-        title="Add image"
-        sceneW={420}
-        sceneH={246}
-        scrim={false}
-      >
-        <Tabs x={86} y={66} items={['Upload', 'Gallery']} active={1} tabW={84} h={22} />
+      <Dialog x={70} y={20} w={280} h={206} title="Image" sceneW={420} sceneH={246} scrim={false}>
+        <Tabs x={86} y={66} items={['Upload', 'Gallery', 'Search']} active={1} tabW={84} h={22} />
         {[0, 1, 2, 3, 4, 5].map((i) => {
           const col = i % 3;
           const row = Math.floor(i / 3);

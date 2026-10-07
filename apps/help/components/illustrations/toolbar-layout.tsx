@@ -79,7 +79,7 @@ function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?
       <rect
         x={x}
         y={y}
-        width={274}
+        width={304}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
@@ -106,47 +106,69 @@ function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?
       <Pill x={x + 232} y={y + 4} w={38} active={moreActive}>
         <Ellipsis x={x + 238} y={y + 16} />
       </Pill>
-    </g>
-  );
-}
-
-/** The whole layout: the menu button top-left, the strip across the top, and
- *  the Floating layout's bottom row kept as it was. */
-export function ToolbarLayoutOverview() {
-  return (
-    <Scene w={420} h={200}>
-      <rect
-        x={16}
-        y={16}
-        width={30}
-        height={30}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+      {/* Search, last on the strip behind its own divider. */}
+      <path d={`M${x + 275} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
+      <circle
+        cx={x + 287}
+        cy={y + 15}
+        r={5}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.6}
       />
       <path
-        d="M24 25h14M24 31h14M24 37h14"
+        d={`M${x + 291} ${y + 19} l4 4`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"
       />
-      <Strip x={79} y={16} />
-      <Label x={31} y={62} size={10} anchor="middle" tone="muted">
-        Explorer
+    </g>
+  );
+}
+
+/** The whole layout: the menu button and the editor mode switch top-left, the
+ *  strip across the top (ending in Search), and the Floating layout's bottom
+ *  row kept as it was. */
+export function ToolbarLayoutOverview() {
+  return (
+    <Scene w={420} h={200}>
+      {/* The top-left card: the menu button and the editor mode switch. */}
+      <rect
+        x={8}
+        y={16}
+        width={62}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <path
+        d="M16 26h14M16 32h14M16 38h14"
+        className="stroke-slate-500"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+      <Pill x={36} y={20} w={30}>
+        <rect x={41} y={27} width={10} height={10} rx={2} className="fill-none stroke-brand-600" />
+      </Pill>
+      <Strip x={78} y={16} />
+      <Label x={39} y={62} size={10} anchor="middle" tone="muted">
+        Explorer, mode
       </Label>
-      <Label x={100} y={62} size={10} anchor="middle" tone="muted">
+      <Label x={99} y={78} size={10} anchor="middle" tone="muted">
         Selection mode
       </Label>
-      {/* Alternate rows: side by side, "Selection mode" and "Category" ran
-          into each other. */}
-      <Label x={162} y={78} size={10} anchor="middle" tone="muted">
+      {/* Alternate rows: side by side, neighbouring labels ran into each other. */}
+      <Label x={162} y={62} size={10} anchor="middle" tone="muted">
         Category
       </Label>
-      <Label x={259} y={62} size={10} anchor="middle" tone="muted">
-        First ten tiles
+      <Label x={258} y={78} size={10} anchor="middle" tone="muted">
+        Up to twelve tiles
       </Label>
-      <Label x={330} y={78} size={10} anchor="middle" tone="accent" weight={700}>
+      <Label x={329} y={62} size={10} anchor="middle" tone="accent" weight={700}>
         More
+      </Label>
+      <Label x={366} y={78} size={10} anchor="middle" tone="muted">
+        Search
       </Label>
       {/* The bottom row, unchanged from Floating: Layers, then zoom. */}
       <Tile x={290} y={158} size={26}>
@@ -179,8 +201,8 @@ export function ToolbarMorePopover() {
   const grid = ['square', 'circle', 'diamond', 'text', 'arrow', 'square'] as const;
   return (
     <Scene w={420} h={220}>
-      <Strip x={79} y={16} moreActive />
-      {/* Right edge under the More button's right edge (79 + 232 + 38). */}
+      <Strip x={78} y={16} moreActive />
+      {/* Right edge under the More button's right edge (78 + 232 + 38). */}
       <Panel x={185} y={58} w={164} h={148} title="SHAPES">
         <rect
           x={195}

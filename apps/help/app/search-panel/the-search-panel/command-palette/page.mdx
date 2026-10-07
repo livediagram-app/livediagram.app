@@ -1,10 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'The Command Palette (⌘K)',
   description:
-    'Press Cmd/Ctrl+K to open the search panel and run any editor command by name: undo, auto layout, export, settings and more, without hunting through menus.',
+    'Press Cmd/Ctrl+K in the editor to open the search panel and run any editor command by name: undo, auto layout, export, settings, canvas tools and more, without hunting through menus.',
   path: '/help/search-panel/the-search-panel/command-palette/',
 });
 
@@ -19,31 +20,43 @@ The [search panel](/help/search-panel/the-search-panel/) isn't only for finding 
 
 ## Opening it
 
-- **Keyboard:** press `Cmd` / `Ctrl` + `K` from anywhere in the editor. This is the conventional command-palette shortcut, so it's the one to reach for. The older `Cmd` / `Ctrl` + `.` still opens the same panel, they're interchangeable.
-- It works in **[zen mode](/help/tools/zen-mode/)** and in **read-only** views too, just like opening search.
+- **Keyboard:** press `Cmd` / `Ctrl` + `K` anywhere in the editor. This is the conventional command-palette shortcut, so it's the one to reach for. The older `Cmd` / `Ctrl` + `.` opens the same panel; they're interchangeable.
+- **Button:** the **Search** button in the bottom bar opens it too.
+- It works in **[zen mode](/help/tools/zen-mode/)** and in **read-only** views, just like opening search.
 
-The palette and search are one surface, so you can find a document and run a command from the same box.
+The palette and search are one surface, so you can find a document and run a command from the same box. Commands only exist inside a document: on the Explorer page, search finds things but has no actions to run.
 
 ## Running a command
 
-Start typing and matching commands appear in an **Actions** group alongside any navigation results. Arrow to the one you want and press `Enter`, or click it. Commands only show once you've typed something, so an empty box just lists places to jump to, it never runs an action by accident.
+Start typing and matching commands appear in an **Actions** group, below any documents, tabs or elements that also match. Click the one you want, or arrow down to it and press `Enter`. Commands match on their name and on a few related words, so "tidy" finds Auto Layout and "front" finds Bring to front. At most 10 actions show at once, so type a little more to narrow a long list.
 
-Every command does exactly what its menu item or shortcut does, it's the same action under a different name, so nothing behaves differently depending on how you reach it.
+Commands only show once you've typed something, so an empty box just lists places to jump to and never runs an action by accident. Because the Actions group sits below the navigation groups, the preselected first result is still a place to go when your query also names a tab or element; arrow down to the command to run it deliberately.
+
+<Figure caption="Typing a verb lists the matching actions; the first is preselected when nothing else matches.">
+  <SearchCommandPalette />
+</Figure>
+
+Every command does exactly what its menu item or shortcut does: it's the same action under a different name, so nothing behaves differently depending on how you reach it.
 
 ## What you can run
 
-The palette reaches across the whole editor, including:
+The list follows what you're doing, so it only offers commands that apply right now:
 
-- **History:** Undo and Redo (shown only when there's something to undo or redo).
-- **View:** Toggle zen mode, Fit to screen.
-- **Tools:** pick up the Hand, Eraser, Format painter, Laser, Spotlight, Avatar or Isometric mode without opening the palette. Type "laser" and you get the laser, not just the article about it. The tool you are already holding isn't offered, everything except Select and Hand needs something on the canvas, Spotlight is desktop-only, and the two that can change the canvas (Eraser and Format painter) are withheld in a read-only view.
-- **Cleanup:** [Auto Layout and Auto-align](/help/tools/layout-cleanup/) the current tab.
-- **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts, and Browse templates.
-- **Selection and document actions:** the same verbs the panel already offered for a selected element or the current document.
+- **With something selected:** Delete selection, Duplicate selection, Lock / unlock selection, Bring to front and Send to back. For a single shape or other boxed element also Rotate 90°, 180° or 270°, Reset rotation, Add / edit note and Add comment, plus Clear animation when it has one and the shape markers (Add … marker, Clear marker) for a plain shape.
+- **History:** Undo and Redo, shown only when there's something to undo or redo.
+- **Document and tab:** Create new tab, Rename tab, Rename document, Delete document, Open theme, Open canvas options, and Share document (owner only, and not for a document saved only in this browser).
+- **Cleanup:** Auto Layout (tidy up), one Auto Layout command per layout style (Flowchart (down), Flowchart (right), Tree and Mindmap), and Auto-align to grid. See [Layout Cleanup](/help/tools/layout-cleanup/).
+- **Dialogs:** Export…, Import…, Browse templates, Open settings, and Keyboard shortcuts.
+- **View:** Enter (or Exit) zen mode, Fit to screen, and Collaborators, which opens the [list of people in the document](/help/collaboration/live-presence/#collaborators).
+- **Tools:** pick up the Select tool, Hand tool, Eraser tool, Format painter, Laser pointer, Spotlight, Avatar mode, Slide Deck or Isometric view without opening the palette. Type "laser" and you get the laser, not just the article about it.
+
+A few rules keep the tool list honest, matching the palette's own tool menu: the tool you're already holding isn't offered; everything except Select and Hand needs something on the canvas first; Spotlight and Slide Deck are desktop-only; and the Format painter isn't offered on a Draw whiteboard, whose dock replaces it.
+
+On an Event Storming board where reading a wall photo is available, **Add notes from a photo** joins the list too.
 
 ## In read-only views
 
-When you're viewing a document you can't edit (a view-only share link, someone else's document), the palette still offers the actions that make sense without editing, like toggling zen mode, fitting the canvas to the screen, and exporting. The actions that would change the document simply aren't listed.
+When you're viewing a document you can't edit (a view-only share link, for example), the palette still offers the actions that don't change anything: Enter or Exit zen mode, Fit to screen, Export…, Collaborators, and the tools that only change how you look at the canvas (Select, Hand, Laser pointer, Spotlight, Avatar mode, Slide Deck and Isometric view). The Eraser, the Format painter and every command that would change the document simply aren't listed.
 
 <Tip>
   Forgotten a shortcut? Open the palette with `⌘K`, type the first few letters of what you want to

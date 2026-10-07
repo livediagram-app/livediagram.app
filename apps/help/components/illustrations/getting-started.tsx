@@ -3,220 +3,279 @@
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Panel, Dialog, Tabs, Tile, Label, Avatar } from './primitives';
+import type { ReactNode } from 'react';
+import { Scene, Shape, Arrow, Panel, Dialog, Button, Tile, Label, Avatar } from './primitives';
 
-/** The new-document welcome flow: a Blank card and a couple of template cards,
- *  the entry point to every document. */
+/** A template card in the New Document wizard: a thumbnail over its title. */
+function TemplateCard({
+  x,
+  y,
+  title,
+  selected = false,
+  children,
+}: {
+  x: number;
+  y: number;
+  title: string;
+  selected?: boolean;
+  children?: ReactNode;
+}) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={98}
+        height={84}
+        rx={9}
+        className={selected ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
+        strokeWidth={selected ? 2.5 : 1.5}
+      />
+      <rect x={x + 8} y={y + 8} width={82} height={46} rx={5} className="fill-slate-50" />
+      {children}
+      <Label
+        x={x + 49}
+        y={y + 70}
+        anchor="middle"
+        size={10}
+        weight={selected ? 700 : 600}
+        tone={selected ? 'strong' : 'body'}
+      >
+        {title}
+      </Label>
+    </g>
+  );
+}
+
+/** The New Document wizard on its first step: the Template / Location rail,
+ *  the template search, the Popular shelf led by Blank Diagram, and the
+ *  footer's Skip and Next. */
 export function NewDocumentWelcome() {
   return (
-    <Scene w={420} h={236} bg="plain">
+    <Scene w={420} h={270} bg="plain">
       <Dialog
-        x={48}
-        y={18}
-        w={324}
-        h={200}
-        title="New document"
+        x={30}
+        y={10}
+        w={360}
+        h={252}
+        title="New Document"
         sceneW={420}
-        sceneH={236}
+        sceneH={270}
         scrim={false}
       >
-        {/* Top-right chrome: a help icon button to the left of the close X. */}
         <g className="stroke-slate-400" strokeWidth={1.6} fill="none" strokeLinecap="round">
-          <circle cx={338} cy={38} r={7} />
-          <path d="M335.6 35.8 a2.4 2.4 0 1 1 2.9 2.4 v1.2" />
-          <path d="M357 35 l7 7 M364 35 l-7 7" />
+          <path d="M366 26 l7 7 M373 26 l-7 7" />
         </g>
-        <circle cx={338} cy={41.6} r={0.7} className="fill-slate-400" />
-        {/* Three cards centred in the dialog with even 12u margins and gaps. */}
-        {/* Blank card, selected */}
-        <rect
-          x={60}
-          y={72}
-          width={92}
-          height={116}
-          rx={9}
-          className="fill-white stroke-brand-500"
-          strokeWidth={2.5}
-        />
-        <path
-          d="M90 122 h32 M106 106 v32"
-          className="stroke-brand-400"
-          strokeWidth={3}
-          strokeLinecap="round"
-        />
-        <Label x={106} y={174} anchor="middle" size={11} weight={700} tone="strong">
-          Blank
+        {/* Step rail: 1 Template (current), 2 Location. */}
+        <rect x={42} y={54} width={78} height={20} rx={10} className="fill-brand-50" />
+        <circle cx={53} cy={64} r={8} className="fill-brand-500" />
+        <Label x={53} y={65} anchor="middle" size={10} weight={700} tone="onAccent">
+          1
         </Label>
-        {/* Template card A */}
+        <Label x={66} y={65} size={10} weight={600} tone="strong">
+          Template
+        </Label>
+        <rect x={126} y={62} width={20} height={4} rx={2} className="fill-slate-200" />
+        <circle cx={160} cy={64} r={8} className="fill-slate-200" />
+        <Label x={160} y={65} anchor="middle" size={10} weight={700} tone="muted">
+          2
+        </Label>
+        <Label x={173} y={65} size={10} weight={600} tone="muted">
+          Location
+        </Label>
+        {/* Search field. */}
         <rect
-          x={164}
-          y={72}
-          width={92}
-          height={116}
-          rx={9}
+          x={42}
+          y={84}
+          width={336}
+          height={22}
+          rx={6}
           className="fill-white stroke-slate-200"
           strokeWidth={1.5}
         />
-        <rect x={178} y={92} width={26} height={18} rx={3} className="fill-brand-200" />
-        <rect x={216} y={92} width={26} height={18} rx={3} className="fill-brand-400" />
-        <line x1={204} y1={101} x2={216} y2={101} className="stroke-slate-300" strokeWidth={2} />
-        <rect x={190} y={124} width={40} height={16} rx={3} className="fill-brand-300" />
-        <Label x={210} y={174} anchor="middle" size={11} weight={600} tone="body">
-          Flowchart
+        <Label x={54} y={96} size={10} tone="muted">
+          Search templates...
         </Label>
-        {/* Template card B */}
-        <rect
-          x={268}
-          y={72}
-          width={92}
-          height={116}
-          rx={9}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <circle cx={314} cy={104} r={11} className="fill-emerald-200" />
-        <rect x={284} y={124} width={26} height={16} rx={3} className="fill-violet-300" />
-        <rect x={318} y={124} width={26} height={16} rx={3} className="fill-amber-300" />
-        <Label x={314} y={174} anchor="middle" size={11} weight={600} tone="body">
-          Mind map
+        <Label x={42} y={120} size={10} weight={700} tone="strong">
+          Popular
         </Label>
+        <TemplateCard x={42} y={130} title="Blank Diagram" selected>
+          <path
+            d="M83 155 h16 M91 147 v16"
+            className="stroke-brand-400"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          />
+        </TemplateCard>
+        <TemplateCard x={161} y={130} title="Flowchart">
+          <rect x={180} y={146} width={22} height={13} rx={3} className="fill-brand-200" />
+          <rect x={220} y={146} width={22} height={13} rx={3} className="fill-brand-400" />
+          <line x1={202} y1={152} x2={220} y2={152} className="stroke-slate-300" strokeWidth={2} />
+          <rect x={200} y={166} width={22} height={11} rx={3} className="fill-brand-300" />
+        </TemplateCard>
+        <TemplateCard x={280} y={130} title="Mind map">
+          <circle cx={329} cy={158} r={8} className="fill-emerald-400" />
+          <rect x={295} y={146} width={18} height={9} rx={3} className="fill-violet-400" />
+          <rect x={345} y={162} width={18} height={9} rx={3} className="fill-amber-400" />
+        </TemplateCard>
+        {/* Footer: Skip creates a Blank Diagram straight away; Next goes to Location. */}
+        <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
+        <Button x={250} y={231} w={56} h={22} label="Skip" />
+        <Button x={314} y={231} w={64} h={22} label="Next" variant="primary" />
       </Dialog>
     </Scene>
   );
 }
 
-/** The Palette panel with its category tabs and a grid of shape tiles, the
- *  surface every element comes from. */
+/** A dropdown chip in the palette's header band: a label and a caret. */
+function DropdownChip({ x, y, w, label }: { x: number; y: number; w: number; label: string }) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={20}
+        rx={6}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={x + 9} y={y + 11} size={10} weight={600} tone="strong">
+        {label}
+      </Label>
+      <path
+        d={`M${x + w - 14} ${y + 8} l4 4 l4 -4`}
+        className="stroke-slate-400"
+        strokeWidth={1.5}
+        fill="none"
+        strokeLinecap="round"
+      />
+    </g>
+  );
+}
+
+/** The Palette panel: the selection-mode dropdown and the category dropdown
+ *  in its header band, over Popular's twelve tiles. */
 export function ShapePalette() {
+  const stroke = { className: 'stroke-brand-500', strokeWidth: 2, fill: 'none' } as const;
+  const glyphs: ReactNode[] = [
+    <rect
+      key="sq"
+      x={-7}
+      y={-7}
+      width={14}
+      height={14}
+      rx={2}
+      className="stroke-white"
+      strokeWidth={2}
+      fill="none"
+    />,
+    <circle key="ci" r={7} {...stroke} />,
+    <path key="di" d="M0 -8 L8 0 L0 8 L-8 0 Z" {...stroke} />,
+    <path key="tx" d="M-6 -6 h12 M0 -6 v13" {...stroke} strokeLinecap="round" />,
+    <path key="ar" d="M-7 5 L6 -6 M1 -6 h5 v5" {...stroke} strokeLinecap="round" />,
+    <rect key="fr" x={-8} y={-7} width={16} height={14} rx={2} {...stroke} strokeDasharray="3 2" />,
+    <rect key="st" x={-7} y={-7} width={14} height={14} rx={1.5} className="fill-amber-400" />,
+    <path key="im" d="M-8 6 L-3 -1 L1 3 L4 0 L8 6 Z" className="fill-brand-300" />,
+    <path key="pe" d="M-7 4 q3 -9 7 -2 t7 -4" {...stroke} strokeLinecap="round" />,
+    <path key="tb" d="M-8 -6 h16 v12 h-16 Z M-8 0 h16 M-2 -6 v12" {...stroke} strokeWidth={1.5} />,
+    <path key="co" d="M-3 -5 L-8 0 L-3 5 M3 -5 L8 0 L3 5" {...stroke} strokeLinecap="round" />,
+    <path key="en" d="M-8 -7 h16 v14 h-16 Z M-8 -2 h16" {...stroke} strokeWidth={1.5} />,
+  ];
   return (
     <Scene w={420} h={200}>
-      <Panel x={96} y={20} w={228} h={160} title="PALETTE">
-        <Tabs
-          x={110}
-          y={54}
-          items={['Shapes', 'Tools', 'Devices', 'Icons']}
-          active={0}
-          tabW={50}
-          h={22}
-        />
-        {/* Shape tiles, two rows */}
-        <Tile x={114} y={92} active>
-          <rect
-            x={-7}
-            y={-7}
-            width={14}
-            height={14}
-            rx={2}
-            className="stroke-white"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={154} y={92}>
-          <circle r={7} className="stroke-brand-500" strokeWidth={2} fill="none" />
-        </Tile>
-        <Tile x={194} y={92}>
-          <path
-            d="M0 -8 L8 0 L0 8 L-8 0 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={234} y={92}>
-          <path
-            d="M-8 -4 a8 4 0 0 1 16 0 v8 a8 4 0 0 1 -16 0 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={274} y={92}>
-          <path
-            d="M-5 -7 h10 l4 7 l-4 7 h-10 l-4 -7 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={114} y={132}>
-          <rect
-            x={-8}
-            y={-6}
-            width={16}
-            height={12}
-            rx={6}
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={154} y={132}>
-          <path
-            d="M-8 -6 h16 v12 h-16 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={194} y={132}>
-          <path
-            d="M-7 -7 h14 l-3 14 h-8 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={234} y={132}>
-          <path
-            d="M-6 -8 l4 0 l6 8 l-6 8 l-4 0 l6 -8 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={274} y={132}>
-          <path d="M0 -8 L8 8 H-8 Z" className="stroke-brand-500" strokeWidth={2} fill="none" />
-        </Tile>
+      <Panel x={96} y={16} w={228} h={168} title="PALETTE">
+        <DropdownChip x={108} y={48} w={76} label="Select" />
+        <DropdownChip x={232} y={48} w={80} label="Popular" />
+        {glyphs.map((g, i) => (
+          <Tile key={i} x={110 + (i % 6) * 34} y={86 + Math.floor(i / 6) * 40} active={i === 0}>
+            {g}
+          </Tile>
+        ))}
       </Panel>
     </Scene>
   );
 }
 
-/** Quick-connect: hovering a shape surfaces + handles, and dragging from one
- *  pins an arrow to a second shape. */
+/** Quick-connect: a selected shape shows + buttons on its sides; clicking one
+ *  fans out its options (Duplicate, Arrow, Pencil, Text), and dragging Arrow
+ *  onto a second shape pins an arrow to both. */
 export function QuickConnect() {
+  const plus: [number, number][] = [
+    [90, 54],
+    [90, 150],
+    [26, 102],
+  ];
+  const options: { label: string; cx: number; cy: number }[] = [
+    { label: 'Duplicate', cx: 190, cy: 52 },
+    { label: 'Arrow', cx: 204, cy: 86 },
+    { label: 'Pencil', cx: 204, cy: 120 },
+    { label: 'Text', cx: 190, cy: 154 },
+  ];
   return (
-    <Scene w={420} h={220}>
-      <Shape x={48} y={84} w={104} h={56} kind="rect" label="Order" />
-      {/* + quick-connect affordances around the hovered shape */}
-      {(
-        [
-          [100, 74],
-          [100, 150],
-          [38, 112],
-          [162, 112],
-        ] as [number, number][]
-      ).map(([cx, cy], i) => (
+    <Scene w={420} h={210}>
+      <Shape x={38} y={74} w={104} h={56} kind="rect" label="Order" />
+      <rect
+        x={34}
+        y={70}
+        width={112}
+        height={64}
+        rx={6}
+        className="stroke-brand-500"
+        strokeWidth={1.5}
+        strokeDasharray="4 3"
+        fill="none"
+      />
+      {plus.map(([cx, cy], i) => (
         <g key={i}>
-          <circle
-            cx={cx}
-            cy={cy}
-            r={9}
-            className={i === 3 ? 'fill-brand-500' : 'fill-white stroke-brand-400'}
-            strokeWidth={1.5}
-          />
+          <circle cx={cx} cy={cy} r={8} className="fill-white stroke-brand-400" strokeWidth={1.5} />
           <path
             d={`M${cx - 4} ${cy} h8 M${cx} ${cy - 4} v8`}
-            className={i === 3 ? 'stroke-white' : 'stroke-brand-500'}
+            className="stroke-brand-500"
             strokeWidth={2}
             strokeLinecap="round"
           />
         </g>
       ))}
-      {/* Drag from the right + to the second shape */}
-      <Arrow from={[171, 112]} to={[264, 138]} kind="curved" tone="accent" />
-      <Shape x={272} y={112} w={104} h={52} kind="rect" accent label="Pay" />
+      {/* The clicked + on the right, its options fanned in an arc. */}
+      <circle cx={158} cy={102} r={8} className="fill-brand-500" />
+      <path
+        d="M154 102 h8 M158 98 v8"
+        className="stroke-white help-art-as-drawn"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      {options.map((o) => (
+        <g key={o.label}>
+          <circle
+            cx={o.cx}
+            cy={o.cy}
+            r={11}
+            className={o.label === 'Arrow' ? 'fill-brand-500' : 'fill-white stroke-slate-300'}
+            strokeWidth={1.5}
+          />
+          <Label
+            x={o.cx}
+            y={o.cy - 17}
+            anchor="middle"
+            size={10}
+            weight={o.label === 'Arrow' ? 700 : 500}
+            tone={o.label === 'Arrow' ? 'accent' : 'muted'}
+          >
+            {o.label}
+          </Label>
+        </g>
+      ))}
+      <path
+        d="M199 86 h11 M206 82 l4 4 l-4 4"
+        className="stroke-white help-art-as-drawn"
+        strokeWidth={1.8}
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Drag the Arrow option onto the second shape. */}
+      <Arrow from={[216, 88]} to={[290, 118]} kind="curved" tone="accent" />
+      <Shape x={296} y={100} w={96} h={52} kind="rect" accent label="Pay" />
     </Scene>
   );
 }
@@ -239,7 +298,7 @@ export function GuestVsAccount() {
       <Label x={110} y={40} anchor="middle" size={12} weight={700} tone="strong">
         Guest
       </Label>
-      <Label x={110} y={56} anchor="middle" size={8} weight={600} tone="muted">
+      <Label x={110} y={56} anchor="middle" size={10} weight={600} tone="muted">
         SAVED IN THIS BROWSER
       </Label>
       {/* Single browser window */}
@@ -258,7 +317,7 @@ export function GuestVsAccount() {
       <Shape x={70} y={108} w={36} h={22} kind="rect" />
       <Shape x={120} y={132} w={34} h={20} kind="circle" accent />
       <Arrow from={[106, 119]} to={[120, 142]} tone="muted" head={false} width={2} />
-      <Label x={110} y={196} anchor="middle" size={8} tone="muted">
+      <Label x={110} y={196} anchor="middle" size={10} tone="muted">
         Per-browser id
       </Label>
 
@@ -275,7 +334,7 @@ export function GuestVsAccount() {
       <Label x={310} y={40} anchor="middle" size={12} weight={700} tone="accent">
         Account
       </Label>
-      <Label x={310} y={56} anchor="middle" size={8} weight={600} tone="muted">
+      <Label x={310} y={56} anchor="middle" size={10} weight={600} tone="muted">
         SYNCED ACROSS DEVICES
       </Label>
       {/* Cloud syncing two devices */}
@@ -381,6 +440,103 @@ export function KeyboardEssentials() {
       <Label x={175} y={125} anchor="middle" size={10} weight={700} tone="muted">
         Space, hold and drag to pan
       </Label>
+    </Scene>
+  );
+}
+
+/** A mini layout drawing on the welcome card: Floating panels in two
+ *  corners, or the Toolbar strip across the top. */
+function LayoutThumb({
+  x,
+  y,
+  kind,
+  picked,
+}: {
+  x: number;
+  y: number;
+  kind: 'floating' | 'toolbar';
+  picked: boolean;
+}) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={96}
+        height={58}
+        rx={7}
+        className={picked ? 'fill-slate-50 stroke-brand-500' : 'fill-slate-50 stroke-slate-200'}
+        strokeWidth={picked ? 2.5 : 1.5}
+      />
+      {kind === 'floating' ? (
+        <>
+          <rect
+            x={x + 8}
+            y={y + 8}
+            width={22}
+            height={30}
+            rx={3}
+            className="fill-white stroke-slate-300"
+          />
+          <rect
+            x={x + 66}
+            y={y + 8}
+            width={22}
+            height={26}
+            rx={3}
+            className="fill-white stroke-slate-300"
+          />
+        </>
+      ) : (
+        <rect
+          x={x + 18}
+          y={y + 8}
+          width={60}
+          height={10}
+          rx={3}
+          className="fill-white stroke-slate-300"
+        />
+      )}
+      <rect x={x + 8} y={y + 46} width={80} height={5} rx={2.5} className="fill-slate-200" />
+      <Label
+        x={x + 48}
+        y={y + 72}
+        anchor="middle"
+        size={10}
+        weight={picked ? 700 : 500}
+        tone={picked ? 'accent' : 'body'}
+      >
+        {kind === 'floating' ? 'Floating' : 'Toolbar'}
+      </Label>
+    </g>
+  );
+}
+
+/** The welcome tour's offer card: the Floating / Toolbar layout choice, then
+ *  No thanks or Show me around. */
+export function WelcomeTourCard() {
+  return (
+    <Scene w={420} h={240} bg="plain">
+      <rect
+        x={70}
+        y={12}
+        width={280}
+        height={216}
+        rx={14}
+        className="fill-white stroke-slate-200"
+        strokeWidth={2}
+      />
+      <Label x={210} y={34} anchor="middle" size={10} weight={700} tone="accent">
+        QUICK TOUR
+      </Label>
+      <Label x={210} y={54} anchor="middle" size={14} weight={700} tone="strong">
+        Welcome to livediagram
+      </Label>
+      <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
+      <LayoutThumb x={106} y={86} kind="floating" picked />
+      <LayoutThumb x={218} y={86} kind="toolbar" picked={false} />
+      <Button x={110} y={186} w={92} h={26} label="No thanks" />
+      <Button x={210} y={186} w={104} h={26} label="Show me around" variant="primary" />
     </Scene>
   );
 }

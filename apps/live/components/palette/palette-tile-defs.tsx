@@ -446,7 +446,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'build',
     label: 'Add mind node',
     description:
-      'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below — each connected and ready to type into.',
+      'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below, each connected and ready to type into.',
     action: { type: 'shape', kind: 'mind-node' },
     icon: (
       <Glyph size={18} units={24}>
@@ -832,7 +832,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add stopwatch button',
     description:
-      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
+      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set: a stopwatch has no length.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
     icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
@@ -875,7 +875,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add reveal zone',
     caption: 'Reveal',
     description:
-      'A cover over part of the canvas. Click it to uncover it just for you, or reveal it for everyone from the menu.',
+      'A cover over part of the canvas. Double-click it to uncover it just for you, or reveal it for everyone from the menu.',
     filled: true,
     action: { type: 'shape', kind: 'reveal' },
     icon: <RevealIcon size={TILE_GLYPH_PX} />,
@@ -986,7 +986,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add picker',
     caption: 'Picker',
     description:
-      'Press it to choose at random — one of the people in the room, or one of the options you write on it.',
+      'Press it to choose at random: one of the people in the room, or one of the options you write on it.',
     filled: true,
     action: { type: 'shape', kind: 'picker' },
     icon: <PickerIcon size={TILE_GLYPH_PX} />,
@@ -1065,7 +1065,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'record',
     label: 'Add action panel',
     description:
-      'A card that carries one assigned action: what needs doing, who owns it, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
+      'A card that carries a list of assigned actions: what needs doing, who owns each, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
     filled: true,
     action: { type: 'shape', kind: 'action-card' },
     icon: (

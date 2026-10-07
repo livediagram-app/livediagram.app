@@ -124,7 +124,10 @@ device or from the keyboard.
   lock badge and the remote selectors.
 - An annotation's marker is its note, and a margin note shows its count on its own face, so
   neither shows a note indicator.
-- They are editor chrome: exports, thumbnails, the share view and embeds never draw them.
+- They are editor chrome: exports, thumbnails and embeds (view or edit role) never draw them,
+  whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**).
+  The share view (`/document/shared`) is the editor reached by a share link, so it draws them like
+  the editor; a Community visitor sees them without the comment count, having no comments to open.
 
 ## Accessibility
 
@@ -140,3 +143,8 @@ device or from the keyboard.
 
 Picking a style in Settings sends `UI` · `Changed` · `ElementIndicatorsTop`,
 `ElementIndicatorsFooter` or `ElementIndicatorsOff` ([Telemetry](../017-telemetry/telemetry.md)).
+
+## Help
+
+[Element Indicators](/help/canvas/element-indicators/) explains the badges, the Top / Footer / Off
+setting and where each one sits.

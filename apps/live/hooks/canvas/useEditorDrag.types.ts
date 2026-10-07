@@ -44,7 +44,7 @@ export type EditorDragDeps = {
   // on an element applies the format instead of dragging. The drag
   // dispatcher checks this and routes appropriately.
   formatSourceId: string | null;
-  applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
+  applyFormatFromSource: (targetId: string) => void;
   // The persistent Format canvas tool is active. A click on an element
   // picks it as the paint source (first click) or paints the armed
   // source's style onto it and stays armed (subsequent clicks) — instead

@@ -22,6 +22,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   themes: '#d946ef',
   templates: '#14b8a6',
   'event-storming-boards': '#d97706',
+  'editor-modes': '#4338ca',
   'draw-mode': '#78716c',
   'plan-mode': '#2563eb',
   items: '#7c3aed',
@@ -184,6 +185,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   shadows: '#475569',
   'quick-style-panel': '#db2777',
   locking: '#94a3b8',
+  'element-indicators': '#f97316',
   snapping: '#22c55e',
   // Palette → Palette Settings
   popular: '#eab308',

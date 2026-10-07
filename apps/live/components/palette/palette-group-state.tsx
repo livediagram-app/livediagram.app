@@ -4,11 +4,11 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 // Which collapsible tile group is open, shared across the palette.
 //
-// At most ONE at a time. Behaviour carries two groups (Session and Reactions,
-// docs/specs/012-collaboration/session-button.md and docs/specs/009-elements/reaction-pad.md) holding eight tiles between them, and with both open
-// the category ran well past the panel — the reader ends up scrolling a list
-// they opened precisely to avoid scrolling. Opening one closes the other, the
-// way the element context menu's accordion sections already behave.
+// At most ONE at a time. The groups today are Media's Embed and Components'
+// Web Elements (palette-create-tabs.tsx); when a category carried two groups
+// with both open it ran well past the panel, and the reader ended up scrolling
+// a list they opened precisely to avoid scrolling. Opening one closes the
+// other, the way the element context menu's accordion sections already behave.
 //
 // Lifted into a context rather than held per group for the same reason that
 // menu lifted its own: a group cannot close a sibling it has no reference to,

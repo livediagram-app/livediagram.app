@@ -242,3 +242,23 @@ describe('flowDirectionOf', () => {
     expect(new Set(out.map((el) => el.y)).size).toBe(1);
   });
 });
+
+// docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put".
+describe('autoLayoutElements lockedIds', () => {
+  it('leaves a locked box and a locked arrow exactly as they were', () => {
+    const els: Element[] = [
+      shape('a', 0, 0, 133, 57),
+      shape('b', 500, 40, 97, 61),
+      shape('c', 900, 300, 141, 45),
+      arrow('a', 'b'),
+      arrow('b', 'c'),
+    ];
+    const locked = new Set(['c', 'arr-a-b']);
+    const out = autoLayoutElements(els, { lockedIds: locked });
+    const byId = new Map(out.map((e) => [e.id, e]));
+    expect(byId.get('c')).toBe(els[2]);
+    expect(byId.get('arr-a-b')).toBe(els[3]);
+    // The unlocked pair is still laid out.
+    expect(box(byId.get('a')!)).not.toEqual(els[0]);
+  });
+});

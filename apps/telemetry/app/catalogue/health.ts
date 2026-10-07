@@ -91,6 +91,36 @@ export const EXCEPTIONS: MetricStack = {
   seeAlso: { view: 'exceptions', label: 'See Each Error on the Exceptions Tab' },
 };
 
+// Load recovery (docs/specs/007-editor/load-recovery.md): what people did on the load-error screen
+// and the help centre's Repair page. The load's own timeouts and fallbacks are Warnings above.
+const isDiagnostics = (t: string | null) => t === 'Diagnostics' || t === 'Diagnostics.Help';
+
+export const DIAGNOSTICS_COPIED = chart(
+  'UI',
+  'Copied',
+  'Diagnostics Copied',
+  'A diagnostics report copied for support, from a failed load or the Repair page.',
+  { typeIn: isDiagnostics, rising: 'bad' },
+);
+
+export const BROWSER_REPAIRS = chart(
+  'UI',
+  'Cleared',
+  'Browser Repairs',
+  "A browser's livediagram settings and caches cleared to get a document loading again.",
+  { rising: 'bad' },
+);
+
+export const LOAD_RECOVERY: MetricStack = {
+  rising: 'bad',
+  stack: true,
+  title: 'Load Recovery',
+  blurb:
+    'Diagnostics copied and browsers repaired when a document would not load. A rising line means people are getting stuck opening documents.',
+  members: [DIAGNOSTICS_COPIED, BROWSER_REPAIRS],
+  headline: BROWSER_REPAIRS,
+};
+
 // Help centre (Help tab has the rankings).
 export const ARTICLE_VIEWS = chart(
   'Help',

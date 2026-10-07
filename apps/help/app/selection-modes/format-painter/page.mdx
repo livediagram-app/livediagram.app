@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { FormatPainterMode } from '@/components/illustrations/palette-modes';
+import { FormatPanelScene } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Format Painter',
@@ -18,25 +19,46 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("format-painter")}
 >
 
-The Format Painter mode copies the look of one element (its colours, line, and text styling) and applies it to others, so a set of shapes can share a consistent style without setting each one by hand. Choose it from the mode picker at the top of the floating palette, where it appears simply as **Format**.
+The Format Painter mode copies the look of one element (its colours, line, text styling and more) and applies it to others, so a set of shapes can share a consistent style without setting each one by hand. Choose it from the tool picker at the top of the floating palette, where it appears simply as **Format**. It has no keyboard shortcut (`F` adds a frame and `P` picks up the pencil).
 
 ## How to use it
 
-<Step n={1}>Pick the mode labelled **Format** from the palette's mode picker.</Step>
-<Step n={2}>Click a source element to copy its look.</Step>
-<Step n={3}>Click each element you want to apply that style to.</Step>
+<Step n={1}>
+  Pick **Format** from the palette's tool picker. A banner at the top of the screen reads "Select a
+  base element to copy its style".
+</Step>
+<Step n={2}>
+  Click the element whose look you want to copy. The banner changes to "Tap elements to paint this
+  style onto them".
+</Step>
+<Step n={3}>Click each element you want to apply that style to, one at a time.</Step>
 
-Every element you click takes on the copied colours, line, and text styling. Because it copies the styling rather than the content, each target keeps its own text and position, only its look changes.
+Every element you click takes on the copied look. Because it copies the styling rather than the content, each target keeps its own text and position; only its look changes. Press **Done** on the banner, press `Esc`, or pick another tool to finish.
 
-Arrows join in too: click an arrow as the source to copy its line colour, thickness, pattern, arrowheads, flow animation, and label styling, then tap other arrows to give them the same look. Styles copy between like kinds — shape to shape, arrow to arrow — so tapping a shape while an arrow is the source simply does nothing.
+Arrows join in too: click an arrow as the source to copy its line colour, thickness, pattern, arrowheads, flow animation and label styling, then tap other arrows to give them the same look. Styles copy between like kinds (shape to shape, arrow to arrow), so tapping a shape while an arrow is the source simply does nothing.
 
-<Figure caption="The Format Painter is lit in the mode picker, copying the source shape's style onto another.">
+<Figure caption="The palette's tool picker set to Format, copying the source shape's style onto another.">
   <FormatPainterMode />
 </Figure>
 
+## Choosing what it copies
+
+While the mode is active a **Format** panel sits under the palette. The top of it shows what the brush is holding: the element you picked, and a swatch of its look drawn from only the parts you have switched on. Until you pick one it reads "Pick something to copy from". Beneath that:
+
+- **Copies**: five toggles, **Fill**, **Border**, **Text**, **Effects** (shadow, opacity, animations) and **Size** (width, height, aspect lock, padding). All are on to start, which copies everything. Turn Fill off to give a row of boxes the same typography while they keep their own colours; turn everything off but Border to spread one dashed outline around.
+- **After painting**: **Keep the brush** to paint one element after another, or **Paint once** to have the brush empty itself after a single apply, ready for you to pick a new source.
+
+<Figure caption="Painting with Fill switched off: the Format panel copies only Border and Text, so the target keeps its own colour.">
+  <FormatPanelScene />
+</Figure>
+
+The collapsed row always names what is currently enabled ("Border, Text"), so a painter that seems to be ignoring colours explains itself at a glance. With every toggle off the row turns amber and the brush paints nothing. Your choices are remembered on this device.
+
+Labels, links and comments are never copied whatever the toggles say: the painter copies the look, not the content.
+
 ## Painting across many elements
 
-The format painter is most useful when you have several elements to bring into line. Combine it with a [multi-selection](/help/canvas/selecting-and-grouping/multi-select/): gather the elements that need the same style, then paint the source look across the whole selection at once. A row of mismatched boxes becomes a tidy, uniform set in a single action.
+The format painter is most useful when you have several elements to bring into line. Leave **After painting** on **Keep the brush** and click each target in turn: the source stays loaded, so a row of mismatched boxes becomes a tidy, uniform set in a few clicks. Each paint is its own step, so [undo](/help/canvas/undo/) takes back the last one.
 
 ## Format painter and themes
 
@@ -44,18 +66,15 @@ The format painter copies the exact look of one element onto another, which is p
 
 <Tip>
   Style one element carefully, then let the format painter do the repetitive work. It is far quicker
-  than matching colours and borders by eye across a busy canvas.
+  than matching colours and borders by eye across a busy canvas. For more on what each part copies,
+  see [The Format Painter](/help/tips-and-tricks/format-painter/).
 </Tip>
 
-## Choosing what it copies
+## When it is unavailable
 
-While the mode is active a **Format** panel sits under the palette. The top of it shows what the brush is holding — the element you picked, and a swatch of its look — and beneath that:
-
-- **Copies** — five toggles: **Fill**, **Border**, **Text**, **Effects** (shadow, opacity, animations) and **Size** (width, height, aspect lock, padding). All are on to start, which copies everything, exactly as the painter always has. Turn Fill off to give a row of boxes the same typography while they keep their own colours; turn everything off but Border to spread one dashed outline around.
-- **After painting** — **Keep the brush** to paint one element after another, or **Paint once** to have the brush empty itself after a single apply.
-
-The collapsed row always names what is currently enabled ("Copies: Border, Text"), so a painter that seems to be ignoring colours explains itself at a glance. Your choices are remembered on this device.
-
-Labels, links and comments are never copied whatever the toggles say — the painter copies the look, not the content.
+- **On an empty canvas** Format is greyed out, as there is nothing to copy from.
+- **On a view-only link** it is not offered, because painting changes the document.
+- **In [Plan mode](/help/canvas/plan-mode/) and [Draw mode](/help/canvas/draw-mode/)** it is left out.
+- An element someone else has selected, or one on a hidden or locked layer, cannot be painted.
 
 </ArticleLayout>

@@ -6,23 +6,34 @@ import { AiPanel } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'AI Assistance',
   description:
-    'An optional AI assistant on the canvas with Ask and Clean modes for answering questions about and tidying your diagrams.',
+    'An optional AI Assistant panel with Ask and Clean modes for answering questions about, and tidying, the diagram on the active tab.',
   path: '/help/tools/ai/',
 });
 
 <ArticleLayout title="AI Assistance" description="An optional assistant that answers questions about and tidies the diagram on the active tab." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("ai")}>
 
-AI Assistance is an optional panel that works alongside you on the canvas. It can answer questions about what is on the tab and tidy up an existing diagram. It is built around two modes, both driven from a single panel.
+AI Assistance is an optional floating panel that works alongside you on the canvas. It can answer questions about what is on the tab and tidy up an existing diagram, through two modes in one panel: **Ask** and **Clean**.
 
-<Figure caption="The Assistant panel: one prompt box, with Ask and Clean modes across the top.">
+<Figure caption="The AI Assistant panel: Ask and Clean across the top, what the request is about, and one prompt box.">
   <AiPanel />
 </Figure>
 
 ## An optional feature
 
-AI Assistance is off by default and only appears when the people running livediagram have chosen to enable it. Because livediagram is free and open source, anyone can self-host it, and AI is deliberately not required to do so. When no AI provider is configured, the feature is hidden entirely: there is no toggle in Settings, no panel on the canvas, and no degraded experience to work around. Everything else in the editor behaves exactly the same.
+AI Assistance is off by default and only exists when the people running livediagram have configured an AI provider. Because livediagram is free and open source, anyone can self-host it, and AI is deliberately not required to do so. When no provider is configured, the feature is hidden entirely: there is no **AI Tools** category in Settings, no panel on the canvas, and nothing degraded to work around. Everything else in the editor behaves exactly the same.
 
-When AI is available, you opt in from Settings. Once enabled, the assistant is surfaced from the **Assistant** section of the editor side panel, and on mobile through the bottom dock. The panel is hidden in view-only sessions, because the AI modes that change the diagram need edit access to persist their work.
+## Turning it on
+
+<Step n={1}>Open **Settings** from the tab bar and choose the **AI Tools** category.</Step>
+
+<Step n={2}>
+  Switch on **AI Assistant**. The panel appears straight away, floating at the top right of the
+  canvas.
+</Step>
+
+The panel is an ordinary floating panel: drag its header to move it, or collapse it to its title bar when you want the space back. To remove it, switch **AI Assistant** off again. The same category has a **Suggested Prompts** switch, which shows a row of one-click starter prompts under the mode buttons (on by default).
+
+The panel is not shown in view-only sessions, or while [zen mode](/help/tools/zen-mode/) hides the chrome.
 
 ## What it can do
 
@@ -31,11 +42,19 @@ The assistant always works against the **active tab** only. Other tabs are never
 - **Ask** answers questions about the diagram without changing anything.
 - **Clean** tidies an existing diagram: fixing label typos and normalising sizes, positions, and styles.
 
-If you have elements selected when you send a request, the assistant focuses its attention there while treating the rest of the tab as context, so connected arrows and neighbours stay coherent. For a full walkthrough of each mode, see [Ask and Clean](/help/tools/ai/ai-tools/).
+If you have elements selected when you send a request, the assistant focuses on them while treating the rest of the tab as context, so connected arrows and neighbours stay coherent. The **Context** line above the prompt box tells you which it will use, for example "2 selected elements" or "14 elements (whole tab)". For a full walkthrough of each mode, see [Ask and Clean](/help/tools/ai/ai-tools/).
+
+The panel does not draw new diagrams from a description. For that, connect an AI tool you already use, such as Claude, to livediagram (this needs an account): the panel's **Connect agent** button opens the guide, [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
 
 ## Working with the results
 
-Clean applies its changes as a single step, so one **Undo** (Ctrl+Z) reverses the whole AI operation rather than unpicking it element by element. The result is ordinary elements you can edit freely afterwards. (Ask never changes the diagram — it only answers.)
+Clean applies its changes as a single step, so one **Undo** (⌘Z / Ctrl+Z) reverses the whole AI operation rather than unpicking it element by element. The result is ordinary elements you can edit freely afterwards. Ask never changes the diagram; it only answers.
+
+## Limits
+
+- A prompt can be up to 1,000 characters.
+- A request covers at most 200 elements, so on a very large tab, select the part you want help with.
+- The panel remembers your last few exchanges on the tab so a follow-up question makes sense. Switching tabs starts a fresh conversation, and **Clear context** under the response forgets it sooner.
 
 <Tip>
   Keep Clean prompts focused on one thing at a time. "Even out the box sizes" gives cleaner results

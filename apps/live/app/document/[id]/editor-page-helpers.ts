@@ -150,6 +150,18 @@ function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
   return JSON.stringify(prevMeta) === JSON.stringify(currentMeta);
 }
 
+// Whether the autosave may write this document (docs/specs/007-editor/load-recovery.md "Offline").
+// A document that failed to load, or was not found, is never written: those error paths still hydrate
+// with the id, and the editor's empty default tab would otherwise save into the real document once
+// the connection is back.
+export function autosaveReadOnly(state: {
+  canEdit: boolean;
+  loadError: boolean;
+  documentNotFound: boolean;
+}): boolean {
+  return !state.canEdit || state.loadError || state.documentNotFound;
+}
+
 export function computeTabSaveDiff(
   prevTabs: Tab[],
   currentTabs: Tab[],

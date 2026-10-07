@@ -1,39 +1,44 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { PaletteSettings, AlignmentGuides } from '@/components/illustrations/palette-modes';
+import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
+import { SnappingGuides } from '@/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Alignment Guides',
   description:
-    'Show faint snap lines while you move or resize an element, so you can line it up with the edges and centres of other elements.',
+    'Show faint guide lines while you move or resize an element, so you can see when it lines up with the edges and centres of other elements. Switching them off hides the lines; elements still snap.',
   path: '/help/palette/alignment-guides/',
 });
 
 <ArticleLayout
   title="Alignment Guides"
-  description="Show snap lines while moving or resizing so you can align elements by eye."
+  description="Show the guide lines that explain a snap while you move or resize an element."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("alignment-guides")}
 >
 
-Alignment Guides is a toggle, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**.
+Alignment Guides is a switch, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**. It is your own preference: it applies to every document you open, follows you to other devices when you are signed in, and changes nothing for anyone else.
 
-<Figure caption="The Editor settings, with Alignment guides highlighted and switched on.">
-  <PaletteSettings highlight="guides" />
+<Figure caption="Settings open on Editor, with Alignment Guides highlighted and switched on.">
+  <SettingsEditorPane highlight="guides" />
 </Figure>
 
 ## What it does
 
-When the setting is on, faint snap lines appear while you move or resize an element. They show when it lines up with the edges or centres of other elements, so you can align things by eye without measuring. Under the switch the description reads: "Show snap lines while moving or resizing."
+As you drag or resize an element, it [snaps](/help/canvas/snapping/) into line when an edge or centre comes within a few pixels of a neighbour's, or settles at an equal gap between two others. With Alignment Guides on, a faint dashed line marks each match that is in effect, and a short coloured span marks a matched gap, so you can see why the element jumped. Under the switch the description reads: "Shows snap lines while you move or resize an element, so it lines up with its neighbours."
 
-<Figure caption="Snap lines appear as a shape is dragged into line with the edges and centres of its neighbours.">
-  <AlignmentGuides />
+<Figure caption="Dragging B next to A snaps their top edges together; the dashed guide shows the alignment.">
+  <SnappingGuides />
 </Figure>
 
-## When to turn it off
+The same guides show while you drag an arrow's endpoint or bend, so a connector can line up with the shapes around it.
 
-Switch it off for a cleaner drag with no snapping hints. With the toggle off, elements move and resize freely and the guide lines stay out of the way, which suits fine adjustments where the snapping would otherwise get in your path.
+## Turning it off
+
+Switch it off for a cleaner drag with no lines on screen. Switching it off **hides the lines only**: elements still snap to their neighbours exactly as before, you just no longer see the hint.
+
+To place one element freely, with no snapping at all, hold **Cmd** (Mac) or **Ctrl** (Windows and Linux) while you drag or resize it. That turns both the snap and its guides off for that one gesture, whatever this setting says. See [Alignment & Snapping](/help/canvas/snapping/).
 
 </ArticleLayout>

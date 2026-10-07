@@ -1,18 +1,18 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SearchOverview } from '@/components/illustrations/search-panel';
+import { SearchOverview, SearchSettings } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'The Search Panel',
   description:
-    'One global search across your documents, folders, teams, tabs, and elements, that can also add to the canvas. Open it with Ctrl/Cmd + . or the Search button.',
+    'One global search across your documents, folders, teams, tabs, elements, settings and help, that can also add to the canvas and run commands. Open it with Cmd/Ctrl + K or the Search button.',
   path: '/help/search-panel/the-search-panel/',
 });
 
 <ArticleLayout
   title="The Search Panel"
-  description="One box to jump anywhere: documents, folders, teams, tabs, and elements, plus actions like adding a shape or creating a tab."
+  description="One box to jump anywhere: documents, folders, teams, tabs, elements, settings and help, plus actions like adding a shape or creating a tab."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   subArticles={getSubArticles('the-search-panel')}
@@ -22,14 +22,15 @@ The **search panel** is the fastest way to get anywhere in livediagram. It is on
 
 ## Opening and closing search
 
-- **Keyboard:** press `Ctrl` / `Cmd` + `K`, or `Ctrl` / `Cmd` + `.` — both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd`+`T` for a new browser tab.)
-- **Button:** click the **Search** button in the footer toolbar.
+- **Keyboard:** press `Cmd` / `Ctrl` + `K`, or `Cmd` / `Ctrl` + `.`. Both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd` + `T` for a new browser tab.) They work in the editor and on the Explorer page alike, including in [zen mode](/help/tools/zen-mode/) and in view-only documents. While you are typing in a text box (such as the Explorer's filter box) they are left to that box, and they are off when you turn off keyboard shortcuts in Settings.
+- **Button:** click **Search** at the right-hand end of the bottom bar, beside Settings. In the editor it sits to the right of the tabs; on the Explorer page it is the magnifier in the bottom bar. On a phone, and with Minimal Chrome on, the button is the magnifier alone.
+- **Explorer panel menu:** inside the editor, the Explorer panel's **⋯** menu also has a **Search** row.
 
-The panel pops up near the top of the screen and blurs the canvas behind it so you can focus on the query. Press `Esc` or click outside to close it. Search only ever navigates or adds, it never edits what is already there, so it is available even in read-only views.
+The panel pops up near the top of the screen and blurs what is behind it so you can focus on the query. Press `Esc`, click the **Esc** chip at the end of the search box, or click outside the panel to close it.
 
 ## What search covers
 
-Type a few letters and matches appear, grouped by what they are. What is in scope depends on where you open it:
+Type a few letters and matches appear, grouped by what they are. Matching is a simple, case-insensitive "contains" match on the name, so `flow` finds "Checkout flow" and "Workflow". What is in scope depends on where you open it:
 
 <Figure caption="One query, with matches grouped by type and the first result preselected.">
   <SearchOverview />
@@ -39,18 +40,36 @@ Type a few letters and matches appear, grouped by what they are. What is in scop
 - **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)** and their shared folders and documents.
 - **Inside a document:** also the **[tabs and elements](/help/search-panel/the-search-panel/search-tabs-and-elements/)** of the current document, including text inside table cells.
 
+With an empty box, the panel lists what it can browse (your documents, folders, teams and, in the editor, the tabs and labelled elements), so you can open it and arrow straight to something. Each group shows at most 8 results (12 for elements), so keep typing to narrow a long list.
+
+The results come in this order: **Documents**, **Shared with You**, **My documents** (your folders), **Teams**, **Tabs**, **Elements**, then **Actions**, **Add to canvas**, **Settings** and **Help**.
+
 ## Beyond navigation
 
 In the editor the panel does more than jump around:
 
 - **[Add to the canvas](/help/search-panel/the-search-panel/search-add-to-canvas/):** search the palette and drop a shape or icon straight onto the canvas.
 - **[Create a new tab](/help/search-panel/the-search-panel/search-create-tab/):** an action result that spins up a fresh tab.
-- **[Run any command](/help/search-panel/the-search-panel/command-palette/):** type an action's name, undo, auto layout, export, settings, and run it, or pick up a canvas tool. The panel doubles as a command palette on `⌘K`.
-- **Find the help for it:** a **Help** group lists matching articles from this help centre, so the explanation of a feature is reachable from the same box as the feature. It sits last, so a help article never steals the `Enter` from somewhere you were trying to go. Articles match on their search synonyms too, so "transparency" finds Opacity.
+- **[Run any command](/help/search-panel/the-search-panel/command-palette/):** type an action's name (undo, auto layout, export, settings) and run it, or pick up a canvas tool. The panel doubles as a command palette on `⌘K`.
+
+These three only appear once you have typed something, and only inside a document. Two more groups work everywhere, in the editor and on the Explorer page:
+
+- **Jump to a setting:** a **Settings** group matches the rows of the [Settings](/help/user-interface/settings/) dialog, by name and by the words people use for them, so "dark mode" finds **Theme**. Each result says which category it lives in ("in Appearance"), and picking it opens Settings on that row with the row highlighted.
+- **Find the help for it:** a **Help** group lists matching articles from this help centre, so the explanation of a feature is reachable from the same box as the feature. Articles match on their search synonyms too, so "transparency" finds Opacity. Picking one opens the article in a new browser tab, so you do not lose your place.
+
+<Figure caption="A Settings result names the category it opens on, with matching help articles listed last.">
+  <SearchSettings />
+</Figure>
+
+The Help group always sits last, so a help article never steals the `Enter` from somewhere you were trying to go.
 
 ## Picking a result
 
-Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or arrow down to it and press `Enter`. Picking a result takes you exactly where it points: opening a document, switching to a tab, selecting an element, or jumping to a team.
+Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or press the `↑` and `↓` arrow keys to move the highlight and `Enter` to pick it. Picking a result takes you exactly where it points: opening a document or folder, switching to a tab, selecting an element, or jumping to a team. The panel closes as it goes.
+
+## Read-only views
+
+Search only navigates, so it works in a view-only document too: you can still find and jump to tabs and elements. **Add to canvas** results are not offered there, and the command palette keeps only the actions that do not change the document. See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#in-read-only-views).
 
 <Tip>
   Looking for a node buried deep in a big canvas? Open search inside the editor and type part of its

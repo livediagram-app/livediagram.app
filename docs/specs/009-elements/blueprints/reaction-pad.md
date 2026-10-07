@@ -206,7 +206,7 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 - **Export:** `reactionPad` draws the wash, the spot, the emoji as text (colour depends on the
   renderer's emoji font) and the label chip, at the canvas proportions; no motion.
 - **Burst:** centred on the pad, `z-10` over the face and under selection chrome, pointer-inert.
-- **Palette:** a **React** accordion (`palette-create-tabs.tsx`) in Behaviours, one tile per
+- **Palette:** a **React** group (`BEHAVIOUR_GROUPS` in `palette-create-tabs.tsx`) in Collaborate, one tile per
   reaction with its emoji [QF22].
 - **Menu:** accordion **Reaction** (icon: current emoji), three-column tiles, hint line
   `"<hint>. Press the pad, or walk a character onto it in Avatar mode."`.

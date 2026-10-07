@@ -1,6 +1,7 @@
 import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
+  autosaveReadOnly,
   computeTabSaveDiff,
   createTab,
   deriveTabLoadState,
@@ -506,5 +507,24 @@ describe('mergeAiElements (docs/specs/007-editor/ai-assistance.md AI apply)', ()
     );
     expect(out.map((e) => e.id).sort()).toEqual(['a', 'b', 'c']);
     expect((byId(out, 'a') as ShapeElement).label).toBe('mod');
+  });
+});
+
+// docs/specs/007-editor/load-recovery.md "Offline": a failed load once saved the editor's empty default
+// tab into the real document when the connection came back.
+describe('autosaveReadOnly', () => {
+  it('writes only a document that loaded and can be edited', () => {
+    expect(autosaveReadOnly({ canEdit: true, loadError: false, documentNotFound: false })).toBe(
+      false,
+    );
+    expect(autosaveReadOnly({ canEdit: false, loadError: false, documentNotFound: false })).toBe(
+      true,
+    );
+    expect(autosaveReadOnly({ canEdit: true, loadError: true, documentNotFound: false })).toBe(
+      true,
+    );
+    expect(autosaveReadOnly({ canEdit: true, loadError: false, documentNotFound: true })).toBe(
+      true,
+    );
   });
 });

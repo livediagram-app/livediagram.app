@@ -198,7 +198,7 @@ function Consent() {
         className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
       >
         <span className="min-w-0 text-slate-600 dark:text-slate-300">
-          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span> —
+          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
           let it find and view your documents, but not create, edit, delete, or share them. Leave
           off for full read + write.
         </span>

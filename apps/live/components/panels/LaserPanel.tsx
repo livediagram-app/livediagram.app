@@ -129,7 +129,7 @@ export function LaserPanel({
           />
         </div>
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
-          Everyone in the room sees your pen, and it is remembered on this device —{' '}
+          Everyone in the room sees your pen, and it is remembered on this device:{' '}
           {laserStrokeWidth(config)}px, fading over {(laserLifetimeMs(config) / 1000).toFixed(1)}s.
         </p>
       </div>

@@ -1,50 +1,64 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { IconsCatalogue } from '@/components/illustrations/palette-catalogues';
+import { IconsCategory } from '@/components/illustrations/palette-illustrate-categories';
 
 export const metadata = helpMetadata({
   title: 'Icons',
   description:
-    'The palette Icons category is a searchable catalogue of single-colour line-art icons that take on your scheme colour, organised into categories from Animated to UI.',
+    'The palette Icons category is a searchable catalogue of single-colour line-art icons that take on your theme colour, organised into categories from Animated to UI.',
   path: '/help/palette/icons/',
 });
 
 <ArticleLayout
   title="Icons"
-  description="A searchable catalogue of single-colour line-art icons that take on your scheme colour."
+  description="A searchable catalogue of single-colour line-art icons that take on your theme colour."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("icons")}
 >
 
-The **Icons** category is a searchable catalogue of single-colour, line-art icons. Because they are drawn in one colour, every icon takes on your theme's colour automatically, so a whole diagram stays visually consistent.
+The **Icons** category is a searchable catalogue of single-colour, line-art icons. Because they are drawn in one colour, every icon takes on your theme's colour automatically, so a whole diagram stays visually consistent. It sits under **Decorate** in the palette's category dropdown, in Diagram and Illustrate mode.
 
 ## Browsing by category
 
-The catalogue is organised into categories so you can browse when you are not sure what you want: **Animated**, **Tech**, **People**, **Security**, **Files**, **Charts**, **Arrows**, **Furniture**, and **UI**. The tab opens on a grid of category tiles, each showing one of the icons inside it. Click a category to see every icon it holds, and use the breadcrumb at the top to come back.
+The catalogue is organised into categories so you can browse when you are not sure what you want: **Animated**, **Tech**, **People**, **Security**, **Files**, **Charts**, **Arrows**, **Furniture**, and **UI**. The category opens on a grid of category tiles, each showing one of the icons inside it. Click a category to see every icon it holds, and use the breadcrumb at the top to come back.
+
+<Figure caption="The Icons category: a search box across the whole catalogue, over a grid of category tiles.">
+  <IconsCategory />
+</Figure>
+
+**Furniture** holds top-down floor-plan symbols (beds, sofas, tables, a door, stairs) for sketching room layouts, and **Animated** holds the few icons that move.
 
 ## Searching and placing
 
-When you know what you need, search by name (for example "server", "heart", or "calendar") and the catalogue filters to matching icons as you type. Search always looks across **every** category, so you never have to guess which one an icon lives in. Click one to place it on the canvas, then resize and position it like any other element. Its colour follows your theme, so changing the theme recolours every placed icon at once.
+When you know what you need, type in **Search icons** (for example "server", "heart", or "calendar") and the catalogue filters to matching icons as you type. Search always looks across **every** category, so you never have to guess which one an icon lives in.
 
-Type while an icon is selected to give it a **caption**. The glyph always keeps to the side opposite the text, move the caption to the top and the art drops below it, align it left and the art shifts right, so the two never overlap however you arrange them.
+Click an icon to place it, or drag across the canvas to draw it at the size you want; it keeps its proportions either way. Then resize and position it like any other element. Its colour follows your theme, so changing the theme recolours every placed icon at once. To pick a colour of your own, right-click it and set the **Icon** colour in the **Colours** section; **Reset to theme** puts it back.
+
+Type while an icon is selected to give it a **caption**. The glyph always keeps to the side opposite the text: move the caption to the top and the art drops below it, align it left and the art shifts right, so the two never overlap however you arrange them.
+
+## Putting an icon inside a shape
+
+An icon can also sit beside a shape's own label rather than standing alone:
+
+- **Drag** an icon from the palette onto a shape. It lands on the side of the text nearest where you let go; a highlight shows which side before you release.
+- **Click** an icon while a shape is selected, and it goes on that shape's left.
+- **Drag** an icon already on the canvas onto a shape, and it folds in.
+
+To move or remove it, right-click the shape and open the **Icon** section. Frames, and the elements that draw their own faces (collaboration cards, buttons, stickers), don't take inline icons: an icon dropped on them stays a separate element.
 
 ## Line weight
 
 Right-click a placed icon and open **Weight** to draw it **Thin**, **Regular** or **Bold**. Hover a tile to preview it on the canvas first. The weight holds at any size and zoom, so a large icon never turns into a heavy brush stroke. New icons start at Regular, the same weight as the icons in the editor itself. Select several icons to set them all at once.
 
-<Figure caption="The Icons category is a searchable grid of single-colour glyphs, filtered live as you type in the search field.">
-  <IconsCatalogue />
-</Figure>
-
 ## Looking for emoji?
 
-Colour emoji have their own palette category: see [Stickers](/help/palette/stickers/). They used to sit here as an Emoji category, and moved out so this tab is purely line art that follows your theme. They place exactly the same way, click to add, or drag one onto a shape to sit beside its label.
+Colour emoji have their own palette category: see [Stickers](/help/palette/stickers/). They used to sit here as an Emoji category, and moved out so this category is purely line art that follows your theme.
 
 ## Line-art icons versus technology tiles
 
-These icons are deliberately single-colour and abstract. If you need full-colour service tiles for cloud providers and infrastructure, look in the [Technology](/help/palette/technology/) tab instead, which keeps AWS, Azure, and similar services in their providers' colours rather than your scheme colour.
+These icons are deliberately single-colour and abstract. If you need full-colour service tiles for cloud providers and infrastructure, look in the [Technology](/help/palette/technology/) category (**Tech** in the dropdown) instead, which keeps AWS, Azure, and similar services in their providers' colours rather than your theme colour.
 
 <Tip>
   Stuck on the right icon? Search a synonym: many icons answer to more than one common name, so

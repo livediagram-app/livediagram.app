@@ -20,14 +20,15 @@ type CommentThreadPopoverProps = {
   onClose: () => void;
   // True for a view-only ('view' share role) session. View-role
   // visitors can still READ the thread (so they can see what the
-  // host's collaborators have been discussing), and the composer
-  // stays open (they can chime in), but the resolve/unresolve toggle
-  // becomes a plain "Resolved" badge they can't flip, and per-row
-  // delete is limited to THEIR OWN comments (see selfId). The
-  // selection-popover gate in Canvas means a view-role visitor
-  // can't open the popover from the toolbar anyway — but the
-  // element comment-badge is a separate entry point, so the
-  // mutations need their own gate.
+  // host's collaborators have been discussing), the composer stays
+  // open (they can chime in) and they can resolve or reopen the
+  // thread: replying, resolving and reopening are participation, open
+  // to view-role (docs/specs/015-api/api.md, the comment thread verbs).
+  // What this flag limits is per-row delete, to THEIR OWN comments (see
+  // selfId); deleting anyone else's needs edit rights. The
+  // selection-popover gate in Canvas means a view-role visitor can't
+  // open the popover from the toolbar anyway, but the element
+  // comment-badge is a separate entry point, so delete needs its own gate.
   readOnly?: boolean;
   // The local participant's stable id, matched against each comment's
   // server-stamped authorId to decide whether a view-role visitor may
@@ -151,10 +152,9 @@ export function CommentThreadPopover({
         />
 
         {/* Add-comment textarea is available even in view-role: viewers
-          can chime in (POSTs go through a dedicated comments endpoint
-          that allows view-role), but can't toggle resolve / unresolve
-          or delete others' comments. Resolved threads still hide the
-          textarea — adding a comment would functionally reopen the
+          can chime in, resolve and reopen (the comments endpoints allow
+          view-role), but can't delete others' comments. Resolved threads
+          still hide the textarea: adding a comment would functionally reopen the
           thread and that's a deliberate intent best surfaced as the
           reopen button up top, not a sneaky side effect of typing. */}
         {!resolved ? <CommentComposer onAddComment={onAddComment} fieldRef={composerRef} /> : null}

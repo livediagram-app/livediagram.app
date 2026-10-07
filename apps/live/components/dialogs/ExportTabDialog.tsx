@@ -153,7 +153,7 @@ const TEXT_PANELS: Record<
 > = {
   file: {
     blurb:
-      "This tab as a livediagram JSON export. Edit it here to copy a variant — your edits don't change the tab.",
+      "This tab as a livediagram JSON export. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .json',
     ext: 'livediagram-tab.json',
     mime: 'application/json',
@@ -161,7 +161,7 @@ const TEXT_PANELS: Record<
   },
   mermaid: {
     blurb:
-      "This tab as a Mermaid flowchart. Edit it here to copy a variant — your edits don't change the tab.",
+      "This tab as a Mermaid flowchart. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .mmd',
     ext: 'mmd',
     mime: 'text/plain',
@@ -169,7 +169,7 @@ const TEXT_PANELS: Record<
   },
   markdown: {
     blurb:
-      "This tab as a Markdown outline. Edit it here to copy a variant — your edits don't change the tab.",
+      "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .md',
     ext: 'md',
     mime: 'text/markdown',

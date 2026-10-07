@@ -1,6 +1,6 @@
 # Isometric view
 
-A fourth **canvas tool** alongside Select / Hand / Laser that renders the
+A **canvas tool**, in the picker beside Select / Hand / Laser, that renders the
 current tab as an **isometric scene with depth** — the flat canvas tilted
 onto an isometric plane, each shape extruded into a raised block. It's a way
 to _look_ at a canvas (architecture decks, system maps, screenshots), not a
@@ -77,16 +77,16 @@ Available to everyone, including view-only visitors (looking is read-only).
 ## How it's toggled
 
 - **Tool dropdown** in the palette (its own isometric-cube icon).
-  The picker is grouped with menu dividers — editing tools (Select / Hand /
-  Eraser), then presenter tools (Laser / Spotlight), then Isometric on its
-  own at the end. Selecting it switches the cursor mode the same way Select /
+  The picker is grouped with menu dividers: editing tools (Select / Hand /
+  Eraser / Format), then presenter tools (Laser / Spotlight / Avatar / Slide
+  Deck), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
   Hand / Laser do.
-- **Keyboard:** `I` selects it (free letter; `S`/`P`/`L` are the other tools,
-  `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
+- **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` / `W` are the
+  other view tools, `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
   text-input / label-edit bailouts so typing `i` into a label never flips the
   mode. Listed under Tools in the shortcut catalogue (Settings' Keyboard
   category, [User preferences](../007-editor/user-preferences.md)).
-- Switching to any other tool (or `S` for Select) returns to the flat 2D view.
+- Switching to any other tool (or `V` for Select) returns to the flat 2D view.
 
 ## Telemetry
 

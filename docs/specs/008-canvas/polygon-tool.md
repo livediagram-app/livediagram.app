@@ -22,7 +22,7 @@ Set by this tool at commit; absent on pencil/highlighter strokes. Both renderers
 - **Double-click / Enter** commits the open polyline (`closed: false`, stroke only) ending at the last placed vertex.
 - **Escape** cancels the in-progress polygon if any vertices are placed; a second Escape (or Escape with none placed) disarms the tool, matching the draw-mode conventions.
 - **Backspace** removes the last placed vertex (stays armed).
-- Banner copy: "Click to place points — click the start to close, double-click to finish". Mobile taps behave as clicks; the banner keeps the shorter mobile copy convention.
+- Banner copy: "Click to place points, click the start to close, double-click to finish". Mobile taps behave as clicks; the banner keeps the shorter mobile copy convention.
 - A minimum of 2 vertices is required to commit an open line, 3 to close; anything less on finish is a cancel, not a degenerate element.
 
 Commit runs through `createFreehand(vertices, closed)` (no RDP simplification — the user placed exactly the vertices they want), spreads theme colours the same way the pencil does (fill only when closed), selects the new element, and pushes one history entry.

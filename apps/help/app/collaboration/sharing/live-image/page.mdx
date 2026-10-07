@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { ShareLiveImageMenu } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Live Image',
@@ -22,19 +23,27 @@ Both come from a share link and both stay current, but they suit different homes
 
 ## Getting a live image
 
-<Step n={1}>Open the **Share** dialog and create or pick a share link for the document.</Step>
-<Step n={2}>Open the **Live image** menu next to that link and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
+<Step n={1}>Open the **Share** dialog and create or pick a pass for the document.</Step>
+<Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
 <Step n={3}>Paste it where you want the diagram to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
 
-The image serves a cached snapshot that re-renders after the document is saved, so editing the document updates the image the next time it loads. The URL also carries a short public cache window, so a page may show the previous version for a brief moment after an edit.
+<Figure caption="The Live image menu copies the image as a URL, Markdown or HTML, with a Tab picker on documents with several tabs.">
+  <ShareLiveImageMenu />
+</Figure>
+
+The image serves a cached snapshot that re-renders after the document is saved, so editing the document updates the image the next time it loads. Browsers and sites may keep a copy for about 30 seconds (a little longer while they fetch a fresh one), so a page can show the previous version briefly after an edit.
 
 ## Scoping the image to one tab
 
-By default the image shows the document's first tab. When the document has more than one tab, the **Live image** menu also shows a **Tab** dropdown: pick a tab and every copy option (image URL, Markdown, HTML) carries a tab parameter that scopes the image to that tab. That way a README can show the overview tab while a design doc shows the detail tab, each from its own URL.
+By default the image shows the document's first tab. When the document has more than one tab, the **Live image** menu also shows a **Tab** dropdown: pick a tab and every copy option (image URL, Markdown, HTML) carries a tab parameter that scopes the image to that tab. That way a README can show the overview tab while a design doc shows the detail tab, each from its own URL. The choice applies to every pass while the dialog is open.
+
+A pass scoped to [one tab](/help/collaboration/sharing/one-tab/) always shows its own tab, so its menu has no **Tab** dropdown.
 
 ## When it is not offered
 
-The **Live image** menu is hidden for a link that has a [share password](/help/collaboration/sharing/share-passwords/). An `<img>` request cannot supply a password, so the server refuses an image for a gated share rather than leak it, and offering the option would only mislead. Remove the password to use a live image, or use the [embed](/help/collaboration/sharing/embeds/), which can prompt for the password inside its frame.
+The **Live image** menu is hidden on every pass while the document has a [share password](/help/collaboration/sharing/share-passwords/). An `<img>` request cannot supply a password, so the server refuses an image for a protected document rather than leak it, and offering the option would only mislead. That includes image URLs you copied before setting the password: they stop showing the document. Remove the password to use a live image, or use the [embed](/help/collaboration/sharing/embeds/), which can prompt for the password inside its frame.
+
+A live image also stops working when its share link is revoked or [expires](/help/collaboration/sharing/share-link-expiry/), so keep the link alive for as long as the image is in use.
 
 ## Privacy and self-hosting
 

@@ -349,4 +349,4 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
 Palette Settings) explains the strip, More, the menu button and how it
-fits a phone, with two figures. The Panel Layout settings row links to it.
+fits a phone, with three figures. The Panel Layout settings row links to it.

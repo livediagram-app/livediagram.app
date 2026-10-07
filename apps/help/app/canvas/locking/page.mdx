@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { LockedElement } from '@/components/illustrations/element-properties';
+import { LockedElementScene } from '@/components/illustrations/canvas-annotations-locking';
 
 export const metadata = helpMetadata({
   title: 'Locking Elements',
@@ -14,25 +14,25 @@ export const metadata = helpMetadata({
 
 Once part of the canvas is the way you want it, locking keeps it that way. A locked element can't be moved, resized, or deleted by accident, so you can keep building around it without knocking it out of place.
 
-<Figure caption="A locked element carries a padlock and shows no resize handles; an editable one still does.">
-  <LockedElement />
+<Figure caption="A locked element wears a padlock badge on its top-left corner and shows no resize handles, even while selected.">
+  <LockedElementScene />
 </Figure>
 
-## Locking and unlocking
+## Locking and Unlocking
 
-Select an element and click the **Lock** button in its floating toolbar. The button reads **Unlock** while it's locked, so the same control toggles it back. Select several elements first and the button locks or unlocks the whole selection at once.
+Select an element and click the **Lock** button in its floating toolbar, or press `Cmd+Shift+L` (`Ctrl+Shift+L` on Windows and Linux). The button reads **Unlock** while it's locked, so the same control toggles it back, and so does the shortcut. Select several elements first and the button locks or unlocks the whole selection at once. Locking is a normal edit: it syncs to collaborators and **Undo** reverses it.
 
-A locked element shows a small **padlock** so it's clear at a glance which parts of the canvas are protected.
+A locked element shows a small **padlock** badge on its top-left corner, selected or not, so it's clear at a glance which parts of the canvas are protected. People who can only view a document get no Lock button.
 
-## What locking protects
+## What Locking Protects
 
 A locked element:
 
 - **Can still be selected**, so you can always reach it to unlock it.
-- **Can't be moved** — dragging its body does nothing.
-- **Can't be resized** — its resize handles are hidden entirely, so there's nothing to grab.
-- **Can't be deleted** — Delete and Backspace skip it, the [eraser](/help/selection-modes/eraser/) passes over it, and a multi-select delete keeps the locked members while removing the rest. Deleting a shape that an arrow connects to also leaves a locked arrow in place.
-- **Can still be labelled** — double-click to edit its text. Locking protects an element's position and existence, not its content.
+- **Can't be moved**: dragging its body does nothing.
+- **Can't be resized**: its resize handles are hidden entirely, so there's nothing to grab.
+- **Can't be deleted**: the toolbar's Delete is disabled, Delete and Backspace skip it, the [eraser](/help/selection-modes/eraser/) passes over it, and a multi-select delete keeps the locked members while removing the rest. Deleting a shape that an arrow connects to also leaves a locked arrow in place.
+- **Can still be labelled**: double-click to edit its text. Locking protects an element's position and existence, not its content.
 
 The same applies to **arrows**: a locked arrow's endpoint handles can't be dragged, and it can't be moved or deleted until you unlock it.
 
@@ -44,8 +44,9 @@ The same applies to **arrows**: a locked arrow's endpoint handles can't be dragg
 
 <Tip>
   Lock a finished background, frame, or legend before you start arranging the busy part of a
-  diagram, so the foundation stays put while you work on top of it. To freeze a whole tab at once,
-  see [locking a tab](/help/tabs/locking-tabs/).
+  diagram, so the foundation stays put while you work on top of it. To protect a whole slice of the
+  canvas, [lock its layer](/help/canvas/layers-visibility-and-locking/#locking-a-layer); to freeze a
+  whole tab at once, see [locking a tab](/help/tabs/locking-tabs/).
 </Tip>
 
 </ArticleLayout>

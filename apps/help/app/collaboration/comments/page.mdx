@@ -19,19 +19,23 @@ Comments let you have a conversation on top of the canvas without changing anyth
 A comment is attached to the thing it is about, so the reader sees exactly what you are talking about.
 
 <Step n={1}>
-  Right-click the element and open **Collaborate › Comments**. Every boxed element can carry a
-  thread; arrows cannot.
+  Right-click the element (or long-press it on a touch screen), open **Collaborate** and choose
+  **Add Comment**. Every boxed element can carry a thread; arrows cannot.
 </Step>
 
 <Step n={2}>
-  Type your note and post it. The element shows a small comment icon with the count along the inside
-  of its top (or along its bottom edge, if you chose **Footer** for **Element Indicators** in
-  Settings › Editor).
+  Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
+  on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
+  edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
+  See [Element Indicators](/help/canvas/element-indicators/).
 </Step>
 
-<Step n={3}>Press that icon any time to reopen the thread and read or reply to what is there.</Step>
+<Step n={3}>
+  Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
+  close button shuts the popover.
+</Step>
 
-Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place.
+Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place. Each comment shows its author's name, colour and how long ago it was posted. You can delete your own comments with the bin that appears when you hover one; people who can edit the document can delete anyone's.
 
 To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the canvas, joined to whatever it is about by an ordinary arrow.
 
@@ -52,7 +56,9 @@ You can mention the members of the team whose library holds the document, includ
 
 ## Resolving comments
 
-Once a comment has been actioned, resolve it to clear it from the working view while keeping the record. Resolving keeps the canvas focused on what still needs attention rather than on questions that are already settled. Use comments to:
+Once a comment has been actioned, press **Resolve** at the top of its thread to clear it from the working view while keeping the record. The button turns green and reads **Resolved**, and the reply box is hidden; press it again to reopen the thread. Resolving keeps the canvas focused on what still needs attention rather than on questions that are already settled.
+
+Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved. Use comments to:
 
 - **Request changes** during a review without editing someone else's work directly.
 - **Ask a question** anchored to the exact element it is about.
@@ -60,7 +66,15 @@ Once a comment has been actioned, resolve it to clear it from the working view w
 
 ## Comments and collaboration
 
-The canvas is multiplayer, so comments are part of how a group works on the canvas together. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later. Because the canvas works without signing in, a guest you hand a share link to can read and join the conversation too.
+The canvas is multiplayer, so comments are part of how a group works on the canvas together. New comments appear for everyone in the document as they are posted. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later.
+
+Because the canvas works without signing in, a guest you hand a share link to can read and join the conversation too. Comments are the one thing someone on a **Viewer** share link can add: they can't change the drawing, but they can comment and delete their own comments.
+
+A few things to know:
+
+- **Comments aren't part of undo.** Pressing undo never takes back a comment, yours or anyone else's.
+- **Owners can be emailed.** When someone comments on a document you own, you can get an email, controlled by **Someone Comments on My Document** in your [email notifications](/help/account-and-data/email-notifications/).
+- **Comments stay private in the Community.** A document [shared to the Community](/help/collaboration/sharing/community/) never shows its comments to visitors.
 
 <Tip>
   Keep each comment to one point. A marker that asks a single, specific question is far easier to

@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Reaction Pads"
-  description="A pad the room can press to throw a burst over the canvas."
+  description="A pad the room can press, or walk onto, to throw a burst over the canvas."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate', slug: 'behaviour' }}
@@ -23,7 +23,9 @@ A **Reaction pad** throws a burst over itself when somebody presses it, or walks
 
 ## Adding one
 
-The **Reactions** row of the [Collaborate](/help/palette/behaviour/) category opens into five pads, one per reaction, so you pick the one you want and it drops ready. You can still change an existing pad from **Reaction**.
+The **React** group of the [Collaborate](/help/palette/behaviour/) category opens into five pads, one per reaction, so you pick the one you want and it drops ready, already captioned with what pressing it means: "Celebrate", "Nice one", "Show some love", "Thanks" or "It shipped". Type over the caption to say something else.
+
+To switch an existing pad to another reaction, right-click it and pick one from **Reaction**.
 
 <Figure caption="The five pads, and the burst one of them has just thrown over the canvas.">
   <ReactionPads />
@@ -40,6 +42,10 @@ The **Reactions** row of the [Collaborate](/help/palette/behaviour/) category op
 ## Nothing is saved
 
 Everyone in the room sees the burst, and nothing is saved: a reaction is a moment, not a mark on the canvas, so there is nothing to undo and nothing for a latecomer to find.
+
+Pressing a pad again while it is still bursting starts the burst over rather than piling another on top. Standing on a pad in Avatar mode throws one burst; step off and back on for another.
+
+On a view-only link the pad shows but does not fire. With reduced motion on, the pad stops bobbing, but the burst still plays so the room sees the moment.
 
 <Tip>Drop one at the end of a retro column or under a demo and let the room use it.</Tip>
 

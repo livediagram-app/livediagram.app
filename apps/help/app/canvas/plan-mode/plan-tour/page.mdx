@@ -11,36 +11,40 @@ export const metadata = helpMetadata({
 <ArticleLayout
   title="The Plan Tour"
   description="A short interactive walkthrough of Plan mode, offered the first time you work in Plan and replayable from Settings."
-  categoryTitle="Plan mode"
+  categoryTitle="Canvas"
   categorySlug="canvas/plan-mode"
 >
 
 The Plan tour shows you how to run work on a board. Like the [Welcome Tour](/help/getting-started/welcome-tour/), it works on the real editor rather than screenshots: it puts an example board on your canvas, adds a few cards, moves one along, opens it, and spotlights each part with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point.
 
-## When it's offered
+## When It's Offered
 
-The first time you work in [Plan mode](/help/canvas/plan-mode/) (switching a tab to Plan, or opening a Plan board) a centred card asks whether you'd like a look around: **Show me around** starts the tour, **No thanks** dismisses it. If the Welcome Tour is still running, the Plan tour waits until it has finished.
+The first time you work in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit (switching a tab to Plan, opening a document whose tab opens in Plan, or making one from a Plan template), a centred **Welcome to Plan** card asks whether you'd like a look around: **Show me around** starts the tour, **No thanks** dismisses it. If the Welcome Tour is still running, or still to be offered, the Plan tour waits until it has finished. It isn't offered on a locked tab, in an embed, or to someone who can only view.
 
-The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device.
+The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
 
-## What it covers
+## What It Covers
 
 1. **Your board**: the example board, a Kanban board, and where the other boards come from. See [Boards](/help/canvas/plan-mode/boards/).
 2. **Add cards**: the **Add card** button at the foot of each column, and dropping a card from the palette.
 3. **Move work along**: dragging a card to the next column, or **Shift** and an arrow key.
 4. **The card panel**: everything about one piece of work, saved as you type. See [Cards](/help/canvas/plan-mode/cards/).
 5. **The board header**: the widgets that count and filter the board, and a column's cog.
-6. **Card types**: the colours and fields of each kind of card. See [Card types](/help/canvas/plan-mode/card-types/).
+6. **Card types**: the colours and fields of each kind of card. See [Card Types](/help/canvas/plan-mode/card-types/).
 7. **The Plan palette**: cards, boards, widgets, metrics and visualisations.
 
-## Your work is left alone
+Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to plan**, links to the [Plan mode](/help/canvas/plan-mode/) article and ends the tour with **Start planning**. The steps are the same on a phone.
+
+## Your Work Is Left Alone
 
 - The tour's example board and cards are its own. It never adds cards to your boards or changes them.
 - Everything it made is **taken away** when the tour ends, however it ends. If you close the window mid-tour, it's tidied up the next time you open the document.
 - None of it goes into your undo history, so **Undo** afterwards never brings it back.
-- Anyone else in the document at the time sees the example board come and go.
+- Anyone else in the document at the time sees the example board, titled **Example Board**, come and go.
+- The example cards take the next card numbers, so your next card's number skips past them.
+- If you leave Plan mode or switch tab mid-tour, it ends as skipped and tidies up.
 
-## Replaying the tour
+## Replaying the Tour
 
 <Step n={1}>Open **Settings** from the editor and go to **Accessibility**.</Step>
 

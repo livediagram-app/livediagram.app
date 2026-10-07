@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SharedWithYou } from '@/components/illustrations/explorer';
+import { SharedWithMeTable } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Shared With Me',
@@ -16,25 +16,46 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-**Shared with me** collects the documents other people have handed you, so a link a colleague sent last week is still easy to find this week. It sits in the Explorer sidebar's **Overview** group, just below Activity, and shows a count of how many documents are waiting.
+**Shared with me** collects the documents other people have handed you, so a link a colleague sent last week is still easy to find this week. It sits in the Explorer sidebar's **Overview** group, just below Activity, and its row shows a count of how many documents are there.
 
 ## How a document gets here
 
-When you open a [share link](/help/collaboration/sharing/) that someone sent you, that document is remembered and added to **Shared with You**. You do not have to do anything extra: opening the link once is enough for it to show up here afterwards. Until you have opened a shared link, the section stays empty, with a prompt explaining that anything shared with you will land here.
+When you open a [share link](/help/collaboration/sharing/) that someone sent you, that document is remembered and added to **Shared with me**. You do not have to do anything extra: opening the link once is enough. Until you have opened one, the section says **Nothing shared with you yet**.
 
-<Figure caption="Shared documents collect here, each card showing the owner's avatar and a shared badge.">
-  <SharedWithYou />
+Opening a link to one of your own documents doesn't add it, and documents in your [teams](/help/explorer/team-spaces/) live in the team's space rather than here.
+
+## Reading the list
+
+Shared with me is a table, with the documents you opened most recently first:
+
+- **Name**, with a picture of the document. Click it to open the document on its share link, no need to dig the original link out of your messages.
+- **Owner**: whose document it is (hidden on a phone, to save room).
+- **Role**: **Edit** or **View**, the access the share link gives you.
+- **Updated**: when the document last changed.
+
+<Figure caption="Shared with me: each document's owner, your role on it, when it last changed, and a cross to dismiss it.">
+  <SharedWithMeTable />
 </Figure>
 
-## Working with shared documents
+Type in the Explorer's search box to [filter](/help/explorer/filters/) the list.
 
-- **Reopen** a shared document by clicking its row, no need to dig the original link out of your messages.
-- You can **dismiss** a document from the list when you are done with it. That only removes it from your Shared with you view; it does not affect the document or anyone else's access.
-- Your access follows the share link's permissions, so whether you can edit or only view depends on how the owner shared it.
+## Dismissing a document
+
+Click the × at the end of a row (**Dismiss**) when you are done with a document. That only removes it from your Shared with me list; it does not affect the document or anyone else's access. Open the share link again and it comes back.
+
+## When a document disappears by itself
+
+The list only offers documents you can still open. If the owner revokes the link, it [expires](/help/collaboration/sharing/share-link-expiry/), or the owner turns sharing off, the document drops off the list. If the owner shares it again and you open the new link, it returns.
+
+## Guests and signing in
+
+Shared with me works without an account: the list is kept for this browser's guest identity. It is stored on the server rather than in the browser, so it is the same wherever you are signed in, and signing up carries a guest's list into your new account.
 
 <Tip>
   Shared documents stay separate from **My documents**: they are other people's documents you have
-  access to, not your own library, so they never clutter your folders.
+  access to, not your own library, so they never clutter your folders. They do show up in
+  [Recent](/help/explorer/recent/) and in
+  [search](/help/search-panel/the-search-panel/search-documents/).
 </Tip>
 
 </ArticleLayout>

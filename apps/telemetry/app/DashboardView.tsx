@@ -25,6 +25,7 @@ import {
   EXCEPTIONS,
   EXPORT_AND_IMPORT,
   HELP_CENTRE,
+  LOAD_RECOVERY,
   LAYERS_FEATURE,
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
@@ -158,7 +159,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Health & support',
-    metrics: [EXCEPTIONS, HELP_CENTRE],
+    metrics: [EXCEPTIONS, LOAD_RECOVERY, HELP_CENTRE],
   },
   {
     // Written server-side by the api worker: nothing about a send reaches a

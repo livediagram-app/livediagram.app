@@ -1,7 +1,7 @@
 # Editor modes
 
 A general tab is drawn on in one of four **editor modes**: **Diagram**,
-**Draw**, **Illustrate** and **Plan** (Illustrate and Plan are experiments under review). A mode decides which tools and rules are in focus; it never decides
+**Draw**, **Illustrate** and **Plan**. A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
@@ -251,7 +251,7 @@ Docs, Website), keeping Image and Avatar.
 | Category       | Diagram | Illustrate | Plan |
 | -------------- | ------- | ---------- | ---- |
 | Popular        | yes     | yes        | no   |
-| Boards, Cards  | no      | no         | yes  |
+| Plan's seven   | no      | no         | yes  |
 | Shapes         | yes     | yes        | no   |
 | My shapes      | yes     | yes        | no   |
 | Write          | yes     | yes        | no   |
@@ -267,7 +267,8 @@ Docs, Website), keeping Image and Avatar.
 | Data           | no      | yes        | no   |
 | Behaviours     | yes     | no         | no   |
 
-Plan offers only Boards and Cards and opens on Cards
+Plan offers only its own seven categories (Cards, Boards, Widgets, Metrics,
+Visualisations, Content and Tools) and opens on Cards
 ([Plan mode](../026-plan/plan-mode.md#the-palette)).
 
 - **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an
@@ -418,6 +419,8 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 ## Naming in the interface
 
+- The help article **Editor Modes** (`/help/canvas/editor-modes/`) explains all four modes, the
+  switch and Opens in, and links to each mode's own article.
 - The mode is **Draw** on the switch and in Settings, where it names the
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,

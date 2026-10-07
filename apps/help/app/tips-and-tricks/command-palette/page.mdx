@@ -5,39 +5,42 @@ import { CommandPalette } from '@/components/illustrations/tips';
 export const metadata = helpMetadata({
   title: 'The Palette',
   description:
-    'The floating palette is where you pick tools and add shapes, icons, and components to your diagram in livediagram.',
+    'The floating palette is where you pick a selection mode and add shapes, text, icons and more to your diagram in livediagram: its dropdowns, categories and how placing works.',
   path: '/help/tips-and-tricks/command-palette/',
 });
 
 <ArticleLayout title="The Palette" description="Pick tools and drop new elements onto the canvas from the floating palette that sits on top of your diagram." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
 
-The palette is the small floating panel that sits over the canvas, labelled `PALETTE`. It holds the canvas tools and a row of categories for everything you can add to a diagram, so it is your main launchpad while you build.
+The palette is the floating panel that sits over the canvas, top-right by default, labelled `PALETTE`. It holds the canvas tools and every category of thing you can add to a diagram, so it is your main launchpad while you build.
 
-## Tools and categories
+## The title row and the two dropdowns
 
-The top of the palette is a row of canvas-tool toggles, in three bands. **Edit** holds **Select**, **Hand** (pan), **Eraser**, and the [Format painter](/help/tips-and-tricks/format-painter/) as a tool. **Present** holds **Laser**, **Spotlight** (desktop only), **Avatar**, and [Slide Deck](/help/selection-modes/slide-deck/). **Preview** holds **Isometric** and **Zen**. Below the tools sits a category tab bar that keeps the panel compact however much it holds.
+The palette's title row carries the **editor mode** switch (Diagram, Draw, Illustrate or Plan; see [Editor Modes](/help/canvas/editor-modes/)). Beneath it, a header band holds two dropdowns:
 
-The categories are:
+- On the left, the **selection mode** (what your pointer does), shown as a grid in three groups. **Edit**: **Select** (`V`), **Hand** (`H`), **Eraser** (`E`) and the [Format](/help/tips-and-tricks/format-painter/) painter. **Present**: **Laser** (`K`), **Spotlight**, **Avatar** (`W`) and [Slide Deck](/help/selection-modes/slide-deck/). **Preview**: **Isometric** (`I`) and **Zen** (`Z`). Spotlight and Slide Deck are desktop only, and most of these stay greyed out until the canvas has something on it. See [Selection Modes](/help/selection-modes/).
+- On the right, the **category**. It opens on **Popular**, the twelve tiles a diagram is most often built from (Square, Circle, Diamond, text, an arrow, a frame, a sticky note, an image, the shape pen, a table, a code block and an entity). The rest are grouped into bands:
+  - **Common**: Shapes, Write and Draw (plus My shapes once you have [imported a shape library](/help/explorer/shape-libraries/)).
+  - **Structure**: Build (frames, lanes, mind maps and more).
+  - **Decorate**: Icons, Stickers, Tech (full-colour technology marks) and Media.
+  - **Dynamic**: Collaborate, the interactive elements for workshops.
 
-- **Shapes** (open by default): squares, circles, diamonds, cylinders, and many more.
-- **Tools**: text, arrows, sticky notes, tables, frames, annotations, link cards, and data charts.
-- **Components**: ready-made composites that follow the tab theme, such as Banner, Hero, and Header.
-- **Devices**: browser, monitor, laptop, phone, tablet, and watch frames for wireframing.
-- **Icons**: a searchable grid of single-colour line icons, plus full-colour technology brand marks.
+Pick a category from the dropdown and its tiles fill the panel. Each mode has its own set: Illustrate mode adds the wireframing **Components** and **Devices** and the **Data** charts, and Plan mode leads with its cards and boards. See [where each one lives](/help/palette/tools/).
 
-Click a category tab to open its panel, click it again to collapse, or click another to switch. Only one category is open at a time, so the palette never sprawls.
-
-<Figure caption="The palette stacks the canvas tools, a category tab bar, and a grid of shapes ready to drop on the canvas.">
+<Figure caption="The palette: the mode switch in its title row, the selection-mode and category dropdowns, and Popular's tiles.">
   <CommandPalette />
 </Figure>
 
 ## Adding elements
 
-Most shapes and elements arm a **tap-or-drag** gesture: tap the canvas to drop the element at its natural size, or drag to size it as you place it. Icons, tables, and annotations instead drop at the centre of the visible canvas, ready to move.
+Pick a tile and it arms a **tap-or-drag** gesture: click the canvas to drop the element at its natural size, or drag on the canvas to size it as you place it. You can also drag a tile straight onto the canvas. An annotation is the exception: it drops at the centre of the visible canvas, ready to move.
 
-If a boxed element is already selected when you add another, the new one inherits its width and height, so you can chain similarly-sized nodes quickly.
+If a boxed element is already selected when you click to drop another, the new one inherits its width and height, so you can chain similarly-sized nodes quickly. (Circles and diamonds stay round and square, and a selected frame or lane never passes its size on.)
 
-The palette is fully movable: drag its header to reposition it, and use the collapse button to shrink it to a banner and reclaim canvas space. On a phone it becomes a strip across the top of the canvas (the [Toolbar layout](/help/palette/toolbar-layout/)).
+Hold `⌘` (Ctrl on Windows and Linux) and each tile shows its keyboard shortcut. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+
+## Moving and folding it away
+
+On a computer the palette is movable: drag its header to another corner, and use the collapse button to shrink it to a banner and reclaim canvas space. See [Panel Layout](/help/user-interface/panel-layout/). On a phone it becomes a strip across the top of the canvas instead (the [Toolbar layout](/help/palette/toolbar-layout/)).
 
 <Tip>
   Prefer a tidier workspace? Set **Panel Layout** to Toolbar in Settings to swap the floating

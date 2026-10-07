@@ -1,45 +1,58 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ExportMenu } from '@/components/illustrations/account';
+import { ExportMenu } from '@/components/illustrations/tabs';
 
 export const metadata = helpMetadata({
   title: 'Exporting Diagrams',
   description:
-    'Get your livediagram out of the app as an image, or embed a read-only live view elsewhere.',
+    'Get your work out of livediagram as an image, a PDF or a portable file, or embed a live view elsewhere.',
   path: '/help/account-and-data/exporting-diagrams/',
 });
 
-<ArticleLayout title="Exporting Diagrams" description="Take your work with you as a shareable image, or drop a live read-only view into another site." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout title="Exporting Diagrams" description="Take your work with you as an image, a PDF or a portable file, or drop a live view into another site." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-Your documents are not locked inside livediagram. When you want a copy to drop into a slide deck, a doc, or a chat, you can export the current tab as an image. And when you want the document to stay live wherever you put it, you can embed a read-only view instead.
+Your documents are not locked inside livediagram. When you want a copy to drop into a slide deck, a doc, or a chat, you can export a tab as an image or a PDF, or as a file another tool can open. And when you want the document to stay live wherever you put it, you can embed it instead.
 
-<Figure caption="Export the current tab as a PNG, SVG, or PDF, or grab a live embed instead.">
+## Exporting a tab
+
+Export works on one tab at a time, so switch to the tab you want first. Then either:
+
+- open the tab's **⋯** menu, expand **Content**, and choose **Export**; or
+- open the Explorer panel's menu and choose **Export**, which exports the tab you are on.
+
+To export only part of a tab, select two or more elements and choose **Export** on the toolbar that appears for a multi-selection.
+
+<Figure caption="The Export dialog offers seven formats: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG and PDF.">
   <ExportMenu />
 </Figure>
 
-## Exporting as an image
+Pick a format:
 
-The editor can turn the current tab into an image file you can save and share anywhere. Because the export is built from the same elements you see on the canvas, what you get matches the canvas exactly.
+- **PNG**, **SVG** or **PDF** for a picture: PNG to paste into docs and chat, SVG to stay sharp at any size, PDF to print. An options screen lets you add the canvas background pattern, tilt the picture into the isometric view, and include hidden layers, then **Download**.
+- **JSON** for a `.livediagram-tab.json` file that [imports](/help/tabs/import-tabs/) back into livediagram with everything intact. This is the one to keep as a backup.
+- **Mermaid**, **Markdown** or **Excalidraw** to carry the structure into another tool. Each opens the text first, so you can copy it or download it.
 
 A few things to know about image exports:
 
-- Looping element animations and animated backgrounds **freeze to a static frame** in the export, so a still image always looks clean.
-- Frames are drawn behind their contents, just as they do on the canvas, so a section stays a backdrop in the exported image.
-- The export covers the current tab, so switch to the tab you want before exporting a multi-tab document.
+- Looping element animations and animated backgrounds **freeze to a static frame**, so a still image always looks clean.
+- Frames are drawn behind their contents, just as they are on the canvas.
+
+[Exporting a Tab](/help/tabs/export-tabs/) covers every format and option in detail, including how [Illustrate](/help/canvas/illustrate/) pages export one sheet at a time.
 
 An image is the right choice when you need a fixed snapshot: a diagram for a report, an attachment, or a printout.
 
 ## Embedding a live view
 
-When you want the document to keep updating wherever it lives, [embed it](/help/collaboration/sharing/embeds/) instead. An embed is a read-only iframe of a shared document that you can drop into Notion, a wiki, or any doc that accepts an iframe.
+When you want the document to keep updating wherever it lives, [embed it](/help/collaboration/sharing/embeds/) instead. An embed is an iframe of a shared document that you can drop into Notion, a wiki, or any page that accepts an iframe.
 
-An embed is always read-only, whatever role the share link carries, so editing happens back in the full editor. It hides all the editor controls, leaving just the canvas with pan and zoom, and it stays live: as the document is edited, the embed updates in place rather than showing a stale snapshot.
+An embed follows the role of the pass it was made from: a **Viewer** pass embeds a read-only canvas, an **Editor** pass an editable one. It hides the editor's controls, leaving the canvas with pan and zoom, and it stays live: as the document is edited, the embed updates in place rather than showing a stale snapshot.
 
-To grab one, open the Share dialog and use the **Embed** copy button next to a link. It copies a ready-made iframe snippet, sized sensibly, that you can paste straight into your page.
+To grab one, open the **Share** dialog, find the pass you want, open its **Embed** menu and choose **Copy iframe** for a ready-made snippet you can paste straight into your page.
 
 <Tip>
   Reach for an image when you need a fixed snapshot, and an embed when you want the document to keep
-  updating in place wherever you have put it.
+  updating in place wherever you have put it. For a picture that updates itself, see [Live
+  Image](/help/collaboration/sharing/live-image/).
 </Tip>
 
 </ArticleLayout>

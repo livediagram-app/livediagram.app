@@ -6,7 +6,7 @@ import { UndoStep } from '@/components/illustrations/undo-redo';
 export const metadata = helpMetadata({
   title: 'Undo',
   description:
-    'Step back your most recent change with a keyboard shortcut or the undo button. Undo is personal to you and covers your last few steps.',
+    'Step back your most recent change with Cmd or Ctrl+Z, the Undo button or the search palette. Undo is personal to you and keeps up to 500 steps for the session.',
   path: '/help/canvas/undo/',
 });
 
@@ -23,28 +23,42 @@ export const metadata = helpMetadata({
 Undo takes back your most recent change. You can:
 
 - Press **Cmd+Z** on a Mac, or **Ctrl+Z** on Windows and Linux.
-- Click the undo button in the controls at the bottom-right of the canvas.
+- Click the **Undo** button at the left of the controls in the bottom-right corner of the canvas. It is greyed out when there is nothing to undo.
+- Open the search palette (**Cmd+K** or **Cmd+.**, **Ctrl** on Windows and Linux) and type **undo**.
 
-A whole drag counts as a single step, so one undo takes you all the way back to before you started dragging.
+A whole drag counts as a single step, so one undo takes you all the way back to before you started dragging. A slider drag, such as opacity or a shadow's blur, is one step too. Selecting something is not a change, so it never uses up a step.
 
 <Figure caption="Pressing Cmd or Ctrl plus Z steps back your most recent change.">
   <UndoStep />
 </Figure>
 
-## Undo is personal
+While you are typing in a label or a text box, the shortcut undoes your typing instead. Click away to finish editing, then undo whole changes as usual.
 
-Undo steps back the changes that **you** made. Each person editing the document has their own short undo history of their last few steps, so undoing never reaches into someone else's work.
+<Tip>
+  Changed your mind halfway through a drag? Press **Escape** before letting go: the element snaps
+  back and nothing is added to your undo history.
+</Tip>
+
+## How far back it goes
+
+Undo keeps up to **500** steps, on desktop and on phones, and you can step back through them one at a time. Past that, the oldest steps are dropped.
+
+Your undo history lives in this browser tab for the current session. It is cleared when you reload the page or open another document. Your document itself is saved as you go, so reloading never loses work.
+
+## Undo with other people
+
+Undo steps back the changes that **you** made in this session: each person editing the document has their own undo history. When you undo, the change is reversed for everyone on the document, just like any other edit.
 
 <Note>
-  Your undo history is just for the current session and is cleared when you reload the page. Your
-  document itself is saved as you go, so reloading never loses work.
+  Your undo history is a record of how the document looked before each of your changes. If a
+  collaborator edits the same tab in between, undoing far back can also take away their later edit.
+  When several people are working on the same area, undo only your last step or two, and fix
+  anything older by hand.
 </Note>
 
-## What other people see
+## Who can undo
 
-When you undo, the change is reversed for everyone on the document, just like any other edit.
-
-Undo is not available to people who are only viewing the document.
+Undo is not available to people who are only viewing the document: the buttons are hidden and the shortcuts leave the document alone. In zen mode the buttons are hidden too, but the shortcuts still work.
 
 When you have gone back too far, use [Redo](/help/canvas/redo/) to put a change back.
 

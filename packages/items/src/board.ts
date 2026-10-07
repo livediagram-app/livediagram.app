@@ -298,13 +298,25 @@ function readAddTypes(input: unknown): string[] | undefined {
   return out.slice(0, 32);
 }
 
-// The types a board takes new cards of, in the catalogue's order: its own, or every one.
+// The types a board takes new cards of, in the catalogue's order: its own, or every one. Never empty while
+// the catalogue is not: a board whose every named type has since been deleted takes every type again
+// (docs/specs/026-plan/plan-board.md "The board set-up").
 export function boardAddTypes<T extends { id: string }>(
   setup: Pick<PlanBoardSetup, 'addTypes'>,
   types: readonly T[],
 ): T[] {
   if (!setup.addTypes) return [...types];
-  return types.filter((t) => setup.addTypes!.includes(t.id));
+  const own = types.filter((t) => setup.addTypes!.includes(t.id));
+  return own.length ? own : [...types];
+}
+
+// Whether a board takes new cards of `typeId` (palette drops), by the same rule as boardAddTypes.
+export function boardTakesType(
+  setup: Pick<PlanBoardSetup, 'addTypes'>,
+  types: readonly { id: string }[],
+  typeId: string,
+): boolean {
+  return boardAddTypes(setup, types).some((t) => t.id === typeId);
 }
 
 export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): boolean {

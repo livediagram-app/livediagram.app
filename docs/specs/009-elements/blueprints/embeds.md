@@ -305,10 +305,10 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
 - **Colours.** `supportsColours` exposes Text, Background and Border rows; `VideoView` ignores
   `textColor` [QC7].
 - **Empty state.** `EmbedGlyph`, then:
-  - no provider: "Add a link — double-click", hint "YouTube, Vimeo, Loom, Figma, Google Docs, or any
+  - no provider: "Double-click to add a link", hint "YouTube, Vimeo, Loom, Figma, Google Docs, or any
     website";
-  - `website`: "Add a web address — double-click", hint `EMBED_PROVIDER_HINT.website`;
-  - named: "Add a <Label> link — double-click", hint `EMBED_PROVIDER_HINT[provider]` [QC9].
+  - `website`: "Double-click to add a web address", hint `EMBED_PROVIDER_HINT.website`;
+  - named: "Double-click to add a <Label> link", hint `EMBED_PROVIDER_HINT[provider]` [QC9].
 - **Unembeddable.** "Can't embed that link" and the URL, truncated [QC9].
 - **Poster.** `object-cover`, a 68:48 red play badge at 24 % of the card height (min 26 px),
   `hover:scale-110`.

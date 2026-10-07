@@ -189,7 +189,7 @@ const ERROR_TOASTS: Record<string, string> = {
 // actionable, and the thing in the way is always on screen already.
 export const BUSY_TOASTS = {
   review: 'A photo is already open. Finish or cancel that one first.',
-  draft: 'Finish the notes from the last photo — Add or Discard them — then import another.',
+  draft: 'Finish the notes from the last photo (Add or Discard them), then import another.',
   blocked: 'This board cannot take new notes right now.',
 } as const;
 

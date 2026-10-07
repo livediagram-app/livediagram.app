@@ -105,7 +105,7 @@ export const TOUR_STEPS: TourStep[] = [
     // nobody's mode.
     id: 'editor-mode',
     title: 'Diagram & Draw',
-    body: 'Each tab works in one of two modes: Diagram for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand. Switch here, or press Shift+D.',
+    body: 'Each tab works in one of four modes: Diagram for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand, Illustrate for pages and Plan for boards of items. Switch here, or press Shift+D.',
     target: 'editor-mode-menu',
     alsoHighlight: 'editor-mode',
     // An event-storming board offers no switch, and nor does a phone (its tab menu's Opens in

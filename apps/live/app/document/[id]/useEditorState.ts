@@ -148,7 +148,13 @@ import {
 } from '@/components/panels/CollaboratePanel';
 
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
-import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
+import {
+  autosaveReadOnly,
+  createTab,
+  deriveTabLoadState,
+  mergeAiElements,
+  patchTab,
+} from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
@@ -813,7 +819,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
     documentId,
-    isReadOnly,
+    isReadOnly: autosaveReadOnly({ canEdit, loadError, documentNotFound }),
     tabs,
     documentName,
     selfId: selfParticipant.id,
@@ -2074,29 +2080,23 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
   // Selection + placement + format helpers. See useElementHelpers.
-  const {
-    addBoxed,
-    addBoxedAt,
-    currentSelectionIds,
-    selectionPrimary,
-    exitFormatPainter,
-    applyFormatFromSource,
-  } = useElementHelpers({
-    readSelection,
-    activeId,
-    activeTab,
-    // Creation-only helpers: additionally blocked while the active layer
-    // is hidden / locked (docs/specs/006-document/layers.md).
-    editsBlocked: createBlocked,
-    formatSourceId,
-    formatConfig: formatSettings.config,
-    getViewportCenter,
-    commit,
-    commitTabs,
-    setSelectedId,
-    setEditingId,
-    setFormatSourceId,
-  });
+  const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
+    useElementHelpers({
+      readSelection,
+      activeId,
+      activeTab,
+      // Creation-only helpers: additionally blocked while the active layer
+      // is hidden / locked (docs/specs/006-document/layers.md).
+      editsBlocked: createBlocked,
+      formatSourceId,
+      formatConfig: formatSettings.config,
+      getViewportCenter,
+      commit,
+      commitTabs,
+      setSelectedId,
+      setEditingId,
+      setFormatSourceId,
+    });
 
   // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): reads a photographed wall, reconciles it
   // against this board and lands the result as an on-canvas DRAFT. Detection
@@ -2947,10 +2947,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openDocument,
   });
 
-  // Selection-editing handlers (format painter, label edit, type-to-edit,
+  // Selection-editing handlers (label edit, type-to-edit,
   // single + shift-click select). See useSelectionEditing.
   const {
-    beginFormatPainter,
     beginEdit,
     commitLabel,
     commitTable,
@@ -3425,7 +3424,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginDrag,
     beginEdit,
     beginEndpointDrag,
-    beginFormatPainter,
     beginFreehand,
     beginHighlighter,
     beginMarker,
@@ -3496,7 +3494,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     effectiveTemplatePickerMode,
     templateGridOpen,
     embedMode,
-    exitFormatPainter,
     extendShareLink,
     rescopeShareLink,
     fitToScreen,

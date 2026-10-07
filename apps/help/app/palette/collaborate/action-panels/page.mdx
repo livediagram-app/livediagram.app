@@ -6,7 +6,7 @@ import { ActionPanelCard } from '@/components/illustrations/palette-collab-panel
 export const metadata = helpMetadata({
   title: 'Action Panels',
   description:
-    'A card on the canvas that shows one assigned action, with its name, description, assignee and status, set up and completed from the card itself.',
+    'A card on the canvas that lists assigned actions, each with its name, assignee and a check to complete it, added and completed from the card itself.',
   path: '/help/palette/collaborate/action-panels/',
 });
 
@@ -23,28 +23,30 @@ An action panel is a card on the canvas that carries a list of [assigned actions
 
 ## Adding one
 
-Add one from the **Record** group of the palette's [Collaborate](/help/palette/behaviour/) category. A fresh panel has no actions yet, so it invites you to give someone a clear next step, with an **Add Action** button.
+Add one from the **Record** group of the palette's [Collaborate](/help/palette/behaviour/) category. A fresh panel has no actions yet: it reads **No Actions Yet** and invites you to give someone a clear next step, with an **Add Action** button.
 
-Press it and the usual **Assign Action** dialog opens: pick who it is for, give it a name and an optional description, and choose whether to email them. Confirm, and the action appears on the card. Add as many as you need from the dashed **Add Action** bar at the bottom of the card.
+Press it and the usual **Assign Action** dialog opens: pick who it is for, give it a name and an optional description, and choose whether to email them. Confirm, and the action appears on the card. Add as many as you need (up to 50) from the dashed **Add Action** bar at the bottom of the card.
 
 A panel can be _about_ an element: drop one beside it and join the two with an ordinary arrow, the same way a [comment panel](/help/palette/collaborate/comment-panels/) is attached.
 
 ## Working with it
 
-Each action is a row: a round check, its name, and who it is for. The header counts how many are still open, and says **All Done** once every one is ticked.
+Each action is a row: a round check, its name, and who it is for. The header counts how many are still open ("2 open"), and shows **All Done** once every one is ticked. If you give the panel a label it becomes the card's title; otherwise the title reads **Actions**.
 
 <Figure caption="An action panel: one row per action, each with a check to finish it, and a bar to add another.">
   <ActionPanelCard />
 </Figure>
 
 - **Tick the check** to mark an action done. It fills green, the name is struck through, and the row stays on the card as a record of what was agreed. Tick it again to reopen it. Finishing the last open action throws a small burst of confetti.
-- **Click the action's name** to open the dialog with everything filled in, so you can rename it, change the description or hand it to someone else.
+- **Click the rest of the row** to open the dialog with everything filled in, so you can rename the action, change the description or hand it to someone else.
 - To remove one action, open it and use **Delete Action** at the bottom of the dialog (you confirm it with a second click). Deleting the card removes all of its actions.
 
-Each one is the same kind of action as any other: it appears in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and on your Activity page, and anyone who can view the document can read it, while only editors can change it.
+Ticking and reopening are not undoable: Ctrl+Z never unassigns or reopens somebody else's work. The list scrolls once it outgrows the card, and resizing the card makes room for more rows rather than bigger text.
+
+Each one is the same kind of action as any other: it appears in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and on your Activity page, and anyone who can view the document can read it, while only editors can change it. On a view-only link, in an embed or while presenting, the card shows its actions with no buttons.
 
 ## Panel or action badge
 
-You can already put an action on any element with **Assign Action** in its menu. That shows as a small badge that opens a popover for one reader at a time. A panel holds the same kind of action, as many as you like, left out on the canvas, so they are in the export and in everyone else's view.
+You can already put an action on any element with **Assign Action** in its menu. That shows as a small badge that opens a popover for one reader at a time, and an element holds only one. A panel holds the same kind of action, as many as you like, left out on the canvas, so they are in the export and in everyone else's view.
 
 </ArticleLayout>

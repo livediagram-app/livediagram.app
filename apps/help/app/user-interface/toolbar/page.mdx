@@ -5,7 +5,7 @@ import { ContextualToolbar, MultiSelectToolbar } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Toolbar',
   description:
-    'When you select elements, a toolbar appears with the actions that apply to your selection: style, group, duplicate, and more.',
+    'When you select elements, a toolbar appears with the quick actions for your selection: text, duplicate, layer order, lock, delete, and the full menu behind More.',
   path: '/help/user-interface/toolbar/',
 });
 
@@ -16,28 +16,48 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-Select something on the canvas and a **toolbar** appears next to it, holding the actions that apply to what you have selected. It is contextual: it shows up only when there is a selection, and its contents change to match.
+Select something on the canvas and a **toolbar** appears next to it, holding the quick actions for what you have selected. It is contextual: it shows up only when there is a selection, and its contents change to match. A small caption above it names the selection, for example "Selected Square".
 
-<Figure caption="With one element selected, the toolbar floats beside it carrying that element's styling and actions.">
+<Figure caption="With one shape selected, the toolbar floats beside it with More, Add text, Duplicate, layer order, Lock and Delete.">
   <ContextualToolbar />
 </Figure>
 
-## What it offers
+## One element selected
 
-- **One element selected**: the styling and actions for that element: colours and borders, text and font, layer order, links and comments, lock, duplicate, and delete. The exact set depends on the element kind (a shape, an arrow, an image, and a data element each expose what is relevant to them).
-- **Several elements selected**: the actions that make sense across a group: Filter, Duplicate, Lock, Export, and Delete. Right-click the selection for everything else; on a touch screen, which cannot right-click, a **More** button opens the same menu. This is the fastest way to act on a whole cluster of elements at once.
+From left to right:
 
-When a selection mixes element kinds, the **Filter** button narrows it by type, so you can marquee over a busy area and keep, say, just the arrows before acting on them.
+- **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
+- **Add text** (or **Edit text** once the element has some), and **Edit points** on a shape you can reshape point by point.
+- On a [mind map](/help/palette/mind-maps/) node, **Add child** and **Add sibling**.
+- **Duplicate**.
+- **Bring to front** and **Send to back**.
+- **Lock** (or **Unlock**) and **Delete**.
 
-The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back.
+Which buttons show depends on the element: an image has no text to add, and a locked element offers little beyond **Unlock**. To comment on an element, open **More** and choose **Add Comment** under **Collaborate**. On a view-only link, where there is no element menu, the toolbar holds just an **Add Comment** button instead, so visitors can still join a discussion.
 
-<Figure caption="Select several elements and the toolbar switches to the cross-selection actions: filter, duplicate, lock, export, and delete.">
+## Several elements selected
+
+Drag a marquee or Shift-click to select several, and the toolbar switches to the actions that make sense across a group:
+
+- **More** (**⋯**): the selection's menu, for styling everything at once.
+- **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
+- **Duplicate**, with the arrows between the selected elements included.
+- **Export**: export just these elements.
+- **Lock** (or **Unlock**) and **Delete**.
+
+The caption reads "Selected Elements" with a count.
+
+<Figure caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete.">
   <MultiSelectToolbar />
 </Figure>
 
+The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back. Beside a selected shape or arrow, the [Quick Style panel](/help/canvas/quick-style-panel/) offers the most-used colours and widths too.
+
+In [power user mode](/help/user-interface/power-user-mode/) on a computer, **More** leaves the toolbar (right-click instead), and with Minimal Chrome on so do the caption and the bin (press `Delete` instead). Touch screens keep all three.
+
 <Tip>
-  Copy one element's look onto others with the [format
-  painter](/help/selection-modes/format-painter/), reachable from the toolbar and the palette.
+  To copy one element's look onto others, use the **Format** tool in the Palette's selection-mode
+  dropdown (see [Format Painter](/help/selection-modes/format-painter/)).
 </Tip>
 
 </ArticleLayout>

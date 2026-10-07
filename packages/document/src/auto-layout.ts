@@ -59,6 +59,10 @@ export type AutoLayoutOptions = {
   // a contracted cluster block is exactly its members' bounding box, and
   // normalizeSizes would clamp it to the shape tier's size.
   fixedSizeIds?: Set<ElementId>;
+  // Elements that keep their place and size (docs/specs/008-canvas/layout-cleanup.md "Locked elements
+  // stay put"): the editor passes its locked elements and everything on a locked layer. A locked
+  // box is not a graph node, so arrows to it are not edges, and a locked arrow keeps its anchors.
+  lockedIds?: ReadonlySet<ElementId>;
 };
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
@@ -262,7 +266,8 @@ export function nodesLookUnplaced(elements: Element[]): boolean {
 // them). Non-boxed, non-arrow elements, edgeless boxed content, and arrows with
 // free / external endpoints pass through with only their position untouched.
 export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions = {}): Element[] {
-  const allBoxed = elements.filter(isBoxed);
+  const locked = opts.lockedIds;
+  const allBoxed = elements.filter(isBoxed).filter((n) => !locked?.has(n.id));
   const arrows = elements.filter((e): e is ArrowElement => e.type === 'arrow');
 
   // Only boxed elements an arrow touches are graph nodes. Edgeless boxed
@@ -346,7 +351,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
       return { ...el, x: p.x + dx, y: p.y + dy, width: s.w, height: s.h };
     }
     // Mindmap spokes run every way, so only flow and tree have an axis.
-    if (el.type === 'arrow')
+    if (el.type === 'arrow' && !locked?.has(el.id))
       return reanchorArrow(el, finalCenters, style === 'mindmap' ? undefined : dir);
     return el;
   });

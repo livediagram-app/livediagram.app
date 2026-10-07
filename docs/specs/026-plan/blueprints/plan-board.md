@@ -114,8 +114,11 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - **Plan card onto a board**: in `useEditorDrag`'s drag end, a moved `plan-card` released over a board cell
   (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
   that column and the card element is removed (two undo steps: the removal, then the move).
-- **Quick add**: Enter → `parseQuickAdd` → `createItem({ type, fields, place: { status, after: lastId } })`;
-  the field stays open and empties. Escape closes. Type defaults to `task`.
+- **New card types**: `boardAddTypes(setup, types)` (`packages/items/src/board.ts`) is what Add Card offers and
+  what the Cards menu's New Cards Can Be shows pressed: `setup.addTypes` filtered to the catalogue, in its order,
+  or every type when it is unset or names none still in the catalogue. `boardTakesType(setup, types, id)` is the
+  same rule for a palette card's drop. Deleting a type never rewrites a board's `addTypes`; the next New Cards
+  Can Be change stores only current ids.
 - **Item panel**: `openItemId` in `usePlanSlice`; opening broadcasts presence `viewing`; edits debounce 400 ms
   per field (`ITEM_EDIT_DEBOUNCE_MS`), flushed on close; each flush is one undo step.
 - **Card trail**: `itemTrail: string[]` in `usePlanSlice`, beside `openItemId`. `openItem(id)` resets it to
@@ -204,7 +207,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | Projection: columns, rows, unplaced, filter | `packages/items/src/board.test.ts`                            |
 | Drop moves, between boards, refusals        | `apps/live/components/plan/plan-board-moves.test.ts`          |
 | Keyboard moves and their announcement       | `apps/live/components/plan/plan-board-keys.test.ts`           |
-| Quick add tokens                            | `packages/items/src/quick-add.test.ts`                        |
+| New card types, deleted-type fallback       | `packages/items/src/archive.test.ts`                          |
 | Face-down and votes spent                   | `packages/items/src/board.test.ts`                            |
 | A palette card lands only in a column       | `apps/live/hooks/plan/plan-card-drop.test.ts`                 |
 | Plan templates' boards                      | `apps/live/lib/template-boards.test.ts`                       |

@@ -376,12 +376,12 @@ function EmptyState({
           <span className="text-[11px] font-medium text-slate-200">
             {/* "Add a Website link" reads like a typo; a website has an
                 address, not a link. */}
+            Double-click to{' '}
             {provider === 'website'
-              ? 'Add a web address'
+              ? 'add a web address'
               : named
-                ? `Add a ${named} link`
-                : 'Add a link'}{' '}
-            — double-click
+                ? `add a ${named} link`
+                : 'add a link'}
           </span>
           <span className="text-[10px] leading-snug text-slate-400">
             {provider

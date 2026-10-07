@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("avatar-mode")}
 >
 
-Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Choose it from the mode picker at the top of the floating palette, or press **`W`**.
+Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Choose **Avatar** from the tool picker at the top of the floating palette, or press **`W`**.
 
 ## Walking
 
@@ -28,7 +28,7 @@ Avatar mode drops a small pixel character onto the canvas and lets you walk it a
 
 When the character ends up standing on an element, that element gets a soft ring around it, so your audience can see exactly which box you have arrived at. The canvas scrolls to follow the character when it gets close to the edge of the view, and the zoom is left alone.
 
-<Figure caption="Avatar mode is lit in the mode picker; the character has walked over to the shape being discussed, which is ringed.">
+<Figure caption="The palette's tool picker set to Avatar; the character has walked over to the shape being discussed, which is ringed.">
   <AvatarMode />
 </Figure>
 
@@ -40,56 +40,60 @@ One press is one hop: holding the key down will not pogo, and pressing again mid
 
 ## Make the character yours
 
-Whenever Avatar mode is on, an **Avatar panel** appears — a character sheet with a portrait of your character and four choices, each one a row you expand:
+Whenever Avatar mode is on, an **Avatar** panel appears under the palette: a character sheet with a portrait of your character and four choices, each one a row you expand:
 
-- **Gender** — male or female.
-- **Clothing** — sixteen outfits: T-shirt, stripes, jumper, hoodie, vest, suit, dress, skirt, polo, flannel, overalls, lab coat, Hawaiian, varsity, turtleneck, or apron.
-- **Hair** — fourteen styles: short, buzz, curly, long, ponytail, bun, mohawk, bald, pigtails, afro, spiky, bob, braid, or top knot.
-- **Size** — small, regular, or tall.
+- **Gender**: male or female.
+- **Clothing**: sixteen outfits: T-shirt, stripes, jumper, hoodie, vest, suit, dress, skirt, polo, flannel, overalls, lab coat, Hawaiian, varsity, turtleneck, or apron.
+- **Hair**: fourteen styles: short, buzz, curly, long, ponytail, bun, mohawk, bald, pigtails, afro, spiky, bob, braid, or top knot.
+- **Size**: small, regular, or tall.
 
-Each row shows what it is currently set to, so a collapsed panel still reads as a summary of your character; open one and the options appear. Pick anything and the character on the canvas changes as you go. In the corner of the portrait is a **randomise button** — one click for a whole new character, keeping the size you chose.
+Each row shows what it is currently set to, so a collapsed panel still reads as a summary of your character; open one and the options appear. Pick anything and the character on the canvas changes as you go. In the corner of the portrait is a **Randomise** button: one click for a whole new character, keeping the size you chose.
 
-**The first time you use the mode you get a random character** — a random gender, outfit, and hairstyle, at the regular size — so you are not the same figure as everyone else by default. From then on it is yours: **your choices are remembered in this browser**, so the character you build is the one waiting the next time you enter the mode, in this document or any other.
+**The first time you use the mode you get a random character** (a random gender, outfit and hairstyle, at the regular size), so you are not the same figure as everyone else by default. From then on it is yours: **your choices are remembered in this browser**, so the character you build is the one waiting the next time you enter the mode, in this document or any other.
 
 The panel drags and docks like every other panel, in both [panel layouts](/help/palette/toolbar-layout/) and on a phone.
 
 **Right-clicking the character** on the canvas is a shortcut for switching gender without opening the panel. Right-clicking anywhere else does nothing while you are in this mode (the usual context menus stay shut so a menu cannot interrupt a walkthrough).
 
-There is no colour choice, on purpose: the character's shirt takes **your participant colour** — the same colour as your cursor and your name in the tab bar — so on a shared document it is always obvious which character is yours.
+There is no colour choice, on purpose: the character's shirt takes **your participant colour** (the same colour as your cursor and your name in the tab bar), so on a shared document it is always obvious which character is yours.
 
-## Reactions
+## Behaviour and Reactions
 
-Under the customisation rows are five **reactions** your character can perform on the spot, one click each:
+Under the customisation rows are two more rows you expand, each a list of one-click actions.
 
-- **Jumping jacks** — five of them.
-- **Wave** — a raised hand, waving.
-- **Spin** — two turns on the spot.
-- **Cheer** — arms up, bouncing.
-- **Dance** — a side-to-side sway.
+**Behaviour** makes the character perform on the spot:
 
-They are quick on purpose — a gesture, not a cutscene — and everyone else on a shared document sees the performance too. Starting one stops whatever walk was in progress, so the character performs where it stands.
+- **Jumping jacks**: five of them.
+- **Wave**: a raised hand, waving.
+- **Spin**: two turns on the spot.
+- **Cheer**: arms up, bouncing.
+- **Dance**: a side-to-side sway.
+
+They are quick on purpose (a gesture, not a cutscene), and everyone else on a shared document sees the performance too. Starting one stops whatever walk was in progress, so the character performs where it stands.
+
+**Reactions** throws a burst around your character: **Confetti**, **Sparkles**, **Hearts**, **Applause** or **Fireworks**, the same five a [Reaction Pad](/help/palette/behaviour/reaction-pads/) throws. The burst plays on your own screen.
 
 ## The canvas is read-only while you walk
 
 Every click means "walk over there", so nothing on the canvas can be selected, moved, resized, or edited while Avatar mode is on, and the element shortcuts stay dormant. That is deliberate: you can click around the canvas freely mid-presentation without any chance of nudging a shape out of place.
 
-**Reaching for the palette lets you edit again.** Pick any palette tile — or drag one onto the canvas — and Avatar mode steps aside, back to whichever mode you were in before, and the element drops as normal. You do not have to leave the mode by hand first.
+**Reaching for the palette lets you edit again.** Pick any palette tile, or drag one onto the canvas, and Avatar mode steps aside, back to whichever tool you were using before, and the element drops as normal. You do not have to leave the mode by hand first.
 
 Press **`Esc`** (or pick another mode) to put the character away. Panning still works the usual ways while walking: middle-mouse drag, a two-finger trackpad scroll, or the zoom controls.
 
 ## Availability
 
-Avatar mode is disabled on an empty canvas — add something to walk to first. It is available on desktop and touch, and to view-only visitors, since it changes nothing.
+Avatar mode is disabled on an empty canvas: add something to walk to first. It is available on desktop and touch, and to view-only visitors (press `W`), since it changes nothing. In [Draw mode](/help/canvas/draw-mode/) the palette shows Draw's own tools and `W` is not a shortcut there.
 
 <Tip>
   Everyone on a shared document can walk around at the same time, and you can see each other's
   characters. See [Walking Together](/help/selection-modes/walking-together/).
 </Tip>
 
-To invite people in without explaining where the mode picker is, drop a **Selection Mode** button on
-the canvas (palette → Collaborate). It reads "Switch to Avatar", so one click puts a visitor in
-the mode — and the character appears right at the button they pressed. Pressing it again while in the
-mode hands them back the tool they were using. See [Tools](/help/palette/tools/).
+To invite people in without explaining where the tool picker is, drop a **Selection Mode** button on
+the canvas (the palette's Collaborate category). It reads "Switch to Avatar", so one click puts a visitor in
+the mode, and the character appears right at the button they pressed. Pressing it again while in the
+mode hands them back the tool they were using. See [Selection Mode Buttons](/help/palette/behaviour/mode-buttons/).
 
 Portals work here too: walk your character into a [Portal](/help/palette/tools/portals/) and you come
 out of the one it is linked to, even on another tab.

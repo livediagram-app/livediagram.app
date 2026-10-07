@@ -4,7 +4,10 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement } from '@livediagram/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
-import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
+import {
+  ElementIndicatorStyleProvider,
+  SuppressElementIndicators,
+} from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 
 // docs/specs/008-canvas/element-indicators.md, through the real element view: the indicators draw
@@ -30,10 +33,16 @@ const cloud = {
 
 function draw(
   element: BoxedElement,
-  { selected = false, style = 'top' }: { selected?: boolean; style?: ElementIndicatorStyle } = {},
+  {
+    selected = false,
+    style = 'top',
+    embed = false,
+  }: { selected?: boolean; style?: ElementIndicatorStyle; embed?: boolean } = {},
 ) {
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <ElementIndicatorStyleProvider style={style}>{children}</ElementIndicatorStyleProvider>
+    <SuppressElementIndicators when={embed}>
+      <ElementIndicatorStyleProvider style={style}>{children}</ElementIndicatorStyleProvider>
+    </SuppressElementIndicators>
   );
   return render(
     <BoxedElementView
@@ -86,6 +95,15 @@ describe('BoxedElementView indicators', () => {
     const { container, getByText } = draw(cloud, { style: 'off' });
     expect(container.querySelector('[data-indicators]')).toBeNull();
     expect(getByText('Cloud').closest('.inset-x-0')).toBeNull();
+  });
+
+  it('draws none in an embed, whatever style the person chose', () => {
+    for (const style of ['top', 'footer'] as const) {
+      const { container, getByText, unmount } = draw(cloud, { style, embed: true });
+      expect(container.querySelector('[data-indicators]')).toBeNull();
+      expect(getByText('Cloud').closest('.inset-x-0')).toBeNull();
+      unmount();
+    }
   });
 
   it('draws none on an element that carries nothing', () => {

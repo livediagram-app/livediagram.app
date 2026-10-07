@@ -222,7 +222,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 
 - **Chrome**: `element-variant.ts` `link-card` case: 10 px radius, 1 px solid border, `shadow-sm`,
   `overflow-hidden`; defaults fill `#ffffff`, stroke `#e2e8f0`, text `#1e293b` in every surface.
-- **Empty**: centred "Add a link — double-click" (UI copy as shipped).
+- **Empty**: centred "Double-click to add a link" (UI copy as shipped).
 - **Linked**: banner (OG image `object-cover`, else slate gradient with a globe), then the info row:
   16 px favicon or glyph, title (12 px semibold, `line-clamp-2`, `textColor`), destination (10 px,
   truncated), and a right arrow that nudges on hover when followable.

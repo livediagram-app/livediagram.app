@@ -1,34 +1,38 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { Templates } from '@/components/illustrations/canvas';
+import { NewDocumentTemplates } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Templates',
   description:
-    'Start from a themed template instead of a blank canvas, with the structure and styling already in place.',
+    'Start a document from a ready-made template instead of a blank canvas, filter the catalogue by mode, and restyle it with any theme.',
   path: '/help/canvas/templates/',
 });
 
 <ArticleLayout
   title="Templates"
-  description="Begin a diagram from a ready-made, themed starting point instead of an empty canvas, and adapt it to your needs."
+  description="Begin a document from a ready-made starting point instead of an empty canvas, find the templates for the mode you work in, and adapt it to your needs."
   categoryTitle="Canvas"
   categorySlug="canvas"
   subArticles={getSubArticles("templates")}
 >
 
-A blank canvas is freeing, but sometimes you would rather start with structure already in place. Templates give you a ready-made diagram as a starting point, complete with a theme applied, so you can begin from something shaped roughly like what you need and adapt it, instead of building every diagram from nothing.
+A blank canvas is freeing, but sometimes you would rather start with structure already in place. Templates give you a ready-made document as a starting point, filled with believable example content, so you can begin from something shaped roughly like what you need and adapt it, instead of building every diagram from nothing.
 
-## Starting from a template
+## Starting from a Template
 
-When you [create a new document](/new), you can pick a template rather than an empty canvas. Each template arrives with its elements laid out and a [theme](/help/canvas/themes/) already applied, so the look is coherent from the first moment. From there it is an ordinary document: move, edit, add, and delete elements exactly as you would on any canvas.
+When you [create a new document](/new), the **New Document** wizard opens on its template step. Pick a template, press **Next**, then name the document and choose where it lives, and press **Create**. From there it is an ordinary document: move, edit, add, and delete elements exactly as you would on any canvas.
 
-<Figure caption="The new-document screen offers a grid of ready-made, themed templates to start from.">
-  <Templates />
+<Figure caption="The New Document wizard's template step: the mode filter beside the search box, then the Popular shelf.">
+  <NewDocumentTemplates />
 </Figure>
 
-## What's in the catalogue
+The step opens on the **Popular** shelf. Below it, **Explore More Categories** opens any other category as a shelf of its own, and **Search templates...** finds a template by name across the whole catalogue.
+
+Inside a document, **Quick Start** offers the same catalogue for a tab that is still empty. It opens when you add a tab, and from the **Quick Start** button on the banner along the bottom of an empty canvas; pick a template and press **Apply** to fill that tab, or **Cancel** to keep it blank.
+
+## What's in the Catalogue
 
 The templates browse by category, and the picker skips a category that has nothing in it:
 
@@ -45,26 +49,29 @@ The templates browse by category, and the picker skips a category that has nothi
 
 Four blanks lead the **Popular** shelf, one for each way of working, and sit apart from the categories since starting from nothing is not a kind of diagram: **Blank Diagram** (an empty canvas), **Blank Whiteboard** (a board in [Draw mode](/help/canvas/draw-mode/) for free drawing without distractions), **Blank Illustration** (an empty page in [Illustrate mode](/help/canvas/illustrate/), for an infographic or an article) and **Blank Plan** (a board in [Plan mode](/help/canvas/plan-mode/) for moving work through columns).
 
-## Finding templates for a mode
+## Finding Templates for a Mode
 
-Every template opens in one mode: **Diagram**, **Draw** or **Illustrate**. The small icon before a template's name says which. To see only one mode's templates, choose it in the dropdown beside the search box (hover it to see the choices): **Diagram**, **Draw** or **Illustrate**. Popular, the categories, their counts and your search results all narrow to that mode. **Everything** shows every template again.
+Every template opens in one mode: **Diagram**, **Draw**, **Illustrate** or **Plan**. The small icon before a template's name says which. To see only one mode's templates, choose it in the dropdown to the left of the search box (hover it, or click it, to see the choices, each with how many templates it holds). Popular, the categories, their counts and your search results all narrow to that mode, and if the template you had selected is not of that mode, the selection moves to the mode's blank. **Everything** shows every template again. The filter starts on Everything each time the wizard opens.
 
 - **Draw** templates are drawn by hand, ready to draw over: **Sketchnote**, **Rich Picture**, **Comic Strip**, **Doodle Warm-Up**, **Paper Prototype**, **Journey Doodle**, **Pre-Mortem** and **Idea Garden**.
 - **Illustrate** templates open on pages of their own: **Article**, **Slide deck**, **Logo design**, **Group card**, **Event Poster**, **Year in Review**, **Résumé**, **Recipe Card**, **Data Story**, **How It Works**, **Versus** and **Social Carousel**.
+- **Plan** templates set up a way of working across several tabs, with no cards yet: **Kanban Board**, **Project Planner**, **Bug Tracker**, **Team Retro**, **Weekly Planner**, **Content Calendar**, **Hiring Pipeline**, **OKRs**, **Product Launch** and **Feedback Board**.
+- Every other template is a **Diagram** template.
 
 Each one arrives as real elements rather than a picture: a Gantt chart's bars are shapes you drag, a wireframe's frames are [device frames](/help/palette/devices/) you can rearrange. Nothing in a template is locked or special.
 
-## Changing the theme
+## Changing the Theme
 
-A new document starts on the Default theme, so the new-document screen only asks for a template and where to save it. Once you are on the canvas, open the Tab Look & Feel dialog to try a different [theme](/help/canvas/themes/), including any of your [custom themes](/help/canvas/themes/custom-themes/): it recolours the whole template at once.
+A new document starts on the Default theme, so the wizard only asks for a template and where to save it (Quick Start keeps the tab's current theme). Once you are on the canvas, click the paintbrush button in the bottom-right corner to open the **Tab Look & Feel** dialog and try a different [theme](/help/canvas/themes/), including any of your [custom themes](/help/canvas/themes/custom-themes/): it recolours the whole template at once.
 
-## Making it your own
+## Making It Your Own
 
 A template is just a head start, not a constraint. Everything in it is fully editable: rename and recolour the elements, restyle the whole thing with a different theme, or strip out the parts you do not need. Because the document works the same as any other, you can also add [tabs](/help/tabs/using-tabs/), invite others, and share it once you have shaped it into what you want.
 
 <Tip>
   Templates pair naturally with themes: pick a layout that fits your content, then try a few themes
-  from the Tab Look & Feel dialog to find the look you want.
+  from the Tab Look & Feel dialog to find the look you want. Double-click a theme to apply it and
+  close the dialog in one go.
 </Tip>
 
 </ArticleLayout>

@@ -6,7 +6,7 @@ Status: shipped
 
 The Pencil splits into two palette tiles in the **Draw** category:
 
-- **Freehand** (`P`) — the stroke is kept exactly as you drew it.
+- **Freehand pencil** (`P` or `7`): the stroke is kept exactly as you drew it.
 - **Shape Pen** (`6`) — a rough circle, square, triangle or line converts to
   the real shape on release.
 

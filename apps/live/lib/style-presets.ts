@@ -32,6 +32,7 @@ import {
   type Padding,
   type ShapeKind,
   isChartShape,
+  supportsRotation,
   type ChartPaletteId,
   type CodeThemeId,
   type ShapeMarker,
@@ -229,7 +230,7 @@ export function applyShadowToEl(el: Element, shadow: ElementShadow | null): Elem
 // Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is
 // stored as undefined (upright). Boxed elements only.
 export function applyRotationToEl(el: Element, deg: number): Element {
-  if (!isBoxed(el)) return el;
+  if (!supportsRotation(el)) return el;
   const next = ((Math.round(deg) % 360) + 360) % 360;
   return { ...el, rotation: next === 0 ? undefined : next };
 }

@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { WebsiteEmbedCards } from '@/components/illustrations/embeds';
 
 export const metadata = helpMetadata({
   title: 'Website embeds',
@@ -17,7 +18,7 @@ export const metadata = helpMetadata({
 
 The other embeds each know one service. **Website** knows none of them, which is the point: type any `http` or `https` address, press **Load embed**, and the page renders inside the element. A status page beside the architecture it monitors, a spec next to the flow it describes, a dashboard on the retro board.
 
-Add one from **Media → Embed → Website** in the palette, then double-click the card and paste the address.
+In [Illustrate mode](/help/canvas/illustrate/), add one from **Media → Embed → Website** in the palette. In Diagram mode the palette leaves embeds out, so search for "website" in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and add it from **Add to canvas**. Then double-click the card and paste the address.
 
 ## The named services still win
 
@@ -29,9 +30,13 @@ The flip side is that a **lookalike** host is framed, because it is not a host w
 
 ## The card is labelled with the host
 
-A website card reads **`bbc.co.uk`**, not the word "Website". Three cards side by side saying "Website" tell you nothing; three saying `bbc.co.uk`, `status.example.com` and `docs.internal` tell you what the canvas holds at a glance.
+A website card reads **`bbc.co.uk`** (in capitals, like every embed's name chip), not the word "Website". Three cards side by side saying "Website" tell you nothing; three saying `bbc.co.uk`, `status.example.com` and `docs.internal` tell you what the canvas holds at a glance. A leading `www.` is dropped.
 
 That means the label follows the address. Change the address and the label changes with it.
+
+<Figure caption="A website card is labelled with its host; once loaded it carries a third control, open in a new tab.">
+  <WebsiteEmbedCards />
+</Figure>
 
 ## Some sites will come up blank
 
@@ -41,8 +46,8 @@ When one of those is framed, **the rectangle comes up empty**. The refusal happe
 
 What you get instead is the thing you actually want:
 
-- **Open in a new tab** sits beside a website embed's controls at all times, not only when something goes wrong. If the rectangle is blank, that is the button.
-- **If nothing loads at all**, the card says so after a few seconds — hedged, because the honest reading covers both causes: the site may be refusing, or it may just be slow or unreachable.
+- **Open this page in a new tab** sits beside a running website embed's other controls at all times, not only when something goes wrong. If the rectangle is blank, that is the button.
+- **If nothing loads at all** within eight seconds, the card says the site "isn't loading", hedged, because the honest reading covers both causes: the site may be refusing, or it may just be slow or unreachable. It offers an **Open in a new tab** button right there.
 
 The palette tile, the empty card and the address hint all warn you about framing before you try, so a blank rectangle is never the first you hear of it.
 
@@ -66,8 +71,8 @@ The named services carry no sandbox at all, because those hosts were each chosen
 
 ## Using it, and moving it
 
-An embedded page ignores the pointer by default, so it never becomes a hole you can't drag or select through. When you want to scroll or click inside the page, use the **Use the player** control in its top-left corner, and press it again to get dragging back. This works as it does for the video embeds, covered in [Embeds on the canvas](/help/palette/embed-elements/).
+An embedded page ignores the pointer by default, so it never becomes a hole you can't drag or select through. When you want to scroll or click inside the page, hover it and press the pointer button (**Use the player controls**) in its top-left corner; press it again to get dragging back. The square beside it (**Stop video**) closes the page and returns to the card. This works as it does for the video embeds, covered in [Embeds on the canvas](/help/palette/embed-elements/).
 
-A website embed carries one control the others do not: **Open in a new tab**, alongside the rest. It is there whether or not the page loaded, because a framed page is a convenience and the real page is always the fallback.
+A website embed carries one control the others do not: **Open this page in a new tab**, beside the other two. It is there whether or not the page loaded, because a framed page is a convenience and the real page is always the fallback.
 
 </ArticleLayout>

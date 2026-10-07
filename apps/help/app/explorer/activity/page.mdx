@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ActivityList } from '@/components/illustrations/explorer';
+import { ActivitySections } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Activity',
@@ -18,29 +18,31 @@ export const metadata = helpMetadata({
 
 **Activity** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group. Where Home tells you what _happened_, Activity tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) and [Plan cards](/help/canvas/plan-mode/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
 
-<Figure caption="Three sections, each a list of rows that open the document at the element in question.">
-  <ActivityList />
+<Figure caption="Three sections, each with its count, and rows that open the document at the element in question.">
+  <ActivitySections />
 </Figure>
 
 ## What lands here
 
 Everything on the page comes from one of your documents, so the row always knows where it is from.
 
-- **Assigned to You** — every open action whose assignee is you, on any document you can open. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list across documents. Plan cards whose **Assignee** is you are listed here too, mixed in with the actions, until the card is finished: moved to a board's done column or past it, archived, or put in the Trash.
-- **You Assigned** — open actions you assigned to somebody else. They are here so you can see what you are waiting _on_, not just what is waiting on you.
-- **Open Comment Threads** — unresolved threads you are in. That means threads you wrote a comment in, threads where a teammate [mentioned you](/help/collaboration/comments/#mentioning-a-teammate), and threads on documents you own. A thread you were mentioned in carries a **Mentioned You** hint, and a row on your own document that you have not replied to yet carries a small **Your document** hint, so you can tell them apart.
+- **Assigned to You:** every open action whose assignee is you, on any document you can open. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list across documents. Plan cards whose **Assignee** is you are listed here too, mixed in with the actions, until the card is finished: moved to a board's done column or past it, archived, or put in the Trash.
+- **You Assigned:** open actions you assigned to somebody else. They are here so you can see what you are waiting _on_, not just what is waiting on you.
+- **Open Comment Threads:** unresolved threads you are in. That means threads you wrote a comment in, threads where a teammate [mentioned you](/help/collaboration/comments/#mentioning-a-teammate), and threads on documents you own. Comment threads on Plan cards are listed too, by the same rules. A thread you were mentioned in carries a **Mentioned You** hint, and a row on your own document that you have not replied to yet carries a small **Your document** hint, so you can tell them apart.
 
-Done actions, finished cards and resolved threads are not listed. Activity is an inbox, not a history; the Timeline and each document's own **Collaborate** panel keep the past.
+The sections appear in that order, each with a count beside its heading, and a section with nothing in it is left out. When all three are empty the page says **Nothing waiting on you**.
+
+Done actions, finished cards and resolved threads are not listed. Activity is an inbox, not a history; [All activity](/help/explorer/timeline/#all-activity) and each document's own **Collaborate** panel keep the past.
 
 ## Reading a row
 
 A row leads with a glyph for its kind (the action clipboard or the comment bubble), then the action's name or, for a thread, the element it hangs off. Under that is the action's description or the latest comment. The last line says where the row is from: a chip with the document's name (a team document's chip carries the team glyph), then the element and the tab.
 
-On the right is the person: the assignee for an action (brand-tinted and labelled **You** when that is you), or the latest commenter for a thread, with the time of the most recent change beneath. Hovering the avatar names them and, for a thread, says how many comments it holds.
+On the right is the person: the assignee for an action (brand-tinted and labelled **You** when that is you), or the latest commenter for a thread, with how long ago the most recent change was beneath. Hovering the avatar names them (a **You Assigned** row reads "Assigned to" and the name) and, for a thread, says how many comments it holds.
 
 A Plan card's row shows its card type's glyph, its number and title, and the type. Its last line names the board it is on and that board's tab, or says **Not on a board** when no board in the document shows it.
 
-Rows are ordered by their most recent change, newest first, within each section.
+Rows are ordered by their most recent change, newest first, within each section. Each kind of row is capped at 100, far more than anyone scrolls through.
 
 ## Opening a row
 

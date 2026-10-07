@@ -108,6 +108,8 @@ export const HELP_ARTICLES = {
   drawMode: 'canvas/draw-mode',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
+  // Load recovery (docs/specs/007-editor/load-recovery.md).
+  documentNotLoading: 'troubleshooting/document-not-loading',
 } as const;
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
@@ -391,6 +393,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   guestVsAccount: {
     title: 'Learn about guest vs account',
     description: 'What changes when you sign in, and what stays the same.',
+  },
+  documentNotLoading: {
+    title: 'Learn about loading problems',
+    description: 'Steps to try when a document will not open.',
   },
 };
 

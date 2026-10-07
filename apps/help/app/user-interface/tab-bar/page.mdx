@@ -5,7 +5,7 @@ import { TabBar } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'The Tab Bar',
   description:
-    'The tab bar runs along the editor and lets you switch between the boards in a document, add new ones, and group them into folders.',
+    'The tab bar runs along the bottom of the editor and lets you switch between the boards in a document, add, rename and reorder them, and group them into folders.',
   path: '/help/user-interface/tab-bar/',
 });
 
@@ -16,19 +16,23 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-A document can hold many boards, and the **tab bar** is how you move between them. Each tab is its own canvas; the bar shows them in a row so the whole document is one click wide.
+A document can hold many boards, and the **tab bar** is how you move between them. Each tab is its own canvas; the bar runs along the bottom of the editor and shows them in a row, so the whole document is one click wide. The [quick controls](/help/user-interface/quick-controls/) (Search, Settings and the appearance switch) sit at its right-hand end.
 
-<Figure caption="A row of tab pills along the bottom: the active tab, a couple of others, a collapsible folder, and the + button to add more.">
+<Figure caption="The bottom bar: the Tabs label, the active tab, a tab folder, the + button, and the quick controls at the far end.">
   <TabBar />
 </Figure>
 
 ## What you can do here
 
-- **Switch** between boards by clicking a tab.
-- **Add** a new tab with the **+** button, blank or from a template.
-- **Manage** a tab by right-clicking it (a [context menu](/help/user-interface/context-menus/)): rename, duplicate, lock, or delete.
-- **Organise** related tabs into one-level collapsible folders when a document grows.
+- **Switch** between boards by clicking a tab. A small stack of initials on a tab shows who else is on it right now.
+- **Add** a new tab with the **+** button straight after the last tab. It arrives numbered ("Tab 2", "Tab 3"), wearing the current tab's theme, with the **Quick Start** picker open so you can begin from a [template](/help/canvas/templates/) or leave it blank.
+- **Rename** a tab by double-clicking the active one, or from its menu.
+- **Reorder** tabs by dragging them along the bar; a caret shows where the tab will land.
+- **Manage** a tab from its menu: right-click it, or click its **⋯** button. The menu holds **Rename**, **Duplicate**, **Paste**, **Lock tab** and **Delete**, plus **Add to Folder**, **Add to Document**, import, export and more. See [Context Menus](/help/user-interface/context-menus/#on-a-tab).
+- **Organise** related tabs into one-level folders with **Add to Folder** when a document grows. See [Tab Folders](/help/tabs/tab-folders/).
 
-For the depth, see [Tabs](/help/tabs/) — this bar is just the control surface for them.
+On a view-only link the bar still switches tabs, but there is no **+** button and no tab menu. On a phone the "Tabs" label is dropped to save room.
+
+For the depth, see [Tabs](/help/tabs/): this bar is just the control surface for them.
 
 </ArticleLayout>

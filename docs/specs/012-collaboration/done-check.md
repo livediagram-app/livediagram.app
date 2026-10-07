@@ -3,11 +3,10 @@
 Everyone marks themselves finished; the card shows who has and who has not, and
 flashes when the last person does.
 
-Palette home: **Behaviour**. By the [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md) rule it is arguably a Collaborate
-element (it collects an answer from the room, like the roll call), and it is
-built out of the Collaborate machinery below. It sits in Behaviour because that
-is where it was asked for; if the two categories are ever reconciled, this is
-the element to move.
+Palette home: **Collaborate > Tools**, beside the timer, the Reveal and the
+Picker. Behaviour and Collaborate are one category since the [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)
+reconciliation; the Done check collects an answer from the room, like the roll
+call, and is built out of the Collaborate machinery below.
 
 ## Built on `responses`, not a new field
 

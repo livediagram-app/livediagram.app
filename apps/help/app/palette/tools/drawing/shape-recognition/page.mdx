@@ -6,7 +6,7 @@ import { ShapeRecognition } from '@/components/illustrations/palette-tools';
 export const metadata = helpMetadata({
   title: 'Shape Recognition',
   description:
-    'Turn rough freehand strokes into real shapes: rectangles, circles, diamonds, triangles, stars and lines.',
+    'Draw with the Shape Pen and rough strokes turn into real shapes on release: rectangles, circles, diamonds, triangles, stars and lines.',
   path: '/help/palette/tools/drawing/shape-recognition/',
 });
 
@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("drawing").filter((a) => a.slug !== "shape-recognition")}
 >
 
-Shape recognition is what the **Shape Pen** does. Draw with it and a rough sketch is matched against real shapes when you release, so a wobbly square becomes a proper square and a quick loop becomes a circle, no need to draw precisely.
+Shape recognition is what the **Shape Pen** does. Draw with it and a rough sketch is matched against real shapes when you release, so a wobbly square becomes a proper square and a quick loop becomes a circle, with no need to draw precisely.
 
 <Figure caption="A wobbly hand-drawn outline matched into a clean square by the Shape Pen.">
   <ShapeRecognition />
@@ -27,7 +27,7 @@ Shape recognition is what the **Shape Pen** does. Draw with it and a rough sketc
 
 ## Picking it
 
-Open the palette's **Draw** category and choose **Shape Pen** (or press `6`). Its neighbour, **Freehand** (`P`), is the same gesture with recognition off: it keeps your stroke exactly as you drew it.
+Open the palette's **Draw** category and choose **Shape Pen** (or press `6`); its banner tells you your rough shape will snap to the real one. Its neighbour, **Freehand** (`P`), is the same gesture with recognition off: it keeps your stroke exactly as you drew it. Like Freehand, the Shape Pen draws one stroke per pick, so pick it again (or press `6`) for the next shape.
 
 There is no setting to remember and nothing to switch on. This used to be a magic-wand toggle in the Pencil's banner, which meant whether your next stroke would convert depended on a choice you might have made days ago on another device. Two pens put the answer where the decision is.
 
@@ -35,18 +35,20 @@ There is no setting to remember and nothing to switch on. This used to be a magi
 
 Your simplified stroke is scored against a handful of shapes, and if it is a confident enough match, a real shape is created instead of a freehand sketch:
 
-- A rough four-corner outline becomes a **square**.
+- A rough four-corner outline becomes a **square** (a rectangle, at the size you drew it).
 - A closed loop becomes a **circle**.
 - A four-corner shape with corners at the edge midpoints becomes a **diamond**.
 - A three-corner outline becomes a **triangle**.
 - A five-pointed sketch becomes a **star**.
-- A straight stroke becomes an **arrow** (a line with no arrowheads).
+- A straight stroke becomes a **line**: an arrow with no heads, so you can add a pointer from its menu afterwards. If either end lands on an existing arrow, it attaches there.
 
 A few shapes are intentionally not recognised, such as trapezoids, speech bubbles, frames, and the device frames: they are either ambiguous to draw freehand or are not freehand-drawable, so they stay palette-only. If a stroke is not confidently matched, it simply commits as a normal freehand sketch.
 
 ## How it decides
 
-Recognition uses heuristics rather than template matching, measuring how closely your sample points hug each idealised shape, so it tolerates strokes drawn at any rotation or size. The confidence threshold leans toward converting: reaching for the Shape Pen rather than Freehand is itself the statement that you want strokes classified, and a false positive is a single undo away. The frustrating case is a wobbly square that stays a sketch when you wanted a real one, so the detector errs toward conversion.
+Recognition uses heuristics rather than template matching, measuring how closely your sample points hug each idealised shape, so it tolerates strokes drawn at any size. The confidence threshold leans toward converting: reaching for the Shape Pen rather than Freehand is itself the statement that you want strokes classified, and a false positive is a single `⌘Z` away. The frustrating case is a wobbly square that stays a sketch when you wanted a real one, so the detector errs toward conversion.
+
+The new shape lands selected and takes the theme's colours, like a shape placed from the palette.
 
 <Tip>
   Recognition only changes confident matches, so you can keep an irregular doodle as a genuine

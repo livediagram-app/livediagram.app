@@ -5,7 +5,7 @@ import { StuckCanvas } from '@/components/illustrations/troubleshooting';
 export const metadata = helpMetadata({
   title: 'A Document Will Not Load',
   description:
-    'A checklist for when a livediagram document does not open, including expired or revoked share links and password gates.',
+    'A checklist for when a livediagram document does not open or is stuck loading, including expired or revoked share links, password gates and repairing your browser.',
   path: '/help/troubleshooting/document-not-loading/',
 });
 
@@ -23,6 +23,25 @@ When a document does not open, the cause is usually access-related rather than d
 2. **Check your connection.** The editor needs to reach the API to load a document. Confirm you are online and not behind a network that blocks the site.
 3. **Open it from your own list.** If you own the document, open it from [your documents](/explorer/recent) rather than an old URL, to rule out a stale link.
 
+## Stuck on "Opening your document"
+
+The opening screen tries to fix a slow load on its own:
+
+1. **After 10 seconds** it says "This is taking longer than usual." and offers **Refresh**.
+2. **After 30 seconds** it reloads the page once by itself, with a fresh start.
+3. **If that does not help**, it shows "Couldn't load document" with two more ways out: **Copy Diagnostics**, a short report to send to [support](/help/contact/), and **Repair This Browser**, which clears stuck settings and caches while keeping your documents. You can also run the repair from [Repair This Browser](/help/troubleshooting/repair-this-browser/), even if the editor will not start.
+
+If your browser is offline, the screen says "You're offline" instead, and the document opens by itself as soon as you reconnect. While you are offline in an open document, a banner says so: your changes stay in that tab and save when the connection is back, so keep the tab open until it does.
+
+## It opens for a colleague but not for you
+
+When the same link works for someone else, the document is fine and the difference is on your side:
+
+1. **Check who you are signed in as.** A document belongs to one account or one guest browser. If your colleague shared it with a different account, or you made it as a guest in another browser, it will not be in your list. Compare the account in the top right with the one the document was shared with.
+2. **Open the share link itself**, not a copy of the address bar from your colleague's browser. The owner's address only works for the owner.
+3. **[Repair this browser](/help/troubleshooting/repair-this-browser/)**, which clears anything saved in this browser that could be in the way.
+4. **Try another browser or network.** A browser extension, an out-of-date browser, or a work network that blocks parts of the site can stop a load that works elsewhere.
+
 ## If you opened it from a share link
 
 A share link is the most common reason a document refuses to load, and the fixes are different from a document you own.
@@ -38,6 +57,6 @@ A share link is the most common reason a document refuses to load, and the fixes
 2. **Try another device** on a different network to separate a local problem from a document problem.
 3. **Confirm you are signed in as the right identity.** A guest document is tied to the browser that made it; a different browser or a signed-in account owns a different set of documents. See [working as a guest](/help/getting-started/guest-vs-account/).
 
-If none of this helps, the document itself may be reachable but stuck on real-time connection; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/). If you are still stuck, [contact us](/help/contact/) with the URL you used and what you see.
+If none of this helps, the document itself may be reachable but stuck on real-time connection; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/). If you are still stuck, [contact us](/help/contact/) with the URL you used, what you see, and the report from **Copy Diagnostics**.
 
 </ArticleLayout>

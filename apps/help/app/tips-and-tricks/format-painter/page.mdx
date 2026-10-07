@@ -15,41 +15,50 @@ The format painter copies the styling of one element and applies it to others, s
 
 ## Painting a style
 
-The format painter comes in two forms. The quick one-shot version copies a source element's style and applies it to the next element you click, then ends. The persistent version lives in the palette as the **Format** tool (a paintbrush icon), so you can keep painting target after target.
-
-Picking the Format tool walks you through two phases with an on-screen banner:
+The format painter is the **Format** tool in the Palette's selection-mode dropdown (in its **Edit** group, beside Select, Hand and Eraser). Picking it opens the **Format** panel and walks you through two phases with an on-screen banner:
 
 <Step n={1}>
   First the banner reads "Select a base element to copy its style". Click the element whose look you
-  want to reuse.
+  want to reuse. The panel's preview, which read "Nothing loaded", now shows it.
 </Step>
 
 <Step n={2}>
   The banner then reads "Tap elements to paint this style onto them". Every element you click now
-  takes on the base element's formatting, and the base stays armed so you can keep going.
+  takes on the base element's formatting, and the base stays loaded so you can keep going.
 </Step>
 
-Click **Done**, or switch to another tool, to exit. Leaving the tool disarms the base element.
+Click **Done** in the banner, or click empty canvas, to put the brush down and return to the tool you had before. `Escape` puts it down too and returns you to Select.
 
 <Figure caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
   <FormatPainter />
 </Figure>
 
-## What it copies
+## Choosing what it copies
 
-The format painter copies cosmetic styling: fill, border, and text colours, border weight and pattern, text formatting, shadows, and looping element animations, which are all cosmetic so they travel with the paint. It also copies the element's size (width and height), aspect-ratio lock, opacity, and padding, so painted elements match the base completely.
+The **Format** panel decides what the brush carries. Under **Copies**, five switches, all on by default:
 
-The target ends up looking exactly like the source, defaults included. If the source arrow uses the theme's colour and the target is red, painting turns the target back to the theme colour rather than leaving the red in place. The same goes for shadows, borders, and text styling. Text formatting you applied to part of the target's label (a bold word, a coloured phrase) gives way to the painted style too; links in the label stay.
+- **Fill**: the fill colour, a header's fill, and its theme preset.
+- **Border**: stroke colour, width, pattern and corners, and an arrow's line.
+- **Text**: colour, size, weight, font and alignment.
+- **Effects**: shadow, opacity and looping animations.
+- **Size**: width, height, aspect-ratio lock and padding.
 
-Arrows join in too: arm an arrow as the source to copy its line colour, thickness, pattern, arrowheads (including their colour), flow animation, and label styling onto other arrows. Styles paint between like kinds only — shape to shape, arrow to arrow — so tapping a shape while an arrow is armed simply does nothing (the two share almost no formatting).
+Under **After painting**, **Keep the brush** (the default) paints one element after another, and **Paint once** empties the brush after a single apply, for a quick one-off.
 
-One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed.
+## How painting works
+
+The target ends up looking exactly like the source in everything the brush carries, defaults included. If the source arrow uses the theme's colour and the target is red, painting turns the target back to the theme colour rather than leaving the red in place. The same goes for shadows, borders, and text styling. Text formatting you applied to part of the target's label (a bold word, a coloured phrase) gives way to the painted style too; links in the label stay.
+
+Arrows join in too: load an arrow as the source to copy its line colour, thickness, pattern, arrowheads (including their colour), flow animation, and label styling onto other arrows. Styles paint between like kinds only: any boxed element to another (a shape onto a sticky note works), and arrow to arrow. Clicking a shape while an arrow is loaded simply does nothing, since the two share almost no formatting.
+
+One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed. Each paint is an ordinary edit, so `⌘Z` undoes it.
 
 Because it only changes elements, the format painter is available to editors. View-only visitors will not see it, since there is nothing for them to change.
 
 <Tip>
   Build one "reference" element with the exact colours, border, and text you want, then use the
-  persistent Format tool to bring every related element into line in a few quick clicks.
+  Format tool to bring every related element into line in a few quick clicks. Switch **Size** off
+  first if the targets should keep their own dimensions.
 </Tip>
 
 </ArticleLayout>

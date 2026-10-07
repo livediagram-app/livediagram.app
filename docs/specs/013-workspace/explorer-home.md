@@ -55,7 +55,8 @@ the **4 most used** and the **4 most recent**, no document twice.
   of links, named **Jump back in**, each named by its document's name.
 - **See more** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
   tablet, the strip's last tile on a phone. The Recent page is `/explorer/recent`: every document the person can
-  open, newest first, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
+  open, most recently saved first (a save by anyone), not by the person's own use as Jump back in's recent
+  group is, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
   back to Home (**Home › Recent**).
 
 ### Desktop and tablet

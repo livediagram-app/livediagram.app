@@ -1,12 +1,13 @@
-// Card-element illustrations for the Tools tab (docs/specs/009-elements/code-block.md + docs/specs/009-elements/checklist.md): the dark
+// Card-element illustrations for the Components category (docs/specs/009-elements/code-block.md + docs/specs/009-elements/checklist.md): the dark
 // monospace code block and the checkable checklist card. Split out from
 // palette-tools.tsx (already at size) per the no-god-files rule; composed from
 // the shared primitives plus raw rects for the token/row motifs the kit lacks.
 
 import { Scene, Label, TextBar } from './primitives';
 
-/** A code block on the canvas: the fixed dark editor-style card with coloured
- *  token bars standing in for highlighted code, and the language badge. */
+/** A code block on the canvas in its default Midnight scheme: the dark
+ *  editor-style card with coloured token bars standing in for highlighted
+ *  code, and the language badge (the language's id, as the card prints it). */
 export function CodeBlockCard() {
   const x = 100;
   const y = 44;
@@ -55,8 +56,8 @@ export function CodeBlockCard() {
         />
         {/* Language badge, top-right */}
         <rect x={x + w - 42} y={y + 12} width={30} height={16} rx={5} className="fill-slate-700" />
-        <Label x={x + w - 27} y={y + 21} anchor="middle" size={9} weight={600} tone="muted">
-          TS
+        <Label x={x + w - 27} y={y + 21} anchor="middle" size={10} weight={600} tone="muted">
+          ts
         </Label>
         {/* Token bars */}
         {lines.map(([indent, tokens], row) => {

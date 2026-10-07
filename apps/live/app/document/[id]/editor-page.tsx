@@ -9,6 +9,9 @@ import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
+// Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
+// "Offline"); its recovery tools are the lazy part.
+import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { EditorContext } from './EditorContext';
@@ -19,10 +22,7 @@ import { MentionContext } from '@/components/canvas/collab/comment/MentionContex
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
 });
-const ApiErrorPage = dynamic(
-  () => import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
-  { ssr: false },
-);
+
 const DocumentTrashedCard = dynamic(
   () => import('@/components/chrome/DocumentTrashedCard').then((m) => m.DocumentTrashedCard),
   { ssr: false },
@@ -31,9 +31,6 @@ const SharePasswordGate = dynamic(
   () => import('@/components/dialogs/SharePasswordGate').then((m) => m.SharePasswordGate),
   { ssr: false },
 );
-
-const LOAD_ERROR_MESSAGE =
-  'We couldn’t load this document: the server didn’t respond. Check your connection and try again.';
 
 // `embed` mounts the read-only embed view (docs/specs/013-workspace/embeds.md): same state, same
 // EditorView, with the chrome / identity / edit gates flipped by the
@@ -149,7 +146,10 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
     const card = (
-      <ApiErrorPage onRetry={() => window.location.reload()} message={LOAD_ERROR_MESSAGE} />
+      <LoadErrorCard
+        embed={embed}
+        ownerId={state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null)}
+      />
     );
     // Embed frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).

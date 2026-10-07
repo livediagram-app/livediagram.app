@@ -172,7 +172,7 @@ export function CustomThemeBuilder({
             className="h-4 w-4 shrink-0 rounded border border-black/10 dark:border-white/20"
             style={{ backgroundColor: copied }}
           />
-          <span className="flex-1">Copied colour — click any box to paste it.</span>
+          <span className="flex-1">Copied colour: click any box to paste it.</span>
           <button
             type="button"
             onClick={() => setCopied(null)}

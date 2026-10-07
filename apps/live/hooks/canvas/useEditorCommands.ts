@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed } from '@livediagram/document';
+import { isBoxed, supportsRotation } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -139,6 +139,7 @@ export function useEditorCommands(open: boolean): {
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
   const singleIsBoxed = single ? isBoxed(single) : false;
   const singleIsShape = single?.type === 'shape';
+  const singleRotates = single ? supportsRotation(single) : false;
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single
     ? single.type === 'arrow'
@@ -157,6 +158,7 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
+      singleRotates,
       singleIsShape,
       hasAnimation,
       marker,
@@ -179,6 +181,7 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
+      singleRotates,
       singleIsShape,
       hasAnimation,
       marker,

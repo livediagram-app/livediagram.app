@@ -181,20 +181,15 @@ export function useElementHelpers(opts: {
 
   // --- Modes ---------------------------------------------------------------
 
-  const exitFormatPainter = () => setFormatSourceId(null);
-
-  // `keepSource` (set by the persistent Format canvas tool) leaves the
-  // source armed after a paint so the user can tap target after target;
-  // the single-shot toolbar painter omits it and the source clears after
-  // one apply.
-  const applyFormatFromSource = (targetId: string, opts?: { keepSource?: boolean }) => {
+  // The Format tool's paint (docs/specs/008-canvas/format-panel.md): "Keep
+  // painting" leaves the source armed after a paint so the user can tap
+  // target after target; "Paint once" empties the brush after one apply.
+  const applyFormatFromSource = (targetId: string) => {
     if (!formatSourceId) return;
     // Every toggle off means there is nothing to paint: leave the brush and
     // the target alone rather than committing an empty change per tap.
     if (!formatPaintsAnything(formatConfig)) return;
-    // "Paint once" (docs/specs/008-canvas/format-panel.md) empties the brush after one apply, whatever the
-    // caller asked for; the single-shot toolbar painter never asks to keep it.
-    const keepSource = opts?.keepSource === true && formatConfig.mode === 'keep';
+    const keepSource = formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
     const target = activeTab.elements.find((el) => el.id === targetId);
     if (!source || !target || source.id === target.id) {
@@ -231,7 +226,6 @@ export function useElementHelpers(opts: {
     addBoxedAt,
     currentSelectionIds,
     selectionPrimary,
-    exitFormatPainter,
     applyFormatFromSource,
   };
 }

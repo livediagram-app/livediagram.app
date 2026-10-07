@@ -12,20 +12,20 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Done Checks"
-  description="Ask to say when they have finished, and watch the waiting list empty."
+  description="Ask the room to say when they have finished, and watch the waiting list empty."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Collaborate', slug: 'behaviour' }}
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'done-checks')}
 >
 
-A **Done check** asks the room to say when they have finished. It lives in the **Tools** group of the [Collaborate](/help/palette/behaviour/) category.
+A **Done check** asks the room to say when they have finished. It lives in the **Tools** group of the [Collaborate](/help/palette/behaviour/) category. Its title reads "Everyone done?" until you give it a label of your own, such as "Finished writing?".
 
 ## Marking yourself done
 
-Everyone presses **I'm done** on the card. A ring fills as people finish, with the count in the middle, and beside it two lists: who has finished, and who it is still waiting on. When the last person marks themselves done the ring turns into a big check, a burst of confetti goes off and the card flashes, so you do not have to sit watching it.
+Everyone presses **I'm done** on the card. A ring fills as people finish, with the count in the middle, and beside it two lists: **Done**, and **Waiting** for the people it is still waiting on. When the last person marks themselves done the ring turns into a big check, the card reads "Everyone's done!", a burst of confetti goes off and the card flashes, so you do not have to sit watching it.
 
-<Figure caption="The card keeps two lists: who has finished, and who it is still waiting on.">
+<Figure caption="The ring counts who has finished, beside the Done and Waiting lists.">
   <DoneCheckCard />
 </Figure>
 
@@ -35,9 +35,13 @@ Press **I'm not done** to take your mark off again.
 
 The waiting list is built from whoever is actually **in the room** at that moment, not from everyone who has ever opened the document. That is deliberate: it means somebody who closed their tab stops holding the card open, and the check can actually finish. If they come back their mark is still there.
 
+With nobody in the room the card says "Nobody here yet" rather than drawing an empty ring, and it never counts an empty room as done.
+
 ## Running the next round
 
-The card's **…** menu has **Clear my mark** and **Reset everyone**, which clears the round so you can run the next one.
+The **…** before the card's title has **Clear my mark** (when you have one) and **Reset everyone**, which clears the round so you can run the next one, plus **All settings…** for the full menu. While somebody holds the [facilitator](/help/collaboration/facilitator/) role, resetting the round is theirs to do; anyone can still mark themselves done.
+
+The card is a fixed size, so it has no resize handles. On a view-only link you can watch it fill, but the button is greyed out.
 
 <Tip>
   Good over a silent-writing block, a review column, or any "tell me when you're ready" moment.

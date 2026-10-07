@@ -43,7 +43,7 @@ export function BlockTypePicker({
   return (
     <ToolbarDropdown
       label="Block type"
-      description="Heading level, paragraph, or a list — applied to the selected lines."
+      description="Heading level, paragraph, or a list, applied to the selected lines."
       menuClassName="min-w-[10rem]"
       trigger={<span className="px-1 text-xs font-medium">{blockTypeLabel(blockType)}</span>}
     >

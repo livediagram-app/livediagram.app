@@ -15,7 +15,7 @@ The timer time-boxes an activity for the whole room. Set it going and a clock pi
 
 ## Setting it up
 
-The Timer lives in the tab's menu under **Collaborate**, beside Vote and Poll.
+The Timer lives in the tab's menu (its **⋯** button, or right-click empty canvas) under **Collaborate**, beside Vote and Poll. You need edit access to run it, and while someone is the [facilitator](/help/collaboration/facilitator/) it is theirs to run.
 
 You can also put the timer **on the canvas**: a [session button](/help/palette/behaviour/session-buttons/) set to Timer counts down where it sits, carrying its own pause, resume and reset. It is the same timer as the pill, not a second one, which is what lets a template ship its own running order.
 
@@ -26,22 +26,25 @@ You can also put the timer **on the canvas**: a [session button](/help/palette/b
 <Step n={1}>
   Choose **Countdown** or **Stopwatch**. For a countdown, set the length by dragging the handle
   round the dial (the coloured wedge is the time; one lap is an hour), tapping a preset (1, 3, 5,
-  10, 15, or 30 minutes), or using the **−** and **+** buttons for a minute at a time, up to two
-  hours. The dial also takes the arrow keys.
+  10, 15, or 30 minutes), or using the **−** and **+** buttons for a minute at a time, from one
+  minute up to two hours (past an hour, the dial shows an extra ring). The dial also takes the arrow
+  keys, with **Home** for one minute and **End** for an hour.
 </Step>
 
 <Step n={2}>
-  Press **Start** to begin. While it runs the dial becomes the clock, the wedge shrinking as time
-  goes, and underneath it you can **Pause** and **Resume**, **Reset** back to the start, or **End**
-  the timer altogether. A countdown also offers **+30s**, **+1 min**, and **+5 min** to give the
-  room a little longer without starting over, and **Again** once it reaches zero.
+  Press the start button, which names what it will do (**Start 5 min countdown**, or **Start
+  stopwatch**). While it runs the dial becomes the clock, the wedge shrinking as time goes, with a
+  **Running**, **Paused** or **Time's up** label above it. Underneath you can **Pause** and
+  **Resume**, **Reset** back to the start, or **End** the timer altogether. A countdown also offers
+  **+30s**, **+1 min**, and **+5 min** to give the room a little longer without starting over, and
+  **Again** once it reaches zero.
 </Step>
 
 The wedge turns amber in the last minute and red at zero, so the dial reads at a glance. A tab runs one timer at a time: while one exists the panel shows it rather than the set-up, and you end it to start a different kind. The timer is scoped to the tab, so each tab can have its own. Because it syncs like everything else, anyone who joins late or reloads sees the current time straight away rather than a fresh clock.
 
 ## What everyone sees
 
-The live clock shows as a floating pill near the top of the canvas, ticking smoothly while it runs. A countdown also **drains**: the pill starts fully tinted and empties from left to right as the time goes, so someone across the room can read how long is left without parsing the digits. It **flashes when it reaches 0:00** so the room knows time is up. A stopwatch has no end to work towards, so it gets no fill. People with edit access get inline pause, resume, and reset controls on the pill itself; view-only visitors see the same clock as a read-only display.
+The live clock shows as a floating pill near the top of the canvas, ticking smoothly while it runs. A countdown also **drains**: the pill starts fully tinted and empties from left to right as the time goes, so someone across the room can read how long is left without parsing the digits. It turns red and **flashes when it reaches 0:00** so the room knows time is up. A stopwatch has no end to work towards, so it gets no fill. The pill is labelled **Timer** or **Stopwatch**. People with edit access get inline pause, resume, reset and remove (the cross) controls on the pill itself, so they can stop it without going back to the menu; view-only visitors see the same clock as a read-only display. There is no sound.
 
 The pill sits in the shared top row of floating controls, alongside things like mode banners and the selection toolbar, so it never overlaps them: to the right of them on desktop, and underneath on mobile.
 

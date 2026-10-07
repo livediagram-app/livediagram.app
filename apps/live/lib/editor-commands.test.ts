@@ -46,6 +46,7 @@ const base: CommandContext = {
   zenMode: false,
   selectionCount: 0,
   singleIsBoxed: false,
+  singleRotates: false,
   singleIsShape: false,
   hasAnimation: false,
   marker: null,
@@ -110,7 +111,7 @@ describe('buildEditorCommands — selection commands', () => {
   });
 
   it('offers rotate/note/comment for a single boxed element', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
+    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
     expect(out).toEqual(
       expect.arrayContaining([
         'rotate-90',
@@ -121,6 +122,14 @@ describe('buildEditorCommands — selection commands', () => {
         'comment',
       ]),
     );
+  });
+
+  // docs/specs/009-elements/blueprints/annotations.md [QD8]: an annotation marker never rotates.
+  it('offers note and comment but no Rotate for an annotation marker', () => {
+    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
+    expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
+    expect(out).not.toContain('rotate-90');
+    expect(out).not.toContain('rotate-0');
   });
 
   it('does not offer boxed-only commands for a single arrow (not boxed)', () => {
@@ -165,7 +174,10 @@ describe('buildEditorCommands — markers (shape only)', () => {
 describe('buildEditorCommands — dispatch', () => {
   it('runs the matching handler, including the rotation angle', () => {
     const h = handlers();
-    const cmds = buildEditorCommands({ ...base, selectionCount: 1, singleIsBoxed: true }, h);
+    const cmds = buildEditorCommands(
+      { ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true },
+      h,
+    );
     cmds.find((c) => c.id === 'rotate-180')!.run();
     expect(h.rotate).toHaveBeenCalledWith(180);
 

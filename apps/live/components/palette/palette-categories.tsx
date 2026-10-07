@@ -207,7 +207,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Tech',
     group: 2,
     description:
-      'Full-colour AWS, Azure, and generic-infrastructure icons for system-architecture diagrams.',
+      'Full-colour AWS, Azure, Cloudflare, Firebase, and generic-infrastructure icons for system-architecture diagrams.',
     icon: <TechTabIcon />,
   },
   {

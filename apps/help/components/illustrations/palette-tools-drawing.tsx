@@ -1,135 +1,40 @@
 // Drawing-gesture illustrations (docs/specs/008-canvas/highlighter.md + docs/specs/008-canvas/polygon-tool.md): the Highlighter
-// tile in the palette's Draw category, its wide translucent marker stroke, and
+// row in the palette's Draw category, its wide translucent marker stroke, and
 // the Polygon tool's click-to-place vertices.
 // Split out from palette-tools.tsx (already at size) per the no-god-files
 // rule; composed only from the shared primitives.
 
-import type { ReactNode } from 'react';
-import { Scene, Shape, Cursor, Panel, Label, SelectionBox, Tile } from './primitives';
+import { Scene, Shape, Cursor, Panel, Label, SelectionBox } from './primitives';
+import { PaletteCategoryPanel } from './palette-rows';
 
-// --- Draw-category tile glyphs ------------------------------------------------
-//
-// Drawn at the tile's centre (the tile translates to its own origin), lit
-// white on the active tile like the mode-row glyphs.
-
-function DrawGlyph({ on, children }: { on: boolean; children: ReactNode }) {
-  return (
-    <g
-      className={on ? 'stroke-white' : 'stroke-slate-500'}
-      strokeWidth={1.5}
-      fill="none"
-      strokeLinejoin="round"
-      strokeLinecap="round"
-    >
-      {children}
-    </g>
-  );
-}
-
-/** A chisel-tip marker over the band it lays down (Highlighter). The band is
- *  what tells it apart from a pen at this size, where both nibs are the same
- *  three strokes. */
-function HighlighterGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <DrawGlyph on={on}>
-      <path d="M-5 3 L0 -2 L2.5 0.5 L-2.5 5.5 Z" />
-      <path d="M0 -2 L2 -4.5 L5 -1.5 L2.5 0.5" />
-      <path d="M-6 7 H1" strokeWidth={2.4} opacity={0.5} />
-    </DrawGlyph>
-  );
-}
-
-function FreehandGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <DrawGlyph on={on}>
-      <path d="M-6 3 C-3 -6 0 6 3 -2 S6 -4 7 -3" />
-    </DrawGlyph>
-  );
-}
-
-function ShapePenGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <DrawGlyph on={on}>
-      <path d="M-5 2 C-6 -4 3 -7 5 -2 C7 3 0 7 -4 4" />
-    </DrawGlyph>
-  );
-}
-
-function PolygonGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <DrawGlyph on={on}>
-      <path d="M-6 4 L-3 -5 L5 -4 L6 4 Z" />
-    </DrawGlyph>
-  );
-}
-
-function ArrowGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <DrawGlyph on={on}>
-      <path d="M-6 5 L5 -5 M0 -5 H5 V0" />
-    </DrawGlyph>
-  );
-}
-
-function LineGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <DrawGlyph on={on}>
-      <path d="M-6 5 L6 -5" />
-    </DrawGlyph>
-  );
-}
-
-// The Draw category in the palette's own order (docs/specs/008-canvas/highlighter.md):
-// the Highlighter sits third, after the two pens.
-const DRAW_TILES = [
-  { key: 'freehand', label: 'Freehand', Glyph: FreehandGlyph },
-  { key: 'shape-pen', label: 'Shape Pen', Glyph: ShapePenGlyph },
-  { key: 'highlighter', label: 'Highlighter', Glyph: HighlighterGlyph },
-  { key: 'polygon', label: 'Polygon', Glyph: PolygonGlyph },
-  { key: 'arrow', label: 'Arrow', Glyph: ArrowGlyph },
-  { key: 'line', label: 'Line', Glyph: LineGlyph },
-] as const;
-
-/** The palette's Draw category with the Highlighter tile picked, the "Drag to
+/** The palette's Draw category with the Highlighter row armed, the "Drag to
  *  highlight" banner up, and the one stroke it lays down mid-drag across a
- *  label that stays legible through it. */
+ *  label that stays legible through it. The rows are the real layout: caption,
+ *  blurb and key (apps/live/components/palette/PaletteToolRows.tsx). */
 export function HighlighterTile() {
-  const gap = 44;
   return (
-    <Scene w={420} h={250}>
-      <Panel x={24} y={14} w={DRAW_TILES.length * gap - (gap - 26) + 28} h={88} title="DRAW">
-        {DRAW_TILES.map((t, i) => {
-          const on = t.key === 'highlighter';
-          return (
-            <Tile key={t.key} x={38 + i * gap} y={44} active={on} label={t.label}>
-              <t.Glyph on={on} />
-            </Tile>
-          );
-        })}
-      </Panel>
+    <Scene w={420} h={258}>
+      <PaletteCategoryPanel x={10} y={14} w={250} category="Draw" active="Highlighter" />
       {/* Mode banner, up until the one stroke lands */}
-      <Panel x={190} y={116} w={206} h={30}>
-        <circle cx={208} cy={131} r={6} className="fill-brand-500" />
-        <Label x={222} y={132} size={11} weight={600} tone="body">
+      <Panel x={270} y={30} w={144} h={30}>
+        <Label x={280} y={46} size={10} weight={600} tone="body">
           Drag to highlight
         </Label>
-        <Label x={358} y={132} size={11} weight={600} tone="muted">
+        <Label x={406} y={46} anchor="end" size={10} weight={600} tone="muted">
           Cancel
         </Label>
       </Panel>
-      {/* The band goes down FIRST so the labels draw over it: a highlight
-          sits under what it marks, not on top of it. */}
+      <Shape x={282} y={140} w={120} h={46} label="Checkout" />
+      {/* The marker is translucent, so the label stays legible through it. */}
       <path
-        d="M228 202 C262 196 316 196 344 200"
+        d="M290 168 C320 162 360 162 396 166"
         fill="none"
         className="stroke-amber-300"
-        strokeOpacity={0.6}
+        strokeOpacity={0.55}
         strokeWidth={14}
         strokeLinecap="round"
       />
-      <Shape x={60} y={176} w={120} h={48} label="Sign up" />
-      <Shape x={226} y={176} w={124} h={48} accent label="Checkout" />
-      <Cursor x={344} y={200} colour="brand" />
+      <Cursor x={396} y={166} colour="brand" />
     </Scene>
   );
 }

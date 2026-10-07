@@ -126,15 +126,15 @@ export const categories: Category[] = [
     slug: 'developers',
     title: 'Developers',
     description:
-      'Call the livediagram REST API from your own scripts: authentication, worked examples, errors and limits, and the OpenAPI reference.',
-    articleCount: 4,
+      'Call the livediagram REST API from your own scripts or the command line: authentication, worked examples, the CLI, errors and limits, and the OpenAPI reference.',
+    articleCount: 5,
   },
   {
     slug: 'troubleshooting',
     title: 'Troubleshooting',
     description:
       'Get unstuck fast with fixes for the most common editor and collaboration problems.',
-    articleCount: 5,
+    articleCount: 6,
   },
   {
     slug: 'supported-devices',
@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 26,
+    articleCount: 28,
     kind: 'feature',
   },
   {
@@ -257,7 +257,8 @@ export const articles: Article[] = [
     slug: 'toolbar',
     title: 'The Toolbar',
     description: 'The contextual toolbar that appears when you select one or more elements.',
-    keywords: 'selection bar buttons formatting style options floating contextual',
+    keywords:
+      'selection bar buttons floating contextual duplicate lock delete comment filter export more',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -298,8 +299,10 @@ export const articles: Article[] = [
   {
     slug: 'quick-controls',
     title: 'Quick Controls',
-    description: 'The always-available actions tucked into the corner of the editor.',
-    keywords: 'corner buttons actions settings share help github bottom bar cluster appearance',
+    description:
+      'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
+    keywords:
+      'corner buttons actions settings search github bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -308,7 +311,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel layout floating toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
+      'settings preferences options config configure gear cog toggles panel layout floating toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -366,7 +369,8 @@ export const articles: Article[] = [
     slug: 'your-first-diagram',
     title: 'Your First Diagram',
     description: 'Create a diagram and add your first shapes in under a minute.',
-    keywords: 'start begin new create tutorial beginner basics quickstart onboarding',
+    keywords:
+      'start begin new create tutorial beginner basics quickstart onboarding wizard document template location',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -435,15 +439,17 @@ export const articles: Article[] = [
     title: 'Keyboard Shortcuts',
     description: 'The full shortcut reference and how to toggle shortcuts off.',
     keywords:
-      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter question mark settings keyboard category',
+      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category draw mode pens shift d disable all',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
   {
     slug: 'command-palette',
     title: 'The Palette',
-    description: 'Add any shape or run any command from the floating palette.',
-    keywords: 'quick add search elements floating toolbar launcher',
+    description:
+      'Pick a selection mode and add shapes, text, icons and more from the floating palette.',
+    keywords:
+      'quick add search elements floating toolbar launcher categories dropdown popular selection mode tiles bands',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -451,7 +457,8 @@ export const articles: Article[] = [
     slug: 'format-painter',
     title: 'The Format Painter',
     description: 'Copy the look of one element onto others in two clicks.',
-    keywords: 'copy style paste formatting clone look duplicate appearance brush',
+    keywords:
+      'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -511,16 +518,17 @@ export const articles: Article[] = [
   {
     slug: 'exporting-diagrams',
     title: 'Exporting Diagrams',
-    description: 'Get a diagram out as an image or a shareable embed.',
-    keywords: 'export download png svg pdf image save picture screenshot',
+    description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
+    keywords:
+      'export download png svg pdf image save picture screenshot json mermaid markdown excalidraw embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
-    description: 'How to remove a document or clear everything tied to your id.',
-    keywords: 'delete remove erase gdpr clear account wipe forget',
+    description: 'How to delete a document or your whole account, and what each removes.',
+    keywords: 'delete remove erase gdpr clear account wipe forget close trash',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -543,9 +551,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'connect-ai-mcp',
-    title: 'Connect an AI tool (MCP)',
+    title: 'Connect an AI Tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
-    keywords: 'claude chatgpt cursor model context protocol ai integration assistant llm connector',
+    keywords:
+      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore plan items read-only',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -561,8 +570,9 @@ export const articles: Article[] = [
   {
     slug: 'email-notifications',
     title: 'Email Notifications',
-    description: 'The optional emails we send, and how to turn each kind off from your profile.',
-    keywords: 'emails unsubscribe opt out notification preferences turn off welcome',
+    description: 'The optional emails we send, and how to turn each kind off in Settings.',
+    keywords:
+      'emails unsubscribe opt out notification preferences turn off welcome mention comment settings',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -601,6 +611,16 @@ export const articles: Article[] = [
     category: 'Developers',
     categorySlug: 'developers',
   },
+  {
+    slug: 'cli',
+    title: 'The livediagram CLI',
+    description:
+      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
+    keywords:
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
+    category: 'Developers',
+    categorySlug: 'developers',
+  },
 
   // ---- Policies ----
   {
@@ -616,7 +636,8 @@ export const articles: Article[] = [
     slug: 'privacy-policy',
     title: 'Privacy Policy',
     description: 'The full privacy policy for the hosted livediagram service.',
-    keywords: 'legal privacy gdpr data protection personal information',
+    keywords:
+      'legal privacy gdpr data protection personal information openai ai retention security',
     category: 'Policies',
     categorySlug: 'policies',
     parentSlug: 'policies',
@@ -666,7 +687,8 @@ export const articles: Article[] = [
     slug: 'share-link-security',
     title: 'Share Link Security',
     description: 'Passwords and expiry for the links you hand out.',
-    keywords: 'password protect expire lock secure links safety access',
+    keywords:
+      'password protect expire lock secure links safety access pass expiry extend revoke viewer editor',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -695,7 +717,8 @@ export const articles: Article[] = [
     slug: 'deploying-livediagram',
     title: 'Deploying livediagram',
     description: 'The apps, the Cloudflare stack, and how a deploy runs.',
-    keywords: 'cloudflare workers deploy install setup infrastructure d1 pages',
+    keywords:
+      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
@@ -704,7 +727,8 @@ export const articles: Article[] = [
     slug: 'configuration',
     title: 'Configuration and Optional Auth',
     description: 'Environment variables, optional Clerk auth, and guest-only mode.',
-    keywords: 'env vars environment clerk setup secrets settings configure',
+    keywords:
+      'env vars environment clerk setup secrets settings configure resend email ai openai google drive mcp telemetry r2 community',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
@@ -715,7 +739,17 @@ export const articles: Article[] = [
     slug: 'document-not-loading',
     title: 'A Document Will Not Load',
     description: 'What to check when a document is blank or stuck loading.',
-    keywords: 'blank stuck loading error broken empty spinner wont open 404 diagram',
+    keywords:
+      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others',
+    category: 'Troubleshooting',
+    categorySlug: 'troubleshooting',
+  },
+  {
+    slug: 'repair-this-browser',
+    title: 'Repair This Browser',
+    description: 'Clear stuck settings and caches, keeping your documents.',
+    keywords:
+      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
@@ -746,7 +780,7 @@ export const articles: Article[] = [
   {
     slug: 'missing-changes',
     title: 'My Changes Are Missing',
-    description: 'How autosave works and how to recover with undo.',
+    description: 'How autosave works, what a failed save looks like, and how to recover.',
     keywords:
       'lost work autosave recover restore disappeared gone save history new version reload update',
     category: 'Troubleshooting',
@@ -793,7 +827,7 @@ export const articles: Article[] = [
     slug: 'select',
     title: 'Select',
     description: 'The default pointer for selecting, moving, and editing elements.',
-    keywords: 'pointer cursor arrow tool default mode click',
+    keywords: 'pointer cursor arrow tool default mode click marquee picker shift',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -801,7 +835,7 @@ export const articles: Article[] = [
     slug: 'hand',
     title: 'Hand',
     description: 'Grab and pan the canvas without moving any elements.',
-    keywords: 'pan drag move canvas grab scroll navigate',
+    keywords: 'pan drag move canvas grab scroll navigate space middle click hand tool',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -809,7 +843,7 @@ export const articles: Article[] = [
     slug: 'eraser',
     title: 'Eraser',
     description: 'Click or drag across elements to delete them quickly.',
-    keywords: 'delete remove rub out erase clear wipe',
+    keywords: 'delete remove rub out erase clear wipe brush size filter drawings arrows sweep tap',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -825,14 +859,14 @@ export const articles: Article[] = [
     slug: 'laser',
     title: 'Laser Pointer',
     description: 'A temporary laser trail for drawing attention while presenting.',
-    keywords: 'presentation highlight trail point attention presenting red',
+    keywords: 'presentation highlight trail point attention presenting red pointer pen glow comet',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
   {
     slug: 'spotlight',
     title: 'Spotlight',
-    description: 'Dim the canvas and spotlight the element under your cursor.',
+    description: 'Dim the canvas around a circle of light that follows your cursor.',
     keywords: 'dim focus highlight presentation emphasis attention darken',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
@@ -901,8 +935,8 @@ export const articles: Article[] = [
   {
     slug: 'isometric-mode',
     title: 'Isometric Mode',
-    description: 'Toggle the tab into a tilted, isometric perspective.',
-    keywords: '3d tilt perspective iso angle view projection',
+    description: 'Look at the tab as a tilted 3D scene, orbit it, and export it that way.',
+    keywords: '3d tilt perspective iso angle view projection orbit rotate camera export',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -948,7 +982,7 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description: 'Page, Text, Sticky note and Annotation — plus the Event Storming note grammar.',
+    description: 'Page, Text, Sticky note and Annotation: the elements whose content is words.',
     keywords:
       'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
     category: 'Palette',
@@ -980,7 +1014,7 @@ export const articles: Article[] = [
     title: 'Frames',
     description: 'A labelled section that draws behind its contents and moves them as one.',
     keywords:
-      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing',
+      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
     category: 'Palette',
     categorySlug: 'palette/build',
     parentSlug: 'build',
@@ -990,7 +1024,7 @@ export const articles: Article[] = [
     title: 'Components',
     description: 'Web components: banners, callouts, stat rows, steps, heroes and headers.',
     keywords:
-      'banner callout stat kpi block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps',
+      'banner callout stat kpi block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps illustrate mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -998,7 +1032,7 @@ export const articles: Article[] = [
   {
     slug: 'mind-maps',
     title: 'Mind Maps',
-    description: 'Tab adds a child, Enter a sibling — build a branch from the keyboard.',
+    description: 'Tab adds a child, Enter a sibling: build a branch from the keyboard.',
     keywords:
       'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets',
     category: 'Palette',
@@ -1031,7 +1065,7 @@ export const articles: Article[] = [
     title: 'Chairs',
     description: 'Furniture for Avatar mode: walk a character in and it sits down.',
     keywords:
-      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour',
+      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1040,7 +1074,8 @@ export const articles: Article[] = [
     slug: 'lanes',
     title: 'Lanes',
     description: 'Titled bands for swimlanes; dragging one carries its contents.',
-    keywords: 'lane swimlane swim band row role team process cross-functional container pool track',
+    keywords:
+      'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1050,7 +1085,7 @@ export const articles: Article[] = [
     title: 'Entities',
     description: 'A title over name / type rows, for class diagrams and data models.',
     keywords:
-      'entity class uml er erd record table schema model field attribute method database column',
+      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1060,7 +1095,7 @@ export const articles: Article[] = [
     title: 'Embeds on the canvas',
     description: 'Play a video, or open a Figma file, Google Doc or any website, on the canvas.',
     keywords:
-      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame',
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame illustrate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1092,7 +1127,7 @@ export const articles: Article[] = [
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
     keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device',
+      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device illustrate mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1101,7 +1136,8 @@ export const articles: Article[] = [
     slug: 'icons',
     title: 'Icons',
     description: 'A searchable catalogue of single-colour glyphs.',
-    keywords: 'glyph symbol pictogram line art search catalogue catalog theme colour color tint',
+    keywords:
+      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1119,8 +1155,9 @@ export const articles: Article[] = [
   {
     slug: 'technology',
     title: 'Technology',
-    description: 'Full-colour AWS, Azure, and infrastructure icons.',
-    keywords: 'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker',
+    description: 'Full-colour AWS, Azure, Cloudflare, Firebase and infrastructure icons.',
+    keywords:
+      'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1138,8 +1175,9 @@ export const articles: Article[] = [
   {
     slug: 'alignment-guides',
     title: 'Alignment Guides',
-    description: 'Show snap lines while moving or resizing elements.',
-    keywords: 'snap lines smart guides distribute align straighten ruler',
+    description: 'Show the guide lines that explain a snap while moving or resizing.',
+    keywords:
+      'snap lines smart guides distribute align straighten ruler snapping hide off cmd ctrl free',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1193,13 +1231,13 @@ export const articles: Article[] = [
     slug: 'text-and-fonts',
     title: 'Text and Fonts',
     description: 'Editing labels and choosing from eleven fonts per element or tab.',
-    keywords: 'label typography font family typeface type writing edit',
+    keywords: 'label typography font family typeface type writing edit size colour color',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
   {
     slug: 'follow-along',
-    title: 'Following someone',
+    title: 'Following Someone',
     description: "Pin your pan, zoom and tab to a collaborator's until you move the canvas.",
     keywords:
       'follow following follow me follow along presenter presentation present audience viewport view camera pan zoom tab sync synchronise synchronize mirror watch spectate lead guide tour walkthrough demo',
@@ -1218,9 +1256,9 @@ export const articles: Article[] = [
   {
     slug: 'templates',
     title: 'Templates',
-    description: 'Start from a themed template instead of a blank canvas.',
+    description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1235,8 +1273,18 @@ export const articles: Article[] = [
     parentSlug: 'templates',
   },
   {
+    slug: 'editor-modes',
+    title: 'Editor Modes',
+    description:
+      'Diagram, Draw, Illustrate and Plan: what each mode is for, the mode switch, Shift+D and Opens in.',
+    keywords:
+      'editor mode editor modes mode switch switch mode change mode modes diagram draw illustrate plan shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
     slug: 'draw-mode',
-    title: 'Draw mode',
+    title: 'Draw Mode',
     description:
       'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, erasers and shapes.',
     keywords:
@@ -1246,11 +1294,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'plan-mode',
-    title: 'Plan mode',
+    title: 'Plan Mode',
     description:
       'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
     keywords:
-      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card quick add @ mention assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board hiring onboarding tabs dashboard',
+      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1271,7 +1319,7 @@ export const articles: Article[] = [
     description:
       'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
     keywords:
-      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board',
+      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -1280,19 +1328,19 @@ export const articles: Article[] = [
     slug: 'cards',
     title: 'Cards',
     description:
-      'Plan cards: add, open and fill one in, comment on it, archive or trash it, and present it as a slide.',
+      'Plan cards: add, open and fill one in, child cards, comments, flags, find any card, archive or trash it, and present it as a slide.',
     keywords:
-      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate slide slides present presentation card size',
+      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate slide slides present presentation card size flag flagged child breadcrumb trail find search finder not on a board',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
   },
   {
     slug: 'card-types',
-    title: 'Card types',
+    title: 'Card Types',
     description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',
     keywords:
-      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in',
+      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in tabs details new cards can be limits',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -1314,7 +1362,7 @@ export const articles: Article[] = [
     description:
       'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
     keywords:
-      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in',
+      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1354,22 +1402,24 @@ export const articles: Article[] = [
     slug: 'using-tabs',
     title: 'Tabs',
     description: 'Multiple boards in one document: add, name, reorder, and switch between them.',
-    keywords: 'boards pages multiple sheets add rename reorder switch',
+    keywords:
+      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
   {
     slug: 'tab-folders',
     title: 'Tab Folders',
-    description: 'Group related tabs under a named, collapsible folder along the tab bar.',
-    keywords: 'group tabs organise organize collapse nest sections',
+    description: 'Group related tabs under one named folder chip on the tab bar.',
+    keywords: 'group tabs organise organize collapse nest sections fan chip',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
   {
     slug: 'linking-tabs',
     title: 'Linking Across Tabs',
-    description: 'Turn an element into a jump point to another tab, element, document, or URL.',
+    description:
+      'Turn an element into a jump point to another tab, another document, or a web address.',
     keywords: 'jump navigation cross reference hyperlink go to connect boards',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1378,7 +1428,7 @@ export const articles: Article[] = [
     slug: 'locking-tabs',
     title: 'Locking a Tab',
     description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
-    keywords: 'read only protect freeze prevent editing lock board',
+    keywords: 'read only protect freeze prevent editing lock board unlock padlock',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1404,7 +1454,7 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF — copy the text formats or set image options.',
+      'Export the active tab or a selection as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF: copy the text formats or set image options.',
     keywords: 'export download save png svg pdf json mermaid markdown excalidraw image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1455,7 +1505,8 @@ export const articles: Article[] = [
     slug: 'links',
     title: 'Links and Link Cards',
     description: 'Link elements across tabs or to URLs, and bookmark cards.',
-    keywords: 'url hyperlink bookmark card website jump navigate external',
+    keywords:
+      'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1540,9 +1591,9 @@ export const articles: Article[] = [
   {
     slug: 'recent',
     title: 'Recent Documents',
-    description: 'The default view: the documents you opened or edited most recently.',
+    description: 'The documents that changed most recently, across every folder, team and share.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1550,7 +1601,8 @@ export const articles: Article[] = [
     slug: 'shared-with-you',
     title: 'Shared With Me',
     description: 'Documents other people have shared with you, collected in one place.',
-    keywords: 'shared with me received from others incoming shares collaborations',
+    keywords:
+      'shared with me received from others incoming shares collaborations dismiss role owner',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1567,7 +1619,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents skip location step wizard',
+      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents skip location step wizard illustrate plan',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1578,7 +1630,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results illustrate plan',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1604,7 +1656,7 @@ export const articles: Article[] = [
     slug: 'image-gallery',
     title: 'Image Gallery',
     description: 'Every image you have uploaded, with where each is used and how to delete them.',
-    keywords: 'uploads pictures photos assets manage delete media',
+    keywords: 'uploads pictures photos assets manage delete media guest upload used unused',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1621,7 +1673,8 @@ export const articles: Article[] = [
     title: 'Your Account',
     description:
       'Your identity card, email-notification switches, and account deletion, in Settings.',
-    keywords: 'account profile settings email delete avatar name preferences identity danger zone',
+    keywords:
+      'account profile settings email delete avatar name preferences identity danger zone menu sign out picture mentions',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1645,7 +1698,7 @@ export const articles: Article[] = [
     slug: 'zen-mode',
     title: 'Zen Mode',
     description: 'A distraction-free canvas with all the chrome hidden.',
-    keywords: 'distraction free fullscreen hide ui focus clean minimal',
+    keywords: 'distraction free fullscreen hide ui focus clean minimal presentation screen share',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1664,7 +1717,8 @@ export const articles: Article[] = [
     slug: 'ai',
     title: 'AI Assistance',
     description: 'Optional Ask and Clean helpers on the canvas.',
-    keywords: 'assistant ask clean generate artificial intelligence helper suggest',
+    keywords:
+      'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1689,7 +1743,8 @@ export const articles: Article[] = [
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
-    keywords: 'quick styles variations color colour line fill appearance',
+    keywords:
+      'quick styles variations color colour line fill appearance preset sticky table chart theme reset bold',
     category: 'Palette',
     categorySlug: 'palette/shapes',
     parentSlug: 'shapes',
@@ -1785,7 +1840,7 @@ export const articles: Article[] = [
     slug: 'shadows',
     title: 'Element Shadows',
     description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
-    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade',
+    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1794,7 +1849,7 @@ export const articles: Article[] = [
     title: 'Quick Style Panel',
     description: 'Restyle a selection in one click; the next shape of that kind remembers it.',
     keywords:
-      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker',
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker corners ink turn off disable settings',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1807,10 +1862,21 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
   },
   {
+    slug: 'element-indicators',
+    title: 'Element Indicators',
+    description:
+      'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
+    keywords:
+      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy map settings editor color colour',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
     slug: 'undo',
     title: 'Undo',
     description: 'Step back your most recent change, with a keyboard shortcut and a button.',
-    keywords: 'ctrl z cmd z revert back mistake reverse cancel history',
+    keywords:
+      'ctrl z cmd z revert back mistake reverse cancel history 500 steps collaborator escape',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1825,8 +1891,10 @@ export const articles: Article[] = [
   {
     slug: 'snapping',
     title: 'Alignment & Snapping',
-    description: 'Drag to snap elements into line with guides; hold Cmd/Ctrl to place freely.',
-    keywords: 'snap align guides grid free placement override precise position',
+    description:
+      'Drag or resize to snap elements into line and match sizes; hold Cmd/Ctrl to place freely.',
+    keywords:
+      'snap align guides grid free placement override precise position resize size match equal spacing distribute alignment',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1835,8 +1903,8 @@ export const articles: Article[] = [
   {
     slug: 'adding-elements',
     title: 'Adding Elements',
-    description: 'Use the palette and double-click to place shapes.',
-    keywords: 'place insert drop create add double click new',
+    description: 'Add elements from the palette or a single key, with a tap or drawn to size.',
+    keywords: 'place insert drop create add double click new draw to size tap shortcut keyboard',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
@@ -1845,7 +1913,8 @@ export const articles: Article[] = [
     slug: 'pan-and-zoom',
     title: 'Panning and Zooming',
     description: 'Move around the infinite canvas and fit the view.',
-    keywords: 'navigate move scroll magnify fit view wheel pinch',
+    keywords:
+      'navigate move scroll magnify fit view wheel pinch hand trackpad middle mouse space zoom in out percent',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
@@ -1853,7 +1922,7 @@ export const articles: Article[] = [
   {
     slug: 'changing-the-background',
     title: 'Changing the Canvas Background',
-    description: 'Pick a canvas background from the Change Canvas dialog.',
+    description: 'Pick a canvas pattern and colours in the Tab Look & Feel dialog.',
     keywords: 'backdrop color colour pattern grid dots lines paper dark',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
@@ -1966,7 +2035,7 @@ export const articles: Article[] = [
     slug: 'sticky-notes',
     title: 'Sticky Notes',
     description: 'A coloured note card for short annotations and brainstorm items.',
-    keywords: 'postit post it note card brainstorm memo colored',
+    keywords: 'postit post it note card brainstorm memo colored sticky colour color presets amber',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1974,7 +2043,7 @@ export const articles: Article[] = [
   {
     slug: 'code-blocks',
     title: 'Code Blocks',
-    description: 'A dark monospace card with syntax-highlighted code snippets.',
+    description: 'A monospace card with syntax-highlighted code snippets, in eight colour schemes.',
     keywords:
       'code snippet syntax highlight monospace programming source developer json sql python javascript typescript',
     category: 'Palette',
@@ -1993,7 +2062,7 @@ export const articles: Article[] = [
   {
     slug: 'portals',
     title: 'Portals',
-    description: 'Link two rings of energy and jump — or walk — between them, across tabs too.',
+    description: 'Link two rings of energy and jump, or walk, between them, across tabs too.',
     keywords:
       'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
     category: 'Palette',
@@ -2003,7 +2072,7 @@ export const articles: Article[] = [
   {
     slug: 'data-elements',
     title: 'Data and Chart Elements',
-    description: 'Progress bars, ratings, pie charts, and timeline rails.',
+    description: 'Charts, legends, progress bars and rings, ratings, and timeline rails.',
     keywords:
       'chart progress bar ring rating star pie timeline graphs visualisation visualization donut meter',
     category: 'Palette',
@@ -2044,9 +2113,9 @@ export const articles: Article[] = [
   {
     slug: 'session-buttons',
     title: 'Session Buttons',
-    description: 'Start a timer, a dot vote or a poll for the room from the canvas.',
+    description: 'Start a timer, a stopwatch, a dot vote or a poll for the room from the canvas.',
     keywords:
-      'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only',
+      'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only stopwatch count up facilitator',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -2106,7 +2175,7 @@ export const articles: Article[] = [
   {
     slug: 'action-panels',
     title: 'Action Panels',
-    description: 'One assigned action as a card on the canvas, set up from the card.',
+    description: 'A list of assigned actions as a card on the canvas, ticked off from the card.',
     keywords:
       'action panel card task todo to-do assign assignee owner follow-up action item complete done reopen email teammate board',
     category: 'Palette',
@@ -2220,8 +2289,8 @@ export const articles: Article[] = [
   {
     slug: 'changing-theme',
     title: 'Changing the Theme',
-    description: 'Open the theme dialog and browse themes by category.',
-    keywords: 'apply browse switch restyle colours colors dialog pick',
+    description: 'Open the Tab Look & Feel dialog and browse themes by category.',
+    keywords: 'apply browse switch restyle colours colors dialog pick paintbrush look feel',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
@@ -2302,7 +2371,7 @@ export const articles: Article[] = [
     slug: 'share-passwords',
     title: 'Share Passwords',
     description: 'Gate view or edit access behind a password.',
-    keywords: 'protect lock secure gate private restrict access',
+    keywords: 'protect lock secure gate private restrict access remember',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2320,7 +2389,8 @@ export const articles: Article[] = [
     slug: 'share-link-expiry',
     title: 'Share Link Expiry',
     description: 'Give a share link a lifetime so it stops working later.',
-    keywords: 'expire time limit temporary duration deadline revoke',
+    keywords:
+      'expire time limit temporary duration deadline revoke extend expired forever week month',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2349,7 +2419,8 @@ export const articles: Article[] = [
     slug: 'ai-tools',
     title: 'Ask and Clean',
     description: 'What each AI helper does and when to reach for it.',
-    keywords: 'ai assistant helpers question tidy generate review',
+    keywords:
+      'ai assistant helpers question tidy generate review ask clean summarise summarize typo prompt',
     category: 'Tools',
     categorySlug: 'tools/ai',
     parentSlug: 'ai',
@@ -2368,9 +2439,10 @@ export const articles: Article[] = [
   {
     slug: 'polls',
     title: 'Polls',
-    description: 'Ask the room a question and tally the answers, saving nothing.',
+    description:
+      'Ask the room a question, tally the answers live, and keep the results if you want them.',
     keywords:
-      'poll polls survey question vote pulse check sentiment anonymous ephemeral rating scale yes no abstain multiple choice free text audience presenter',
+      'poll polls survey question vote pulse check sentiment anonymous ephemeral rating scale yes no abstain multiple choice free text audience presenter keep results chart collaborators people',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',
@@ -2469,7 +2541,8 @@ export const articles: Article[] = [
   {
     slug: 'bar-and-line-charts',
     title: 'Bar and Line Charts',
-    description: 'Multi-series bar and line charts from an editable grid or a CSV import.',
+    description:
+      'Bar charts from label and value rows, and multi-series line charts from a grid or a CSV import.',
     keywords: 'graph series csv data plot axis columns trends bar chart line chart',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
@@ -2498,7 +2571,7 @@ export const articles: Article[] = [
   {
     slug: 'auto-align',
     title: 'Auto-Align',
-    description: 'Snap selected elements onto a tidy grid.',
+    description: 'Snap every element on the tab onto a 10 px grid.',
     keywords: 'grid tidy straighten arrange snap organise organize',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
@@ -2519,7 +2592,8 @@ export const articles: Article[] = [
     slug: 'the-search-panel',
     title: 'The Search Panel',
     description: 'Open the global search, what it covers, and how to navigate the results.',
-    keywords: 'find lookup global search everywhere quick open locate',
+    keywords:
+      'find lookup global search everywhere quick open locate settings preferences help articles command palette',
     category: 'Search Panel',
     categorySlug: 'search-panel',
   },

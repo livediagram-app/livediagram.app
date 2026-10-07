@@ -9,7 +9,6 @@ export * from './fields';
 export * from './limits';
 export * from './rank';
 export * from './apply';
-export * from './quick-add';
 export * from './board';
 export * from './board-widgets';
 export * from './plan-views';

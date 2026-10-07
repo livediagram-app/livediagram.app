@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { PieChartWithLegend } from '@/components/illustrations/palette-data';
+import { ChartDataMenu } from '@/components/illustrations/tools-menus';
 
 export const metadata = helpMetadata({
   title: 'Pie Chart',
@@ -12,33 +13,46 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Pie Chart" description="Split a total into slices you edit as plain label and value rows, drawn in your theme's colours." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "pie-chart")}>
 
-A pie chart shows how a total divides into parts. Each slice is sized by its value, coloured from your active theme, and labelled, so a reader sees the breakdown at a glance. You build the chart from a short list of label and value rows, with no spreadsheet required.
+A pie chart shows how a total divides into parts. Each slice is sized by its value, coloured from your active theme, and named in a key, so a reader sees the breakdown at a glance. You build the chart from a short list of label and value rows, with no spreadsheet required.
 
-<Figure caption="A pie chart of four labelled slices with the legend key beside it.">
+<Figure caption="A pie chart of four slices, with its key in a row underneath (the default placement).">
   <PieChartWithLegend />
 </Figure>
 
 ## Adding one
 
-<Step n={1}>Open the floating palette and switch to the **Data** category.</Step>
-
-<Step n={2}>
-  Pick **Pie**. It drops onto the canvas with sample data so it looks finished straight away.
+<Step n={1}>
+  In [Illustrate](/help/canvas/illustrate/), open the floating palette and switch to the **Data**
+  category (**Pie** is also in Illustrate's **Popular**). In Diagram mode, type "pie" into the
+  [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) instead.
 </Step>
 
-<Step n={3}>Move, resize, group, or lock it like any other element.</Step>
+<Step n={2}>
+  Pick **Pie**, then tap the canvas to drop it, or drag to draw it at a size. It lands with sample
+  slices so it looks finished straight away.
+</Step>
+
+<Step n={3}>Move, resize, or lock it like any other element.</Step>
 
 ## Editing the data
 
-Right-click the chart to open its context menu and find the **Data** category. It edits inline, one row per slice, and each row has:
+Right-click the chart, open **Tools**, then **Data**. It edits inline, one row per slice, and each row has:
 
 - A recolourable **swatch** to set that slice's colour.
 - A **label** for the slice name.
 - A **value** that sizes the slice.
 
-You can add and remove rows, and the chart redraws live as you type. New slices default to variants of the active theme, so the chart reads as part of your diagram out of the box, but you can override any slice's colour with its swatch.
+Remove a slice with its **×**, or add one with **+ Add slice**; the chart redraws live as you type. New slices default to variants of the active theme, so the chart reads as part of your diagram out of the box, but you can override any slice's colour with its swatch.
 
-Two more categories tune the display. The **Chart** category has a **Legend** placement picker — **Off**, **Top**, **Left**, **Right**, or **Below** — that shows the label key and chooses which side of the chart it sits on (**Below** by default); **Off** hides it. Under it, **Text Size** (**Small**, **Medium**, or **Large**) sets how big the key's labels are. The **Animation** category carries chart-specific animations (None / Grow / Pop / Spin / Pulse) with a **Speed** row and a **Repeat** toggle; Grow and Pop play once as an entrance, while Spin and Pulse loop. Hovering a slice always shows a readout with its label and value, whether or not the legend is on.
+<Figure caption="Right-click, Tools, then Data: a swatch, a label and a value for each slice, with + Add slice underneath.">
+  <ChartDataMenu />
+</Figure>
+
+## Legend, palette and animation
+
+- **Chart**, also in **Tools**, has a **Legend** placement picker: **Off**, **Top**, **Left**, **Right**, or **Below** (the default). Picking a side shows the key there, and **Off** hides it. While the key is on, **Text Size** (**Small**, **Medium**, or **Large**) sets how big its labels are. The key names each slice; hovering a slice always shows a readout with its label and value, whether or not the key is on.
+- **Style** holds the chart's **Presets**: eight palettes (**Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** and **Contrast**) that recolour every slice you haven't coloured by hand, including slices you add later. Resetting the presets puts the chart back on the theme's colours. A chart has no Colours or Border controls: its colour lives in its slices.
+- **Animation** carries chart-specific animations: **Grow**, **Pop**, **Spin** and **Pulse**. Grow and Pop play once as an entrance, while Spin and Pulse loop. Once you pick one, a speed row (**Slowest**, **Slow**, **Normal**, **Fast**) and a **Repeat** toggle appear.
 
 <Tip>
   Because slice colours default to your theme, changing the tab's theme restyles the chart to match

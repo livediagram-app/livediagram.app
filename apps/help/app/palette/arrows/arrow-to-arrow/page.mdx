@@ -27,12 +27,12 @@ An arrow's endpoint can connect to a point along another arrow's line, not just 
 
 ## Snapping to a line
 
-While you drag an arrow endpoint near another arrow, that arrow reveals a row of evenly-spaced snap points along its length. The endpoint snaps to the nearest one, so connections line up neatly rather than landing at arbitrary spots.
+While you drag an arrow endpoint near another arrow, that arrow reveals a row of evenly-spaced snap points along its length, roughly one every 24 pixels. The endpoint snaps to the nearest one, so connections line up neatly rather than landing at arbitrary spots.
 
 - Shape anchors take priority. If your cursor is also near a shape's connection anchor, that pins as usual; arrow snapping only kicks in when no shape anchor is in range.
 - A connected endpoint draws filled, the same way a pinned endpoint does, so you can tell at a glance that it is attached rather than floating.
 - This works both when you reposition an existing endpoint (the snap dots appear live as you drag) and when you draw a brand new arrow, whose ends connect to a nearby line on release. You do not have to drop the arrow and nudge it afterwards.
-- **Shift-drag a selected arrow's head** to fork: the arrow stays put and a new branch starts attached to its line, ready to drag to a second target, the quickest way to make one trunk point at several places.
+- **Shift-drag a selected arrow's head** to fork: the arrow stays put and a new branch starts attached to its line (about 70% of the way along), ready to drag to a second target. The branch takes the trunk's colour, weight and pattern, so the fork reads as one connector. It is the quickest way to make one trunk point at several places.
 
 ## A persistent, dynamic connection
 
@@ -46,11 +46,13 @@ So an attached message rides along its lifeline, staying at the same relative he
 
 ## Tidying up
 
-Deleting a target arrow also removes the arrows attached to it, so you never leave a connector dangling from a line that is gone.
+Deleting a target arrow also removes the arrows attached to it, so you never leave a connector dangling from a line that is gone. Undo brings them all back together.
+
+Duplicate a target together with the arrows attached to it and the copies attach to the copied line, not the original.
 
 <Tip>
   For a sequence diagram, draw your lifelines first as long vertical arrows, then draw each message
-  across them, the snap points make it easy to keep messages evenly spaced down the page.
+  across them: the snap points make it easy to keep messages evenly spaced down the page.
 </Tip>
 
 </ArticleLayout>

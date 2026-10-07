@@ -45,7 +45,7 @@ export function EmptyCanvasBanner({
           </p>
           <p className="mt-0.5 truncate text-xs text-slate-500 phone:hidden dark:text-slate-400">
             {readOnly
-              ? 'Nothing here yet — the owner can build it out, and your view updates live.'
+              ? 'Nothing here yet. The owner can build it out, and your view updates live.'
               : 'Add an element from the Palette, or start from a template.'}
           </p>
         </div>

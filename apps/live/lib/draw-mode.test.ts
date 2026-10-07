@@ -151,7 +151,7 @@ describe('drawBannerMessage', () => {
     // (docs/specs/008-canvas/two-pens.md), so the banner is where that gets said. Distinct from plain
     // freehand on both viewports, or the two pens would read identically.
     expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).toBe(
-      'Draw a rough shape — it snaps to the real one',
+      'Draw a rough shape; it snaps to the real one',
     );
     expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, true)).toBe(
       'Draw a shape',
@@ -174,7 +174,7 @@ describe('drawBannerMessage', () => {
 
   it('describes the polygon click-to-place gesture, shortened on mobile', () => {
     expect(drawBannerMessage({ type: 'polygon' }, false)).toBe(
-      'Click to place points — click the start to close, double-click to finish',
+      'Click to place points, click the start to close, double-click to finish',
     );
     expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
   });

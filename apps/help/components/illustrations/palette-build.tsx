@@ -5,8 +5,8 @@
 
 import { Scene, Shape, Arrow, Label } from './primitives';
 
-/** A frame around a cluster: drawn behind its contents, labelled top-left, and
- *  mid-drag with a ghost of where the whole section is heading. */
+/** A frame around a cluster: drawn behind its contents, its title inside the top-right
+ *  corner, and mid-drag with a ghost of where the whole section is heading. */
 export function FrameSection() {
   return (
     <Scene w={420} h={230}>
@@ -16,7 +16,7 @@ export function FrameSection() {
         y={54}
         width={180}
         height={118}
-        rx={8}
+        rx={1}
         className="fill-none stroke-brand-200"
         strokeWidth={1.5}
         strokeDasharray="6 5"
@@ -27,18 +27,18 @@ export function FrameSection() {
         y={40}
         width={180}
         height={118}
-        rx={8}
+        rx={1}
         className="fill-none stroke-brand-400"
         strokeWidth={2}
       />
-      <Label x={36} y={30} size={11} weight={700} tone="accent">
+      <Label x={202} y={54} size={11} weight={700} tone="accent" anchor="end">
         Rollout
       </Label>
-      <Shape x={46} y={56} w={70} h={36} label="Plan" />
-      <Shape x={132} y={56} w={64} h={36} kind="circle" accent label="Ship" />
-      <Shape x={46} y={110} w={70} h={36} label="Review" />
-      <Arrow from={[116, 74]} to={[132, 74]} />
-      <Arrow from={[81, 92]} to={[81, 110]} tone="muted" />
+      <Shape x={42} y={66} w={70} h={36} label="Plan" />
+      <Shape x={128} y={66} w={64} h={36} kind="circle" accent label="Ship" />
+      <Shape x={42} y={114} w={70} h={36} label="Review" />
+      <Arrow from={[112, 84]} to={[128, 84]} />
+      <Arrow from={[77, 102]} to={[77, 114]} tone="muted" />
       {/* The drag. */}
       <path
         d="M222 100 L286 106"

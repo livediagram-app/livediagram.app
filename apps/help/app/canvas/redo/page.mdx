@@ -6,7 +6,7 @@ import { RedoStep } from '@/components/illustrations/undo-redo';
 export const metadata = helpMetadata({
   title: 'Redo',
   description:
-    'Re-apply something you just undid with a keyboard shortcut or the redo button. Step back and forth through your recent changes.',
+    'Re-apply something you just undid with Cmd+Shift+Z, Ctrl+Y, the Redo button or the search palette. Step back and forth through your recent changes.',
   path: '/help/canvas/redo/',
 });
 
@@ -22,9 +22,10 @@ export const metadata = helpMetadata({
 
 Redo re-applies something you just undid. You can:
 
-- Press **Cmd+Shift+Z** on a Mac.
+- Press **Cmd+Shift+Z** or **Cmd+Y** on a Mac.
 - Press **Ctrl+Y** or **Ctrl+Shift+Z** on Windows and Linux.
-- Click the redo button in the controls at the bottom-right of the canvas, beside undo.
+- Click the **Redo** button in the controls at the bottom-right of the canvas, beside Undo. It is greyed out when there is nothing to redo.
+- Open the search palette (**Cmd+K** or **Cmd+.**, **Ctrl** on Windows and Linux) and type **redo**.
 
 <Figure caption="Redo re-applies the change you just undid.">
   <RedoStep />
@@ -32,10 +33,12 @@ Redo re-applies something you just undid. You can:
 
 ## Stepping back and forth
 
-Like undo, redo is personal to you and applies to your current session. Keep undoing and redoing to move back and forth through your recent changes until the canvas looks the way you want.
+Like undo, redo is personal to you and applies to your current session. Keep undoing and redoing to move back and forth through your recent changes, up to 500 steps either way, until the canvas looks the way you want.
+
+Making a new change after undoing clears what you could redo: the new change starts a fresh path, and the steps you undid are gone. If you might want them, redo first.
 
 <Tip>If you undo a few steps too many, redo is the quickest way to return to where you were.</Tip>
 
-To go the other direction, see [Undo](/help/canvas/undo/).
+Redo, like undo, is not available to people who are only viewing the document. To go the other direction, see [Undo](/help/canvas/undo/).
 
 </ArticleLayout>

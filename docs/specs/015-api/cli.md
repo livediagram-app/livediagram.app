@@ -1,9 +1,8 @@
 # CLI
 
-**Status: built, not yet published.** Every command below runs from source (`apps/cli`), signs in through the browser,
-a device code or a token kept in the system's keychain, and is counted on the dashboard. Ahead: publishing the
-`livediagram` package to npm (prepared, waiting for its owner to set up trusted publishing), then the update check
-and the help centre article.
+**Status: published.** `@livediagram/cli` is on npm (0.1.0, 2026-10-06). Every command below signs in through the
+browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
+article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
 `livediagram` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).

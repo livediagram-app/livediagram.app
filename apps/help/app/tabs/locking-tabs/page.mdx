@@ -14,23 +14,26 @@ export const metadata = helpMetadata({
 
 When a whole canvas is finished, locking the tab protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
 
-<Figure caption="A locked tab carries a padlock and is marked read-only in the tab bar.">
+<Figure caption="A locked tab shows a padlock before its name in the tab bar.">
   <LockedTab />
 </Figure>
 
 ## Locking and unlocking a tab
 
-Right-click the tab in the [tab bar](/help/user-interface/tab-bar/) (or long-press on touch) to open its menu, then choose **Lock tab**. The same item reads **Unlock tab** afterwards, so it toggles the tab back to editable. A locked tab shows a small **padlock** in the bar so you can tell at a glance which boards are frozen.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and press the padlock button, **Lock tab**, in the row of quick actions along the top. The same button reads **Unlock tab** afterwards (and shows as pressed), so it toggles the tab back to editable. A locked tab shows a small **padlock** before its name in the bar, so you can tell at a glance which boards are frozen.
+
+The lock is part of the document, so it applies to everyone who opens it, not just you. Anyone with edit access can unlock it again.
 
 ## What a locked tab protects
 
 While a tab is locked, its whole canvas is read-only:
 
-- Elements **can't be moved, resized, or edited**.
+- Elements **can't be moved, resized, restyled, or edited**, and nothing new can be added or pasted onto the tab.
 - The [eraser](/help/selection-modes/eraser/) skips everything on the tab.
-- The tab's content **can't be cleared**, and the tab itself **can't be deleted** until you unlock it.
+- **Undo** and **Redo** are paused on the tab, so history can't change it either.
+- **Import** and **Clear** are greyed out, [Cleanup](/help/tabs/tab-cleanup/) has no effect, and the tab itself **can't be deleted** until you unlock it.
 
-You can still **rename** or **duplicate** the tab from the same menu, and duplicating gives you an editable copy if you want to keep building from a locked original.
+Locking clears your current selection. You can still look around, pan and zoom, follow [links](/help/tabs/linking-tabs/), and **rename**, **duplicate**, or **export** the tab from the same menu. Duplicating gives you an editable copy if you want to keep building from a locked original.
 
 ## When to use it
 
@@ -40,7 +43,8 @@ You can still **rename** or **duplicate** the tab from the same menu, and duplic
 
 <Tip>
   To protect just a few elements rather than a whole canvas, lock them individually instead. See
-  [locking elements](/help/canvas/locking/).
+  [locking elements](/help/canvas/locking/). To stop someone editing anything at all, share a
+  [view-only link](/help/collaboration/sharing/) instead.
 </Tip>
 
 </ArticleLayout>

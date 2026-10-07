@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SavedState } from '@/components/illustrations/troubleshooting';
+import { SaveFailedToast } from '@/components/illustrations/troubleshooting';
 import { UndoStep } from '@/components/illustrations/undo-redo';
 
 export const metadata = helpMetadata({
@@ -25,15 +25,18 @@ Work in livediagram is saved automatically as you go, so missing changes are usu
 
 Changes are saved automatically after you make them, per tab, to the server, not just to your browser. There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
 
-If you edited offline or on a flaky connection, a save may not have reached the server. Reconnect, make sure the document is loaded, and let the autosave run again.
+There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
+
+- **Couldn't confirm you're signed in**: your session has lapsed. Sign in again to keep the changes.
+- **You no longer have permission to edit this document**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
+
+<Figure caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
+  <SaveFailedToast />
+</Figure>
 
 ### "A new version of livediagram is ready"
 
 When livediagram is updated while you have a document open, and the update changes how documents are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. **Not now** hides the notice; reload whenever suits you.
-
-<Figure caption="When autosave settles, the editor confirms your work reached the server.">
-  <SavedState />
-</Figure>
 
 ## Recover a recent step
 
@@ -44,10 +47,12 @@ If you have just undone, moved or deleted something by mistake, [Redo](/help/can
 </Figure>
 
 1. **Press Undo** (**Cmd/Ctrl+Z**, or the undo button at the bottom-right) to step back your most recent changes, one at a time.
-2. **Press Redo** (**Cmd/Ctrl+Shift+Z**) if you went back too far.
+2. **Press Redo** (**Cmd/Ctrl+Shift+Z**, or **Ctrl+Y**) if you went back too far.
 3. Undo covers your own recent steps in this session. It is cleared when you reload, and it never reaches into someone else's edits.
 
-A deleted document is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it.
+A deleted document is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it. A document left empty for 30 days moves there on its own, so look there too.
+
+If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the document, the note that appears with its change has an **Undo** that puts it back, separately from your own undo history.
 
 ## What collaboration does and doesn't protect
 

@@ -13,6 +13,9 @@ the registry from selection/document verbs to the whole app surface.
 - **Cmd/Ctrl+K opens the Search panel**, identically to Cmd/Ctrl+. (both
   stay; `K` is the convention users arrive with, `.` is grandfathered).
   Works in zen mode and read-only views, like the existing binding.
+- **The Explorer page binds both too** (`useSearchShortcut`), opening the same panel as its
+  Search button. As in the editor, the chords stand down when the Keyboard Shortcuts setting is
+  off, while focus is in a text field (the Explorer's filter box included), and while a dialog is open.
 
 ## Registry expansion
 
@@ -30,8 +33,9 @@ forks, no drifted telemetry):
 ## Read-only visitors
 
 The registry previously returned nothing for read-only views. Now it returns
-the **view-safe subset** (zen mode, fit to screen, export); mutating commands
-stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
+the **view-safe subset** (zen mode, fit to screen, export, Collaborators, and
+the canvas tool switches that do not write to the document); mutating
+commands and the Eraser and Format painter tools stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.
 
 ## Unchanged on purpose

@@ -1,7 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { PaletteSettings, QuickAddOnHover } from '@/components/illustrations/palette-modes';
+import { QuickAddHoverMenu } from '@/components/illustrations/palette-settings';
+import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Quick-add on Hover',
@@ -18,26 +19,30 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("quick-add-on-hover")}
 >
 
-When you select an element, a **+** button appears on each edge. Clicking it opens the quick-add menu: Duplicate, Arrow, Pencil, and Text, each acting on that side. Quick-add on Hover changes how that menu opens, so you can reach it without a click.
+When you select an element, a **+** button appears on each of its sides. Clicking one opens the quick-add menu, a strip of actions for that side: **Duplicate** (copy the element to that side, connected), **Arrow** (drag out an arrow), **Pencil** (sketch freehand) and **Text** (add a label beside it, with no connector). Quick-add on Hover changes how that menu opens, so you can reach it without a click.
+
+Some elements put their own actions on the **+**: a mind node leads with **Add child** and **Add sibling**, a table offers **Add row** and **Add column**, and a timeline offers **Add point**.
 
 ## What it does
 
-With the setting on, **hovering** a **+** button opens its menu right away, and the menu stays open while your pointer is over the + or the menu itself. Move away and it closes on its own. It is a small thing, but when you are adding several connected elements in a row it saves a click each time.
+With the setting on, **hovering** a **+** opens its menu straight away, and the menu stays open while your pointer is over the + or the menu itself. Move away and it closes on its own after a moment, long enough to cross the gap between the two. When you are adding several connected elements in a row, it saves a click each time.
 
-<Figure caption="With Quick-add on Hover, resting the pointer on a + opens its menu, no click needed.">
-  <QuickAddOnHover />
+<Figure caption="With Quick-add on Hover on, resting the pointer on a + opens its menu, no click needed.">
+  <QuickAddHoverMenu />
 </Figure>
 
-The **+** buttons still only appear on the element you have selected, and clicking a + still works exactly as before, so turning this on only adds the hover shortcut, it never takes the click away.
+The **+** buttons still only appear on the element you have selected, and clicking a + still works exactly as before, so turning this on only adds the hover shortcut; it never takes the click away. Dragging a **+** still skips the menu and starts an arrow from that side, either way.
+
+Hovering needs a mouse or trackpad. On a touch screen there is no hover, so you tap the **+** as usual.
 
 ## Turning it on
 
-It is **off by default**, since opening menus on hover can feel twitchy if you didn’t ask for it. Switch it on in [Settings](/help/user-interface/settings/), under **Editor**.
+It is **off by default**, since menus that open on hover can feel twitchy if you didn’t ask for them. Switch on **Quick-Add on Hover** in [Settings](/help/user-interface/settings/), under **Editor**.
 
-<Figure caption="The Editor settings, with Quick-add on hover highlighted.">
-  <PaletteSettings highlight="quick-add" />
+<Figure caption="Settings, Editor: Quick-Add on Hover is the first row, off until you switch it on.">
+  <SettingsEditorPane highlight="quick-add" />
 </Figure>
 
-The setting is saved with your other [settings](/help/user-interface/settings/) and follows you across your devices.
+The setting is saved with your other [settings](/help/user-interface/settings/). When you are signed in it follows you to your other devices; as a guest it stays with this browser.
 
 </ArticleLayout>

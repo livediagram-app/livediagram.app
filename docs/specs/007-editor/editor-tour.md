@@ -62,8 +62,8 @@ flag, so a mid-rerun reload re-offers the same way.
 ## The steps
 
 A welcome offer card, then eight steps in palette → mode → explorer →
-canvas → tabs → theme order (seven on mobile, where the theme-canvas step is
-skipped; five on an **event-storming board**, which hides the palette header
+canvas → tabs → theme order (six on mobile, where the mode step and the
+theme-canvas step are skipped; five on an **event-storming board**, which hides the palette header
 and offers no mode switch, and so drops the two dropdown steps and the mode
 step; four when it is both), and a closing "you're ready" card. The bookend
 cards sit outside the step count. Copy is one or two
@@ -84,7 +84,7 @@ live in `apps/live/components/tour/tour-steps.ts`):
    ([Editor modes](editor-modes.md#the-mode-switch)) and highlights the switch
    and its menu as one region, wherever the layout puts it (the Palette's
    title row, or beside the Toolbar layout's menu button). The copy says
-   what each mode is for and that Shift+D flips between them; the step
+   what each mode is for and that Shift+D steps through them; the step
    switches nobody's mode. Skipped on an event-storming board, which offers
    no switch, and on a phone, which shows none (it switches from the tab menu's Opens in).
 5. **The Explorer**: the in-editor document/folder browser.

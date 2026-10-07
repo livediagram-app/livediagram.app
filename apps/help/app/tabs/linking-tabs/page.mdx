@@ -5,55 +5,64 @@ import { CrossTabLink } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Linking Across Tabs',
   description:
-    'Link an element to another tab, or to a specific element on it, so a document with many tabs becomes navigable like a small site.',
+    'Link an element to another tab in the same document, so a document with many tabs becomes navigable like a small site.',
   path: '/help/tabs/linking-tabs/',
 });
 
-<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, a specific element on that tab, another document, or an external address." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, another document, or an external address." categoryTitle="Tabs" categorySlug="tabs">
 
-A document spread across many tabs is far more useful when you can move between them by clicking the canvas itself. Any element can carry a **link**, and that link can point at another tab in the same document. Click the element, and the editor jumps you there. It turns a multi-tab document into something you navigate like a small site.
+A document spread across many tabs is far more useful when you can move between them from the canvas itself. Any shape, sticky, text box or other boxed element can carry a **link**, and that link can point at another tab in the same document. Follow it, and the editor jumps you there. It turns a multi-tab document into something you navigate like a small site.
 
 ## What an element can link to
 
 A single link on an element can target any one of these:
 
-- **A tab.** Clicking the element opens that tab.
-- **A specific element on another tab.** The editor opens that tab and focuses the linked element, so you land exactly where you meant to.
-- **Another document.** Jumps to a separate document entirely.
-- **An external URL.** Opens the address in a new browser tab.
+- **A tab** in this document. Following the link switches to that tab.
+- **Another document.** Following it opens that document.
+- **An external URL.** Following it opens the address in a new browser tab.
 
-A linked element shows a small "Follow link" badge, and its hover card names the target so you can tell where a link leads before you click it.
+A linked element carries a small link badge. Hover it and its card reads **Follow link** and names the target (for example `Goes to tab "DB internals"`), so you can tell where a link leads before you click it. Click the badge to follow the link.
 
-<Figure caption="A linked element on one tab carries a Follow link badge that jumps to its target tab when clicked.">
+<Figure caption="A linked element carries a badge whose hover card names the target tab; clicking the badge jumps there.">
   <CrossTabLink />
 </Figure>
 
 ## Linking an element to a tab
 
 <Step n={1}>
-  Right-click the element you want to turn into a jump point and choose "Link Element".
+  Right-click the element you want to turn into a jump point, expand **Resources**, and choose **Add
+  Link**.
 </Step>
 
 <Step n={2}>
-  Pick the target: another tab, a specific element on that tab, another document, or an external
-  URL.
+  In the **Link element** dialog, switch to **Tab** and pick the target tab. The tab you are on is
+  marked "current". The **Document** list offers your eight most recent other documents, and
+  **External URL** takes a web address.
 </Step>
 
 <Step n={3}>
-  Click the element's badge to follow the link. The link follows the element if you later move it.
+  Click the element's badge to follow the link. The link travels with the element if you later move
+  it.
 </Step>
 
-## Why cross-tab links hold up
+To change or remove a link, right-click the element again and choose **Edit Link**: pick a new target, or use the Remove link button at the bottom of the dialog. Arrows can't carry links, and [link cards](/help/canvas/links/) manage their address in their own **Link** section instead.
 
-Element IDs are unique across the whole document, not just within one tab. That means a link keeps resolving even if you cut an element from one tab and paste it into another: the element keeps its id, so the link still finds it. Some patterns this enables:
+## When the target tab goes away
 
-- **Drill-down.** A "Database" node on the Overview tab links to a "Database internals" tab, so a click dives into the detail.
+Deleting a tab removes every link that pointed at it, so you are never left with a badge that leads nowhere. Renaming or reordering the target tab doesn't affect its links: the hover card always shows the tab's current name.
+
+Some patterns this enables:
+
+- **Drill-down.** A "Database" node on the Overview tab links to a "DB internals" tab, so a click dives into the detail.
 - **Mindmap deep-dives.** A leaf branch links to its own tab for deeper structure.
-- **Cross-references.** A process step links to a related decision elsewhere, with no duplicated content.
+- **Cross-references.** A process step links to the tab where a related decision is written up, with no duplicated content.
+
+Anyone who can open the document can follow links, including on a view-only share link; adding or editing links needs edit access.
 
 <Tip>
-  For an external address, only http, https, and mailto links are allowed. See [Links and Link
-  Cards](/help/canvas/links/) for more on linking elements to the web.
+  For an external address, only http, https, and mailto links are allowed, and https:// is added if
+  you leave off the scheme. See [Links and Link Cards](/help/canvas/links/) for more on linking
+  elements to the web.
 </Tip>
 
 </ArticleLayout>

@@ -165,21 +165,19 @@ function Pie({ cx, cy, r = 56 }: { cx: number; cy: number; r?: number }) {
   );
 }
 
-/** A legend keying the shared pie slices: a colour chip, label, and value.
- *  `valueX` is the value column's right edge, relative to `x`. */
-function PieLegend({ x, y, valueX = 88 }: { x: number; y: number; valueX?: number }) {
+/** The chart's own key for the shared pie slices: a square swatch and the
+ *  label per slice, stacked (Left / Right placement). The key prints no values;
+ *  hovering a slice shows its value. */
+function PieLegend({ x, y }: { x: number; y: number }) {
   return (
     <g>
       {PIE_SLICES.map((s, i) => {
-        const ry = y + i * 24;
+        const ry = y + i * 22;
         return (
           <g key={i}>
-            <rect x={x} y={ry} width={12} height={12} rx={3} className={s.cls} />
-            <Label x={x + 20} y={ry + 7} size={9} tone="body" weight={500}>
+            <rect x={x} y={ry} width={11} height={11} rx={2} className={s.cls} />
+            <Label x={x + 18} y={ry + 6} size={10} tone="body" weight={500}>
               {s.label}
-            </Label>
-            <Label x={x + valueX} y={ry + 7} size={9} tone="muted" anchor="end">
-              {s.value}%
             </Label>
           </g>
         );
@@ -188,7 +186,26 @@ function PieLegend({ x, y, valueX = 88 }: { x: number; y: number; valueX?: numbe
   );
 }
 
-/** A horizontal timeline rail with evenly spaced milestone dots and labels. */
+/** The same key in a centred row under the chart (the default, Below). */
+function PieLegendRow({ cx, y }: { cx: number; y: number }) {
+  const itemW = 62;
+  const x0 = cx - (PIE_SLICES.length * itemW) / 2;
+  return (
+    <g>
+      {PIE_SLICES.map((s, i) => (
+        <g key={i}>
+          <rect x={x0 + i * itemW + 8} y={y - 5} width={11} height={11} rx={2} className={s.cls} />
+          <Label x={x0 + i * itemW + 25} y={y + 1} size={10} tone="body" weight={500}>
+            {s.label}
+          </Label>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** A horizontal timeline rail: evenly spaced milestone dots, each with its
+ *  label above it, as RailView draws it. */
 function TimelineRail({ x, y, w, points }: { x: number; y: number; w: number; points: string[] }) {
   const n = points.length;
   const step = w / (n - 1);
@@ -214,7 +231,7 @@ function TimelineRail({ x, y, w, points }: { x: number; y: number; w: number; po
               className="fill-brand-500 stroke-white"
               strokeWidth={2.5}
             />
-            <Label x={px} y={y + 20} anchor="middle" size={9} weight={600} tone="body">
+            <Label x={px} y={y - 20} anchor="middle" size={10} weight={600} tone="body">
               {p}
             </Label>
           </g>
@@ -238,14 +255,14 @@ export function DataElementsOverview() {
         <ProgressRing cx={252} cy={53} r={22} pct={65} />
       </Panel>
       <Panel x={312} y={18} w={88} h={70} title="RATING">
-        <StarRow x={326} cy={62} r={8} filled={4} gap={17} />
+        <StarRow x={322} cy={62} r={8} filled={4} gap={16} />
       </Panel>
       <Panel x={20} y={104} w={172} h={120} title="PIE">
         <Pie cx={70} cy={172} r={38} />
-        <PieLegend x={122} y={140} valueX={58} />
+        <PieLegend x={124} y={140} />
       </Panel>
       <Panel x={208} y={104} w={192} h={120} title="TIMELINE">
-        <TimelineRail x={234} y={170} w={144} points={['Plan', 'Build', 'Beta', 'GA']} />
+        <TimelineRail x={234} y={182} w={144} points={['Plan', 'Build', 'Beta', 'GA']} />
       </Panel>
     </Scene>
   );
@@ -256,11 +273,11 @@ export function ProgressBarAndRing() {
   return (
     <Scene w={420} h={200}>
       <Panel x={36} y={42} w={216} h={116} title="PROGRESS">
-        <Label x={50} y={80} size={9} tone="muted">
+        <Label x={50} y={80} size={10} tone="muted">
           Bar
         </Label>
         <ProgressBar x={50} y={94} w={188} h={26} pct={70} />
-        <Label x={50} y={138} size={9} tone="muted">
+        <Label x={50} y={138} size={10} tone="muted">
           Fills from the left
         </Label>
       </Panel>
@@ -283,14 +300,13 @@ export function StarRating() {
   );
 }
 
-/** A pie chart split into four labelled slices with a legend key beside it. */
+/** A pie chart of four slices with its key in a row underneath, the default
+ *  Below placement. */
 export function PieChartWithLegend() {
   return (
-    <Scene w={420} h={220}>
-      <Pie cx={138} cy={110} r={74} />
-      <Panel x={262} y={48} w={132} h={124} title="LEGEND">
-        <PieLegend x={278} y={82} />
-      </Panel>
+    <Scene w={420} h={230}>
+      <Pie cx={210} cy={96} r={72} />
+      <PieLegendRow cx={210} y={196} />
     </Scene>
   );
 }
@@ -318,10 +334,20 @@ export function LegendCard() {
   );
 }
 
-/** A small bar chart beside a line chart, both multi-category. */
+/** A bar chart beside a line chart. A bar chart holds one value per row, each
+ *  bar in its own colour like a pie's slices; a line chart holds one line per
+ *  series across shared categories. */
 export function BarAndLineCharts() {
-  const bars = [34, 58, 46, 72, 50];
-  const line = [60, 38, 52, 30, 44, 22];
+  const bars: [number, string][] = [
+    [34, 'fill-brand-500'],
+    [58, 'fill-amber-500'],
+    [46, 'fill-emerald-500'],
+    [72, 'fill-rose-500'],
+  ];
+  const series: [number[], string, string][] = [
+    [[24, 54, 40, 70], 'stroke-brand-500', 'fill-brand-500'],
+    [[12, 26, 52, 36], 'stroke-amber-500', 'fill-amber-500'],
+  ];
   const baseY = 150;
   return (
     <Scene w={420} h={200}>
@@ -335,22 +361,19 @@ export function BarAndLineCharts() {
           className="stroke-slate-200"
           strokeWidth={1.5}
         />
-        {bars.map((v, i) => {
-          const bx = 50 + i * 27;
-          return (
-            <rect
-              key={i}
-              x={bx}
-              y={baseY - v}
-              width={18}
-              height={v}
-              rx={3}
-              className={i % 2 === 0 ? 'fill-brand-500' : 'fill-brand-300'}
-            />
-          );
-        })}
+        {bars.map(([v, cls], i) => (
+          <rect
+            key={i}
+            x={56 + i * 32}
+            y={baseY - v}
+            width={22}
+            height={v}
+            rx={3}
+            className={cls}
+          />
+        ))}
       </Panel>
-      {/* Line chart */}
+      {/* Line chart: two series */}
       <Panel x={216} y={24} w={180} h={158} title="LINE">
         <line
           x1={234}
@@ -360,23 +383,20 @@ export function BarAndLineCharts() {
           className="stroke-slate-200"
           strokeWidth={1.5}
         />
-        <polyline
-          points={line.map((v, i) => `${238 + i * 29} ${baseY - v}`).join(' ')}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {line.map((v, i) => (
-          <circle
-            key={i}
-            cx={238 + i * 29}
-            cy={baseY - v}
-            r={3.5}
-            className="fill-white stroke-brand-500"
-            strokeWidth={2}
-          />
+        {series.map(([vals, stroke, fill], si) => (
+          <g key={si}>
+            <polyline
+              points={vals.map((v, i) => `${246 + i * 42} ${baseY - v}`).join(' ')}
+              fill="none"
+              className={stroke}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {vals.map((v, i) => (
+              <circle key={i} cx={246 + i * 42} cy={baseY - v} r={3.5} className={fill} />
+            ))}
+          </g>
         ))}
       </Panel>
     </Scene>

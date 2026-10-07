@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { MarkdownToTree } from '@/components/illustrations/tools';
+import { MarkdownImportPanel, MarkdownToTree } from '@/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Markdown Import',
@@ -23,7 +23,7 @@ Your document is treated as a hierarchical outline, and the importer is tolerant
 - **Tables** (pipe tables with a header row) become a table element.
 - **Plain prose lines** become leaf nodes so nothing is silently dropped.
 
-Code blocks, horizontal rules, and blockquote markers are skipped, and inline formatting such as bold, italic, and links is flattened to plain text in the labels. If the file has a single top-level item it becomes the root; otherwise a root named from the file holds the top-level items so you always get one connected diagram.
+Code blocks, horizontal rules, and blockquote markers are skipped, and inline formatting such as bold, italic, code, and links is flattened to plain text in the labels. Very long lines are shortened to 120 characters. If the file has a single top-level item it becomes the root; otherwise a root named from the file holds the top-level items so you always get one connected diagram.
 
 ## What you get
 
@@ -38,22 +38,32 @@ Everything is recoloured to a theme (the active tab's theme, or Brand as a fallb
 ## How to import
 
 <Step n={1}>
-  Open the **Import…** action from a tab's ellipsis (…) menu. The Import dialog opens, mirroring the
-  Export dialog.
+  Open the tab's ⋯ menu, then **Import** in its **Content** section, or run "Import…" from the
+  [command palette](/help/search-panel/the-search-panel/command-palette/).
 </Step>
 
 <Step n={2}>
-  Choose **Markdown** as the format. This sets the file picker's filter and tells livediagram to
-  build a tree.
+  In the **Import to tab** dialog, choose **Markdown** as the format. This sets the example text,
+  the file picker's filter, and tells livediagram to build a tree.
 </Step>
 
-<Step n={3}>Pick your `.md` file. The outline is built into the themed tree on that tab.</Step>
+<Step n={3}>
+  Paste your outline into the box and press **Import**, or use **Import a file instead** to pick a
+  `.md` file. The outline is built into the themed tree on that tab.
+</Step>
 
-Import **replaces the current tab's contents**, including its elements, theme, and background, while keeping the tab's id and name. The dialog warns you before you commit. Because the replace is a single step, **Undo (⌘Z) restores** the previous contents if you change your mind.
+<Figure caption="The Markdown step of Import to tab: paste an outline or pick a file, with the replace warning above.">
+  <MarkdownImportPanel />
+</Figure>
+
+Import **replaces the current tab's contents**, including its elements, theme, and background, while keeping the tab's name. The dialog warns you before you commit. Because the replace is a single step, **Undo** (⌘Z / Ctrl+Z) restores the previous contents if you change your mind. To keep what is on the tab, add a new tab first and import into that.
+
+If the file has nothing the importer recognises, the dialog says "No headings, lists, or tables found in this Markdown." and leaves your tab untouched. Import is greyed out on a [locked tab](/help/tabs/locking-tabs/), and view-only visitors don't have the tab menu at all.
 
 <Tip>
-  Importing a `.json` tab export is also offered in the same dialog, restored exactly as it was
-  saved. Pick the format that matches your file: livediagram does not guess.
+  The same dialog imports a `.json` tab export, a Mermaid diagram, an Excalidraw scene, or a draw.io
+  file. Pick the format that matches your content: livediagram does not guess. See [Importing a
+  Tab](/help/tabs/import-tabs/).
 </Tip>
 
 </ArticleLayout>

@@ -1,15 +1,16 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { PlanCardTypesScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
-  title: 'Card types',
+  title: 'Card Types',
   description:
-    'Make your own kinds of card for Plan boards: a name, a colour and a glyph, the built-in fields you want, and custom fields such as a choice, a link or a checkbox. Kept with the document and live for everyone.',
+    'Make your own kinds of card for Plan boards: a name, a colour and a glyph, the built-in fields you want, custom fields such as a choice, a link or a checkbox, and the tabs they sit on. Kept with the document and live for everyone.',
   path: '/help/canvas/plan-mode/card-types/',
 });
 
 <ArticleLayout
-  title="Card types"
+  title="Card Types"
   description="Your own kinds of card, with the fields each one holds."
   categoryTitle="Canvas"
   categorySlug="canvas/plan-mode"
@@ -19,33 +20,46 @@ Every [item](/help/canvas/plan-mode/items/) has a **type**: Project, Task, Note,
 
 ## Open Card Types
 
-In [Plan mode](/help/canvas/plan-mode/), press the **Card Types** button in the bottom-right corner, where Layers sits in the other modes, or **Edit Cards** at the foot of the palette's **Cards** category. The panel lists each type with its colour, its glyph, its fields and how many items have it.
+In [Plan mode](/help/canvas/plan-mode/), press the **Card Types** button in the bottom-right corner, where Layers sits in the other modes, or **Edit Cards** at the foot of the palette's **Cards** category (at the end of the strip with the Toolbar layout). The panel lists each type with its colour, its glyph, how many fields it has and how many items have it.
+
+<Figure caption="The Card Types panel opens above its button: a row per type, then Add Type.">
+  <PlanCardTypesScene />
+</Figure>
 
 - **Add Type** makes a new one; press a type to edit it.
-- Drag a row to reorder the types, or focus it and hold Alt while you press the up or down arrow. The palette's **Cards** list follows the same order.
-- **Restore built-in types** puts back the five the document started with.
+- Drag a row to reorder the types, or focus it and hold **Alt** while you press the up or down arrow. The palette's **Cards** list follows the same order.
+- **Restore built-in types** puts back the five the document started with, after asking. It shows once you have changed the types. Items of a type you made keep it, and show as a plain **Item** card.
 
-## Edit a type
+Someone who can only view the document sees the list but can't change it.
 
-The type editor opens over the canvas (on a phone, it slides up from the bottom).
+## Edit a Type
 
-- **Name**, **Colour** and **Glyph**: how its cards look.
-- **Fields**: what its item panel offers, in order. **Title** and **Status** are always there. Move a field with the arrows, or take it off with the cross.
-- **Add Field** offers the built-in fields the type doesn't have yet (Assignee, Priority, Due date, Checklist...) and **New Custom Field**: give it a name and a kind, which is **Text**, **Long text**, **Number**, **Date**, **Checkbox**, **Link** or **Choice** (one of the options you list).
-- **Edit** on a custom field changes its name, its options and **Show on card**, which draws its value on every card of the type.
-- **Tabs**: where a card's fields show. Each field's row has a picker of **Details** (the column beside the tabs), the type's tabs, or **New Tab…** (type a name, then Enter). Under Fields, rename **Details** and the tabs in place, move tabs with the arrows, and take one off with the cross (up to six tabs). **Details** and **Overview** can be renamed but always stay. A type starts with one **Overview** tab holding its description and checklist.
-- Press **Save** to apply the whole edit, or **Cancel** to leave it as it was. Undo takes a saved change back.
+The type editor (**Edit Card Type**, or **New Card Type**) opens over the canvas; on a phone, it slides up from the bottom.
+
+- **Name**, **Colour** (one of twelve) and **Glyph**: how its cards look. Two types can't share a name.
+- **Fields**: what its card panel offers, in order. **Title** and **Status** are always there. Move a field with the arrows, or take it off with the cross.
+- **+ Add Field** offers the **Built-In Fields** the type doesn't have yet (Assignee, Priority, Due date, Checklist, Comments...) and a **New Custom Field**: give it a name and a kind, which is **Text**, **Long text**, **Number**, **Date**, **Checkbox**, **Link** or **Choice** (one of the options you list, one a line), then press **Add Custom Field**.
+- **Edit** on a custom field changes its name, its options and **Show on card**, which draws its name and value on every card of the type.
+- **Tabs**: where a card's fields show. Each field's row has a picker of **Details** (the column beside the tabs), the type's tabs, or **New Tab…** (type a name, then Enter). Under Fields, rename **Details** and the tabs in place, move tabs with the arrows, and take one off with the cross (its fields go to Details). **Details** and **Overview** can be renamed but always stay. A type starts with one **Overview** tab holding its description, checklist and comments.
+- Press **Save** to apply the whole edit, or **Cancel** to leave it as it was. If something is missing (a name, a Choice's options), it says so beside **Save**. **Undo** takes a saved change back.
 
 Taking a field off a type never deletes anything: items keep what they hold in it, and it shows again if you add the field back.
 
-## Delete a type
+### Limits
 
-Open the type and press **Delete Type**. If items have the type, you choose where they go: another type, or **Keep as Item**, which keeps their fields and shows them as a plain Item card. A board that showed only that type then shows every type.
+A document holds up to 32 card types. Each type holds up to 24 fields, 12 of them custom, and up to 6 tabs. A Choice field has up to 20 options.
 
-## Where your types show
+## Delete a Type
 
-- The palette's **Cards** category has a card for each type, ready to drag into a board's column.
-- Quick add on a board understands a type's name before a colon: `customer call: Acme renewal`.
-- A board's set-up lists them under **Shows**, and its rows can be one per type.
+Open the type and press **Delete Type** (the last type can't be deleted). If items have the type, you choose where they go: another type, or **Keep as Item**, which keeps their fields and shows them as a plain Item card. If a board took new cards of that type alone, it takes every type again; pick the ones it should take in its menu's **New Cards Can Be**.
+
+## Where Your Types Show
+
+- The palette's **Cards** category has a card for each type ("Customer call Card"), ready to drag into a board's column.
+- **+ Add card** on a board offers the types that board takes, set in its menu's **Cards** › **New Cards Can Be**.
+- A card's panel lets you change its type from the picker at the top.
+- A board's rows can be one per type (**By Card Type**), in this panel's order.
+
+When someone saves a change, everyone with the document open sees their cards, panels and palette update at once. If two people save the same type at the same moment, the later save wins.
 
 </ArticleLayout>
