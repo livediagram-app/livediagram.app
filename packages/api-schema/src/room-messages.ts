@@ -637,3 +637,7 @@ export type RoomIncoming =
 // member leaving their team. Beside 4003 (a share link changed) and 4004 (the
 // document was trashed). The editor reloads into the ordinary access path.
 export const ACCESS_CHANGED_CLOSE = 4005;
+
+// The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
+// the page turns read-only and does not reconnect.
+export const WORKBENCH_ENDED_CLOSE = 4006;
