@@ -42,9 +42,18 @@ folder = "fld_8k2m4q"              # a personal or team folder, its subfolders i
 documents = ["doc_3h9x2a"]         # and any single documents, from anywhere the person can open
 
 [mirror]
-level = "files"                    # none | index | files
-dir = "docs/diagrams"              # relative to this file
+level = "files"                    # none | index | files; default index
+dir = "docs/diagrams"              # relative to this file; default diagrams
+
+[hooks]
+block = false                      # true: a commit fails when its sync cannot run
+
+[[sources]]                        # sources without a comment syntax (Diagram sources)
+path = "docs/arch.excalidraw"
+tab = "doc_3h9x2a/0b34"
 ```
+
+These are every table and key a link file holds; [Diagram sources](diagram-sources.md) owns `[[sources]]`.
 
 - **Covers.** A link covers the documents in its `folder` (subfolders included) and its listed `documents`. Either
   may be absent, not both. A document moved out of the folder leaves the link's coverage; a listed document stays
@@ -98,19 +107,27 @@ It is what an agent reads first, at a tenth of the JSON's tokens, and what a rev
 A covered document is in one state, from comparing its mirror file, the file's recorded revisions and hashes, and
 the document now:
 
-| State       | Means                                                                       | A sync                                       |
-| ----------- | --------------------------------------------------------------------------- | -------------------------------------------- |
-| `in-step`   | Local hashes match the recorded ones; the revisions are the document's      | Nothing                                      |
-| `behind`    | Local unchanged; livediagram has newer revisions                            | Writes the newer snapshot                    |
-| `ahead`     | Local changed; livediagram unchanged since the recorded revisions           | Sends the local change ([Merging](#merging)) |
-| `diverged`  | Both changed                                                                | Merges, then sends ([Merging](#merging))     |
-| `new`       | Covered, never mirrored                                                     | Writes it                                    |
-| `local-new` | A mirror file in `dir` naming no document livediagram has                   | Creates the document in the link's folder    |
-| `gone`      | Trashed, moved out of coverage, or no longer readable by the person syncing | Removes its files; git history keeps them    |
+| State        | Means                                                                                    | A sync                                       |
+| ------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `in-step`    | Local hashes match the recorded ones; the revisions are the document's                   | Nothing                                      |
+| `behind`     | Local unchanged; livediagram has newer revisions                                         | Writes the newer snapshot                    |
+| `ahead`      | Local changed; livediagram unchanged since the recorded revisions                        | Sends the local change ([Merging](#merging)) |
+| `diverged`   | Both changed                                                                             | Merges, then sends ([Merging](#merging))     |
+| `new`        | Covered, never mirrored                                                                  | Writes it                                    |
+| `local-new`  | A file in `dir` holding a document envelope with no `livediagramSync`: written by hand   | Creates the document in the link's folder    |
+| `gone`       | The api answers `410 document_trashed`, or the document is readable and outside coverage | Removes its files; git history keeps them    |
+| `unreadable` | The api answers `404` for the file's document: purged, or not this person's to open      | Nothing; reported once per sync              |
 
-A missing mirror file of a covered document is `new` again: deleting a file never deletes a document. A document
-that cannot be read for a transient reason (offline, rate limited, a server failure) keeps its files untouched and
-is reported, never treated as `gone`.
+- **Only an envelope without sync data is new.** A file whose `livediagramSync` names a document is never created
+  again, whatever the api answers, so a teammate without access, a purged document's file on an old branch or a
+  file a merge brings back never makes a duplicate. The api answers a document someone may not open exactly as an
+  absent one, so `unreadable` covers both and touches nothing.
+- A missing mirror file of a covered document is `new` again: deleting a file never deletes a document. A file of
+  an `unreadable` document stays until someone deletes it.
+- A document that cannot be read for a transient reason (offline, rate limited, a server failure) keeps its files
+  untouched and is reported, never treated as `gone` or `unreadable`.
+- A file holding git's conflict markers is refused, naming `livediagram sync --resolve <file>`
+  ([Git](#git)); nothing else in the sync waits for it.
 
 Until the merge is built, `ahead` and `diverged` are refused per document, naming the file and the command that
 sends it (`livediagram push <file>`), and the rest of the sync proceeds.
@@ -123,8 +140,10 @@ CLI and git's merge driver merge alike, and any other front door can.
 
 **The base** is the tab at the recorded revision. The CLI keeps every snapshot it writes in its local sync state
 (below), keyed by document, tab and revision; inside a git work tree it falls back to the file's own history
-(`git log` for the version recording that revision). A merge with no base is a **baseless merge**: every element
-that differs takes the remote version, local-only elements are added, and each difference is reported.
+(`git log` for the version recording that revision). A merge with no base (a cleared cache, a squashed history, a
+fresh clone) is a **baseless merge**: every field that differs takes the remote value and records the local one as
+a lost local value (below); elements only in the file are added, as an edit outranks a delete, and listed in the
+report and the changeset's summary.
 
 | Base → local | Base → remote   | Result                                                                   |
 | ------------ | --------------- | ------------------------------------------------------------------------ |
@@ -158,7 +177,8 @@ that differs takes the remote version, local-only elements are added, and each d
 | `link status`                                       | Every covered document with its state; exit 0 when all are `in-step`   |
 | `link ls`                                           | The covered documents, as `document ls` prints them                    |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted        |
-| `link hooks install\|uninstall`                     | The git hooks and the merge driver (below)                             |
+| `sync --resolve <file>`                             | A mirror file git left conflicted, resolved by the driver's table      |
+| `link hooks install\|uninstall`                     | The git hooks and the merge driver ([Git](#git))                       |
 
 - Every other command takes a mirror file's path wherever it takes a document, as it takes a pulled file today.
 - `sync --watch` listens to each covered document's room through the CLI's [room stream](../015-api/cli.md) and
@@ -170,33 +190,65 @@ that differs takes the remote version, local-only elements are added, and each d
 
 ## Git
 
-Git moves slower than diagrams, so the repository holds **snapshots at commit time**, kept honest three ways:
+Git moves slower than diagrams, so the repository holds **snapshots at commit time**. Diagrams are not branched:
+every branch's snapshots are views of the one document, and every branch's local changes are proposals to it.
 
-- **The pre-commit hook** runs `livediagram sync --hook`: one sync, then `git add` of exactly the files it wrote. A
-  commit therefore carries the diagrams as they were when it was made, and the local changes it carries have reached
-  livediagram. Within `SYNC_HOOK_BUDGET_MS`, offline, or signed out, the hook lets the commit through with one stderr
-  line naming the revisions the snapshot holds; `[hooks] strict = true` in the link file fails the commit instead.
-- **The merge driver** (`.gitattributes`: `*.livediagram.json merge=livediagram`) resolves two branches' snapshots
-  with `@livediagram/tab-merge`, base `%O`, ours `%A`, theirs `%B`, and then, online, takes livediagram's current
-  revision for every tab neither branch changed locally. Diagrams are not branched: both branches converge on the one
-  document.
-- **`link status`** in CI answers whether the committed snapshots are current; it never fails a build unless asked
-  (`--fail-behind`), and without a token it says so and exits 0.
+### The hooks
 
-`link hooks install` writes the hooks through the repository's `core.hooksPath` when one is set (Husky, lefthook),
-appending one line and never replacing a hook; it registers the driver in `.git/config` and the attribute in
-`.gitattributes`.
+- **Pre-commit** (and **pre-merge-commit**, which `git merge` runs instead) runs `livediagram sync --hook`: one sync,
+  then `git add` of exactly the files it wrote. A commit carries the diagrams as they were when it was made, and the
+  local changes it carries have reached livediagram.
+- **Partial staging is refused.** A mirror file whose staged content differs from the work tree, or a commit with
+  its own index (`git commit -o`, `GIT_INDEX_FILE`), would commit what the person did not stage; the hook fails
+  naming the file and the fix (`git add <file>`), and syncs nothing.
+- **Never in the way.** Past `SYNC_HOOK_BUDGET_MS`, offline, or signed out, the commit goes through with one
+  stderr line naming the revisions its snapshots hold. `[hooks] block = true` fails the commit instead.
+- **The hook line** is guarded, so a teammate without the CLI commits as before:
+  `if command -v livediagram >/dev/null 2>&1; then livediagram sync --hook; fi`. `link hooks install` appends it,
+  never replacing a hook, to the tracked hook file where a hook manager keeps one (Husky's `.husky/pre-commit`,
+  never its generated `.husky/_`; a `pre-commit` command in `lefthook.yml`), committed for everyone, and otherwise
+  to `.git/hooks`, for this clone only.
+
+### The merge driver
+
+`.gitattributes` (committed): `*.livediagram.json merge=livediagram`; the driver itself is registered per clone in
+`.git/config` by `link hooks install`. It merges two branches' copies of a mirror file **tab by tab**, telling
+livediagram's history from local changes by each copy's own record: a tab whose hash equals its recorded hash is a
+**clean snapshot**, any other tab carries a **local change**.
+
+| Ours           | Theirs         | Result                                                                              |
+| -------------- | -------------- | ----------------------------------------------------------------------------------- |
+| clean snapshot | clean snapshot | The higher revision's tab, verbatim                                                 |
+| local change   | clean snapshot | Ours, with its own recorded revision; the next sync merges it with livediagram      |
+| clean snapshot | local change   | Theirs, likewise                                                                    |
+| local change   | local change   | Ours; theirs is kept as a **pending proposal** in the local sync state and reported |
+
+- The driver never merges two snapshots element by element: two revisions of livediagram are not two edits, and
+  their difference is never sent back.
+- It works offline and sends nothing. The next sync sends pending proposals first, each merged against livediagram
+  from its own base, so both branches' changes arrive.
+- A tab in only one copy is kept; the document envelope's other fields come from the copy with the higher revision.
+- **Without the driver** (a clone that never ran `link hooks install`), git merges the text and may leave conflict
+  markers. `livediagram sync --resolve <file>` reads the three versions from git's index (`:1:`, `:2:`, `:3:`),
+  applies the driver's table and stages the result.
+
+### In CI
+
+`link status` answers whether the committed snapshots are current; it fails a build only when asked
+(`--fail-behind`), and without a token it says so and exits 0.
 
 ## Local sync state
 
 Per link, never committed: inside a git work tree at `<git dir>/livediagram/<link id>/` (each worktree its own),
 elsewhere at `~/.cache/livediagram/links/<link id>/`. The link id is a hash of the link file's absolute path. It
-holds the base snapshots (the latest `SYNC_BASES_KEPT` per tab), when each tab was last synced, and the lock.
+holds the base snapshots (the latest `SYNC_BASES_KEPT` per tab), the pending proposals, the last
+`SYNC_REPORTS_KEPT` sync reports, when each tab was last synced, and the lock.
 
 ## Who may sync
 
 - The person syncing reads and writes with their own credential, so each person's sync reaches only what they can
-  open; a teammate without access to a document leaves its snapshot untouched and is told so once per sync.
+  open; a teammate without access to a document finds it `unreadable`: its snapshot stays untouched and they are
+  told so once per sync.
 - A view-level token syncs one way: snapshots are written, local changes are reported as not sent.
 - The mirror is as public as the repository: `link init` says so in one line when the repository has a public
   remote. Document and folder ids in `livediagram.toml` grant nothing.
@@ -209,11 +261,12 @@ holds the base snapshots (the latest `SYNC_BASES_KEPT` per tab), when each tab w
 | `SYNC_LOCAL_SETTLE_MS` | 1500  | An editor's save and a formatter's rewrite land as one change            |
 | `SYNC_LOCK_WAIT_MS`    | 30000 | Longer than a sync of a large folder; shorter than a person's patience   |
 | `SYNC_HOOK_BUDGET_MS`  | 5000  | A commit never waits on a slow network for longer                        |
+| `SYNC_REPORTS_KEPT`    | 20    | Enough to find what last week's syncs did; small enough to never matter  |
 | `SYNC_BASES_KEPT`      | 5     | Covers several syncs while a local edit is in flight                     |
 
 ## Observability and telemetry
 
 - CLI debug fingerprints: `[sync] state`, `[sync] wrote`, `[sync] sent`, `[sync] merged`, `[sync] lost-local-value`,
-  `[sync] gone`, `[sync] refused`, `[sync] lock-wait`, each with the document and tab ids, never content.
+  `[sync] gone`, `[sync] unreadable`, `[sync] pending`, `[sync] resolved`, `[sync] refused`, `[sync] lock-wait`, each with the document and tab ids, never content.
 - Telemetry: category `Cli`, action `Used`, type the verb (`LinkInit`, `Sync`, `SyncWatch`, `LinkHooks`), as every
   command ([CLI](../015-api/cli.md#telemetry)).

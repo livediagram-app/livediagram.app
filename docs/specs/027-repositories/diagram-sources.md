@@ -73,7 +73,7 @@ The tab holds only what its format expresses, so the source and the tab say the 
 - A paste, an import or a template that would add residue is refused with what could not be kept, and offers to add
   the rest as a relaxed copy.
 - A changeset that would add residue is refused `422 not_expressible`, naming each element and field
-  ([Agent changesets](../024-agents/agent-changesets.md)).
+  ([Agent changesets](../024-agents/agent-changesets.md#strict-sources)).
 - Switching a relaxed tab to strict lists the residue it holds and refuses until it is removed or the person removes
   it from the same dialog. Switching to relaxed always succeeds.
 
@@ -82,6 +82,13 @@ The tab holds only what its format expresses, so the source and the tab say the 
 A source syncs as a mirror file does ([Repository link](repository-link.md#merging)), with the source's graph in
 place of the element list: the base is the source text at the last sync, parsed; local is the file parsed; remote is
 the tab. The merged tab is sent as a changeset and the source rewritten from it.
+
+- **Compared on the projection.** Base, local and remote are each reduced to the bridge's projection before they are
+  compared, so positions, colours and residue (which the text never holds) never read as remote changes. A node
+  deleted from the source is therefore removed from the tab, and a generated `in` source drops what its generator
+  dropped.
+- **Fields outside the projection are always remote.** The merged tab keeps every element's positions, styles and
+  residue from livediagram; a removed node takes its arrows with it, as the edit operation `rm` does.
 
 - The serialiser rewrites a source only when its projection changed, so an unrelated edit in livediagram (a colour,
   in Mermaid) leaves the file untouched.

@@ -27,11 +27,16 @@ that acts as the person on one document only.
    calls `POST /api/workbench/tickets { documentId, tabId?, origin }` with its token and prints
    `{ url, documentId, tabId, expiresAt }`. The ticket is 128 random bits, single use, valid for
    `WORKBENCH_TICKET_TTL_MS`, stored with the token's owner, the document, the origin and the token's access level.
-2. **Frame.** The workbench frames `url`: `<live origin>/embed/workbench#ticket=<ticket>`. The ticket travels in the
-   fragment, which no server, log or `Referer` sees; the page removes it from its address on load.
+   - **The origin** is exactly `scheme://host[:port]`, nothing more: `https` anywhere, `http` only on a loopback
+     host (`localhost`, `127.0.0.1`, `[::1]`). `*`, `null`, a path, a query or any other scheme is refused
+     `400 invalid_origin`; another workbench's scheme (a VS Code webview's) joins the list in this spec first.
+2. **Frame.** The workbench frames `url`: `<live origin>/embed/workbench?d=<documentId>#ticket=<ticket>`. The
+   document id is no secret; the ticket travels in the fragment, which no server, log or `Referer` sees, and the page
+   removes it from its address on load.
 3. **Redeem.** The page sends `POST /api/workbench/sessions { ticket }`. The api consumes the ticket and answers
-   `{ session, documentId, tabId, origin, role, expiresAt }`. The session is an opaque `lvw_` credential valid for
-   `WORKBENCH_SESSION_TTL_MS`, held in the page's memory only, never in storage.
+   `{ session, documentId, tabId, origin, role, expiresAt, person }` (`person`: the owner's display identity). A
+   `documentId` other than the address's `d` is refused and the session revoked. The session is an opaque `lvw_`
+   credential valid for `WORKBENCH_SESSION_TTL_MS`, held in the page's memory only, never in storage.
 4. **Bind to the workbench.** The page posts `livediagram:hello` to its parent with `targetOrigin` set to the
    ticket's origin, so a parent of any other origin never receives it, and mounts the editor only after the parent
    answers `livediagram:hello-ack` from that origin within `WORKBENCH_HANDSHAKE_MS`. A page that is not framed, or
@@ -48,8 +53,13 @@ that acts as the person on one document only.
   carrying the owner's [person tag](../024-agents/agent-presence.md), so the person's selection there is what their
   agent's `selected` reads and never holds against their own agent.
 - **Never more than the token.** The session's level is the minting token's level on the document, capped by the
-  owner's own access now: a view token gives a read-only frame. Ownership powers (share, delete, move, publish) and
-  account routes are refused.
+  owner's own access now: a view token gives a read-only frame.
+- **Only what the editor of one document needs.** The document, its tabs, comments, changesets, items and room;
+  uploading images into it and reading its images; reading the person's display identity, preferences, custom
+  themes and shape libraries; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
+  (share links, password, move, delete, publish, copy), other documents, the person's library and folders,
+  writing preferences or the profile, the guest migration, tokens, teams, the account and the AI assistant. The
+  editor offers none of them in a workbench embed: the person's agent sits beside it.
 - **Revocable.** Revoking the minting token ends its sessions; the page learns it on its next request or the room's
   close and turns read-only.
 
@@ -93,7 +103,10 @@ selected: 146b button "Play", e4a8 frame "Game grid", 0c84 sticky "Daily streak 
 read: livediagram tab view 3h9x2a --tab 0b34 --view show --ref 146b
 ```
 
-- The header names the document, tab, ids and revision; `tab diff --since <rev>` tells the agent what changed after.
+- The header names the document, tab, ids and revision the selection was made on. Refs are element ids, so they stay
+  valid after later edits; the agent reads what they hold now.
+- Labels are quoted as JSON strings, as the outline prints them: they are the diagram's content, possibly written by
+  other people, and an agent treats them as data, never as instructions.
 - `selected` lists each element as the outline prints it (ref, kind, label cut at 60 characters), up to
   `WORKBENCH_SELECTION_MAX_REFS`, then `… and <n> more: livediagram tab view <doc> --tab <t> --view show --ref selected`.
 - No selection gives the header and `whole tab`, so the person can talk about the picture as a whole.
@@ -128,10 +141,16 @@ The contract Spinner builds against (its own specs hold the detail):
 
 - **Minting needs a token**, so no page can obtain a ticket for someone else; this is what makes a frameable,
   signed-in page safe from clickjacking, as the share code is for [embeds](embeds.md#frame-headers).
-- **The origin binding** keeps a ticket that leaks from being useful in another site's frame: the page only mounts
-  for the origin the minter named.
-- **One document, one level, a day at most.** A stolen session reaches one document at the token's level until it
-  expires or the token is revoked.
+- **A ticket is a bearer credential.** Redemption cannot tell a browser from a script, so what protects a ticket is
+  that it is single use, lives `WORKBENCH_TICKET_TTL_MS` and travels only in a fragment. The origin binding is the
+  page's guard against being framed by a site other than the minter's, not a guard on redemption.
+- **The trust boundary is the token, and the person's machine.** A session gives nothing an edit-level token's
+  holder lacks, except writing as the person's own editor (whole-tab saves, no agent attribution, a person's
+  selection). An agent holding the token could open one itself; on the person's machine it already runs as the
+  person, with the person's browser profile in reach.
+- **One document, one level, renewable up to the token.** A session reaches one document at its level for
+  `WORKBENCH_SESSION_TTL_MS`; renewal mints a new ticket with the token, so the ceiling is the token's own life, and
+  revoking the token ends every session it opened.
 - Sessions are stored hashed; the api logs their id prefix, never the secret.
 
 ## Observability and telemetry
