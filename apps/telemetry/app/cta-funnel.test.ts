@@ -116,7 +116,7 @@ describe('ctaSourceLabel', () => {
     expect(ctaSourceLabel('Home.HeroDraw')).toBe('Hero: Drawing');
     expect(ctaSourceLabel('Home.HeroBrainstorm')).toBe('Hero: Brainstorm');
     expect(ctaSourceLabel('Feature.Hero')).toBe('Hero: Start Drawing');
-    expect(ctaSourceLabel('Help.Header')).toBe('Header: Start Drawing');
+    expect(ctaSourceLabel('Help.Header')).toBe('Header: Choose Template (was Start Drawing)');
     expect(ctaSourceLabel('Community.HeaderDraw')).toBe('Header: Blank Diagram');
   });
 });

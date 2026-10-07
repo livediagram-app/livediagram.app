@@ -1,6 +1,6 @@
 'use client';
 
-// Animated hero: seven windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
+// Animated hero: eight windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
 // "Hero"): an overview first, then the modes in action.
 //   0. Overview — a bare board (no editor chrome), one named frame per mode window, each drawing
 //      its scene settled; pressing a frame moves the stage to that window (hero-overview.tsx).
@@ -20,7 +20,10 @@
 //   6. Article (Illustrate mode) — an article page written line by line, with a header image, a
 //      heading and a pull quote, and a phrase set in bold from the rich-text toolbar
 //      (hero-article-page.tsx).
-//   7. Town hall — an all-hands on a Q&A board: questions land, votes tick up, the most-voted
+//   7. Plan — a launch board: columns of cards with Doing's WIP limit, a teammate carrying a card to
+//      Done, you carrying one into Doing, the counts ticking over, and a card quick-added with
+//      `@sam #docs` (hero-plan-board.tsx).
+//   8. Town hall — an all-hands on a Q&A board: questions land, votes tick up, the most-voted
 //      rises and is answered, reactions float up (hero-townhall-board.tsx).
 // Every window is in the Toolbar panel layout, its strip wearing its mode: the mode switch and
 // the mode's tiles (hero-mode-palette.tsx), and the glyph on its tab. Below the stage, a label names the centred window and a row of dots
@@ -50,6 +53,7 @@ import { DrawBoard } from './hero-draw-board';
 import { ArticlePage } from './hero-article-page';
 import { InfographicPages } from './hero-illustrate-page';
 import { MindMapBoard } from './hero-mindmap-board';
+import { PlanBoard } from './hero-plan-board';
 import { TownHallBoard } from './hero-townhall-board';
 import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
@@ -165,6 +169,20 @@ const CARDS: {
     shared: true,
   },
   {
+    key: 'plan',
+    word: 'Plan',
+    build: '/new?mode=plan',
+    short: 'Plan',
+    title: 'Launch',
+    label: 'Plan: move cards across a board together, with WIP limits and quick add',
+    mode: 'plan',
+    tabs: [
+      { name: 'Board', color: '#0ea5e9', active: true },
+      { name: 'Roadmap', color: '#10b981' },
+    ],
+    shared: true,
+  },
+  {
     key: 'townhall',
     word: 'Workshop',
     short: 'Town hall',
@@ -208,6 +226,7 @@ const PORTRAIT_VIEWBOX: Record<string, string> = {
   infographic: '10 -40 360 680',
   article: '10 -40 360 680',
   townhall: '0 -40 360 520',
+  plan: '0 -40 360 520',
 };
 
 export function HeroIllustration() {
@@ -296,6 +315,8 @@ export function HeroIllustration() {
                 <DrawBoard portrait={portrait} />
               ) : c.key === 'townhall' ? (
                 <TownHallBoard portrait={portrait} />
+              ) : c.key === 'plan' ? (
+                <PlanBoard portrait={portrait} />
               ) : c.key === 'mindmap' ? (
                 <MindMapBoard portrait={portrait} />
               ) : c.key === 'article' ? (

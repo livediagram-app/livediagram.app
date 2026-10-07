@@ -1,15 +1,16 @@
-import { ctaHref } from '@livediagram/api-schema';
-import { CtaLink } from '@/components/CtaLink';
-import type { ReactNode } from 'react';
+import { lucideBookOpen, lucideMail } from '@livediagram/icons/lucide';
+import { JsonLd, lucideGlyph, pageMetadata } from '@livediagram/ui';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+import { FaqBrowser } from '@/components/faq/FaqBrowser';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { JsonLd, pageMetadata, REPO_URL } from '@livediagram/ui';
+import { TryItCard } from '@/components/TryItCard';
+import { FAQ_CATEGORIES, faqAnswerText } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · livediagram';
 const FAQ_DESCRIPTION =
-  'Common questions about livediagram: accounts, collaboration, self-hosting, and more.';
+  'Answers to common questions about livediagram: getting started, collaboration, sharing, AI and MCP, import and export, privacy, and self-hosting.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
@@ -17,144 +18,22 @@ export const metadata = pageMetadata({
   path: '/faq',
 });
 
-// Each entry's `a` is what renders on the page (a ReactNode so we
-// can mix prose with anchor links). `aText` is the plain-text form
-// the FAQPage JSON-LD emits, since schema.org's Answer.text expects
-// a string. Entries whose `a` is already a string can omit
-// `aText`; the rest restate the sentence sans markup so the
-// structured data stays a faithful image of the visible answer.
-const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
-  {
-    q: 'Do I need an account to use livediagram?',
-    a: 'No. Open the editor and start drawing straight away, with no sign-up. An account is optional, and signing in (for free) keeps your documents synced across your devices.',
-  },
-  {
-    q: 'Is it free?',
-    a: 'Yes. The editor is free to use, with no paid tier and no plan to introduce one. The whole project is open source under the MIT license, so you can also run your own copy at no cost.',
-  },
-  {
-    q: 'What can I make with it?',
-    a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, editable tables, pie, bar and line charts, UML class and state diagrams, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, a personal objectives planner, UI wireframes for browser, laptop, phone and tablet screens, and a to-scale floor plan. Ninety-one starter templates and twenty-six themes get you going in seconds.',
-  },
-  {
-    q: 'Can AI help me build or tidy a diagram?',
-    a: 'Yes, when it is switched on. Turn on AI assistance in Settings to get an in-editor panel with two modes: Ask, for questions about the diagram in front of you, and Clean, which tidies and tightens the current tab. It is optional and off by default; if you self-host, you supply your own AI provider key.',
-  },
-  {
-    q: 'Can I work on a diagram with my team?',
-    a: 'Yes, that is the point. Share a link and your teammates join the same canvas in real time, with live cursors, presence on each tab, comments, and a laser pointer for presenting.',
-  },
-  {
-    q: 'How do share links work?',
-    a: 'From a document you own, create an editor link (full edit access) or a view-only link (look, do not touch). Anyone with the link can join. You can give a link an expiry when you create it, a week, a month, six months, or never, so it stops working on its own; extend it later if you need longer, or revoke it at any time and it stops working immediately.',
-  },
-  {
-    q: 'Can I set up a team with shared documents?',
-    a: 'Yes, once you sign in (for free). Create a team from the Explorer, invite people by their email address, and everyone gets a shared folder of documents that every member can open and edit. Teams have Admin and Member roles: admins manage who is in the team, everyone else just gets to work. The canvas itself still needs no account; teams simply add a shared home and proper membership on top.',
-  },
-  {
-    q: 'Can I embed a diagram in my docs or wiki?',
-    a: 'Yes. Any share link can be embedded as a read-only, live-updating iframe. Copy the embed snippet from the Share dialog and paste it into Notion, Confluence, a wiki, or any page that allows iframes, and it always shows the current state of the diagram.',
-  },
-  {
-    q: 'Can I connect my own AI assistant, like Claude?',
-    a: 'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool (such as Claude) and, after a one-time authorization, it can find, read, create, and edit the documents in your account on your behalf.',
-  },
-  {
-    q: 'Is there an API?',
-    a: 'Yes. Once you sign in, you can create API tokens and call the REST API to read and manage your documents programmatically. It is an optional power-user feature; guests and the canvas itself stay completely account-free.',
-  },
-  {
-    q: 'What happens if two people edit the same thing at once?',
-    a: 'Every change shows up for everyone live. If two people change the same element at the same moment, the most recent change is the one that sticks.',
-  },
-  {
-    q: 'Is my work saved automatically?',
-    a: 'Yes. Every change autosaves on its own, with a status that shows saving, saved, or a problem. Close the tab and reload, and your document comes back exactly as you left it.',
-  },
-  {
-    q: 'Can I undo a mistake?',
-    a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits, and Cmd-Shift-Z to bring one back. The undo and redo buttons also sit in the bottom-right corner of the canvas.',
-  },
-  {
-    q: 'Does it work on my phone or tablet?',
-    a: 'It runs in any modern browser, with nothing to install. It works well on a laptop, desktop, or tablet; small phone screens are best for viewing rather than heavy editing.',
-  },
-  {
-    q: 'Can I export my diagrams?',
-    a: 'Yes. Each tab can be exported as a Mermaid flowchart, Markdown, PDF, PNG, SVG, or a portable .json file you can import into another document. Mermaid, Markdown, and JSON also import back (paste the text or pick a file), and Mermaid keeps every connection. The same Import / Export accordion in the Palette covers both directions.',
-  },
-  {
-    q: 'Does it work with Mermaid?',
-    a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram, or ER diagram and livediagram lays it out on the canvas, keeping every connection rather than flattening it to an outline. Export any tab back to Mermaid flowchart text to copy it or download a .mmd file. It is the diagram-as-code format your READMEs, issues, and AI tools already speak, so diagrams move in and out without lock-in. Non-graph Mermaid types (sequence, gantt, pie) are not supported.',
-  },
-  {
-    q: 'Where is my data stored, and do you track me?',
-    a: (
-      <>
-        Your documents are stored in our database on Cloudflare. There are no tracking pixels, no
-        advertising, and no third-party analytics. We do record anonymous, first-party usage (which
-        features get used, never your content or name), and show it openly on our{' '}
-        <a href="/telemetry">telemetry page</a>. See the{' '}
-        <a href="/help/policies/privacy-policy/">privacy policy</a> for the details.
-      </>
-    ),
-    aText:
-      'Your documents are stored in our database on Cloudflare. There are no tracking pixels, no advertising, and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name), shown openly on our telemetry page. See the privacy policy for the details.',
-  },
-  {
-    q: 'Can I self-host livediagram?',
-    a: (
-      <>
-        Yes. It is MIT-licensed and the source is{' '}
-        <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-          on GitHub
-        </a>
-        . Deploy the static frontend plus the Cloudflare Workers backend on your own account and you
-        get every feature in the open-source codebase.
-      </>
-    ),
-    aText:
-      'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontend plus the Cloudflare Workers backend on your own account and you get every feature in the open-source codebase.',
-  },
-  {
-    q: 'How do I delete my data or account?',
-    a: 'You can delete any document you own at any time, and delete your account and its data yourself from your account settings.',
-  },
-  {
-    q: 'Who makes livediagram?',
-    a: (
-      <>
-        It is built by{' '}
-        <a href="https://www.tommcclean.me" target="_blank" rel="noopener noreferrer">
-          Tom McClean
-        </a>
-        . Questions or feedback? Email{' '}
-        <a href="mailto:hello@livediagram.app">hello@livediagram.app</a>.
-      </>
-    ),
-    aText: 'It is built by Tom McClean. Questions or feedback? Email hello@livediagram.app.',
-  },
-];
-
-// FAQPage JSON-LD: unlocks Google's expandable-FAQ rich result
-// for this page. Each Question.acceptedAnswer.text falls back to
-// the entry's plain-text a-field when aText isn't set (the
-// string-typed entries), and uses the parallel aText for entries
-// whose `a` carries JSX (so the structured-data text stays
-// markup-free). Build-time only, no client JS.
+// FAQPage JSON-LD: unlocks Google's expandable-FAQ rich result for this page. Built from the same
+// FAQ_CATEGORIES the page renders, so the structured data cannot drift from the visible answers. Build-time only.
 const FAQ_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: FAQS.map((f) => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: f.aText ?? (typeof f.a === 'string' ? f.a : ''),
-    },
-  })),
+  mainEntity: FAQ_CATEGORIES.flatMap((c) =>
+    c.items.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: faqAnswerText(item) },
+    })),
+  ),
 };
+
+const BookIcon = lucideGlyph(lucideBookOpen, 20);
+const MailIcon = lucideGlyph(lucideMail, 20);
 
 export default function FaqPage() {
   return (
@@ -162,27 +41,54 @@ export default function FaqPage() {
       <JsonLd data={FAQ_JSON_LD} />
       <BreadcrumbJsonLd name="FAQ" path="/faq" />
       <Header surface="Faq" />
-      <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
-          Frequently asked questions
-        </h1>
-        <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
-          Everything you might want to know before you open the canvas.
-        </p>
-        <div className="legal-prose mt-10">
-          {FAQS.map((f) => (
-            <div key={f.q}>
-              <h2>{f.q}</h2>
-              <p>{f.a}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-slate-700 dark:text-slate-200">Still have a question?</p>
-          <CtaLink href={ctaHref('/new', 'Faq.Card')} size="sm" className="mt-3">
-            Just start drawing
-          </CtaLink>
-        </div>
+      <main className="pb-20 sm:pb-24">
+        <FaqBrowser
+          eyebrow="FAQ"
+          title="Questions, answered"
+          lede="Everything you might want to know about livediagram, from your first diagram to running your own copy."
+        />
+
+        <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">
+          <h2
+            id="faq-more-title"
+            className="text-center text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100"
+          >
+            Still have a question?
+          </h2>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <a
+              href="/help/"
+              className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/40"
+            >
+              <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+                <BookIcon />
+              </span>
+              <p className="mt-4 font-semibold text-slate-900 dark:text-slate-100">
+                Browse the Help Centre
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Step-by-step guides for every tool, mode and setting.
+              </p>
+            </a>
+            <a
+              href="/help/contact/"
+              className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/40"
+            >
+              <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+                <MailIcon />
+              </span>
+              <p className="mt-4 font-semibold text-slate-900 dark:text-slate-100">Get in touch</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Ask us anything, report a bug or share an idea.
+              </p>
+            </a>
+            <TryItCard
+              title="The quickest answer is to try it"
+              body="No sign-up, nothing to install, free forever."
+              source="Faq.Card"
+            />
+          </div>
+        </section>
       </main>
       <Footer />
     </>

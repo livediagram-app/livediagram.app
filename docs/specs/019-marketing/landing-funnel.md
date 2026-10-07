@@ -76,7 +76,7 @@ ingest drops.
 | `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `Card`                                                                                               |
 | `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
 | `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
-| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                                             |
+| `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
 | `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
 
 The slots:

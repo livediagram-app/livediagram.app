@@ -3,6 +3,7 @@ import {
   FlowchartIcon,
   IllustrateIcon,
   MarkerIcon,
+  PlanIcon,
   lucideGlyph,
   type IconProps,
 } from '@livediagram/ui';
@@ -11,7 +12,7 @@ import type { ComponentType, Ref } from 'react';
 // The card under the hero's cycling word (docs/specs/019-marketing/marketing-site.md "Hero"): every
 // word the headline cycles through, as a row with its glyph, its name and one line on what it is,
 // the word showing in brand. The modes' words wear the editor's mode-switch glyphs (Diagram,
-// Whiteboard, Illustrate), so the card reads as the product. A pointer on top aims at the word;
+// Whiteboard, Illustrate, Plan), so the card reads as the product. A pointer on top aims at the word;
 // it stays on the word when the card is nudged inside a phone's edge (--hero-card-nudge, set by
 // HeroTitleLine).
 
@@ -52,6 +53,12 @@ export const HERO_WORDS: readonly {
     many: 'Illustrations',
     what: 'Infographics, posters and posts, sized to print or share',
     Icon: IllustrateIcon,
+  },
+  {
+    word: 'Plan',
+    many: 'Plans',
+    what: 'Boards of cards that move work from to do to done',
+    Icon: PlanIcon,
   },
   {
     word: 'Brainstorm',

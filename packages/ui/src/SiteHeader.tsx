@@ -21,7 +21,7 @@ import { StartBlankMenu } from './StartBlankMenu';
 // the logo (the landing page passes 'home', which reads as "Welcome").
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
-// (help keeps its single "Start drawing"). `shareRail` (default true) puts the
+// (no surface uses it today). `shareRail` (default true) puts the
 // share links on the page-edge rail; help and Community turn them off, keeping the rail's Appearance card. `wide` matches a surface whose
 // pages run max-w-7xl with md:px-8 (help), so the logo lines up with the
 // breadcrumb and content below instead of sitting inside a narrower column.
@@ -33,7 +33,7 @@ import { StartBlankMenu } from './StartBlankMenu';
 // `ctaSurface` names the page for the landing funnel (docs/specs/019-marketing/landing-funnel.md): the default
 // pair's hrefs carry `via=<surface>.Header` / `.HeaderDraw` so the editor can
 // count which page's header brought somebody in. A surface passing its own
-// `actions` tags those links itself (help's Start drawing is `Help.Header`).
+// `actions` tags those links itself.
 export function SiteHeader({
   productNav,
   ctaSurface,
@@ -43,7 +43,7 @@ export function SiteHeader({
   wide = false,
 }: {
   productNav?: ProductNavKey;
-  ctaSurface?: Exclude<CtaSurface, 'Help'>;
+  ctaSurface?: CtaSurface;
   center?: ReactNode;
   actions?: ReactNode;
   shareRail?: boolean;
@@ -73,7 +73,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
-            {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
+            {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
           </div>
         </div>
       </header>
@@ -85,11 +85,15 @@ export function SiteHeader({
 
 // The default CTA pair. The Start Blank menu is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
-// escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex).
-function DefaultActions({ ctaSurface }: { ctaSurface?: Exclude<CtaSurface, 'Help'> }) {
+// escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex). Beside a centre slot (help's
+// search) it waits for `md`, so the search box keeps room to read on a small tablet.
+function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
   return (
     <>
-      <StartBlankMenu ctaSurface={ctaSurface} className="max-sm:hidden" />
+      <StartBlankMenu
+        ctaSurface={ctaSurface}
+        className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
+      />
       <a
         href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
         className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}

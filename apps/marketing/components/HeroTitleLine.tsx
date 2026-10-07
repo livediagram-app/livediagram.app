@@ -6,7 +6,7 @@ import { HERO_WORDS, HeroWordCard } from './HeroWordCard';
 import { useHeroWordPin } from '@/lib/hero-word-pin';
 
 // The headline's first word cycles through what livediagram is for
-// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Workshop, Whiteboard, Illustrate, Brainstorm ...
+// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Workshop, Whiteboard, Illustrate, Plan, Brainstorm ...
 // together, live. The headline stays on one line, and a change never moves anything in layout
 // (docs/specs/004-interface-design/layout-stability.md): every word sits in the same grid cell, so
 // the slot is as wide as the widest, and each word is right-aligned in it, snug against

@@ -59,10 +59,15 @@ describe('CTA_SOURCES', () => {
       'Dashboard.HeaderIllustration',
       'Dashboard.HeaderPlan',
       'Help.Header',
+      'Help.HeaderDraw',
+      'Help.HeaderWhiteboard',
+      'Help.HeaderIllustration',
+      'Help.HeaderPlan',
       'Community.Header',
       'Community.HeaderDraw',
       'Community.HeaderWhiteboard',
       'Community.HeaderIllustration',
+      'Community.HeaderPlan',
     ]);
   });
 
@@ -85,7 +90,7 @@ describe('CTA_SOURCES', () => {
 describe('isCtaSource', () => {
   it('accepts only sources in the table', () => {
     expect(isCtaSource('Home.Hero')).toBe(true);
-    expect(isCtaSource('Help.HeaderDraw')).toBe(false);
+    expect(isCtaSource('Help.Card')).toBe(false);
     expect(isCtaSource('Home.hero')).toBe(false);
     expect(isCtaSource('Home')).toBe(false);
     expect(isCtaSource('')).toBe(false);

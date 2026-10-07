@@ -78,34 +78,3 @@
     opacity: 0 !important;
   }
 }
-
-/* Prose styling for long-form marketing copy (the FAQ answer column). */
-.legal-prose {
-  color: #475569;
-  line-height: 1.7;
-}
-.legal-prose h2 {
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-.legal-prose p {
-  margin-bottom: 1rem;
-}
-.legal-prose ul {
-  margin: 0 0 1rem 1.25rem;
-  list-style: disc;
-}
-.legal-prose li {
-  margin-bottom: 0.375rem;
-}
-.legal-prose a {
-  color: #0284c7;
-  text-decoration: underline;
-}
-.legal-prose strong {
-  font-weight: 600;
-  color: #0f172a;
-}

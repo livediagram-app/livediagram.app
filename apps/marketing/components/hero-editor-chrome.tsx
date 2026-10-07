@@ -5,7 +5,7 @@
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
-import { lucideStar } from '@livediagram/icons/lucide';
+import { lucideStar, lucideStickyNote } from '@livediagram/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
@@ -140,9 +140,12 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
             <StripDivider />
             <span className="flex h-6 items-center gap-1 px-1.5 text-[9px] font-medium">
               <Glyph size={10} units={24}>
-                <Prims prims={lucideStar} />
+                {/* Plan has no Popular: its strip opens on Cards. */}
+                <Prims prims={mode === 'plan' ? lucideStickyNote : lucideStar} />
               </Glyph>
-              <span className="hidden sm:text-optical-line">Popular</span>
+              <span className="hidden sm:text-optical-line">
+                {mode === 'plan' ? 'Cards' : 'Popular'}
+              </span>
               <ChevronDownIcon size={7} />
             </span>
           </>

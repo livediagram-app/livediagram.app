@@ -41,11 +41,11 @@ describe('the hero headline word', () => {
     vi.unstubAllGlobals();
   });
 
-  it('cycles Diagram, Document, Workshop, Whiteboard, Illustrate, Brainstorm, 2.5s each, then wraps', () => {
+  it('cycles Diagram, Document, Workshop, Whiteboard, Illustrate, Plan, Brainstorm, 2.5s each, then wraps', () => {
     stubMotion(false);
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
     const seen = [shownWord(container)];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       act(() => vi.advanceTimersByTime(2499));
       expect(shownWord(container)).toBe(seen.at(-1));
       act(() => vi.advanceTimersByTime(1));
@@ -57,6 +57,7 @@ describe('the hero headline word', () => {
       'Workshop',
       'Whiteboard',
       'Illustrate',
+      'Plan',
       'Brainstorm',
       'Diagram',
     ]);
