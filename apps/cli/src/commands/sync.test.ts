@@ -465,6 +465,7 @@ describe('sync, edges', () => {
     let status = 429;
     io.fetch = async (request) => {
       const url = new URL(request.url);
+      if (url.pathname.includes('/tabs/') && status === 0) throw new TypeError('fetch failed');
       if (url.pathname.includes('/tabs/')) return Response.json({ error: 'x' }, { status });
       return (await route(request, url)) ?? Response.json({}, { status: 404 });
     };
@@ -476,6 +477,10 @@ describe('sync, edges', () => {
     expect(io.fileMap.has(MIRROR)).toBe(false);
     status = 503;
     expect((await sync(io)).code).toBe(7);
+    status = 0;
+    expect((await sync(io)).out).toContain(
+      'could not reach https://livediagram.app (fetch failed); files kept',
+    );
     status = 401;
     expect((await sync(io)).code).toBe(4);
   });

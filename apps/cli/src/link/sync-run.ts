@@ -6,6 +6,7 @@
 
 import { posix } from 'node:path';
 import type { VerbContext } from '@livediagram/agent-verbs';
+import { ApiError } from '@livediagram/api-client';
 import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livediagram/document';
 import { readDocumentSnapshot } from '../commands/snapshot';
 import type { CliIo } from '../io';
@@ -153,7 +154,7 @@ async function writeAct(
   } catch (err) {
     const failure = failureOf(err, host);
     if (failure.exit === EXIT.auth) throw err;
-    ctx.log(`transient ${action.documentId} ${failure.code}`);
+    ctx.log(`transient ${action.documentId} ${err instanceof ApiError ? err.status : 'network'}`);
     return {
       kind: 'transient',
       documentId: action.documentId,
