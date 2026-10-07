@@ -3,8 +3,13 @@
 // The frame of the OAuth pages (the consent page and the device page, docs/specs/015-api/blueprints/cli.md
 // "The device grant"): the brand over a card on the animated lines backdrop, and the help link to the
 // connect-an-AI-tool article.
-import { Brand, Glyph } from '@livediagram/ui';
+import { Brand, Glyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
+
+// The primary action of every page in the shell (Allow, Approve, Continue). White on brand-700 in light
+// (about 5.9:1; brand-600 was 4.1:1, under WCAG 2.2 AA), darker still on hover; the shared solid brand
+// control in dark.
+export const OAUTH_PRIMARY = `rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`;
 
 export function OauthShell({ children }: { children: React.ReactNode }) {
   return (

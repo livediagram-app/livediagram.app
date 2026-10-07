@@ -4,13 +4,13 @@ import { expect, expectNoPageErrors, test } from '../fixtures';
 import { WEBBER } from './agent-session';
 import { freshUserId, installClerkStub } from './clerk-stub';
 
-// Contrast of the workbench pairing surfaces (docs/specs/013-workspace/blueprints/workbench-embeds.md
-// "Accessibility"), to WCAG 2.2 AA: a paired-workbench row in Settings > API tokens in both colour schemes, and the
-// pairing page in its pending state in dark. The pairing page is the device page's card, whose light-mode solid
-// brand fill belongs to the shared light palette, outside these audits as in contrast-audit.spec.ts. Both need a
-// signed-in person, so they run against the Clerk-enabled export here rather than in the guest-mode audit. The
-// api's answers are stubbed, as the device page's spec stubs the MCP worker, so each surface renders exactly the
-// state under audit.
+// Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
+// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes: the pairing page in its pending
+// state, the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
+// consent, both drawn by OauthShell and its primary fill, and a paired-workbench row in Settings > API tokens.
+// All need a signed-in person, so they run against the Clerk-enabled export here rather than in the guest-mode
+// audit. The api's and the MCP worker's answers are stubbed, so each surface renders exactly the state under
+// audit.
 
 const CODE = 'AAAAAAAAAAAAAAAAAAAAAA';
 const DAY = 86_400_000;
@@ -49,32 +49,58 @@ async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   await page.addInitScript((mode) => localStorage.setItem('livediagram:v2:ui-mode', mode), scheme);
 }
 
-test.describe('Workbench pairing contrast, the pairing page', () => {
-  test.use({ colorScheme: 'dark', reducedMotion: 'reduce', viewport: VIEWPORT });
+const MCP = 'https://mcp.livediagram.app';
 
-  test('pending, dark', async ({ page, pageErrors }) => {
-    await signedIn(page, 'dark');
-    await page.route(`**/api/workbench/pairing-requests/${CODE}`, (route) =>
-      route.fulfill({
-        json: {
-          request: {
-            origin: PAIRING.origin,
-            name: PAIRING.name,
-            tokenName: TOKEN.name,
-            expiresAt: NOW + 600_000,
-            status: 'pending',
+async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void> {
+  if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  else await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test.describe(`OAuth shell contrast, ${scheme} mode`, () => {
+    test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
+
+    test('the pairing page, pending', async ({ page, pageErrors }) => {
+      await signedIn(page, scheme);
+      await page.route(`**/api/workbench/pairing-requests/${CODE}`, (route) =>
+        route.fulfill({
+          json: {
+            request: {
+              origin: PAIRING.origin,
+              name: PAIRING.name,
+              tokenName: TOKEN.name,
+              expiresAt: NOW + 600_000,
+              status: 'pending',
+            },
           },
-        },
-      }),
-    );
-    await page.goto(`/workbench/pair?code=${CODE}`);
-    await expect(page.getByRole('heading', { name: 'Allow this workbench?' })).toBeVisible();
-    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
-    await page.screenshot({ path: test.info().outputPath('pair-pending-dark.png') });
-    expectAA(await auditContrast(page), 'pairing page, pending, dark');
-    expectNoPageErrors(pageErrors);
+        }),
+      );
+      await page.goto(`/workbench/pair?code=${CODE}`);
+      await expect(page.getByRole('heading', { name: 'Allow this workbench?' })).toBeVisible();
+      await expectScheme(page, scheme);
+      await page.screenshot({ path: test.info().outputPath(`pair-pending-${scheme}.png`) });
+      expectAA(await auditContrast(page), `pairing page, pending, ${scheme}`);
+      expectNoPageErrors(pageErrors);
+    });
+
+    test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
+      await signedIn(page, scheme);
+      await page.route(`${MCP}/oauth/device/session/*`, (route) =>
+        route.fulfill({ json: { clientName: 'livediagram CLI' } }),
+      );
+      await page.goto('/oauth/device?code=bcdf-ghjk');
+      await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
+      await expectScheme(page, scheme);
+      expectAA(await auditContrast(page), `device page, code entry, ${scheme}`);
+
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await expect(page.getByRole('heading', { name: 'Connect livediagram CLI' })).toBeVisible();
+      await page.screenshot({ path: test.info().outputPath(`device-consent-${scheme}.png`) });
+      expectAA(await auditContrast(page), `device page, consent, ${scheme}`);
+      expectNoPageErrors(pageErrors);
+    });
   });
-});
+}
 
 for (const scheme of ['dark', 'light'] as const) {
   test.describe(`Workbench pairing contrast, Settings, ${scheme} mode`, () => {
@@ -93,8 +119,7 @@ for (const scheme of ['dark', 'light'] as const) {
       await page.goto('/explorer/home?settings=tokens');
       const pairings = page.getByRole('list', { name: 'Paired workbenches' });
       await expect(pairings.getByText('Spinner')).toBeVisible();
-      if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);
-      else await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
+      await expectScheme(page, scheme);
       await page.screenshot({ path: test.info().outputPath(`pair-settings-${scheme}.png`) });
       // The token card holding the row, so the audit judges this surface and nothing behind the dialog.
       expectAA(

@@ -30,7 +30,7 @@ import { useCommunityState } from '@/lib/community-state-store';
 import { useCommunityEnabled } from '@livediagram/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
-import { WorkbenchChrome } from '@/components/chrome/WorkbenchChrome';
+import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
@@ -452,10 +452,9 @@ export function EditorView() {
                         onSelectTab={selectTab}
                       />
                     ) : null}
-                    {workbench && documentId ? (
-                      // The workbench's own chrome: Open in livediagram and the Reconnect line.
-                      <WorkbenchChrome
-                        documentId={documentId}
+                    {workbench ? (
+                      // The workbench's Reconnect line; its Open in livediagram sits in the tab bar.
+                      <WorkbenchReconnectLine
                         workbenchName={workbench.workbenchName}
                         ended={workbench.ended}
                       />
@@ -464,6 +463,13 @@ export function EditorView() {
                       <AreaErrorBoundary area="TabBar" fallback="panel">
                         <TabBar
                           powerUser={isPowerUserMode(userPreferences)}
+                          workbenchLink={
+                            workbench && documentId
+                              ? (labelled) => (
+                                  <WorkbenchOpenLink documentId={documentId} labelled={labelled} />
+                                )
+                              : undefined
+                          }
                           roleIcon={
                             minimalChrome ? (
                               <RoleStatusIcon role={role.role} onToggle={role.onToggle} />

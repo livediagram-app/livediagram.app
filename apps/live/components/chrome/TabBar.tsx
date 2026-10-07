@@ -72,6 +72,9 @@ type TabBarProps = {
   // Power user mode turns the Appearance control into a quick switch
   // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
   powerUser?: boolean;
+  // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
+  // livediagram link at the bar's right end, and no Appearance control (the workbench sets the scheme).
+  workbenchLink?: (labelled: boolean) => ReactNode;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
@@ -208,6 +211,7 @@ export function TabBar({
   canvasActions,
   roleIcon,
   powerUser = false,
+  workbenchLink,
 }: TabBarProps) {
   const minimalChrome = useMinimalChrome();
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -419,7 +423,9 @@ export function TabBar({
           labelled={!minimalChrome}
           github={false}
           powerUser={powerUser}
+          appearance={!workbenchLink}
         />
+        {workbenchLink?.(!minimalChrome)}
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.

@@ -9,7 +9,6 @@ import {
   WORKBENCH_HANDLE_PATTERN,
   type WorkbenchPairingRequestView,
 } from '@livediagram/api-schema';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import {
   apiAnswerPairingRequest,
   apiReadPairingRequest,
@@ -18,7 +17,7 @@ import {
 import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { OauthShell } from '../../oauth/oauth-shell';
+import { OAUTH_PRIMARY, OauthShell } from '../../oauth/oauth-shell';
 
 type Answer = 'approve' | 'decline';
 
@@ -36,7 +35,6 @@ type Step =
   | { kind: 'expired' }
   | { kind: 'answered' };
 
-const PRIMARY = `rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`;
 const SECONDARY =
   'rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
 const HEADING = 'text-lg font-semibold text-slate-900 focus:outline-none dark:text-slate-100';
@@ -154,7 +152,7 @@ export function PairWorkbench() {
         <div className="mt-5">
           <a
             href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
-            className={`inline-flex ${PRIMARY}`}
+            className={`inline-flex ${OAUTH_PRIMARY}`}
           >
             Sign in
           </a>
@@ -253,7 +251,7 @@ function PendingRequest({
           type="button"
           onClick={() => void onAnswer(request, 'approve')}
           disabled={working !== null}
-          className={PRIMARY}
+          className={OAUTH_PRIMARY}
         >
           {working === 'approve' ? 'Allowing…' : 'Allow'}
         </button>
