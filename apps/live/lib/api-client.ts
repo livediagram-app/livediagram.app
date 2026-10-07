@@ -71,3 +71,5 @@ export * from './api/unfurl';
 export * from './api/trash';
 export * from './api/drive';
 export * from './api/community';
+// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
+export * from './api/workbench';
