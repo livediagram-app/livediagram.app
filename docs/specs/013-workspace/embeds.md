@@ -42,3 +42,5 @@ Works with zero external services: the embed page is part of the live app's stat
 - oEmbed / OpenGraph provider endpoints (candidate follow-up).
 - Embedding a single element or region rather than a tab.
 - Hiding the "Open in livediagram" badge (it is deliberately not configurable).
+- A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`
+  so it may be framed, and admitted by a workbench ticket rather than a share code.
