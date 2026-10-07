@@ -338,7 +338,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && !readOnly && !whiteboard;
-  const explorerMenuButton = (
+  const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}

@@ -40,6 +40,9 @@ type CustomThemeContextValue = {
     patch: { name?: string; definition?: CustomThemeDefinition },
   ) => Promise<CustomTheme | undefined>;
   deleteTheme: (id: string) => void;
+  // False in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): the
+  // themes are read, never built, edited or deleted there.
+  writable: boolean;
 };
 
 const CustomThemeContext = createContext<CustomThemeContextValue | null>(null);
@@ -54,6 +57,7 @@ export function useCustomThemes(): CustomThemeContextValue {
       createTheme: async () => undefined,
       updateTheme: async () => undefined,
       deleteTheme: () => {},
+      writable: false,
     }
   );
 }
@@ -61,9 +65,11 @@ export function useCustomThemes(): CustomThemeContextValue {
 export function CustomThemeProvider({
   ownerId,
   onThemeDeleted,
+  readOnly = false,
   children,
 }: {
   ownerId: string | null;
+  readOnly?: boolean;
   // Called synchronously when a theme is deleted, with its id, BEFORE the
   // delete is persisted. The editor uses it to revert any tab in the open
   // document that was using the now-dead `custom:<uuid>` id back to the
@@ -161,7 +167,9 @@ export function CustomThemeProvider({
   );
 
   return (
-    <CustomThemeContext.Provider value={{ themes, loading, createTheme, updateTheme, deleteTheme }}>
+    <CustomThemeContext.Provider
+      value={{ themes, loading, createTheme, updateTheme, deleteTheme, writable: !readOnly }}
+    >
       {children}
     </CustomThemeContext.Provider>
   );

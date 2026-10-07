@@ -208,6 +208,7 @@ export function EditorCanvasHost() {
     editingId,
     effectiveTemplatePickerMode,
     embedMode,
+    workbenchMode,
     endVote,
     exitFormatTool,
     explorerPosition,
@@ -1152,6 +1153,7 @@ export function EditorCanvasHost() {
         // withheld so the ZoomControls dock doesn't offer an exit
         // from a mode the embed can't actually leave.
         zenMode={zenMode || embedMode}
+        explorerHidden={workbenchMode}
         onToggleZen={embedMode ? undefined : toggleZenMode}
         aiPanel={
           aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly

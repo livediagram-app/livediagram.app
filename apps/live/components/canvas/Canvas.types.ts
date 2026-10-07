@@ -846,4 +846,7 @@ export type CanvasProps = {
   // button, the zoom-dock exit button, and the Z shortcut.
   zenMode?: boolean;
   onToggleZen?: () => void;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
+  // has no Explorer: neither the floating panel nor the Toolbar layout's menu button.
+  explorerHidden?: boolean;
 };

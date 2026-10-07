@@ -6,7 +6,7 @@ import type { Tab } from '@livediagram/document';
 // The autosave stands down while a peer's op has reached the baseline but not yet this render's `tabs`
 // (docs/specs/012-collaboration/collab-race-hardening.md), and re-arms on the render that carries it. The
 // count of ops a render includes is state (react-state-and-effects.md), never a ref read during render.
-const apiSaveTab = vi.fn(() => Promise.resolve());
+const apiSaveTab = vi.fn((): Promise<number | null> => Promise.resolve(null));
 vi.mock('@/lib/api-client', () => ({
   apiSaveTab: (...a: unknown[]) => apiSaveTab(...(a as [])),
   apiDeleteTab: vi.fn(() => Promise.resolve()),
@@ -61,6 +61,7 @@ function setup() {
     opsApplied: number,
     onDocumentTrashed: () => void = () => {},
     changesetSeen: ReadonlyMap<string, number> = noneSeen,
+    noteTabRevision?: (tabId: string, rev: number) => void,
   ) =>
     useAutosave({
       hydrated: true,
@@ -75,9 +76,29 @@ function setup() {
       ...setters,
       onDocumentTrashed,
       changesetSeen,
+      noteTabRevision,
     });
   return { journal, useSubject };
 }
+
+// The selection reference names the revision the editor knows (docs/specs/013-workspace/blueprints/
+// workbench-embeds.md "The selection reference"): a save's answer is one.
+describe('useAutosave and tab revisions', () => {
+  it('notes the revision each save wrote, and nothing when the answer names none', async () => {
+    const { useSubject } = setup();
+    const noted = vi.fn();
+    apiSaveTab.mockResolvedValueOnce(12);
+    const { rerender } = renderHook(({ tabs }) => useSubject(tabs, 0, () => {}, undefined, noted), {
+      initialProps: { tabs: [tab('mine')] },
+    });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(noted).toHaveBeenCalledWith('t1', 12);
+
+    rerender({ tabs: [tab('again')] });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(noted).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('useAutosave and peer ops', () => {
   it('saves a local edit after the debounce', () => {
@@ -130,7 +151,7 @@ describe('useAutosave and the Trash', () => {
       vi.advanceTimersByTime(600);
     });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
-    apiSaveTab.mockImplementation(() => Promise.resolve());
+    apiSaveTab.mockImplementation(() => Promise.resolve(null));
   });
 });
 
@@ -205,7 +226,9 @@ describe('useAutosave after a failed save', () => {
 describe('hasUnsavedChanges', () => {
   it('is true while an edit waits out the debounce or its save is in flight, false once saved', async () => {
     let finish: () => void = () => {};
-    apiSaveTab.mockImplementationOnce(() => new Promise<void>((resolve) => (finish = resolve)));
+    apiSaveTab.mockImplementationOnce(
+      () => new Promise<number | null>((resolve) => (finish = () => resolve(null))),
+    );
     const { useSubject } = setup();
     const { result } = renderHook(({ tabs, n }) => useSubject(tabs, n), {
       initialProps: { tabs: [tab('mine')], n: 0 },

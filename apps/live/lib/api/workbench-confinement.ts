@@ -6,6 +6,7 @@
 import {
   apiRouteLabel,
   isWorkbenchSessionFormat,
+  readErrorCode,
   workbenchRouteVerdict,
 } from '@livediagram/api-schema';
 
@@ -60,4 +61,23 @@ export function confinementRefusal(
     console.warn('[workbench] request-confined', { method, route });
   }
   return new WorkbenchConfinedError(route);
+}
+
+// The api refused the session itself (`401 invalid_session`: revoked, unpaired, purged, expired): the
+// workbench page ends (blueprint "The workbench page" step 6). Every response to a request presenting
+// the session passes here; listeners hear each refusal.
+const refusedListeners = new Set<() => void>();
+
+export function subscribeWorkbenchSessionRefused(listener: () => void): () => void {
+  refusedListeners.add(listener);
+  return () => refusedListeners.delete(listener);
+}
+
+export async function noteWorkbenchResponse(
+  init: RequestInit | undefined,
+  res: Response,
+): Promise<void> {
+  if (res.status !== 401 || !presentsSession(init?.headers)) return;
+  if ((await readErrorCode(res)) !== 'invalid_session') return;
+  refusedListeners.forEach((l) => l());
 }

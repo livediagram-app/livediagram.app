@@ -47,6 +47,9 @@ type ImagePickerProps = {
   onRemove?: () => void;
   onSelect: (image: PickedImage) => void;
   onClose: () => void;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
+  // uploads into its one document and never reads the person's gallery: no Gallery, no Search.
+  uploadOnly?: boolean;
 };
 
 export function ImagePicker({
@@ -57,6 +60,7 @@ export function ImagePicker({
   onRemove,
   onSelect,
   onClose,
+  uploadOnly = false,
 }: ImagePickerProps) {
   const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
   const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
@@ -66,6 +70,7 @@ export function ImagePicker({
   const confirm = useConfirm();
 
   useEffect(() => {
+    if (uploadOnly) return;
     apiListImages(ownerId)
       .then((list) => {
         if (list === null) {
@@ -76,7 +81,7 @@ export function ImagePicker({
         setGallery(list);
       })
       .catch(() => setGalleryError('Could not load your gallery.'));
-  }, [ownerId]);
+  }, [ownerId, uploadOnly]);
 
   const handleFile = async (file: File) => {
     setUploadError(null);
@@ -171,18 +176,20 @@ export function ImagePicker({
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
         <DialogCloseButton compact onClick={onClose} />
       </header>
-      <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
-        <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>
-          Upload
-        </TabButton>
-        <TabButton active={tab === 'gallery'} onClick={() => setTab('gallery')}>
-          Gallery
-          {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
-        </TabButton>
-        <TabButton active={tab === 'search'} onClick={() => setTab('search')}>
-          Search
-        </TabButton>
-      </nav>
+      {uploadOnly ? null : (
+        <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
+          <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>
+            Upload
+          </TabButton>
+          <TabButton active={tab === 'gallery'} onClick={() => setTab('gallery')}>
+            Gallery
+            {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
+          </TabButton>
+          <TabButton active={tab === 'search'} onClick={() => setTab('search')}>
+            Search
+          </TabButton>
+        </nav>
+      )}
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {tab === 'upload' ? (
           <ImageDropZone

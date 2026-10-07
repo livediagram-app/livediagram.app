@@ -309,46 +309,47 @@ export function useCanvasChromePanels({
       : null,
   });
 
-  const explorerEl = zenMode ? null : (
-    <Explorer
-      recentExcludedIds={userPreferences.recentExcludedIds ?? []}
-      onToggleRecentExclusion={onToggleRecentExclusion}
-      favouriteIds={favouriteIds}
-      onToggleFavourite={onToggleFavourite}
-      position={explorerWiring.position}
-      documents={documentList}
-      ownerId={selfParticipant?.id ?? null}
-      folders={folders}
-      loading={documentListLoading}
-      shared={sharedDocuments}
-      teams={teams}
-      teamFolders={teamFolders}
-      teamDocuments={teamDocuments}
-      onDismissShared={explorerHandlers.onDismissShared}
-      currentDocumentId={currentDocumentId}
-      onMoveTo={explorerHandlers.onMoveExplorer}
-      onReset={explorerWiring.onReset}
-      dock={explorerWiring.dock}
-      onOpenDocument={explorerHandlers.onOpenDocument}
-      onNewDocument={explorerHandlers.onNewDocument}
-      menuActions={explorerMenu}
-      onRenameCurrent={explorerHandlers.onRenameCurrent}
-      onDeleteDocument={explorerHandlers.onDeleteDocument}
-      onDuplicateDocument={explorerHandlers.onDuplicateDocument}
-      onCreateFolder={explorerHandlers.onCreateFolder}
-      onRenameFolder={explorerHandlers.onRenameFolder}
-      onDeleteFolder={explorerHandlers.onDeleteFolder}
-      onTeamFolders={onTeamFolders}
-      onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
-      onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
-      popoverOpen={activeDockPanel === 'explorer'}
-      popoverAnchor={activeDockAnchor ?? undefined}
-      // Toolbar layout: a popover under the menu button, the dock's path.
-      asPopover={toolbarActive}
-      dismissOnOutside={toolbarActive}
-      onPopoverClose={closeDockPanel}
-    />
-  );
+  const explorerEl =
+    zenMode || props.explorerHidden ? null : (
+      <Explorer
+        recentExcludedIds={userPreferences.recentExcludedIds ?? []}
+        onToggleRecentExclusion={onToggleRecentExclusion}
+        favouriteIds={favouriteIds}
+        onToggleFavourite={onToggleFavourite}
+        position={explorerWiring.position}
+        documents={documentList}
+        ownerId={selfParticipant?.id ?? null}
+        folders={folders}
+        loading={documentListLoading}
+        shared={sharedDocuments}
+        teams={teams}
+        teamFolders={teamFolders}
+        teamDocuments={teamDocuments}
+        onDismissShared={explorerHandlers.onDismissShared}
+        currentDocumentId={currentDocumentId}
+        onMoveTo={explorerHandlers.onMoveExplorer}
+        onReset={explorerWiring.onReset}
+        dock={explorerWiring.dock}
+        onOpenDocument={explorerHandlers.onOpenDocument}
+        onNewDocument={explorerHandlers.onNewDocument}
+        menuActions={explorerMenu}
+        onRenameCurrent={explorerHandlers.onRenameCurrent}
+        onDeleteDocument={explorerHandlers.onDeleteDocument}
+        onDuplicateDocument={explorerHandlers.onDuplicateDocument}
+        onCreateFolder={explorerHandlers.onCreateFolder}
+        onRenameFolder={explorerHandlers.onRenameFolder}
+        onDeleteFolder={explorerHandlers.onDeleteFolder}
+        onTeamFolders={onTeamFolders}
+        onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
+        onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
+        popoverOpen={activeDockPanel === 'explorer'}
+        popoverAnchor={activeDockAnchor ?? undefined}
+        // Toolbar layout: a popover under the menu button, the dock's path.
+        asPopover={toolbarActive}
+        dismissOnOutside={toolbarActive}
+        onPopoverClose={closeDockPanel}
+      />
+    );
 
   // Layers opens as a popover over its bottom-right cluster button in
   // Toolbar (docs/specs/007-editor/toolbar-layout.md); the Floating layout docks it as a corner panel

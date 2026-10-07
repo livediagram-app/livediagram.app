@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { __setOfflineBackend, offlineGetRecord, offlinePutRecord } from '../offline/offline-store';
 import { memBackend, testRecord } from '../offline/offline-test-utils';
-import { apiLoadTab } from './tabs';
+import { apiLoadTab, apiSaveTab } from './tabs';
 
 // A local document's open (docs/specs/013-workspace/blueprints/explorer-home-view.md "Local
 // opens"): the editor's marked first-tab read counts it in this browser, as the server counts a
@@ -34,5 +34,24 @@ describe('apiLoadTab on a document stored only in this browser', () => {
   it('counts nothing for an unmarked load', async () => {
     await apiLoadTab('owner', 'local-1', 't2', null);
     expect((await offlineGetRecord('local-1'))?.opens).toBeUndefined();
+  });
+});
+
+// A local document's save answers no revision: there is no server revision to name.
+describe('apiSaveTab on a document stored only in this browser', () => {
+  beforeEach(async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(testRecord({ id: 'local-1' }));
+    vi.stubGlobal('fetch', vi.fn());
+  });
+  afterEach(() => {
+    __setOfflineBackend(null);
+    vi.unstubAllGlobals();
+  });
+
+  it('saves locally and answers no revision', async () => {
+    const rev = await apiSaveTab('owner', 'local-1', { id: 't1', name: 'T', elements: [] });
+    expect(rev).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

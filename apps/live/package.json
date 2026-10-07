@@ -30,6 +30,7 @@
     "@jsquash/webp": "1.5.0",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/document": "workspace:*",
+    "@livediagram/document-views": "workspace:*",
     "@livediagram/explorer-lens": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",

@@ -24,11 +24,12 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-sa
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
-import { confinementRefusal } from './workbench-confinement';
+import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
 export {
   getWorkbenchConfinement,
   setWorkbenchConfinement,
+  subscribeWorkbenchSessionRefused,
   WorkbenchConfinedError,
   type WorkbenchConfinement,
 } from './workbench-confinement';
@@ -103,6 +104,7 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
     throw err;
   }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
+  void noteWorkbenchResponse(init, res);
   // The server release signal rides every response: the document format number and the live build
   // id (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
   noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));

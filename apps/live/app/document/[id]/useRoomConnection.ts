@@ -63,6 +63,9 @@ export function useRoomConnection(opts: {
   // False keeps the room closed whatever else holds: a Community viewer never joins the author's room
   // (docs/specs/025-community/community.md "Viewing a post's document"). Defaults to true.
   enabled?: boolean;
+  // A workbench session (docs/specs/013-workspace/blueprints/workbench-embeds.md): told when the room
+  // ends it (close 4006), or when an access change does (4005, WB31), instead of reloading.
+  onWorkbenchEnded?: () => void;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -166,6 +169,7 @@ export function useRoomConnection(opts: {
     documentId,
     documentServerStored,
     enabled = true,
+    onWorkbenchEnded,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -517,6 +521,11 @@ export function useRoomConnection(opts: {
   );
 
   const roomDocumentTrashed = useEffectEvent(() => receiveDocumentTrashed());
+  // A workbench frame cannot reload into another access path: an access change ends its session.
+  const roomAccessChanged = useEffectEvent(() =>
+    onWorkbenchEnded ? onWorkbenchEnded() : window.location.reload(),
+  );
+  const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -579,7 +588,8 @@ export function useRoomConnection(opts: {
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       onDocumentTrashed: () => roomDocumentTrashed(),
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
-      onAccessChanged: () => window.location.reload(),
+      onAccessChanged: () => roomAccessChanged(),
+      onWorkbenchEnded: () => roomWorkbenchEnded(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };

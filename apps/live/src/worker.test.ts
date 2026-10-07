@@ -48,6 +48,29 @@ describe('live worker security headers', () => {
     expect(res.headers.get('X-Frame-Options')).toBeNull();
   });
 
+  // Workbench embeds (docs/specs/013-workspace/blueprints/workbench-embeds.md): the workbench page is
+  // framed by its workbench; the pairing page never is (E34), nor is any other route.
+  it('leaves the workbench page frameable, with or without a trailing slash', async () => {
+    const { env: e } = env();
+    for (const path of ['/embed/workbench', '/embed/workbench/?d=doc-1']) {
+      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      expect(res.headers.get('X-Frame-Options')).toBeNull();
+    }
+  });
+
+  it('denies framing on the pairing page and the editor', async () => {
+    const { env: e } = env();
+    for (const path of [
+      '/workbench/pair?code=x',
+      '/document/doc-1',
+      '/embedded',
+      '/explorer/home',
+    ]) {
+      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+    }
+  });
+
   // The headers above only ship if the worker actually runs for page paths.
   // Static Assets serves a matching file BEFORE the worker by default, which
   // once left every real page (consent screen included) frameable in prod.

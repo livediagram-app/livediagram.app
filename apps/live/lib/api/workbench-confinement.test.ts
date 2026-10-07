@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   confinementRefusal,
   getWorkbenchConfinement,
+  noteWorkbenchResponse,
+  subscribeWorkbenchSessionRefused,
   setWorkbenchConfinement,
   WorkbenchConfinedError,
 } from './workbench-confinement';
@@ -129,5 +131,33 @@ describe('getWorkbenchConfinement', () => {
     expect(getWorkbenchConfinement()).toBeNull();
     setWorkbenchConfinement(SESSION);
     expect(getWorkbenchConfinement()).toEqual(SESSION);
+  });
+});
+
+describe('noteWorkbenchResponse', () => {
+  const refusal = (status: number, error: string) =>
+    new Response(JSON.stringify({ error }), { status });
+
+  it('tells every listener when the api refuses the session', async () => {
+    const heard = vi.fn();
+    const off = subscribeWorkbenchSessionRefused(heard);
+
+    await noteWorkbenchResponse({ headers: BEARER }, refusal(401, 'invalid_session'));
+    off();
+    await noteWorkbenchResponse({ headers: BEARER }, refusal(401, 'invalid_session'));
+
+    expect(heard).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores any other answer, and requests that do not present the session', async () => {
+    const heard = vi.fn();
+    const off = subscribeWorkbenchSessionRefused(heard);
+
+    await noteWorkbenchResponse({ headers: BEARER }, refusal(403, 'workbench_confined'));
+    await noteWorkbenchResponse({ headers: BEARER }, refusal(401, 'sign_in_required'));
+    await noteWorkbenchResponse(undefined, refusal(401, 'invalid_session'));
+    off();
+
+    expect(heard).not.toHaveBeenCalled();
   });
 });

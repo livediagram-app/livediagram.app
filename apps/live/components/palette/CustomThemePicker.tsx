@@ -45,7 +45,13 @@ export function CustomThemePicker({
   onBuildingChange?: (building: boolean) => void;
   browserClassName?: string;
 }) {
-  const { themes: customThemes, createTheme, updateTheme, deleteTheme } = useCustomThemes();
+  const {
+    themes: customThemes,
+    createTheme,
+    updateTheme,
+    deleteTheme,
+    writable,
+  } = useCustomThemes();
   const confirm = useConfirm();
   // null = browsing; 'new' = building a fresh theme; an id = editing it.
   const [building, setBuilding] = useState<null | 'new' | string>(null);
@@ -159,10 +165,11 @@ export function CustomThemePicker({
         className={browserClassName}
         customThemes={customThemes}
         initialCategory={returnToCustom ? 'custom' : undefined}
-        onNewCustomTheme={() => openBuilder('new')}
-        onEditCustomTheme={(id) => openBuilder(id)}
-        onDeleteCustomTheme={confirmDelete}
-        onCopyTheme={copyTheme}
+        // Without writes (a workbench) there is no builder: no Custom category, no Copy.
+        onNewCustomTheme={writable ? () => openBuilder('new') : undefined}
+        onEditCustomTheme={writable ? (id) => openBuilder(id) : undefined}
+        onDeleteCustomTheme={writable ? confirmDelete : undefined}
+        onCopyTheme={writable ? copyTheme : undefined}
       />
       {footer}
     </>

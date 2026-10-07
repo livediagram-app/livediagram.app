@@ -54,6 +54,9 @@ export type CommandContext = {
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
+  // no ownership powers, so neither Share nor Delete document.
+  workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
   canvasTool: string;
@@ -306,12 +309,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'rename document diagram title name relabel',
     run: h.renameDocument,
   });
-  out.push({
-    id: 'delete-document',
-    name: 'Delete document',
-    keywords: 'delete document diagram remove trash destroy',
-    run: h.deleteDocument,
-  });
+  if (!ctx.workbench) {
+    out.push({
+      id: 'delete-document',
+      name: 'Delete document',
+      keywords: 'delete document diagram remove trash destroy',
+      run: h.deleteDocument,
+    });
+  }
   out.push({
     id: 'open-theme',
     name: 'Open theme',
@@ -324,7 +329,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'canvas background pattern grid options style backdrop',
     run: h.openCanvasOptions,
   });
-  if (ctx.isOwner && !ctx.isOffline) {
+  if (ctx.isOwner && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
       name: 'Share document',

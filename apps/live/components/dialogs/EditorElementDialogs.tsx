@@ -69,6 +69,7 @@ export function EditorElementDialogs() {
     applyImageToElement,
     closeImagePicker,
     refreshRecentImages,
+    workbenchMode,
   } = useEditorContext();
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
@@ -220,6 +221,7 @@ export function EditorElementDialogs() {
         <ImagePicker
           ownerId={selfParticipant.id}
           documentId={documentId}
+          uploadOnly={workbenchMode}
           forElementId={imagePickerOpenFor.forElementId}
           currentImageId={(() => {
             const targetId = imagePickerOpenFor.forElementId;
