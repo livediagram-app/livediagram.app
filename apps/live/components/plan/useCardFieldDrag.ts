@@ -6,6 +6,7 @@
 // (where a placed field comes off), and moves a floating copy with the pointer by writing its transform directly, so
 // the editor re-renders only when the landing place changes. Escape cancels a drag.
 import { useEffect, useRef, useState, type PointerEvent, type RefObject } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import { cardSlotFits, type CardField, type CardSize, type CardSlot } from '@livediagram/items';
 
 // How far a press travels before it is a drag (a shorter press is a click).
@@ -69,6 +70,30 @@ export function useCardFieldDrag({
     setOverTray(false);
   };
 
+  const place = (x: number, y: number) => {
+    pointer.current = { x, y };
+    if (ghost.current) ghost.current.style.transform = `translate(${x}px, ${y}px)`;
+  };
+
+  // The drag as the window's listeners read it (state is what the editor draws).
+  const live = useRef<{
+    drag: FieldDrag;
+    target: FieldDropTarget | null;
+    overTray: boolean;
+    pointerId: number;
+    onClick?: ((el: HTMLElement) => void) | undefined;
+    el: HTMLElement;
+  } | null>(null);
+  const stop = useRef<(() => void) | null>(null);
+  const finish = () => {
+    stop.current?.();
+    stop.current = null;
+    live.current = null;
+    endDrag();
+  };
+  // Escape's cancel ends the window listeners too.
+  const cancelRef = useLatest(finish);
+
   // Escape cancels a drag under way, before the dialog hears it (it would close).
   const moving = !!drag?.moving;
   useEffect(() => {
@@ -77,56 +102,82 @@ export function useCardFieldDrag({
       if (e.key !== 'Escape') return;
       e.preventDefault();
       e.stopPropagation();
-      endDrag();
+      cancelRef.current();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [moving]);
+  }, [moving, cancelRef]);
 
-  const place = (x: number, y: number) => {
-    pointer.current = { x, y };
-    if (ghost.current) ghost.current.style.transform = `translate(${x}px, ${y}px)`;
-  };
-
-  // Pointer handlers for anything that drags a field; `onClick` runs for a press that never moved.
+  // Pointer handling for anything that drags a field; `onClick` runs for a press that never moved. Once pressed,
+  // the drag follows that pointer on the window, not on the chip: a pointer's capture can be lost as the editor
+  // re-renders (a touch's, and a mouse's in some browsers), and the release then lands on whatever part of the
+  // card is under it, which would leave the drag stuck. The window always hears it.
   const dragProps = (field: CardField, onClick?: (el: HTMLElement) => void) => ({
     onPointerDown: (e: PointerEvent<HTMLElement>) => {
       if (e.button !== 0) return;
-      try {
-        e.currentTarget.setPointerCapture?.(e.pointerId);
-      } catch {
-        // Not capturable: the drag still follows while over the chip.
-      }
-      place(e.clientX, e.clientY);
-      setDrag({ field, startX: e.clientX, startY: e.clientY, moving: false });
+      stop.current?.();
+      const pointerId = e.pointerId;
+      const startX = e.clientX;
+      const startY = e.clientY;
+      live.current = {
+        drag: { field, startX, startY, moving: false },
+        target: null,
+        overTray: false,
+        pointerId,
+        onClick,
+        el: e.currentTarget,
+      };
+      place(startX, startY);
+      setDrag(live.current.drag);
+      const onMove = (ev: globalThis.PointerEvent) => {
+        const l = live.current;
+        if (!l || ev.pointerId !== pointerId) return;
+        place(ev.clientX, ev.clientY);
+        if (!l.drag.moving) {
+          if (Math.hypot(ev.clientX - startX, ev.clientY - startY) <= DRAG_START_PX) return;
+          l.drag = { ...l.drag, moving: true };
+          setDrag(l.drag);
+        }
+        const next = dropTargetAt(card.current, size, field, ev.clientX, ev.clientY);
+        if (!sameTarget(l.target, next)) {
+          l.target = next;
+          setTarget(next);
+        }
+        const inTray =
+          !next &&
+          (document.elementsFromPoint?.(ev.clientX, ev.clientY) ?? []).some(
+            (el) => !!tray.current?.contains(el),
+          );
+        if (inTray !== l.overTray) {
+          l.overTray = inTray;
+          setOverTray(inTray);
+        }
+      };
+      const onUp = (ev: globalThis.PointerEvent) => {
+        const l = live.current;
+        if (!l || ev.pointerId !== pointerId) return;
+        if (l.drag.moving) {
+          if (l.target) onDrop(field, l.target);
+          else if (l.overTray) onTakeOff(field);
+        } else l.onClick?.(l.el);
+        finish();
+      };
+      const onCancel = (ev: globalThis.PointerEvent) => {
+        if (ev.pointerId === pointerId) finish();
+      };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onCancel);
+      stop.current = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onCancel);
+      };
     },
-    onPointerMove: (e: PointerEvent<HTMLElement>) => {
-      if (!drag || drag.field !== field) return;
-      const now =
-        drag.moving || Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > DRAG_START_PX;
-      place(e.clientX, e.clientY);
-      if (!now) return;
-      if (!drag.moving) setDrag({ ...drag, moving: true });
-      const next = dropTargetAt(card.current, size, field, e.clientX, e.clientY);
-      setTarget((t) => (sameTarget(t, next) ? t : next));
-      const inTray =
-        !next &&
-        (document.elementsFromPoint?.(e.clientX, e.clientY) ?? []).some(
-          (el) => !!tray.current?.contains(el),
-        );
-      setOverTray(inTray);
-    },
-    onPointerUp: (e: PointerEvent<HTMLElement>) => {
-      // A drag cancelled with Escape has already ended: the release does nothing.
-      if (!drag || drag.field !== field) return;
-      if (drag.moving) {
-        if (target) onDrop(field, target);
-        else if (overTray) onTakeOff(field);
-      } else onClick?.(e.currentTarget);
-      endDrag();
-    },
-    onPointerCancel: endDrag,
   });
+
+  // A drag in flight when the editor goes away takes its listeners with it.
+  useEffect(() => () => stop.current?.(), []);
 
   return { drag, target, overTray, dragProps, ghost, pointer };
 }

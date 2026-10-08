@@ -1,6 +1,7 @@
 // What a card type's cards show at each card size, and where (docs/specs/026-plan/item-types.md "Card display"):
-// each size draws its fields in slots (Minimal before and after its title; Compact beside and below it; Detailed a
-// header, a header end, under the title and a footer), each slot an ordered list of fields. A type's own layout for a
+// each size draws its fields in slots (Minimal before and after its title; Compact beside and below it, and at
+// the bottom right; Detailed a
+// header, a header end, under the title, a footer and the footer's end, at the bottom right), each slot an ordered list of fields. A type's own layout for a
 // size, else its default: a built-in type's own field set, by id, or the generic one, each placed where a board drew
 // it before layouts existed. A board has no say over the fields: the type's layout is what a card shows.
 //
@@ -9,21 +10,27 @@
 import { CARD_FIELDS, CARD_SIZE_FIELDS, type CardField, type CardSize } from './board';
 import type { ItemTypeDef } from './item-types';
 
-export type CardSlot = 'lead' | 'trail' | 'row' | 'head' | 'headEnd' | 'body' | 'foot';
+export type CardSlot = 'lead' | 'trail' | 'row' | 'head' | 'headEnd' | 'body' | 'foot' | 'footEnd';
 export type CardLayout = Partial<Record<CardSlot, readonly CardField[]>>;
 export type CardDisplay = Partial<Record<CardSize, CardLayout>>;
 
 // Each size's slots, in reading order.
 export const CARD_SLOTS: Readonly<Record<CardSize, readonly CardSlot[]>> = {
   minimal: ['lead', 'trail'],
-  compact: ['lead', 'row'],
-  detailed: ['head', 'headEnd', 'body', 'foot'],
+  compact: ['lead', 'row', 'trail'],
+  detailed: ['head', 'headEnd', 'body', 'foot', 'footEnd'],
 };
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {
   minimal: { lead: 'Before the Title', trail: 'After the Title' },
-  compact: { lead: 'Beside the Title', row: 'Below the Title' },
-  detailed: { head: 'Header', headEnd: 'Header End', body: 'Under the Title', foot: 'Footer' },
+  compact: { lead: 'Beside the Title', row: 'Below the Title', trail: 'Bottom Right' },
+  detailed: {
+    head: 'Header',
+    headEnd: 'Header End',
+    body: 'Under the Title',
+    foot: 'Footer',
+    footEnd: 'Bottom Right',
+  },
 };
 
 // Where a board drew each field before layouts existed, in its order: a field's default slot and place.
@@ -31,13 +38,16 @@ const DRAWN: Readonly<Record<CardSize, Partial<Record<CardSlot, readonly CardFie
   minimal: { lead: ['key'], trail: ['priority', 'due', 'assignee'] },
   compact: {
     lead: ['type', 'key'],
-    row: ['priority', 'start', 'due', 'votes', 'comments', 'assignee'],
+    row: ['priority', 'start', 'due', 'votes', 'comments'],
+    // The assignee sits at the bottom right by default (docs/specs/026-plan/item-types.md "Card display").
+    trail: ['assignee'],
   },
   detailed: {
     head: ['type', 'key'],
     headEnd: ['priority'],
     body: ['parent', 'description', 'labels'],
-    foot: ['start', 'due', 'estimate', 'checklist', 'comments', 'votes', 'assignee'],
+    foot: ['start', 'due', 'estimate', 'checklist', 'comments', 'votes'],
+    footEnd: ['assignee'],
   },
 };
 

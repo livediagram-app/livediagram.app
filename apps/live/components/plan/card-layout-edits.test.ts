@@ -25,7 +25,8 @@ describe('card layout edits', () => {
 
   it('finds the slot before or after that takes a field', () => {
     expect(neighbourSlot('detailed', 'foot', 'due', -1)).toBe('body');
-    expect(neighbourSlot('detailed', 'foot', 'description', 1)).toBeNull();
+    expect(neighbourSlot('detailed', 'foot', 'description', 1)).toBe('footEnd');
+    expect(neighbourSlot('detailed', 'footEnd', 'description', 1)).toBeNull();
     expect(neighbourSlot('minimal', 'lead', 'due', -1)).toBeNull();
   });
 });

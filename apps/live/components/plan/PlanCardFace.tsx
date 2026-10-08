@@ -274,6 +274,8 @@ export function PlanCardFace({
   // Compact: the title with its Beside slot, over one row (Below the Title).
   if (size === 'compact') {
     const row = slotBits('row');
+    // The Bottom Right slot: the row's far end (the assignee, by default).
+    const trail = slotBits('trail');
     return (
       <div className={`${FRAME} flex-col gap-1.5 px-3 py-2`} style={frame}>
         {presenceTag}
@@ -289,13 +291,16 @@ export function PlanCardFace({
           {titleText(2, 13, 20, edit ? EDIT_CHIP_INSET_PX : 0)}
           {flag}
         </div>
-        {row.length || loneVote || edit ? (
+        {row.length || trail.length || loneVote || edit ? (
           <div
             className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
             style={{ color: palette.muted }}
           >
             {zone('row', row)}
             {loneVote}
+            {trail.length || edit ? (
+              <span className="ml-auto flex items-center gap-1.5">{zone('trail', trail)}</span>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -315,6 +320,8 @@ export function PlanCardFace({
   const headEnd = slotBits('headEnd', true);
   const body = slotBits('body');
   const foot = slotBits('foot');
+  // The Bottom Right slot: the footer's far end (the assignee, by default).
+  const footEnd = slotBits('footEnd');
   return (
     <div className={`${FRAME} flex-col gap-2 px-3 py-2.5`} style={frame}>
       {presenceTag}
@@ -366,10 +373,13 @@ export function PlanCardFace({
           ))}
         </dl>
       ) : null}
-      {foot.length || loneVote || edit ? (
+      {foot.length || footEnd.length || loneVote || edit ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
           {zone('foot', foot)}
           {loneVote}
+          {footEnd.length || edit ? (
+            <span className="ml-auto flex items-center gap-1">{zone('footEnd', footEnd)}</span>
+          ) : null}
         </div>
       ) : null}
     </div>

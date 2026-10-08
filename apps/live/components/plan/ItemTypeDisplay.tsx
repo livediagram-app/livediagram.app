@@ -385,8 +385,9 @@ export function ItemTypeDisplay({
               </>
             )}
           </section>
-          <div className="flex items-center gap-2">
-            {!isDefault ? (
+          {/* Reset to Default, once the size differs from its default. */}
+          {!isDefault ? (
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="xs"
@@ -397,12 +398,8 @@ export function ItemTypeDisplay({
               >
                 Reset to Default
               </Button>
-            ) : (
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                Showing the default for {type.label || 'this type'}.
-              </span>
-            )}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
       {drag?.moving && typeof document !== 'undefined'
