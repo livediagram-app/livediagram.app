@@ -163,6 +163,28 @@ describe('sync --watch', () => {
     expect(await done).toBe(0);
   });
 
+  // A covered document whose stream ended (trashed, then restored before coverage was read again) is listened to
+  // again on the next coverage read, so its changes arrive live rather than never.
+  it('listens again to a covered document whose stream ended', async () => {
+    const { io, host } = setup([hostDoc('d-home', 'Home', { folderId: 'games' })]);
+    const done = run(['sync', '--watch'], io);
+    await until(() => io.sockets.length === 1);
+    socketOf(io, 'd-home').open();
+    host.doc('d-home').state = 'trashed';
+    io.sockets[0]!.drop(DOCUMENT_TRASHED_CLOSE);
+    await until(() => lines(io).length === 2);
+    host.doc('d-home').state = 'live';
+    await io.advance(SYNC_WATCH_COVERAGE_MS);
+    await until(() => io.sockets.length === 2);
+    io.sockets[1]!.open();
+    host.edit('d-home');
+    io.sockets[1]!.send(changed('d-home-t1'));
+    await io.advance(WAIT_SETTLE_MS);
+    await until(() => lines(io).some((l) => l.includes('rev 1→2') || l.includes('rev 2')));
+    io.interrupt();
+    expect(await done).toBe(0);
+  });
+
   it('carries on after a failed pass or coverage read, saying what failed', async () => {
     const { io, host } = setup([hostDoc('d-home', 'Home', { folderId: 'games' })]);
     const done = run(['sync', '--watch'], io);

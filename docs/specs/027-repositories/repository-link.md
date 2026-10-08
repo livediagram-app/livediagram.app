@@ -201,6 +201,9 @@ report and the changeset's summary.
   writes a tab's snapshot after its burst of changes settles (the `wait --for change` rule), and watches the mirror
   directory for local changes, syncing them after `SYNC_LOCAL_SETTLE_MS` of quiet. It reconnects as the room stream
   does and prints one line per sync.
+- A covered document without a live room stream (one trashed and restored, refused a ticket, or dropped) is
+  listened to again at the next coverage read, so its changes keep arriving live. A rate-limited ticket (`429`) is
+  retried, never treated as a refusal.
 - One sync runs at a time per link: a lock in the local sync state makes a second wait for it, or fail after
   `SYNC_LOCK_WAIT_MS` naming the holder's process id.
 

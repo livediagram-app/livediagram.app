@@ -1,6 +1,6 @@
 // The CLI's own version, and the host's floor for writes (blueprint CLI13).
 
-export const CLI_VERSION = '0.2.1';
+export const CLI_VERSION = '0.2.2';
 
 // The name npm publishes the CLI under (blueprint CLI1); its command is `livediagram`.
 export const NPM_PACKAGE = '@livediagram/cli';

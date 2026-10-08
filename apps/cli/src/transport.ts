@@ -8,8 +8,14 @@ import type { CliIo } from './io';
 
 export const REQUEST_TIMEOUT_MS = 30_000;
 
+// Reads the stored credential again: its token, or null when there is none. Null where none can change (an env token).
+export type RefreshToken = (() => Promise<string | null>) | null;
+
 export type Transport = {
   forToken: (token: string) => ApiClient;
+  // A client whose token is read again from the store when the api refuses it (a newer `auth login` revoked it while
+  // a long command ran), retrying the refused request once with the new token.
+  forCredential: (token: string, refresh: RefreshToken) => ApiClient;
   useShareCode: (code: string) => void;
 };
 
@@ -23,19 +29,35 @@ export function transport(io: CliIo, apiBase: string, log: DebugLog): Transport 
     );
     return res;
   };
-  return {
-    forToken: (token) =>
-      createApiClient({
-        baseUrl: apiBase,
-        fetch,
-        timeoutMs: REQUEST_TIMEOUT_MS,
-        headers: () => ({
-          Authorization: `Bearer ${token}`,
-          'X-Livediagram-Client': 'cli',
-          'User-Agent': `livediagram-cli/${CLI_VERSION} ${io.runtime}`,
-          ...(shareCode ? { 'X-Share-Code': shareCode } : {}),
-        }),
+  const client = (token: () => string, send: (request: Request) => Promise<Response>) =>
+    createApiClient({
+      baseUrl: apiBase,
+      fetch: send,
+      timeoutMs: REQUEST_TIMEOUT_MS,
+      headers: () => ({
+        Authorization: `Bearer ${token()}`,
+        'X-Livediagram-Client': 'cli',
+        'User-Agent': `livediagram-cli/${CLI_VERSION} ${io.runtime}`,
+        ...(shareCode ? { 'X-Share-Code': shareCode } : {}),
       }),
+    });
+  return {
+    forToken: (token) => client(() => token, fetch),
+    forCredential: (initial, refresh) => {
+      let token = initial;
+      const send = async (request: Request) => {
+        const retry = refresh ? request.clone() : null;
+        const res = await fetch(request);
+        if (res.status !== 401 || !refresh || !retry) return res;
+        const fresh = await refresh();
+        if (!fresh || fresh === token) return res;
+        token = fresh;
+        log('credential refreshed');
+        retry.headers.set('Authorization', `Bearer ${token}`);
+        return fetch(retry);
+      };
+      return client(() => token, send);
+    },
     useShareCode: (code) => {
       shareCode = code;
     },

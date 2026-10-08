@@ -116,6 +116,22 @@ describe('openRoomStream', () => {
     stream.stop();
   });
 
+  // A rate-limited ticket is the network being busy, not a refusal: the watch must keep its stream.
+  it('retries a rate-limited ticket rather than ending', async () => {
+    let calls = 0;
+    const { io, stream } = setUp((request, url) =>
+      ++calls === 1
+        ? Response.json({ error: 'rate_limited' }, { status: 429 })
+        : ticketing(request, url),
+    );
+    await tick();
+    await io.advance(ROOM_RECONNECT_MIN_MS);
+    await tick();
+    expect(io.sockets).toHaveLength(1);
+    stream.stop();
+    expect(await stream.ended).toBe('stopped');
+  });
+
   it('fails when the ticket is refused', async () => {
     const { stream } = setUp(() => Response.json({ error: 'not_found' }, { status: 404 }));
     await expect(stream.ended).rejects.toMatchObject({ status: 404 });

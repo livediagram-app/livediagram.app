@@ -162,7 +162,11 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
             const entered = [...after].filter((id) => !before.has(id));
             const left = [...before].filter((id) => !after.has(id));
             coverage = fresh;
-            entered.forEach(listen);
+            // Every covered document without a stream gets one: those that entered, and any whose stream ended
+            // (trashed then restored, refused, dropped), so a change never waits on a later pass to be noticed.
+            const unheard = [...after].filter((id) => !streams.has(id) && !entered.includes(id));
+            if (unheard.length > 0) ctx.log(`watch relisten ${unheard.length}`);
+            [...entered, ...unheard].forEach(listen);
             for (const id of left) {
               streams.get(id)?.stop();
               streams.delete(id);
