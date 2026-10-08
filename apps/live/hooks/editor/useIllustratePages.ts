@@ -65,6 +65,18 @@ export type IllustratePagesView = {
   setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: IllustratePageEdits;
+  // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
+  // where the deck cannot be changed.
+  deck?: PageDeckControls;
+  // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
+  letterbox?: boolean;
+};
+
+export type PageDeckControls = {
+  // The deck's slide of this page (on this tab), if it has one.
+  slideOf: (pageId: string) => { id: string; hidden: boolean } | undefined;
+  add: (pageId: string) => void;
+  toggleHidden: (slideId: string) => void;
 };
 
 // The Toolbar layout's strip lies over the canvas's top edge; the page centres below it.

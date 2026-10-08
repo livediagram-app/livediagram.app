@@ -93,6 +93,17 @@ export function slideMaxZoom(config: PresentationConfig): number {
   return config.zoom === 'actual' ? 1 : 2.5;
 }
 
+/** How a slide is fitted to the screen: a page slide fills it edge to edge (its page is the
+ *  slide, docs/specs/007-editor/illustrate-pages.md "Slides"); any other keeps the fit's margin. */
+export function slideFitOptions(
+  slide: { pageId?: string },
+  config: PresentationConfig,
+): { maxZoom: number; padding?: number } {
+  return slide.pageId
+    ? { maxZoom: slideMaxZoom(config), padding: 0 }
+    : { maxZoom: slideMaxZoom(config) };
+}
+
 export function loadPresentationConfig(): PresentationConfig {
   const raw = readLocalStorageSafe(KEY);
   if (!raw) return DEFAULT_PRESENTATION_CONFIG;

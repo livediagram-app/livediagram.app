@@ -6,9 +6,10 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import {
   PAGE_PATTERNS,
-  PAGE_SIZE_IDS,
   PAGE_SIZES,
   pageHasOrientation,
+  pageKindOf,
+  pageSizesFor,
   pageIsDark,
   type IllustratePage,
   type PageBackground,
@@ -49,15 +50,19 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   a3: { label: 'A3', hint: 'A3 paper, for posters' },
   square: { label: 'Square', hint: 'Square post (1:1)' },
   social: { label: 'Post', hint: 'Portrait post (4:5) for Instagram and LinkedIn' },
-  wide: { label: 'Story', hint: 'Story (9:16), or a Slide (16:9) turned landscape' },
+  wide: { label: 'Story', hint: 'Story (9:16), or a wide 16:9 page turned landscape' },
+  slide: { label: 'Slide', hint: 'Slide (16:9), always landscape' },
+  'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
 };
 
 // A size drawn to scale in a 28 px box, in the page's current orientation.
 function SizeGlyph({ size, orientation }: { size: PageSizeId; orientation: PageOrientation }) {
-  const { short, long } = PAGE_SIZES[size];
+  const { short, long, landscapeOnly } = PAGE_SIZES[size];
   const scale = 24 / long;
   const [w, h] =
-    orientation === 'portrait' ? [short * scale, long * scale] : [long * scale, short * scale];
+    orientation === 'portrait' && !landscapeOnly
+      ? [short * scale, long * scale]
+      : [long * scale, short * scale];
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden>
       <rect
@@ -90,16 +95,19 @@ export function SizeSection({
   onSize: (size: PageSizeId) => void;
 }) {
   const current = page.size ?? 'a4';
+  // A slide page offers only the slide sizes; the tiles sit four to a row.
   return (
     <PanelSection title="Size">
-      <div role="radiogroup" aria-label="Page size" className="grid grid-cols-6 gap-1">
-        {PAGE_SIZE_IDS.map((id) => (
+      <div role="radiogroup" aria-label="Page size" className="grid grid-cols-4 gap-1">
+        {pageSizesFor(pageKindOf(page)).map((id) => (
           <Tooltip key={id} label={SIZE_TILE[id].hint}>
             <button
               type="button"
               role="radio"
               aria-checked={current === id}
-              aria-label={PAGE_SIZES[id][page.orientation]}
+              aria-label={
+                PAGE_SIZES[id][PAGE_SIZES[id].landscapeOnly ? 'landscape' : page.orientation]
+              }
               onClick={() => onSize(id)}
               className={tileClass(current === id)}
             >

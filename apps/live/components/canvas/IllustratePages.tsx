@@ -4,6 +4,7 @@ import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { EMPTY_PAGE_LAYOUTS_WIDTH, EmptyPageLayouts } from './EmptyPageLayouts';
+import { PageDeckButton } from './PageDeckButton';
 import { track } from '@/lib/telemetry';
 import { PageNavigator } from './PageNavigator';
 import {
@@ -43,7 +44,11 @@ const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
 const COG_ROOM = 32;
+// The deck button beside a slide page's cog: its 24 px and the gap.
+const DECK_ROOM = 28;
 const LABEL_MIN = 40;
+// Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
+const LETTERBOX_SPREAD = 100_000;
 // The empty page's layout button beside the cog: with its words, or just its icon.
 const INVITE_WIDE = 150;
 const INVITE_ICON = 30;
@@ -194,9 +199,12 @@ export function IllustratePages({
               : room >= INVITE_ICON + COG_ROOM + LABEL_MIN
                 ? 'icon'
                 : null;
+        // A slide page's deck button sits beside its cog (PageDeckButton).
+        const deckButton = !!edit && !!view.deck && page.kind === 'slide' && !mobile;
         const labelRoom =
           room -
           (edit ? COG_ROOM : 0) -
+          (deckButton ? DECK_ROOM : 0) -
           (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0);
         return (
           <div
@@ -215,7 +223,10 @@ export function IllustratePages({
               top: page.rect.y,
               width: page.rect.width,
               height: page.rect.height,
-              boxShadow: '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
+              // Presenting a page slide, a spread shadow blacks out the whole surround.
+              boxShadow: view.letterbox
+                ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
+                : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
               ...pageSheetStyle(background, rulingOf(page)),
             }}
           >
@@ -257,6 +268,10 @@ export function IllustratePages({
               >
                 {invite && openId !== page.id ? (
                   <LayoutInvite wide={invite === 'wide'} onOpen={() => openLayouts(page.id)} />
+                ) : null}
+                {/* Beside the cog: this slide's place in the deck. */}
+                {deckButton && view.deck ? (
+                  <PageDeckButton pageId={page.id} deck={view.deck} />
                 ) : null}
                 <PageCog
                   name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}

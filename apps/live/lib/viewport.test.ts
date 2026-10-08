@@ -24,6 +24,12 @@ describe('computeFitToScreen', () => {
     expect(out.zoom).toBe(FIT_TO_SCREEN_MAX_AT_FIT);
   });
 
+  it('fits edge to edge with no padding (a page slide presenting)', () => {
+    const out = computeFitToScreen(viewport, { x: 0, y: 0, width: 1920, height: 1080 }, 2.5, 0);
+    // The width binds: 1200 / 1920.
+    expect(out.zoom).toBeCloseTo(0.625);
+  });
+
   it('centres the bbox in the viewport regardless of bbox origin', () => {
     const bbox = { x: 200, y: 300, width: 400, height: 200 };
     const out = computeFitToScreen(viewport, bbox);

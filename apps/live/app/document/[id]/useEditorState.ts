@@ -143,7 +143,8 @@ import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
-import { slideMaxZoom } from '@/lib/presentation-config';
+import { slideFitOptions } from '@/lib/presentation-config';
+import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
@@ -1507,7 +1508,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const frameSlide = useEffectEvent(() => {
     if (!presentingStep) return;
     const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
+    if (bounds) fitToBounds(bounds, slideFitOptions(presentingStep.slide, slideDeck.config));
   });
   const slideZoom = slideDeck.config.zoom;
   useLayoutEffect(() => {
@@ -1530,7 +1531,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const refitSlide = useEffectEvent(() => {
     if (!presentingStep) return;
     const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
+    if (bounds) fitToBounds(bounds, slideFitOptions(presentingStep.slide, slideDeck.config));
   });
   useEffect(() => {
     const node = canvasMainRef.current;
@@ -2114,8 +2115,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
-  const illustrateView =
-    illustratePages && articles ? { ...illustratePages, articles } : illustratePages;
+  // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
+  // Memoised so the pages' view keeps its identity across renders where nothing changed.
+  const { deck: currentDeck, newPageSlide, toggleSlideHidden } = slideDeck;
+  const pageDeck = useMemo(
+    () => pageDeckControls(currentDeck, activeId, !isReadOnly, { newPageSlide, toggleSlideHidden }),
+    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden],
+  );
+  const illustrateView = useMemo(
+    () =>
+      illustratePages
+        ? { ...illustratePages, ...(articles ? { articles } : {}), deck: pageDeck }
+        : illustratePages,
+    [illustratePages, articles, pageDeck],
+  );
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a

@@ -33,17 +33,19 @@ export type Offset = { x: number; y: number };
 // four-box diagram blown up to 300% looks broken in a workspace. A SLIDE is
 // the opposite case — it is the only thing on a projector, and a slide holding
 // one box should fill the screen rather than sit tiny in the middle of it.
+// `padding` is 0 for a page slide presenting: the page is the slide, edge to edge.
 export function computeFitToScreen(
   rect: Rect,
   bbox: BBox,
   maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
+  padding: number = FIT_TO_SCREEN_PADDING,
 ): { zoom: number; offset: Offset } {
   const zoom = Math.max(
     FIT_TO_SCREEN_MIN,
     Math.min(
       FIT_TO_SCREEN_MAX,
-      (rect.width - 2 * FIT_TO_SCREEN_PADDING) / Math.max(1, bbox.width),
-      (rect.height - 2 * FIT_TO_SCREEN_PADDING) / Math.max(1, bbox.height),
+      (rect.width - 2 * padding) / Math.max(1, bbox.width),
+      (rect.height - 2 * padding) / Math.max(1, bbox.height),
       maxZoom,
     ),
   );

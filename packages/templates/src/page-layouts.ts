@@ -28,9 +28,13 @@ import { buildBeforeAfter, buildFeatureMatrix, buildProsCons } from './page-layo
 import { buildAnnouncement, buildDidYouKnow, buildSaveTheDate } from './page-layouts-social';
 import { buildCycle, buildFunnel, buildPictogram, buildRanking } from './page-layouts-figures';
 
+import type { SlideLayoutId } from './slide-layouts';
+
 export type { LayoutBox } from './page-layout-kit';
 
+// Every layout's id: the infographic layouts' and the slide layouts' (SlideLayoutId).
 export type PageLayoutId =
+  | SlideLayoutId
   | 'title'
   | 'big-number'
   | 'key-stats'
@@ -643,7 +647,3 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
     build: buildFunnel,
   },
 ];
-
-export function pageLayoutById(id: PageLayoutId): PageLayout {
-  return PAGE_LAYOUTS.find((l) => l.id === id)!;
-}

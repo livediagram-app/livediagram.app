@@ -272,15 +272,17 @@ export const ILLUSTRATE_PAGES = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Added and Deleted',
-  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new article), or deleted from its settings.',
+  'A page added to an Illustrate tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
   {
     types: [
       'PageAdded',
       'ArticleAdded',
+      'SlidePageAdded',
       'PageRemoved',
       'ArticlesToPages',
       'PageKindInfographic',
       'PageKindArticle',
+      'PageKindSlide',
     ],
   },
 );

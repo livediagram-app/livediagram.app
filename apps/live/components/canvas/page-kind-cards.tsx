@@ -1,6 +1,6 @@
 'use client';
 
-// The two kinds of page as cards (docs/specs/007-editor/illustrate-pages.md "Page kinds"): a
+// The three kinds of page as cards (docs/specs/007-editor/illustrate-pages.md "Page kinds"): a
 // miniature of the page above its name and a line on what it is for. Shared by the add-a-page
 // popover and the first page's own choice.
 import type { PageKind } from '@livediagram/document';
@@ -18,6 +18,11 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     kind: 'article',
     name: 'Article',
     line: 'A page to write on, flowing onto new pages as it grows.',
+  },
+  {
+    kind: 'slide',
+    name: 'Slide',
+    line: 'A slide for a deck: widescreen, ready to present.',
   },
 ];
 
@@ -38,7 +43,13 @@ export function PageKindCard({
       className="group flex flex-col items-stretch gap-2 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:bg-brand-500/10"
     >
       <span className="flex h-24 items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800/70">
-        {choice.kind === 'article' ? <ArticleMiniature /> : <InfographicMiniature />}
+        {choice.kind === 'article' ? (
+          <ArticleMiniature />
+        ) : choice.kind === 'slide' ? (
+          <SlideMiniature />
+        ) : (
+          <InfographicMiniature />
+        )}
       </span>
       <span className="px-0.5">
         <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -132,6 +143,39 @@ function ArticleMiniature() {
       <circle cx="10" cy="62" r="1.5" className="fill-brand-500" />
       <rect x="14" y="61" width="26" height="2.5" rx="1.25" className={line} />
       <rect x="8" y="68" width="38" height="2.5" rx="1.25" className={line} />
+    </svg>
+  );
+}
+
+// A widescreen slide: a title, an accent rule and bullet points beside a picture.
+function SlideMiniature() {
+  const line = 'fill-slate-300 dark:fill-slate-500';
+  return (
+    <svg width="78" height="44" viewBox="0 0 78 44" aria-hidden className="drop-shadow-sm">
+      <rect width="78" height="44" rx="3" className="fill-white dark:fill-slate-700" />
+      <rect
+        x="6"
+        y="6"
+        width="30"
+        height="5"
+        rx="2"
+        className="fill-slate-700 dark:fill-slate-200"
+      />
+      <rect x="6" y="14" width="9" height="1.6" rx="0.8" className="fill-brand-500" />
+      <circle cx="7.5" cy="21" r="1.3" className="fill-brand-500" />
+      <rect x="11" y="20" width="24" height="2.2" rx="1.1" className={line} />
+      <circle cx="7.5" cy="27" r="1.3" className="fill-brand-500" />
+      <rect x="11" y="26" width="20" height="2.2" rx="1.1" className={line} />
+      <circle cx="7.5" cy="33" r="1.3" className="fill-brand-500" />
+      <rect x="11" y="32" width="22" height="2.2" rx="1.1" className={line} />
+      <rect
+        x="42"
+        y="6"
+        width="30"
+        height="32"
+        rx="2"
+        className="fill-brand-100 dark:fill-brand-500/25"
+      />
     </svg>
   );
 }

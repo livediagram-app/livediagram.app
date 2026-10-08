@@ -7576,7 +7576,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageKind": {
     "enum": [
       "infographic",
-      "article"
+      "article",
+      "slide"
     ],
     "type": "string"
   },
@@ -7602,7 +7603,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "a3",
       "square",
       "social",
-      "wide"
+      "wide",
+      "slide",
+      "slide-classic"
     ],
     "type": "string"
   },

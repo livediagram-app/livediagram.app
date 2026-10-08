@@ -67,12 +67,12 @@ sees only what starts there.
 
 Popular opens with one blank per mode, in mode order:
 
-| Template           | Kind id              | Opens in   | What it makes                                                     |
-| ------------------ | -------------------- | ---------- | ----------------------------------------------------------------- |
-| Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                             |
-| Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                     |
-| Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic or Article). |
-| Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start with a Board.               |
+| Template           | Kind id              | Opens in   | What it makes                                                            |
+| ------------------ | -------------------- | ---------- | ------------------------------------------------------------------------ |
+| Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                                    |
+| Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                            |
+| Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article or Slide). |
+| Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start with a Board.                      |
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
