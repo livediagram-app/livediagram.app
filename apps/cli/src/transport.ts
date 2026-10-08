@@ -47,12 +47,14 @@ export function transport(io: CliIo, apiBase: string, log: DebugLog): Transport 
       let token = initial;
       const send = async (request: Request) => {
         const retry = refresh ? request.clone() : null;
+        // The token this request carried: a parallel request may already have refreshed the shared one.
+        const sent = token;
         const res = await fetch(request);
         if (res.status !== 401 || !refresh || !retry) return res;
         const fresh = await refresh();
-        if (!fresh || fresh === token) return res;
+        if (!fresh || fresh === sent) return res;
+        if (fresh !== token) log('credential refreshed');
         token = fresh;
-        log('credential refreshed');
         retry.headers.set('Authorization', `Bearer ${token}`);
         return fetch(retry);
       };

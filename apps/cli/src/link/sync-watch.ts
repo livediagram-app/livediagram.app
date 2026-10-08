@@ -157,6 +157,7 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
         void readCoverage(ctx, link).then(
           (fresh) => {
             ctx.log('watch coverage settled');
+            if (stopped) return;
             const before = new Set(coverage.documents.map((d) => d.id));
             const after = new Set(fresh.documents.map((d) => d.id));
             const entered = [...after].filter((id) => !before.has(id));
@@ -195,20 +196,23 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
       void Promise.allSettled([first, running]).then(() => resolve(EXIT.done));
     };
     cleanups.push(io.onInterrupt(stop));
-    first.then(
-      async () => {
+    const fail = (err: unknown) => {
+      stopped = true;
+      streams.forEach((s) => s.stop());
+      cleanups.forEach((c) => c());
+      reject(err);
+    };
+    first
+      .then(async () => {
         if (stopped) return;
         if (link.mirror.level === 'none') return stop();
         coverage.documents.forEach((d) => listen(d.id));
         await io.files.mkdir(base);
+        // Ctrl-C during the mkdir: its cleanups have run, so nothing more may be registered.
+        if (stopped) return;
         cleanups.push(io.watchTree(base, onLocal));
         recover();
-      },
-      (err: unknown) => {
-        stopped = true;
-        cleanups.forEach((c) => c());
-        reject(err);
-      },
-    );
+      })
+      .catch(fail);
   });
 }

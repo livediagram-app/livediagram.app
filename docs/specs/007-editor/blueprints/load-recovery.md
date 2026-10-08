@@ -51,9 +51,12 @@ design decision.
      `DocumentLoad.AutoReload`, `healing: true`, `location.reload()` after `AUTO_RELOAD_DELAY_MS`;
    - false (claimed in the window, or storage unreadable) → `onTimedOut()`: `setLoadError(true)`,
      `setLoadingDocument(false)`.
-4. `finish()` is idempotent. Before the timer: disarm, `step: 'done'`, return false. After it: warn
-   `DocumentLoad.Late`; return false while `healing` (the reload will replace the page anyway), else
-   true. The success tail calls `if (watchdog.finish()) setLoadError(false)`.
+4. `finish()` is idempotent and leaves `step` where the load reached (only the success tail sets `done`, so a
+   failed load's diagnostics name its step). Before the timer: disarm, return false. After it: warn
+   `DocumentLoad.Late`; a pending self-healing reload is cancelled (`healing: false`): the late load wins. Return
+   true. The success tail calls `setLoadStep('done')`, then `if (watchdog.finish()) setLoadError(false)`.
+   Each bootstrap run takes a generation; a run superseded by a later one (auth settling twice: Clerk answering
+   after the guest timeout, then a guest migration) has every setter and its seed turned into no-ops.
 5. The runner wraps `load()` in try/catch/finally: a throw → `Error·Client·DocumentLoad.<ErrorName>`,
    `setLoadError(true)`, `setLoadingDocument(false)`; `finally` → `finish()`.
 6. A password retry re-runs the bootstrap and arms a fresh watchdog.
@@ -113,7 +116,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 | Token provider never settles              | Each attempt resolves null after 10 s; signed-in → `SessionTokenUnavailableError` |
 | Load throws                               | Load-error screen, `DocumentLoad.<ErrorName>`                                     |
 | Load lands after the watchdog             | Editor replaces the error screen, `DocumentLoad.Late`                             |
-| Load lands while the healing reload pends | The reload still runs                                                             |
+| Load lands while the healing reload pends | The reload is cancelled; the editor shows                                         |
 | sessionStorage unreadable                 | No self-healing reload; error screen at once                                      |
 | Clipboard refused                         | `execCommand('copy')`, then a read-only textarea                                  |
 | A storage blocked during repair           | Skipped; the other storage still repairs                                          |

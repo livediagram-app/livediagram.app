@@ -796,7 +796,10 @@ function CanvasView(props: CanvasProps) {
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
-          <CanvasArrivalProvider tabId={props.activeTabId ?? ''}>
+          <CanvasArrivalProvider
+            tabId={props.activeTabId ?? ''}
+            loaded={props.activeTabLoaded ?? true}
+          >
             {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
             <CanvasZoomProvider zoom={viewportZoom}>

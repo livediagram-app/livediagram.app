@@ -7,7 +7,14 @@
 // the field (in place, so the panel's focus trap keeps it): a filter, None, then the candidate cards. Keys: Enter or
 // Space opens it, the arrows move, Enter picks, Escape closes.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { itemColourOf, itemTitle, typeIn, type Item, type ItemTypeDef } from '@livediagram/items';
+import {
+  itemColourOf,
+  itemTitle,
+  linkedCard,
+  typeIn,
+  type Item,
+  type ItemTypeDef,
+} from '@livediagram/items';
 import { ChevronDownIcon, ChevronRightIcon, Tooltip, useEscape } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { COLOUR_NAMES } from './ColourSwatches';
@@ -50,7 +57,7 @@ export function LinkedCardField({
   const linkedId = typeof value === 'string' && value ? value : undefined;
   // The linked card, from the document's cards, else from the candidates (a host that passes only those).
   const linked = linkedId
-    ? (items.get(linkedId) ?? candidates.find((c) => c.id === linkedId))
+    ? (linkedCard(items, linkedId) ?? candidates.find((c) => c.id === linkedId))
     : undefined;
   const missing = !!linkedId && !linked;
   const name = linked ? `#${linked.key} ${itemTitle(linked)}` : missing ? 'Missing card' : 'None';

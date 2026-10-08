@@ -132,6 +132,10 @@ function processAlive(pid: number): boolean {
   }
 }
 
+// The CLI walks paths with posix rules; Windows' own separators would never reach a root (`C:\x` has no `/`).
+const toPosixPath = (path: string) =>
+  process.platform === 'win32' ? path.replaceAll('\\', '/') : path;
+
 export function nodeIo(): CliIo {
   return {
     env: process.env,
@@ -149,7 +153,7 @@ export function nodeIo(): CliIo {
     now: () => Date.now(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     homedir: homedir(),
-    cwd: process.cwd(),
+    cwd: toPosixPath(process.cwd()),
     runtime: `node/${process.versions.node} ${process.platform}`,
     openSocket,
     listenLoopback,
@@ -230,7 +234,7 @@ export function nodeIo(): CliIo {
           throw err;
         }
       },
-      realpath: (path) => realpath(path).catch(() => null),
+      realpath: (path) => realpath(path).then(toPosixPath, () => null),
     },
   };
 }

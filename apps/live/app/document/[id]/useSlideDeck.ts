@@ -69,7 +69,7 @@ export function useSlideDeck({
   /** Persists the serialised deck (null clears it). Absent before hydration. */
   saveDeck?: (serialised: string | null) => void;
   /** Pulls every not-yet-loaded tab, so a deck can reach a tab nobody visited. */
-  loadAllTabs?: () => Promise<void>;
+  loadAllTabs?: () => Promise<unknown>;
   /** The document's items and types, for a Plan board's thumbnail. */
   plan?: ThumbnailPlan;
 }) {

@@ -106,7 +106,7 @@ export function CardSearchView({
               fields={fields.map((f) => ({ id: fieldKey(f), label: f.label }))}
               valuesOf={(id) => {
                 const f = fields.find((x) => fieldKey(x) === id);
-                return f ? searchValues(matching, f, types, statusNames) : [];
+                return f ? searchValues(matching, f, types, statusNames, items.values()) : [];
               }}
               onPick={(id, key) => {
                 const f = fields.find((x) => fieldKey(x) === id);

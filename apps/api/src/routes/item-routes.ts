@@ -11,6 +11,7 @@ import { itemForViewer, readRestoredThread } from '@livediagram/document';
 import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
+  ITEM_KEY_MAX,
   ITEM_STATUS_MAX,
   ITEM_WRITE_RETRIES,
   isSwimlaneSettable,
@@ -120,7 +121,8 @@ async function list(ctx: RouteContext, documentId: string): Promise<Response> {
   return json(body);
 }
 
-// Creates `creates` in one batch; keys from the store's next key (or a free restored key).
+// Creates `creates` in one batch. A named key (a restore, an offline sync, a copy) is kept while it is free, below
+// the store's next key or above it; every other create takes the next key not already in use.
 async function createMany(
   ctx: RouteContext,
   caller: ItemCaller,
@@ -138,6 +140,7 @@ async function createMany(
     const existing = await listItems(ctx.env, caller.documentId);
     const ids = new Set(existing.map((i) => i.id));
     const pool = [...existing];
+    const keys = new Set(existing.map((i) => i.key));
     const made: Item[] = [];
     let nextKey = head.nextKey;
     const now = Date.now();
@@ -149,15 +152,18 @@ async function createMany(
       let key: number;
       if (
         create.key !== undefined &&
-        create.key < head.nextKey &&
-        !pool.some((i) => i.key === create.key) &&
+        create.key <= ITEM_KEY_MAX &&
+        !keys.has(create.key) &&
         !(await itemKeyTaken(ctx.env, caller.documentId, create.key))
       ) {
         key = create.key;
       } else {
+        // A key named earlier in this batch may sit at or above the next key.
+        while (keys.has(nextKey)) nextKey += 1;
         key = nextKey;
         nextKey += 1;
       }
+      keys.add(key);
       const item = makeItem(create, { id, key, now, by, items: pool });
       pool.push(item);
       made.push(item);

@@ -17,7 +17,7 @@ export {
   type MenuKeyIntent,
   type MenuMove,
 } from './menu-keys';
-export { isInMenuSurface, menuItemsOf, ownsFocus } from './menu-dom';
+export { isInMenuSurface, isTextEditFocused, menuItemsOf, ownsFocus } from './menu-dom';
 export { MenuTreeContext, useMenuKind, type MenuKind, type MenuTree } from './menu-tree';
 export { useMenu, type MenuHandle, type SurfaceProps, type UseMenuOptions } from './useMenu';
 export { useMenuButton, type MenuButton } from './useMenuButton';

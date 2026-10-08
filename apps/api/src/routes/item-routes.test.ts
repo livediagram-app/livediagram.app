@@ -165,6 +165,24 @@ describe('creating items', () => {
     expect(clash.body.item.key).toBe(3);
   });
 
+  it('keeps the keys a sync or copy names, above the next key too, and numbers the rest around them', async () => {
+    const res = await call<ItemsResponse>({
+      path: '/items/bulk',
+      body: {
+        items: [
+          { type: 'bug', key: 2, fields: { title: 'doing', status: 'new' } },
+          { type: 'bug', fields: { title: 'unnamed', status: 'new' } },
+          { type: 'bug', key: 1, fields: { title: 'todo', status: 'new' } },
+          { type: 'bug', key: 4, fields: { title: 'later', status: 'new' } },
+          { type: 'bug', fields: { title: 'next', status: 'new' } },
+        ],
+      },
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.items.map((i) => i.key)).toEqual([2, 1, 3, 4, 5]);
+    expect((await add({ title: 'after' })).body.item.key).toBe(6);
+  });
+
   it('caps the store', async () => {
     sql.sql.exec('UPDATE documents SET items_next_key = 2001');
     const insert = sql.sql.prepare(

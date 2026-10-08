@@ -43,6 +43,13 @@ describe('nearestLink', () => {
     });
   });
 
+  it('stops at a Windows drive root', async () => {
+    expect(await failureOf(() => nearestLink(fakeIo(), 'C:/work/a'))).toMatchObject({
+      code: 'no_link',
+      message: 'no livediagram.toml in C:/work/a or above',
+    });
+  });
+
   it('reads the link through its real path', async () => {
     const io = fakeIo({
       files: { '/real/repo/livediagram.toml': LINK },

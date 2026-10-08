@@ -170,7 +170,7 @@ export function CardFinderPanel({
               fields={filterFields.map((f) => ({ id: filterKey(f), label: f.label }))}
               valuesOf={(id) => {
                 const f = filterFields.find((x) => filterKey(x) === id);
-                return f ? searchValues(found, f, plan.types, plan.statusNames) : [];
+                return f ? searchValues(found, f, plan.types, plan.statusNames, live) : [];
               }}
               onPick={(id, key) => {
                 const f = filterFields.find((x) => filterKey(x) === id);

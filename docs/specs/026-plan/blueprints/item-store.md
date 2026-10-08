@@ -435,6 +435,7 @@ include `fields` or comment text.
 | `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |
 | `ITEM_BULK_MAX`            | 200                       | A sync of a big offline doc batches                     |
 | `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                    |
+| `ITEM_KEY_MAX`             | 1000000                   | A named key's ceiling; keeps the next key far from 2^53 |
 | `ITEM_COMMENTS_MAX`        | 200                       | Spec; a card's conversation, well past a real one       |
 | `ITEM_COMMENTS_BYTES`      | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                |
 | `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |

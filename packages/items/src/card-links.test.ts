@@ -108,4 +108,14 @@ describe('card links', () => {
     const samLane = g.lanes.find((l) => l.label === 'Sam');
     expect(laneDropPatch(samLane)).toEqual({ set: { 'f-owner': sam.id } });
   });
+
+  it('reads a trashed or archived linked card as Missing card, until it is back', () => {
+    const sam = item({ title: 'Sam Reed', status: 'trash' }, { type: 'person' });
+    const ada = item({ title: 'Ada', archived: true }, { type: 'person' });
+    const items = new Map([sam, ada].map((c) => [c.id, c]));
+    expect(linkText(items, sam.id)).toBe('Missing card');
+    expect(linkText(items, ada.id)).toBe('Missing card');
+    const back = { ...sam, fields: { title: 'Sam Reed', status: 'todo' } };
+    expect(linkText(new Map([[back.id, back]]), back.id)).toBe('Sam Reed');
+  });
 });

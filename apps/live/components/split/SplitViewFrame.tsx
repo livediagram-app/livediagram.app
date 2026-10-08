@@ -119,17 +119,23 @@ export function SplitViewFrame({
   // The pane slides in once, when the split opens; moving the editor between panes is instant.
   const [arrived, setArrived] = useState(false);
   const [wasShowing, setWasShowing] = useState(showing);
-  if (wasShowing !== showing) {
-    setWasShowing(showing);
-    setArrived(false);
-  }
   const [leaving, setLeaving] = useState(false);
-  // The seam's Fit Both Sides, for the pane without the editor (the editor fits itself).
-  const [fitNonce, setFitNonce] = useState(0);
-
   // Handing the view over as the editor moves, so neither drawing moves on screen.
   const staticHandle = useRef<TabSvgViewportHandle | null>(null);
   const [handoff, setHandoff] = useState<{ tabId: string; anchor: CanvasAnchor } | null>(null);
+  if (wasShowing !== showing) {
+    setWasShowing(showing);
+    setArrived(false);
+    // A pane hidden mid leave-animation (zen, a narrow window, a deleted tab) never ends it: the next split must
+    // not arrive leaving. Nor may it start from the view an earlier split handed over (it opens fitted).
+    if (!showing) {
+      setLeaving(false);
+      setHandoff(null);
+    }
+  }
+  // The seam's Fit Both Sides, for the pane without the editor (the editor fits itself).
+  const [fitNonce, setFitNonce] = useState(0);
+
   const focusPane = (via: 'Click' | 'Hover') => {
     if (!staticId) return;
     const main = canvasMainRef.current?.getBoundingClientRect();
@@ -262,6 +268,7 @@ export function SplitViewFrame({
               key={staticTab.id}
               tab={staticTab}
               loaded={loadedTabIds.has(staticTab.id)}
+              failed={split.staticLoadFailed}
               initialAnchor={handoff?.tabId === staticTab.id ? handoff.anchor : null}
               handleRef={staticHandle}
               fitNonce={fitNonce}

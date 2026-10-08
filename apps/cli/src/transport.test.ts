@@ -43,4 +43,22 @@ describe('transport', () => {
       await expect(api.json('/documents')).rejects.toMatchObject({ status: 401 });
     expect(io.requests).toHaveLength(3);
   });
+
+  it('retries every request refused in parallel, not only the first to refresh', async () => {
+    const io = fakeIo({ routes: [host] });
+    const api = transport(io, API, () => {}).forCredential('lvd_old', async () => 'lvd_new');
+
+    const answers = await Promise.all([api.json('/documents'), api.json('/documents')]);
+
+    expect(answers).toEqual([
+      { ok: true, body: null },
+      { ok: true, body: null },
+    ]);
+    expect(io.requests.map(bearer)).toEqual([
+      'Bearer lvd_old',
+      'Bearer lvd_old',
+      'Bearer lvd_new',
+      'Bearer lvd_new',
+    ]);
+  });
 });

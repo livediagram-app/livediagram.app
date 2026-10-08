@@ -46,6 +46,16 @@ describe('the usage count', () => {
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 
+  it('never fails a command whose cache cannot be written (CLI41)', async () => {
+    const { events, route } = host();
+    const io = fakeIo({ env: on(), routes: [capabilities, route] });
+    io.files.write = async () => {
+      throw new Error('EROFS');
+    };
+    expect(await run(['document', 'ls'], io)).toBe(0);
+    expect(events).toEqual([{ category: 'Cli', action: 'Used', type: 'DocumentLs' }]);
+  });
+
   it('counts nothing for help, a usage error, a refusal or a command with no host', async () => {
     const { events, route } = host((url) =>
       url.pathname === '/api/documents/x'

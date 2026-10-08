@@ -105,13 +105,15 @@ export function searchFields(
 }
 
 // The values a field can take among the matching cards, in a board's lane order, each with how many cards have it.
+// A parent or a linked card is looked up among `items` (every card, as searchCards does), not only the matching ones.
 export function searchValues(
   matching: readonly Item[],
   field: { by: SwimlaneBy; field?: string | undefined },
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
+  items: Iterable<Item> = matching,
 ): { key: string; label: string; count: number }[] {
-  const all = new Map(matching.map((c) => [c.id, c]));
+  const all = new Map(liveCards(items).map((c) => [c.id, c]));
   const groups = laneGroups(field.by, field.field, matching, all, types, statusNames);
   const counts = new Map<string, number>();
   for (const key of groups.laneOfItem.values()) counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -131,6 +133,8 @@ export function searchFilterLabel(
       ? (laneFieldsOf(types).find((f) => f.id === filter.field)?.label ?? filter.field ?? '')
       : (GROUPING_LABELS[filter.by] ?? filter.by);
   const cards = liveCards(items);
-  const value = searchValues(cards, filter, types, statusNames).find((v) => v.key === filter.key);
+  const value = searchValues(cards, filter, types, statusNames, cards).find(
+    (v) => v.key === filter.key,
+  );
   return { field, value: value?.label ?? (filter.key || 'Empty') };
 }

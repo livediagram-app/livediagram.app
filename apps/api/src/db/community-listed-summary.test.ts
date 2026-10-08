@@ -48,7 +48,7 @@ describe('a document list says which documents are listed in the Community', () 
     });
   });
 
-  it('marks a listed team document too', async () => {
+  it('never marks a listed post whose document moved into a team library: the badge reads Team', async () => {
     const { env, sql, addDocument, publish } = setUp();
     sql
       .prepare(
@@ -58,6 +58,15 @@ describe('a document list says which documents are listed in the Community', () 
     addDocument('team-doc', 't1');
     publish('team-doc', 'listed');
     const [row] = await listDocumentsByTeam(env, 't1');
-    expect(row?.communityListed).toBe(true);
+    expect(row?.communityListed).toBe(false);
+  });
+
+  it('never marks a listed post whose document has a share password', async () => {
+    const { env, sql, addDocument, publish } = setUp();
+    addDocument('locked');
+    publish('locked', 'listed');
+    sql.prepare("UPDATE documents SET share_password = 'x' WHERE id = 'locked'").run();
+    const [row] = await listDocumentsByOwner(env, OWNER);
+    expect(row?.communityListed).toBe(false);
   });
 });

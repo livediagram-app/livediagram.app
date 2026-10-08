@@ -22,11 +22,20 @@ type Arrival = { settledTab: RefObject<string | null>; tabId: string } | null;
 
 const CanvasArrivalContext = createContext<Arrival>(null);
 
-export function CanvasArrivalProvider({ tabId, children }: { tabId: string; children: ReactNode }) {
+export function CanvasArrivalProvider({
+  tabId,
+  loaded = true,
+  children,
+}: {
+  tabId: string;
+  // False while the tab shows its placeholder: the commit that lands its content is the one it arrives in.
+  loaded?: boolean;
+  children: ReactNode;
+}) {
   const settledTab = useRef<string | null>(null);
   useEffect(() => {
-    settledTab.current = tabId;
-  }, [tabId]);
+    if (loaded) settledTab.current = tabId;
+  }, [tabId, loaded]);
   // Changes only on a tab switch, when the tab's elements mount anew anyway.
   const value = useMemo(() => ({ settledTab, tabId }), [tabId]);
   return <CanvasArrivalContext.Provider value={value}>{children}</CanvasArrivalContext.Provider>;

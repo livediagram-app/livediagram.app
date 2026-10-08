@@ -344,6 +344,7 @@ export function EditorCanvasHost() {
     editorMode,
     illustratePages,
     presentArticles,
+    loadedTabIds,
   } = useEditorContext();
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
@@ -524,6 +525,7 @@ export function EditorCanvasHost() {
         // Portals (docs/specs/009-elements/portal-element.md) can lead to another tab; see Canvas.enterPortal.
         portalTabs={tabs}
         activeTabId={activeTab.id}
+        activeTabLoaded={loadedTabIds.has(activeTab.id)}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
         documentName={documentName}

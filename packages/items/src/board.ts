@@ -157,6 +157,13 @@ export function isTrashed(item: Item): boolean {
   return itemStatus(item) === TRASH_STATUS;
 }
 
+// The card a link (a Parent, a Card field) points at; undefined while it is gone, trashed or archived, when the
+// link reads "Missing card" (docs/specs/026-plan/item-types.md "Card fields").
+export function linkedCard(items: ReadonlyMap<string, Item>, id: unknown): Item | undefined {
+  const card = typeof id === 'string' && id ? items.get(id) : undefined;
+  return card && !isTrashed(card) && !isArchived(card) ? card : undefined;
+}
+
 export interface LaneHead {
   key: string;
   label: string;
@@ -401,7 +408,7 @@ function laneOf(
       const lane = fieldLane(field, laneValue(field, item));
       // A Card field's row is named by the linked card (docs/specs/026-plan/item-types.md "Card fields").
       if (field.kind === 'card' && typeof lane.value === 'string') {
-        const linked = items.get(lane.value);
+        const linked = linkedCard(items, lane.value);
         return { ...lane, label: linked ? itemTitle(linked) : 'Missing card' };
       }
       return lane;
@@ -436,8 +443,7 @@ function laneOf(
         : { key: NO_LANE, label: 'No priority', field: 'priority', value: null };
     }
     case 'parent': {
-      const id = item.fields['parent'];
-      const parent = typeof id === 'string' ? items.get(id) : undefined;
+      const parent = linkedCard(items, item.fields['parent']);
       return parent
         ? {
             key: `e:${parent.id}`,

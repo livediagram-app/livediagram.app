@@ -12,9 +12,11 @@ const tab = (id: string) => ({ id, name: id, elements: [] }) as unknown as Tab;
 type Props = { tabs: Tab[]; activeId: string; suspended?: boolean };
 
 // The editor around the hook: selectTab moves the active tab, as the real one does.
-function setup(initial: Props) {
+function setup(initial: Props, failing: readonly string[] = []) {
   let props = initial;
-  const loadTabs = vi.fn(async () => {});
+  const loadTabs = vi.fn(async (ids: readonly string[]) =>
+    ids.filter((id) => failing.includes(id)),
+  );
   const view = renderHook(
     (p: Props) =>
       useSplitView({
@@ -102,6 +104,24 @@ describe('useSplitView', () => {
     act(() => view.result.current.open('b', 'Drag'));
     rerender({ tabs: [tab('a')] });
     expect(view.result.current.pair).toBeNull();
+  });
+
+  it('closes when the editor’s tab of the pair is deleted and the editor falls to a third tab', () => {
+    const { view, rerender } = setup({ tabs: [tab('a'), tab('b'), tab('c')], activeId: 'a' });
+    act(() => view.result.current.open('b', 'Drag'));
+    act(() => view.result.current.focus('b', 'Click'));
+    rerender({ tabs: [tab('a'), tab('c')], activeId: 'c' });
+    expect(view.result.current.pair).toBeNull();
+  });
+
+  it('says so when the other pane’s tab cannot be fetched, instead of loading forever', async () => {
+    const { view } = setup({ tabs: [tab('a'), tab('b'), tab('c')], activeId: 'a' }, ['c']);
+    act(() => view.result.current.open('b', 'Drag'));
+    await act(async () => {});
+    expect(view.result.current.staticLoadFailed).toBe(false);
+    act(() => view.result.current.open('c', 'Drag'));
+    await act(async () => {});
+    expect(view.result.current.staticLoadFailed).toBe(true);
   });
 
   it('steps aside while suspended and comes back after', () => {

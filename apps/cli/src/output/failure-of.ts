@@ -72,7 +72,8 @@ export function failureOf(err: unknown, host: string): CliFailure {
   if (err instanceof AddressError) return addressFailure(err);
   if (err instanceof VerbRefusal)
     return {
-      exit: exitCodeForStatus(err.status),
+      // A command line the verb cannot use exits as any other usage error.
+      exit: err.code === 'usage' ? EXIT.usage : exitCodeForStatus(err.status),
       code: err.code,
       message: err.message,
       lines: err.lines,

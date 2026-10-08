@@ -8,4 +8,7 @@ import { nodeIo } from './node-io';
 const EXIT_GRACE_MS = 250;
 
 process.exitCode = await run(process.argv.slice(2), nodeIo());
-setTimeout(() => process.exit(), EXIT_GRACE_MS).unref();
+// The grace starts once stdout and stderr have flushed: exiting sooner drops what a slow pipe reader has not read yet.
+process.stdout.write('', () =>
+  process.stderr.write('', () => setTimeout(() => process.exit(), EXIT_GRACE_MS).unref()),
+);

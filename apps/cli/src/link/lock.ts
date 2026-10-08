@@ -36,29 +36,37 @@ export async function acquireLinkLock(
       path,
       JSON.stringify({ pid: io.pid, hostname: io.hostname, startedAt: io.now(), command }),
     );
+  // A holder on this machine that is no longer alive is taken over, checked again on every poll: it may die while
+  // this pass waits.
+  const takeOver = async (): Promise<{ taken: boolean; holder: Holder | null }> => {
+    const holder = await holderOf(io, path);
+    if (!holder || holder.hostname !== io.hostname || io.processAlive(holder.pid))
+      return { taken: false, holder };
+    log(`lock stale ${holder.pid}`);
+    await io.files.remove(path);
+    if (await take()) return { taken: true, holder };
+    // Another pass took it first.
+    return { taken: false, holder: await holderOf(io, path) };
+  };
   const started = io.now();
   let taken = await take();
   if (!taken) {
-    let holder = await holderOf(io, path);
-    if (holder && holder.hostname === io.hostname && !io.processAlive(holder.pid)) {
-      log(`lock stale ${holder.pid}`);
-      await io.files.remove(path);
-      taken = await take();
-      // Another pass took it first.
-      if (!taken) holder = await holderOf(io, path);
-    }
-    const pid = holder?.pid ?? '?';
-    if (!taken) log(`lock-wait ${pid}`);
+    let holder: Holder | null;
+    ({ taken, holder } = await takeOver());
+    if (!taken) log(`lock-wait ${holder?.pid ?? '?'}`);
     while (!taken) {
-      if (io.now() - started >= SYNC_LOCK_WAIT_MS)
+      if (io.now() - started >= SYNC_LOCK_WAIT_MS) {
+        const pid = holder?.pid ?? '?';
         throw new CliError({
           exit: EXIT.conflict,
           code: 'lock_held',
           message: `another sync of ${linkPath} is running (process ${pid})`,
           hint: `wait for it, or stop process ${pid}`,
         });
+      }
       await io.sleep(SYNC_LOCK_POLL_MS);
       taken = await take();
+      if (!taken) ({ taken, holder } = await takeOver());
     }
   }
   log('lock taken');

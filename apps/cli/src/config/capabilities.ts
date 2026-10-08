@@ -75,12 +75,17 @@ export async function loadCapabilities(
       message: `${profile.host} does not answer as a livediagram host`,
       hint: 'check the host: --host https://<your livediagram>',
     });
-  await io.files.mkdir(`${cacheDir(io)}/capabilities`, 0o700);
   const entry: CacheEntry = {
     fetchedAt: io.now(),
     host: profile.host,
     capabilities: capabilities as CapabilitiesResponse,
   };
-  await io.files.write(path, JSON.stringify(entry));
+  // The cache only saves a request: one that cannot be written (a read-only home) never fails the command.
+  try {
+    await io.files.mkdir(`${cacheDir(io)}/capabilities`, 0o700);
+    await io.files.write(path, JSON.stringify(entry));
+  } catch (err) {
+    log(`capabilities unwritten ${err instanceof Error ? err.name : typeof err}`);
+  }
   return of(profile.host, entry.capabilities);
 }

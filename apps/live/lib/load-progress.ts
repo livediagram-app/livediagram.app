@@ -90,6 +90,7 @@ export function armLoadWatchdog(
   set({ step: 'identity', startedAt: now(), timedOut: false, healing: false });
   let fired = false;
   let finished = false;
+  let reloadTimer: ReturnType<typeof setTimeout> | null = null;
   const timer = setTimeout(() => {
     if (finished) return;
     fired = true;
@@ -102,7 +103,10 @@ export function armLoadWatchdog(
     if ((deps.online ?? getOnline)() && claimAutoReload(deps)) {
       warn('DocumentLoad.AutoReload');
       set({ healing: true });
-      setTimeout(deps.reload ?? (() => window.location.reload()), AUTO_RELOAD_DELAY_MS);
+      reloadTimer = setTimeout(
+        deps.reload ?? (() => window.location.reload()),
+        AUTO_RELOAD_DELAY_MS,
+      );
       return;
     }
     onTimedOut();
@@ -112,12 +116,16 @@ export function armLoadWatchdog(
       if (finished) return false;
       finished = true;
       clearTimeout(timer);
-      set({ step: 'done' });
+      // The step stays where the load reached: a failed load's diagnostics name it (the success path sets 'done').
       if (!fired) return false;
       console.warn('[load] finished after its watchdog');
       warn('DocumentLoad.Late');
-      // A self-healing reload already scheduled would throw away the load that just landed.
-      if (progress.healing) return false;
+      // A late load still wins: the self-healing reload not yet run would throw away the load that just landed.
+      if (reloadTimer !== null) {
+        clearTimeout(reloadTimer);
+        reloadTimer = null;
+        set({ healing: false });
+      }
       return true;
     },
   };
