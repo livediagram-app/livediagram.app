@@ -39,6 +39,8 @@ export type SplitView = {
   close: () => void;
   // Move the editor to the tab in the other pane; the tabs keep their sides.
   focus: (tabId: string, via: 'Click' | 'Hover') => void;
+  // The pane's tab could not be fetched: the pane says so, and clicking in loads it the editor's way (with Retry).
+  staticLoadFailed: boolean;
   // Fetch a tab's content ahead of showing it (the drop zone's preview of a dragged tab).
   prefetch: (tabId: string) => void;
   // Live resize from the divider; `commit` stores the width once the drag ends.
@@ -67,7 +69,8 @@ export function useSplitView({
   // matched against them.
   hydrated: boolean;
   loadedTabIds: ReadonlySet<string>;
-  loadTabs: (ids: readonly string[]) => Promise<void>;
+  // Resolves with the ids that failed to load.
+  loadTabs: (ids: readonly string[]) => Promise<readonly string[]>;
   // Zen, embeds, presenting and phones: the split steps aside but is kept, so it comes back.
   suspended: boolean;
 }): SplitView {
@@ -88,14 +91,8 @@ export function useSplitView({
   const tabIds = useMemo(() => tabs.map((t) => t.id), [tabs]);
 
   let current = state;
-  if (current && current.seenActive !== activeId) {
-    current = {
-      pair: pairAfterActivation(current.pair, current.seenActive, activeId),
-      seenActive: activeId,
-    };
-    setState(current);
-  }
-  // A tab of the pair was deleted (here or by a collaborator).
+  // A tab of the pair was deleted (here or by a collaborator). Checked before the active tab is folded in: deleting
+  // the editor's tab moves it to a neighbour in the same render, and the fold would put that neighbour in the pair.
   if (
     current &&
     (!tabIds.includes(current.pair.leftId) ||
@@ -104,6 +101,13 @@ export function useSplitView({
   ) {
     current = null;
     setState(null);
+  }
+  if (current && current.seenActive !== activeId) {
+    current = {
+      pair: pairAfterActivation(current.pair, current.seenActive, activeId),
+      seenActive: activeId,
+    };
+    setState(current);
   }
 
   // Restore the document's split on arrival, once its tabs are known.
@@ -127,9 +131,19 @@ export function useSplitView({
 
   // The pane not holding the editor draws its tab: fetch a never-opened tab's content for it.
   const staticId = pair ? (pair.leftId === activeId ? pair.rightId : pair.leftId) : null;
+  const [failedId, setFailedId] = useState<string | null>(null);
   useEffect(() => {
-    if (staticId && !loadedTabIds.has(staticId)) void loadTabs([staticId]);
+    if (!staticId || loadedTabIds.has(staticId)) return;
+    let live = true;
+    void loadTabs([staticId]).then((failed) => {
+      if (live && failed.includes(staticId)) setFailedId(staticId);
+    });
+    return () => {
+      live = false;
+    };
   }, [staticId, loadedTabIds, loadTabs]);
+  const staticLoadFailed =
+    staticId !== null && failedId === staticId && !loadedTabIds.has(staticId);
 
   const available = !suspended && splitAvailable(viewportWidth, viewportHeight);
 
@@ -198,6 +212,7 @@ export function useSplitView({
     open,
     close,
     focus,
+    staticLoadFailed,
     prefetch,
     resize,
     resetWidth,

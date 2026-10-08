@@ -135,4 +135,53 @@ describe('useIdentityBootstrap recovery', () => {
     expect(s.setLoadError).not.toHaveBeenCalled();
     expect(s.setLoadingDocument).toHaveBeenCalledWith(false);
   });
+
+  // Clerk answering after the guest timeout settles auth twice: the second run wins, the first's late answer is
+  // dropped rather than overwriting it.
+  it('drops the writes of a load superseded by a later run', async () => {
+    seed.mockClear();
+    let resolveFirst!: (d: unknown) => void;
+    api.apiLoadDocument
+      .mockReturnValueOnce(new Promise((r) => (resolveFirst = r)))
+      .mockResolvedValueOnce(DOC);
+    const fns: Setters = {};
+    const set = new Proxy(fns, { get: (t, k: string) => (t[k] ??= vi.fn()) });
+    const props = (authLoaded: boolean) => ({
+      authLoaded,
+      passwordRetry: 0,
+      hydrated: false,
+      clerkUserId: null,
+      clerkDisplayName: null,
+      embed: false,
+      workbench: null,
+      activeId: 't1',
+      selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' as const },
+      refreshDocumentList: () => {},
+      refreshSharedList: () => {},
+      resetTabs: () => {},
+      refs: {
+        lastPersistedSelfRef: { current: null },
+        lastSavedTabsRef: { current: [] },
+        lastSavedNameRef: { current: '' },
+        loadedTabIdsRef: { current: new Set<string>() },
+        noteChangesetSeen: () => {},
+      },
+      set: set as never,
+    });
+    const hook = renderHook(
+      (p: { authLoaded: boolean }) => useIdentityBootstrap(props(p.authLoaded)),
+      {
+        initialProps: { authLoaded: true },
+      },
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    hook.rerender({ authLoaded: false });
+    hook.rerender({ authLoaded: true });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(seed).toHaveBeenCalledTimes(1);
+    resolveFirst({ ...DOC, name: 'stale' });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(seed).toHaveBeenCalledTimes(1);
+    expect(fns['setHydrated']).toHaveBeenCalledTimes(1);
+  });
 });

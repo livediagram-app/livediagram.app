@@ -1,6 +1,7 @@
 import type { ItemTypeCatalogue } from '@livediagram/items';
 import {
   useLayoutEffect,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type SetStateAction,
@@ -38,6 +39,18 @@ import type { WorkbenchSession } from '@/components/providers/workbench-session-
 import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
+
+// Every function of `fns`, doing nothing once `live` says its run was superseded.
+function guardRun<T extends object>(fns: T, live: () => boolean): T {
+  return new Proxy(fns, {
+    get: (target, name) => {
+      const fn: unknown = Reflect.get(target, name);
+      return typeof fn === 'function'
+        ? (...args: unknown[]) => (live() ? fn(...args) : undefined)
+        : fn;
+    },
+  });
+}
 
 // One-shot identity + document hydration (Clerk gate -> guest id ->
 // participant -> document/share/password resolution -> tab seeding),
@@ -116,9 +129,6 @@ export function useIdentityBootstrap(opts: {
     workbench,
     activeId,
     selfParticipant,
-    refreshDocumentList,
-    refreshSharedList,
-    resetTabs,
     refs,
     set,
   } = opts;
@@ -129,67 +139,10 @@ export function useIdentityBootstrap(opts: {
     loadedTabIdsRef,
     noteChangesetSeen,
   } = refs;
-  const {
-    setActiveId,
-    setDocumentId,
-    setDocumentName,
-    setDocumentPresentation,
-    setDocumentItemTypes,
-    setDocumentNotFound,
-    setLoadError,
-    setDocumentTrashed,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
-    setDocumentOwnerName,
-    setDocumentShareable,
-    setDocumentShareCode,
-    setDocumentTeamId,
-    setDocumentServerStored,
-    setHydrated,
-    setIsOwner,
-    setLoadedExistingDocument,
-    setLoadedTabIds,
-    setLoadingDocument,
-    setNameConfirmed,
-    setSelfParticipant,
-    setSessionRole,
-    setSessionShareCode,
-    setSessionCommunity,
-    setSessionTabScope,
-    setSharedDocuments,
-    setShareLinks,
-    setSharePasswordSet,
-    setSharePasswordGate,
-    setTemplatePickerMode,
-  } = set;
-
-  // The tab-seeding + owner-field body both arrival branches share —
-  // see seed-fetched-document.ts.
-  const seedFetchedDocument = makeSeedFetchedDocument({
-    activeId,
-    // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
-    recordOpen: !embed && workbench === null,
-    resetTabs,
-    lastSavedTabsRef,
-    lastSavedNameRef,
-    loadedTabIdsRef,
-    noteChangesetSeen,
-    setActiveId,
-    setDocumentName,
-    setDocumentPresentation,
-    setDocumentItemTypes,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
-    setDocumentOwnerName,
-    setDocumentShareable,
-    setDocumentShareCode,
-    setDocumentTeamId,
-    setLoadedExistingDocument,
-    setLoadedTabIds,
-  });
 
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
+  const runRef = useRef(0);
   const bootstrap = useEffectEvent(() => {
     if (hydrated) return;
     // Wait for Clerk to determine the auth state before bootstrapping.
@@ -198,6 +151,77 @@ export function useIdentityBootstrap(opts: {
     // subsequent document load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded) return;
+    // A later run (auth settling twice: Clerk answering after the guest timeout, then a guest migration) supersedes
+    // this one: a superseded run's writes are dropped, so a stale guest-identity load never overwrites the newer one.
+    const generation = ++runRef.current;
+    const live = () => runRef.current === generation;
+    const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
+    const { refreshDocumentList, refreshSharedList } = guardRun(
+      { refreshDocumentList: opts.refreshDocumentList, refreshSharedList: opts.refreshSharedList },
+      live,
+    );
+    const {
+      setActiveId,
+      setDocumentId,
+      setDocumentName,
+      setDocumentPresentation,
+      setDocumentItemTypes,
+      setDocumentNotFound,
+      setLoadError,
+      setDocumentTrashed,
+      setDocumentOwnerColor,
+      setDocumentOwnerId,
+      setDocumentOwnerName,
+      setDocumentShareable,
+      setDocumentShareCode,
+      setDocumentTeamId,
+      setDocumentServerStored,
+      setHydrated,
+      setIsOwner,
+      setLoadedExistingDocument,
+      setLoadedTabIds,
+      setLoadingDocument,
+      setNameConfirmed,
+      setSelfParticipant,
+      setSessionRole,
+      setSessionShareCode,
+      setSessionCommunity,
+      setSessionTabScope,
+      setSharedDocuments,
+      setShareLinks,
+      setSharePasswordSet,
+      setSharePasswordGate,
+      setTemplatePickerMode,
+    } = guardRun(set, live);
+
+    // The tab-seeding + owner-field body both arrival branches share —
+    // see seed-fetched-document.ts.
+    const seedOnce = makeSeedFetchedDocument({
+      activeId,
+      // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
+      recordOpen: !embed && workbench === null,
+      resetTabs,
+      lastSavedTabsRef,
+      lastSavedNameRef,
+      loadedTabIdsRef,
+      noteChangesetSeen,
+      setActiveId,
+      setDocumentName,
+      setDocumentPresentation,
+      setDocumentItemTypes,
+      setDocumentOwnerColor,
+      setDocumentOwnerId,
+      setDocumentOwnerName,
+      setDocumentShareable,
+      setDocumentShareCode,
+      setDocumentTeamId,
+      setLoadedExistingDocument,
+      setLoadedTabIds,
+    });
+    // The seed writes refs too (the saved tabs, the loaded ids): a superseded run never starts one.
+    const seedFetchedDocument: typeof seedOnce = async (...args) => {
+      if (live()) await seedOnce(...args);
+    };
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once auth has settled we
     // know whether this open is a guest or a signed-in user. Fire-and-
     // forget, gated to once per browser per UTC day inside the helper,

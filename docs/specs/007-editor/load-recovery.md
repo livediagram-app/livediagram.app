@@ -34,7 +34,9 @@ screen. It never stays on the opening screen indefinitely.
   rather than leaving the opening screen up.
 - **A late load still wins.** A load that finishes after its watchdog fired
   replaces the load-error screen with the editor, so a slow connection is never
-  stuck behind an error it outlived.
+  stuck behind an error it outlived. One landing during "Trying a fresh start"
+  cancels that reload. If auth settles twice (sign-in answering after the guest
+  timeout), only the newer load's result is kept.
 - **The offline-store check gives up.** Opening the offline store waits at
   most **4 seconds**. A store that does not open in time (or reports
   `blocked`) counts as having no offline documents, for the rest of that page

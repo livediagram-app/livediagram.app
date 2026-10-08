@@ -17,7 +17,9 @@ import {
   asUndoWrite,
   inverseItemWrites,
   itemPersonId,
+  itemIdsOfWrite,
   mergeItemChanges,
+  refetchedItemStore,
   withCreateIds,
   type Item,
   type ItemPerson,
@@ -118,6 +120,8 @@ export function usePlanItems(opts: {
   // optimistic writes never move it.
   const serverRevRef = useRef(0);
   const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Items whose last write was refused or failed: the next load takes the server's copy of them as it is.
+  const unconfirmedRef = useRef(new Set<string>());
 
   useEffect(() => {
     let live = true;
@@ -146,18 +150,12 @@ export function usePlanItems(opts: {
     if (!s) return;
     loadedRef.current = true;
     try {
+      // Read before the fetch: a write that fails while it is in flight asks for a load of its own.
+      const unconfirmed = new Set(unconfirmedRef.current);
       const fetched = await fetchItems(s);
-      const fetchedIds = new Set(fetched.items.map((f) => f.id));
       serverRevRef.current = fetched.rev;
-      // Keep anything newer that arrived while the fetch was in flight.
-      setStore((prev) =>
-        mergeItemChanges(
-          fetched,
-          prev.items.filter((i) => fetchedIds.has(i.id)),
-          [],
-          fetched.rev,
-        ),
-      );
+      unconfirmed.forEach((id) => unconfirmedRef.current.delete(id));
+      setStore((prev) => refetchedItemStore(prev, fetched, unconfirmed));
       setStatus('ready');
     } catch (err) {
       console.warn('[plan] plan.items.load-failed', { error: String(err) });
@@ -223,11 +221,18 @@ export function usePlanItems(opts: {
       setStore(local.state);
       try {
         const answer = await writeItem(s, write, by);
+        // A room op newer than this answer already landed: an item it removed stays removed.
+        const overtaken = answer.rev >= 0 && answer.rev < serverRevRef.current;
         if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
-        setStore((prev) => mergeItemChanges(prev, answer.upserts, answer.removed, answer.rev));
+        setStore((prev) => {
+          const held = new Set(prev.items.map((i) => i.id));
+          const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
+          return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
+        });
         return { ok: true, made: answer.upserts };
       } catch (err) {
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
+        itemIdsOfWrite(write).forEach((id) => unconfirmedRef.current.add(id));
         const code = (err as { code?: string }).code;
         callbacks.current.onError(
           code === 'items_full'

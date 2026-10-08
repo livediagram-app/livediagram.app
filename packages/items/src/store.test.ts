@@ -4,7 +4,9 @@ import {
   applyItemWrite,
   asUndoWrite,
   inverseItemWrites,
+  itemIdsOfWrite,
   mergeItemChanges,
+  refetchedItemStore,
   storeAsCreates,
   withCreateIds,
   type ItemStoreState,
@@ -308,5 +310,55 @@ describe('a write of many patches', () => {
       inverseItemWrites(two, { kind: 'patches', patches: [{ id: 'gone', patch: trash }] }),
     ).toBeNull();
     expect(asUndoWrite(write)).toEqual({ ...write, undo: true });
+  });
+});
+
+// A refetch after a refused write (docs/specs/026-plan/items.md "Writes"): the server's copy wins.
+describe('refetchedItemStore', () => {
+  const at = (id: string, rev: number, title: string) => item({ title }, { id, rev });
+  it('keeps a newer copy that arrived mid-read, but never a refused one', () => {
+    const fetched = { items: [at('a', 1, 'server'), at('b', 1, 'server')], rev: 5, nextKey: 3 };
+    const prev = {
+      items: [at('a', 2, 'room'), at('b', 2, 'refused'), at('c', 1, 'gone')],
+      rev: 5,
+      nextKey: 4,
+    };
+    const next = refetchedItemStore(prev, fetched, new Set(['b']));
+    expect(next.items.map((i) => [i.id, i.fields['title']])).toEqual([
+      ['a', 'room'],
+      ['b', 'server'],
+    ]);
+  });
+});
+
+describe('itemIdsOfWrite', () => {
+  it('names every item a write touches', () => {
+    expect(
+      itemIdsOfWrite({ kind: 'create', creates: [{ id: 'x', type: 't', fields: {} }] }),
+    ).toEqual(['x']);
+    expect(
+      itemIdsOfWrite({
+        kind: 'patches',
+        patches: [
+          { id: 'p', patch: {} },
+          { id: 'q', patch: {} },
+        ],
+      }),
+    ).toEqual(['p', 'q']);
+    expect(itemIdsOfWrite({ kind: 'delete', id: 'd' })).toEqual(['d']);
+  });
+});
+
+describe('undoing a move of a card with no status', () => {
+  it('takes the status the move gave it away again', () => {
+    const card = item({ title: 'from the canvas' });
+    const before: ItemStoreState = { items: [card], rev: 1, nextKey: 2 };
+    const move = { kind: 'move', id: card.id, move: { status: 'todo' } } as const;
+    const moved = ok(applyItemWrite(before, move, ctx));
+    expect(moved.items[0]!.fields['status']).toBe('todo');
+    let state: ItemStoreState = moved;
+    for (const back of inverseItemWrites(before, move)!)
+      state = ok(applyItemWrite(state, back, ctx));
+    expect(state.items[0]!.fields['status']).toBeUndefined();
   });
 });

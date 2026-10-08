@@ -452,6 +452,9 @@ export type CanvasProps = {
   // read-only / embed mounts that never travel can omit them.
   portalTabs?: import('@livediagram/document').Tab[];
   activeTabId?: string;
+  // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
+  // the board once it lands, not as additions. Omitted, the tab is loaded.
+  activeTabLoaded?: boolean;
   folders: Folder[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.

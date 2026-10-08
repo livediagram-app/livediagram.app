@@ -229,4 +229,14 @@ describe("a verb's own refusal", () => {
       hint: 're-read',
     });
   });
+
+  it('exits 2 for a usage refusal, as any command line that does not parse', () => {
+    const refusal = new VerbRefusal({
+      status: 400,
+      code: 'usage',
+      message: 'expected key=value',
+      hint: 'x',
+    });
+    expect(failureOf(refusal, HOST)).toMatchObject({ exit: EXIT.usage, code: 'usage' });
+  });
 });

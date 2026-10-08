@@ -18,6 +18,7 @@ import {
   typeIn,
   itemVotes,
   itemColourOf,
+  linkedCard,
   cardFieldsAt,
   type CardField,
   type CardSize,
@@ -136,7 +137,7 @@ export function PlanCardFace({
   const start = item.fields['start'];
   const description = item.fields['description'];
   const parentId = item.fields['parent'];
-  const parent = typeof parentId === 'string' ? plan?.items.get(parentId) : undefined;
+  const parent = plan ? linkedCard(plan.items, parentId) : undefined;
   // An item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside the type, never replacing it.
   const ownColour = itemColourOf(item);
   const parentColour = parent ? itemColourOf(parent) : undefined;

@@ -51,6 +51,22 @@ describe('acquireLinkLock', () => {
     expect(logs).toEqual(['lock-wait 77', 'lock taken']);
   });
 
+  it('takes over from a holder that dies while this pass waits', async () => {
+    const logs: string[] = [];
+    const io = fakeIo({ files: { [LOCK]: holder(77) } });
+    io.alive.add(77);
+    let polls = 0;
+    const sleep = io.sleep;
+    io.sleep = async (ms) => {
+      if (++polls === 2) io.alive.delete(77);
+      await sleep(ms);
+    };
+    await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) => logs.push(l));
+    expect(JSON.parse(io.fileMap.get(LOCK)!.data).pid).toBe(4242);
+    expect(io.slept).toEqual([SYNC_LOCK_POLL_MS, SYNC_LOCK_POLL_MS]);
+    expect(logs).toEqual(['lock-wait 77', 'lock stale 77', 'lock taken']);
+  });
+
   it('gives up after SYNC_LOCK_WAIT_MS naming the holder, and never judges another machine’s stale (E20)', async () => {
     const io = fakeIo({ files: { [LOCK]: holder(77, 'other-host') } });
     const failure = await acquireLinkLock(

@@ -91,8 +91,10 @@ reads **Close Side by Side**.
 - **Live:** an edit to the tab, by anyone, redraws it at a deferred priority, so it never competes
   with the editor. A drawing that grows up or left keeps every element where it was.
 - **States:** _Loading name…_ while a never-opened tab's content is fetched (it is fetched as soon
-  as it is placed, or when its drag starts); _Nothing on this tab yet. Click to start on it._ for
-  an empty tab.
+  as it is placed, or when its drag starts); _Couldn't load name. Click to try again._ when that fetch
+  fails (clicking in loads it as the editor does, with its Retry); _Nothing on this tab yet. Click to
+  start on it._ for an empty tab. Resting the pointer here never moves the editor while a text field
+  has focus.
 
 ## Closing, and tab changes
 

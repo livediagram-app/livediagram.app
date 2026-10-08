@@ -3,7 +3,7 @@
 // link field may point at, and, for a card, the groups of cards that point at it. Pure.
 import type { Item } from './item';
 import { itemTitle } from './item';
-import { isArchived, isTrashed } from './board';
+import { isArchived, isTrashed, linkedCard } from './board';
 import type { ItemTypeDef } from './item-types';
 
 // The built-in link: a card's Parent, always a Project.
@@ -91,6 +91,6 @@ export function linkedCardsOf(
 // A linked card as one line ("#3 Sam Reed"), or "Missing card" for a value whose card is gone.
 export function linkText(items: ReadonlyMap<string, Item>, value: unknown): string | null {
   if (typeof value !== 'string' || !value) return null;
-  const card = items.get(value);
+  const card = linkedCard(items, value);
   return card ? itemTitle(card) : 'Missing card';
 }

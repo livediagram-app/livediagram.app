@@ -51,7 +51,8 @@ export async function nearestLink(io: CliIo, cwd: string): Promise<LinkFile> {
   for (let dir = cwd; ; dir = posix.dirname(dir)) {
     const link = await readLink(io, posix.join(dir, LINK_FILE_NAME));
     if (link) return link;
-    if (dir === '/') throw noLink(cwd, 'above');
+    // The root is its own parent: `/` here, `C:/` on Windows.
+    if (posix.dirname(dir) === dir) throw noLink(cwd, 'above');
   }
 }
 

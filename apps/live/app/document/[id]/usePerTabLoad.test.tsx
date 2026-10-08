@@ -159,7 +159,7 @@ describe('usePerTabLoad search sweep failing on the tab being viewed', () => {
         }),
       { initialProps: { activeId: 't1' } },
     );
-    let sweep: Promise<void> = Promise.resolve();
+    let sweep: Promise<unknown> = Promise.resolve();
     act(() => {
       sweep = hook.result.current.loadAllTabs();
     });

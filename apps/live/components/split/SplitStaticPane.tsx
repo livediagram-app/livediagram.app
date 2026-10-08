@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, type CSSProperties, type Ref } from 'react';
 import type { Tab } from '@livediagram/document';
+import { isTextEditFocused } from '@livediagram/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
@@ -25,6 +26,7 @@ import { useTabSvg } from './useTabSvg';
 export function SplitStaticPane({
   tab,
   loaded,
+  failed = false,
   initialAnchor,
   handleRef,
   fitNonce,
@@ -33,6 +35,8 @@ export function SplitStaticPane({
   tab: Tab;
   // False while the tab's content is still on its way (a tab nobody had opened yet).
   loaded: boolean;
+  // The tab's content could not be fetched; clicking in loads it as the editor does, with its Retry.
+  failed?: boolean;
   // The view the editor had on this tab as it left, so the drawing holds still.
   initialAnchor: CanvasAnchor | null;
   handleRef: Ref<TabSvgViewportHandle>;
@@ -80,10 +84,11 @@ export function SplitStaticPane({
   useEffect(() => cancelDwell, []);
   const armDwell = (buttons: number) => {
     cancelDwell();
-    if (buttons !== 0 || editingId !== null || anyModalOpen()) return;
+    // Typing in a field (a panel, the Explorer filter, a comment) keeps the editor where it is.
+    if (buttons !== 0 || editingId !== null || anyModalOpen() || isTextEditFocused()) return;
     dwell.current = window.setTimeout(() => {
       dwell.current = null;
-      if (!anyModalOpen()) onFocus('Hover');
+      if (!anyModalOpen() && !isTextEditFocused()) onFocus('Hover');
     }, SPLIT_HOVER_FOCUS_MS);
   };
 
@@ -104,7 +109,9 @@ export function SplitStaticPane({
         onFocus('Click');
       }}
     >
-      {!loaded || !svg ? (
+      {!loaded && failed ? (
+        <PaneMessage>{`Couldn't load ${tab.name}. Click to try again.`}</PaneMessage>
+      ) : !loaded || !svg ? (
         <PaneMessage busy>{`Loading ${tab.name}…`}</PaneMessage>
       ) : empty ? (
         <PaneMessage>Nothing on this tab yet. Click to start on it.</PaneMessage>

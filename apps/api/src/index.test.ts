@@ -210,6 +210,24 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(other.status).toBe(403);
   });
 
+  it('lets a read-only token open and pair a workbench, whose frame it caps to view', async () => {
+    for (const path of ['/api/workbench/tickets', '/api/workbench/pairing-requests']) {
+      const res = await worker.fetch(
+        new Request(`https://api.test${path}`, { method: 'POST', headers: RO }),
+        env(),
+      );
+      expect(res.status, path).not.toBe(403);
+    }
+    const session = await worker.fetch(
+      new Request('https://api.test/api/workbench/sessions/current', {
+        method: 'DELETE',
+        headers: RO,
+      }),
+      env(),
+    );
+    expect(session.status).toBe(403);
+  });
+
   it('lets a GET through (reads are allowed)', async () => {
     const res = await worker.fetch(req('GET'), env());
     expect(res.status).not.toBe(403);

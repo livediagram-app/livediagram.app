@@ -12,6 +12,8 @@ describe('the loopback server', () => {
     idle.on('error', () => {});
     await new Promise<void>((resolve) => idle.once('connect', () => resolve()));
     const ended = new Promise<void>((resolve) => idle.once('close', () => resolve()));
+    // Closing destroys the connection, which this end may see as a reset: that is the ending, not a failure.
+    idle.on('error', () => {});
 
     loopback.close();
 

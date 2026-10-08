@@ -56,7 +56,13 @@ describe('armLoadWatchdog', () => {
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS * 2);
     expect(onTimedOut).not.toHaveBeenCalled();
     expect(warn).not.toHaveBeenCalled();
-    expect(getLoadProgress().step).toBe('done');
+  });
+
+  it('keeps the step a failed load reached, for the diagnostics', () => {
+    const w = armLoadWatchdog(vi.fn(), deps());
+    setLoadStep('document');
+    w.finish();
+    expect(getLoadProgress().step).toBe('document');
   });
 
   it('reloads once on the first timeout in a tab, saying so first', () => {
@@ -128,10 +134,15 @@ describe('armLoadWatchdog', () => {
     expect(w.finish()).toBe(false);
   });
 
-  it('does not report a late load as recoverable while a healing reload is pending', () => {
-    const w = armLoadWatchdog(vi.fn(), deps({ reload: vi.fn() }));
+  it('lets a load that lands before the healing reload win, cancelling the reload', () => {
+    const reload = vi.fn();
+    const w = armLoadWatchdog(vi.fn(), deps({ reload }));
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS);
-    expect(w.finish()).toBe(false);
+    expect(getLoadProgress().healing).toBe(true);
+    expect(w.finish()).toBe(true);
+    expect(getLoadProgress().healing).toBe(false);
+    vi.advanceTimersByTime(AUTO_RELOAD_DELAY_MS * 2);
+    expect(reload).not.toHaveBeenCalled();
   });
 
   it('notifies subscribers of step changes', () => {

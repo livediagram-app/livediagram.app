@@ -45,6 +45,20 @@ describe('card search', () => {
     ]);
   });
 
+  it('names a parent outside the matching cards, and picking it finds them', () => {
+    const parent = project({ title: 'Launch' });
+    const child = item({ title: 'Write', parent: parent.id });
+    const all = [parent, child];
+    const tasks = searchCards(all, [{ by: 'type', key: 't:task' }]);
+    const values = searchValues(tasks, { by: 'parent' }, ITEM_TYPES, undefined, all);
+    expect(values.map((v) => [v.label, v.count])).toEqual([['Launch', 1]]);
+    const picked = [
+      { by: 'type', key: 't:task' },
+      { by: 'parent', key: values[0]!.key },
+    ] as const;
+    expect(searchCards(all, picked).map((c) => c.fields['title'])).toEqual(['Write']);
+  });
+
   it('offers only the fields the types still in play have, less those filtered', () => {
     const all = searchFields(cards, []).map((f) => f.label);
     expect(all).toEqual(expect.arrayContaining(['Card Type', 'State', 'Assignee', 'Estimate']));

@@ -241,15 +241,18 @@ export function usePerTabLoad(opts: {
   // `only` narrows the sweep to the given tabs: the side by side pane (docs/specs/007-editor/split-view.md)
   // fetches the one tab it shows, with the same merge rules.
   const loadAllTabs = useCallback(
-    async (only?: readonly string[]) => {
-      if (!hydrated || !documentId) return;
+    async (only?: readonly string[]): Promise<string[]> => {
+      if (!hydrated || !documentId) return [];
       const loadedTabIds = loadedTabIdsRef.current;
       // A failed sweep fetch is silent for a tab nobody is looking at. But if
       // the user switched to it while the sweep was in flight, the visit-time
       // effect saw the id already claimed and did nothing, and won't run again
       // on its own: the tab sat on its loader with no error and no Retry. So
       // for the ACTIVE tab, raise the same error overlay the visit path does.
+      // The tabs that did not load, for a caller that shows one (the side by side pane).
+      const failures: string[] = [];
       const failed = (targetId: string) => {
+        failures.push(targetId);
         loadedTabIds.delete(targetId);
         if (targetId !== activeIdRef.current) return;
         setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
@@ -258,7 +261,7 @@ export function usePerTabLoad(opts: {
         .map((t) => t.id)
         .filter((id) => !only || only.includes(id))
         .filter((id) => !loadedTabIds.has(id) && !isTabOutOfScope(id, sessionTabScope));
-      if (pending.length === 0) return;
+      if (pending.length === 0) return failures;
       pending.forEach((id) => loadedTabIds.add(id));
       await Promise.all(
         pending.map(async (targetId) => {
@@ -287,6 +290,7 @@ export function usePerTabLoad(opts: {
           }
         }),
       );
+      return failures;
     },
     [
       hydrated,

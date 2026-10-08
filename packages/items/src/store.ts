@@ -141,6 +141,29 @@ export function mergeItemChanges(
   };
 }
 
+// The items a write touches: after a refused or failed write, their optimistic copies are wrong.
+export function itemIdsOfWrite(write: ItemWrite): string[] {
+  if (write.kind === 'create') return write.creates.flatMap((c) => (c.id ? [c.id] : []));
+  if (write.kind === 'patches') return write.patches.map((p) => p.id);
+  return [write.id];
+}
+
+// A fresh read folded over the store: anything newer that arrived while the read was in flight is kept, except
+// the copies of `unconfirmed` items (a refused write's optimistic rev outranks the server's, yet is wrong).
+export function refetchedItemStore(
+  prev: ItemStoreState,
+  fetched: ItemStoreState,
+  unconfirmed: ReadonlySet<string>,
+): ItemStoreState {
+  const fetchedIds = new Set(fetched.items.map((f) => f.id));
+  return mergeItemChanges(
+    fetched,
+    prev.items.filter((i) => fetchedIds.has(i.id) && !unconfirmed.has(i.id)),
+    [],
+    fetched.rev,
+  );
+}
+
 // The writes that undo `write`, made against `before` and answered with `made` (a create's items as
 // made, so its redo restores the same ids and keys). Null: not undoable (a vote is taken back by
 // voting minus, docs/specs/026-plan/items.md "Undo").
@@ -177,6 +200,13 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
   if (lane.set) move.set = lane.set;
   if (lane.clear) move.clear = lane.clear;
   if (lane.type) move.type = lane.type;
+  // A card that had no status (dropped on a board from the canvas, made by an agent) loses the one the move gave
+  // it: a move always keeps a status, so a patch clears it.
+  if (itemStatus(item) === undefined && write.move.status !== undefined)
+    return [
+      { kind: 'move', id: item.id, move },
+      { kind: 'patch', id: item.id, patch: { clear: ['status'] } },
+    ];
   return [{ kind: 'move', id: item.id, move }];
 }
 

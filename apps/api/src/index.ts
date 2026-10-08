@@ -277,7 +277,14 @@ async function routeApiRequest(
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
+  // Opening and pairing a workbench write nothing a read-only token could misuse: its ticket is minted view-only, so
+  // a view token gives a read-only frame (docs/specs/013-workspace/workbench-embeds.md).
+  const isWorkbenchAsk =
+    request.method === 'POST' &&
+    segments.length === 3 &&
+    segments[1] === 'workbench' &&
+    (segments[2] === 'tickets' || segments[2] === 'pairing-requests');
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isWorkbenchAsk) {
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
