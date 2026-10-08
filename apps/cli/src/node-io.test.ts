@@ -16,3 +16,18 @@ describe('the loopback server', () => {
     await expect(ended).resolves.toBeUndefined();
   });
 });
+
+// A process manager stops a long command (`sync --watch`) with SIGTERM as often as with SIGINT; both end it cleanly.
+describe('interrupts', () => {
+  it.each(['SIGINT', 'SIGTERM'] as const)('hears %s, once, until released', (signal) => {
+    let heard = 0;
+    const release = nodeIo().onInterrupt(() => void heard++);
+
+    process.emit(signal);
+    process.emit(signal);
+    release();
+
+    expect(heard).toBe(1);
+    expect(process.listenerCount('SIGINT') + process.listenerCount('SIGTERM')).toBe(0);
+  });
+});
