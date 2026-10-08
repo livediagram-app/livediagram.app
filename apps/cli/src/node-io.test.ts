@@ -8,6 +8,8 @@ describe('the loopback server', () => {
   it('ends open connections when closed, so the process can exit', async () => {
     const loopback = await nodeIo().listenLoopback();
     const idle = connect(loopback.port, '127.0.0.1');
+    // The server ends it by destroying the socket, which the client may see as a reset: expected.
+    idle.on('error', () => {});
     await new Promise<void>((resolve) => idle.once('connect', () => resolve()));
     const ended = new Promise<void>((resolve) => idle.once('close', () => resolve()));
 
