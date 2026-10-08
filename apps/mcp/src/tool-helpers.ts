@@ -51,6 +51,8 @@ export function viewResult(
     id: string;
     name: string;
     tab: { id: string; name: string; rev: number; view: string };
+    // Every tab, in order.
+    tabs: { id: string; name: string }[];
     url: string;
   },
 ): ToolResult {
@@ -58,6 +60,7 @@ export function viewResult(
     id: meta.id,
     name: meta.name,
     tab: { id: meta.tab.id, name: meta.tab.name, rev: meta.tab.rev },
+    tabs: meta.tabs,
     url: meta.url,
   };
   return {
@@ -70,10 +73,13 @@ export function errorResult(message: string): ToolResult {
   return { content: [{ type: 'text', text: message }], isError: true };
 }
 
+// An input the caller can correct, thrown from deep in a handler and answered as a tool error by registerTool.
+export class ToolInputError extends Error {}
+
 // Load a document and one of its tabs: the named tab, or the first one when the
 // caller didn't name one (the default every tab-scoped tool applies). Null when
-// the document has no tabs to default to; an unknown id surfaces as the api's
-// own ApiError, like every other call.
+// the document has no tabs to default to; a tab id the document lacks is a ToolInputError naming its tabs.
+
 export async function loadTab(
   env: Env,
   token: string,
@@ -87,6 +93,10 @@ export async function loadTab(
   );
   const id = tabId ?? liveDoc.tabs[0]?.id;
   if (!id) return null;
+  if (!liveDoc.tabs.some((t) => t.id === id))
+    throw new ToolInputError(
+      `No tab "${id}" in this document. Tabs: ${liveDoc.tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+    );
   const { tab } = await apiJson<TabResponse>(
     env,
     token,

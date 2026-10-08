@@ -91,6 +91,14 @@ export async function readDocument(
     args.tabId === undefined ? document.tabs[0] : document.tabs.find((t) => t.id === args.tabId);
   const tabId = args.tabId ?? summary?.id;
   if (tabId === undefined) return errorResult('That document has no tabs.');
+  // Every tab, in order, so a caller can read the others (a Plan template's Board, Requests and Flow).
+  const tabs = [...document.tabs]
+    .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+    .map((t) => ({ id: t.id, name: t.name }));
+  if (!summary)
+    return errorResult(
+      `No tab "${tabId}" in this document. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+    );
   const tabPath = `/documents/${encodeURIComponent(document.id)}/tabs/${encodeURIComponent(tabId)}`;
   const auth = { env, token, documentId: document.id };
 
@@ -100,6 +108,7 @@ export async function readDocument(
       id: document.id,
       name: document.name,
       tab: { id: tab.id, name: tab.name, rev: tab.rev, elements: tab.elements },
+      tabs,
       url: deepLink(document.id),
     });
     if (!args.image) return result;
@@ -124,7 +133,8 @@ export async function readDocument(
   const result = viewResult(read.text, {
     id: document.id,
     name: document.name,
-    tab: { id: tabId, name: summary?.name ?? '', rev, view },
+    tab: { id: tabId, name: summary.name, rev, view },
+    tabs,
     url: deepLink(document.id),
   });
   if (plain === null) return result;

@@ -8,7 +8,7 @@ import {
   ITEM_TYPE_CATALOGUE_VERSION,
   ITEM_TYPE_EXCLUDED_STATUSES_MAX,
   ITEM_TYPE_LABEL_MAX,
-  PLAN_TYPE_COLOURS,
+  NEW_ITEM_TYPE,
   defaultNewTitle,
   newItemTypeId,
   tabsOf,
@@ -44,12 +44,7 @@ import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // Where a deleted type's items go: another type's id, or null to keep them (drawn as "Item").
 
-const NEW_TYPE: Omit<ItemTypeDef, 'id' | 'newTitle'> = {
-  label: '',
-  color: PLAN_TYPE_COLOURS[11],
-  glyph: 'star',
-  fields: ['title', 'status', 'description', 'assignee'],
-};
+const NEW_TYPE = NEW_ITEM_TYPE;
 
 export function ItemTypeEditor({
   type,

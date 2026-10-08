@@ -72,6 +72,27 @@ export async function tabIdsWithComments(env: Env, documentId: string): Promise<
   return results.map((r) => r.tab_id);
 }
 
+// A page of the document's tabs that hold a Plan board, in tab order, bodies included: the plan route
+// (docs/specs/026-plan/plan-agents.md "Cost") never parses a tab without a board.
+export async function tabBodiesWithBoards(
+  env: Env,
+  documentId: string,
+  offset: number,
+  limit: number,
+): Promise<TabDTO[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+       FROM tabs t
+       JOIN document_tabs dt ON dt.tab_id = t.id
+      WHERE dt.document_id = ? AND instr(t.data, '"plan-board"') > 0
+      ORDER BY dt.order_index, t.id
+      LIMIT ? OFFSET ?`,
+  )
+    .bind(documentId, limit, offset)
+    .all<TabRow>();
+  return results.map(rowToTab);
+}
+
 // A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
 // never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/document-views.md, VW47).
 export async function tabBodiesInOrder(

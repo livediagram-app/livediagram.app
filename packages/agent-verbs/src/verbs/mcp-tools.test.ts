@@ -10,6 +10,9 @@ describe('the MCP tool verbs', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
       'list_items',
       'change_items',
+      'add_board',
+      'change_board',
+      'change_card_types',
       'find_documents',
       'read_document',
       'list_templates',

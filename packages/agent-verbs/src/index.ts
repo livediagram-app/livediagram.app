@@ -67,3 +67,25 @@ export { EXPORT_FORMATS } from './verbs/local';
 export { documentListText, documentRows, type ListedDocument } from './verbs/document';
 export { MIRROR_LEVELS, STATUS_ORDER, SYNC_WATCH_TYPE, type StatusRow } from './verbs/link';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
+export {
+  addBoard,
+  apiRefusalOf,
+  changeBoard,
+  resolveBoard,
+  type ChangeBoardInput,
+  type ChangeBoardResult,
+  applyItemChanges,
+  changeCardTypes,
+  FIELD_HINT,
+  NO_BOARD_HINT,
+  planListing,
+  planPath,
+  readPlanState,
+  type AddBoardInput,
+  type AddBoardResult,
+  type CardTypeChangesResult,
+  type ItemChange,
+  type ItemChangesResult,
+  type PlanListing,
+  type PlanState,
+} from './plan';

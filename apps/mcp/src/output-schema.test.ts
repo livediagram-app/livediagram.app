@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
+import { ITEM_TYPES } from '@livediagram/items';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts). The
 // stub keeps the structured result, which is what this suite checks.
 vi.mock('./image-result', () => ({
@@ -18,7 +19,28 @@ import * as outputs from '@livediagram/agent-verbs/mcp';
 // again after listTools, and the strict parse below catches the one drift
 // neither SDK side does, a result field the schema never declared.
 
-const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [] };
+// A tab holding the Sprint board PLAN describes, for change_board.
+const BOARD_ELEMENT = {
+  id: 'b1',
+  type: 'shape',
+  shape: 'plan-board',
+  x: 0,
+  y: 0,
+  width: 800,
+  height: 500,
+  planBoard: {
+    title: 'Sprint',
+    columns: [
+      { id: 'todo', status: 'todo~a', name: 'To Do' },
+      { id: 'done', status: 'done~a', name: 'Done' },
+    ],
+    swimlaneBy: 'none',
+    cardFields: ['key'],
+    voting: { on: false },
+    hideWriting: false,
+  },
+};
+const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [BOARD_ELEMENT] };
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
 const CHANGESET = {
   dryRun: false,
@@ -41,6 +63,41 @@ const ITEM = {
   updatedBy: { id: 'p', name: 'P', color: '#000000' },
 };
 const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
+const BUG = {
+  ...ITEM_TYPES[1],
+  id: 'bug',
+  label: 'Bug',
+  custom: [
+    {
+      id: 'f-severity',
+      label: 'Severity',
+      kind: 'choice',
+      options: ['S1', 'S2'],
+      linkType: undefined,
+    },
+  ],
+};
+const PLAN = {
+  boards: [
+    {
+      tabId: 't1',
+      tabName: 'Tab 1',
+      elementId: 'b1',
+      title: 'Sprint',
+      kind: 'board',
+      types: ['task'],
+      columns: [
+        { status: 'todo~a', name: 'To Do', wipLimit: 3 },
+        { status: 'done~a', name: 'Done' },
+      ],
+    },
+  ],
+  statuses: [
+    { status: 'todo~a', name: 'To Do' },
+    { status: 'done~a', name: 'Done' },
+  ],
+  types: [...ITEM_TYPES, BUG],
+};
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
@@ -62,6 +119,8 @@ async function api(request: Request): Promise<Response> {
     });
   }
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [ITEM], rev: 1 });
+  if (path.endsWith('/plan')) return json(PLAN);
+  if (path.endsWith('/item-types')) return json({ itemTypes: null });
   if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -124,9 +183,35 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
       documentId: 'd1',
       changes: [
         { op: 'add', title: 'New' },
-        { op: 'move', item: '#12', status: 'done' },
+        { op: 'move', item: '#12', status: 'Done' },
         { op: 'set', item: '12', fields: { priority: 'high' } },
         { op: 'delete', item: 'item123' },
+      ],
+    },
+  },
+  {
+    tool: 'add_board',
+    output: 'addBoardOutput',
+    args: { documentId: 'd1', columns: ['Ideas', 'Done'], types: ['Task'] },
+  },
+  {
+    tool: 'change_board',
+    output: 'changeBoardOutput',
+    args: {
+      documentId: 'd1',
+      board: 'Sprint',
+      columns: ['To Do', 'Review', 'Done'],
+      types: ['Bug'],
+    },
+  },
+  {
+    tool: 'change_card_types',
+    output: 'changeCardTypesOutput',
+    args: {
+      documentId: 'd1',
+      changes: [
+        { op: 'add', name: 'Risk', custom: [{ name: 'Impact', kind: 'number' }] },
+        { op: 'delete', type: 'Bug' },
       ],
     },
   },

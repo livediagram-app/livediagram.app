@@ -18,6 +18,8 @@ import type { ZodRawShape } from 'zod';
 import type { McpToolVerb } from '@livediagram/agent-verbs/mcp';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import { pascalToken } from '@livediagram/api-schema';
+import { apiRefusalOf } from '@livediagram/agent-verbs';
+import { errorResult, ToolInputError } from './tool-helpers';
 import { postTelemetry } from './api';
 import type { Env } from './env';
 import { runInTool } from './tool-scope';
@@ -72,7 +74,7 @@ export function registerTool<
   // it reports which tool it came from (tool-scope.ts).
   const scoped = ((...args: unknown[]) =>
     runInTool(name, async () => {
-      const result = await (handler as (...a: unknown[]) => unknown)(...args);
+      const result = await answered(() => (handler as (...a: unknown[]) => unknown)(...args));
       // `Mcp·Used·<Tool>` counts calls that SUCCEEDED (docs/specs/017-telemetry/telemetry.md's success-path
       // rule): a thrown error (no token, api down) or an `isError` result
       // (bad input the model has to correct) isn't a use. A 5xx underneath is
@@ -99,6 +101,20 @@ export function registerTool<
       },
       aliased,
     );
+  }
+}
+
+// A mistake the caller can fix is a tool error that says so, never a thrown protocol error
+// (docs/specs/026-plan/plan-agents.md "Errors that teach"): a named input refusal, or an api 4xx in words. A 5xx
+// or anything else still throws, and is reported as Error·Api underneath.
+async function answered(run: () => unknown): Promise<unknown> {
+  try {
+    return await run();
+  } catch (err) {
+    if (err instanceof ToolInputError) return errorResult(err.message);
+    const refusal = apiRefusalOf(err);
+    if (refusal) return errorResult(refusal.message);
+    throw err;
   }
 }
 

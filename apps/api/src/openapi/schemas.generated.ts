@@ -7908,6 +7908,63 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PlanBoardKind": {
+    "enum": [
+      "board",
+      "all-cards",
+      "archive"
+    ],
+    "type": "string"
+  },
+  "PlanBoardOutline": {
+    "additionalProperties": false,
+    "properties": {
+      "columns": {
+        "items": {
+          "$ref": "#/components/schemas/PlanColumnOutline"
+        },
+        "type": "array"
+      },
+      "elementId": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/PlanBoardKind"
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "types": {
+        "anyOf": [
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "tabId",
+      "tabName",
+      "elementId",
+      "title",
+      "kind",
+      "types",
+      "columns"
+    ],
+    "type": "object"
+  },
   "PlanBoardSetup": {
     "additionalProperties": false,
     "properties": {
@@ -8026,6 +8083,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PlanColumnOutline": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "wipLimit": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "status",
+      "name"
+    ],
+    "type": "object"
+  },
   "PlanGlyphId": {
     "enum": [
       "task",
@@ -8104,6 +8180,51 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link"
     ],
     "type": "string"
+  },
+  "PlanResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "boards": {
+        "items": {
+          "$ref": "#/components/schemas/PlanBoardOutline"
+        },
+        "type": "array"
+      },
+      "statuses": {
+        "items": {
+          "$ref": "#/components/schemas/PlanStatusName"
+        },
+        "type": "array"
+      },
+      "types": {
+        "items": {
+          "$ref": "#/components/schemas/ItemTypeDef"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "boards",
+      "statuses",
+      "types"
+    ],
+    "type": "object"
+  },
+  "PlanStatusName": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "status",
+      "name"
+    ],
+    "type": "object"
   },
   "PlanViewId": {
     "anyOf": [

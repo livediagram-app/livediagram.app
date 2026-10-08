@@ -90,6 +90,21 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Reading a document’s Plan items: cards, tasks and their fields.',
   ),
   mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
+  mcpTool(
+    'AddBoard',
+    'Add Board',
+    'Putting a Plan board on a tab, from a preset or columns by name.',
+  ),
+  mcpTool(
+    'ChangeBoard',
+    'Change Board',
+    'Changing a Plan board’s title, columns or the card types it shows.',
+  ),
+  mcpTool(
+    'ChangeCardTypes',
+    'Change Card Types',
+    'Adding, editing or deleting a document’s card types.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

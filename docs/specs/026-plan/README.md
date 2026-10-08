@@ -9,5 +9,6 @@ Follow the references below only as needed; never upfront.
 - ./plan-views.md - when working on plan views: metrics and visualisations (Gantt, calendar, workload, status, priority) that read every card
 - ./item-types.md - when working on item types: the type catalogue, custom types and custom fields, the Card Types panel and the type editor
 - ./plan-tour.md - when working on the Plan tour: the first-time guided tour of Plan mode, its example board and cards, its Settings row and telemetry
+- ./plan-agents.md - when working on how agents (MCP, CLI) read the plan, name columns, types and fields, and change card types
 - ./items.md - when working on items and the item store: fields, item types, writes, access, live sync, undo, offline documents, copies, limits
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests

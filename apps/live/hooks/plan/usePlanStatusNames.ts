@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import type { Element, Tab } from '@livediagram/document';
 import {
   normaliseBoardSetup,
+  statusColumnsOfSetups,
   statusPhasesOf,
   type BoardStatusTypes,
   type StatusPhase,
@@ -34,21 +35,6 @@ export function documentBoardSetups(tabs: readonly Tab[], activeId: string): unk
   const active = tabs.find((t) => t.id === activeId);
   const rest = tabs.filter((t) => t !== active);
   return [active, ...rest].flatMap((t) => (t ? boardSetupsIn(t.elements) : []));
-}
-
-export function statusColumnsOfSetups(setups: readonly unknown[]): [string, string][] {
-  const out: [string, string][] = [];
-  const seen = new Set<string>();
-  for (const raw of setups) {
-    const setup = normaliseBoardSetup(raw);
-    if (!setup || setup.allCards || setup.archive) continue;
-    for (const c of setup.columns) {
-      if (seen.has(c.status)) continue;
-      seen.add(c.status);
-      out.push([c.status, c.name]);
-    }
-  }
-  return out;
 }
 
 // Each status a board names as a column, with the card types the boards naming it show: 'all' when any of

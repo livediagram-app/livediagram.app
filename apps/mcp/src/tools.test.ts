@@ -2,6 +2,7 @@ import { isDeprecatedDescription, successorToolName } from './legacy-tool-names'
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
+import { ITEM_TYPES } from '@livediagram/items';
 // `./image-result` reaches the resvg WASM renderer, which cannot load in the
 // plain-node test environment — the reason that file exists as its own module in
 // the first place (see its header). Stubbing it is what makes tools.ts
@@ -52,7 +53,40 @@ type Registered = {
 
 type Emitted = { category: string; action: string; type: string };
 
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [] };
+// The tab holds one Plan board, so change_board has a board to change.
+const BOARD = {
+  id: 'b_1',
+  type: 'shape',
+  shape: 'plan-board',
+  x: 0,
+  y: 0,
+  width: 800,
+  height: 500,
+  planBoard: {
+    title: 'Sprint',
+    columns: [{ id: 'todo', status: 'todo', name: 'To Do' }],
+    swimlaneBy: 'none',
+    cardFields: ['key'],
+    voting: { on: false },
+    hideWriting: false,
+  },
+};
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [BOARD] };
+const PLAN = {
+  boards: [
+    {
+      tabId: 't_1',
+      tabName: 'Tab 1',
+      elementId: 'b_1',
+      title: 'Sprint',
+      kind: 'board',
+      types: null,
+      columns: [{ status: 'todo', name: 'To Do' }],
+    },
+  ],
+  statuses: [{ status: 'todo', name: 'To Do' }],
+  types: ITEM_TYPES,
+};
 const LIVE_DOC = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
 
 // A plausible api: enough of each route's response shape for every tool to
@@ -87,6 +121,7 @@ function okResponse(request: Request): Response {
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
+  if (path.endsWith('/plan')) return json(PLAN);
   return json({});
 }
 
@@ -148,6 +183,7 @@ const ARGS = {
   ops: [],
   limit: 5,
   changes: [],
+  board: 'Sprint',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -160,11 +196,14 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the thirteen documented tools, each with a description', () => {
+  it('registers the sixteen documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
+      'add_board',
       'add_tab',
+      'change_board',
+      'change_card_types',
       'change_items',
       'create_document',
       'delete_document',
@@ -280,6 +319,10 @@ describe('tool annotations', () => {
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
     list_items: 'read',
     change_items: 'destructive',
+    // docs/specs/026-plan/plan-agents.md: a board is added; deleting a card type trashes its cards.
+    add_board: 'write',
+    change_board: 'write',
+    change_card_types: 'destructive',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -342,7 +385,12 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual(['change_items', 'delete_document', 'update_document']);
+    expect(destructive).toEqual([
+      'change_card_types',
+      'change_items',
+      'delete_document',
+      'update_document',
+    ]);
   });
 });
 

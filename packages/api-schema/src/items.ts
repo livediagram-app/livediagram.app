@@ -1,7 +1,16 @@
 // The item store on the wire (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"). Item shapes come from @livediagram/items; these are the request and response bodies.
 
-import type { Item, ItemCreate, ItemMove, ItemPatch, ItemTypeCatalogue } from '@livediagram/items';
+import type {
+  Item,
+  ItemCreate,
+  ItemMove,
+  ItemPatch,
+  ItemTypeCatalogue,
+  ItemTypeDef,
+  PlanBoardOutline,
+  PlanStatusName,
+} from '@livediagram/items';
 
 // The item shapes the api documents, re-exported so the OpenAPI generator finds them here.
 export type {
@@ -17,6 +26,10 @@ export type {
   ItemTypeDef,
   CustomFieldDef,
   CustomFieldKind,
+  PlanBoardOutline,
+  PlanBoardKind,
+  PlanColumnOutline,
+  PlanStatusName,
 } from '@livediagram/items';
 
 // GET /api/documents/:id/items[?tabId=]: the store, or the items one tab shows.
@@ -63,3 +76,12 @@ export type ItemTypesRoomOp = { kind: 'item-types'; itemTypes: ItemTypeCatalogue
 
 export const ITEM_ERRORS = ['item_not_found', 'item_exists', 'item_busy', 'items_full'] as const;
 export type ItemError = (typeof ITEM_ERRORS)[number];
+
+// GET /api/documents/:id/plan (docs/specs/026-plan/plan-agents.md "Reading the plan"): the document's Plan boards
+// with their columns, the statuses they name (each once) and the card types, for agents. A tab-scoped link passes
+// tabId and gets that tab's boards.
+export type PlanResponse = {
+  boards: PlanBoardOutline[];
+  statuses: PlanStatusName[];
+  types: readonly ItemTypeDef[];
+};
