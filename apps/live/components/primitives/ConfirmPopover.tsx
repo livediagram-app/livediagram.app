@@ -23,9 +23,6 @@ type ConfirmPopoverProps = {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
-  // The confirm button's intent: rose for destructive actions (the default),
-  // the soft yellow for one with a way back, brand for anything else.
-  tone?: 'danger' | 'caution' | 'neutral';
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -35,7 +32,6 @@ export function ConfirmPopover({
   message,
   confirmLabel,
   cancelLabel = 'Cancel',
-  tone = 'danger',
   onConfirm,
   onCancel,
 }: ConfirmPopoverProps) {
@@ -118,7 +114,8 @@ export function ConfirmPopover({
             {cancelLabel}
           </Button>
           <Button
-            variant={tone === 'neutral' ? 'primary' : tone}
+            // Its primary action, a delete included: never painted red.
+            variant="primary"
             size="xs"
             autoFocus
             onClick={onConfirm}

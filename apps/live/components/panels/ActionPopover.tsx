@@ -176,7 +176,7 @@ export function ActionPopover({
               <button
                 type="button"
                 onClick={onDelete}
-                className="inline-flex items-center gap-1.5 rounded-md bg-rose-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-rose-700"
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <TrashIcon size={11} />
                 Confirm
@@ -186,7 +186,7 @@ export function ActionPopover({
                 type="button"
                 aria-label="Delete action"
                 onClick={() => setConfirmingDelete(true)}
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 <TrashIcon size={11} />
               </button>

@@ -231,7 +231,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <MenuActionRow
               icon={<RemoveIcon />}
               label="Remove"
-              danger
               onClick={runAndClose(props.onDeleteElement)}
             />
           </>

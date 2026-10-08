@@ -351,9 +351,7 @@ function LiveVote({
             </StudioButton>
           )}
           {phase !== 'results' ? (
-            <StudioButton variant="danger" onClick={onClearVote}>
-              Clear vote
-            </StudioButton>
+            <StudioButton onClick={onClearVote}>Clear vote</StudioButton>
           ) : null}
           <span className="text-center text-[10px] leading-snug text-slate-400">
             {phase === 'casting'

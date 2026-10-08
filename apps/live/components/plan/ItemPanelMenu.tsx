@@ -1,7 +1,8 @@
 'use client';
 
 // The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
-// Flag), Archive (or Restore) and Trash for someone who may edit, then Help for everyone, as icon-left rows beside
+// Flag), Archive (or Restore) and Edit Card Type for someone who may edit, then Help for everyone, then Trash last
+// for an editor, as icon-left rows beside
 // the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
 import { DuplicateIcon, PlanCardsIcon, TrashIcon } from '@livediagram/ui';
@@ -72,14 +73,6 @@ export function ItemPanelMenu({
                 icon={<PlanBoardTileArt preset="archive" size={14} />}
                 onClick={run(onArchive)}
               />
-              <MenuGroupSeparator />
-              <MenuActionRow
-                plain
-                danger
-                label="Trash"
-                icon={<TrashIcon />}
-                onClick={run(onTrash)}
-              />
               {onEditType ? (
                 <MenuActionRow
                   plain
@@ -97,6 +90,13 @@ export function ItemPanelMenu({
             icon={<HelpMarkIcon />}
             onClick={run(() => openHelpArticle('planCards'))}
           />
+          {/* Trash last, at the bottom of the list, after a separator. */}
+          {canEdit ? (
+            <>
+              <MenuGroupSeparator />
+              <MenuActionRow plain label="Trash" icon={<TrashIcon />} onClick={run(onTrash)} />
+            </>
+          ) : null}
         </PortalMenu>
       ) : null}
     </>

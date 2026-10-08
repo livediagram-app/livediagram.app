@@ -215,7 +215,7 @@ export function PollComposerBody({
                   type="button"
                   aria-label={`Remove answer ${i + 1}`}
                   onClick={() => setOptions(options.filter((_, j) => j !== i))}
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
                   ×
                 </button>

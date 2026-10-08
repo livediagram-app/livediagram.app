@@ -215,7 +215,7 @@ separator**, unless the row is the document already open in this editor
 row doesn't offer a no-op); then **one full-width row per verb, icon on
 the left** (Rename, Duplicate, Change Folder, Favourite,
 History, Hide from Recent, Open Team, Take Offline / Sync); then
-**Delete last, under a separator, red at rest**. It was an icon-over-
+**Delete last, under a separator** (styled as every other row: a delete is never red). It was an icon-over-
 label tile grid, two columns and then three: eight verbs in a grid read
 in two directions with labels wrapping under their icons, and a list of
 verbs scans down in one. The rows are `MenuActionRow` in its `plain`

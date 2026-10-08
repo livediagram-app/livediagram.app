@@ -154,7 +154,6 @@ export function LayerRowMenu({
                   }
                   if (deleteRef.current) setConfirm({ kind: 'delete', anchor: deleteRef.current });
                 }}
-                danger
                 disabled={!canDelete}
               />
             </div>
@@ -208,7 +207,6 @@ export function LayerRowMenu({
               <MenuTile
                 icon={<ClearIcon />}
                 label="Clear"
-                danger
                 disabled={elementCount === 0}
                 onClick={() => {
                   const anchorEl = ref.current;

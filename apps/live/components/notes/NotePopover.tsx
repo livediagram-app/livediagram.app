@@ -166,7 +166,7 @@ export function NotePopover({
                   onClose();
                 }}
                 disabled={!initial && !hasText}
-                className="text-[10px] font-medium text-rose-700 transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline dark:text-rose-300 dark:disabled:text-slate-600"
+                className="text-[10px] font-medium text-slate-500 transition hover:text-slate-700 hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline dark:text-slate-400 dark:hover:text-slate-200 dark:disabled:text-slate-600"
               >
                 Delete note
               </button>

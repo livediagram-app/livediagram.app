@@ -55,7 +55,7 @@ export function SettingsTokenPairings({
                 type="button"
                 onClick={(e) => setConfirm({ pairing, anchor: e.currentTarget })}
                 aria-label={`Unpair ${name} at ${pairing.origin}`}
-                className="min-h-6 shrink-0 rounded-md px-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-2 focus-visible:outline-rose-400 dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+                className="min-h-6 shrink-0 rounded-md px-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-400 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 Unpair
               </button>

@@ -109,12 +109,17 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
     <SettingsRowShell
       row={described}
       wrapper={() => (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50/50 px-3.5 py-2.5 dark:border-rose-500/30 dark:bg-rose-500/10">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5 dark:border-slate-700">
           <span className="min-w-0 text-sm font-medium text-slate-900 dark:text-slate-100">
             {row.label}
           </span>
           {signedIn ? (
-            <Button variant="danger" size="sm" onClick={() => setOpen(true)} className="shrink-0">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setOpen(true)}
+              className="shrink-0"
+            >
               Delete Account
             </Button>
           ) : (

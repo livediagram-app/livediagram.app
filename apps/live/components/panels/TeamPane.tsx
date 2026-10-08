@@ -249,7 +249,6 @@ export function TeamPane({
                       </span>
                     }
                     label="Leave team"
-                    danger
                     onClick={() => {
                       setMenuOpen(false);
                       if (selfRow) void removeMember(selfRow, true);
@@ -264,7 +263,6 @@ export function TeamPane({
                       </span>
                     }
                     label="Delete team"
-                    danger
                     onClick={() => {
                       setMenuOpen(false);
                       void deleteTeam();

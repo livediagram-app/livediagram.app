@@ -112,7 +112,7 @@ export function TrashPanel({
                         <button
                           type="button"
                           aria-label={`Delete #${it.key} for good`}
-                          className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+                          className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                           onClick={(e) =>
                             setPurging({ id: it.id, key: it.key, anchor: e.currentTarget })
                           }
@@ -140,14 +140,13 @@ export function TrashPanel({
             </ul>
             {canEdit ? (
               <Button
-                variant="danger"
+                variant="secondary"
                 className="gap-1.5 rounded-lg py-2 text-[13px] font-semibold"
                 onClick={async () => {
                   const ok = await confirm({
                     title: 'Empty the Trash?',
                     message: `${trashed.length} ${trashed.length === 1 ? 'card is' : 'cards are'} deleted for good. This can't be undone.`,
                     confirmLabel: 'Empty Trash',
-                    variant: 'danger',
                   });
                   if (!ok) return;
                   plan.emptyTrash();

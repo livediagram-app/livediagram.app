@@ -246,7 +246,7 @@ export function LinkPickerDialog({
           <button
             type="button"
             onClick={() => commit(null)}
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             Remove link
           </button>

@@ -34,7 +34,6 @@ export function deleteConfirmation(input: DeleteConfirmationInput) {
     title: DELETE_CONFIRM_TITLE,
     message: deleteConfirmationMessage(input),
     confirmLabel: DELETE_CONFIRM_LABEL,
-    variant: 'caution' as const,
   };
 }
 

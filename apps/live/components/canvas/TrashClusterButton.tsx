@@ -8,8 +8,8 @@ import { ClusterPopoverSegment } from './ClusterPopoverButton';
 
 // The Trash in Plan mode's bottom-right strip (docs/specs/026-plan/items.md "Trash"): its first, left-hand
 // button, before Find a Card and Card Types, with a count of the cards in it. While a card is dragged it is
-// replaced by a drop target beside the strip ("Drop to Trash", dashed), filling red with its lid tipped while
-// the card is over it; a card let go there is trashed. Pressed, it opens the Trash. Motion stops with reduced
+// replaced by a drop target beside the strip ("Drop to Trash", dashed), filling with the brand colour, its lid
+// tipped, while the card is over it (never red: a trash looks like any other target); a card let go there is trashed. Pressed, it opens the Trash. Motion stops with reduced
 // motion; the colours still change. Not on a phone (the strip there has no room for it).
 
 // Whether a card is being dragged (the drop target shows in place of the button).
@@ -44,8 +44,8 @@ export function TrashDropTarget() {
       aria-live="polite"
       className={`pointer-events-auto flex h-12 items-center gap-2 rounded-xl border-2 px-4 text-[13px] font-semibold shadow-lg transition-all duration-200 ease-out animate-fade-in motion-reduce:transition-none ${
         over
-          ? 'scale-105 border-rose-600 bg-rose-600 text-white shadow-rose-500/30 motion-reduce:scale-100'
-          : 'border-dashed border-rose-400 bg-rose-50 text-rose-600 dark:border-rose-500/70 dark:bg-rose-950/60 dark:text-rose-300'
+          ? 'scale-105 border-brand-500 bg-brand-500 text-white shadow-brand-500/30 motion-reduce:scale-100 dark:border-brand-600 dark:bg-brand-600'
+          : 'border-dashed border-slate-300 bg-white text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300'
       }`}
     >
       <span
@@ -82,7 +82,8 @@ export function TrashSegment(props: {
       />
       {count > 0 ? (
         <span aria-hidden className="pointer-events-none absolute right-0.5 top-0.5">
-          <CountBadge size="sm" background="#e11d48" color="#ffffff">
+          {/* Grey, not red: the Trash holds nothing urgent. */}
+          <CountBadge size="sm" background="#64748b" color="#ffffff">
             {count}
           </CountBadge>
         </span>

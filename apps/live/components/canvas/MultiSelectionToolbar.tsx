@@ -155,7 +155,7 @@ export function MultiSelectionToolbar({
             className={
               allLocked
                 ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
-                : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
+                : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
             }
           >
             <TrashIcon size={14} />

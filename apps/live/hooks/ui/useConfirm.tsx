@@ -27,7 +27,7 @@ import { ConfirmDialog, type ConfirmDialogProps } from '@/components/dialogs/Con
 
 type ConfirmOptions = Pick<
   ConfirmDialogProps,
-  'title' | 'message' | 'confirmLabel' | 'cancelLabel' | 'variant'
+  'title' | 'message' | 'confirmLabel' | 'cancelLabel'
 >;
 
 type Pending = ConfirmOptions & { resolve: (ok: boolean) => void };
@@ -72,7 +72,6 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         message={pending?.message ?? ''}
         confirmLabel={pending?.confirmLabel}
         cancelLabel={pending?.cancelLabel}
-        variant={pending?.variant}
         onConfirm={() => finish(true)}
         onCancel={() => finish(false)}
       />

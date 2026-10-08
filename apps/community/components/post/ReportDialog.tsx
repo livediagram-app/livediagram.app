@@ -149,7 +149,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
               </Button>
               <Button
                 type="submit"
-                variant="danger"
+                variant="primary"
                 size="md"
                 disabled={!reason || phase === 'sending' || phase === 'gone'}
               >

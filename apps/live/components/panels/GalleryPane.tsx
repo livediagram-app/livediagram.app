@@ -184,7 +184,7 @@ function GalleryCard({
           type="button"
           onClick={onDelete}
           aria-label={`Delete ${image.originalName ?? 'image'}`}
-          className="rounded p-1 text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10"
+          className="rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
         >
           <TrashIcon />
         </button>

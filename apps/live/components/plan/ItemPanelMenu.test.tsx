@@ -20,7 +20,7 @@ function open(archived = false, canEdit = true) {
 }
 
 describe('ItemPanelMenu', () => {
-  it('ends in Help for everyone, and offers a viewer Help alone', () => {
+  it('ends in Trash for an editor (after Help), and offers a viewer Help alone', () => {
     const openArticle = vi.spyOn(window, 'open').mockImplementation(() => null);
     open(false, false);
     expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Help']);
@@ -28,7 +28,8 @@ describe('ItemPanelMenu', () => {
     expect(openArticle).toHaveBeenCalledOnce();
     cleanup();
     open();
-    expect(screen.getAllByRole('menuitem').at(-1)!.textContent).toBe('Help');
+    const labels = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(labels.slice(-2)).toEqual(['Help', 'Trash']);
     openArticle.mockRestore();
   });
 

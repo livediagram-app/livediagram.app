@@ -280,14 +280,12 @@ function MenuTile({
   y,
   w,
   label,
-  danger = false,
   children,
 }: {
   x: number;
   y: number;
   w: number;
   label: string;
-  danger?: boolean;
   children?: ReactNode;
 }) {
   return (
@@ -308,7 +306,8 @@ function MenuTile({
         anchor="middle"
         size={10}
         weight={500}
-        className={danger ? 'fill-rose-600' : 'fill-slate-600'}
+        // A delete is styled as every other tile (never red).
+        className="fill-slate-600"
       >
         {label}
       </Label>

@@ -313,7 +313,7 @@ export function LayersPanel({
                   if (activeCount === 0) onRemoveLayer(activeLayerId);
                   else setConfirmAnchor(e.currentTarget);
                 }}
-                className="flex items-center justify-center rounded-md border border-red-200 bg-white px-2 py-1 text-red-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300 disabled:hover:bg-white dark:border-red-500/40 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-500/10 dark:disabled:border-slate-700 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
+                className="flex items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
               >
                 <TrashIcon />
               </button>

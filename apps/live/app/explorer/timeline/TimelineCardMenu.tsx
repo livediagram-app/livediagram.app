@@ -57,13 +57,13 @@ export type TimelineFolderMenuHandlers = (anchor: HTMLElement | null) => {
   onDelete: () => void;
 };
 
-// One row of an entity menu. `danger` rows render last, red, under
+// One row of an entity menu. `destructive` rows render last (styled as the rest, never red), under
 // their own separator.
 export type TimelineMenuItem = {
   label: string;
   icon: ReactNode;
   onClick: () => void;
-  danger?: boolean;
+  destructive?: boolean;
 };
 
 type Shared = {
@@ -153,8 +153,8 @@ function EntityMenu({
   onClose: () => void;
   then: (fn: () => void) => () => void;
 }) {
-  const plain = items.filter((i) => !i.danger);
-  const danger = items.filter((i) => i.danger);
+  const plain = items.filter((i) => !i.destructive);
+  const destructive = items.filter((i) => i.destructive);
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       <MenuHeader title={subject} />
@@ -174,12 +174,11 @@ function EntityMenu({
         label="Remove from Timeline"
         onClick={onRemove}
       />
-      {danger.length > 0 ? <MenuGroupSeparator /> : null}
-      {danger.map((item) => (
+      {destructive.length > 0 ? <MenuGroupSeparator /> : null}
+      {destructive.map((item) => (
         <MenuActionRow
           key={item.label}
           plain
-          danger
           icon={item.icon}
           label={item.label}
           onClick={then(item.onClick)}

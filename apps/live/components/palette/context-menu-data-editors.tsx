@@ -85,7 +85,7 @@ export function PieDataEditor({
               aria-label="Remove slice"
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
               ×
             </button>
@@ -157,7 +157,7 @@ export function LegendDataEditor({
               aria-label="Remove legend row"
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
               ×
             </button>
@@ -267,7 +267,7 @@ export function EntityFieldsEditor({
               type="button"
               aria-label="Remove field"
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
             >
               ×
             </button>
@@ -331,7 +331,7 @@ export function ChecklistRowsEditor({
               aria-label="Remove row"
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
               ×
             </button>

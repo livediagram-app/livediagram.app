@@ -312,7 +312,7 @@ function CommentRow({
             type="button"
             aria-label="Delete comment"
             onClick={onDelete}
-            className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center self-start rounded-md text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+            className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center self-start rounded-md text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:opacity-100 group-hover:opacity-100 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <TrashIcon size={12} />
           </button>

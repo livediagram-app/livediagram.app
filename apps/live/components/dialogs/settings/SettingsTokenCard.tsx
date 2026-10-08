@@ -101,7 +101,7 @@ export function SettingsTokenCard({
             type="button"
             onClick={(e) => onRevoke(e.currentTarget)}
             aria-label={`Revoke ${name}`}
-            className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-rose-400 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+            className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-brand-400 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <TrashIcon />
           </button>

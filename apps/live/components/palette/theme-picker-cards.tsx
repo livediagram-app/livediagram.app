@@ -166,7 +166,7 @@ export function CustomThemeCard({
           type="button"
           onClick={onDelete}
           aria-label={`Delete ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-rose-600 dark:bg-slate-800/90 dark:text-slate-300"
+          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
           <TrashIcon size={12} />
         </button>

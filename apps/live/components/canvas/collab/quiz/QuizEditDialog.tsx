@@ -156,7 +156,7 @@ export function QuizEditDialog({
                       aria-label={`Remove answer ${quizOptionLetter(i)}`}
                       disabled={rows.length <= 2}
                       onClick={() => removeRow(i)}
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
                     >
                       ×
                     </button>

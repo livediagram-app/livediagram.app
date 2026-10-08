@@ -64,7 +64,6 @@ const MOVE =
 const ROW_BASE =
   'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[13px] transition disabled:opacity-35';
 const ROW = `${ROW_BASE} text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800`;
-const DANGER_ROW = `${ROW_BASE} text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15`;
 
 // One colour choice: a filled dot (or a dashed ring for none) with a check when chosen.
 function Swatch({
@@ -423,7 +422,7 @@ export function PlanColumnPopover({
         {others.length > 0 ? (
           <button
             type="button"
-            className={DANGER_ROW}
+            className={ROW}
             aria-haspopup={stateCards > 0 ? 'dialog' : undefined}
             aria-expanded={stateCards > 0 ? removingAt !== null : undefined}
             onClick={(e) => {
