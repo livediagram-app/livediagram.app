@@ -252,7 +252,7 @@ author redaction, and the same thread list, composer and resolve control the com
 - **Filters**: under the switch, a chip per field filter ("State: Done", "Assignee: No assignee"), each with a
   cross, and **Add Filter**, the picker Card Search uses ([Plan views](plan-views.md#card-search)): a field the
   listed cards' types offer (Card Type among them while they hold more than one type), then one of its values among them with its count, so no filter leaves nothing. Every
-  filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: "No cards match these filters."
+  filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row is the card as a board draws it at **Compact** size, laid out as its type's Display says, so a card
   looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
@@ -260,8 +260,11 @@ author redaction, and the same thread list, composer and resolve control the com
   opens the card in the item panel.
 - Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
   puts that card in the Trash (restorable from there) without leaving the list.
-- Empty: "No cards yet" with how to add one; no match: "No cards match that search"; no strays: "Every card is
-  on a board here".
+- Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
+  **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
+  match** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these filters**
+  ("Remove a filter, or Clear Filters, to see more."); no strays, **Every card is on a board** ("None of them sits
+  off a board here.").
 - Opening it is tracked as `Plan · Opened · CardFinder`.
 
 ## Who may do what
