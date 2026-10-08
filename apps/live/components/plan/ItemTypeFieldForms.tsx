@@ -1,7 +1,7 @@
 'use client';
 
 // The type editor's field forms (docs/specs/026-plan/item-types.md "Editing a type"): a custom field's
-// name, options (Choice) and Show on card, and Add Field, which offers the built-in fields the type lacks
+// name and options (Choice), and Add Field, which offers the built-in fields the type lacks
 // and a new custom field. The grouped field list is ItemTypeLayoutEditor.
 import { useState } from 'react';
 import {
@@ -98,7 +98,8 @@ function LinksToSelect({
   );
 }
 
-// A custom field's name, options (Choice), the type it links to (Card) and Show on card.
+// A custom field's name, options (Choice) and the type it links to (Card); where it shows on a card is the
+// Display tab's.
 export function CustomFieldForm({
   field,
   onChange,
@@ -134,15 +135,7 @@ export function CustomFieldForm({
           }}
         />
       ) : null}
-      <label className="flex items-center gap-2 text-[12px]">
-        <input
-          type="checkbox"
-          className="h-4 w-4 accent-brand-600"
-          checked={field.onCard === true}
-          onChange={(e) => onChange({ onCard: e.target.checked || undefined })}
-        />
-        Show on card
-      </label>
+      {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}
     </div>
   );
 }

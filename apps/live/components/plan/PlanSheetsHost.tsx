@@ -156,6 +156,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           else track('Plan', 'Moved', 'Archive');
         }}
         onClose={plan.closeItem}
+        onEditType={() => {
+          plan.closeItem();
+          ctx.editType(item.type);
+        }}
         comments={{
           canComment: ctx.canVote,
           selfId: ctx.ownerId,

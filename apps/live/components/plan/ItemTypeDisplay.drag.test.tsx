@@ -52,6 +52,17 @@ describe('dragging a field on the card', () => {
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
   });
 
+  // A pointer whose capture was lost (a touch, as the editor re-renders) releases over another part: the window
+  // still hears it, so the drop lands rather than leaving the drag stuck.
+  it('drops in another part when the release lands there, not on the chip', () => {
+    const onChange = display();
+    const to = otherSlot('due');
+    startDrag('due', slotEl(to));
+    fireEvent.pointerUp(slotEl(to), { clientX: 60, clientY: 60, pointerId: 1 });
+    expect(onChange.mock.lastCall![0].compact[to]).toContain('due');
+    expect(document.querySelector('[data-drop-marker]')).toBeNull();
+  });
+
   it('takes a field off when it is dropped on Available Fields', () => {
     const onChange = display();
     startDrag('due', screen.getByRole('region', { name: 'Available Fields' }));
@@ -93,5 +104,27 @@ describe('the card’s size', () => {
     expect(cardZoomFor(1000)).toBe(1.4);
     expect(cardZoomFor(392)).toBe(1);
     expect(cardZoomFor(200)).toBe(0.75);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "On the card": a type's custom fields are in Available Fields, and a placed one
+// draws on the card as a chip of its value.
+describe('custom fields in the Display', () => {
+  it('offers a custom field, and places it on the card', () => {
+    const onChange = vi.fn();
+    const pet = { ...task, custom: [{ id: 'f-person', label: 'Person', kind: 'text' as const }] };
+    render(<ItemTypeDisplay type={pet} display={{}} onChange={onChange} />);
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Person' }), { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Bottom Right' }));
+    expect(onChange.mock.lastCall![0].compact.trail).toContain('f-person');
+    cleanup();
+    render(
+      <ItemTypeDisplay
+        type={pet}
+        display={{ compact: { trail: ['f-person'] } }}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByLabelText('Person: Person')).toBeTruthy();
   });
 });

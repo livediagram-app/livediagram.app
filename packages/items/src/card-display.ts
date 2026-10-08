@@ -1,29 +1,42 @@
 // What a card type's cards show at each card size, and where (docs/specs/026-plan/item-types.md "Card display"):
-// each size draws its fields in slots (Minimal before and after its title; Compact beside and below it; Detailed a
-// header, a header end, under the title and a footer), each slot an ordered list of fields. A type's own layout for a
+// each size draws its fields in slots (Minimal before and after its title; Compact beside and below it, and at
+// the bottom right; Detailed a
+// header, a header end, under the title, a footer and the footer's end, at the bottom right), each slot an ordered list of fields. A type's own layout for a
 // size, else its default: a built-in type's own field set, by id, or the generic one, each placed where a board drew
 // it before layouts existed. A board has no say over the fields: the type's layout is what a card shows.
 //
 // board.ts reads the type catalogue, which reads this, so nothing here touches board.ts's values while the modules
 // load: they are read inside functions.
-import { CARD_FIELDS, CARD_SIZE_FIELDS, type CardField, type CardSize } from './board';
+import {
+  CARD_FIELDS,
+  CARD_SIZE_FIELDS,
+  isCustomCardField,
+  type CardField,
+  type CardSize,
+} from './board';
 import type { ItemTypeDef } from './item-types';
 
-export type CardSlot = 'lead' | 'trail' | 'row' | 'head' | 'headEnd' | 'body' | 'foot';
+export type CardSlot = 'lead' | 'trail' | 'row' | 'head' | 'headEnd' | 'body' | 'foot' | 'footEnd';
 export type CardLayout = Partial<Record<CardSlot, readonly CardField[]>>;
 export type CardDisplay = Partial<Record<CardSize, CardLayout>>;
 
 // Each size's slots, in reading order.
 export const CARD_SLOTS: Readonly<Record<CardSize, readonly CardSlot[]>> = {
   minimal: ['lead', 'trail'],
-  compact: ['lead', 'row'],
-  detailed: ['head', 'headEnd', 'body', 'foot'],
+  compact: ['lead', 'row', 'trail'],
+  detailed: ['head', 'headEnd', 'body', 'foot', 'footEnd'],
 };
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {
   minimal: { lead: 'Before the Title', trail: 'After the Title' },
-  compact: { lead: 'Beside the Title', row: 'Below the Title' },
-  detailed: { head: 'Header', headEnd: 'Header End', body: 'Under the Title', foot: 'Footer' },
+  compact: { lead: 'Beside the Title', row: 'Below the Title', trail: 'Bottom Right' },
+  detailed: {
+    head: 'Header',
+    headEnd: 'Header End',
+    body: 'Under the Title',
+    foot: 'Footer',
+    footEnd: 'Bottom Right',
+  },
 };
 
 // Where a board drew each field before layouts existed, in its order: a field's default slot and place.
@@ -31,13 +44,16 @@ const DRAWN: Readonly<Record<CardSize, Partial<Record<CardSlot, readonly CardFie
   minimal: { lead: ['key'], trail: ['priority', 'due', 'assignee'] },
   compact: {
     lead: ['type', 'key'],
-    row: ['priority', 'start', 'due', 'votes', 'comments', 'assignee'],
+    row: ['priority', 'start', 'due', 'votes', 'comments'],
+    // The assignee sits at the bottom right by default (docs/specs/026-plan/item-types.md "Card display").
+    trail: ['assignee'],
   },
   detailed: {
     head: ['type', 'key'],
     headEnd: ['priority'],
     body: ['parent', 'description', 'labels'],
-    foot: ['start', 'due', 'estimate', 'checklist', 'comments', 'votes', 'assignee'],
+    foot: ['start', 'due', 'estimate', 'checklist', 'comments', 'votes'],
+    footEnd: ['assignee'],
   },
 };
 
@@ -46,9 +62,13 @@ export function cardDisplayFields(size: CardSize): readonly CardField[] {
   return CARD_SIZE_FIELDS[size];
 }
 
-// Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where).
+// Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where). A custom field
+// fits any slot of any size.
 export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): boolean {
-  return CARD_SLOTS[size].includes(slot) && CARD_SIZE_FIELDS[size].includes(field);
+  return (
+    CARD_SLOTS[size].includes(slot) &&
+    (isCustomCardField(field) || CARD_SIZE_FIELDS[size].includes(field))
+  );
 }
 
 // A set of fields placed where a board drew them, in its order.
@@ -124,23 +144,42 @@ export function defaultCardLayout(typeId: string, size: CardSize): CardLayout {
 
 // A type's layout at a size: its own, else its default.
 export function typeCardLayout(
-  type: Pick<ItemTypeDef, 'id' | 'display'>,
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'custom'>,
   size: CardSize,
 ): CardLayout {
-  return type.display?.[size] ?? defaultCardLayout(type.id, size);
+  const own = type.display?.[size];
+  if (own) return own;
+  const base = defaultCardLayout(type.id, size);
+  // A custom field ticked Show on card, before the Display placed custom fields, starts Under the Title on a
+  // Detailed card, where it was drawn then.
+  const shown =
+    size === 'detailed'
+      ? (type.custom ?? []).filter((c) => c.onCard).map((c) => c.id as CardField)
+      : [];
+  return shown.length ? { ...base, body: [...(base.body ?? []), ...shown] } : base;
 }
 
 // The fields a type's cards show at a size.
 export function typeCardDisplay(
-  type: Pick<ItemTypeDef, 'id' | 'display'>,
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'custom'>,
   size: CardSize,
 ): readonly CardField[] {
   return cardLayoutFields(size, typeCardLayout(type, size));
 }
 
-// A field the type can show: one it offers (Number and Type always; the rest when in its fields).
-export function typeOffersCardField(type: Pick<ItemTypeDef, 'fields'>, field: CardField): boolean {
+// A field the type can show: one it offers (Number and Type always; the rest when in its fields), a custom field
+// when the type has it.
+export function typeOffersCardField(
+  type: Pick<ItemTypeDef, 'fields' | 'custom'>,
+  field: CardField,
+): boolean {
+  if (isCustomCardField(field)) return (type.custom ?? []).some((c) => c.id === field);
   return field === 'key' || field === 'type' || type.fields.includes(field);
+}
+
+// The type's custom fields a size can place, in the type's order.
+export function customCardFields(type: Pick<ItemTypeDef, 'custom'>): CardField[] {
+  return (type.custom ?? []).map((c) => c.id as CardField);
 }
 
 export function sameCardLayout(size: CardSize, a: CardLayout, b: CardLayout): boolean {
