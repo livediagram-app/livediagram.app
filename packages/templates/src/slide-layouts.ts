@@ -31,7 +31,9 @@ export const SLIDE_LAYOUT_CATEGORIES: readonly { id: SlideLayoutCategoryId; labe
 // box's short side over 100), so a slide reads from the back of the room.
 const BODY_UNITS = 4.6;
 
-function body(k: Kit, units = BODY_UNITS): Partial<TextElement> {
+/** Slide type: large text scaled so its glyphs stand `units` of the box tall (a unit is its short
+ *  side over 100), shared with the slide deck template. */
+export function slideType(k: Kit, units = BODY_UNITS): Partial<TextElement> {
   return {
     textSize: 'lg',
     textScale: Math.round(((k.u * units) / LABEL_FONT_PX.lg) * 100) / 100,
@@ -60,7 +62,7 @@ function bullets(
     return [
       k.shape('circle', x, top + (rowH - dot) / 2, dot, dot, { label: '' }),
       k.text(x + dot + u * 3, top, w - dot - u * 3, rowH, line, {
-        ...body(k),
+        ...slideType(k),
         textAlignY: 'middle',
       }),
     ];
@@ -74,9 +76,16 @@ function titleSlide(k: Kit): Element[] {
   return [
     k.title(0, top, W * 0.85, u * 18, 'Your presentation title'),
     rule(k, 0, top + u * 21),
-    k.text(0, top + u * 25, W * 0.75, u * 12, 'A subtitle that sets up the story', body(k, 5.4)),
+    k.text(
+      0,
+      top + u * 25,
+      W * 0.75,
+      u * 12,
+      'A subtitle that sets up the story',
+      slideType(k, 5.4),
+    ),
     k.text(0, H - u * 7, W * 0.6, u * 7, 'Presenter name · October 2026', {
-      ...body(k, 3.2),
+      ...slideType(k, 3.2),
       textAlignY: 'bottom',
     }),
   ];
@@ -90,7 +99,7 @@ function sectionSlide(k: Kit): Element[] {
     k.title(0, top, W * 0.3, u * 26, '01'),
     rule(k, 0, top + u * 29),
     k.title(0, top + u * 33, W * 0.8, u * 13, 'Section title'),
-    k.text(0, top + u * 49, W * 0.7, u * 10, 'One line on what this section covers.', body(k)),
+    k.text(0, top + u * 49, W * 0.7, u * 10, 'One line on what this section covers.', slideType(k)),
   ];
 }
 
@@ -116,7 +125,7 @@ function twoColumnsSlide(k: Kit): Element[] {
   const gap = u * 8;
   const colW = (W - gap) / 2;
   const column = (x: number, title: string, lines: string[]) => [
-    k.text(x, head.top, colW, u * 9, title, { ...body(k, 5), textBold: true }),
+    k.text(x, head.top, colW, u * 9, title, { ...slideType(k, 5), textBold: true }),
     ...bullets(k, x, head.top + u * 12, colW, H - head.top - u * 12, lines),
   ];
   return [
@@ -135,7 +144,14 @@ function imageTextSlide(k: Kit): Element[] {
   return [
     k.image(0, 0, imageW, H),
     k.title(x, H * 0.08, w, u * 11, 'The picture says it'),
-    k.text(x, H * 0.08 + u * 14, w, u * 14, 'One line on what to notice in the image.', body(k)),
+    k.text(
+      x,
+      H * 0.08 + u * 14,
+      w,
+      u * 14,
+      'One line on what to notice in the image.',
+      slideType(k),
+    ),
     ...bullets(k, x, H * 0.08 + u * 32, w, H * 0.92 - u * 32, [
       'A first detail',
       'A second detail',
@@ -153,13 +169,13 @@ function statementSlide(k: Kit): Element[] {
     // A short accent rule, centred, over the statement.
     rule(k, (W - u * 14) / 2, Math.max(0, top - u * 6)),
     k.text(W * 0.06, top, W * 0.88, textH, 'One sentence that changes how the room sees it.', {
-      ...body(k, 9),
+      ...slideType(k, 9),
       textBold: true,
       textAlignX: 'center',
       textAlignY: 'middle',
     }),
     k.text(W * 0.15, top + textH + u * 4, W * 0.7, u * 10, 'The line that backs it up.', {
-      ...body(k),
+      ...slideType(k),
       textAlignX: 'center',
     }),
   ];
@@ -172,9 +188,9 @@ function closingSlide(k: Kit): Element[] {
   return [
     k.title(0, top, W * 0.7, u * 22, 'Thank you'),
     rule(k, 0, top + u * 25),
-    k.text(0, top + u * 29, W * 0.7, u * 11, 'Questions?', { ...body(k, 6), textBold: true }),
+    k.text(0, top + u * 29, W * 0.7, u * 11, 'Questions?', { ...slideType(k, 6), textBold: true }),
     k.text(0, H - u * 7, W * 0.7, u * 7, 'your.name@example.com · example.com', {
-      ...body(k, 3.2),
+      ...slideType(k, 3.2),
       textAlignY: 'bottom',
     }),
   ];

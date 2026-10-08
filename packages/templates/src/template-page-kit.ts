@@ -5,6 +5,7 @@
 // built in page coordinates and ignore the centre every other template is built around.
 import {
   layOutIllustratePages,
+  newSlidePage,
   pageMargin,
   type IllustratePage,
   type PageBackground,
@@ -29,6 +30,22 @@ export function templatePage(
     ...(background ? { background } : {}),
     name,
     kind: 'infographic',
+  };
+}
+
+/** A slide page of a template (docs/specs/007-editor/illustrate-pages.md "Page kinds"): `page-n`,
+ *  landscape in a slide size (16:9 by default), so it offers the slide sizes and layouts and its
+ *  deck button. */
+export function templateSlidePage(
+  n: number,
+  name: string,
+  background?: PageBackground,
+  size: PageSizeId = 'slide',
+): IllustratePage {
+  return {
+    ...newSlidePage(`page-${n}`, size),
+    ...(background ? { background } : {}),
+    name,
   };
 }
 

@@ -260,7 +260,7 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('opens the slide deck in Illustrate on six Slide (16:9) pages, keeping its layers', () => {
+  it('opens the slide deck in Illustrate on six 16:9 slide pages, keeping its layers', () => {
     // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
     const o = templateCanvasOverrides('slide-deck');
     expect(o).toMatchObject({
@@ -271,7 +271,7 @@ describe('templateCanvasOverrides', () => {
     expect(o.pages).toHaveLength(6);
     expect(
       o.pages!.every(
-        (p) => p.size === 'wide' && p.orientation === 'landscape' && p.kind === 'infographic',
+        (p) => p.size === 'slide' && p.orientation === 'landscape' && p.kind === 'slide',
       ),
     ).toBe(true);
     expect(o.pages!.map((p) => p.id)).toEqual([
@@ -419,7 +419,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Frames: the footer (deck name + page number) of the five content slides; the slides
     // themselves are Illustrate pages. Content: the title slide's nine pieces, each other
     // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 53 },
+    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
     // Frames: six panel cards, their number chips and the how-to.
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Spine + the three-entry status legend stay put; each of the six
