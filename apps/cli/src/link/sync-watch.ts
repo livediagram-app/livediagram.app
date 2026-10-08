@@ -174,7 +174,7 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
             }
             if (entered.length + left.length > 0)
               due({ documents: new Set([...entered, ...left]) });
-            if (!stopped) recover();
+            recover();
           },
           (err: unknown) => {
             io.stderr(formatError(failureOf(err, host), false));

@@ -85,7 +85,7 @@ export async function loadCapabilities(
     await io.files.mkdir(`${cacheDir(io)}/capabilities`, 0o700);
     await io.files.write(path, JSON.stringify(entry));
   } catch (err) {
-    log(`capabilities unwritten ${err instanceof Error ? err.name : typeof err}`);
+    log(`capabilities unwritten ${String(err)}`);
   }
   return of(profile.host, entry.capabilities);
 }

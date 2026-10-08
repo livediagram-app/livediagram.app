@@ -68,7 +68,7 @@ export async function sendCliUsed(
   }
   // The notice's state file is a convenience: an unwritable cache never fails the command (CLI41).
   await noticeOnce(sink, host).catch((err: unknown) =>
-    sink.log(`telemetry notice state unwritten ${err instanceof Error ? err.name : typeof err}`),
+    sink.log(`telemetry notice state unwritten ${String(err)}`),
   );
   await report('Cli', 'Used', pascalToken(verbId), sink);
 }

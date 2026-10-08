@@ -276,4 +276,63 @@ describe('sync --watch, stopping', () => {
       expect(lines(io)).toHaveLength(1);
     }
   });
+
+  it('streams nothing a coverage read in flight at Ctrl-C found', async () => {
+    const { io, host } = setup([hostDoc('d-home', 'Home', { folderId: 'games' })]);
+    const done = run(['sync', '--watch'], io);
+    await until(() => io.sockets.length === 1);
+    host.docs.push(hostDoc('d-new', 'New', { folderId: 'games' }));
+    const route = host.route;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    io.fetch = async (request) => {
+      const url = new URL(request.url);
+      if (url.pathname === '/api/folders') await held;
+      return (await route(request, url)) ?? Response.json({}, { status: 404 });
+    };
+    const advancing = io.advance(SYNC_WATCH_COVERAGE_MS);
+    await flush();
+    io.interrupt();
+    release();
+    await advancing;
+    expect(await done).toBe(0);
+    await flush();
+    expect(io.sockets).toHaveLength(1);
+  });
+
+  it('watches no files when Ctrl-C comes while the mirror directory is made', async () => {
+    const { io } = setup([hostDoc('d-home', 'Home', { folderId: 'games' })]);
+    const mkdir = io.files.mkdir;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    let holding = false;
+    io.files.mkdir = async (path, mode) => {
+      // The first pass has said what it wrote: the next directory made is the one the watch listens in.
+      if (io.out() !== '' && path === '/work/diagrams') {
+        holding = true;
+        await held;
+      }
+      return mkdir(path, mode);
+    };
+    const done = run(['sync', '--watch'], io);
+    await until(() => holding);
+    io.interrupt();
+    release();
+    expect(await done).toBe(0);
+    await flush();
+    io.touch(MIRROR);
+    await io.advance(SYNC_LOCAL_SETTLE_MS * 2);
+    expect(lines(io)).toHaveLength(1);
+  });
+
+  it('fails, closing its streams, when the mirror directory cannot be made', async () => {
+    const { io } = setup([hostDoc('d-home', 'Home', { folderId: 'games' })]);
+    const mkdir = io.files.mkdir;
+    io.files.mkdir = async (path, mode) => {
+      if (io.out() !== '' && path === '/work/diagrams') throw new Error('EACCES');
+      return mkdir(path, mode);
+    };
+    expect(await run(['sync', '--watch'], io)).toBe(7);
+    expect(io.sockets.every((s) => s.closedWith !== undefined)).toBe(true);
+  });
 });
