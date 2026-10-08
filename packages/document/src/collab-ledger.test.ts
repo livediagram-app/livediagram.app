@@ -267,3 +267,22 @@ describe('board set-up in the ledger', () => {
     expect(recordInLedger(undefined, board({ set: { columns: [] } }), 1)).toBeNull();
   });
 });
+
+// docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": a dot on a card rides the ledger by its key.
+describe('a dot on a Plan card', () => {
+  it('records under the card’s vote key', () => {
+    const op = {
+      kind: 'vote',
+      tabId: 't1',
+      elementId: 'item:i1',
+      voter: 'a',
+      delta: 1,
+      round: 'r1',
+    };
+    expect(recordInLedger(undefined, op, 4)).toEqual({
+      round: 'r1',
+      votes: { 'item:i1': ['a'] },
+      seq: 4,
+    });
+  });
+});

@@ -4,6 +4,8 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { isCardVotableInVote } from '@livediagram/document';
+import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
@@ -134,6 +136,12 @@ export function PlanBoardView({
   const canEdit = !!plan?.canEdit;
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   const maximised = useMaximisedPlanId() === element.id;
+  // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
+  const tabCardVote = useCardVote();
+  const cardVote =
+    tabCardVote && isCardVotableInVote(element, tabCardVote.vote, tabCardVote.layers, false)
+      ? tabCardVote
+      : null;
   // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Illustrate.
   const viewport = useViewportStoreIfAny();
   const phone = useIsMobileViewport();
@@ -513,6 +521,7 @@ export function PlanBoardView({
                                 onOpen={() => plan?.openItem(item.id)}
                                 onKey={onCardKey}
                                 onMenu={(it, at) => setMenu({ itemId: it.id, at })}
+                                cardVote={cardVote}
                                 {...(interactive && canEdit
                                   ? {
                                       onLongPress: (it: Item, at: { x: number; y: number }) => {

@@ -55,7 +55,7 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                |
 | `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                        |
 | `parent`          | item ref  | Another item's id (a Project), resolved within the same document; edited and listed as a link field (item-types.md "Card fields")                                     |
-| `votes`           | votes     | Per-person counts `{ [personId]: n }`, written only through voting                                                                                                    |
+| `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                               |
 | `comments`        | comments  | The card's conversation: the same comment thread a canvas element carries (`{ comments, resolved }`), written only through the comment writes ([Comments](#comments)) |
 
 A card's type may leave statuses out ([Item types](item-types.md#an-item-type)): an item made or moved into one is
@@ -119,10 +119,10 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   each other; the same field resolves to the last write.
 - **Move**: a new `status` and/or a new `rank`, given as "after this item" or "before this item" (or the top or
   end of a column), so a move needs no knowledge of other ranks.
-- **Vote**: plus or minus one for the caller; a person's count never drops below zero. Votes are written only this
-  way, so two people voting at once never lose a vote. A guest's `+1` is admitted against a per-network cap of guest
-  voters per document; an account votes freely, and withdrawing is never refused
-  ([Vote integrity](../012-collaboration/vote-integrity.md)).
+- **Tally**: a session vote's host, ending it, adds each card's dots to the card's `votes` (per voter, as
+  pseudonymous person ids) in one write (`POST /items/tally`, edit access); nothing else writes `votes`. Cards are
+  voted on through the tab's session vote ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan
+  cards"), which keeps its own budget and privacy.
 - **Delete**: removes the item. Its key is not reused.
 - **Restore** (an undo of a delete, or an offline document's sync): a create may name the item's old id and key
   and carry its votes and its comment thread; the key is honoured while it is free.
@@ -277,7 +277,6 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   picker.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
   [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
-- **Vote** with participate access, as comments.
 - **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
 - An agent token acts as its person, and a read-only token reads only.
 
@@ -293,7 +292,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - A person can undo their own item changes with the canvas's Undo, in the order they made them, mixed with their
   canvas edits: undoing a card's move puts it back; undoing a delete brings the item back with its id, key and
   votes.
-- Votes are not undoable (a vote is taken back by voting minus), matching comments and assigned actions. A card's
+- A tally is not undoable (a session vote's dots are taken back during the vote), matching comments and assigned
+  actions. A card's
   comments are not undoable either; undoing a card's delete brings its thread back with it.
 - An undo writes the old value back, even over a later change someone else made to that field, as canvas undo
   does.
