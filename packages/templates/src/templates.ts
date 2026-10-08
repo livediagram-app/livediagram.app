@@ -446,7 +446,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'slide-deck',
     title: 'Slide deck',
     description:
-      'A six-slide pitch (title, problem, solution, traction, team, the ask) on Slide (16:9) pages, with speaker notes.',
+      'A six-slide pitch (title, problem, solution, traction, team, the ask) on 16:9 slide pages, with speaker notes.',
     extra: true,
   },
   {
