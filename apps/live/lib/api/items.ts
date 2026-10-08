@@ -90,6 +90,21 @@ export async function writeItem(
     }
     case 'patch':
       return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
+    case 'tally': {
+      // One request per ITEM_BULK_MAX cards (a session vote's tally, as its host ends it).
+      const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
+      for (let i = 0; i < write.tallies.length; i += ITEM_BULK_MAX) {
+        const r = await post<ItemsResponse>(
+          scope,
+          '/tally',
+          { items: write.tallies.slice(i, i + ITEM_BULK_MAX) },
+          'items tally',
+        );
+        answer.upserts.push(...r.items);
+        answer.rev = r.rev;
+      }
+      return answer;
+    }
     case 'patches': {
       // One request per ITEM_BULK_MAX items (a type's or a removed column's cards to the Trash).
       const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
@@ -110,8 +125,6 @@ export async function writeItem(
     }
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
-    case 'vote':
-      return one(await post(scope, `${id}/vote`, { delta: write.delta }, 'item vote'));
     case 'delete': {
       await apiDelete(itemsUrl(scope, id), scope.ownerId, {
         action: 'item delete',

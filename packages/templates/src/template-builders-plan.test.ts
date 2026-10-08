@@ -136,7 +136,6 @@ describe('plan templates', () => {
     const setup = boardSetup(retro!.board!);
     expect(setup.columns.map((c) => c.name)).toEqual(['Went Well', 'To Improve', 'Ideas']);
     expect(setup.addTypes).toEqual(['note', 'idea']);
-    expect(setup.voting).toEqual({ on: true, budget: 5 });
     expect(setup.hideWriting).toBe(true);
     expect(boardSetup(actions!.board!).addTypes).toEqual(['action']);
     expect(boardSetup(archive!.board!).archive).toBe(true);
@@ -207,7 +206,14 @@ describe('plan templates', () => {
       'sticky',
       'temperature',
       'session-button',
+      'session-button',
     ]);
+    // The retro votes with the tab's session vote (docs/specs/012-collaboration/session-tools.md "Voting on Plan
+    // cards"): a Vote button, 5 dots each.
+    const vote = buildPlanTab(retro, 0, 0).filter(
+      (el) => el.type === 'shape' && el.shape === 'session-button',
+    )[1];
+    expect(vote && 'session' in vote ? vote.session : null).toEqual({ tool: 'vote', dots: 5 });
   });
 
   it('names the tabs of a template with several, and leaves a one-tab template’s name to the caller', () => {

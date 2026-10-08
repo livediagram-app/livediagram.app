@@ -38,7 +38,6 @@ export function PlanBoardHeader({
   onQuick,
   canFilterMine,
   canEdit,
-  votesLeft,
   loadFailed,
   widgetDropAt,
   flashWidget,
@@ -62,7 +61,6 @@ export function PlanBoardHeader({
   onQuick: (q: QuickFilter) => void;
   canFilterMine: string | null;
   canEdit: boolean;
-  votesLeft: number | null;
   loadFailed: boolean;
   // Where a widget dragged from the palette would land in the zone.
   widgetDropAt: number | null;
@@ -94,7 +92,6 @@ export function PlanBoardHeader({
     quick,
     onQuick,
     canFilterMine,
-    votesLeft,
     trayOpen,
     onToggleTray: () => setTrayOpen((o) => !o),
     now: new Date(),

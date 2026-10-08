@@ -41,3 +41,19 @@ describe('writeItem patches', () => {
     expect(answer.rev).toBe(2);
   });
 });
+
+describe('writeItem tally', () => {
+  it('posts a vote’s tally to /items/tally', async () => {
+    const fetch = vi.fn(async () => Response.json({ items: [{ id: 'i1', rev: 2 }], rev: 3 }));
+    vi.stubGlobal('fetch', fetch);
+    const answer = await writeItem(
+      scope,
+      { kind: 'tally', tallies: [{ id: 'i1', votes: { p: 2 } }] },
+      by,
+    );
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain('/documents/doc-cloud/items/tally');
+    expect(JSON.parse(String(init.body))).toEqual({ items: [{ id: 'i1', votes: { p: 2 } }] });
+    expect(answer.rev).toBe(3);
+  });
+});

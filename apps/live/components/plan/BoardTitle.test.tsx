@@ -26,7 +26,6 @@ function header(canRename: boolean) {
         canFilterMine={null}
         canEdit
         canRename={canRename}
-        votesLeft={null}
         loadFailed={false}
         widgetDropAt={null}
         flashWidget={null}

@@ -13,7 +13,6 @@ export const BOARD_WIDGET_KINDS = [
   'types',
   'wip',
   'due',
-  'votes',
   'points',
   'priorities',
   'unassigned',
@@ -44,10 +43,10 @@ export function readBoardWidgets(input: unknown): BoardWidgetKind[] | undefined 
   return out;
 }
 
-// The widgets a board shows: its own, or the default set (with Votes Left when it has voting on).
-export function widgetsOf(setup: Pick<PlanBoardSetup, 'widgets' | 'voting'>): BoardWidgetKind[] {
-  if (setup.widgets) return [...setup.widgets];
-  return setup.voting.on ? [...DEFAULT_BOARD_WIDGETS, 'votes'] : [...DEFAULT_BOARD_WIDGETS];
+// The widgets a board shows: its own, or the default set. A stored Votes Left (from when boards had their own
+// voting) is no kind any more, and reads past.
+export function widgetsOf(setup: Pick<PlanBoardSetup, 'widgets'>): BoardWidgetKind[] {
+  return setup.widgets ? [...setup.widgets] : [...DEFAULT_BOARD_WIDGETS];
 }
 
 // A widget placed before the widget at `index` (the end when past it). One the board already has moves

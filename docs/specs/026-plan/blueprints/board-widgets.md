@@ -81,16 +81,15 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                    |
-| ------------------------------------ | ----------------------------------------------------------- |
-| Dropped off any header               | Nothing placed; toast "Drop a widget into a board’s header" |
-| Tapped with no board to choose       | Toast "Select a board to add the widget to"                 |
-| A viewer who may not edit            | Zone has no ×, no drag, no keys; drops are refused          |
-| Kind the board already has           | Moves to the drop place (tap: to the end)                   |
-| Completion with no done column       | "No done column"                                            |
-| Votes Left on a board without voting | Renders nothing                                             |
-| Items of a type the catalogue lost   | Counted under the type they read as (`typeIn`)              |
-| More widgets than fit                | The zone scrolls sideways                                   |
+| Case                               | Handling                                                    |
+| ---------------------------------- | ----------------------------------------------------------- |
+| Dropped off any header             | Nothing placed; toast "Drop a widget into a board’s header" |
+| Tapped with no board to choose     | Toast "Select a board to add the widget to"                 |
+| A viewer who may not edit          | Zone has no ×, no drag, no keys; drops are refused          |
+| Kind the board already has         | Moves to the drop place (tap: to the end)                   |
+| Completion with no done column     | "No done column"                                            |
+| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)              |
+| More widgets than fit              | The zone scrolls sideways                                   |
 
 ## Presentation and UX
 

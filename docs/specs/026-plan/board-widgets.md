@@ -64,24 +64,24 @@ and are placed by dragging them into a board's header.
   - **Item Count** is left out where Completion already counts the cards.
   - **Only Mine** never by default: Filter and People already narrow.
 
-  | Board      | Widgets                        | Why                                                              |
-  | ---------- | ------------------------------ | ---------------------------------------------------------------- |
-  | Kanban     | Completion, WIP Alerts, Filter | Flow against its limits, and finding a card                      |
-  | To-do List | Completion, Due Soon           | How much is done, and what is due; a short list needs no Filter  |
-  | Sprint     | Points, Completion, Filter     | Burn-up in points; its rows already show who has what            |
-  | Bug Triage | Item Count, Unassigned, Filter | Bugs nobody owns; its rows already show severity                 |
-  | Retro      | Votes Left, Top Voted          | Voting; notes are hidden until revealed, so nothing else to read |
-  | Roadmap    | Item Count, Due Soon, Filter   | Dates; Now, Next and Later has no done column, so no Completion  |
-  | Week       | Item Count, Due Soon, Filter   | What is due this week; the days have no done column              |
-  | All Cards  | Item Count, Card Types, Filter | Sweeping every card by kind                                      |
-  | Archive    | Item Count, Filter             | Finding a card to restore                                        |
-  | Blank      | None                           | A clean start: no columns yet, so nothing to measure or filter   |
+  | Board      | Widgets                        | Why                                                             |
+  | ---------- | ------------------------------ | --------------------------------------------------------------- |
+  | Kanban     | Completion, WIP Alerts, Filter | Flow against its limits, and finding a card                     |
+  | To-do List | Completion, Due Soon           | How much is done, and what is due; a short list needs no Filter |
+  | Sprint     | Points, Completion, Filter     | Burn-up in points; its rows already show who has what           |
+  | Bug Triage | Item Count, Unassigned, Filter | Bugs nobody owns; its rows already show severity                |
+  | Retro      | Top Voted                      | Notes are hidden until revealed, so nothing else to read        |
+  | Roadmap    | Item Count, Due Soon, Filter   | Dates; Now, Next and Later has no done column, so no Completion |
+  | Week       | Item Count, Due Soon, Filter   | What is due this week; the days have no done column             |
+  | All Cards  | Item Count, Card Types, Filter | Sweeping every card by kind                                     |
+  | Archive    | Item Count, Filter             | Finding a card to restore                                       |
+  | Blank      | None                           | A clean start: no columns yet, so nothing to measure or filter  |
 
 - A Plan template's boards follow the same rules ([Plan templates](plan-templates.md)); a template board that
   names no widgets of its own takes its preset's.
 - This sets what a **new** board starts with; a board already made keeps the widgets it has.
-- A board saved before widgets existed (and so naming none) shows the default set: **Item Count, Completion, Not on Board, Filter, Only Mine**, plus
-  **Votes Left** on a board with voting on.
+- A board saved before widgets existed (and so naming none) shows the default set: **Item Count, Completion, Not on Board, Filter, Only Mine**. A board
+  that listed **Votes Left** (from when boards had their own voting) shows it no more.
 - A board saved before widgets existed shows that same default set, so it looks as it did.
 
 ## Telemetry

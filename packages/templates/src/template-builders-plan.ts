@@ -138,6 +138,13 @@ function railItem(item: RailItem, x: number, y: number): Box {
         height: 96,
         session: { tool: 'timer', minutes: item.minutes },
       };
+    case 'vote':
+      return {
+        ...createShape('session-button', x, y),
+        width: RAIL_W,
+        height: 96,
+        session: { tool: 'vote', dots: item.dots },
+      };
     case 'picker':
       return { ...createShape('picker', x, y), width: RAIL_W, height: 160, label: item.label };
     case 'temperature':

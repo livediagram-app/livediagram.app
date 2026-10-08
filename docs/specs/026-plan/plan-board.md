@@ -45,7 +45,9 @@ Stored on the element, shared by everyone, undone like any element edit:
   A Gantt chart's Swimlanes do the same for the card types it draws.
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
   checklist progress). Title always shows.
-- **Voting**: off, or on with an optional number of votes each person may spend on this board.
+- **Voting** is not a board setting: a vote is the tab's session vote (Collaborate, Vote), cast on the cards the
+  board shows ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan cards"); a card shows the
+  votes it has gathered.
 - **Hide writing**: off, or on: each person's cards on this board are face-down to everyone else until the board
   is revealed. It hides the face, not the data; it is a facilitation aid, not a privacy boundary.
 
@@ -150,7 +152,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   column side by side at
   its narrowest (220px a slot, with the gaps between), never narrower than its default, so no new board scrolls. Archive and All Cards boards show cards by what they are, not by
   status, and keep their columns.
-- **Voting** and **Hide writing** come with a board's template (the Retro's are on); they have no menu control.
+- **Hide writing** comes with a board's template (the Retro's is on); it has no menu control.
 
 ## What the board shows
 
@@ -175,7 +177,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   the item type's colour as the fill behind its **number** (white or near-black text, whichever reads better on it); a
   Minimal card, which shows no number, has a small dot of it before the title. A card being dragged or opened by
   someone else carries their colour ring and name. Of the fields the set-up shows:
-  - **Minimal**: the title (two lines at most) and nothing else, but the vote control on a voting board.
+  - **Minimal**: the title (two lines at most) and nothing else, but a session vote's stepper during a vote.
   - **Compact**: the type's glyph on a tint of its colour and the number, top left, beside the title (two lines at
     most), over one row of the priority's signal bars, the start and due dates, votes, comments and the assignee's
     avatar.
@@ -346,8 +348,8 @@ In Plan mode:
     their colour) beside their name.
   - **On a phone** it is a sheet of one column, as tall as a sheet goes (85% of the screen): the title, then a tab bar whose first tab is
     **Details** (the side panel's fields), then the type's tabs.
-- **Vote**: on a voting board each card has a vote control; a person sees their own votes and the total. With a
-  vote budget the header shows the votes left.
+- **Vote**: during the tab's session vote each card the board shows has the vote's stepper in its corner; the
+  votes a card has gathered (from ended votes) show as its ▲ count where its type's Display places Votes.
 - **Reveal**: on a board hiding writing, anyone who may edit can press **Reveal**; every card turns face up for
   everyone, and the set-up's Hide writing turns off.
 - **Set-up**: a column's cog, and the board's element menu (above, "The board set-up").

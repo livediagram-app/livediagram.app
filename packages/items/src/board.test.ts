@@ -6,7 +6,6 @@ import {
   columnForStatus,
   normaliseBoardSetup,
   projectBoard,
-  votesSpent,
   type PlanBoardSetup,
 } from './board';
 import {
@@ -164,11 +163,9 @@ describe('projectBoard', () => {
     expect(projectBoard(setup, new Map()).lanes).toHaveLength(1);
   });
 
-  it("counts the viewer's spent votes and decides face-down", () => {
+  it('decides face-down', () => {
     const a = item({ title: 'a', status: 'went-well', votes: { me: 2, you: 1 } }, { type: 'note' });
     const retro = presetSetup('retro');
-    const p = projectBoard(retro, map([a]));
-    expect(votesSpent(p, 'me')).toBe(2);
     expect(cardIsFaceDown(a, retro, 'other')).toBe(true);
     expect(cardIsFaceDown(a, retro, a.createdBy.id)).toBe(false);
     expect(cardIsFaceDown(a, { hideWriting: false }, 'other')).toBe(false);
@@ -210,7 +207,8 @@ describe('normaliseBoardSetup', () => {
       doneColumnId: 'zzz',
       hideWriting: 'yes',
     });
-    // A scope an older board stored is read past: every board shows every card.
+    // A scope and a voting setting an older board stored are read past: every board shows every card, and a vote
+    // is the tab's session vote.
     expect(s).toEqual({
       title: 'Board',
       columns: [
@@ -219,7 +217,6 @@ describe('normaliseBoardSetup', () => {
       ],
       swimlaneBy: 'none',
       cardFields: ['key'],
-      voting: { on: true },
       hideWriting: false,
     });
     expect(columnForStatus(s!, 'done')?.id).toBe('c');

@@ -21,7 +21,6 @@ export const BOARD_WIDGET_INFO: Record<BoardWidgetKind, { label: string; descrip
   types: { label: 'Card Types', description: 'How many cards of each type the board holds.' },
   wip: { label: 'WIP Alerts', description: 'How many columns are over their WIP limit.' },
   due: { label: 'Due Soon', description: 'Cards overdue, and cards due in the next 7 days.' },
-  votes: { label: 'Votes Left', description: 'Your votes left, on a board with voting on.' },
   points: {
     label: 'Points',
     description: 'Estimate points done out of all on the board: a sprint’s burn-up at a glance.',
