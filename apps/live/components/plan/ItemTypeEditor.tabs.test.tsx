@@ -117,7 +117,7 @@ describe('deleting a type', () => {
         onClose={() => {}}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Type' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(
       screen.getByText('Delete the Task type? Its 2 cards will be moved to the Trash too.'),
     ).toBeTruthy();
@@ -125,8 +125,8 @@ describe('deleting a type', () => {
     fireEvent.click(within(pop()).getByRole('button', { name: 'Cancel' }));
     expect(onDelete).not.toHaveBeenCalled();
     expect(document.querySelector('[data-confirm-popover]')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Type' }));
-    fireEvent.click(within(pop()).getByRole('button', { name: 'Delete Type' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(pop()).getByRole('button', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 });

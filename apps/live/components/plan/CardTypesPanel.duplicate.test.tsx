@@ -75,7 +75,7 @@ describe('duplicating a card type', () => {
     );
     expect(screen.getByText('New Card Type')).toBeTruthy();
     expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Task copy');
-    expect(screen.queryByRole('button', { name: 'Duplicate Type' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Duplicate' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     const saved = onSave.mock.calls[0]![0];
     expect(saved).toMatchObject({ id: 'task-copy', label: 'Task copy', color: task.color });
@@ -83,7 +83,7 @@ describe('duplicating a card type', () => {
     expect([...saved.fields].sort()).toEqual([...task.fields].sort());
   });
 
-  it('offers Duplicate Type in the footer of a type that exists', () => {
+  it('offers Duplicate in the footer of a type that exists', () => {
     const onDuplicate = vi.fn();
     render(
       <ItemTypeEditor
@@ -97,7 +97,7 @@ describe('duplicating a card type', () => {
         onDuplicate={onDuplicate}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate Type' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
     expect(onDuplicate).toHaveBeenCalled();
   });
 });

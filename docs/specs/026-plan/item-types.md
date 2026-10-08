@@ -158,7 +158,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   " copy 2", " copy 3"... while the name is taken, shortened to fit 32 characters), and the same colour, glyph,
   fields, custom fields, tabs and Details name. Nothing is made until **Save**; **Cancel** drops it. With the
   catalogue full it is disabled and its tooltip says "The document has the most card types it can hold".
-  The type editor's footer offers **Duplicate Type** too, for a type that exists. Telemetry: `Plan` ·
+  The type editor's footer offers **Duplicate** too, for a type that exists. Telemetry: `Plan` ·
   `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end, with **Restore
   built-in types** under it once the catalogue is stored. The panel does not reorder types: the catalogue keeps
   its order (the built-ins first, then added types in the order they were added).
@@ -207,7 +207,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Help** (the Card Types help article) and a close cross, which acts as Cancel. Every
-  button carries an icon: Save a tick, Cancel and the cross a cross, Delete Type a bin, Duplicate Type the copy
+  button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
   icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
   - **General**: **Name**, **Colour** (the twelve swatches, then **+** for a custom colour, which opens the custom colour picker in place
     (as in [Draw](../023-draw-mode/draw-mode.md)); a custom colour in force shows as a picked swatch before the +) and **Glyph**: one field-sized button showing the chosen glyph (on a tint of the type's colour), its
@@ -283,13 +283,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 64
     statuses off (a type stored that way: "Too many states turned off: a type can turn off at most 64.", on the
     States tab).
-  - **Delete Type**, at the foot, for a type that is not the catalogue's last.
+  - **Delete** (one word, as is **Duplicate**, so a phone's footer keeps each on one line), at the foot, for a type that is not the catalogue's last.
   - **Save** applies the whole edit as one change; **Cancel** drops it.
 - Removing a field from a type, or deleting a custom field, never deletes values: items keep them, and they show
   again if the field returns. The type editor says so under the field list once a field is removed.
-- **Deleting a type** asks first, in a confirmation popover anchored to **Delete Type**: "Delete the {Name} type?",
+- **Deleting a type** asks first, in a confirmation popover anchored to **Delete**: "Delete the {Name} type?",
   and when cards (out of the Trash) have the type, "Its card will be moved to the Trash too." or "Its N cards will
-  be moved to the Trash too.". **Delete Type** in it deletes the type and moves those cards to the
+  be moved to the Trash too.". **Delete** in it deletes the type and moves those cards to the
   [Trash](items.md#trash), where they can be restored (as the fallback "Item", the type gone); Cancel or Escape
   leaves everything as it was. Cards already in the Trash stay there.
   A board that showed only the deleted type shows and takes every type again ([Plan board](plan-board.md#the-board-set-up)).

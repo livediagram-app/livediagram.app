@@ -284,13 +284,14 @@ export function ItemTypeEditor({
               onClick={(e) => setConfirmingAt(e.currentTarget)}
             >
               <TrashIcon size={14} />
-              Delete Type
+              {/* One word, so a phone's footer keeps each button on one line. */}
+              Delete
             </Button>
           ) : null}
           {type && onDuplicate ? (
             <Button variant="secondary" className="mr-auto" onClick={onDuplicate}>
               <DuplicateIcon size={14} />
-              Duplicate Type
+              Duplicate
             </Button>
           ) : null}
           {problem && draft.label ? (
@@ -316,7 +317,7 @@ export function ItemTypeEditor({
         <ConfirmPopover
           anchor={confirmingAt}
           message={deleteMessage(type.label, itemCount)}
-          confirmLabel="Delete Type"
+          confirmLabel="Delete"
           onConfirm={() => {
             setConfirmingAt(null);
             onDelete();
