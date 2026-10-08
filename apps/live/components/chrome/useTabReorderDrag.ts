@@ -1,4 +1,5 @@
 import { useState, type DragEvent as ReactDragEvent } from 'react';
+import { setDraggedTab } from '@/lib/tab-drag-store';
 
 // The tab bar's drag-reorder machinery (docs/specs/006-document/tab-folders.md), lifted out of
 // TabBar's pill renderer: which pill is being dragged, which pill +
@@ -24,6 +25,8 @@ export function useTabReorderDrag(
       e.dataTransfer.setData('text/plain', tabId);
       e.dataTransfer.effectAllowed = 'move';
       setDragId(tabId);
+      // Lets the side by side drop zone answer the same drag (docs/specs/007-editor/split-view.md).
+      setDraggedTab(tabId);
     },
     onDragOver: (e: ReactDragEvent) => {
       e.preventDefault();
@@ -49,6 +52,7 @@ export function useTabReorderDrag(
     onDragEnd: () => {
       setDragId(null);
       setDropTarget(null);
+      setDraggedTab(null);
     },
   });
 

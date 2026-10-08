@@ -2,6 +2,7 @@ import type { IconPrim } from '@livediagram/icons';
 import {
   lucideArrowDown,
   lucideArrowUp,
+  lucideColumns2,
   lucideCopy,
   lucideCopyPlus,
   lucideIndentDecrease,
@@ -12,6 +13,7 @@ import {
   lucidePencil,
   lucidePlus,
   lucideRefreshCw,
+  lucideScan,
   lucideTrash2,
   lucideX,
 } from '@livediagram/icons/lucide';
@@ -44,6 +46,10 @@ export const IndentIcon = lucideGlyph(lucideIndentIncrease, 14);
 export const OutdentIcon = lucideGlyph(lucideIndentDecrease, 14);
 export const ArrowUpIcon = lucideGlyph(lucideArrowUp, 14);
 export const ArrowDownIcon = lucideGlyph(lucideArrowDown, 14);
+// Two panes side by side: open a tab beside the one you are on (docs/specs/007-editor/split-view.md).
+export const SideBySideIcon = lucideGlyph(lucideColumns2, 16);
+// Corner brackets: fit the view to its content.
+export const FitViewIcon = lucideGlyph(lucideScan, 14);
 
 // Padlock, closed by default; `closed={false}` swings the shackle open.
 export function LockIcon({ closed = true, size = 16, ...rest }: IconProps & { closed?: boolean }) {

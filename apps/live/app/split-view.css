@@ -1,0 +1,112 @@
+/*
+ * Side by side tabs (docs/specs/007-editor/split-view.md): the motion of the right pane and of the
+ * drop target a dragged tab finds. One-shot animations only; the global reduced-motion rules in
+ * globals.css collapse them to instant (they still fire animationend, which the pane's close waits on).
+ */
+
+/* The pane arrives from the right edge it was dropped on, settling with the house ease-out. */
+.split-pane-enter {
+  animation: split-pane-enter var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* And leaves the same way, quicker: closing is a dismissal, not an arrival. */
+.split-pane-leave {
+  animation: split-pane-leave var(--transition-duration-short) cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* The ghost of the pane while a dragged tab hovers the zone. */
+.split-ghost-enter {
+  animation: split-ghost-enter var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The "drop here" hint beside the edge rail. */
+.split-hint-enter {
+  animation: split-hint-enter var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes split-pane-enter {
+  from {
+    transform: translateX(48px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes split-pane-leave {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(48px);
+    opacity: 0;
+  }
+}
+
+@keyframes split-ghost-enter {
+  from {
+    transform: translateX(40%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes split-hint-enter {
+  /* `transform`, not `translate`: the hint's own centring is a Tailwind translate utility. */
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* The editor's chrome arriving on the other side (docs/specs/007-editor/split-view.md "Moving between
+ * the panes"): the floating panels, the zoom cluster and the Toolbar strip slide in a little from the
+ * side they left and fade up, so the move reads as the toolbars travelling rather than blinking.
+ * The canvas holds still. `translate`, not `transform`: none of these roots uses the property, and
+ * several carry their own transforms or zoom. One keyframe per direction, so a quick switch back
+ * restarts the animation instead of finishing the old one.
+ *
+ * No `to` frame and no forwards fill: the animation ends on each element's own computed style. An
+ * explicit `opacity: 1` held to the end snapped translucent panels (the Panel opacity setting) back
+ * to their own opacity a frame after it finished.
+ *
+ * The chrome's own arrival `fade-in` (globals.css "Editor fade-in") stays first in the list, with the
+ * same timing: an animation whose name stays listed keeps running, so when the marker lifts the
+ * element keeps its finished fade instead of starting it again (measured: lifting the marker
+ * replayed the fade, a flash to transparent ~450 ms after the move). */
+[data-split-arrive='from-left']
+  :is([data-floating-panel], [data-zoom-cluster], [data-toolbar-menu], [data-split-chrome]) {
+  animation:
+    fade-in var(--transition-duration-short) ease-out,
+    split-chrome-from-left var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+[data-split-arrive='from-right']
+  :is([data-floating-panel], [data-zoom-cluster], [data-toolbar-menu], [data-split-chrome]) {
+  animation:
+    fade-in var(--transition-duration-short) ease-out,
+    split-chrome-from-right var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes split-chrome-from-left {
+  from {
+    opacity: 0;
+    translate: -24px 0;
+  }
+}
+
+@keyframes split-chrome-from-right {
+  from {
+    opacity: 0;
+    translate: 24px 0;
+  }
+}

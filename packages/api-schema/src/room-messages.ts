@@ -366,7 +366,9 @@ export type RoomOp =
   // The sender just switched to (or initially focused) a tab. Drives
   // the per-tab avatar dots in the TabBar so collaborators can see at
   // a glance which tab each peer is working on.
-  | { kind: 'tab-focus'; tabId: string }
+  // `besideTabId`: the tab in the sender's other pane while they work side by side
+  // (docs/specs/007-editor/split-view.md "Presence"); absent or null with no split.
+  | { kind: 'tab-focus'; tabId: string; besideTabId?: string | null }
   // A single tab's content changed. The post-refactor replacement for
   // the heavyweight `tabs` op below — sender ships only the one tab
   // they edited. Receivers merge by id. Kept as a fallback for bulk

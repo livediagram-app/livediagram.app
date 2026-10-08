@@ -57,6 +57,10 @@ export function buildParticipantsByTab(input: {
   selfParticipant: Participant;
   tabs: { id: string }[];
   remoteTabFocus: Map<string, string>;
+  // The tab in each person's other pane while they work side by side (docs/specs/007-editor/split-view.md
+  // "Presence"): they show on that tab's pill too. Peers by id; ourselves apart.
+  remoteBesideTabs?: ReadonlyMap<string, string>;
+  selfBesideTabId?: string | null;
   livePresence: Participant[];
   livePresenceById: Map<string, Participant>;
   lastSeen: ReadonlyMap<string, number>;
@@ -70,6 +74,8 @@ export function buildParticipantsByTab(input: {
     selfParticipant,
     tabs,
     remoteTabFocus,
+    remoteBesideTabs,
+    selfBesideTabId = null,
     livePresence,
     livePresenceById,
     lastSeen,
@@ -78,6 +84,8 @@ export function buildParticipantsByTab(input: {
   const map = new Map<string, Participant[]>();
   if (!documentShareable && !documentTeamId && !agentsPresent) return map;
   map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
+  if (selfBesideTabId && selfBesideTabId !== activeId)
+    map.set(selfBesideTabId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
   const defaultTabId = tabs[0]?.id ?? activeId;
   const tabFocus = new Map<string, string>(remoteTabFocus);
   for (const p of livePresence) {
@@ -115,6 +123,20 @@ export function buildParticipantsByTab(input: {
     const bucket = map.get(tabId);
     if (bucket) bucket.push(withStatus);
     else map.set(tabId, [withStatus]);
+    // On screen beside it too: the same person, with the status that tab earns from our side.
+    const besideTabId = remoteBesideTabs?.get(id);
+    if (besideTabId && besideTabId !== tabId) {
+      const besideStatus =
+        idleStatus === 'online' && besideTabId === activeId
+          ? 'online'
+          : status === 'offline'
+            ? 'offline'
+            : 'away';
+      const beside: Participant = { ...p, status: besideStatus, lastActiveAt };
+      const besideBucket = map.get(besideTabId);
+      if (besideBucket) besideBucket.push(beside);
+      else map.set(besideTabId, [beside]);
+    }
   }
   return map;
 }

@@ -3510,6 +3510,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelDrawShape,
     cancelEdit,
     canvasMainRef,
+    // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
+    skipTabFitRef,
     canvasTool,
     exitAvatarTool,
     exitFormatTool,

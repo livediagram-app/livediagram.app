@@ -813,9 +813,15 @@ export class DocumentRoom implements DurableObject {
         void this.selections.note(sender.id, selectionFromOp(msg.op)).catch(() => {});
       }
       if (opKind === 'tab-focus') {
-        const tabId = (msg.op as { tabId?: unknown }).tabId;
+        const { tabId, besideTabId } = msg.op as { tabId?: unknown; besideTabId?: unknown };
         if (typeof tabId === 'string') {
           sender.tabId = tabId.slice(0, MAX_TAB_ID_LEN);
+          // The other pane of a side by side split (docs/specs/007-editor/split-view.md "Presence"),
+          // clamped like tabId; anything but a string clears it. A tab-scoped session has one tab
+          // and no split, so it never holds one.
+          if (typeof besideTabId === 'string' && !session.tabScope)
+            sender.besideTabId = besideTabId.slice(0, MAX_TAB_ID_LEN);
+          else delete sender.besideTabId;
           ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
         }
       }

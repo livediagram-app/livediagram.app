@@ -53,6 +53,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   presenting: '#6366f1',
   'presenter-controls': '#8b5cf6',
   'locking-tabs': '#64748b',
+  'side-by-side': '#0ea5e9',
   'ai-tools': '#7c3aed',
   'auto-align': '#22c55e',
   'auto-layout': '#2563eb',

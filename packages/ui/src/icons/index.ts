@@ -9,6 +9,7 @@ export {
   CloseIcon,
   CopyIcon,
   DuplicateIcon,
+  FitViewIcon,
   FormatPainterIcon,
   IndentIcon,
   LockIcon,
@@ -16,6 +17,7 @@ export {
   PencilIcon,
   PlusIcon,
   RefreshIcon,
+  SideBySideIcon,
   TrashIcon,
 } from './actions';
 export {
