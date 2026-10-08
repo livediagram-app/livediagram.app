@@ -306,7 +306,9 @@ In Plan mode:
     placed.
   - **Look**: a thin band of the card type's colour across the panel's top edge (lifted on the dark chrome as
     the type stripes are), then a slim header with no rule under it, then the title, large (22 px, semibold),
-    a click away from editing. The main column's sections (Description, Checklist, Linked as Parent, Comments...)
+    a click away from editing. A long title wraps, up to **three lines**, then scrolls within them; a short one takes one
+    line, so no room is kept for lines it does not need. It stays one line of text: Enter saves it (and closes the card),
+    and a line break pasted in becomes a space. The main column's sections (Description, Checklist, Linked as Parent, Comments...)
     sit under 13 px semibold headings with generous space between them. An empty description is one quiet
     line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
