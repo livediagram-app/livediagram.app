@@ -562,7 +562,7 @@ function SecondPage({ x, y }: { x: number; y: number }) {
         <circle cx={left + 37} cy={quoteY + 32} r="7" fill={INDIGO} />
         <text
           x={left + 37}
-          y={quoteY + 34.5}
+          y={quoteY + 32 + 6 * 0.36}
           textAnchor="middle"
           fontFamily={FONT}
           fontSize="6"

@@ -198,7 +198,7 @@ export function ArticlePage({ portrait = false }: { portrait?: boolean }) {
         <circle cx={left + 5.5} cy={y + 109} r="5.5" fill={TEAMMATE} />
         <text
           x={left + 5.5}
-          y={y + 111.2}
+          y={y + 109 + 5 * 0.36}
           textAnchor="middle"
           fontFamily={SANS}
           fontSize="5"

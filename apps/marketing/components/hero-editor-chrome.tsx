@@ -49,10 +49,12 @@ export function CanvasCluster({ className }: { className: string }) {
           <ThemeBrushIcon size={12} />
         </span>
       </span>
+      {/* Each piece of the readout centres its cap band, not its line box, as the window's
+          other labels do (docs/specs/004-interface-design/optical-alignment.md). */}
       <span className={`${CARD} gap-2.5 px-2.5 text-[9px] font-medium`}>
-        <span>−</span>
-        100%
-        <span>+</span>
+        <span className="text-optical-line">−</span>
+        <span className="text-optical-line">100%</span>
+        <span className="text-optical-line">+</span>
       </span>
     </div>
   );
@@ -93,7 +95,7 @@ export function ToolbarMenuButton({ mode }: { mode: HeroMode }) {
       <span className={CELL}>
         <MenuIcon size={11} />
       </span>
-      <span className="flex h-full items-center gap-1 border-l border-slate-100 bg-brand-50 px-2 text-[9px] font-medium text-brand-700 dark:border-slate-800 dark:bg-brand-500/15 dark:text-brand-200">
+      <span className="optical-edges flex h-full items-center gap-1 border-l border-slate-100 bg-brand-50 px-2 text-[9px] font-medium text-brand-700 dark:border-slate-800 dark:bg-brand-500/15 dark:text-brand-200">
         <Icon size={10} />
         <span className="text-optical-line">{label}</span>
         <ChevronDownIcon size={7} />

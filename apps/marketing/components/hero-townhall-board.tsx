@@ -171,9 +171,11 @@ function Avatar({ cx, cy, r, person }: { cx: number; cy: number; r: number; pers
     <>
       <circle cx={cx} cy={cy} r={r + 1.5} className="fill-white dark:fill-slate-900" />
       <circle cx={cx} cy={cy} r={r} fill={person.colour} />
+      {/* Baseline half a cap height below the centre (about 0.365 of the font size), so the
+          initials' ink sits on the disc's centre (the optical audit holds it to 0.5px). */}
       <Txt
         x={cx}
-        y={cy + r * 0.36}
+        y={cy + r * 0.85 * 0.365}
         size={r * 0.85}
         weight={800}
         anchor="middle"
