@@ -7,6 +7,7 @@ import { ChipField } from '@/components/primitives/ChipField';
 import { CheckIcon, CloseIcon, PlusIcon, Select, TextInput, TextArea } from '@livediagram/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
 import {
   ESTIMATE_POINTS,
   PRIORITIES,
@@ -36,10 +37,14 @@ export function DebouncedText({
   label,
   maxLength,
   onEnter,
+  wrapLines,
 }: {
   id: string;
   value: string;
   multiline?: boolean;
+  // One line of text that wraps, growing to this many lines and then scrolling (the card panel's title: 3). A short
+  // value takes one line; Enter still saves (onEnter), and a line break pasted in becomes a space.
+  wrapLines?: number;
   // The most characters the field takes: typing stops there, and a count shows near it.
   maxLength?: number;
   // Enter on a one-line field: what follows once it has saved (the card's title closes the card). Not called when
@@ -55,6 +60,8 @@ export function DebouncedText({
   label?: string;
 }) {
   const [draft, setDraft] = useState(value);
+  const wrapRef = useRef<HTMLTextAreaElement>(null);
+  useAutoHeight(wrapRef, draft, { lines: wrapLines ?? 1 });
   const savedRef = useRef(value);
   // The saved value as last received, to go back to when a save is refused.
   const valueRef = useLatest(value);
@@ -95,7 +102,8 @@ export function DebouncedText({
     maxLength,
     'aria-label': label,
     onChange: (e: { target: { value: string } }) => {
-      const text = e.target.value;
+      // A wrapping one-line field never holds a line break (a paste brings them).
+      const text = wrapLines ? e.target.value.replace(/\r?\n/g, ' ') : e.target.value;
       setDraft(text);
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => flush(text), ITEM_EDIT_DEBOUNCE_MS);
@@ -129,7 +137,9 @@ export function DebouncedText({
     ) : null;
   // A caller's own look replaces the shared field (the item panel's large title).
   const field = className ? (
-    multiline ? (
+    wrapLines && !multiline ? (
+      <textarea {...common} ref={wrapRef} rows={1} className={`block resize-none ${className}`} />
+    ) : multiline ? (
       <textarea {...common} className={className} />
     ) : (
       <input {...common} className={className} />

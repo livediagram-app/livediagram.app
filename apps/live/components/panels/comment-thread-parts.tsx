@@ -4,7 +4,8 @@
 // "Comments", "On Plan cards"): the list of comments, the composer with @-mentions, and the Resolve / Reopen
 // control. The canvas's comment popover and a Plan card's item panel both compose them; the panel draws them
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useRef, useState, type RefObject } from 'react';
+import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
 import {
   Button,
   CheckIcon,
@@ -26,6 +27,7 @@ export type CommentDensity = 'compact' | 'comfortable';
 
 // The tallest the composer grows before it scrolls, in px (about eight lines).
 export const COMPOSER_MAX_PX = 160;
+const COMPOSER_MAX = { px: COMPOSER_MAX_PX };
 
 // The send shortcut as this platform names it: ⌘ on Apple devices, Ctrl elsewhere.
 export function sendShortcutLabel(): string {
@@ -151,18 +153,8 @@ export function CommentComposer({
     fieldRef: ref,
   });
   const comfortable = density === 'comfortable';
-  // Grows with its text up to COMPOSER_MAX_PX, then scrolls. The height is border-box, so it adds the borders to the
-  // content's scrollHeight: without them the field is 2px short of its text and shows a scrollbar on one line. It
-  // only scrolls (and so only ever shows a scrollbar) once it is at its tallest.
-  useLayoutEffect(() => {
-    const field = ref.current;
-    if (!field) return;
-    field.style.height = 'auto';
-    const borders = field.offsetHeight - field.clientHeight;
-    const needed = field.scrollHeight + borders;
-    field.style.height = `${Math.min(needed, COMPOSER_MAX_PX)}px`;
-    field.style.overflowY = needed > COMPOSER_MAX_PX ? 'auto' : 'hidden';
-  }, [draft, ref]);
+  // Grows with its text up to COMPOSER_MAX_PX, then scrolls (useAutoHeight).
+  useAutoHeight(ref, draft, COMPOSER_MAX);
   const submit = () => {
     const text = draft.trim();
     if (!text) return;

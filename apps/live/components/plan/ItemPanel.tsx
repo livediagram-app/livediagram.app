@@ -322,6 +322,8 @@ function ItemPanelContent({
             maxLength={ITEM_TITLE_MAX}
             // Enter saves the title and closes the card.
             onEnter={onClose}
+            // A long title wraps to three lines, then scrolls; a short one keeps to one (plan-board.md "Look").
+            wrapLines={3}
             required
             placeholder="Title"
             disabled={!canEdit}
