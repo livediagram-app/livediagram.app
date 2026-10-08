@@ -76,6 +76,8 @@ last read of that tab: the CLI keeps a local copy of each tab it reads and sends
 every element, so the api can tell whether what the changeset targets changed since. The same copies give
 `tab diff`.
 
+**Ending.** Ctrl-C and SIGTERM (what a process manager sends) end a long command (`watch`, `sync --watch`) the same way: the work under way finishes, then the process exits within `EXIT_GRACE_MS` (250 ms), whatever a closing socket still waits for.
+
 **Waiting.** `wait --for change` treats a burst of edits as one change. When `--timeout` passes, `wait` prints that
 nothing new happened and exits 0.
 

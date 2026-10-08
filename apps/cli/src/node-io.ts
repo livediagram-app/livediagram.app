@@ -163,9 +163,19 @@ export function nodeIo(): CliIo {
       const id = setTimeout(handler, ms);
       return () => clearTimeout(id);
     },
+    // Ctrl-C, or a process manager stopping the command (PM2, systemd and containers send SIGTERM): heard once.
     onInterrupt: (handler) => {
-      process.once('SIGINT', handler);
-      return () => void process.off('SIGINT', handler);
+      const once = () => {
+        release();
+        handler();
+      };
+      const release = () => {
+        process.off('SIGINT', once);
+        process.off('SIGTERM', once);
+      };
+      process.on('SIGINT', once);
+      process.on('SIGTERM', once);
+      return release;
     },
     files: {
       read: (path) => readFile(path, 'utf8').catch(() => null),
