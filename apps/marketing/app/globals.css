@@ -22,7 +22,8 @@
 @media (prefers-reduced-motion: reduce) {
   /* the window veils stay hidden */
   .hero-fade,
-  .hero-fade-out {
+  .hero-fade-out,
+  .hero-fade-end {
     animation: none;
     opacity: 0;
   }
@@ -32,29 +33,15 @@
   .fa-pulse,
   .fa-grow,
   .fa-hl,
-  .fa-theme,
-  .fa-theme-bg,
-  .fa-arrow-move,
-  .fa-arrow-grow,
-  .fa-paint,
-  .fa-lww,
-  .fa-tab,
-  .fa-reveal,
-  .fa-chev,
-  .fa-laser,
   .fa-spin,
-  .fa-dip,
   .fa-rotate,
   .fa-swap-a,
-  .fa-on,
   .fa-fade,
   .fa-ripple,
   .fa-flow,
   .fa-glow,
   .fa-spin-cont,
   .fa-beat,
-  .fa-drift,
-  .fa-spot,
   .tg-reveal,
   .tg-reveal .tg-reveal-track > li {
     animation: none !important;
@@ -63,17 +50,8 @@
     stroke-dashoffset: 0 !important;
   }
 
-  /* the shift-drag ghost holds its landed (solid clone) frame */
-  .fa-drag-dup {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: translate(88px, 14px) !important;
-  }
-
-  /* the "after" half of cross-fades / the travelling brush stay hidden */
-  .fa-brush,
-  .fa-swap-b,
-  .fa-off {
+  /* the "after" half of a cross-fade stays hidden */
+  .fa-swap-b {
     animation: none !important;
     opacity: 0 !important;
   }

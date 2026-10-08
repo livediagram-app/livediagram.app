@@ -1,768 +1,292 @@
-// Feature illustrations — foundations + 'simple by design' scenes.
-// Split from FeatureArt.tsx; see ./shared for Frame + color constants.
-import { ARROW_STROKE, Frame, INK_FILL, INK_STROKE, INK_TEXT, PINK, SKY } from './shared';
+// Feature illustrations for livediagram's open edges: the REST API from your own scripts, an AI
+// tool building a diagram over MCP, and export that is a faithful picture of the canvas. Same
+// vocabulary as ./features (panel chrome with a light and a dark half, the Default canvas, the
+// fa-b-* loops); under reduced motion each shows its finished state.
+//
+// Split from FeatureArt.tsx; see ./shared for Frame and the colour constants.
 
-/* ─────────────────────── Section: foundations ────────────────────── */
+import type { ReactNode } from 'react';
+import { Arrow, MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
+import { Frame, PINK, SKY } from './shared';
 
-export function MitArt() {
-  return (
-    <Frame>
-      <div className="flex h-full flex-col items-center justify-center gap-1.5">
-        <div
-          className="fa-pop flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-          style={{ animationDelay: '0.3s' }}
-        >
-          <GitHubIcon />
-          <span className="text-[9px] font-semibold text-slate-700 dark:text-slate-200">
-            livediagram
-          </span>
-          <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[7px] font-semibold text-white dark:bg-slate-700">
-            MIT
-          </span>
-        </div>
-        <span className="text-[7px] text-slate-400">editor · api · marketing, all public</span>
-      </div>
-    </Frame>
-  );
-}
+const VIEW = '0 0 300 96';
+const VIOLET = '#8b5cf6';
+const EMERALD = '#10b981';
 
+// Terminal colours: the window is a terminal in both appearances, so these are fixed.
+const TERM = {
+  prompt: '#94a3b8',
+  text: '#e2e8f0',
+  flag: '#7dd3fc',
+  string: '#fcd34d',
+  key: '#c4b5fd',
+  dim: '#64748b',
+};
+
+/** The API: a curl call with a bearer token, and the documents it returns. */
 export function ApiArt() {
-  // A tiny terminal: a curl call to the API with a bearer token, echoing the
-  // "call it from your own scripts" card.
+  const mono = {
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+    fontSize: 6.2,
+  } as const;
   return (
     <Frame>
-      <div className="flex h-full flex-col items-center justify-center gap-1.5">
-        <div
-          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-          style={{ animationDelay: '0.3s' }}
-        >
-          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1 dark:border-slate-800 dark:bg-slate-950">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-300" />
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-          </div>
-          <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
-            <div className="text-slate-400">$ curl …/api/documents</div>
-            <div className="text-slate-600 dark:text-slate-300">
-              -H &quot;Authorization:{' '}
-              <span className="font-semibold text-brand-600 dark:text-brand-300">Bearer lvd_…</span>
-              &quot;
-            </div>
-          </div>
-        </div>
-        <span className="text-[7px] text-slate-400">your scripts, your account</span>
-      </div>
-    </Frame>
-  );
-}
-
-export function McpArt() {
-  // A connected AI tool calling an MCP tool that lands as a diagram — echoing
-  // the "connect your AI tools" card, sibling to the API/curl one above.
-  return (
-    <Frame>
-      <div className="flex h-full flex-col items-center justify-center gap-1.5">
-        <div
-          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-          style={{ animationDelay: '0.3s' }}
-        >
-          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1 dark:border-slate-800 dark:bg-slate-950">
-            <SparkIcon />
-            <span className="text-[8px] font-semibold text-slate-600 dark:text-slate-300">
-              AI tool · MCP
-            </span>
-          </div>
-          <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
-            <div className="text-slate-600 dark:text-slate-300">
-              ▸{' '}
-              <span className="font-semibold text-brand-600 dark:text-brand-300">
-                create_document
-              </span>
-            </div>
-            <div className="text-slate-400">&quot;auth flow&quot; → livediagram</div>
-          </div>
-        </div>
-        <span className="text-[7px] text-slate-400">find · read · create · edit</span>
-      </div>
-    </Frame>
-  );
-}
-
-function SparkIcon() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 16 16" fill="#7c3aed" aria-hidden="true">
-      <path d="M8 0 L9.6 5.4 L15 7 L9.6 8.6 L8 14 L6.4 8.6 L1 7 L6.4 5.4 Z" />
-    </svg>
-  );
-}
-
-function GitHubIcon() {
-  return (
-    <svg className="dark:fill-slate-300" width="12" height="12" viewBox="0 0 16 16" fill="#334155">
-      <path d="M8 0C3.6 0 0 3.6 0 8c0 3.5 2.3 6.5 5.5 7.6.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.3.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-3.9 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8.6-.2 1.3-.3 2-.3.7 0 1.4.1 2 .3 1.5-1 2.2-.8 2.2-.8.5 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3-1.8 3.7-3.6 3.9.3.3.6.8.6 1.6v2.3c0 .2.1.5.6.4C13.7 14.5 16 11.5 16 8c0-4.4-3.6-8-8-8z" />
-    </svg>
-  );
-}
-
-export function NoServersArt() {
-  const nodes = ['marketing', 'live', 'api', 'router'];
-  return (
-    <Frame>
-      <div className="flex h-full flex-col items-center justify-center gap-2 px-3">
-        <div className="flex items-center gap-1 text-[8px] font-medium text-slate-400">
-          <CloudIcon /> Cloudflare edge
-        </div>
-        <div className="flex items-center gap-1.5">
-          {nodes.map((n, i) => (
-            <span
-              key={n}
-              className="relative rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-            >
-              <span
-                className="fa-pulse absolute inset-0 rounded ring-2 ring-brand-400"
-                style={{ animationDelay: `${i * 0.5}s` }}
-              />
-              <span className="relative">{n}</span>
-            </span>
-          ))}
-        </div>
-        <span className="text-[7px] text-slate-400">no VMs · no containers</span>
-      </div>
-    </Frame>
-  );
-}
-
-function CloudIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="#f59e0b">
-      <path d="M4 12 a3 3 0 0 1 0-6 a4 4 0 0 1 7.6-1 A3 3 0 0 1 12 12 Z" />
-    </svg>
-  );
-}
-
-export function NoTrackingArt() {
-  return (
-    <Frame>
-      <div className="flex h-full flex-col items-center justify-center gap-1.5">
-        <svg width="56" height="34" viewBox="0 0 56 34">
-          {/* eye */}
-          <path
-            d="M6 17 C 16 4, 40 4, 50 17 C 40 30, 16 30, 6 17 Z"
-            fill="none"
-            stroke="#94a3b8"
-            strokeWidth="2"
-          />
-          <circle cx="28" cy="17" r="5" fill="none" stroke="#94a3b8" strokeWidth="2" />
-          {/* slash drawing across it */}
-          <line
-            className="fa-draw"
-            x1="8"
-            y1="29"
-            x2="48"
-            y2="5"
-            stroke="#f43f5e"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
-        <span
-          className="fa-fade text-[8px] font-medium text-slate-500 dark:text-slate-400"
-          style={{ animationDelay: '0.4s' }}
-        >
-          0 third-party trackers
-        </span>
-      </div>
-    </Frame>
-  );
-}
-
-/* ─────────────── Section: simple by design (lead-in) ─────────────────
- * These cards mock the real editor surface like the rest of the page, so
- * the lead-in section stays visually consistent with the sections below. */
-
-// Cursor drawn inside an SVG (vs the HTML Cursor helper) so it can be
-// placed precisely in a 220x96 illustration. Optional name label.
-function SvgCursor({
-  x,
-  y,
-  color,
-  label,
-  delay,
-}: {
-  x: number;
-  y: number;
-  color: string;
-  label?: string;
-  delay?: string;
-}) {
-  // Position with the transform attribute on the outer group; animate the
-  // scale on an inner group. (A CSS transform animation on the same element
-  // overrides the translate attribute and snaps the element to the origin.)
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <g className="fa-pop" style={{ animationDelay: delay }}>
-        <path
-          d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z"
-          fill={color}
-          stroke="white"
+      <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
+        <PanelShadow x={22} y={8} w={256} h={80} r={6} />
+        <rect
+          className="fill-slate-900 stroke-slate-900 dark:fill-slate-950 dark:stroke-slate-700"
+          x="22"
+          y="8"
+          width="256"
+          height="80"
+          rx="6"
           strokeWidth="1"
         />
-        {label ? (
-          <g>
-            <rect x="12" y="-10" width="17" height="11" rx="2" fill={color} />
-            <text x="20.5" y="-2" textAnchor="middle" fontSize="7" fontWeight="600" fill="white">
-              {label}
-            </text>
+        <path
+          className="fill-slate-800 dark:fill-slate-900"
+          d="M22.5 21 V14 a5.5 5.5 0 0 1 5.5 -5.5 H272 a5.5 5.5 0 0 1 5.5 5.5 V21 Z"
+        />
+        {['#fb7185', '#fbbf24', '#34d399'].map((c, i) => (
+          <circle key={c} cx={31 + i * 6} cy="14.8" r="1.9" fill={c} />
+        ))}
+        <text x="150" y="17" textAnchor="middle" fontSize="5.5" fontWeight="600" fill={TERM.prompt}>
+          ~/scripts · zsh
+        </text>
+
+        <text x="32" y="33" {...mono}>
+          <tspan fill={EMERALD}>$ </tspan>
+          <tspan fill={TERM.text}>curl </tspan>
+          <tspan fill={TERM.string}>https://livediagram.app/api/documents</tspan>
+          <tspan fill={TERM.dim}> \</tspan>
+        </text>
+        <text x="42" y="43" {...mono}>
+          <tspan fill={TERM.flag}>-H </tspan>
+          <tspan fill={TERM.string}>&quot;Authorization: Bearer lvd_7Kq2…&quot;</tspan>
+        </text>
+
+        {/* The response, once the call returns. */}
+        <g className="fa-b-late">
+          <rect x="32" y="50" width="30" height="9" rx="2" fill={EMERALD} fillOpacity="0.2" />
+          <text x="47" y="56.6" textAnchor="middle" fontSize="5.6" fontWeight="700" fill="#6ee7b7">
+            200 OK
+          </text>
+          <text x="32" y="69" {...mono}>
+            <tspan fill={TERM.dim}>[{'{'} </tspan>
+            <tspan fill={TERM.key}>&quot;title&quot;</tspan>
+            <tspan fill={TERM.dim}>: </tspan>
+            <tspan fill={TERM.string}>&quot;Auth flow&quot;</tspan>
+            <tspan fill={TERM.dim}>, </tspan>
+            <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
+            <tspan fill={TERM.dim}>: </tspan>
+            <tspan fill={TERM.flag}>3</tspan>
+            <tspan fill={TERM.dim}> {'}'},</tspan>
+          </text>
+          <text x="38" y="79" {...mono}>
+            <tspan fill={TERM.dim}>{'{'} </tspan>
+            <tspan fill={TERM.key}>&quot;title&quot;</tspan>
+            <tspan fill={TERM.dim}>: </tspan>
+            <tspan fill={TERM.string}>&quot;Q3 roadmap&quot;</tspan>
+            <tspan fill={TERM.dim}>, </tspan>
+            <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
+            <tspan fill={TERM.dim}>: </tspan>
+            <tspan fill={TERM.flag}>5</tspan>
+            <tspan fill={TERM.dim}> {'}'}]</tspan>
+          </text>
+        </g>
+        {/* The caret, waiting while the call is in flight. */}
+        <rect className="fa-b-early" x="32" y="51" width="3.6" height="7" fill={TERM.text} />
+      </svg>
+    </Frame>
+  );
+}
+
+// The four-point sparkle an AI tool's chat marks itself with.
+function Sparkle({ x, y, r = 4 }: { x: number; y: number; r?: number }) {
+  return (
+    <path
+      d={`M${x} ${y - r} Q${x + r * 0.18} ${y - r * 0.18} ${x + r} ${y} Q${x + r * 0.18} ${y + r * 0.18} ${x} ${y + r} Q${x - r * 0.18} ${y + r * 0.18} ${x - r} ${y} Q${x - r * 0.18} ${y - r * 0.18} ${x} ${y - r} Z`}
+      fill={VIOLET}
+    />
+  );
+}
+
+/** MCP: you ask your AI tool for a diagram; it calls livediagram and the diagram appears. */
+export function McpArt() {
+  return (
+    <Frame>
+      <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
+        {/* The AI tool's chat. */}
+        <PanelShadow x={12} y={8} w={150} h={80} r={6} />
+        <rect className={PANEL} x="12" y="8" width="150" height="80" rx="6" strokeWidth="1" />
+        <Sparkle x={22} y={18} r={3.6} />
+        <text className={STRONG} x="29" y="20.2" fontSize="6.2" fontWeight="700">
+          Your AI tool
+        </text>
+        <text className={SUBTLE} x="154" y="20.2" textAnchor="end" fontSize="5.2" fontWeight="600">
+          MCP connected
+        </text>
+        <circle cx="104" cy="18.4" r="1.8" fill={EMERALD} />
+        <path
+          className="stroke-slate-100 dark:stroke-slate-800"
+          d="M12 26.5 H162"
+          strokeWidth="1"
+        />
+
+        {/* You ask. */}
+        <rect x="74" y="32" width="80" height="14" rx="7" fill={SKY} />
+        <text x="114" y="41.2" textAnchor="middle" fontSize="6" fontWeight="600" fill="#fff">
+          Draw our login flow
+        </text>
+
+        {/* The tool call, running then done. */}
+        <rect
+          className="fill-violet-50 stroke-violet-200 dark:fill-violet-500/10 dark:stroke-violet-500/30"
+          x="20"
+          y="52"
+          width="118"
+          height="14"
+          rx="4"
+          strokeWidth="0.8"
+        />
+        <text
+          className="fill-violet-700 dark:fill-violet-300"
+          x="38"
+          y="61.2"
+          fontSize="5.8"
+          fontWeight="600"
+          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+        >
+          livediagram.create_document
+        </text>
+        <g className="fa-b-early">
+          <circle
+            cx="29"
+            cy="59"
+            r="3"
+            fill="none"
+            stroke={VIOLET}
+            strokeOpacity="0.25"
+            strokeWidth="1.2"
+          />
+          <path
+            d="M29 56 A3 3 0 0 1 32 59"
+            fill="none"
+            stroke={VIOLET}
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+        </g>
+        <g className="fa-b-late">
+          <circle cx="29" cy="59" r="3.4" fill={EMERALD} />
+          <path
+            d="M27.4 59 L28.6 60.2 L30.7 57.8"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </g>
+        <g className="fa-b-late">
+          <rect className={SUBTLE} x="20" y="72" width="96" height="3" rx="1.5" opacity="0.4" />
+          <rect className={SUBTLE} x="20" y="78" width="64" height="3" rx="1.5" opacity="0.4" />
+        </g>
+
+        {/* What lands in livediagram. */}
+        <MiniWindow x={176} y={8} w={112} h={80} title="Login flow">
+          <g className="fa-b-late">
+            <Node x={190} y={30} w={36} h={16} label="Sign in" r={8} />
+            <Node x={240} y={30} w={36} h={16} label="Verify" />
+            <Node x={240} y={62} w={36} h={16} label="Session" />
+            <Node x={190} y={62} w={36} h={16} label="Retry" />
+            <Arrow d="M226 38 H234" head={[239, 38, 0]} />
+            <Arrow d="M258 46 V56" head={[258, 61, 90]} />
+            <Arrow d="M240 70 H232" head={[227, 70, 180]} />
           </g>
-        ) : null}
-      </g>
+        </MiniWindow>
+      </svg>
+    </Frame>
+  );
+}
+
+// The diagram drawn on the canvas and again in each exported file, mark for mark.
+function ExportDiagram({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <Node x={0} y={0} w={30} h={13} label="Plan" r={3} />
+      <Node x={44} y={0} w={30} h={13} label="Build" r={3} />
+      <Node x={22} y={28} w={30} h={13} label="Ship" r={3} />
+      <Arrow d="M30 6.5 H38" head={[43, 6.5, 0]} />
+      <Arrow d="M59 13 L44 24" head={[48, 27, 144]} />
+      <circle cx="66" cy="34" r="5" fill={PINK} fillOpacity="0.85" />
     </g>
   );
 }
 
-export function EasyStartArt() {
-  // A click creates a shape: the cursor taps (ripple) and a shape pops in.
+// An exported file: a page with a folded corner and its format on a tab.
+function FileCard({
+  x,
+  y,
+  label,
+  color,
+  children,
+  className,
+  delay,
+}: {
+  x: number;
+  y: number;
+  label: string;
+  color: string;
+  children?: ReactNode;
+  className?: string;
+  delay?: string;
+}) {
   return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
-          <rect
-            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-            x="74"
-            y="33"
-            width="66"
-            height="30"
-            rx="15"
-            fill={INK_FILL}
-            stroke={INK_STROKE}
-            strokeWidth="2"
-          />
-          <text
-            className="fill-(--art-ink-text)"
-            x="107"
-            y="52"
-            textAnchor="middle"
-            fontSize="12"
-            fontWeight="600"
-            fill={INK_TEXT}
-          >
-            Start
-          </text>
-        </g>
-        <circle
-          className="fa-ripple"
-          cx="122"
-          cy="60"
-          r="7"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="1.5"
-        />
-        <g transform="translate(118 54)" fill={SKY} stroke="white" strokeWidth="1">
-          <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
-        </g>
-      </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-        one click
-      </span>
-    </Frame>
-  );
-}
-
-export function DepthArt() {
-  // A plain-looking shape, selected, revealing a toolbar of deeper tools.
-  const tools = [
-    <GroupGlyph key="g" />,
-    <LockGlyph key="l" />,
-    <LinkGlyph key="k" />,
-    <CommentGlyph key="c" />,
-  ];
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="28"
-          y="38"
-          width="58"
-          height="30"
-          rx="6"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="fa-pulse dark:stroke-brand-500"
-          x="24"
-          y="34"
-          width="66"
-          height="38"
-          rx="9"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="1.5"
-        />
-      </svg>
-      <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-md dark:border-slate-800 dark:bg-slate-900">
-        {tools.map((g, i) => (
-          <span
-            key={i}
-            className="fa-pop flex h-5 w-5 items-center justify-center rounded text-slate-500 dark:text-slate-400"
-            style={{ animationDelay: `${0.4 + i * 0.25}s` }}
-          >
-            {g}
-          </span>
-        ))}
-      </div>
-    </Frame>
-  );
-}
-
-function GroupGlyph() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-    >
-      <rect x="2" y="2" width="8" height="8" rx="1.5" />
-      <rect
-        className="dark:fill-slate-900"
-        x="6"
-        y="6"
-        width="8"
-        height="8"
-        rx="1.5"
-        fill="white"
-      />
-    </svg>
-  );
-}
-
-function LockGlyph() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-    >
-      <rect x="3.5" y="7" width="9" height="6" rx="1.5" />
-      <path d="M5.5 7 V5 a2.5 2.5 0 0 1 5 0 V7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function LinkGlyph() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-    >
+    <g className={className} style={delay ? { animationDelay: delay } : undefined}>
+      <PanelShadow x={x} y={y} w={66} h={54} r={4} />
       <path
-        d="M6.5 9.5 L9.5 6.5 M7 4.5 L9 2.5 a3 3 0 0 1 4 4 L11 8.5 M9 11.5 L7 13.5 a3 3 0 0 1 -4 -4 L5 7.5"
-        strokeLinecap="round"
+        className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
+        d={`M${x + 4} ${y} H${x + 56} L${x + 66} ${y + 10} V${y + 50} a4 4 0 0 1 -4 4 H${x + 4} a4 4 0 0 1 -4 -4 V${y + 4} a4 4 0 0 1 4 -4 Z`}
+        strokeWidth="1"
       />
-    </svg>
+      <path
+        className="fill-slate-100 stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-700"
+        d={`M${x + 56} ${y} V${y + 6} a4 4 0 0 0 4 4 H${x + 66}`}
+        strokeWidth="1"
+      />
+      <rect x={x + 5} y={y + 3} width="20" height="8.5" rx="2" fill={color} />
+      <text x={x + 15} y={y + 9.4} textAnchor="middle" fontSize="5.8" fontWeight="700" fill="#fff">
+        {label}
+      </text>
+      {children}
+    </g>
   );
 }
 
-function CommentGlyph() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-    >
-      <path d="M2.5 3 h11 v7 h-6.5 l-3 2.5 v-2.5 h-1.5 z" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export function MultiplayerArt() {
-  // The shared canvas: a shape with a remote selection glow and several
-  // named cursors arriving.
+/** Export: the canvas leaves as PNG, SVG or PDF, the same marks in the same places. */
+export function ExportArt() {
   return (
     <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="82"
-          y="36"
-          width="56"
-          height="28"
-          rx="6"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="fa-pulse"
-          x="78"
-          y="32"
-          width="64"
-          height="36"
-          rx="9"
-          fill="none"
-          stroke={PINK}
-          strokeWidth="2"
-        />
-        <SvgCursor x={34} y={22} color={SKY} label="TM" delay="0.3s" />
-        <SvgCursor x={150} y={58} color={PINK} label="JR" delay="0.8s" />
-        <SvgCursor x={58} y={66} color="#8b5cf6" label="AL" delay="1.3s" />
-      </svg>
-    </Frame>
-  );
-}
-
-export function AnyDeviceArt() {
-  // The same document on a laptop, tablet, and phone. A highlight ring
-  // cycles across the three (like the template tiles).
-  return (
-    <Frame>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {/* shared mini diagram, drawn inside each screen via <use>-like repetition */}
-        {/* Laptop */}
-        <rect
-          className="fill-(--art-paper) dark:stroke-slate-600"
-          x="8"
-          y="12"
-          width="70"
-          height="42"
-          rx="3"
-          fill="#fff"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-        />
-        <path
-          className="dark:fill-slate-700 dark:stroke-slate-600"
-          d="M2 58 L84 58 L80 62 L6 62 Z"
-          fill="#e2e8f0"
-          stroke="#cbd5e1"
-          strokeWidth="1"
-          strokeLinejoin="round"
-        />
-        <g
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="1.2"
-        >
-          <line
-            className="stroke-(--art-arrow)"
-            x1="40"
-            y1="27"
-            x2="48"
-            y2="41"
-            stroke={ARROW_STROKE}
-          />
-          <rect x="22" y="22" width="18" height="10" rx="2" />
-          <rect x="48" y="36" width="18" height="10" rx="2" />
-        </g>
-        <rect
-          className="fa-hl dark:stroke-brand-500"
-          x="4"
-          y="8"
-          width="78"
-          height="50"
-          rx="5"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="2"
-          style={{ animationDelay: '0s' }}
-        />
-        <text
-          className="dark:fill-slate-400"
-          x="43"
-          y="74"
-          textAnchor="middle"
-          fontSize="7"
-          fontWeight="500"
-          fill="#64748b"
-        >
-          Laptop
-        </text>
-
-        {/* Tablet */}
-        <rect
-          className="fill-(--art-paper) dark:stroke-slate-600"
-          x="92"
-          y="12"
-          width="46"
-          height="56"
-          rx="5"
-          fill="#fff"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-        />
-        <g
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="1.2"
-        >
-          <line
-            className="stroke-(--art-arrow)"
-            x1="110"
-            y1="34"
-            x2="121"
-            y2="44"
-            stroke={ARROW_STROKE}
-          />
-          <rect x="100" y="24" width="18" height="10" rx="2" />
-          <rect x="113" y="44" width="18" height="10" rx="2" />
-        </g>
-        <rect
-          className="fa-hl dark:stroke-brand-500"
-          x="88"
-          y="8"
-          width="54"
-          height="64"
-          rx="7"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="2"
-          style={{ animationDelay: '2s' }}
-        />
-        <text
-          className="dark:fill-slate-400"
-          x="115"
-          y="80"
-          textAnchor="middle"
-          fontSize="7"
-          fontWeight="500"
-          fill="#64748b"
-        >
-          Tablet
-        </text>
-
-        {/* Phone */}
-        <rect
-          className="fill-(--art-paper) dark:stroke-slate-600"
-          x="150"
-          y="14"
-          width="30"
-          height="54"
-          rx="5"
-          fill="#fff"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-        />
-        <rect
-          className="dark:fill-slate-600"
-          x="160"
-          y="17"
-          width="10"
-          height="1.6"
-          rx="0.8"
-          fill="#cbd5e1"
-        />
-        <g
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="1.2"
-        >
-          <line
-            className="stroke-(--art-arrow)"
-            x1="163"
-            y1="34"
-            x2="167"
-            y2="42"
-            stroke={ARROW_STROKE}
-          />
-          <rect x="155" y="24" width="20" height="9" rx="2" />
-          <rect x="156" y="42" width="20" height="9" rx="2" />
-        </g>
-        <rect
-          className="fa-hl dark:stroke-brand-500"
-          x="146"
-          y="10"
-          width="38"
-          height="62"
-          rx="7"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="2"
-          style={{ animationDelay: '4s' }}
-        />
-        <text
-          className="dark:fill-slate-400"
-          x="165"
-          y="80"
-          textAnchor="middle"
-          fontSize="7"
-          fontWeight="500"
-          fill="#64748b"
-        >
-          Phone
-        </text>
-      </svg>
-    </Frame>
-  );
-}
-
-export function ExportArt() {
-  // The canvas on the left, the same canvas as a file on the right. The two
-  // panels are deliberately identical: docs/specs/020-import-export/export-fidelity.md's whole rule is that an export
-  // is a picture of the canvas, not a lossy version of one.
-  return (
-    <Frame>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+      <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
         {/* On the canvas. */}
-        <rect
-          className="fill-(--art-paper) dark:stroke-slate-700"
-          x="16"
-          y="22"
-          width="74"
-          height="52"
-          rx="4"
-          fill="#fff"
-          stroke="#e2e8f0"
-          strokeWidth="1.5"
-        />
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="28"
-          y="32"
-          width="30"
-          height="15"
-          rx="3"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <path
-          className="stroke-(--art-arrow)"
-          d="M43 47 v9"
-          stroke={ARROW_STROKE}
-          strokeWidth="2"
-        />
-        <path
-          className="stroke-(--art-arrow)"
-          d="M39 53 l4 5 4-5"
-          fill="none"
-          stroke={ARROW_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
-          x="28"
-          y="56"
-          width="30"
-          height="12"
-          rx="3"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <circle cx="74" cy="60" r="6" fill={PINK} opacity="0.85" />
+        <ExportDiagram x={24} y={26} s={1.15} />
 
         {/* Out. */}
         <path
-          className="dark:stroke-brand-400"
-          d="M96 48 h22"
-          stroke={SKY}
-          strokeWidth="2"
+          className="stroke-slate-400 dark:stroke-slate-500"
+          d="M122 48 H146"
+          strokeWidth="1.3"
           strokeLinecap="round"
+          strokeDasharray="2.5 2.5"
         />
-        <path
-          className="dark:stroke-brand-400"
-          d="M113 43 l6 5 -6 5"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
+        <path className="fill-slate-400 dark:fill-slate-500" d="M151 48 l-5 -3 v6 z" />
 
-        {/* The file: the same marks, in the same places. */}
-        <rect
-          className="fill-(--art-paper) dark:stroke-brand-400"
-          x="126"
-          y="22"
-          width="74"
-          height="52"
-          rx="4"
-          fill="#fff"
-          stroke={SKY}
-          strokeWidth="2"
-        />
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="138"
-          y="32"
-          width="30"
-          height="15"
-          rx="3"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <path
-          className="stroke-(--art-arrow)"
-          d="M153 47 v9"
-          stroke={ARROW_STROKE}
-          strokeWidth="2"
-        />
-        <path
-          className="stroke-(--art-arrow)"
-          d="M149 53 l4 5 4-5"
-          fill="none"
-          stroke={ARROW_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
-          x="138"
-          y="56"
-          width="30"
-          height="12"
-          rx="3"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <circle cx="184" cy="60" r="6" fill={PINK} opacity="0.85" />
-
-        {/* Formats. */}
-        {['PNG', 'SVG', 'PDF'].map((label, i) => (
-          <g key={label} className="fa-pop" style={{ animationDelay: `${i * 0.25}s` }}>
-            <rect
-              className="dark:fill-slate-900 dark:stroke-slate-600"
-              x={126 + i * 26}
-              y="78"
-              width="22"
-              height="13"
-              rx="3"
-              fill="#fff"
-              stroke="#cbd5e1"
-              strokeWidth="1.5"
-            />
-            <text
-              className="fill-(--art-ink-text)"
-              x={137 + i * 26}
-              y="87"
-              textAnchor="middle"
-              fill={INK_TEXT}
-              fontSize="7"
-              fontWeight="700"
-            >
-              {label}
-            </text>
-          </g>
-        ))}
+        {/* The files, fanned. */}
+        <FileCard x={214} y={10} label="PDF" color="#ef4444" className="fa-pop" delay="0.5s" />
+        <FileCard x={188} y={23} label="SVG" color={VIOLET} className="fa-pop" delay="0.3s" />
+        <FileCard x={162} y={36} label="PNG" color={SKY} className="fa-pop" delay="0.1s">
+          <ExportDiagram x={168} y={52} s={0.7} />
+        </FileCard>
       </svg>
     </Frame>
   );

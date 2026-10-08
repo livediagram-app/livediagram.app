@@ -59,10 +59,12 @@ export function CanvasCluster({ className }: { className: string }) {
 }
 
 // The tab bar's right-hand controls, labelled as the editor labels them on a wide window:
-// Search, Settings, and the appearance toggle on its default, System.
+// Search, Settings, and the appearance toggle on its default, System. Shown by the window's width
+// (the window/ container in hero-editor-window.tsx), not the viewport's: in a narrower window the
+// tabs ran into it.
 export function TabBarToolbelt() {
   return (
-    <div className="ml-auto hidden items-center gap-3 pr-1 text-[9px] font-medium text-slate-500 sm:flex dark:text-slate-400">
+    <div className="ml-auto hidden items-center gap-3 pr-1 text-[9px] font-medium text-slate-500 @min-[620px]/window:flex dark:text-slate-400">
       <span className="flex items-center gap-1">
         <SearchIcon size={9} />
         Search
@@ -100,7 +102,10 @@ export function ToolbarMenuButton({ mode }: { mode: HeroMode }) {
   );
 }
 
-// The strip shows the mode's first tiles; a phone fewer.
+// The strip shows the mode's first tiles; a narrow window fewer. Measured against the window's
+// canvas (a container query, @container in hero-editor-window.tsx), not the viewport: a landing
+// beat's window is narrower than the hero's at the same screen width, and the full strip there ran
+// into the menu button beside it.
 const NARROW_TILES = 4;
 
 function StripDivider() {
@@ -155,7 +160,7 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
           <span
             key={t.key}
             className={`h-6 w-6 items-center justify-center rounded ${
-              i < NARROW_TILES ? 'flex' : 'hidden sm:flex'
+              i < NARROW_TILES ? 'flex' : 'hidden @[600px]:flex'
             } ${t.active ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300' : ''}`}
           >
             {t.glyph}

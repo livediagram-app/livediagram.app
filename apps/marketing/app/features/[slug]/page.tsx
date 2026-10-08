@@ -18,8 +18,8 @@ import { pageMetadata } from '@livediagram/ui';
 
 // One detail page per feature category at /features/<id>, reading the matching
 // LANDING_SECTIONS entry (see docs/specs/019-marketing/marketing-site.md "Feature category
-// pages"). The landing page advertises each category in a compact block; the
-// full grid of feature cards lives here. Static export: only the known section
+// pages"). The landing page tells each category as a story beat; the full grid
+// of feature cards lives here. Static export: only the known section
 // ids are generated, so an unknown slug 404s at build rather than rendering.
 export const dynamicParams = false;
 
@@ -36,7 +36,7 @@ export async function generateMetadata({
   const section = getLandingSection(slug);
   if (!section) return {};
   return pageMetadata({
-    title: `${section.title} | livediagram`,
+    title: `${section.label}: ${section.title} | livediagram`,
     description: section.description,
     path: `/features/${slug}`,
     // This route ships its own per-category opengraph-image / twitter-image.
@@ -59,10 +59,10 @@ export default async function FeatureCategoryPage({
 
   return (
     <>
-      <BreadcrumbJsonLd name={section.title} path={`/features/${slug}`} />
+      <BreadcrumbJsonLd name={section.label} path={`/features/${slug}`} />
       <Header surface="Feature" />
       <main>
-        <Breadcrumb items={[{ label: section.title }]} />
+        <Breadcrumb items={[{ label: section.label }]} />
         <FeatureCategoryHero section={section} />
         <Section id={section.id} title="Everything in this category">
           {groups ? (

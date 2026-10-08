@@ -1,1053 +1,707 @@
-// Feature illustrations — canvas + real-time scenes. Split from
-// FeatureArt.tsx; see ./shared for Frame + color constants.
-import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, PINK, SKY } from './shared';
-import { ActionIcon, GlyphDisc } from '@livediagram/ui';
+// Feature illustrations: templates and themes, tidy editing, and tabs (the Diagrams category's
+// canvas cards; the Collaborate cards live in ./together). Each is a small mock of the editor
+// surface its card describes, plain SVG on the card's 300 by 96 stage (Scene in ./canvas-parts),
+// composed across the full width. Motion runs on one shared 6s timeline
+// (app/feature-art-animations.css, the canvas and collaboration block): pieces are drawn where they end up and staggered
+// with --d, and every one settles to its finished frame under reduced motion.
+
+import type { CSSProperties, ReactNode } from 'react';
 import {
-  ClockIcon,
-  Cursor,
-  DocumentIcon,
-  FolderIcon,
-  LinkIcon,
-  PixelWalker,
-  SlidersIcon,
-  TeamIcon,
+  ALEX,
+  AWAY,
+  Box,
+  Connector,
+  FOLDER_PATHS,
+  Glyph,
+  JORDAN,
+  LINK_PATHS,
+  ON_CANVAS,
+  Panel,
+  Pill,
+  Pointer,
+  RULE,
+  SAM,
+  Scene,
+  TEXT,
+  Tab,
+  TextBar,
+  YOU,
+  at,
+  from,
 } from './canvas-parts';
 
-/* ───────────────────────── Section: the canvas ───────────────────── */
+/* ───────────────────────── Templates and themes ───────────────────────── */
 
-export function TemplatesArt() {
-  const tiles = ['Flowchart', 'Mind map', 'Kanban'];
-  return (
-    <Frame>
-      <div className="flex h-full items-center justify-center gap-2 px-3">
-        {tiles.map((name, i) => (
-          <div
-            key={name}
-            className="relative h-16 w-1/3 overflow-hidden rounded border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900"
-          >
-            <span
-              className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
-              style={{ animationDelay: `${i * 2}s` }}
-            />
-            <svg viewBox="0 0 60 32" className="h-8 w-full">
-              {i === 0 ? (
-                <g
-                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-                  fill={INK_FILL}
-                  stroke={INK_STROKE}
-                  strokeWidth="1.5"
-                >
-                  <rect x="22" y="2" width="16" height="8" rx="2" />
-                  <rect x="22" y="20" width="16" height="8" rx="2" />
-                  <line
-                    className="stroke-(--art-arrow)"
-                    x1="30"
-                    y1="10"
-                    x2="30"
-                    y2="20"
-                    stroke={ARROW_STROKE}
-                  />
-                </g>
-              ) : i === 1 ? (
-                <g
-                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-                  fill={INK_FILL}
-                  stroke={INK_STROKE}
-                  strokeWidth="1.5"
-                >
-                  <line x1="30" y1="16" x2="12" y2="6" />
-                  <line x1="30" y1="16" x2="48" y2="6" />
-                  <line x1="30" y1="16" x2="14" y2="26" />
-                  <circle cx="30" cy="16" r="5" />
-                  <circle cx="11" cy="6" r="3.5" />
-                  <circle cx="49" cy="6" r="3.5" />
-                  <circle cx="13" cy="26" r="3.5" />
-                </g>
-              ) : (
-                <g
-                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-                  fill={INK_FILL}
-                  stroke={INK_STROKE}
-                  strokeWidth="1.2"
-                >
-                  <rect
-                    className="dark:fill-slate-800 dark:stroke-slate-700"
-                    x="4"
-                    y="3"
-                    width="14"
-                    height="26"
-                    rx="2"
-                    fill="#f1f5f9"
-                    stroke="#cbd5e1"
-                  />
-                  <rect
-                    className="dark:fill-slate-800 dark:stroke-slate-700"
-                    x="23"
-                    y="3"
-                    width="14"
-                    height="26"
-                    rx="2"
-                    fill="#f1f5f9"
-                    stroke="#cbd5e1"
-                  />
-                  <rect
-                    className="dark:fill-slate-800 dark:stroke-slate-700"
-                    x="42"
-                    y="3"
-                    width="14"
-                    height="26"
-                    rx="2"
-                    fill="#f1f5f9"
-                    stroke="#cbd5e1"
-                  />
-                  <rect x="6" y="6" width="10" height="5" rx="1.5" />
-                  <rect x="25" y="6" width="10" height="5" rx="1.5" />
-                  <rect x="25" y="13" width="10" height="5" rx="1.5" />
-                </g>
-              )}
-            </svg>
-            <p className="mt-0.5 text-center text-[7px] font-medium text-slate-500 dark:text-slate-400">
-              {name}
-            </p>
-          </div>
+// The template cards' previews, each drawn in its card's own space (a 60-wide card, its preview
+// well from (4, 18) to (56, 65)).
+const PREVIEWS: { name: string; art: ReactNode }[] = [
+  {
+    name: 'Flowchart',
+    art: (
+      <g className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)" strokeWidth="1.2">
+        <path className="fill-none stroke-(--art-arrow)" d="M30 33 v5 M30 48 v4" />
+        <rect x="17" y="24" width="26" height="9" rx="2.5" />
+        <path d="M30 38 l7 5 l-7 5 l-7 -5 z" />
+        <rect x="17" y="52" width="26" height="9" rx="2.5" />
+      </g>
+    ),
+  },
+  {
+    name: 'Mind map',
+    art: (
+      <g className="stroke-(--art-ink-stroke)" strokeWidth="1.2">
+        <path
+          className="fill-none"
+          d="M30 43 C 20 43, 18 30, 14 30 M30 43 C 20 43, 18 56, 14 56 M30 43 C 40 43, 42 30, 46 30 M30 43 C 40 43, 42 56, 46 56"
+        />
+        <rect className="fill-(--art-ink-stroke)" x="21" y="38" width="18" height="10" rx="5" />
+        {[
+          [6, 27],
+          [6, 53],
+          [44, 27],
+          [44, 53],
+        ].map(([x, y]) => (
+          <rect
+            key={`${x}-${y}`}
+            className="fill-(--art-ink-fill)"
+            x={x}
+            y={y}
+            width="10"
+            height="6"
+            rx="3"
+          />
         ))}
-      </div>
-    </Frame>
+      </g>
+    ),
+  },
+  {
+    name: 'Kanban',
+    art: (
+      <g>
+        {[9, 24, 39].map((x, c) => (
+          <g key={x}>
+            <rect
+              className="fill-slate-100 dark:fill-slate-700/60"
+              x={x}
+              y="24"
+              width="12"
+              height="38"
+              rx="2"
+            />
+            {Array.from({ length: 3 - c }, (_, i) => (
+              <rect
+                key={i}
+                className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                x={x + 1.5}
+                y={27 + i * 8}
+                width="9"
+                height="6"
+                rx="1.2"
+                strokeWidth="0.8"
+              />
+            ))}
+          </g>
+        ))}
+      </g>
+    ),
+  },
+  {
+    name: 'Org chart',
+    art: (
+      <g strokeWidth="1.2">
+        <path
+          className="fill-none stroke-(--art-arrow)"
+          d="M30 33 V 40 M15 47 V 40 H 45 V 47 M30 40 V 47"
+        />
+        <g className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)">
+          <rect x="21" y="25" width="18" height="8" rx="2" />
+          {[8, 23, 38].map((x) => (
+            <rect key={x} x={x} y="47" width="14" height="8" rx="2" />
+          ))}
+        </g>
+      </g>
+    ),
+  },
+];
+
+/** The template picker: four starters, the one under the pointer lifting to be used. */
+export function TemplatesArt() {
+  return (
+    <Scene>
+      {PREVIEWS.map(({ name, art }, i) => {
+        const x = 12 + i * 72;
+        return (
+          <g key={name} transform={`translate(${x} 0)`}>
+            {i === 1 ? (
+              <rect
+                className="fa-a-pop fill-none stroke-sky-500"
+                style={at(1.2)}
+                x="-2.5"
+                y="11.5"
+                width="65"
+                height="75"
+                rx="7.5"
+                strokeWidth="1.5"
+              />
+            ) : null}
+            <Panel x={0} y={14} w={60} h={70} />
+            <rect
+              className="fill-(--art-paper) stroke-slate-100 dark:stroke-slate-700"
+              x="4"
+              y="18"
+              width="52"
+              height="47"
+              rx="3.5"
+              strokeWidth="0.8"
+            />
+            {art}
+            <text
+              className={TEXT}
+              x="30"
+              y="75.5"
+              fontSize="7"
+              fontWeight="600"
+              textAnchor="middle"
+            >
+              {name}
+            </text>
+          </g>
+        );
+      })}
+      <Pointer x={110} y={50} color={YOU} className="fa-a-move" style={from(70, 30, 0.2)} />
+    </Scene>
   );
 }
 
+// The three themes the Themes card cycles through: a paper, an ink and a name each, light and dark.
+const THEMES = [
+  {
+    name: 'Default',
+    paper: 'fill-(--art-paper)',
+    fill: 'fill-(--art-ink-fill)',
+    stroke: 'stroke-(--art-ink-stroke)',
+    text: 'fill-(--art-ink-text)',
+    swatch: '#0ea5e9',
+  },
+  {
+    name: 'Forest',
+    paper: 'fill-emerald-50 dark:fill-emerald-950',
+    fill: 'fill-emerald-100 dark:fill-emerald-900',
+    stroke: 'stroke-emerald-600 dark:stroke-emerald-400',
+    text: 'fill-emerald-900 dark:fill-emerald-100',
+    swatch: '#16a34a',
+  },
+  {
+    name: 'Sunset',
+    paper: 'fill-orange-50 dark:fill-orange-950',
+    fill: 'fill-orange-100 dark:fill-orange-900',
+    stroke: 'stroke-orange-500 dark:stroke-orange-400',
+    text: 'fill-orange-900 dark:fill-orange-100',
+    swatch: '#f97316',
+  },
+];
+// Each theme's turn in the 6s cycle (.fa-a-cycle): a third each.
+const TURN = [0, -4, -2];
+// The themed diagram: [x, y, width, label].
+const THEMED: [number, number, number, string][] = [
+  [30, 37, 40, 'Idea'],
+  [86, 37, 40, 'Plan'],
+  [142, 24, 40, 'Build'],
+  [142, 50, 40, 'Test'],
+];
+
+/** One click recolours everything: the same diagram in Default, Forest and Sunset in turn. */
 export function ThemesArt() {
   return (
-    <Frame>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {/* Each recolouring piece rests in the Default look, which is what reduced motion shows. */}
-        <rect
-          className="fa-theme-bg fill-(--art-paper)"
-          x="40"
-          y="14"
-          width="140"
-          height="68"
-          rx="8"
-          fill="#f0f9ff"
-        />
+    <Scene>
+      <Panel x={14} y={10} w={186} h={76} />
+      {THEMES.map((t, i) => (
         <g
-          className="fa-theme fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
+          key={t.name}
+          className={`fa-a-cycle ${i === 0 ? 'fa-a-first' : ''}`}
+          style={at(TURN[i]!)}
         >
-          <rect x="58" y="30" width="46" height="22" rx="6" />
-          <rect x="120" y="46" width="46" height="22" rx="6" />
-        </g>
-        <line
-          className="fa-theme stroke-(--art-arrow)"
-          stroke={ARROW_STROKE}
-          x1="104"
-          y1="41"
-          x2="120"
-          y2="57"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-        one click
-      </span>
-    </Frame>
-  );
-}
-
-export function MarqueeArt() {
-  const boxes = [
-    { x: 24, y: 30 },
-    { x: 86, y: 46 },
-    { x: 150, y: 26 },
-  ];
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {boxes.map((b, i) => (
-          <g key={i}>
-            <rect
-              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-              x={b.x}
-              y={b.y}
-              width="40"
-              height="22"
-              rx="5"
-              fill={INK_FILL}
-              stroke={INK_STROKE}
-              strokeWidth="2"
-            />
-            <rect
-              className="fa-pulse dark:stroke-brand-500"
-              x={b.x - 3}
-              y={b.y - 3}
-              width="46"
-              height="28"
-              rx="7"
-              fill="none"
-              stroke={SKY}
-              strokeWidth="1.5"
-              style={{ animationDelay: '1.2s' }}
-            />
+          <rect className={t.paper} x="17" y="13" width="180" height="70" rx="4" />
+          <g
+            className={`${t.stroke} fill-none`}
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M70 47 H 84 M126 47 C 134 47, 134 34, 140 34 M126 47 C 134 47, 134 60, 140 60" />
+            <path d="M81 44 l3 3 l-3 3" />
           </g>
-        ))}
-        {/* marquee selection rectangle */}
-        <rect
-          className="fa-grow dark:fill-brand-500/10 dark:stroke-brand-500"
-          x="20"
-          y="22"
-          width="174"
-          height="56"
-          rx="2"
-          fill="rgba(14,165,233,0.08)"
-          stroke={SKY}
-          strokeWidth="1.5"
-          strokeDasharray="4 3"
-        />
-      </svg>
-      <span
-        className="fa-pop absolute left-1/2 top-1.5 -translate-x-1/2 rounded bg-slate-900 px-1.5 py-0.5 text-[8px] font-semibold text-white dark:bg-slate-700"
-        style={{ animationDelay: '1.4s' }}
-      >
-        3 selected
-      </span>
-    </Frame>
-  );
-}
-
-export function CommentsArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="26"
-          y="34"
-          width="58"
-          height="30"
-          rx="6"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-      </svg>
-      {/* comment count badge on the element */}
-      <span className="absolute left-[34%] top-5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[9px] font-bold text-white shadow">
-        <span className="fa-pulse absolute inset-0 rounded-full bg-amber-400" />
-        <span className="text-optical-centre relative">2</span>
-      </span>
-      {/* thread popover */}
-      <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-1">
-          <GlyphDisc
-            size={14}
-            className="text-[6px] font-bold text-white"
-            style={{ backgroundColor: PINK }}
-          >
-            JR
-          </GlyphDisc>
-          <span className="text-[7px] font-semibold text-slate-600 dark:text-slate-300">
-            Jordan
-          </span>
-        </div>
-        <div className="mt-1 h-1.5 w-full rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="mt-0.5 h-1.5 w-3/4 rounded bg-slate-100 dark:bg-slate-800" />
-      </div>
-    </Frame>
-  );
-}
-
-export function AssignedActionsArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="26"
-          y="34"
-          width="58"
-          height="30"
-          rx="6"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-      </svg>
-      {/* action badge on the element */}
-      <span className="absolute left-[34%] top-5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-500 text-white shadow">
-        <ActionIcon size={12} className="h-3 w-3" />
-      </span>
-      {/* action card */}
-      <div className="fa-fade absolute right-2 top-3 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
-        <div className="h-1.5 w-4/5 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="mt-1 flex items-center gap-1">
-          <GlyphDisc
-            size={14}
-            className="text-[6px] font-bold text-white"
-            style={{ backgroundColor: PINK }}
-          >
-            AS
-          </GlyphDisc>
-          <span className="text-[7px] font-semibold text-slate-600 dark:text-slate-300">
-            Assigned to Ana
-          </span>
-        </div>
-        <span className="fa-pop mt-1 inline-block rounded bg-emerald-500 px-1 py-0.5 text-[7px] font-semibold text-white">
-          Complete
-        </span>
-      </div>
-    </Frame>
-  );
-}
-
-// The style the format painter copies (the fa-paint keyframes paint the same pair).
-const PAINTED_FILL = '#dbeafe';
-const PAINTED_STROKE = '#0284c7';
-
-export function FormatPainterArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {/* styled source: a painted style, not the theme's ink, so it keeps its colours on
-            any canvas (the painter's subject is colour) */}
-        <rect
-          x="26"
-          y="35"
-          width="54"
-          height="26"
-          rx="6"
-          fill={PAINTED_FILL}
-          stroke={PAINTED_STROKE}
-          strokeWidth="2"
-        />
-        {/* target adopts the style; it rests painted, which is what reduced motion shows */}
-        <rect
-          className="fa-paint"
-          x="140"
-          y="35"
-          width="54"
-          height="26"
-          rx="6"
-          fill={PAINTED_FILL}
-          stroke={PAINTED_STROKE}
-          strokeWidth="2"
-        />
-        {/* travelling brush */}
-        <g className="fa-brush">
-          <circle
-            className="dark:fill-slate-900 dark:stroke-slate-500"
-            cx="92"
-            cy="34"
-            r="8"
-            fill="white"
-            stroke="#94a3b8"
-            strokeWidth="1.5"
-          />
-          <path className="dark:fill-brand-300" d="M88 34 l4 -4 l3 3 l-4 4 z" fill={BLUE_STROKE} />
-        </g>
-      </svg>
-    </Frame>
-  );
-}
-
-export function TabsArt() {
-  const tabs = ['Overview', 'Backend', 'Data'];
-  return (
-    <Frame>
-      <div className="flex h-full flex-col">
-        <div className="relative flex items-center gap-1 border-b border-slate-200 px-2 pt-2 dark:border-slate-800">
-          {/* sliding active indicator */}
-          <span
-            className="fa-tab absolute bottom-0 left-2 h-[2px] w-[52px] rounded bg-brand-500"
-            aria-hidden
-          />
-          {tabs.map((t) => (
-            <span
-              key={t}
-              className="rounded-t px-1.5 py-1 text-[8px] font-medium text-slate-600 dark:text-slate-300"
-              style={{ width: 52, display: 'inline-block', textAlign: 'center' }}
-            >
-              {t}
-            </span>
+          {THEMED.map(([x, y, w, label]) => (
+            <g key={label}>
+              <rect
+                className={`${t.fill} ${t.stroke}`}
+                x={x}
+                y={y}
+                width={w}
+                height="20"
+                rx="5"
+                strokeWidth="1.6"
+              />
+              <text
+                className={t.text}
+                x={x + w / 2}
+                y={y + 12.6}
+                fontSize="7.5"
+                fontWeight="600"
+                textAnchor="middle"
+              >
+                {label}
+              </text>
+            </g>
           ))}
-          <span className="px-1 text-[10px] text-slate-400">+</span>
-        </div>
-        <div className="relative flex-1">
-          <svg viewBox="0 0 220 56" className="absolute inset-0 h-full w-full">
+        </g>
+      ))}
+      {/* The theme picker beside it, the theme in use highlighted. */}
+      <Panel x={212} y={10} w={76} h={76} />
+      {THEMES.map((t, i) => {
+        const y = 28 + i * 21;
+        return (
+          <g key={t.name}>
             <rect
-              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-              x="30"
-              y="14"
-              width="46"
-              height="20"
-              rx="5"
-              fill={INK_FILL}
-              stroke={INK_STROKE}
-              strokeWidth="1.8"
+              className={`fa-a-cycle ${i === 0 ? 'fa-a-first' : ''} fill-slate-100 dark:fill-slate-700`}
+              style={at(TURN[i]!)}
+              x="216"
+              y={y - 8}
+              width="68"
+              height="16"
+              rx="4"
             />
-            <rect
-              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-              x="120"
-              y="20"
-              width="46"
-              height="20"
-              rx="5"
-              fill={INK_FILL}
-              stroke={INK_STROKE}
-              strokeWidth="1.8"
-            />
-            <line
-              className="fa-draw stroke-(--art-arrow)"
-              x1="76"
-              y1="24"
-              x2="120"
-              y2="30"
-              stroke={ARROW_STROKE}
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-          </svg>
-          {/* cross-tab link chip */}
-          <span
-            className="fa-fade absolute right-3 top-2 flex items-center gap-0.5 rounded bg-white px-1 py-0.5 text-[7px] font-medium text-brand-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-brand-300 dark:ring-slate-800"
-            style={{ animationDelay: '0.6s' }}
-          >
-            ↗ Data
-          </span>
-        </div>
-      </div>
-    </Frame>
-  );
-}
-
-export function FoldersArt() {
-  return (
-    <Frame>
-      <div className="flex h-full flex-col justify-center gap-1 px-3 text-[8px] text-slate-600 dark:text-slate-300">
-        <div className="flex items-center gap-1 font-medium">
-          <svg
-            className="fa-chev"
-            width="8"
-            height="8"
-            viewBox="0 0 8 8"
-            fill="none"
-            stroke="#64748b"
-            strokeWidth="1.5"
-          >
-            <path d="M2 1 L5 4 L2 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <FolderIcon />
-          <span>Product</span>
-        </div>
-        <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0s' }}>
-          <DocumentIcon />
-          <span className="text-slate-500 dark:text-slate-400">Architecture</span>
-        </div>
-        <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0.15s' }}>
-          <DocumentIcon />
-          <span className="text-slate-500 dark:text-slate-400">Onboarding flow</span>
-        </div>
-        <div className="ml-0 flex items-center gap-1 text-slate-400">
-          <FolderIcon muted />
-          <span>Unsorted</span>
-        </div>
-      </div>
-    </Frame>
-  );
-}
-
-// Tab folders (docs/specs/006-document/tab-folders.md): grouping a document's TABS along the tab bar,
-// distinct from FoldersArt above (filing whole documents in the explorer).
-export function TabFoldersArt() {
-  const members = [
-    { name: 'Auth', c: '#8b5cf6' },
-    { name: 'API', c: '#f59e0b' },
-  ];
-  return (
-    <Frame>
-      <div className="flex h-full items-center justify-center gap-1.5 px-3">
-        {/* A folder chip grouping two member tabs. */}
-        <span className="flex items-center gap-1 rounded border border-slate-200 bg-white px-1 py-0.5 dark:border-slate-800 dark:bg-slate-900">
-          <span className="flex items-center gap-1 px-1 text-[7px] font-semibold text-slate-600 dark:text-slate-300">
-            <FolderIcon />
-            <span>Backend</span>
-            <span className="rounded-full bg-slate-200 px-1 text-[6px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-              2
-            </span>
-          </span>
-          {members.map((t) => (
-            <span
-              key={t.name}
-              className="flex items-center gap-1 rounded bg-slate-50 px-1.5 py-1 text-[7px] font-medium text-slate-600 dark:bg-slate-950 dark:text-slate-300"
-            >
-              <span className="h-2.5 w-1 rounded-full" style={{ backgroundColor: t.c }} />
+            <circle className={ON_CANVAS} cx="226" cy={y} r="4.5" fill={t.swatch} strokeWidth="1" />
+            <text className={TEXT} x="235" y={y + 2.4} fontSize="7" fontWeight="600">
               {t.name}
-            </span>
-          ))}
-        </span>
-        {/* A loose tab outside the folder. */}
-        <span className="flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-          <span className="h-2.5 w-1 rounded-full" style={{ backgroundColor: SKY }} />
-          Notes
-        </span>
-      </div>
-    </Frame>
-  );
-}
-
-/* ─────────────────────── Section: real-time ──────────────────────── */
-
-export function PresenceArt() {
-  // Presence shows on the tab bar: each tab carries a small stack of the
-  // participants currently focused on it (not in the editor header).
-  const tabs = [
-    { name: 'Overview', people: [{ initials: 'TM', color: SKY, ring: '#22c55e' }] },
-    {
-      name: 'Backend',
-      active: true,
-      people: [
-        { initials: 'JR', color: PINK, ring: '#22c55e' },
-        { initials: 'AL', color: '#8b5cf6', ring: '#f59e0b' },
-      ],
-    },
-    { name: 'Data', people: [] as { initials: string; color: string; ring: string }[] },
-  ];
-  return (
-    <Frame>
-      <div className="flex h-full flex-col justify-center gap-3 px-3">
-        <div className="flex items-end justify-center gap-1.5">
-          {tabs.map((t, ti) => (
-            <div
-              key={t.name}
-              className={
-                'relative flex flex-col items-center gap-1 rounded-md border px-2 py-1.5 ' +
-                (t.active
-                  ? 'border-brand-300 bg-white dark:border-brand-500/50 dark:bg-slate-900 dark:[--avatar-gap:var(--color-slate-900)]'
-                  : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:[--avatar-gap:var(--color-slate-950)]')
-              }
-            >
-              <div className="flex h-[14px] -space-x-1.5">
-                {t.people.map((p, i) => (
-                  <GlyphDisc
-                    size={14}
-                    key={p.initials}
-                    className="fa-pop text-[6px] font-bold text-white"
-                    style={{
-                      backgroundColor: p.color,
-                      boxShadow: `0 0 0 1.5px var(--avatar-gap, white), 0 0 0 3px ${p.ring}`,
-                      animationDelay: `${0.3 + (ti + i) * 0.5}s`,
-                    }}
-                  >
-                    {p.initials}
-                  </GlyphDisc>
-                ))}
-              </div>
-              <span className="text-[7px] font-medium text-slate-500 dark:text-slate-400">
-                {t.name}
-              </span>
-              {t.active ? (
-                <span className="absolute -bottom-px left-2 right-2 h-[2px] rounded bg-brand-500" />
-              ) : null}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-center gap-3 text-[8px] text-slate-400">
-          <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> online
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> away
-          </span>
-        </div>
-      </div>
-    </Frame>
-  );
-}
-
-export function SelectionGlowArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="78"
-          y="33"
-          width="64"
-          height="32"
-          rx="6"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        {/* remote collaborator's coloured glow */}
-        <rect
-          className="fa-pulse"
-          x="73"
-          y="28"
-          width="74"
-          height="42"
-          rx="9"
-          fill="none"
-          stroke={PINK}
-          strokeWidth="2.5"
-        />
-      </svg>
-      <span
-        className="absolute left-[60%] top-4 rounded px-1 py-0.5 text-[8px] font-semibold text-white shadow"
-        style={{ backgroundColor: PINK }}
-      >
-        JR
-      </span>
-      <span className="absolute bottom-3 right-6">
-        <Cursor color={PINK} />
-      </span>
-    </Frame>
-  );
-}
-
-export function RealtimeArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fa-lww fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="79"
-          y="34"
-          width="62"
-          height="30"
-          rx="6"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-      </svg>
-      <span className="absolute left-6 top-5">
-        <Cursor color={SKY} label="TM" />
-      </span>
-      <span className="absolute bottom-4 right-5">
-        <Cursor color={PINK} label="JR" />
-      </span>
-      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-        in sync
-      </span>
-    </Frame>
-  );
-}
-
-export function ShareLinksArt() {
-  const links = [
-    {
-      code: '/d/9fk2…',
-      role: 'Edit',
-      cls: 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300',
-    },
-    {
-      code: '/d/qp7x…',
-      role: 'View',
-      cls: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
-    },
-  ];
-  return (
-    <Frame>
-      <div className="flex h-full flex-col gap-1.5 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
-          <LinkIcon /> Share
-        </div>
-        {links.map((l, i) => (
-          <div
-            key={l.role}
-            className="fa-pop flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1 dark:border-slate-800 dark:bg-slate-900"
-            style={{ animationDelay: `${0.4 + i * 0.7}s` }}
-          >
-            <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">
-              {l.code}
-            </span>
-            <span className={'flex rounded px-1.5 py-0.5 text-[7px] font-semibold ' + l.cls}>
-              <span className="text-optical-line">{l.role}</span>
-            </span>
-          </div>
-        ))}
-      </div>
-    </Frame>
-  );
-}
-
-export function LaserArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {/* faint reference diagram */}
-        <g opacity="0.6">
-          <rect
-            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-            x="24"
-            y="20"
-            width="40"
-            height="18"
-            rx="4"
-            fill={INK_FILL}
-            stroke="#cbd5e1"
-            strokeWidth="1.5"
-          />
-          <rect
-            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-            x="150"
-            y="58"
-            width="40"
-            height="18"
-            rx="4"
-            fill={INK_FILL}
-            stroke="#cbd5e1"
-            strokeWidth="1.5"
-          />
-        </g>
-        {/* glowing laser trail */}
-        <path
-          className="fa-laser"
-          d="M44 30 C 90 34, 110 70, 170 66"
-          fill="none"
-          stroke="#f43f5e"
-          strokeWidth="3"
-          strokeLinecap="round"
-          style={{ filter: 'drop-shadow(0 0 3px rgba(244,63,94,0.8))' }}
-        />
-        <circle className="fa-pulse" cx="170" cy="66" r="3.5" fill="#f43f5e" />
-      </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-rose-500 shadow-sm dark:bg-slate-900/90">
-        laser
-      </span>
-    </Frame>
-  );
-}
-
-export function RevokeArt() {
-  return (
-    <Frame>
-      <div className="flex h-full flex-col items-center justify-center gap-2 px-3">
-        {/* status badge crossfades Shared ⇄ Private */}
-        <div className="relative h-4 w-14 text-center">
-          <span className="fa-on absolute inset-0 rounded-full bg-brand-100 text-[8px] font-semibold leading-4 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
-            Shared
-          </span>
-          <span className="fa-off absolute inset-0 rounded-full bg-rose-100 text-[8px] font-semibold leading-4 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
-            Private
-          </span>
-        </div>
-        {/* toggle */}
-        <span className="relative inline-flex h-4 w-8 items-center rounded-full bg-slate-200 dark:bg-slate-600">
-          <span className="fa-on absolute inset-0 rounded-full bg-brand-500" />
-          <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
-        </span>
-        {/* link row, struck through when revoked */}
-        <div className="relative flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-800 dark:bg-slate-900">
-          <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">/d/9fk2…</span>
-          <span className="fa-off absolute left-1.5 top-1/2 h-[1px] w-[46px] -translate-y-1/2 bg-rose-400" />
-        </div>
-      </div>
-    </Frame>
-  );
-}
-
-export function TeamsArt() {
-  const members = [
-    {
-      c: SKY,
-      who: 'You',
-      role: 'Admin',
-      cls: 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300',
-    },
-    {
-      c: PINK,
-      who: 'Jordan',
-      role: 'Member',
-      cls: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
-    },
-    {
-      c: '#8b5cf6',
-      who: 'Alex',
-      role: 'Member',
-      cls: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
-    },
-  ];
-  return (
-    <Frame>
-      <div className="flex h-full flex-col gap-1 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
-          <TeamIcon /> Design team
-          <span className="ml-auto text-[7px] font-medium text-slate-400">3 people</span>
-        </div>
-        {members.map((m, i) => (
-          <div
-            key={m.who}
-            className="fa-pop flex items-center gap-1.5 rounded px-1 py-0.5 text-[8px]"
-            style={{ animationDelay: `${0.3 + i * 0.5}s` }}
-          >
-            <GlyphDisc
-              size={14}
-              className="text-[6px] font-semibold text-white"
-              style={{ backgroundColor: m.c }}
-            >
-              {m.who[0]}
-            </GlyphDisc>
-            <span className="font-semibold text-slate-700 dark:text-slate-200">{m.who}</span>
-            <span
-              className={'ml-auto flex rounded px-1.5 py-0.5 text-[7px] font-semibold ' + m.cls}
-            >
-              <span className="text-optical-line">{m.role}</span>
-            </span>
-          </div>
-        ))}
-      </div>
-    </Frame>
-  );
-}
-
-export function ExpiryArt() {
-  return (
-    <Frame>
-      <div className="flex h-full flex-col gap-1.5 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
-          <ClockIcon /> Link expiry
-        </div>
-        {/* an active link counting down */}
-        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1 dark:border-slate-800 dark:bg-slate-900">
-          <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">/d/9fk2…</span>
-          <span className="fa-pulse rounded bg-brand-100 px-1.5 py-0.5 text-[7px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
-            6d left
-          </span>
-        </div>
-        {/* a lapsed link, kept so it can be extended */}
-        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1 dark:border-slate-800 dark:bg-slate-900">
-          <span className="font-mono text-[8px] text-slate-400 line-through">/d/qp7x…</span>
-          <span
-            className="fa-pop rounded bg-slate-100 px-1.5 py-0.5 text-[7px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-            style={{ animationDelay: '0.7s' }}
-          >
-            Extend
-          </span>
-        </div>
-      </div>
-    </Frame>
-  );
-}
-
-export function RefreshArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <g
-          className="fa-dip fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        >
-          <rect x="36" y="34" width="48" height="24" rx="6" />
-          <rect x="132" y="34" width="48" height="24" rx="6" />
-          <line
-            className="stroke-(--art-arrow)"
-            x1="84"
-            y1="46"
-            x2="132"
-            y2="46"
-            stroke={ARROW_STROKE}
-            strokeWidth="2"
-          />
-        </g>
-        {/* reload glyph (translate on the outer group, spin on the inner) */}
-        <g transform="translate(110 78)">
-          <g className="fa-spin" stroke="#94a3b8" strokeWidth="1.8" fill="none">
-            <path d="M-6 0 a6 6 0 1 1 1.8 4.3" strokeLinecap="round" />
-            <path d="M-6 -4 L-6 0 L-2 0" strokeLinecap="round" strokeLinejoin="round" />
+            </text>
           </g>
-        </g>
-      </svg>
-      <span className="absolute bottom-1 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-        reload · intact
-      </span>
-    </Frame>
+        );
+      })}
+    </Scene>
   );
 }
 
-// Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): the canvas dims under a dark shroud and
-// only a soft circle around the cursor stays lit, so the presenter can draw
-// the room's eye to one part of the canvas. The clear circle is a transparent
-// span with a huge dark box-shadow; it travels between two nodes.
-export function SpotlightArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="26"
-          y="20"
-          width="46"
-          height="22"
-          rx="5"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="150"
-          y="56"
-          width="46"
-          height="22"
-          rx="5"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <line
-          className="stroke-(--art-arrow)"
-          x1="72"
-          y1="31"
-          x2="150"
-          y2="67"
-          stroke="#cbd5e1"
-          strokeWidth="2"
-        />
-      </svg>
-      {/* the travelling light: a clear hole, everything else shrouded dark */}
-      <span
-        className="fa-spot absolute flex h-9 w-9 items-center justify-center rounded-full"
-        style={{ boxShadow: '0 0 0 999px rgba(15,23,42,0.6)' }}
-      >
-        <span
-          className="h-1.5 w-1.5 rounded-full bg-white"
-          style={{ boxShadow: '0 0 5px 1px rgba(255,255,255,0.9)' }}
-        />
-      </span>
-      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-        spotlight
-      </span>
-    </Frame>
-  );
-}
+// The custom theme's canvas: [x, y, width, height, label].
+const BRAND_BOXES: [number, number, number, number, string][] = [
+  [146, 28, 38, 20, 'Brand'],
+  [198, 28, 38, 20, 'Voice'],
+  [250, 28, 30, 20, 'Tone'],
+  [146, 62, 38, 18, 'Logo'],
+];
 
-export function AvatarModeArt() {
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="16"
-          y="18"
-          width="44"
-          height="20"
-          rx="5"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
-          x="150"
-          y="18"
-          width="52"
-          height="22"
-          rx="5"
-          fill={INK_FILL}
-          stroke={INK_STROKE}
-          strokeWidth="2"
-        />
-        {/* "you are here" ring on the box being talked about */}
-        <rect
-          x="146"
-          y="14"
-          width="60"
-          height="30"
-          rx="8"
-          fill="none"
-          stroke={SKY}
-          strokeWidth="2"
-        />
-        <line
-          className="stroke-(--art-arrow)"
-          x1="60"
-          y1="28"
-          x2="146"
-          y2="28"
-          stroke="#cbd5e1"
-          strokeWidth="2"
-        />
-        {/* the walked path */}
-        <path
-          d="M70 78 q46 8 84 -4"
-          fill="none"
-          stroke="#7dd3fc"
-          strokeWidth="2"
-          strokeDasharray="4 5"
-          strokeLinecap="round"
-        />
-        <PixelWalker x={58} shirt={SKY} flag />
-        <PixelWalker x={148} shirt={PINK} />
-      </svg>
-      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-        avatar mode
-      </span>
-    </Frame>
-  );
-}
-
-// Custom themes (docs/specs/011-theme/custom-themes.md): build your own palette, save it to your account,
-// and reuse it across documents like any built-in theme. A swatch row with one
-// selected, then a preview adopting the custom (brand-purple) colours.
+/** A theme of your own: pick a colour in the builder and the canvas takes it. */
 export function CustomThemesArt() {
-  const swatches = ['#7c3aed', '#0ea5e9', '#ec4899', '#16a34a', '#f59e0b', '#0f172a'];
+  const swatches = ['#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6', '#0ea5e9', '#334155'];
   return (
-    <Frame>
-      <div className="flex h-full flex-col gap-1.5 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
-          <SlidersIcon /> Theme builder
-          <span className="ml-auto rounded bg-violet-100 px-1.5 py-0.5 text-[7px] font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-            My brand
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {swatches.map((c, i) => (
-            <span
-              key={c}
-              className={
-                'fa-pop h-4 w-4 rounded-full dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.15)] ' +
-                (i === 0 ? 'ring-2 ring-violet-500 ring-offset-1 dark:ring-offset-slate-950' : '')
-              }
-              style={{ backgroundColor: c, animationDelay: `${0.2 + i * 0.25}s` }}
+    <Scene>
+      <Panel x={12} y={10} w={112} h={76} />
+      <Glyph x={20} y={17}>
+        <path d="M1 3 h8 M1 7 h8" />
+        <circle cx="3.5" cy="3" r="1.3" className="fill-white dark:fill-slate-800" />
+        <circle cx="6.5" cy="7" r="1.3" className="fill-white dark:fill-slate-800" />
+      </Glyph>
+      <text className={TEXT} x="33" y="24.5" fontSize="7.5" fontWeight="700">
+        My brand
+      </text>
+      {swatches.map((c, i) => {
+        const x = 30 + (i % 3) * 28;
+        const y = 44 + Math.floor(i / 3) * 20;
+        return (
+          <g key={c}>
+            {i === 0 ? (
+              <circle
+                className="fa-a-pop fill-none stroke-slate-700 dark:stroke-slate-200"
+                style={at(0.8)}
+                cx={x}
+                cy={y}
+                r="8"
+                strokeWidth="1.3"
+              />
+            ) : null}
+            <circle cx={x} cy={y} r="6" fill={c} />
+          </g>
+        );
+      })}
+      <Pill x={84} y={15} w={34} label="Save" tone="slate" className="fa-a-out" style={at(0)} />
+      <Pill x={80} y={15} w={38} label="Saved" tone="green" className="fa-a-late" style={at(0)} />
+      <Pointer x={31} y={45} color={YOU} className="fa-a-move" style={from(40, 30, 0)} />
+
+      <rect
+        className="fill-(--art-paper) stroke-slate-200 dark:stroke-slate-700"
+        x="134"
+        y="10"
+        width="154"
+        height="76"
+        rx="6"
+      />
+      <path
+        className="stroke-(--art-arrow)"
+        d="M184 38 H 198 M236 38 H 250 M165 48 V 62"
+        strokeWidth="1.4"
+        fill="none"
+      />
+      <g className="fa-a-out" style={at(0)}>
+        {BRAND_BOXES.map(([x, y, w, h, label]) => (
+          <Box key={label} x={x} y={y} w={w} h={h} label={label} />
+        ))}
+      </g>
+      <g className="fa-a-late" style={at(0)} strokeWidth="1.75">
+        {BRAND_BOXES.map(([x, y, w, h, label]) => (
+          <g key={label}>
+            <rect
+              className="fill-violet-100 stroke-violet-500 dark:fill-violet-500/25 dark:stroke-violet-300"
+              x={x}
+              y={y}
+              width={w}
+              height={h}
+              rx="5"
+            />
+            <text
+              className="fill-violet-800 dark:fill-violet-100"
+              x={x + w / 2}
+              y={y + h / 2 + 2.6}
+              fontSize="7.5"
+              fontWeight="600"
+              textAnchor="middle"
+            >
+              {label}
+            </text>
+          </g>
+        ))}
+      </g>
+    </Scene>
+  );
+}
+
+/* ───────────────────────── Tidy, fast editing ───────────────────────── */
+
+/** Drag a box, take everything in it: the marquee grows, three shapes light up, the fourth stays out. */
+export function MarqueeArt() {
+  const inside: [number, number, string][] = [
+    [40, 24, 'Ideas'],
+    [108, 54, 'Draft'],
+    [176, 22, 'Review'],
+  ];
+  return (
+    <Scene>
+      {inside.map(([x, y, label]) => (
+        <Box key={label} x={x} y={y} w={44} h={20} label={label} />
+      ))}
+      <Box x={244} y={50} w={44} h={20} label="Ship" />
+      <rect
+        className="fa-a-marquee fill-sky-500/10 stroke-sky-500"
+        x="30"
+        y="12"
+        width="200"
+        height="72"
+        rx="2"
+        strokeWidth="1"
+        strokeDasharray="3 2.5"
+      />
+      {inside.map(([x, y], i) => (
+        <g key={`${x}`} className="fa-a-pop" style={at(1.9 + i * 0.12)}>
+          <rect
+            className="fill-none stroke-sky-500"
+            x={x - 2.5}
+            y={y - 2.5}
+            width="49"
+            height="25"
+            rx="6.5"
+            strokeWidth="1.3"
+          />
+          {[
+            [x - 2.5, y - 2.5],
+            [x + 46.5, y - 2.5],
+            [x - 2.5, y + 22.5],
+            [x + 46.5, y + 22.5],
+          ].map(([hx, hy]) => (
+            <rect
+              key={`${hx}-${hy}`}
+              className="fill-white stroke-sky-500 dark:fill-slate-900"
+              x={hx! - 2}
+              y={hy! - 2}
+              width="4"
+              height="4"
+              rx="1"
+              strokeWidth="1"
             />
           ))}
-        </div>
-        {/* preview canvas adopting the saved palette: a named theme, so it stays light in dark */}
-        <div className="relative mt-0.5 flex-1 rounded border border-slate-200 bg-white dark:border-slate-800">
-          <svg viewBox="0 0 196 38" className="absolute inset-0 h-full w-full">
+        </g>
+      ))}
+      <Pill
+        x={168}
+        y={62}
+        w={46}
+        label="3 selected"
+        tone="solid"
+        className="fa-a-pop"
+        style={at(2.3)}
+      />
+      <Pointer x={230} y={84} color={YOU} className="fa-a-move" style={from(-200, -72, 0)} />
+    </Scene>
+  );
+}
+
+// The format painter's brush, as the toolbar draws it.
+const BRUSH = (
+  <>
+    <rect x="1" y="1" width="7" height="3.5" rx="1" />
+    <path d="M8 2.8 h1.2 v2.4 h-4.2 v2 M5 7.2 v2" />
+  </>
+);
+
+/** The format painter: pick up one shape's look and brush it onto the next. */
+export function FormatPainterArt() {
+  const styled = 'fill-pink-100 stroke-pink-500 dark:fill-pink-500/25 dark:stroke-pink-300';
+  const styledText = 'fill-pink-800 dark:fill-pink-100';
+  return (
+    <Scene>
+      {/* The painter, armed, in the floating toolbar. */}
+      <Panel x={126} y={8} w={48} h={16} />
+      <Glyph x={132} y={11} className="stroke-sky-600 dark:stroke-sky-300">
+        {BRUSH}
+      </Glyph>
+      <text
+        className="fill-sky-700 dark:fill-sky-200"
+        x="145"
+        y="18.5"
+        fontSize="6.5"
+        fontWeight="600"
+      >
+        Paint
+      </text>
+
+      <rect className={styled} x="30" y="42" width="64" height="28" rx="14" strokeWidth="2.2" />
+      <text
+        className={styledText}
+        x="62"
+        y="58.6"
+        fontSize="8"
+        fontWeight="700"
+        textAnchor="middle"
+      >
+        Launch
+      </text>
+      <path
+        className="fa-a-draw stroke-slate-400 dark:stroke-slate-500"
+        style={{ '--len': 150, '--d': '0.3s' } as CSSProperties}
+        d="M94 48 C 120 28, 176 28, 206 44"
+        fill="none"
+        strokeWidth="1.1"
+        strokeDasharray="2 3"
+      />
+      <g className="fa-a-out" style={at(0.4)}>
+        <Box x={206} y={42} w={64} h={28} label="Review" />
+      </g>
+      <g className="fa-a-late" style={at(0.4)}>
+        <rect className={styled} x="206" y="42" width="64" height="28" rx="14" strokeWidth="2.2" />
+        <text
+          className={styledText}
+          x="238"
+          y="58.6"
+          fontSize="8"
+          fontWeight="700"
+          textAnchor="middle"
+        >
+          Review
+        </text>
+      </g>
+      {/* The brush, carried from one to the other. */}
+      <g className="fa-a-move" style={from(-160, 0, 0)}>
+        <circle
+          className="fill-white stroke-sky-500 dark:fill-slate-800"
+          cx="258"
+          cy="76"
+          r="7"
+          strokeWidth="1.2"
+        />
+        <Glyph x={253.5} y={71.5} className="stroke-sky-600 dark:stroke-sky-300" scale={0.9}>
+          {BRUSH}
+        </Glyph>
+      </g>
+    </Scene>
+  );
+}
+
+/* ───────────────────────── Tabs ───────────────────────── */
+
+/** Link an element to another tab: a press on its link lands you there. */
+export function TabsArt() {
+  return (
+    <Scene>
+      <Panel x={12} y={8} w={276} h={80} />
+      <rect className="fill-(--art-paper)" x="13" y="9" width="274" height="60" rx="5" />
+      {/* Backend tab's canvas. */}
+      <g className="fa-a-out" style={at(0.6)}>
+        <Box x={36} y={30} w={56} h={22} label="Auth" />
+        <Connector d="M92 41 H 116" head="M112 38 l4 3 l-4 3" />
+        <Box x={118} y={30} w={60} h={22} label="Gateway" />
+        <Connector d="M178 41 H 202" head="M198 38 l4 3 l-4 3" />
+        <Box x={204} y={30} w={56} h={22} label="Queue" />
+        <rect
+          className="fill-white stroke-sky-300 dark:fill-slate-800 dark:stroke-sky-500/60"
+          x="160"
+          y="18"
+          width="40"
+          height="12"
+          rx="6"
+          strokeWidth="1"
+        />
+        <Glyph x={164} y={19.2} className="stroke-sky-600 dark:stroke-sky-300" scale={0.9}>
+          {LINK_PATHS}
+        </Glyph>
+        <text
+          className="fill-sky-700 dark:fill-sky-200"
+          x="175"
+          y="26.6"
+          fontSize="6.5"
+          fontWeight="600"
+        >
+          Data
+        </text>
+      </g>
+      {/* Data tab's canvas: two tables and the key between them. */}
+      <g className="fa-a-late" style={at(0.6)}>
+        {(
+          [
+            [76, 'users'],
+            [168, 'orders'],
+          ] as const
+        ).map(([x, name]) => (
+          <g key={name}>
             <rect
-              x="14"
-              y="9"
-              width="44"
-              height="20"
-              rx="5"
-              fill="#ede9fe"
-              stroke="#7c3aed"
-              strokeWidth="2"
+              className="fill-violet-50 stroke-violet-500 dark:fill-violet-500/15 dark:stroke-violet-300"
+              x={x}
+              y="20"
+              width="60"
+              height="40"
+              rx="4"
+              strokeWidth="1.5"
             />
-            <rect
-              x="138"
-              y="9"
-              width="44"
-              height="20"
-              rx="5"
-              fill="#ede9fe"
-              stroke="#7c3aed"
-              strokeWidth="2"
+            <path
+              className="fill-violet-500 dark:fill-violet-400"
+              d={`M${x + 4} 20 h52 a4 4 0 0 1 4 4 v7 h-60 v-7 a4 4 0 0 1 4 -4 z`}
             />
-            <line x1="58" y1="19" x2="138" y2="19" stroke="#7c3aed" strokeWidth="2" />
-          </svg>
-          <span className="fa-fade absolute -top-1.5 right-2 rounded bg-violet-600 px-1.5 py-0.5 text-[7px] font-semibold text-white shadow-sm">
-            Saved
-          </span>
-        </div>
-      </div>
-    </Frame>
+            <text
+              x={x + 30}
+              y="28.2"
+              fontSize="6.5"
+              fontWeight="700"
+              textAnchor="middle"
+              fill="#fff"
+            >
+              {name}
+            </text>
+            {[38, 46, 54].map((y) => (
+              <g key={y}>
+                <TextBar
+                  x={x + 6}
+                  y={y - 2}
+                  w={22}
+                  className="fill-violet-200 dark:fill-violet-400/40"
+                />
+                <TextBar
+                  x={x + 36}
+                  y={y - 2}
+                  w={16}
+                  className="fill-violet-200 dark:fill-violet-400/40"
+                />
+              </g>
+            ))}
+          </g>
+        ))}
+        <path className="stroke-violet-400" d="M136 44 H 168" strokeWidth="1.3" fill="none" />
+        <circle className="fill-violet-500" cx="136" cy="44" r="1.8" />
+      </g>
+      <path className={RULE} d="M13 69.5 H 287" strokeWidth="1" />
+      <Tab x={18} w={52} name="Backend" color={YOU} />
+      <Tab x={74} w={40} name="Data" color={ALEX} />
+      <Tab x={118} w={50} name="Roadmap" color={SAM} />
+      <Tab x={172} w={40} name="Notes" color={AWAY} />
+      <rect
+        className="fa-a-out fill-sky-500"
+        style={at(0.6)}
+        x="22"
+        y="85"
+        width="42"
+        height="1.6"
+        rx="0.8"
+      />
+      <rect
+        className="fa-a-late fill-violet-500"
+        style={at(0.6)}
+        x="78"
+        y="85"
+        width="30"
+        height="1.6"
+        rx="0.8"
+      />
+      <g className="fa-a-out" style={at(0.6)}>
+        <Pointer x={182} y={26} color={YOU} className="fa-a-move" style={from(-50, 36, 0)} />
+      </g>
+    </Scene>
+  );
+}
+
+/** Tab folders: a named folder on the tab bar folds its tabs away and opens them again. */
+export function TabFoldersArt() {
+  const bar = (open: boolean) => (
+    <g>
+      <rect
+        className="fill-sky-50 stroke-sky-200 dark:fill-sky-500/10 dark:stroke-sky-500/40"
+        x="22"
+        y="38"
+        width={open ? 140 : 60}
+        height="20"
+        rx="5"
+        strokeWidth="1"
+      />
+      <Glyph
+        x={27}
+        y={43}
+        className="fill-sky-200 stroke-sky-600 dark:fill-sky-500/30 dark:stroke-sky-300"
+      >
+        {FOLDER_PATHS}
+      </Glyph>
+      <text
+        className="fill-sky-800 dark:fill-sky-100"
+        x="39"
+        y="50.6"
+        fontSize="7"
+        fontWeight="700"
+      >
+        Backend
+      </text>
+      <path
+        className="stroke-sky-600 dark:stroke-sky-300"
+        d={open ? 'M73 46 l2.5 2.5 l2.5 -2.5' : 'M74 45 l2.5 2.5 l-2.5 2.5'}
+        fill="none"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      {open ? (
+        <>
+          <Tab x={84} w={24} name="Auth" color={ALEX} y={40} />
+          <Tab x={108} w={24} name="API" color={AWAY} y={40} />
+          <Tab x={130} w={30} name="Jobs" color={YOU} y={40} />
+        </>
+      ) : null}
+      <Tab x={open ? 168 : 88} w={34} name="Notes" color={SAM} y={40} />
+      <Tab x={open ? 202 : 122} w={30} name="Docs" color={JORDAN} y={40} />
+      <Tab x={open ? 234 : 154} w={40} name="Roadmap" color={ALEX} y={40} />
+    </g>
+  );
+  return (
+    <Scene>
+      <Panel x={12} y={32} w={276} h={32} />
+      <g className="fa-a-out" style={at(0.2)}>
+        {bar(true)}
+      </g>
+      <g className="fa-a-late" style={at(0.2)}>
+        {bar(false)}
+      </g>
+      <Pointer x={75} y={50} color={YOU} className="fa-a-move" style={from(60, 26, 0)} />
+    </Scene>
   );
 }

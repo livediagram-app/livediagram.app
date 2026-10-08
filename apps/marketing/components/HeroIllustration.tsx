@@ -48,14 +48,7 @@ import {
   PREFERS_REDUCED_MOTION,
   useMediaQuery,
 } from '@livediagram/ui';
-import { DiagramBoard } from './hero-diagram-board';
-import { DrawBoard } from './hero-draw-board';
-import { ArticlePage } from './hero-article-page';
-import { InfographicPages } from './hero-illustrate-page';
-import { MindMapBoard } from './hero-mindmap-board';
-import { PlanBoard } from './hero-plan-board';
-import { TownHallBoard } from './hero-townhall-board';
-import type { HeroMode } from './hero-mode-palette';
+import { HERO_SCENES, type HeroScene } from './hero-scenes';
 import { snapStage } from '@/lib/hero-stage';
 import { pinHeroWord } from '@/lib/hero-word-pin';
 import { HeroOverview, type OverviewScene } from './hero-overview';
@@ -76,24 +69,23 @@ const GAP = 3;
 // and veil keyframes are timed to it.
 const CYCLE_MS = 22000;
 
-const CARDS: {
+type Card = {
   key: string;
   title: string;
-  // What the dot navigation says about this window while it is centred.
   label: string;
-  mode: HeroMode;
+  mode: HeroScene['mode'];
   tabs: TabDef[];
   shared: boolean;
-  // The name its frame carries on the overview (hero-overview.tsx).
   short?: string;
-  // The headline's word while this window is centred (lib/hero-word-pin.ts).
   word?: string;
-  // Where its Build yours button goes: the template step narrowed to this kind
-  // (docs/specs/007-editor/new-document-route.md "?mode= and ?q=").
   build?: string;
   // The overview: every window after it as a frame, each opening its window (hero-overview.tsx).
   overview?: boolean;
-}[] = [
+  scene?: HeroScene;
+};
+
+// The overview first, then every mode scene (hero-scenes.tsx, shared with the landing beats).
+const CARDS: Card[] = [
   {
     key: 'overview',
     title: 'Everything you can make',
@@ -103,99 +95,7 @@ const CARDS: {
     shared: true,
     overview: true,
   },
-  {
-    key: 'diagram',
-    word: 'Diagram',
-    build: '/new?mode=diagram',
-    short: 'Diagram',
-    title: 'Onboarding',
-    label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
-    mode: 'diagram',
-    tabs: [
-      { name: 'Sign-up', color: '#0ea5e9', active: true },
-      { name: 'Checkout', color: '#ec4899' },
-      { name: 'Billing', color: '#8b5cf6' },
-    ],
-    shared: true,
-  },
-  {
-    key: 'draw',
-    word: 'Whiteboard',
-    build: '/new?mode=draw',
-    short: 'Draw',
-    title: 'Sprint retro',
-    label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
-    mode: 'draw',
-    tabs: [
-      { name: 'Went well', color: '#10b981', active: true },
-      { name: 'To improve', color: '#f59e0b' },
-    ],
-    shared: true,
-  },
-  {
-    key: 'mindmap',
-    word: 'Brainstorm',
-    build: '/new?mode=diagram&q=mind%20map',
-    short: 'Mind map',
-    title: 'Launch plan',
-    label: 'Mind map: grow ideas out from the centre, one Tab at a time',
-    mode: 'diagram',
-    tabs: [
-      { name: 'Ideas', color: '#0ea5e9', active: true },
-      { name: 'Actions', color: '#10b981' },
-    ],
-    shared: true,
-  },
-  {
-    key: 'infographic',
-    word: 'Illustrate',
-    build: '/new?mode=illustrate',
-    short: 'Infographic',
-    title: 'Year in review',
-    label: 'Infographic: lay out pages of numbers, charts and quotes, ready to print or share',
-    mode: 'illustrate',
-    tabs: [{ name: 'Infographic', color: '#8b5cf6', active: true }],
-    shared: true,
-  },
-  {
-    key: 'article',
-    word: 'Document',
-    build: '/new?mode=illustrate&q=article',
-    short: 'Article',
-    title: 'Field notes',
-    label: 'Article: write long reads on pages, with images, headings and pull quotes',
-    mode: 'illustrate',
-    tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
-    shared: true,
-  },
-  {
-    key: 'plan',
-    word: 'Plan',
-    build: '/new?mode=plan',
-    short: 'Plan',
-    title: 'Launch',
-    label: 'Plan: move cards across a board together, with WIP limits and quick add',
-    mode: 'plan',
-    tabs: [
-      { name: 'Board', color: '#0ea5e9', active: true },
-      { name: 'Roadmap', color: '#10b981' },
-    ],
-    shared: true,
-  },
-  {
-    key: 'townhall',
-    word: 'Workshop',
-    short: 'Town hall',
-    build: '/new?mode=diagram&q=town%20hall',
-    title: 'Q3 all-hands',
-    label: 'Town hall: questions in, votes up, answered live with the whole room',
-    mode: 'diagram',
-    tabs: [
-      { name: 'Q&A', color: '#ef4444', active: true },
-      { name: 'Agenda', color: '#0ea5e9' },
-    ],
-    shared: true,
-  },
+  ...HERO_SCENES.map((scene) => ({ ...scene, scene })),
 ];
 
 // The overview's frames: every window that shows a mode at work.
@@ -216,18 +116,6 @@ const OVERVIEW_DWELL_MS = 24000;
 // true to the device); the first paint takes the same numbers from CSS (--hero-card).
 // A phone: narrower peek, wider windows, and each window's portrait layout.
 const PHONE = '(max-width: 639px)';
-
-// The portrait viewBox a phone draws each window's layout in: taller than wide, the pages' windows
-// taller still so two pages stack.
-const PORTRAIT_VIEWBOX: Record<string, string> = {
-  diagram: '0 -40 360 520',
-  draw: '0 -40 360 520',
-  mindmap: '0 -40 360 520',
-  infographic: '10 -40 360 680',
-  article: '10 -40 360 680',
-  townhall: '0 -40 360 520',
-  plan: '0 -40 360 520',
-};
 
 export function HeroIllustration() {
   const [active, setActive] = useState(0);
@@ -311,21 +199,8 @@ export function HeroIllustration() {
           >
             {CARDS.map((c, i) => {
               const playing = i === active;
-              const liveDoc = c.overview ? null : c.mode === 'draw' ? (
-                <DrawBoard portrait={portrait} />
-              ) : c.key === 'townhall' ? (
-                <TownHallBoard portrait={portrait} />
-              ) : c.key === 'plan' ? (
-                <PlanBoard portrait={portrait} />
-              ) : c.key === 'mindmap' ? (
-                <MindMapBoard portrait={portrait} />
-              ) : c.key === 'article' ? (
-                <ArticlePage portrait={portrait} />
-              ) : c.key === 'infographic' ? (
-                <InfographicPages portrait={portrait} />
-              ) : (
-                <DiagramBoard portrait={portrait} />
-              );
+              const Board = c.scene?.Board;
+              const liveDoc = Board ? <Board portrait={portrait} /> : null;
               const frame = (
                 <EditorWindow
                   title={c.title}
@@ -334,7 +209,7 @@ export function HeroIllustration() {
                   mode={c.mode}
                   playing={playing}
                   document={liveDoc}
-                  viewBox={portrait ? PORTRAIT_VIEWBOX[c.key] : undefined}
+                  viewBox={portrait ? c.scene?.portraitViewBox : undefined}
                   overlay={c.build ? <BuildYours href={c.build} live={playing} /> : undefined}
                 />
               );
