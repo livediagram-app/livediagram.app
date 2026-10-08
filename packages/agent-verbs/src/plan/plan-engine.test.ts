@@ -513,3 +513,183 @@ describe('api refusals mid-write', () => {
     });
   });
 });
+
+describe('every branch of the engine', () => {
+  const plan = (boards: unknown[], types: unknown[] = [...ITEM_TYPES, BUG]) => ({
+    boards,
+    statuses: STATUSES,
+    types,
+  });
+
+  it('lists card fields, unknown board types, all-cards boards and an unknown status filter', async () => {
+    const LINKED = {
+      ...BUG,
+      id: 'risk',
+      label: 'Risk',
+      custom: [{ id: 'f-blocks', label: 'Blocks', kind: 'card', linkType: 'task' }],
+    };
+    const { api: a } = api(
+      {},
+      plan(
+        [BOARD(['ghost']), { ...BOARD(), elementId: 'all', kind: 'all-cards' }],
+        [...ITEM_TYPES, LINKED],
+      ),
+    );
+    const listing = planListing(await readPlanState(a, D), { status: 'nowhere' });
+    expect(listing.types.find((t) => t.id === 'risk')!.custom[0]).toMatchObject({
+      linkType: 'task',
+    });
+    expect(listing.boards[0]!.takes).toEqual(['ghost']);
+    expect(listing.boards[1]!.columns.every((c) => c.cards.length === 0)).toBe(true);
+    expect(listing.items).toEqual([]);
+  });
+
+  it('places cards with no status, a status no board names, and a type the catalogue lacks', async () => {
+    const answer =
+      (fields: Item['fields'], type = 'task') =>
+      () =>
+        Response.json({ item: item(9, 'new999', fields, type), rev: 2 });
+    const lineFor = async (fields: Item['fields'], type = 'task', boards = [BOARD()]) => {
+      const { api: a } = api(
+        {
+          [`/documents/${D}/items`]: (r: Request) =>
+            r.method === 'GET' ? Response.json({ items: ITEMS, rev: 1 }) : answer(fields, type)(),
+        },
+        plan(boards),
+      );
+      return (
+        await applyItemChanges(a, D, [{ op: 'add', title: 'New' }], await readPlanState(a, D))
+      ).applied[0];
+    };
+    expect(await lineFor({ title: 'New' })).toContain('(on no board)');
+    expect(await lineFor({ title: 'New', status: 'elsewhere' })).toContain('(on no board)');
+    expect(await lineFor({ title: 'New', status: 'todo~x' }, 'ghost', [BOARD(['task'])])).toContain(
+      'takes ghost cards',
+    );
+  });
+
+  it('notes a clear-only set, says nothing for a type-only set, and knows a name already assigned', async () => {
+    const withRobin = [
+      ...ITEMS,
+      item(8, 'ggg888', {
+        title: 'R',
+        assignee: { id: 'n-robin', name: 'Robin', color: '#2563eb' },
+      }),
+    ];
+    const { api: a, seen } = api({ [`/documents/${D}/items`]: { items: withRobin, rev: 1 } });
+    const state = await readPlanState(a, D);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [
+        { op: 'set', item: '#1', clear: ['due'] },
+        { op: 'set', item: '#1', type: 'Bug' },
+        { op: 'set', item: '#1', fields: { assignee: 'robin' } },
+      ],
+      state,
+    );
+    expect(r.applied[0]).toContain('; cleared due');
+    expect(r.applied[1]).not.toContain(';');
+    expect(r.applied[2]).not.toContain('new name');
+    expect(seen[1]!.body).toEqual({ type: 'bug' });
+  });
+
+  it('answers a dry changeset, widens a board, names unknown types, and lets a 5xx throw', async () => {
+    const { api: a, seen } = api({
+      [`/documents/${D}/tabs/t1/changesets`]: (r: Request) =>
+        r.text().then(() => Response.json({ changeset: null })),
+    });
+    expect(await addBoard(a, D, { preset: 'todo' }, 'mcp')).toMatchObject({
+      ok: true,
+      changesetId: null,
+      rev: null,
+    });
+    const wide = await changeBoard(
+      a,
+      D,
+      { board: 'Sprint', columns: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+      'mcp',
+    );
+    expect(wide).toMatchObject({ ok: true, changesetId: null, rev: null });
+    void seen;
+    const { api: noAction } = api(
+      {},
+      plan(
+        [BOARD()],
+        ITEM_TYPES.filter((t) => t.id !== 'action'),
+      ),
+    );
+    const todo = await addBoard(noAction, D, { preset: 'todo' }, 'mcp');
+    expect(todo.ok && todo.takes).toEqual(['action']);
+    const { api: down } = api({
+      [`/documents/${D}/tabs/t1/changesets`]: () => new Response('', { status: 503 }),
+    });
+    await expect(
+      changeBoard(down, D, { board: 'Sprint', title: 'X' }, 'mcp'),
+    ).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it('names a board type the catalogue lacks after a title change', async () => {
+    const tab = {
+      tab: {
+        id: 't1',
+        elements: [
+          {
+            id: 'b1',
+            type: 'shape',
+            shape: 'plan-board',
+            x: 0,
+            y: 0,
+            width: 800,
+            height: 500,
+            planBoard: {
+              title: 'Sprint',
+              columns: [{ id: 'todo', status: 'todo~x', name: 'To Do' }],
+              addTypes: ['ghost'],
+              swimlaneBy: 'none',
+              cardFields: ['key'],
+              voting: { on: false },
+              hideWriting: false,
+            },
+          },
+        ],
+        rev: 7,
+      },
+    };
+    const { api: a } = api({ [`/documents/${D}/tabs/t1`]: tab });
+    expect(await changeBoard(a, D, { board: 'Sprint', title: 'S2' }, 'mcp')).toMatchObject({
+      ok: true,
+      takes: ['ghost'],
+    });
+  });
+
+  it('trashes a statusless card without a trashedFrom, and lets a 5xx save or trash throw', async () => {
+    const loose = [item(4, 'hhh444', { title: 'Loose bug' }, 'bug')];
+    const { api: a, seen } = api({
+      [`/documents/${D}/items`]: { items: loose, rev: 1 },
+      [`/documents/${D}/items/hhh444`]: (r: Request) =>
+        r
+          .text()
+          .then(
+            (t) => (
+              seen.push({ method: 'POST', path: 'hhh444', body: JSON.parse(t) }),
+              Response.json({ item: loose[0], rev: 2 })
+            ),
+          ),
+    });
+    await changeCardTypes(a, D, [{ op: 'delete', type: 'Bug' }]);
+    expect(seen.find((s) => s.path === 'hhh444')!.body).toEqual({ set: { status: TRASH_STATUS } });
+    const { api: putDown } = api({
+      [`/documents/${D}/item-types`]: () => new Response('', { status: 500 }),
+    });
+    await expect(changeCardTypes(putDown, D, [{ op: 'add', name: 'Risk' }])).rejects.toBeInstanceOf(
+      ApiError,
+    );
+    const { api: trashDown } = api({
+      [`/documents/${D}/items/ccc333`]: () => new Response('', { status: 500 }),
+    });
+    await expect(
+      changeCardTypes(trashDown, D, [{ op: 'delete', type: 'Bug' }]),
+    ).rejects.toBeInstanceOf(ApiError);
+  });
+});

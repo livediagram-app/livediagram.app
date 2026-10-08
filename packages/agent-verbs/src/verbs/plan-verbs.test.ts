@@ -143,3 +143,36 @@ describe('board set', () => {
     ).rejects.toMatchObject({ code: 'board_invalid' });
   });
 });
+
+describe('verb edges', () => {
+  it('adds a board on a named tab from a preset', async () => {
+    const { ctx } = ctxWith();
+    const out = await boardAdd.run!(
+      ctx,
+      boardAdd.input.parse({ doc: DOC_A, tab: TAB, preset: 'todo' }),
+    );
+    expect(out.tabId).toBe(TAB);
+  });
+
+  it('lists custom fields, refuses a file that is not JSON, and prints trashed cards', async () => {
+    const custom = {
+      ...ITEM_TYPES[1],
+      id: 'bug',
+      label: 'Bug',
+      custom: [{ id: 'f-sev', label: 'Severity', kind: 'text' }],
+    };
+    const { ctx } = ctxWith('', {
+      [`/documents/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, custom] },
+    });
+    const ls = await typeLs.run!(ctx, { doc: DOC_A });
+    expect(typeLs.text!(ls).at(-1)).toContain('Severity:text (f-sev)');
+    const notJson = ctxWith('not json').ctx;
+    await expect(typeApply.run!(notJson, { doc: DOC_A, file: '-' })).rejects.toMatchObject({
+      code: 'usage',
+    });
+    expect(typeApply.text!({ applied: ['- Bug (bug)'], trashed: ['#3'] })).toEqual([
+      '- Bug (bug)',
+      'moved to the Trash: #3',
+    ]);
+  });
+});

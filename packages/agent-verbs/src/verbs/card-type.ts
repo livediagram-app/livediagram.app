@@ -48,6 +48,15 @@ export const typeLs = defineVerb({
   },
 });
 
+// The file's JSON, or undefined when it is not JSON (refused as not a list of changes).
+function jsonOf(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
 export const typeApply = defineVerb({
   id: 'type.apply',
   summary: 'Change card types from a file',
@@ -60,12 +69,12 @@ export const typeApply = defineVerb({
     const parsed = z
       .array(cardTypeChangeSchema)
       .min(1)
-      .safeParse(JSON.parse(await ctx.readInput(input.file)));
+      .safeParse(jsonOf(await ctx.readInput(input.file)));
     if (!parsed.success)
       throw new VerbRefusal({
         status: 400,
         code: 'usage',
-        message: `the file is not a list of card type changes: ${parsed.error.issues[0]?.message ?? 'invalid'}`,
+        message: `the file is not a list of card type changes: ${parsed.error.issues[0]!.message}`,
         hint: 'for example: [{"op":"add","name":"Bug","custom":[{"name":"Severity","kind":"choice","options":["S1","S2"]}]}]',
       });
     const document = await documentOf(ctx, input.doc);

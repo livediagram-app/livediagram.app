@@ -49,7 +49,7 @@ async function planOf(
 
 // One change through the Plan engine (docs/specs/026-plan/plan-agents.md): names resolved as the MCP resolves
 // them, a refusal as the verb's.
-async function changeOne(ctx: VerbContext, doc: string, change: ItemChange): Promise<Item | null> {
+async function changeOne(ctx: VerbContext, doc: string, change: ItemChange): Promise<Item> {
   const { documentId, state } = await planOf(ctx, doc);
   const result = await applyItemChanges(ctx.api, documentId, [change], state);
   if (result.refusal)
@@ -59,7 +59,8 @@ async function changeOne(ctx: VerbContext, doc: string, change: ItemChange): Pro
       message: result.refusal.message,
       hint: 'list the columns, card types and fields with: livediagram item ls <doc>',
     });
-  return result.touched[0] ?? null;
+  // An add, set or move that was not refused always answers its item.
+  return result.touched[0]!;
 }
 
 // `key=value` pairs into fields: numbers stay numbers, `labels` splits on commas, the rest is text.
@@ -164,7 +165,7 @@ export const itemAdd = defineVerb({
       ...(input.status ? { status: input.status } : {}),
       fields: fieldsFromPairs(input.fields),
     });
-    return { item: outOf(item!), text: `+ ${itemSummary(item!)}` };
+    return { item: outOf(item), text: `+ ${itemSummary(item)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
@@ -199,7 +200,7 @@ export const itemSet = defineVerb({
       ...(input.clear.length ? { clear: input.clear } : {}),
       ...(input.type ? { type: input.type } : {}),
     });
-    return { item: outOf(item!), text: `~ ${itemSummary(item!)}` };
+    return { item: outOf(item), text: `~ ${itemSummary(item)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
@@ -233,7 +234,7 @@ export const itemMove = defineVerb({
       status: input.status,
       ...(input.before ? { before: input.before } : {}),
     });
-    return { item: outOf(item!), text: `→ ${itemSummary(item!)} in ${input.status}` };
+    return { item: outOf(item), text: `→ ${itemSummary(item)} in ${input.status}` };
   },
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],

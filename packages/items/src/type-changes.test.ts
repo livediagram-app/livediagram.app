@@ -217,3 +217,86 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     expect(r).toMatchObject({ ok: false, code: 'type_unknown', applied: ['+ Risk (risk)'] });
   });
 });
+
+describe('applyCardTypeChanges: every edit path', () => {
+  const tabbed = {
+    version: ITEM_TYPE_CATALOGUE_VERSION,
+    types: [
+      ...ITEM_TYPES,
+      {
+        ...NEW_ITEM_TYPE,
+        id: 'bug',
+        label: 'Bug',
+        newTitle: 'New bug',
+        fields: ['title', 'status', 'f-sev'],
+        custom: [{ id: 'f-sev', label: 'Severity', kind: 'text' as const }],
+        tabs: [{ id: 't-more', label: 'More', fields: ['f-sev'] }],
+      },
+    ],
+  };
+
+  it('sets a colour and glyph, keeps a field it already has, and drops a removed field from tabs', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        tabbed,
+        [
+          {
+            op: 'set',
+            type: 'Bug',
+            color: '#16a34a',
+            glyph: 'flag',
+            addFields: ['status'],
+            removeCustom: ['Severity'],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const bug = r.catalogue!.types.find((t) => t.id === 'bug')!;
+    expect(bug).toMatchObject({
+      color: '#16a34a',
+      glyph: 'flag',
+      fields: ['title', 'status'],
+    });
+    expect(bug.custom ?? []).toEqual([]);
+    expect(bug.tabs?.[0]?.fields ?? []).toEqual([]);
+  });
+
+  it('refuses a taken name, a second field of one name, and a built-in as a custom field', () => {
+    expect(
+      applyCardTypeChanges(tabbed, [{ op: 'set', type: 'Bug', name: 'task' }], statuses),
+    ).toMatchObject({
+      ok: false,
+      message: expect.stringContaining('already exists'),
+    });
+    expect(
+      applyCardTypeChanges(
+        tabbed,
+        [{ op: 'set', type: 'Bug', addCustom: [{ name: 'severity', kind: 'text' }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, message: expect.stringContaining('already has a field') });
+    expect(
+      applyCardTypeChanges(
+        tabbed,
+        [{ op: 'set', type: 'Bug', removeCustom: ['status'] }],
+        statuses,
+      ),
+    ).toMatchObject({
+      ok: false,
+      message: expect.stringContaining('use removeFields'),
+    });
+    expect(
+      applyCardTypeChanges(tabbed, [{ op: 'add', name: 'X', fields: ['Severity'] }], statuses),
+    ).toMatchObject({
+      ok: false,
+      code: 'field_unknown',
+    });
+  });
+
+  it('lets a mistake that is not a refusal throw', () => {
+    expect(() =>
+      applyCardTypeChanges(null, [{ op: 'add', name: undefined as unknown as string }], statuses),
+    ).toThrow(TypeError);
+  });
+});

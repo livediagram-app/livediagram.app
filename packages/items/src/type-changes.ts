@@ -113,10 +113,9 @@ function glyphOf(input: string): string {
   throw invalid(`"${input}" is not a Plan glyph. Glyphs: ${PLAN_GLYPH_IDS.join(', ')}.`);
 }
 
+// A built-in field by id or interface name: with the custom fields set aside, fieldKeyOf can answer nothing else.
 function builtInFieldOf(name: string, type: ItemTypeDef): string {
-  const key = must(fieldKeyOf(name, { ...type, custom: [] })).key;
-  if (!isBuiltInFieldId(key)) throw invalid(`"${name}" is not a built-in field.`);
-  return key;
+  return must(fieldKeyOf(name, { ...type, custom: [] })).key;
 }
 
 function customOf(
