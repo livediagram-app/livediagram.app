@@ -18,12 +18,10 @@ import {
   searchValues,
   type CardSearchFilter,
   type SwimlaneBy,
-  statusLabel,
   typeIn,
   itemTitle,
   type BoardStatusTypes,
   type CardFinderShow,
-  namedStatus,
 } from '@livediagram/items';
 import { CloseIcon, CountBadge, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -214,8 +212,6 @@ export function CardFinderPanel({
           >
             {found.slice(0, CARD_FINDER_ROWS_MAX).map((it) => {
               const type = typeIn(plan.types, it.type);
-              // A state no board names reads as No status (namedStatus).
-              const status = namedStatus(it, plan.statusNames) ?? null;
               return (
                 <li key={it.id} className="group/row flex items-center gap-2 pr-1">
                   <button
@@ -230,10 +226,6 @@ export function CardFinderPanel({
                     {/* The card as a board draws it at Compact size, laid out as its type's Display says. */}
                     <PlanCardFace item={it} palette={palette} fields={CARD_FIELDS} size="compact" />
                   </button>
-                  {/* Where it stands, which a card face does not say; on a phone the card alone. */}
-                  <span className="hidden w-24 shrink-0 truncate rounded-full bg-slate-100 px-2 py-0.5 text-center text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300 sm:block">
-                    {status ? statusLabel(status, plan.statusNames) : 'No status'}
-                  </span>
                   {plan.canEdit ? (
                     <Tooltip label="Move to Trash">
                       <button

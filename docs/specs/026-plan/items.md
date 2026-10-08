@@ -255,8 +255,8 @@ author redaction, and the same thread list, composer and resolve control the com
   filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: "No cards match these filters."
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row is the card as a board draws it at **Compact** size, laid out as its type's Display says, so a card
-  looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"); on
-  desktop its state follows it as a chip ("No status" without one). Choosing one closes the popover and
+  looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
+  narrows by it. Choosing one closes the popover and
   opens the card in the item panel.
 - Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
   puts that card in the Trash (restorable from there) without leaving the list.
