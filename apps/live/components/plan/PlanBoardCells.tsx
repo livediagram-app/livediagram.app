@@ -3,10 +3,19 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { itemVoteKey } from '@livediagram/document';
+import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
+import type { CardVote } from './CardVoteContext';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
-import { ITEM_TYPES, itemAccessibleName, type Item, type LaneHead } from '@livediagram/items';
+import {
+  ITEM_TYPES,
+  itemAccessibleName,
+  itemTitle,
+  type Item,
+  type LaneHead,
+} from '@livediagram/items';
 import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';
@@ -109,6 +118,7 @@ export function PlanBoardCard({
   onKey,
   onMenu,
   onLongPress,
+  cardVote,
 }: {
   item: Item;
   palette: PlanPalette;
@@ -128,6 +138,9 @@ export function PlanBoardCard({
   onMenu: (item: Item, at: { x: number; y: number }) => void;
   // A finger held on the card (touch has no right-click): its menu, at the finger. Absent, a hold does nothing.
   onLongPress?: (item: Item, at: { x: number; y: number }) => void;
+  // The tab's session vote, when this board's cards take dots in it (docs/specs/012-collaboration/session-tools.md
+  // "Voting on Plan cards"): the card carries the vote's stepper, unless it is face down.
+  cardVote?: CardVote | null;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
@@ -142,7 +155,7 @@ export function PlanBoardCard({
         data-plan-card={item.id}
         aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item, types)}
         // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls).
-        className="touch-none rounded-lg outline-none transition-opacity focus-visible:ring-2"
+        className="relative touch-none rounded-lg outline-none transition-opacity focus-visible:ring-2"
         style={{
           opacity: lifted ? 0.35 : 1,
           cursor: interactive ? 'grab' : undefined,
@@ -180,6 +193,20 @@ export function PlanBoardCard({
           presence={presence}
           voting={faceDown ? undefined : voting}
         />
+        {cardVote ? (
+          <ElementVoteOverlay
+            voteKey={itemVoteKey(item.id)}
+            name={faceDown ? 'this card' : itemTitle(item) || 'this card'}
+            vote={cardVote.vote}
+            selfId={cardVote.selfId}
+            voteMax={cardVote.voteMax}
+            votableInVote={!faceDown}
+            voteReviewActive={cardVote.reviewActive}
+            isVoteFocus={cardVote.focusKey === itemVoteKey(item.id)}
+            onCastVote={cardVote.onCast}
+            onRetractVote={cardVote.onRetract}
+          />
+        ) : null}
       </div>
     </>
   );

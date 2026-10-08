@@ -19,7 +19,14 @@ const vote = (active: boolean): TabVote => ({
 function overlay(v: TabVote | null, zoom = 2) {
   return render(
     <CanvasZoomProvider zoom={zoom}>
-      <ElementVoteOverlay element={el} vote={v} selfId="me" voteMax={1} votableInVote />
+      <ElementVoteOverlay
+        voteKey={el.id}
+        name="Square"
+        vote={v}
+        selfId="me"
+        voteMax={1}
+        votableInVote
+      />
     </CanvasZoomProvider>,
   ).container;
 }

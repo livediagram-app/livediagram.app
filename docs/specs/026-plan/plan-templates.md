@@ -108,14 +108,14 @@ Bugs triaged by priority, then fixed, reviewed and released.
 Notes written in private, revealed and voted on; the actions they lead to, tracked between retros; past notes
 archived. It joins the Retrospectives family beside the sticky-note formats, which stay Diagram templates.
 
-| Tab     | Holds                                                                                                                                                                                   |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Retro   | Board **Retro**: Went Well (green), To Improve (red), Ideas (teal); Notes and Ideas only; voting with 5 votes; hide writing on. How we run it, a 5 minute timer and a temperature check |
-| Actions | Board **Actions**: To Do, Doing, Done (done); Actions only; a row per person; due dates                                                                                                 |
-| Archive | An Archive board, **Past Retros**                                                                                                                                                       |
+| Tab     | Holds                                                                                                                                                                                               |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Retro   | Board **Retro**: Went Well (green), To Improve (red), Ideas (teal); Notes and Ideas only; hide writing on. How we run it, a 5 minute timer, a **Vote** button (5 dots each) and a temperature check |
+| Actions | Board **Actions**: To Do, Doing, Done (done); Actions only; a row per person; due dates                                                                                                             |
+| Archive | An Archive board, **Past Retros**                                                                                                                                                                   |
 
 - How we run it: check in on the temperature; review last retro's actions; write notes (they stay hidden) while
-  the timer runs; reveal together; vote, 5 each; turn the top votes into Actions on the Actions tab; archive the
+  the timer runs; reveal together; press Vote (5 dots each, on the cards); turn the top votes into Actions on the Actions tab; archive the
   notes when done.
 
 ### Weekly Planner
@@ -137,7 +137,7 @@ Ideas voted on and approved, produced through review to published, and every pub
 
 | Tab        | Holds                                                                                                                                        |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Ideas; voting with 5 votes                                                          |
+| Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Ideas; a **Vote** button (5 dots each)                                              |
 | Production | Board **Production**: Approved ⇄, Drafting, In Review, Scheduled, Published (done); Tasks and Ideas; labels and due dates (the publish date) |
 | Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Cards by Field                                                                     |
 
@@ -180,10 +180,10 @@ Workstreams on a timeline, a checklist per workstream, and the go/no-go on launc
 
 Requests from users, voted on and reviewed, and the ones planned followed to shipped.
 
-| Tab      | Holds                                                                                                    |
-| -------- | -------------------------------------------------------------------------------------------------------- |
-| Feedback | Board **Feedback**: New, Under Review, Planned ⇄, Not Planned; Ideas; voting (no budget). How this works |
-| Delivery | Board **Delivery**: Planned ⇄, Building, Shipped (done); Ideas and Tasks; a row per person               |
+| Tab      | Holds                                                                                                                 |
+| -------- | --------------------------------------------------------------------------------------------------------------------- |
+| Feedback | Board **Feedback**: New, Under Review, Planned ⇄, Not Planned; Ideas; a **Vote** button (3 dots each). How this works |
+| Delivery | Board **Delivery**: Planned ⇄, Building, Shipped (done); Ideas and Tasks; a row per person                            |
 
 - How this works: add each request as an Idea; vote on what matters; review the top voted each week; Planned
   moves it to Delivery.

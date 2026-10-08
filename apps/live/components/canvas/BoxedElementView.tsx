@@ -19,6 +19,7 @@ import {
   isSelfDrawingShape,
   isUprightTitle,
   uprightTitleStrip,
+  voteKeyOf,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/document';
@@ -673,7 +674,8 @@ function BoxedElementViewImpl({
       {/* Dot-vote tally pill + winner ring (docs/specs/012-collaboration/session-tools.md) — see
           ElementVoteOverlay. */}
       <ElementVoteOverlay
-        element={element}
+        voteKey={voteKeyOf(element)}
+        name={element.label ?? 'this element'}
         vote={vote}
         selfId={selfId}
         voteMax={voteMax}

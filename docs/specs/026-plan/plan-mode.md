@@ -177,8 +177,9 @@ with a Board**.
   person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
   drawn only for people in the presence list.
 - Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
-- Facilitation on a board (voting, a vote budget, hide writing and reveal) lives in the board's set-up, so a retro
-  needs no separate session tool.
+- Facilitation on a board (hide writing and reveal) lives in the board's set-up, and voting is the tab's session
+  vote on the cards, so a retro needs nothing
+  beyond the board and the tab's Vote.
 
 ## Agents
 
