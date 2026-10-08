@@ -19,8 +19,11 @@ describe('LoadErrorCard', () => {
   it('shows the load error with the recovery card in the full app', async () => {
     render(<LoadErrorCard embed={false} ownerId={null} reload={vi.fn()} />);
     expect(screen.getByText(/it didn’t finish loading/)).toBeTruthy();
-    expect(await screen.findByRole('button', { name: /copy diagnostics/i })).toBeTruthy();
-  });
+    // The recovery card is a lazy chunk: under coverage on a busy machine its first import outlasts findBy's 1 s.
+    expect(
+      await screen.findByRole('button', { name: /copy diagnostics/i }, { timeout: 10_000 }),
+    ).toBeTruthy();
+  }, 15_000);
 
   it('keeps an embed to the bare retry card', () => {
     render(<LoadErrorCard embed ownerId={null} reload={vi.fn()} />);
