@@ -25,7 +25,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
     links: [
       { href: '/new', label: 'New Document', icon: lucideGlyph(lucidePenTool, ICON_SIZE) },
       {
-        href: '/features/connect',
+        href: '/features/diagrams#build-diagrams-with-ai',
         label: 'AI & MCP',
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },

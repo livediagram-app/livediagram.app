@@ -1,104 +1,190 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 // The hero's Town Hall window (docs/specs/019-marketing/marketing-site.md "Hero"): the app's Town Hall
-// Q&A template (packages/templates template-builders-town-hall.ts) running live. On the left the panel
-// and the run of show, its open Q&A segment live; in the middle the Q&A board
-// (docs/specs/012-collaboration/qa-board.md): questions land, votes tick up, the most-voted rises, is
-// answered, and is marked done; on the right the facilitator's kit: the Q&A timer counting down,
-// the applause pad the room's reactions float from, a "How useful was this?" poll filling in, and
-// the follow-ups the panel owes ticking off. A phone stacks the panel, the board and the kit. Each
-// piece arrives at its own --d delay (hero-mode-animations.css).
+// Q&A template (packages/templates template-builders-town-hall.ts) running live. The Q&A board
+// (docs/specs/012-collaboration/qa-board.md) leads, one element across most of the canvas: questions
+// land, votes tick up, the most-voted rises, is answered, and is marked done. Beside it the
+// facilitator's kit, one card each: who is on the panel, the Q&A timer counting down, the room's
+// reactions floating up, and a "How useful was this?" poll filling in. A phone stacks the board over
+// the kit. Each piece arrives at its own --d delay (hero-mode-animations.css).
 
 const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const BRAND = '#0ea5e9';
-const MUTED = '#64748b';
 const CARD = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
-const INSET = 'fill-slate-50 stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-700';
+const INSET = 'fill-slate-50 stroke-slate-200 dark:fill-slate-800/70 dark:stroke-slate-700';
 const INK = 'fill-slate-800 dark:fill-slate-100';
+const MUTED = 'fill-slate-500 dark:fill-slate-400';
+const TRACK = 'fill-slate-100 dark:fill-slate-800';
 
 const at = (d: number, extra?: Record<string, string | number>) =>
   ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
-const PANEL = [
-  { initials: 'MC', name: 'Maya Chen', role: 'CEO · hosting', colour: '#7c3aed' },
-  { initials: 'DP', name: 'Dev Patel', role: 'CFO · the numbers', colour: '#0891b2' },
-  { initials: 'PN', name: 'Priya Nair', role: 'Product · roadmap', colour: '#db2777' },
-];
-const AGENDA = [
-  { label: 'Welcome', mins: 5 },
-  { label: 'The quarter in numbers', mins: 10 },
-  { label: 'What we ship next', mins: 10 },
-  { label: 'Open Q&A', mins: 30, live: true },
-  { label: 'Wrap-up', mins: 5 },
-];
-type Question = { text: string; who: string; votes: [number, number]; d: number };
+type Person = { initials: string; name: string; colour: string };
+const MAYA: Person = { initials: 'MC', name: 'Maya Chen', colour: '#7c3aed' };
+const DEV: Person = { initials: 'DP', name: 'Dev Patel', colour: '#0891b2' };
+const PRIYA: Person = { initials: 'PN', name: 'Priya Nair', colour: '#db2777' };
+
+type Question = { text: string; who: Person; ago: string; votes: [number, number]; d: number };
 // In the order they arrive. The second gathers the most votes and rises to the top.
 const QUESTIONS: Question[] = [
-  { text: 'What is on the Q4 roadmap?', who: 'Sam', votes: [3, 5], d: 1.4 },
-  { text: 'Will Fridays stay meeting-free?', who: 'Alex', votes: [4, 21], d: 2.0 },
-  { text: 'When does the EU launch land?', who: 'Jo', votes: [2, 8], d: 2.6 },
-  { text: 'Team offsite this year?', who: 'Kim', votes: [1, 6], d: 3.2 },
+  {
+    text: 'What is on the Q4 roadmap?',
+    who: { initials: 'SL', name: 'Sam Lee', colour: '#f59e0b' },
+    ago: '4m',
+    votes: [3, 5],
+    d: 1.2,
+  },
+  {
+    text: 'Will Fridays stay meeting-free?',
+    who: { initials: 'AR', name: 'Alex Rivera', colour: '#10b981' },
+    ago: '3m',
+    votes: [4, 21],
+    d: 1.8,
+  },
+  {
+    text: 'When does the EU launch land?',
+    who: { initials: 'JO', name: 'Jo Okafor', colour: '#6366f1' },
+    ago: '2m',
+    votes: [2, 8],
+    d: 2.4,
+  },
+  {
+    text: 'Is the team offsite on this year?',
+    who: { initials: 'KW', name: 'Kim Wu', colour: '#ef4444' },
+    ago: '1m',
+    votes: [1, 6],
+    d: 3.0,
+  },
 ];
+// The order the questions settle in once the votes are in.
+const FINAL_SLOT = [1, 0, 2, 3];
 const POLL = [1, 2, 4, 9, 12];
-const FOLLOW_UPS = [
-  'Share the Q4 roadmap · Priya',
-  'Offsite dates · Maya',
-  'EU pricing note · Dev',
-];
 
-const VOTES_AT = 4.2;
-const RISE_AT = 5.4;
-const ANSWERING_AT = 6.4;
+const VOTES_AT = 4.0;
+const RISE_AT = 5.2;
+const ANSWERING_AT = 6.2;
 const ANSWERED_AT = 8.4;
 
 type Box = { x: number; y: number; w: number; h: number };
 type Layout = {
-  title: { x: number; y: number };
-  panel: Box;
-  agenda?: Box;
   board: Box;
   rowH: number;
+  // The board's "Ask a question" box, where the window has the room for it.
+  ask: boolean;
+  question: number; // a question's font size
+  panel?: Box;
   timer: Box;
-  applause: Box;
+  reactions: Box;
   poll: Box;
-  followUps?: Box;
 };
 
-// Three columns on a wide window, as the template lays them out; a phone stacks them.
+// The board takes the canvas's left two thirds, the kit a column on the right, every card on one
+// 8-unit grid; a phone stacks the board over the kit.
 const LANDSCAPE: Layout = {
-  title: { x: 14, y: -38 },
-  panel: { x: 14, y: -14, w: 170, h: 116 },
-  agenda: { x: 14, y: 112, w: 170, h: 176 },
-  board: { x: 196, y: -14, w: 214, h: 302 },
-  rowH: 62,
-  timer: { x: 422, y: -14, w: 164, h: 42 },
-  applause: { x: 422, y: 36, w: 164, h: 42 },
-  poll: { x: 422, y: 86, w: 164, h: 96 },
-  followUps: { x: 422, y: 190, w: 164, h: 98 },
+  board: { x: 20, y: -36, w: 360, h: 336 },
+  rowH: 60,
+  ask: true,
+  question: 11.5,
+  panel: { x: 396, y: -36, w: 184, h: 72 },
+  timer: { x: 396, y: 48, w: 184, h: 68 },
+  reactions: { x: 396, y: 128, w: 184, h: 68 },
+  poll: { x: 396, y: 208, w: 184, h: 92 },
 };
 const PORTRAIT: Layout = {
-  title: { x: 14, y: -22 },
-  panel: { x: 14, y: -6, w: 332, h: 48 },
-  board: { x: 14, y: 52, w: 332, h: 268 },
-  rowH: 54,
-  timer: { x: 14, y: 330, w: 160, h: 42 },
-  applause: { x: 186, y: 330, w: 160, h: 42 },
-  poll: { x: 14, y: 382, w: 332, h: 88 },
+  board: { x: 4, y: -24, w: 352, h: 324 },
+  rowH: 66,
+  ask: false,
+  question: 12,
+  timer: { x: 4, y: 312, w: 172, h: 72 },
+  reactions: { x: 184, y: 312, w: 172, h: 72 },
+  poll: { x: 4, y: 396, w: 352, h: 84 },
 };
 
-function Label({ x, y, children }: { x: number; y: number; children: ReactNode }) {
+function Txt({
+  x,
+  y,
+  size,
+  weight = 400,
+  className = INK,
+  anchor,
+  children,
+  ...rest
+}: {
+  x: number;
+  y: number;
+  size: number;
+  weight?: number;
+  className?: string;
+  anchor?: 'middle' | 'end';
+  children: ReactNode;
+  style?: CSSProperties;
+  fill?: string;
+  letterSpacing?: number;
+}) {
   return (
     <text
       x={x}
       y={y}
       fontFamily={FONT}
-      fontSize="7.5"
-      fontWeight="800"
-      letterSpacing="1"
-      fill={MUTED}
+      fontSize={size}
+      fontWeight={weight}
+      textAnchor={anchor}
+      className={className}
+      {...rest}
     >
       {children}
     </text>
+  );
+}
+
+// A card of the kit: the editor's element card, a soft shadow under it, and its caps heading.
+function KitCard({ box, title, children }: { box: Box; title: string; children?: ReactNode }) {
+  return (
+    <>
+      <rect
+        x={box.x}
+        y={box.y + 2}
+        width={box.w}
+        height={box.h}
+        rx="10"
+        fill="#0f172a"
+        opacity="0.05"
+      />
+      <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="10" className={CARD} />
+      <Txt
+        x={box.x + 14}
+        y={box.y + 19}
+        size={8}
+        weight={700}
+        className={MUTED}
+        letterSpacing={0.8}
+      >
+        {title}
+      </Txt>
+      {children}
+    </>
+  );
+}
+
+function Avatar({ cx, cy, r, person }: { cx: number; cy: number; r: number; person: Person }) {
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={r + 1.5} className="fill-white dark:fill-slate-900" />
+      <circle cx={cx} cy={cy} r={r} fill={person.colour} />
+      {/* Baseline half a cap height below the centre (about 0.365 of the font size), so the
+          initials' ink sits on the disc's centre (the optical audit holds it to 0.5px). */}
+      <Txt
+        x={cx}
+        y={cy + r * 0.85 * 0.365}
+        size={r * 0.85}
+        weight={800}
+        anchor="middle"
+        className=""
+        fill="white"
+      >
+        {person.initials}
+      </Txt>
+    </>
   );
 }
 
@@ -106,529 +192,399 @@ export function TownHallBoard({ portrait = false }: { portrait?: boolean }) {
   const L = portrait ? PORTRAIT : LANDSCAPE;
   return (
     <>
-      {/* The session's heading. */}
-      <g className="hm-pop" style={at(0.1)}>
-        <text
-          x={L.title.x}
-          y={L.title.y}
-          fontFamily={FONT}
-          fontSize="14"
-          fontWeight="800"
-          className={INK}
-        >
-          🎙 Q3 all-hands · Town hall
-        </text>
-      </g>
-
-      <Panel box={L.panel} portrait={portrait} />
-      {L.agenda ? <Agenda box={L.agenda} /> : null}
-      <Board box={L.board} rowH={L.rowH} portrait={portrait} />
+      <Board L={L} />
+      {L.panel ? <Panel box={L.panel} /> : null}
       <Timer box={L.timer} />
-      <Applause box={L.applause} />
+      <Reactions box={L.reactions} />
       <Poll box={L.poll} />
-      {L.followUps ? <FollowUps box={L.followUps} /> : null}
     </>
   );
 }
 
-// On the panel: who is answering, each with an initials disc. A phone shows the discs in a row.
-function Panel({ box, portrait }: { box: Box; portrait: boolean }) {
-  if (portrait) {
-    return (
-      <g className="hm-pop" style={at(0.4)}>
-        <Label x={box.x} y={box.y + 8}>
-          ON THE PANEL
-        </Label>
-        {PANEL.map((p, i) => (
-          <g key={p.initials}>
-            <circle cx={box.x + 14 + i * 110} cy={box.y + 30} r="12" fill={p.colour} />
-            <text
-              x={box.x + 14 + i * 110}
-              y={box.y + 33.5}
-              textAnchor="middle"
-              fontFamily={FONT}
-              fontSize="8.5"
-              fontWeight="800"
-              fill="white"
-            >
-              {p.initials}
-            </text>
-            <text
-              x={box.x + 32 + i * 110}
-              y={box.y + 34}
-              fontFamily={FONT}
-              fontSize="9.5"
-              fontWeight="700"
-              className={INK}
-            >
-              {p.name.split(' ')[0]}
-            </text>
-          </g>
-        ))}
-      </g>
-    );
-  }
-  return (
-    <g className="hm-pop" style={at(0.4)}>
-      <Label x={box.x} y={box.y + 6}>
-        ON THE PANEL
-      </Label>
-      {PANEL.map((p, i) => {
-        const y = box.y + 14 + i * 34;
-        return (
-          <g key={p.initials}>
-            <rect x={box.x} y={y} width={box.w} height="28" rx="7" className={CARD} />
-            <circle cx={box.x + 15} cy={y + 14} r="9" fill={p.colour} />
-            <text
-              x={box.x + 15}
-              y={y + 17}
-              textAnchor="middle"
-              fontFamily={FONT}
-              fontSize="7"
-              fontWeight="800"
-              fill="white"
-            >
-              {p.initials}
-            </text>
-            <text
-              x={box.x + 30}
-              y={y + 12}
-              fontFamily={FONT}
-              fontSize="8.5"
-              fontWeight="700"
-              className={INK}
-            >
-              {p.name}
-            </text>
-            <text x={box.x + 30} y={y + 22} fontFamily={FONT} fontSize="7" fill={MUTED}>
-              {p.role}
-            </text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-// Run of show: the segments and their minutes, the open Q&A live with its progress filling.
-function Agenda({ box }: { box: Box }) {
-  return (
-    <g className="hm-pop" style={at(0.7)}>
-      <Label x={box.x} y={box.y + 6}>
-        RUN OF SHOW
-      </Label>
-      <rect x={box.x} y={box.y + 12} width={box.w} height={box.h - 12} rx="9" className={CARD} />
-      {AGENDA.map((a, i) => {
-        const y = box.y + 22 + i * 31;
-        return (
-          <g key={a.label}>
-            {a.live ? (
-              <rect
-                x={box.x + 6}
-                y={y - 4}
-                width={box.w - 12}
-                height="27"
-                rx="6"
-                className="fill-sky-100 dark:fill-sky-500/20"
-              />
-            ) : null}
-            <text
-              x={box.x + 14}
-              y={y + 10}
-              fontFamily={FONT}
-              fontSize="8"
-              fontWeight={a.live ? 800 : 600}
-              className={a.live ? 'fill-sky-700 dark:fill-sky-300' : INK}
-            >
-              {a.label}
-            </text>
-            <text
-              x={box.x + box.w - 14}
-              y={y + 10}
-              textAnchor="end"
-              fontFamily={FONT}
-              fontSize="7.5"
-              fill={MUTED}
-            >
-              {a.mins}m
-            </text>
-            {a.live ? (
-              <>
-                <rect
-                  x={box.x + 14}
-                  y={y + 15}
-                  width={box.w - 28}
-                  height="3"
-                  rx="1.5"
-                  fill="#bae6fd"
-                />
-                <rect
-                  className="hm-wipe"
-                  style={at(1.2)}
-                  x={box.x + 14}
-                  y={y + 15}
-                  width={(box.w - 28) * 0.4}
-                  height="3"
-                  rx="1.5"
-                  fill={BRAND}
-                />
-              </>
-            ) : null}
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-// The Q&A board itself.
-function Board({ box, rowH, portrait }: { box: Box; rowH: number; portrait: boolean }) {
-  const finalSlot = [1, 0, 2, 3];
+// The Q&A board element: its header, the questions as vote rows, and the box the room asks in.
+function Board({ L }: { L: Layout }) {
+  const box = L.board;
   const right = box.x + box.w;
-  const rowY = (i: number) => box.y + 34 + i * rowH;
+  const rowY = (i: number) => box.y + 52 + i * L.rowH;
+  const h = L.rowH - 8;
   return (
     <>
-      <g className="hm-pop" style={at(0.3)}>
+      <g className="hm-pop" style={at(0.2)}>
         <rect
-          x={box.x + 2}
+          x={box.x}
           y={box.y + 3}
           width={box.w}
           height={box.h}
-          rx="12"
+          rx="14"
           fill="#0f172a"
           opacity="0.06"
         />
-        <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="12" className={CARD} />
-        <text
-          x={box.x + 12}
-          y={box.y + 20}
-          fontFamily={FONT}
-          fontSize="10"
-          fontWeight="800"
-          className={INK}
-        >
+        <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="14" className={CARD} />
+        <Txt x={box.x + 16} y={box.y + 24} size={13} weight={800}>
           Questions for the panel
-        </text>
-        <rect x={right - 46} y={box.y + 9} width="36" height="15" rx="7.5" fill="#fee2e2" />
-        <circle className="hm-live" cx={right - 38} cy={box.y + 16.5} r="2.8" fill="#ef4444" />
-        <text
-          x={right - 32}
-          y={box.y + 20}
-          fontFamily={FONT}
-          fontSize="7.5"
-          fontWeight="800"
-          fill="#b91c1c"
+        </Txt>
+        <Txt x={box.x + 16} y={box.y + 38} size={8.5} className={MUTED}>
+          Q3 all-hands · 4 questions · sorted by votes
+        </Txt>
+        <rect
+          x={right - 56}
+          y={box.y + 13}
+          width="42"
+          height="16"
+          rx="8"
+          fill="#ef4444"
+          fillOpacity="0.14"
+        />
+        <circle className="hm-live" cx={right - 46} cy={box.y + 21} r="3" fill="#ef4444" />
+        <Txt
+          x={right - 39}
+          y={box.y + 24}
+          size={8}
+          weight={800}
+          className="fill-red-700 dark:fill-red-300"
         >
           LIVE
-        </text>
+        </Txt>
       </g>
+
       {QUESTIONS.map((q, i) => {
         const y = rowY(i);
-        const dy = (finalSlot[i]! - i) * rowH;
-        const top = finalSlot[i] === 0;
-        const h = rowH - 8;
+        const dy = (FINAL_SLOT[i]! - i) * L.rowH;
+        const top = FINAL_SLOT[i] === 0;
+        const x = box.x + 12;
+        const w = box.w - 24;
         return (
           <g key={q.text} className="hm-move" style={at(RISE_AT, { '--dy': `${dy}px` })}>
             <g className="hm-pop" style={at(q.d)}>
-              <rect x={box.x + 8} y={y} width={box.w - 16} height={h} rx="9" className={INSET} />
-              <rect x={box.x + 14} y={y + 7} width="26" height={h - 14} rx="6" className={CARD} />
+              <rect x={x} y={y} width={w} height={h} rx="10" className={INSET} />
+              {/* The vote button: an arrow over the count. */}
+              <rect x={x + 8} y={y + 8} width="36" height={h - 16} rx="8" className={CARD} />
               <path
-                d={`M${box.x + 22} ${y + 17} l5 -5 l5 5`}
+                d={`M${x + 20} ${y + 21} l6 -6 l6 6`}
                 fill="none"
-                stroke={BRAND}
-                strokeWidth="1.8"
+                stroke={top ? BRAND : '#94a3b8'}
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <text
+              <Txt
                 className={`hm-out ${INK}`}
                 style={at(VOTES_AT + i * 0.2)}
-                x={box.x + 27}
-                y={y + h - 11}
-                textAnchor="middle"
-                fontFamily={FONT}
-                fontSize="9"
-                fontWeight="800"
+                x={x + 26}
+                y={y + h - 14}
+                size={11}
+                weight={800}
+                anchor="middle"
               >
                 {q.votes[0]}
-              </text>
-              <text
+              </Txt>
+              <Txt
                 className={`hm-fade ${top ? '' : INK}`}
                 style={at(VOTES_AT + i * 0.2)}
-                x={box.x + 27}
-                y={y + h - 11}
-                textAnchor="middle"
-                fontFamily={FONT}
-                fontSize="9"
-                fontWeight="800"
+                x={x + 26}
+                y={y + h - 14}
+                size={11}
+                weight={800}
+                anchor="middle"
                 fill={top ? BRAND : undefined}
               >
                 {q.votes[1]}
-              </text>
-              <text
-                x={box.x + 48}
-                y={y + 17}
-                fontFamily={FONT}
-                fontSize={portrait ? 10 : 9}
-                fontWeight="700"
-                className={INK}
-              >
+              </Txt>
+              <Txt x={x + 56} y={y + 22} size={L.question} weight={700}>
                 {q.text}
-              </text>
-              <text x={box.x + 48} y={y + 30} fontFamily={FONT} fontSize="7.5" fill={MUTED}>
-                {q.who}
-              </text>
+              </Txt>
+              <Avatar cx={x + 62} cy={y + h - 15} r={6} person={q.who} />
+              <Txt x={x + 73} y={y + h - 12} size={8.5} className={MUTED}>
+                {q.who.name} · {q.ago} ago
+              </Txt>
             </g>
             {top ? (
               <>
                 <rect
                   className="hm-fade"
                   style={at(ANSWERING_AT)}
-                  x={box.x + 8}
+                  x={x}
                   y={y}
-                  width={box.w - 16}
+                  width={w}
                   height={h}
-                  rx="9"
+                  rx="10"
                   fill="none"
                   stroke={BRAND}
                   strokeWidth="2"
                 />
                 <g className="hm-select" style={at(ANSWERING_AT)}>
                   <rect
-                    x={box.x + 48}
-                    y={y + h - 15}
-                    width="68"
-                    height="13"
-                    rx="6.5"
-                    fill="#e0f2fe"
+                    x={x + w - 84}
+                    y={y + h - 22}
+                    width="74"
+                    height="15"
+                    rx="7.5"
+                    fill={BRAND}
+                    fillOpacity="0.15"
                   />
-                  <text
-                    x={box.x + 82}
-                    y={y + h - 6}
-                    textAnchor="middle"
-                    fontFamily={FONT}
-                    fontSize="7"
-                    fontWeight="800"
-                    fill="#0369a1"
+                  <Txt
+                    x={x + w - 47}
+                    y={y + h - 11.5}
+                    size={8}
+                    weight={700}
+                    anchor="middle"
+                    className="fill-sky-700 dark:fill-sky-300"
                   >
                     Answering now
-                  </text>
+                  </Txt>
                 </g>
                 <g className="hm-pop" style={at(ANSWERED_AT)}>
                   <rect
-                    x={box.x + 48}
-                    y={y + h - 15}
-                    width="60"
-                    height="13"
-                    rx="6.5"
-                    fill="#dcfce7"
+                    x={x + w - 84}
+                    y={y + h - 22}
+                    width="74"
+                    height="15"
+                    rx="7.5"
+                    fill="#22c55e"
+                    fillOpacity="0.16"
                   />
-                  <text
-                    x={box.x + 78}
-                    y={y + h - 6}
-                    textAnchor="middle"
-                    fontFamily={FONT}
-                    fontSize="7"
-                    fontWeight="800"
-                    fill="#15803d"
+                  <path
+                    d={`M${x + w - 74} ${y + h - 14.5} l2.5 2.5 l4.5 -5`}
+                    fill="none"
+                    className="stroke-green-700 dark:stroke-green-300"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <Txt
+                    x={x + w - 41}
+                    y={y + h - 11.5}
+                    size={8}
+                    weight={700}
+                    anchor="middle"
+                    className="fill-green-700 dark:fill-green-300"
                   >
-                    ✓ Answered
-                  </text>
+                    Answered
+                  </Txt>
                 </g>
               </>
             ) : null}
           </g>
         );
       })}
+
+      {L.ask ? (
+        <g className="hm-pop" style={at(0.6)}>
+          <rect
+            x={box.x + 12}
+            y={box.y + box.h - 40}
+            width={box.w - 24}
+            height="28"
+            rx="8"
+            className="fill-white stroke-slate-300 dark:fill-slate-900 dark:stroke-slate-600"
+            strokeDasharray="4 3"
+          />
+          <Txt x={box.x + 26} y={box.y + box.h - 23} size={9} className={MUTED}>
+            Ask the panel a question…
+          </Txt>
+          <rect x={right - 70} y={box.y + box.h - 35} width="52" height="18" rx="6" fill={BRAND} />
+          <Txt
+            x={right - 44}
+            y={box.y + box.h - 23}
+            size={8.5}
+            weight={700}
+            anchor="middle"
+            className=""
+            fill="white"
+          >
+            Ask
+          </Txt>
+        </g>
+      ) : null}
     </>
   );
 }
 
-// The Q&A timer: 30 minutes, counting down once the Q&A opens.
-function Timer({ box }: { box: Box }) {
+// On the panel: the host and who is answering with them.
+function Panel({ box }: { box: Box }) {
+  const people = [MAYA, DEV, PRIYA];
   return (
-    <g className="hm-pop" style={at(0.9)}>
-      <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="10" className={CARD} />
-      <circle cx={box.x + 21} cy={box.y + box.h / 2} r="11" fill="#fef3c7" />
-      <path
-        d={`M${box.x + 21} ${box.y + box.h / 2 - 5} v5 l3.5 2.5`}
-        fill="none"
-        stroke="#d97706"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <text x={box.x + 40} y={box.y + 16} fontFamily={FONT} fontSize="7.5" fill={MUTED}>
-        Q&amp;A timer
-      </text>
-      <text
-        className={`hm-out ${INK}`}
-        style={at(2.4)}
-        x={box.x + 40}
-        y={box.y + 32}
-        fontFamily={FONT}
-        fontSize="13"
-        fontWeight="800"
-      >
-        30:00
-      </text>
-      <text
-        className={`hm-fade ${INK}`}
-        style={at(2.4)}
-        x={box.x + 40}
-        y={box.y + 32}
-        fontFamily={FONT}
-        fontSize="13"
-        fontWeight="800"
-      >
-        18:42
-      </text>
+    <g className="hm-pop" style={at(0.5)}>
+      <KitCard box={box} title="ON THE PANEL">
+        {people.map((p, i) => (
+          <Avatar key={p.initials} cx={box.x + 24 + i * 22} cy={box.y + 47} r={10} person={p} />
+        ))}
+        <Txt x={box.x + 92} y={box.y + 44} size={10} weight={700}>
+          Maya Chen
+        </Txt>
+        <Txt x={box.x + 92} y={box.y + 57} size={8.5} className={MUTED}>
+          with Dev and Priya
+        </Txt>
+      </KitCard>
     </g>
   );
 }
 
-// The applause pad: the room's reactions float up from it.
-function Applause({ box }: { box: Box }) {
-  const reactions = [
-    { e: '👏', d: 4.8, dx: 0 },
-    { e: '🎉', d: 5.6, dx: 22 },
-    { e: '❤️', d: 7.0, dx: -18 },
-    { e: '👏', d: 8.8, dx: 10 },
-    { e: '🙌', d: 9.6, dx: -8 },
-  ];
-  const cx = box.x + box.w / 2;
+// The Q&A timer: 30 minutes, counting down once the Q&A opens, its bar draining.
+function Timer({ box }: { box: Box }) {
+  const barW = box.w - 28;
+  return (
+    <g className="hm-pop" style={at(0.8)}>
+      <KitCard box={box} title="Q&A TIMER">
+        <Txt
+          className={`hm-out ${INK}`}
+          style={at(2.4)}
+          x={box.x + 14}
+          y={box.y + 44}
+          size={19}
+          weight={800}
+        >
+          30:00
+        </Txt>
+        <Txt
+          className={`hm-fade ${INK}`}
+          style={at(2.4)}
+          x={box.x + 14}
+          y={box.y + 44}
+          size={19}
+          weight={800}
+        >
+          18:42
+        </Txt>
+        <Txt x={box.x + box.w - 14} y={box.y + 43} size={8.5} anchor="end" className={MUTED}>
+          of 30:00
+        </Txt>
+        <rect x={box.x + 14} y={box.y + 54} width={barW} height="5" rx="2.5" className={TRACK} />
+        <rect
+          className="hm-wipe"
+          style={at(2.4)}
+          x={box.x + 14}
+          y={box.y + 54}
+          width={barW * 0.62}
+          height="5"
+          rx="2.5"
+          fill="#f59e0b"
+        />
+      </KitCard>
+    </g>
+  );
+}
+
+// The reaction glyphs: drawn, in the room's colours, not emoji.
+const HEART = 'M0 3.2c-2-2.6-6-1.4-6 1.6 0 3 6 6.2 6 6.2s6-3.2 6-6.2c0-3-4-4.2-6-1.6z';
+const STAR = 'M0 -5.5l1.7 3.6 3.9.5-2.9 2.7.7 3.9L0 3.3l-3.4 1.9.7-3.9-2.9-2.7 3.9-.5z';
+const SPARK = 'M0 -6c.6 3.4 2.6 5.4 6 6-3.4.6-5.4 2.6-6 6-.6-3.4-2.6-5.4-6-6 3.4-.6 5.4-2.6 6-6z';
+const REACTION = [
+  { path: HEART, fill: '#f43f5e', dy: -2 },
+  { path: STAR, fill: '#f59e0b', dy: 0 },
+  { path: SPARK, fill: '#8b5cf6', dy: 0 },
+];
+
+function Glyph({ x, y, kind, r = 11 }: { x: number; y: number; kind: number; r?: number }) {
+  const g = REACTION[kind]!;
+  const s = r / 11;
   return (
     <>
-      <g className="hm-pop" style={at(1.1)}>
-        <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="10" className={CARD} />
-        <text x={box.x + 14} y={box.y + box.h / 2 + 6} fontSize="16">
-          👏
-        </text>
-        <text x={box.x + 40} y={box.y + 16} fontFamily={FONT} fontSize="7.5" fill={MUTED}>
-          Applause
-        </text>
-        <text
-          className={`hm-out ${INK}`}
-          style={at(6)}
-          x={box.x + 40}
-          y={box.y + 32}
-          fontFamily={FONT}
-          fontSize="13"
-          fontWeight="800"
-        >
-          12
-        </text>
-        <text
-          className={`hm-fade ${INK}`}
-          style={at(6)}
-          x={box.x + 40}
-          y={box.y + 32}
-          fontFamily={FONT}
-          fontSize="13"
-          fontWeight="800"
-        >
-          64
-        </text>
+      <circle cx={x} cy={y} r={r} fill={g.fill} fillOpacity="0.16" />
+      <path d={g.path} fill={g.fill} transform={`translate(${x} ${y + g.dy * s}) scale(${s})`} />
+    </>
+  );
+}
+
+// The room's reactions: the pads and the running count, each reaction floating up as it lands.
+function Reactions({ box }: { box: Box }) {
+  const floats = [
+    { kind: 0, d: 4.8, dx: 0 },
+    { kind: 1, d: 5.6, dx: 24 },
+    { kind: 2, d: 7.0, dx: -14 },
+    { kind: 0, d: 8.8, dx: 12 },
+    { kind: 1, d: 9.6, dx: -4 },
+  ];
+  const padY = box.y + 47;
+  return (
+    <>
+      <g className="hm-pop" style={at(1.0)}>
+        <KitCard box={box} title="REACTIONS">
+          {REACTION.map((_, i) => (
+            <Glyph key={i} x={box.x + 25 + i * 28} y={padY} kind={i} />
+          ))}
+          <Txt
+            className={`hm-out ${INK}`}
+            style={at(6)}
+            x={box.x + box.w - 14}
+            y={padY + 6}
+            size={17}
+            weight={800}
+            anchor="end"
+          >
+            12
+          </Txt>
+          <Txt
+            className={`hm-fade ${INK}`}
+            style={at(6)}
+            x={box.x + box.w - 14}
+            y={padY + 6}
+            size={17}
+            weight={800}
+            anchor="end"
+          >
+            64
+          </Txt>
+        </KitCard>
       </g>
-      {reactions.map((r, i) => (
-        <text
+      {floats.map((f, i) => (
+        <g
           key={i}
           className="hm-float"
-          style={at(r.d)}
-          x={cx + 30 + r.dx}
-          y={box.y + 18}
-          fontSize="15"
-          textAnchor="middle"
+          style={{ ...at(f.d), transformBox: 'fill-box', transformOrigin: 'center' }}
         >
-          {r.e}
-        </text>
+          <Glyph x={box.x + 25 + f.kind * 28 + f.dx} y={padY - 12} kind={f.kind} r={8} />
+        </g>
       ))}
     </>
   );
 }
 
-// The closing poll: how useful was this, 1 to 5, the votes filling in.
+// The closing poll: how useful was this, 1 to 5, the votes filling in over faint tracks.
 function Poll({ box }: { box: Box }) {
   const max = Math.max(...POLL);
-  const barsTop = box.y + 26;
-  const barsH = box.h - 42;
+  const barsTop = box.y + 30;
+  const barsH = box.h - 50;
   const gap = 8;
   const barW = (box.w - 28 - gap * (POLL.length - 1)) / POLL.length;
   return (
-    <g className="hm-pop" style={at(1.3)}>
-      <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="10" className={CARD} />
-      <text
-        x={box.x + 14}
-        y={box.y + 16}
-        fontFamily={FONT}
-        fontSize="8.5"
-        fontWeight="800"
-        className={INK}
-      >
-        How useful was this?
-      </text>
-      {POLL.map((n, i) => {
-        const h = (n / max) * barsH;
-        const x = box.x + 14 + i * (barW + gap);
-        return (
-          <g key={i}>
-            <rect
-              className="hm-grow"
-              style={at(7.4 + i * 0.12)}
-              x={x}
-              y={barsTop + barsH - h}
-              width={barW}
-              height={h}
-              rx="3"
-              fill={i === POLL.length - 1 ? BRAND : '#bae6fd'}
-            />
-            <text
-              x={x + barW / 2}
-              y={box.y + box.h - 6}
-              textAnchor="middle"
-              fontFamily={FONT}
-              fontSize="7"
-              fill={MUTED}
-            >
-              {i + 1}
-            </text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-// What the panel owes the room, ticking off.
-function FollowUps({ box }: { box: Box }) {
-  return (
-    <g className="hm-pop" style={at(1.5)}>
-      <Label x={box.x} y={box.y + 6}>
-        FOLLOW-UPS
-      </Label>
-      <rect x={box.x} y={box.y + 12} width={box.w} height={box.h - 12} rx="10" className={CARD} />
-      {FOLLOW_UPS.map((f, i) => {
-        const y = box.y + 30 + i * 22;
-        return (
-          <g key={f}>
-            <rect x={box.x + 12} y={y - 8} width="11" height="11" rx="3" className={INSET} />
-            {i < 2 ? (
-              <path
-                className="hm-draw"
-                style={at(9.2 + i * 0.4, { '--dur': '0.25s', '--len': 14 })}
-                d={`M${box.x + 14.5} ${y - 2.5} l2.5 2.5 l4.5 -5`}
-                fill="none"
-                stroke="#16a34a"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+    <g className="hm-pop" style={at(1.2)}>
+      <KitCard box={box} title="WAS THIS USEFUL?">
+        <g className="hm-pop" style={at(8)}>
+          <Txt x={box.x + box.w - 14} y={box.y + 19} size={9} weight={800} anchor="end">
+            4.3 avg
+          </Txt>
+        </g>
+        {POLL.map((n, i) => {
+          const h = (n / max) * barsH;
+          const x = box.x + 14 + i * (barW + gap);
+          return (
+            <g key={i}>
+              <rect x={x} y={barsTop} width={barW} height={barsH} rx="4" className={TRACK} />
+              <rect
+                className="hm-grow"
+                style={at(7.2 + i * 0.12)}
+                x={x}
+                y={barsTop + barsH - h}
+                width={barW}
+                height={h}
+                rx="4"
+                fill={i === POLL.length - 1 ? BRAND : '#7dd3fc'}
               />
-            ) : null}
-            <text x={box.x + 30} y={y + 1} fontFamily={FONT} fontSize="7.5" className={INK}>
-              {f}
-            </text>
-          </g>
-        );
-      })}
+              <Txt
+                x={x + barW / 2}
+                y={box.y + box.h - 8}
+                size={8}
+                weight={600}
+                anchor="middle"
+                className={MUTED}
+              >
+                {i + 1}
+              </Txt>
+            </g>
+          );
+        })}
+      </KitCard>
     </g>
   );
 }

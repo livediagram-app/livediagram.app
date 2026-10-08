@@ -1,144 +1,245 @@
-// The drawing parts the versatility feature illustrations are built from:
-// the shape-library glyph the Shapes card cycles through, and the four small
-// icons its neighbours hang on their cards.
+// The drawing parts the versatility feature illustrations are built from: tinted node tones that
+// read on the light and the dark canvas, a labelled node, a selection frame with its handles, a
+// teammate's pointer, a floating chip, an arrowhead, the wand glyph and the shared panel styles.
 //
-// Split out of versatility.tsx for the same reason as canvas-parts.tsx — these
-// sat between the scenes that use them, so the file alternated between two
-// kinds of thing with nothing marking which you were reading.
-//
-// Versatility-specific on purpose: ./shared holds what every feature-art file
-// uses (Frame and the colour constants), and none of these are wanted
-// elsewhere.
+// Versatility-specific on purpose: ./shared holds what every feature-art file uses (Frame and the
+// colour constants), and none of these are wanted elsewhere. Colours are Tailwind utilities with a
+// dark: half, never bare hex, so a card is right in both appearances.
 
-import { BLUE_STROKE } from './shared';
+import type { CSSProperties, ReactNode } from 'react';
 
-export function ShapeGlyph({ kind }: { kind: string }) {
-  const c = {
-    width: 15,
-    height: 15,
-    viewBox: '0 0 16 16',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 1.4,
-    'aria-hidden': true,
-  } as const;
-  switch (kind) {
-    case 'square':
-      return (
-        <svg {...c}>
-          <rect x="3" y="3" width="10" height="10" rx="2" />
-        </svg>
-      );
-    case 'circle':
-      return (
-        <svg {...c}>
-          <circle cx="8" cy="8" r="5" />
-        </svg>
-      );
-    case 'diamond':
-      return (
-        <svg {...c}>
-          <polygon points="8,3 13,8 8,13 3,8" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'hexagon':
-      return (
-        <svg {...c}>
-          <polygon points="4,3 11,3 14,8 11,13 4,13 1,8" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'cylinder':
-      return (
-        <svg {...c}>
-          <path d="M3 5 L3 12 A5 1.5 0 0 0 13 12 L13 5" strokeLinejoin="round" />
-          <ellipse cx="8" cy="5" rx="5" ry="1.5" />
-        </svg>
-      );
-    case 'browser':
-      return (
-        <svg {...c}>
-          <rect x="2" y="3" width="12" height="10" rx="1.5" />
-          <line x1="2" y1="6" x2="14" y2="6" />
-          <circle cx="4" cy="4.5" r="0.5" fill="currentColor" />
-          <circle cx="5.8" cy="4.5" r="0.5" fill="currentColor" />
-        </svg>
-      );
-    case 'phone':
-      return (
-        <svg {...c}>
-          <rect x="5" y="2" width="6" height="12" rx="1.5" />
-          <line x1="7" y1="3.4" x2="9" y2="3.4" />
-        </svg>
-      );
-    case 'tablet':
-      return (
-        <svg {...c}>
-          <rect x="3.5" y="2.5" width="9" height="11" rx="1.5" />
-          <circle cx="8" cy="12" r="0.5" fill="currentColor" />
-        </svg>
-      );
-  }
-  return null;
+export type Tone = 'sky' | 'violet' | 'emerald' | 'amber' | 'pink' | 'slate';
+
+// A shape's fill and border in each tone: a pale tint on paper, a deep tint on the dark canvas.
+export const TONE_SHAPE: Record<Tone, string> = {
+  sky: 'fill-sky-50 stroke-sky-500 dark:fill-sky-500/15 dark:stroke-sky-400',
+  violet: 'fill-violet-50 stroke-violet-500 dark:fill-violet-500/15 dark:stroke-violet-400',
+  emerald: 'fill-emerald-50 stroke-emerald-500 dark:fill-emerald-500/15 dark:stroke-emerald-400',
+  amber: 'fill-amber-50 stroke-amber-500 dark:fill-amber-500/15 dark:stroke-amber-400',
+  pink: 'fill-pink-50 stroke-pink-500 dark:fill-pink-500/15 dark:stroke-pink-400',
+  slate: 'fill-white stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600',
+};
+
+// A label inside a shape of that tone.
+export const TONE_TEXT: Record<Tone, string> = {
+  sky: 'fill-sky-800 dark:fill-sky-100',
+  violet: 'fill-violet-800 dark:fill-violet-100',
+  emerald: 'fill-emerald-800 dark:fill-emerald-100',
+  amber: 'fill-amber-800 dark:fill-amber-100',
+  pink: 'fill-pink-800 dark:fill-pink-100',
+  slate: 'fill-slate-700 dark:fill-slate-200',
+};
+
+// Connectors, guides and the selection, as the editor draws them.
+export const LINK = 'stroke-slate-500 dark:stroke-slate-400';
+const LINK_HEAD = 'fill-slate-500 dark:fill-slate-400';
+export const SELECT = 'stroke-sky-500 dark:stroke-sky-400';
+export const MUTED_TEXT = 'fill-slate-500 dark:fill-slate-400';
+
+/** A labelled shape on the canvas. `shape` picks a rounded box, a pill or a diamond. */
+export function Node({
+  x,
+  y,
+  w,
+  h,
+  label,
+  tone = 'sky',
+  shape = 'box',
+  size = 7,
+  className,
+  style,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label?: string;
+  tone?: Tone;
+  shape?: 'box' | 'pill' | 'diamond';
+  size?: number;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const body =
+    shape === 'diamond' ? (
+      <path
+        className={TONE_SHAPE[tone]}
+        d={`M${x + w / 2} ${y} L${x + w} ${y + h / 2} L${x + w / 2} ${y + h} L${x} ${y + h / 2} Z`}
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    ) : (
+      <rect
+        className={TONE_SHAPE[tone]}
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={shape === 'pill' ? h / 2 : 4}
+        strokeWidth="1.4"
+      />
+    );
+  return (
+    <g className={className} style={style}>
+      {body}
+      {label ? (
+        <text
+          className={TONE_TEXT[tone]}
+          x={x + w / 2}
+          y={y + h / 2 + size * 0.36}
+          fontSize={size}
+          fontWeight="600"
+          textAnchor="middle"
+        >
+          {label}
+        </text>
+      ) : null}
+    </g>
+  );
 }
 
-export function NoteIcon() {
+/** The selection frame the editor draws round a selected element: a thin sky line and four handles. */
+export function Selection({
+  x,
+  y,
+  w,
+  h,
+  pad = 3,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  pad?: number;
+}) {
+  const x0 = x - pad;
+  const y0 = y - pad;
+  const x1 = x + w + pad;
+  const y1 = y + h + pad;
   return (
-    <svg
-      width="8"
-      height="8"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
+    <g>
+      <rect
+        className={SELECT}
+        x={x0}
+        y={y0}
+        width={x1 - x0}
+        height={y1 - y0}
+        fill="none"
+        strokeWidth="1"
+      />
+      {[
+        [x0, y0],
+        [x1, y0],
+        [x0, y1],
+        [x1, y1],
+      ].map(([hx, hy]) => (
+        <rect
+          key={`${hx}-${hy}`}
+          className={`fill-white dark:fill-slate-900 ${SELECT}`}
+          x={hx! - 2}
+          y={hy! - 2}
+          width="4"
+          height="4"
+          rx="0.8"
+          strokeWidth="1"
+        />
+      ))}
+    </g>
+  );
+}
+
+/** A teammate's pointer with their name tag, as live presence draws it. */
+export function Pointer({
+  x,
+  y,
+  name,
+  color = '#ec4899',
+}: {
+  x: number;
+  y: number;
+  name?: string;
+  color?: string;
+}) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <path
+        d="M0 0 L0 10 L2.8 7.4 L4.6 11.4 L6.2 10.7 L4.4 6.8 L8.2 6.6 Z"
+        fill={color}
+        stroke="#fff"
+        strokeWidth="0.9"
+        strokeLinejoin="round"
+      />
+      {name ? (
+        <g transform="translate(7 10)">
+          <rect width={name.length * 4.2 + 6} height="8.5" rx="2.5" fill={color} />
+          <text x="3" y="6.1" fontSize="5.8" fontWeight="700" fill="#fff">
+            {name}
+          </text>
+        </g>
+      ) : null}
+    </g>
+  );
+}
+
+/** A small floating chip over the art (a mode, a hint or a value), placed by its corner classes. */
+export function Chip({ className = '', children }: { className?: string; children: ReactNode }) {
+  return (
+    <span
+      className={`absolute flex items-center gap-1 rounded-md border border-slate-200 bg-white/95 px-1.5 py-0.5 text-[8px] font-semibold text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${className}`}
     >
-      <path d="M3 2.5 H13 V13.5 H3 Z" strokeLinejoin="round" />
-      <path d="M5.5 6 H10.5 M5.5 9 H9" strokeLinecap="round" />
-    </svg>
+      {children}
+    </span>
+  );
+}
+
+// An arrowhead marker for a connector, in the link colour. Ids are per card so two cards on one
+// page never share a marker.
+export function ArrowHead({ id, hollow = false }: { id: string; hollow?: boolean }) {
+  return (
+    <marker
+      id={id}
+      viewBox="0 0 10 10"
+      refX="9"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto-start-reverse"
+    >
+      <path
+        className={hollow ? `fill-white dark:fill-slate-900 ${LINK}` : LINK_HEAD}
+        d="M1 1 L9 5 L1 9 z"
+        strokeWidth={hollow ? 1.3 : 0}
+        strokeLinejoin="round"
+      />
+    </marker>
   );
 }
 
 export function WandIcon() {
   return (
-    <svg
-      className="dark:stroke-brand-300"
-      width="9"
-      height="9"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke={BLUE_STROKE}
-      strokeWidth="1.5"
-    >
-      <path d="M3 13 L11 5" strokeLinecap="round" />
+    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" aria-hidden>
       <path
-        className="dark:fill-brand-300"
+        className="stroke-brand-600 dark:stroke-brand-300"
+        d="M3 13 L11 5"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        className="fill-brand-600 dark:fill-brand-300"
         d="M12 2 l0.7 1.8 L14.5 4.5 l-1.8 0.7 L12 7 l-0.7-1.8 L9.5 4.5 l1.8-0.7 Z"
-        fill={BLUE_STROKE}
-        stroke="none"
       />
     </svg>
   );
 }
 
-export function PencilGlyph() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="#64748b" strokeWidth="1.5">
-      <path d="M11 2.5 L13.5 5 L5 13.5 L2.5 13.5 L2.5 11 Z" strokeLinejoin="round" />
-    </svg>
-  );
-}
+export const delay = (s: number): CSSProperties => ({ animationDelay: `${s}s` });
 
-export function SparkleIcon({ light = false }: { light?: boolean }) {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 16 16"
-      fill={light ? '#fff' : BLUE_STROKE}
-      className={light ? undefined : 'dark:fill-brand-300'}
-      aria-hidden
-    >
-      <path d="M8 1 l1.4 4.2 L13.6 6.6 l-4.2 1.4 L8 12.2 l-1.4 -4.2 L2.4 6.6 l4.2 -1.4 Z" />
-      <path d="M13 9.5 l0.55 1.65 L15.2 11.7 l-1.65 0.55 L13 13.9 l-0.55 -1.65 L10.8 11.7 l1.65 -0.55 Z" />
-    </svg>
-  );
-}
+// A panel floating over the canvas, as the editor's popovers and panels sit.
+export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
+export const PANEL_TEXT = 'fill-slate-700 dark:fill-slate-200';
+export const HAIRLINE = 'stroke-slate-200 dark:stroke-slate-700';
+export const INK = 'stroke-slate-800 dark:stroke-slate-100';
+export const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+
+// The card stage: the full width of a card's frame (about 304 by 96 px), drawn at one scale.
+export const STAGE = '0 0 300 96';

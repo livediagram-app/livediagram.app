@@ -26,7 +26,7 @@ function swapTo(url: string, withTransition = true) {
 
 describe('the view transition guard', () => {
   it('keeps the crossfade between two marketing pages', () => {
-    expect(swapTo(`${ORIGIN}/features/simple`).skipTransition).not.toHaveBeenCalled();
+    expect(swapTo(`${ORIGIN}/features/diagrams`).skipTransition).not.toHaveBeenCalled();
     expect(swapTo(`${ORIGIN}/`).skipTransition).not.toHaveBeenCalled();
   });
 

@@ -87,6 +87,21 @@
     opacity: 0;
   }
 }
+/* A landing beat's first play (components/FeatureScene.tsx): the window has nothing to lift from,
+   so the veil starts clear and only closes over the cycle's last second, ready for the replay. */
+.hero-fade-end {
+  opacity: 0;
+  animation: hero-fade-end 22s linear infinite;
+}
+@keyframes hero-fade-end {
+  0%,
+  94% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 
 /* ─────────────────────────────────────────────────────────────────
  * Feature-card mini illustrations
