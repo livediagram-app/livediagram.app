@@ -17,6 +17,7 @@ import {
   MAX_ILLUSTRATE_PAGES,
   nextIllustratePageId,
   PAGE_NAME_MAX,
+  newSlidePage,
   withIllustratePages,
   type IllustratePage,
   type PageKind,
@@ -255,8 +256,9 @@ export function offersPageKindChoice(
   return pages.length === 1 && pages[0]!.id === pageId && !pages[0]!.kind && contentCount === 0;
 }
 
-/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), or an article
- *  (the page becomes its first page, its writing a new Title and paragraph). Null when the page no
+/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), an article
+ *  (the page becomes its first page, its writing a new Title and paragraph), or a slide (the page
+ *  turned into a 16:9 landscape slide). Null when the page no
  *  longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
@@ -268,6 +270,16 @@ export function withPageKindChosen<T extends PagesTab>(
   const page = pages.find((p) => p.id === pageId);
   if (!page || pages.length !== 1 || page.kind) return null;
   if (kind === 'infographic') return withIllustratePages(tab, [{ ...page, kind: 'infographic' }]);
+  if (kind === 'slide') {
+    const { name } = page;
+    return withIllustratePages(tab, [
+      {
+        ...newSlidePage(page.id),
+        ...(page.background ? { background: page.background } : {}),
+        ...(name ? { name } : {}),
+      },
+    ]);
+  }
   return withArticleFlow(
     withIllustratePages(tab, [{ ...page, kind: 'article', flow }]),
     flow,

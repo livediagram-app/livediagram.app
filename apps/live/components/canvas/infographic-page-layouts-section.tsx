@@ -1,19 +1,15 @@
 'use client';
 
-// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layouts by
+// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts", "Slide layouts"):
+// the page's catalogue (a slide page's slide layouts, else the infographic ones) by
 // category, as /new browses templates: the categories first (each a card fronted by its first
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
 // back. Onto an empty page a press places it at once; onto
 // a page with content the grid asks first, inline, naming how much would go. Hovering a tile
 // previews it on the page (InfographicLayoutPreview); the pending one stays previewed while asked.
 import { useState } from 'react';
-import type { LaidOutPage } from '@livediagram/document';
-import {
-  PAGE_LAYOUT_CATEGORIES,
-  PAGE_LAYOUTS,
-  type PageLayoutCategoryId,
-  type PageLayoutId,
-} from '@livediagram/templates';
+import { pageKindOf, type LaidOutPage } from '@livediagram/document';
+import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
 import { ChevronLeftIcon } from '@livediagram/ui';
 import { CountBadge } from '@livediagram/ui';
 import { Button } from '@livediagram/ui';
@@ -41,13 +37,14 @@ export function LayoutsSection(props: LayoutBrowserProps) {
 export function LayoutBrowser({ page, contentCount, onApply, onPreview }: LayoutBrowserProps) {
   const [pending, setPending] = useState<PageLayoutId | null>(null);
   // The category open, or null for the overview of categories.
-  const [category, setCategory] = useState<PageLayoutCategoryId | null>(null);
-  const openCategory = PAGE_LAYOUT_CATEGORIES.find((c) => c.id === category);
+  const [category, setCategory] = useState<string | null>(null);
+  const { categories, layouts } = layoutCatalogueFor(pageKindOf(page));
+  const openCategory = categories.find((c) => c.id === category);
   const pick = (id: PageLayoutId) => {
     if (contentCount === 0) onApply(id);
     else setPending(id);
   };
-  const pendingLabel = PAGE_LAYOUTS.find((l) => l.id === pending)?.label;
+  const pendingLabel = layouts.find((l) => l.id === pending)?.label;
   return (
     <>
       {pending ? (
@@ -109,28 +106,30 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
             onPointerLeave={() => onPreview(pending)}
             onBlur={() => onPreview(pending)}
           >
-            {PAGE_LAYOUTS.filter((l) => l.category === openCategory.id).map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => pick(l.id)}
-                onPointerEnter={() => onPreview(l.id)}
-                onFocus={() => onPreview(l.id)}
-                aria-pressed={pending === l.id}
-                className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
-                  pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
-                }`}
-              >
-                <LayoutThumb layout={l.id} page={page} />
-                {l.label}
-              </button>
-            ))}
+            {layouts
+              .filter((l) => l.category === openCategory.id)
+              .map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => pick(l.id)}
+                  onPointerEnter={() => onPreview(l.id)}
+                  onFocus={() => onPreview(l.id)}
+                  aria-pressed={pending === l.id}
+                  className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
+                    pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
+                  }`}
+                >
+                  <LayoutThumb layout={l.id} page={page} />
+                  {l.label}
+                </button>
+              ))}
           </div>
         </>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {PAGE_LAYOUT_CATEGORIES.map((c) => {
-            const members = PAGE_LAYOUTS.filter((l) => l.category === c.id);
+          {categories.map((c) => {
+            const members = layouts.filter((l) => l.category === c.id);
             return (
               <button
                 key={c.id}

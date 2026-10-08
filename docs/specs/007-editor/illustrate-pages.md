@@ -11,16 +11,16 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | Term                | Means                                                                                                     |
 | ------------------- | --------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab in Illustrate mode (`IllustratePage`), stored in `Tab.pages` in row order.             |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic** page or an **article** page.                |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, an **article** or a **slide** page.        |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px.                                  |
-| **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                    |
+| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                 |
 | **page background** | What the sheet is painted with (`PageBackground`): a solid colour or a two-stop gradient, plus a pattern. |
 | **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.     |
 | **page panel**      | The page's settings, opened from the cog above its top-right corner.                                      |
 
 ## Page kinds
 
-A page is one of two kinds (`IllustratePage.kind`), chosen when it is made and never changed
+A page is one of three kinds (`IllustratePage.kind`), chosen when it is made and never changed
 afterwards (the one exception: the first page's own choice, below):
 
 - **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
@@ -28,18 +28,24 @@ afterwards (the one exception: the first page's own choice, below):
 - **Article** (`kind: 'article'`): a page to write on, its text flowing through the linked pages
   of one article ([Article pages](article-pages.md)). This spec applies to it except where a
   rule names infographic pages; [Article pages](article-pages.md) adds the rest.
+- **Slide** (`kind: 'slide'`): one slide of a deck, to lay out like an infographic page and
+  present. Always landscape, in a slide size (16:9, or the classic 4:3); it offers no orientation
+  and no other size. It starts from the **slide layouts** rather than the infographic ones.
+  Everything in this spec for infographic pages applies to it except where a rule says otherwise.
 
 **Adding a page**: the **+** after the last page (centred in the gap after it, or, zoomed out so
 far that the gap is narrower than the button, kept 12 screen px clear of the page) opens a small
 popover, **Add a page**, offering
-two cards, each a miniature of the kind and a line under its name:
+three cards, side by side, each a miniature of the kind and a line under its name:
 
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
 - **Article**: "A page to write on, flowing onto new pages as it grows."
+- **Slide**: "A slide for a deck: widescreen, ready to present."
 
 Arrow keys move between them, Enter or a press chooses, Escape or an outside press closes. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait); a new
-article is as [Article pages](article-pages.md) "An article" says. The popover is the same on
+article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
+slide's size (else 16:9), landscape. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. In the
 Toolbar layout the strip ends, after a divider, with the same **+** (Add page), opening the same
 popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
@@ -49,10 +55,11 @@ A tab entering Illustrate mode with no pages stored starts with one page, its ki
 
 **The first page's choice**: while a tab's only page is unchosen and empty, it offers the two kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same two
+**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same three
 cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
-choice goes; **Article** makes it the first page of a new article, the caret in its title. One edit
-each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
+choice goes; **Article** makes it the first page of a new article, the caret in its title;
+**Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting. One
+edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
 view, nor on a second page (a page added from the + is chosen in the popover).
@@ -65,8 +72,8 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   than the window.
 - Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
-  and **Layouts** (an article page: **Page** and **Style**, [Article pages](article-pages.md)
-  "Article style"), then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
+  and **Layouts** (a slide page's Layouts are the slide layouts; an article page: **Page** and
+  **Style**, [Article pages](article-pages.md) "Article style"), then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
   (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
   the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
@@ -96,7 +103,9 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
 - `kind` absent is **infographic**; `flow` is present exactly on an article page (its article's
   id). A stored article page without a flow is read as an article of its own (its id as the
-  flow); a stored infographic page with a flow drops it.
+  flow); a stored infographic or slide page with a flow drops it.
+- A **slide** page is always in a slide size and landscape: a stored slide page in any other size
+  is read as 16:9, and its orientation as landscape.
 - **An article's pages sit together.** Read pages are put in order so that the pages of one flow
   form one run, in their stored order, where the flow's first page stands (pages of a flow found
   after another page joined the run as two collaborators' edits crossed). Every page of a flow
@@ -109,14 +118,25 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 
 ## Sizes
 
-| Size id  | Label (portrait / landscape) | Short x long side (px) | For                      |
-| -------- | ---------------------------- | ---------------------- | ------------------------ |
-| `a4`     | A4                           | 794 x 1123             | Print, the default       |
-| `letter` | US Letter                    | 816 x 1056             | Print in North America   |
-| `a3`     | A3                           | 1123 x 1587            | Posters                  |
-| `square` | Square                       | 1080 x 1080            | Social posts             |
-| `social` | Portrait post (4:5)          | 1080 x 1350            | Instagram and LinkedIn   |
-| `wide`   | Story (9:16) / Slide (16:9)  | 1080 x 1920            | Stories, and slides wide |
+| Size id         | Label (portrait / landscape) | Short x long side (px) | For                      |
+| --------------- | ---------------------------- | ---------------------- | ------------------------ |
+| `a4`            | A4                           | 794 x 1123             | Print, the default       |
+| `letter`        | US Letter                    | 816 x 1056             | Print in North America   |
+| `a3`            | A3                           | 1123 x 1587            | Posters                  |
+| `square`        | Square                       | 1080 x 1080            | Social posts             |
+| `social`        | Portrait post (4:5)          | 1080 x 1350            | Instagram and LinkedIn   |
+| `wide`          | Story (9:16) / Slide (16:9)  | 1080 x 1920            | Stories, and slides wide |
+| `slide`         | Slide (16:9)                 | 1080 x 1920            | Slides, landscape only   |
+| `slide-classic` | Classic slide (4:3)          | 1080 x 1440            | Slides for 4:3 screens   |
+
+- **Which sizes a page offers** depends on its kind. An **infographic** page: A4, US Letter, A3,
+  Square, Post, Story and **Slide** (16:9). An **article** page: the first six. A **slide** page:
+  **Slide** (16:9) and **Classic** (4:3) only.
+- The **slide sizes** (`slide`, `slide-classic`) are **landscape only**: like a square they show no
+  Portrait / Landscape choice, a page in one is always drawn landscape, and a turn is refused. An
+  infographic page keeps whatever orientation it had, so turning it back to a paper size restores
+  it; a slide page's is always landscape.
+- The size tiles sit four to a row.
 
 - Paper sizes are at the CSS 96 px per inch; screen sizes are their own pixels.
 - A **square** page has no orientation: its panel shows no Portrait / Landscape choice, and it keeps
@@ -127,7 +147,7 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Infographic|Article>`.
+- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Infographic|Article|Slide>`.
   Only the paper sizes (A4, US Letter, A3) add the orientation: a square has none, and the post,
   story and slide labels already say which way they face. The kind always ends it. No `Page n`
   while there is one page and no name.
@@ -275,6 +295,31 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
   orientation, as a wireframe (text as bars, images shaded, icons as dots).
 
+## Slide layouts
+
+A **slide** page's Layouts tab, and its in-page **Start From a Layout** card, offer the **slide
+layouts** in place of the infographic ones, in the same browser (categories first, then a
+category's layouts, the same Replace question, hover previews and wireframe tiles). They are
+built for a landscape slide's content box (16:9 or 4:3), in the tab's theme, with type sized to
+be read across a room:
+
+- **Openers**: **Title slide** (a large title, a subtitle, an accent rule, and the presenter and
+  date at the foot), **Section header** (a big section number, an accent rule, the section's title
+  and a line), and **Agenda** (the infographic Agenda).
+- **Content**: **Title and bullets** (a title over five bullet points, each a dot beside a line),
+  **Two columns** (a title over two columns, each a heading and three bullet points), **Image and
+  text** (an image filling the left half, a title, a line and three bullet points to its right),
+  **Statement** (an accent rule, one sentence set very large, centred, and a line under it) and **Quote** (the
+  infographic Quote).
+- **Data**: **Big number**, **Key stats**, **Chart story** and **Comparison** (the infographic
+  ones, side by side).
+- **Steps and Time**: **Process**, **Timeline** and **Roadmap** (the infographic ones).
+- **Closers**: **Thank you** (a large "Thank you", "Questions?", and a contact line) and **Team**
+  (the infographic Team).
+
+Seventeen in all; a slide layout reused from the infographics is the same layout (same id, same
+build), filed under the slide category.
+
 ## Page actions
 
 From the page panel's footer. On an **article page** each action acts on its **whole article**
@@ -360,7 +405,8 @@ pages). Mermaid, Markdown, Excalidraw and draw.io are diagram formats and are no
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
-`PagesLaidOut`, `PageKindInfographic` / `PageKindArticle` (the first page's own choice);
+`PagesLaidOut`, `SlidePageAdded`, `PageKindInfographic` / `PageKindArticle` / `PageKindSlide`
+(the first page's own choice);
 `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF` (one page) and
 `IllustratePNGPages / IllustrateSVGPages / IllustratePDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
@@ -398,6 +444,17 @@ pages). Mermaid, Markdown, Excalidraw and draw.io are diagram formats and are no
   follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`; its
   thumbnail is the page on its background. A page deleted leaves its slide empty (shown, fixable),
   as an element slide's deleted elements do.
+- **A slide page's deck button**: beside its cog (left of it), for an editor on a desktop, a slide
+  page shows its place in the deck. While the deck has no slide of the page (on this tab) it is
+  **Add to slide deck** (the Slide Deck icon), which adds the page slide at the deck's end, as Add
+  as slide does. Once the deck has one it is an eye that toggles that slide's visibility in the
+  presentation: **Hide from the presentation** (an open eye, pressed) or **Show in the
+  presentation** (a crossed eye, dimmed), the same as the slide's Visibility in the Slide Deck.
+  Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
+SlideShown`).
+- **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
+  screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 slide
+  fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.
 - Zen, presenting and the isometric view show the sheets alone: no labels, cogs, layout invites or
   add button. While a
   page slide presents, the canvas shows that page's sheet alone (its neighbours are not drawn), as

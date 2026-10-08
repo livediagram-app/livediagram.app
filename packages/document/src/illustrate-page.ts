@@ -23,10 +23,21 @@ export const ILLUSTRATE_PAGE_GAP = 96;
 export const MAX_ILLUSTRATE_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/illustrate-pages.md "Sizes"): its short and long side.
-export type PageSizeId = 'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide';
+export type PageSizeId =
+  'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide' | 'slide' | 'slide-classic';
 
 export const PAGE_SIZES: Readonly<
-  Record<PageSizeId, { short: number; long: number; portrait: string; landscape: string }>
+  Record<
+    PageSizeId,
+    {
+      short: number;
+      long: number;
+      portrait: string;
+      landscape: string;
+      // A slide size is landscape whatever the page's stored orientation, and offers no turn.
+      landscapeOnly?: true;
+    }
+  >
 > = {
   a4: { short: A4_SHORT_SIDE, long: A4_LONG_SIDE, portrait: 'A4', landscape: 'A4' },
   letter: { short: 816, long: 1056, portrait: 'US Letter', landscape: 'US Letter' },
@@ -39,9 +50,43 @@ export const PAGE_SIZES: Readonly<
     landscape: 'Landscape post (5:4)',
   },
   wide: { short: 1080, long: 1920, portrait: 'Story (9:16)', landscape: 'Slide (16:9)' },
+  slide: {
+    short: 1080,
+    long: 1920,
+    portrait: 'Slide (16:9)',
+    landscape: 'Slide (16:9)',
+    landscapeOnly: true,
+  },
+  'slide-classic': {
+    short: 1080,
+    long: 1440,
+    portrait: 'Classic slide (4:3)',
+    landscape: 'Classic slide (4:3)',
+    landscapeOnly: true,
+  },
 };
 
 export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
+
+// The sizes a slide page may take (docs/specs/007-editor/illustrate-pages.md "Sizes"), the first
+// its default.
+export const SLIDE_PAGE_SIZE_IDS: readonly PageSizeId[] = ['slide', 'slide-classic'];
+const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
+  'a4',
+  'letter',
+  'a3',
+  'square',
+  'social',
+  'wide',
+];
+
+/** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, an
+ *  article page the paper and screen ones, an infographic page those and the 16:9 slide. */
+export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
+  if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
+  if (kind === 'article') return PAPER_AND_SCREEN_SIZE_IDS;
+  return [...PAPER_AND_SCREEN_SIZE_IDS, 'slide'];
+}
 
 export function isPageSizeId(v: unknown): v is PageSizeId {
   return typeof v === 'string' && v in PAGE_SIZES;
@@ -59,8 +104,8 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/illustrate-pages.md "Page
-// kinds"): an infographic page to lay out, or an article page to write on.
-export type PageKind = 'infographic' | 'article';
+// kinds"): an infographic page to lay out, an article page to write on, or a slide of a deck.
+export type PageKind = 'infographic' | 'article' | 'slide';
 
 export type IllustratePage = {
   id: string;
@@ -72,7 +117,8 @@ export type IllustratePage = {
   // Absent shows the page's place ("Page 2").
   name?: string;
   // Absent is an infographic page nobody has chosen yet (the first page offers the choice while
-  // it is the only page and empty); 'infographic' once chosen; 'article' for an article page.
+  // it is the only page and empty); 'infographic' once chosen; 'article' for an article page;
+  // 'slide' for a slide, always landscape in a slide size.
   kind?: PageKind;
   // The article an article page belongs to (`Tab.articles[flow]`); present exactly on article pages.
   flow?: string;
@@ -137,7 +183,21 @@ function parsePage(v: unknown): IllustratePage | undefined {
         }
       : p.kind === 'infographic'
         ? { kind: 'infographic' as const }
-        : {};
+        : p.kind === 'slide'
+          ? { kind: 'slide' as const }
+          : {};
+  // A slide is landscape in a slide size, whatever was stored.
+  if (kindFields.kind === 'slide') {
+    const size = isPageSizeId(p.size) && SLIDE_PAGE_SIZE_IDS.includes(p.size) ? p.size : 'slide';
+    return {
+      id: p.id,
+      orientation: 'landscape',
+      size,
+      ...(background ? { background } : {}),
+      ...(name ? { name } : {}),
+      kind: 'slide',
+    };
+  }
   return {
     id: p.id,
     orientation: p.orientation,
@@ -148,9 +208,20 @@ function parsePage(v: unknown): IllustratePage | undefined {
   };
 }
 
-/** The page's kind: an article page, or else an infographic page. */
+/** The page's kind: an article or a slide page, or else an infographic page. */
 export function pageKindOf(page: Pick<IllustratePage, 'kind'>): PageKind {
-  return page.kind === 'article' ? 'article' : 'infographic';
+  return page.kind === 'article' || page.kind === 'slide' ? page.kind : 'infographic';
+}
+
+/** A new slide page (docs/specs/007-editor/illustrate-pages.md "Page kinds"): landscape, in the
+ *  given slide size (16:9 by default). */
+export function newSlidePage(id: string, size: PageSizeId = 'slide'): IllustratePage {
+  return {
+    id,
+    orientation: 'landscape',
+    size: SLIDE_PAGE_SIZE_IDS.includes(size) ? size : 'slide',
+    kind: 'slide',
+  };
 }
 
 export function isArticlePage(
@@ -228,26 +299,27 @@ export function illustratePagesOf(
 }
 
 /** A page's width and height in canvas px: its size's sides, the long one upright in portrait.
- *  A square page is the same either way. */
+ *  A square page is the same either way; a slide size is always landscape. */
 export function pageDimensions(page: Pick<IllustratePage, 'orientation' | 'size'>): {
   width: number;
   height: number;
 } {
-  const { short, long } = PAGE_SIZES[page.size ?? 'a4'];
-  return page.orientation === 'portrait'
+  const { short, long, landscapeOnly } = PAGE_SIZES[page.size ?? 'a4'];
+  return page.orientation === 'portrait' && !landscapeOnly
     ? { width: short, height: long }
     : { width: long, height: short };
 }
 
-/** Whether a page has an orientation to choose (a square page has none). */
+/** Whether a page has an orientation to choose (a square page has none, nor a slide size). */
 export function pageHasOrientation(page: Pick<IllustratePage, 'size'>): boolean {
-  const { short, long } = PAGE_SIZES[page.size ?? 'a4'];
-  return short !== long;
+  const { short, long, landscapeOnly } = PAGE_SIZES[page.size ?? 'a4'];
+  return short !== long && !landscapeOnly;
 }
 
 /** The size's name as this page shows it ("A4", "Slide (16:9)"). */
 export function pageSizeLabel(page: Pick<IllustratePage, 'orientation' | 'size'>): string {
-  return PAGE_SIZES[page.size ?? 'a4'][page.orientation];
+  const size = PAGE_SIZES[page.size ?? 'a4'];
+  return size[size.landscapeOnly ? 'landscape' : page.orientation];
 }
 
 /** The label above a page: its name, or "Page n" once there are several, then its size, where it
@@ -268,9 +340,15 @@ export function pageLabel(
   if (pageHasOrientation(page) && (size === 'a4' || size === 'letter' || size === 'a3')) {
     parts.push(page.orientation === 'portrait' ? 'Portrait' : 'Landscape');
   }
-  parts.push(pageKindOf(page) === 'article' ? 'Article' : 'Infographic');
+  parts.push(PAGE_KIND_LABEL[pageKindOf(page)]);
   return parts.join(' · ');
 }
+
+const PAGE_KIND_LABEL: Record<PageKind, string> = {
+  infographic: 'Infographic',
+  article: 'Article',
+  slide: 'Slide',
+};
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */
 export function pageMargin(page: Pick<IllustratePage, 'orientation' | 'size'>): number {

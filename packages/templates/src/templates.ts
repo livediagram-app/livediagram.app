@@ -243,7 +243,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-illustration',
     title: 'Blank Illustration',
-    description: 'An empty page for an infographic or an article, sized for print or social.',
+    description: 'An empty page for an infographic, an article or a slide.',
     extra: true,
   },
   {

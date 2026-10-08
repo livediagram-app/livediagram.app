@@ -11,7 +11,10 @@ import {
   MAX_ILLUSTRATE_PAGES,
   nextArticleFlowId,
   nextIllustratePageId,
+  newSlidePage,
+  pageHasOrientation,
   pageUnits,
+  SLIDE_PAGE_SIZE_IDS,
   withArticleAdded,
   withPageKindChosen,
   withArticleDuplicated,
@@ -72,6 +75,18 @@ export type IllustratePageEdits = {
 };
 
 type TabChange = (tab: Tab) => Tab | null;
+
+// Telemetry for a kind chosen on the first page, and for a page of a kind added.
+const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
+  infographic: 'PageKindInfographic',
+  article: 'PageKindArticle',
+  slide: 'PageKindSlide',
+};
+const KIND_ADDED_EVENT: Record<PageKind, string> = {
+  infographic: 'PageAdded',
+  article: 'ArticleAdded',
+  slide: 'SlidePageAdded',
+};
 
 export function illustratePageEdits({
   tabId,
@@ -141,15 +156,27 @@ export function illustratePageEdits({
       return withContentFittedToPage(withIllustratePages(t, next), ids, pageId);
     });
 
+  // A page in a slide size (every slide page) has no turn: it is landscape only.
   const setOrientation = (pageId: string, next: PageOrientation) => {
-    if (page(pageId)?.orientation === next) return;
+    const target = page(pageId);
+    if (!target || target.orientation === next) return;
+    if (!pageHasOrientation(target)) {
+      debugLog('[illustrate-page] turn refused: landscape only', { tabId, pageId });
+      return;
+    }
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
     claimArticleLayout(pageId);
     reshapePage(pageId, (p) => ({ ...p, orientation: next }));
     debugLog('[illustrate-page] orientation set', { tabId, pageId, orientation: next });
   };
+  // A slide page takes only a slide size.
   const setSize = (pageId: string, size: PageSizeId) => {
-    if ((page(pageId)?.size ?? 'a4') === size) return;
+    const target = page(pageId);
+    if ((target?.size ?? 'a4') === size) return;
+    if (target?.kind === 'slide' && !SLIDE_PAGE_SIZE_IDS.includes(size)) {
+      debugLog('[illustrate-page] size refused: not a slide size', { tabId, pageId, size });
+      return;
+    }
     track('Tab', 'Changed', 'PageSize');
     claimArticleLayout(pageId);
     reshapePage(pageId, (p) => {
@@ -214,16 +241,17 @@ export function illustratePageEdits({
   };
   // A new infographic page takes the last infographic page's size and orientation (else A4
   // portrait); a new document the last page's paper size and orientation when it is a paper size
-  // (A4, US Letter, A3), else A4 portrait. Both on the plain paper.
+  // (A4, US Letter, A3), else A4 portrait; a new slide the last slide's size (else 16:9),
+  // landscape. All on the plain paper.
   const choosePageKind = (pageId: string, kind: PageKind) => {
-    track('Tab', 'Changed', kind === 'article' ? 'PageKindArticle' : 'PageKindInfographic');
+    track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     const flow = nextArticleFlowId(new Set());
     commitTab((t) => withPageKindChosen(t, pageId, kind, flow));
     if (kind === 'article') onArticleCreated?.(flow);
     debugLog('[illustrate-page] first page kind chosen', { tabId, pageId, kind });
   };
   const addPage = (kind: PageKind) => {
-    track('Tab', 'Changed', kind === 'article' ? 'ArticleAdded' : 'PageAdded');
+    track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextIllustratePageId(current);
     if (kind === 'article') {
       const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
@@ -247,7 +275,11 @@ export function illustratePageEdits({
     }
     commitPages((ps) => {
       if (ps.length >= MAX_ILLUSTRATE_PAGES || ps.some((p) => p.id === id)) return null;
-      const model = [...ps].reverse().find((p) => !p.flow);
+      if (kind === 'slide') {
+        const lastSlide = [...ps].reverse().find((p) => p.kind === 'slide');
+        return [...ps, newSlidePage(id, lastSlide?.size)];
+      }
+      const model = [...ps].reverse().find((p) => !p.flow && p.kind !== 'slide');
       return [
         ...ps,
         {

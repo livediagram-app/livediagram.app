@@ -190,3 +190,68 @@ describe('Illustrate page edits: documents', () => {
     expect(Object.keys(h.tab().articles!)).toHaveLength(1);
   });
 });
+
+// docs/specs/007-editor/illustrate-pages.md "Page kinds", "Sizes": a slide is added landscape in a
+// slide size, keeps to the slide sizes and never turns.
+describe('slide page edits', () => {
+  const slideTab = (): Tab =>
+    ({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [
+        { id: 'page-1', orientation: 'portrait', size: 'social', kind: 'infographic' },
+        { id: 's1', orientation: 'landscape', size: 'slide-classic', kind: 'slide' },
+      ],
+    }) as unknown as Tab;
+
+  it('adds a slide in the last slide size, and an infographic page modelled on the last infographic', async () => {
+    const { track } = await import('@/lib/telemetry');
+    const h = harness(slideTab());
+    h.edits().addPage!('slide');
+    expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'SlidePageAdded');
+    h.edits().addPage!('infographic');
+    const [, , slide, page] = illustratePagesOf(h.tab());
+    expect(slide).toMatchObject({ orientation: 'landscape', size: 'slide-classic', kind: 'slide' });
+    expect(page).toMatchObject({ orientation: 'portrait', size: 'social' });
+  });
+
+  it('adds a 16:9 slide when there is no slide yet', () => {
+    const h = harness(twoPages());
+    h.edits().addPage!('slide');
+    expect(illustratePagesOf(h.tab())[2]).toMatchObject({ size: 'slide', kind: 'slide' });
+  });
+
+  it('never turns a slide, nor gives it a size that is not a slide size', () => {
+    const h = harness(slideTab());
+    h.edits().setOrientation('s1', 'portrait');
+    h.edits().setSize('s1', 'a4');
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    h.edits().setSize('s1', 'slide');
+    expect(illustratePagesOf(h.tab())[1]).toMatchObject({
+      orientation: 'landscape',
+      size: 'slide',
+    });
+  });
+
+  it('never turns an infographic page in the slide size', () => {
+    const h = harness(slideTab());
+    h.edits().setSize('page-1', 'slide');
+    h.commitTabs.mockClear();
+    h.edits().setOrientation('page-1', 'landscape');
+    expect(h.commitTabs).not.toHaveBeenCalled();
+  });
+
+  it('chooses Slide for the only, empty page', async () => {
+    const { track } = await import('@/lib/telemetry');
+    const h = harness({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 'page-1', orientation: 'portrait' }],
+    } as unknown as Tab);
+    h.edits().choosePageKind('page-1', 'slide');
+    expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'PageKindSlide');
+    expect(illustratePagesOf(h.tab())[0]).toMatchObject({ kind: 'slide', size: 'slide' });
+  });
+});

@@ -375,7 +375,7 @@ function PageActions({
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
-  const noun = page.flow ? 'article' : 'page';
+  const noun = page.flow ? 'article' : page.kind === 'slide' ? 'slide' : 'page';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
       <ActionButton

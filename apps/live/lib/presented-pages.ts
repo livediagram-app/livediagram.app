@@ -25,12 +25,14 @@ export function presentedPages(
       ...view,
       pages: only(view.pages),
       rowPages: view.pages,
+      letterbox: true,
       // Presenting is reading: the writing takes no caret.
       articles: view.articles ? { ...view.articles, editable: false } : view.articles,
     };
   return {
     pages: only(layOutIllustratePages(illustratePagesOf(tab))),
     rowPages: layOutIllustratePages(illustratePagesOf(tab)),
+    letterbox: true,
     // Presenting is reading: the writing takes no caret.
     ...(articles ? { articles: { ...articles, editable: false } } : {}),
     focusPage: noop,

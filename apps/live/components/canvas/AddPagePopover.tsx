@@ -1,7 +1,7 @@
 'use client';
 
 // "Add a page" (docs/specs/007-editor/illustrate-pages.md "Page kinds"): the + after the last page
-// opens this small popover offering the two kinds of page, each a card with a miniature of it and a
+// opens this small popover offering the three kinds of page, each a card with a miniature of it and a
 // line under its name. Arrow keys move between them, Enter or a press chooses, Escape or an outside
 // press closes. On a phone it is a bottom sheet.
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
@@ -12,7 +12,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import { PAGE_KINDS, PageKindCard } from './page-kind-cards';
 
-const WIDTH = 332;
+const WIDTH = 420;
 const GAP = 10;
 
 export function AddPagePopover({
@@ -67,7 +67,7 @@ export function AddPagePopover({
       className={mobile ? 'flex flex-col gap-2 px-4 pb-3' : 'flex flex-col gap-2 p-3'}
     >
       <p className="px-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Add a Page</p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {PAGE_KINDS.map((k, i) => (
           <PageKindCard
             key={k.kind}

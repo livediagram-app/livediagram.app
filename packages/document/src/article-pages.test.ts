@@ -147,6 +147,23 @@ describe("the first page's own choice of kind", () => {
     expect(articlesOf(art).f!.blocks.length).toBeGreaterThan(0);
     expect(withPageKindChosen(art, 'p1', 'article', 'g')).toBeNull();
   });
+  it('turns the page into a 16:9 landscape slide, keeping its name and background', () => {
+    const named = [
+      { ...only[0]!, name: 'Intro', background: { fill: { kind: 'solid', color: '#0f172a' } } },
+    ] as IllustratePage[];
+    const slide = withPageKindChosen({ elements: [], pages: named }, 'p1', 'slide', 'f')!;
+    expect(slide.pages).toEqual([
+      {
+        id: 'p1',
+        orientation: 'landscape',
+        size: 'slide',
+        kind: 'slide',
+        name: 'Intro',
+        background: { fill: { kind: 'solid', color: '#0f172a' } },
+      },
+    ]);
+    expect(withPageKindChosen(slide, 'p1', 'slide', 'g')).toBeNull();
+  });
 });
 
 describe('a duplicated article keeps its margin notes to itself', () => {

@@ -79,7 +79,7 @@ type EditorViewportApi = {
   // rather than the whole tab's.
   fitToBounds: (
     bbox: { x: number; y: number; w: number; h: number },
-    opts?: { maxZoom?: number },
+    opts?: { maxZoom?: number; padding?: number },
   ) => void;
   // Pan (and zoom out if needed) until the given canvas-coord bounds
   // are fully on screen. Used by the mobile add-element reveal and the
@@ -321,7 +321,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   );
 
   const fitToBounds = useCallback(
-    (bbox: { x: number; y: number; w: number; h: number }, opts?: { maxZoom?: number }) => {
+    (
+      bbox: { x: number; y: number; w: number; h: number },
+      opts?: { maxZoom?: number; padding?: number },
+    ) => {
       const node = canvasMainRef.current;
       if (!node || bbox.w <= 0 || bbox.h <= 0) return;
       // offsetWidth/Height, NOT getBoundingClientRect: the latter reports the
@@ -335,6 +338,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
         rect,
         { x: bbox.x, y: bbox.y, width: bbox.w, height: bbox.h },
         opts?.maxZoom,
+        opts?.padding,
       );
       setViewportZoom(zoom);
       setViewportOffset(offset);
