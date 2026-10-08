@@ -1,4 +1,5 @@
 import { useEffect, type MutableRefObject } from 'react';
+import { useLocalBesideTab } from '@/lib/split-presence';
 import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';
@@ -62,9 +63,14 @@ export function usePresenceBroadcast({
   }, [hydrated, documentId, documentServerStored, selection, activeId, roomRef]);
 
   // Fires both on initial room connect (when the dependencies first satisfy)
-  // and on every local tab switch.
+  // and on every local tab switch, carrying the tab in the other pane while
+  // working side by side (docs/specs/007-editor/split-view.md "Presence").
+  const besideTabId = useLocalBesideTab();
   useEffect(() => {
     if (!hydrated || !documentId || !documentServerStored) return;
-    roomRef.current?.send({ kind: 'op', op: { kind: 'tab-focus', tabId: activeId } });
-  }, [hydrated, documentId, documentServerStored, activeId, roomRef]);
+    roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'tab-focus', tabId: activeId, ...(besideTabId ? { besideTabId } : {}) },
+    });
+  }, [hydrated, documentId, documentServerStored, activeId, besideTabId, roomRef]);
 }

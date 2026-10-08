@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SideBySideDrag, SideBySideOpen } from '@/components/illustrations/tabs-side-by-side';
+
+export const metadata = helpMetadata({
+  title: 'Side by Side Tabs',
+  description:
+    'Drag a tab to the right edge of the screen to open it beside the tab you are on. Both stay on screen, live, and the toolbars follow you to whichever side you work in.',
+  path: '/help/tabs/side-by-side/',
+});
+
+<ArticleLayout title="Side by Side Tabs" description="Put two tabs of a document on screen at once, and work on either without losing sight of the other." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("side-by-side")}>
+
+Tabs keep related boards together: the context diagram and the detail, the retro and its action plan, the draft and the reference. Side by side puts two of them on screen at once, so you can compare them, copy an idea across, or keep one in view while you work on the other.
+
+## Opening a tab beside another
+
+Drag a tab's pill from the tab bar toward the **right edge** of the screen. A glowing rail wakes along the edge as you head for it, and once you're close, a preview of the pane slides in showing that tab's drawing. Let go there, and the tab opens on the right.
+
+<Figure caption="Drag a tab to the right edge; the preview shows what will open there.">
+  <SideBySideDrag />
+</Figure>
+
+- Drag a **different** tab and it opens on the right, while you keep working where you are on the left.
+- Drag the tab you're **on** and it moves to the right, taking your toolbars with it; the tab you were on before fills the left.
+- With two tabs already side by side, drop another tab on the right to show it there instead.
+
+You can also open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and press **Side by Side** in the row of quick actions along the top.
+
+## Working across both
+
+Each tab keeps its side. The site header runs across the top of both, and the tab bar across the bottom, just as with one tab. Your toolbars and panels (the palette, the Explorer, the map and zoom) sit in the pane you're working in.
+
+<Figure caption="One header and one tab bar across both panes; the toolbars sit with the tab you're editing.">
+  <SideBySideOpen />
+</Figure>
+
+To work on the other tab, **click** in its pane, or simply **rest the pointer** there for a moment. The toolbars glide across to it. Neither drawing moves: each tab stays exactly where it was on screen, at the same zoom.
+
+The pane you're not working in is **live**: anything you or a collaborator changes on that tab shows there straight away. Scroll to pan around it, and hold **Ctrl** (or **⌘** on a Mac) while you scroll to zoom.
+
+Collaborators see you on **both** tabs in the tab bar, since both are on your screen. The tab in your other pane has a dashed outline on its pill so you can tell which it is.
+
+## Resizing and closing
+
+The seam between the two panes is a handle: drag it to give one side more room, or double-click it to go back to halves. You can also focus it with **Tab** and use the arrow keys.
+
+Two buttons sit on the seam, just above the handle:
+
+- **Fit Both Sides** fits each tab's drawing to its pane.
+- **Close Side by Side** goes back to one tab, the one you were working on, across the whole window. The same button appears in the tab's menu while two tabs are side by side.
+
+Your arrangement is remembered on this device for each document, so it comes back the next time you open it.
+
+## Screens it works on
+
+Side by side needs room for two working canvases, so it's offered on screens at least **1,400 pixels wide** and **700 pixels tall** (inside the browser window): most desktop monitors and larger laptops. On smaller laptops, tablets and phones it isn't offered, and you switch between tabs from the tab bar as usual.
+
+It also steps aside in [zen mode](/help/tools/zen-mode/) and while [presenting](/help/selection-modes/slide-deck/presenting/), and comes back when you leave them.
+
+<Tip>
+  To keep a reference tab from changing while you work beside it, [lock
+  it](/help/tabs/locking-tabs/) first. You can still pan and zoom around a locked tab.
+</Tip>
+
+</ArticleLayout>

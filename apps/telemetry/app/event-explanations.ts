@@ -680,6 +680,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone took a tab out of its tab folder, making it a loose tab again, whether by dragging it out or from the tab's menu.",
   'Tab|Renamed|': 'A tab was renamed.',
   'Tab|Reordered|': 'Someone dragged a tab to a new position.',
+  'Tab|Opened|SideBySideDrag':
+    'Someone dragged a tab to the right edge of the screen to open it beside the tab they were editing.',
+  'Tab|Opened|SideBySideMenu': "Someone opened a tab side by side from the tab's menu.",
+  'Tab|Selected|SideBySideClick':
+    'Someone clicked into the other side by side pane, moving the editor (its toolbars and panels) there.',
+  'Tab|Selected|SideBySideHover':
+    'Someone rested the pointer on the other side by side pane, and the editor followed it there.',
+  'Tab|Closed|SideBySide': 'Someone closed the side by side pane, going back to one tab.',
   'Tab|Revealed|Vote': "Someone revealed a dot vote's results to everyone in the room.",
   'Tab|Started|CountdownTimer': 'Someone started a countdown timer on a tab.',
   'Tab|Started|Poll': 'Someone started a live poll on a tab.',
@@ -1341,6 +1349,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Removed': 'Someone took a tab out of its tab folder, making it a loose tab again.',
   'Tab|Renamed': 'A tab was renamed.',
   'Tab|Reordered': 'Someone dragged a tab to a new position.',
+  'Tab|Opened': 'Someone opened a tab beside the one they were editing (side by side).',
+  'Tab|Selected':
+    'Someone moved the editor to the other side by side pane, by a click or by resting the pointer there.',
+  'Tab|Closed': 'Someone closed the side by side pane.',
   'Tab|Revealed':
     "Someone revealed a tab's hidden results to everyone in the room, such as a dot vote's.",
   'Tab|Started': 'Someone started a live activity on a tab, such as a poll or a timer.',

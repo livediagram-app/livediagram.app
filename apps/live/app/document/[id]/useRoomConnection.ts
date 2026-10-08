@@ -6,6 +6,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
+import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import type { QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
@@ -341,6 +342,7 @@ export function useRoomConnection(opts: {
         }
         return next;
       });
+      syncRemoteBesideTabs(participants, selfId);
       setRemoteSelections((prev) => pruneMapToPresent(prev, present));
       setRemoteCursors((prev) => pruneMapToPresent(prev, present));
       // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
@@ -464,6 +466,8 @@ export function useRoomConnection(opts: {
           next.set(from, op.tabId);
           return next;
         });
+        // Their other pane, side by side (docs/specs/007-editor/split-view.md "Presence").
+        setRemoteBesideTab(from, op.besideTabId);
       } else if (op.kind === 'poll-start') {
         // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
         // hook's memory and never touches tabs or autosave, so there is

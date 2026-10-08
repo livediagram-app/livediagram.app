@@ -1075,6 +1075,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11.3 12h.01M13.2 12h.01" />
     </Glyph>
   ),
+  // Two panes side by side, a tab on each, and the seam between them: the split, not a single tab.
+  'side-by-side': (
+    <Glyph>
+      <rect x="2.5" y="4.5" width="19" height="15" rx="2" />
+      <path d="M12 4.5v15" />
+      <path d="M5 7.5h4M15 7.5h4" />
+      <path d="M10.5 12l1.5-1.5 1.5 1.5" />
+    </Glyph>
+  ),
   // A tab with the padlock on it. `locking` is the bare padlock, for an element.
   'locking-tabs': (
     <Glyph>

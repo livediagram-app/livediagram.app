@@ -205,7 +205,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
-    articleCount: 8,
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -1441,6 +1441,16 @@ export const articles: Article[] = [
     description:
       'Turn an element into a jump point to another tab, another document, or a web address.',
     keywords: 'jump navigation cross reference hyperlink go to connect boards',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
+    slug: 'side-by-side',
+    title: 'Side by Side Tabs',
+    description:
+      'Drag a tab to the right edge to open it beside the one you are on; the toolbars follow you.',
+    keywords:
+      'split view split screen two tabs compare beside next to dual pane panes side-by-side drag tab right edge reference resize divider close',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

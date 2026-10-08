@@ -317,6 +317,9 @@ export function ToolbarPalette(props: Props) {
               <div
                 ref={cardRef}
                 data-tour-id="palette"
+                // Slides across with the rest of the chrome when a split moves the editor
+                // (docs/specs/007-editor/split-view.md).
+                data-split-chrome=""
                 // Beside the menu card only the rail gives way (and scrolls): the
                 // selection mode, the category picker and More keep their size.
                 className={

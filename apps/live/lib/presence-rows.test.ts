@@ -30,6 +30,27 @@ describe('buildParticipantsByTab', () => {
     now: 1000,
   };
 
+  // docs/specs/007-editor/split-view.md "Presence"
+  it('shows someone working side by side on both of their tabs', () => {
+    const peer = p('peer');
+    const m = buildParticipantsByTab({
+      ...common,
+      tabs: [{ id: 't1' }, { id: 't2' }, { id: 't3' }],
+      documentShareable: true,
+      remoteTabFocus: new Map([['peer', 't2']]),
+      remoteBesideTabs: new Map([['peer', 't1']]),
+      selfBesideTabId: 't3',
+      livePresence: [self, peer],
+      livePresenceById: byId(self, peer),
+      lastSeen: new Map([['peer', 1000]]),
+    });
+    // The peer edits t2 and has t1 beside it: on both, online on ours (we are on t1).
+    expect(m.get('t2')?.map((x) => x.id)).toEqual(['peer']);
+    expect(m.get('t1')?.find((x) => x.id === 'peer')?.status).toBe('online');
+    // We show on our own other pane's tab too.
+    expect(m.get('t3')?.map((x) => x.id)).toEqual(['me']);
+  });
+
   it('returns an empty map for a private (unshared) document', () => {
     const m = buildParticipantsByTab({
       ...common,

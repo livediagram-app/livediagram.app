@@ -1,3 +1,4 @@
+import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import type { ParticipantPresence } from '@livediagram/api-schema';
@@ -937,6 +938,37 @@ describe('DocumentRoom tab-focus presence echo', () => {
     const presenceFrames = b.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'presence');
     const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
     expect(aRow?.tabId).toBe('tab-2');
+  });
+
+  // Side by side (docs/specs/007-editor/split-view.md "Presence"): the tab in the other pane rides the
+  // same op, is remembered the same way, and clears when the split closes.
+  it('remembers and clears the tab beside, clamped like tabId', () => {
+    const { room } = newRoom();
+    const a = makeSocket();
+    room.acceptSession(asWs(a), 'edit');
+    sendFrame(room, a, { kind: 'hello', participant: { id: 'p-a', name: 'A', color: '#abc' } });
+    sendFrame(room, a, {
+      kind: 'op',
+      op: { kind: 'tab-focus', tabId: 'tab-1', besideTabId: 'tab-3' },
+    });
+    expect(storedPresence(a)?.besideTabId).toBe('tab-3');
+
+    const b = makeSocket();
+    room.acceptSession(asWs(b), 'edit');
+    sendFrame(room, b, { kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } });
+    const aId = storedPresence(a)?.id;
+    const frames = b.sent.map((m) => JSON.parse(m)).filter((m) => m.kind === 'presence');
+    const aRow = frames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
+    expect(aRow?.besideTabId).toBe('tab-3');
+
+    sendFrame(room, a, { kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-1' } });
+    expect(storedPresence(a)?.besideTabId).toBeUndefined();
+
+    sendFrame(room, a, {
+      kind: 'op',
+      op: { kind: 'tab-focus', tabId: 'tab-1', besideTabId: 'x'.repeat(5000) },
+    });
+    expect((storedPresence(a)?.besideTabId ?? '').length).toBeLessThanOrEqual(MAX_TAB_ID_LEN);
   });
 });
 

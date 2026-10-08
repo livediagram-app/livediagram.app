@@ -445,6 +445,10 @@ export type ParticipantPresence = {
   // default existing peers to the first tab until they happened to move.
   // Undefined until the participant's first tab-focus op lands.
   tabId?: string;
+  // The tab in their other pane while they work side by side (docs/specs/007-editor/split-view.md
+  // "Presence"), remembered from the same tab-focus ops so a late joiner sees it too. Undefined with
+  // no split.
+  besideTabId?: string;
   // The id this participant WRITES INTO THE DOCUMENT for anything recorded
   // per person — today the `responses` on a done check / estimate card /
   // temperature check (docs/specs/012-collaboration/participant-responses.md).

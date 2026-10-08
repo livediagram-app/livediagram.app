@@ -8,6 +8,7 @@ Follow the references below only as needed; never upfront.
 - ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All, Diagram, Draw, Illustrate), the mode glyph on template cards, the four blanks, or the Draw and Illustrate templates
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
+- ./split-view.md - when working on Side by side tabs: dragging a tab to the right edge to open it beside the active tab, each tab keeping its side under one header, the editor following a click or a resting pointer between panes with no view jump, the live other pane, the drop zone and ghost, resizing, persistence
 - ./zen-mode.md - when working on Zen mode: Distraction-free focus mode: hide all chrome, keep canvas + zoom
 - ./panel-docking.md - when working on Panel corner docking: Choose which corner each floating panel sits in: desktop drag with snap-to-corner guides, free drop kept where released, stacking + reflow within a corner, device-local localStorage layout
 - ./guided-tour-sample.md - when working on Guided tour sample ("Take the guided tour") — RETIRED: RETIRED (superseded by [Interactive editor tour ("Show me around")](editor-tour.md)): the annotated sample diagram, its hidden template, and the /new card are gone; only the generic `hidden` template flag remains

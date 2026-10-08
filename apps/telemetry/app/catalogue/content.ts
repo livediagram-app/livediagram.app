@@ -359,6 +359,43 @@ export const TAB_ACTIONS: MetricStack = {
   ],
 };
 
+// Side by side tabs (docs/specs/007-editor/split-view.md): a tab opened beside the one being
+// edited (by dragging its pill to the right edge, or from the tab menu), the editor moved between
+// the panes, and
+// the split closed.
+export const SIDE_BY_SIDE_OPENED: Metric = {
+  category: 'Tab',
+  action: 'Opened',
+  typeIn: (type) => type === 'SideBySideDrag' || type === 'SideBySideMenu',
+  title: 'Opened Side by Side',
+  blurb: 'A tab opened beside the one being edited: dragged to the right edge, or from its menu.',
+};
+
+export const SIDE_BY_SIDE_FOCUSED: Metric = {
+  category: 'Tab',
+  action: 'Selected',
+  typeIn: (type) => type === 'SideBySideClick' || type === 'SideBySideHover',
+  title: 'Side by Side Switches',
+  blurb:
+    'The editor moved to the other pane: a click there, or the pointer resting there. Ranked by which.',
+};
+
+export const SIDE_BY_SIDE_CLOSED: Metric = {
+  rising: 'neutral',
+  category: 'Tab',
+  action: 'Closed',
+  type: 'SideBySide',
+  title: 'Side by Side Closed',
+};
+
+export const SIDE_BY_SIDE: MetricStack = {
+  stack: true,
+  title: 'Side by Side',
+  blurb: 'Two tabs on screen at once: how often a split is opened, worked across and closed.',
+  headline: SIDE_BY_SIDE_OPENED,
+  members: [SIDE_BY_SIDE_OPENED, SIDE_BY_SIDE_FOCUSED, SIDE_BY_SIDE_CLOSED],
+};
+
 // Elements added, one chart per palette tab (Palette tab ranks inside each),
 // plus every kind the catalogue doesn't list, so together they cover every
 // Element·Added exactly once and the stack's total is every element added.
