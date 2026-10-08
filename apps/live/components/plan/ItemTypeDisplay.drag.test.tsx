@@ -106,3 +106,25 @@ describe('the card’s size', () => {
     expect(cardZoomFor(200)).toBe(0.75);
   });
 });
+
+// docs/specs/026-plan/item-types.md "On the card": a type's custom fields are in Available Fields, and a placed one
+// draws on the card as a chip of its value.
+describe('custom fields in the Display', () => {
+  it('offers a custom field, and places it on the card', () => {
+    const onChange = vi.fn();
+    const pet = { ...task, custom: [{ id: 'f-person', label: 'Person', kind: 'text' as const }] };
+    render(<ItemTypeDisplay type={pet} display={{}} onChange={onChange} />);
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Person' }), { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Bottom Right' }));
+    expect(onChange.mock.lastCall![0].compact.trail).toContain('f-person');
+    cleanup();
+    render(
+      <ItemTypeDisplay
+        type={pet}
+        display={{ compact: { trail: ['f-person'] } }}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByLabelText('Person: Person')).toBeTruthy();
+  });
+});

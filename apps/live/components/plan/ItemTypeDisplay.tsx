@@ -28,6 +28,9 @@ import {
   sameCardLayout,
   typeCardLayout,
   typeOffersCardField,
+  customCardFields,
+  isCustomCardField,
+  type CustomFieldDef,
   type CardDisplay,
   type CardField,
   type CardLayout,
@@ -48,6 +51,7 @@ import { PlanCardFace, type CardFaceEdit } from './PlanCardFace';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planPalette } from './plan-palette';
 import { useCardFieldDrag } from './useCardFieldDrag';
+import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 
 export type CardDisplayDraft = CardDisplay;
 
@@ -104,6 +108,8 @@ function sampleCard(type: ItemTypeDef): Item {
       description: 'A short description of the work, as its first lines read on a card.',
       votes: { 'sample-person': 3 },
       comments: { comments: [{}, {}] },
+      // A sample value for each of the type's custom fields, so a placed one shows.
+      ...Object.fromEntries((type.custom ?? []).flatMap((c) => sampleCustom(c))),
     },
     rev: 1,
     createdAt: 0,
@@ -113,12 +119,45 @@ function sampleCard(type: ItemTypeDef): Item {
   } as unknown as Item;
 }
 
-const fieldIcon = (f: CardField, size = 14) =>
-  f === 'key' ? (
+// A custom field's sample value, by its kind (none for a Link to Card: the chip then reads its name).
+function sampleCustom(c: CustomFieldDef): [string, unknown][] {
+  switch (c.kind) {
+    case 'number':
+      return [[c.id, 5]];
+    case 'date':
+      return [[c.id, dayFromToday(7)]];
+    case 'checkbox':
+      return [[c.id, true]];
+    case 'link':
+      return [[c.id, 'https://example.com']];
+    case 'choice':
+      return c.options?.[0] ? [[c.id, c.options[0]]] : [];
+    case 'card':
+      return [];
+    default:
+      return [[c.id, c.label || 'Sample']];
+  }
+}
+
+// A field's name and icon: a built-in's own, or a custom field's (its label, its kind's icon).
+const customOf = (type: ItemTypeDef, f: CardField) =>
+  isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+const fieldLabel = (type: ItemTypeDef, f: CardField) =>
+  customOf(type, f)?.label || (isCustomCardField(f) ? 'Custom Field' : CARD_FIELD_LABELS[f]);
+const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
+  const custom = customOf(type, f);
+  if (custom)
+    return (
+      <span className="flex" style={{ width: size, height: size }}>
+        <span className="flex [&_svg]:h-full [&_svg]:w-full">{CUSTOM_KIND_ICONS[custom.kind]}</span>
+      </span>
+    );
+  return f === 'key' ? (
     <span className="text-[12px] font-semibold leading-none">#</span>
   ) : (
-    <PlanTypeGlyph glyph={FIELD_GLYPHS[f]} size={size} />
+    <PlanTypeGlyph glyph={FIELD_GLYPHS[f as keyof typeof FIELD_GLYPHS] ?? 'note'} size={size} />
   );
+};
 
 // Where a dragged field lands: a bar between chips.
 const DROP_MARKER = (
@@ -144,7 +183,8 @@ export function ItemTypeDisplay({
   const drafted = useMemo(() => ({ ...type, display }), [type, display]);
   const layout = typeCardLayout(drafted, size);
   const placed = cardLayoutFields(size, layout);
-  const available = cardDisplayFields(size).filter(
+  // The size's built-in fields the type has, then its custom fields, not yet on the card.
+  const available = [...cardDisplayFields(size), ...customCardFields(type)].filter(
     (f) => typeOffersCardField(type, f) && !placed.includes(f),
   );
   const isDefault = sameCardLayout(size, layout, defaultCardLayout(type.id, size));
@@ -236,7 +276,7 @@ export function ItemTypeDisplay({
     },
     bit: (field, node) => {
       const slot = slotOf(field);
-      const label = CARD_FIELD_LABELS[field];
+      const label = fieldLabel(type, field);
       return (
         <span
           key={field}
@@ -375,9 +415,9 @@ export function ItemTypeDisplay({
                         }`}
                       >
                         <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {fieldIcon(f, 12)}
+                          {fieldIcon(type, f, 12)}
                         </span>
-                        {CARD_FIELD_LABELS[f]}
+                        {fieldLabel(type, f)}
                       </button>
                     </li>
                   ))}
@@ -413,9 +453,9 @@ export function ItemTypeDisplay({
             >
               <span className="ml-4 mt-4 inline-flex -rotate-2 items-center gap-1.5 rounded-lg border border-brand-300 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-800 shadow-lg dark:border-brand-500/60 dark:bg-slate-900 dark:text-slate-100">
                 <span className="flex h-5 w-5 items-center justify-center rounded bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
-                  {fieldIcon(drag.field, 12)}
+                  {fieldIcon(type, drag.field, 12)}
                 </span>
-                {CARD_FIELD_LABELS[drag.field]}
+                {fieldLabel(type, drag.field)}
               </span>
             </div>,
             document.body,
@@ -424,12 +464,12 @@ export function ItemTypeDisplay({
       {placing ? (
         <AnchoredPopover
           anchor={placing.anchor}
-          name={`Add ${CARD_FIELD_LABELS[placing.field]} to`}
+          name={`Add ${fieldLabel(type, placing.field)} to`}
           width={220}
           onClose={() => setPlacing(null)}
         >
           <PlaceMenu
-            title={`Add ${CARD_FIELD_LABELS[placing.field]} to`}
+            title={`Add ${fieldLabel(type, placing.field)} to`}
             slots={CARD_SLOTS[size].filter((s) => cardSlotFits(size, s, placing.field))}
             labelOf={(s) => CARD_SLOT_LABELS[size][s]!}
             onPick={(slot) => {

@@ -38,6 +38,28 @@ describe('PlanCardMenu', () => {
     expect(onTrash).toHaveBeenCalledOnce();
   });
 
+  it('opens the card’s type from Edit Card Type', () => {
+    const onEditType = vi.fn();
+    render(
+      <PlanCardMenu
+        at={{ x: 10, y: 10 }}
+        title="Ship"
+        canEdit
+        columns={[]}
+        onOpen={vi.fn()}
+        onDuplicate={vi.fn()}
+        onMove={vi.fn()}
+        onTrash={vi.fn()}
+        onArchive={vi.fn()}
+        onFlag={vi.fn()}
+        onEditType={onEditType}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Card Type' }));
+    expect(onEditType).toHaveBeenCalledOnce();
+  });
+
   // docs/specs/026-plan/item-types.md "An item type": Move To never offers a status the card's type leaves out.
   it('offers no column whose status the card’s type leaves out', () => {
     const types = ITEM_TYPES.map((t) =>
