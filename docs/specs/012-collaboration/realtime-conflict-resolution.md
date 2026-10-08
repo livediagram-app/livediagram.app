@@ -109,7 +109,10 @@ that let `viewport` through.
   but a dot vote ([Session tools (timer + voting)](session-tools.md)) is a delta, so every replayed dot counted twice. The
   room now sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
   sender of each ordered op, and the client folds it into its cursor (ignoring
-  a different epoch, which the `sync` / `catchup` exchange reconciles).
+  a different epoch, which the `sync` / `catchup` exchange reconciles). An op
+  frame may carry a `ref` (a positive integer the client picks); the room echoes
+  it on that op's `cursor` frame, which is how a save knows the room has
+  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md) phase 6).
 - **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
   map as of their autosave, without dots still in flight, so the receiver keeps
   its own map unless the round itself changed (`mergeRemoteTab`).

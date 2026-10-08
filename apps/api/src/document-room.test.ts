@@ -1054,6 +1054,26 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
     expect(cursors(late)).toEqual([{ kind: 'cursor', epoch: room.epoch, seq: 1 }]);
   });
 
+  // A save waits for its ledger deltas to be sequenced before it writes
+  // (docs/specs/012-collaboration/collab-race-hardening.md phase 6): the sender names each op with a
+  // `ref`, and the cursor frame answering that op carries it back. Only a positive safe integer.
+  it("echoes the op's ref on the sender's cursor frame, and nothing else", () => {
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+    const remove = (id: string) => ({ kind: 'el', tabId: 't', op: { kind: 'remove', id } });
+    sendFrame(room, editor, { kind: 'op', op: remove('a'), ref: 7 });
+    for (const ref of [0, -1, 1.5, '8', Number.MAX_SAFE_INTEGER + 2]) {
+      sendFrame(room, editor, { kind: 'op', op: remove('b'), ref });
+    }
+    const cursors = editor.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'cursor');
+    expect(cursors).toEqual([
+      { kind: 'cursor', epoch: room.epoch, seq: 1, ref: 7 },
+      ...[2, 3, 4, 5, 6].map((seq) => ({ kind: 'cursor', epoch: room.epoch, seq })),
+    ]);
+    // The ref is the sender's alone: peers get the op without it.
+    expect(peer.sent.map((s) => JSON.parse(s)).filter((m) => 'ref' in m)).toEqual([]);
+  });
+
   it('never stamps a seq on an ephemeral presence op', () => {
     const { room } = newRoom();
     const { editor, peer } = editorAndPeer(room);

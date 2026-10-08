@@ -124,6 +124,10 @@ export function isOutboxOp(msg: RoomOutgoing): boolean {
   const kind = (msg.op as { kind?: unknown }).kind;
   return kind === 'poll-answer' || isMutationOpKind(kind);
 }
+// How long a save waits for the room to say it sequenced a delta (docs/specs/012-collaboration/collab-race-hardening.md
+// phase 6). A healthy room answers in one socket round trip, tens of milliseconds; past this the save
+// goes ahead unconfirmed rather than hold the person's work back. Safe range: 500 ms to 10 s.
+export const ROOM_SEQUENCE_ACK_TIMEOUT_MS = 2_000;
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 15_000;
 
@@ -150,6 +154,7 @@ export function connectRoom(
   send: (msg: RoomOutgoing) => void;
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
+  sequence: (op: RoomOp) => Promise<boolean>;
   updateSelf: (participant: RoomSelf) => void;
 } {
   // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
@@ -177,6 +182,15 @@ export function connectRoom(
   // See OUTBOX_MAX. Flushed, in order, once a (re)opened socket has said
   // hello and asked for what it missed.
   let outbox: RoomOutgoing[] = [];
+  // Ops waiting for the room to say it sequenced them, by the `ref` each was sent with. A socket that
+  // drops answers them all false: the room may never have read them.
+  let lastRef = 0;
+  const awaitingRef = new Map<number, (sequenced: boolean) => void>();
+  const settleAll = (sequenced: boolean) => {
+    const waiting = [...awaitingRef.values()];
+    awaitingRef.clear();
+    for (const settle of waiting) settle(sequenced);
+  };
 
   const applyOp = (from: string, op: RoomOp, seq?: number, epoch?: string) => {
     if (typeof seq === 'number') lastSeq = seq;
@@ -232,6 +246,7 @@ export function connectRoom(
             lastEpoch = msg.epoch;
             if (msg.seq > lastSeq) lastSeq = msg.seq;
           }
+          if (msg.ref !== undefined) awaitingRef.get(msg.ref)?.(true);
         } else if (msg.kind === 'catchup') {
           if (msg.resync) {
             // Adopt the room's cursor first so we don't loop on the same
@@ -250,6 +265,7 @@ export function connectRoom(
       }
     });
     ws.addEventListener('close', (event: CloseEvent) => {
+      settleAll(false);
       handlers.onClose?.();
       if (closed) return;
       if (event?.code === DOCUMENT_TRASHED_CLOSE) {
@@ -276,15 +292,44 @@ export function connectRoom(
   };
   open();
 
+  const send = (raw: RoomOutgoing) => {
+    // No comment author id leaves this browser: it is its author's owner
+    // id, a guest's credential, and the room hands every op to every socket
+    // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
+    const msg: RoomOutgoing =
+      raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
+    if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+    else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
+  };
+
   return {
-    send: (raw) => {
-      // No comment author id leaves this browser: it is its author's owner
-      // id, a guest's credential, and the room hands every op to every socket
-      // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
-      const msg: RoomOutgoing =
-        raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
-      else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
+    send,
+    // Send one op and learn whether the room sequenced it (docs/specs/012-collaboration/collab-race-hardening.md
+    // phase 6): true once the room's `cursor` frame echoes the op's `ref`; false when the socket is down
+    // (the op waits in the outbox, unconfirmed), drops, or the room stays silent past the timeout.
+    sequence: (op) => {
+      if (closed) return Promise.resolve(false);
+      if (ws.readyState !== WebSocket.OPEN) {
+        send({ kind: 'op', op });
+        return Promise.resolve(false);
+      }
+      const ref = ++lastRef;
+      return new Promise<boolean>((resolve) => {
+        const timer = setTimeout(() => {
+          awaitingRef.delete(ref);
+          console.warn('[room] op not confirmed in time', {
+            kind: op.kind,
+            timeoutMs: ROOM_SEQUENCE_ACK_TIMEOUT_MS,
+          });
+          resolve(false);
+        }, ROOM_SEQUENCE_ACK_TIMEOUT_MS);
+        awaitingRef.set(ref, (sequenced) => {
+          clearTimeout(timer);
+          awaitingRef.delete(ref);
+          resolve(sequenced);
+        });
+        send({ kind: 'op', op, ref });
+      });
     },
     // Where this client stands in the room's ordered stream, for a save to
     // tell the api what it has seen (docs/specs/012-collaboration/collab-race-hardening.md phase 3). Null while the socket
@@ -305,6 +350,7 @@ export function connectRoom(
     close: () => {
       closed = true;
       outbox = [];
+      settleAll(false);
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
       ws.close();
     },

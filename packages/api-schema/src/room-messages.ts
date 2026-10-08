@@ -314,7 +314,14 @@ export type ServerMessage =
   | CursorMessage
   | FormatMessage;
 
-export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
+// `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
+// sequenced (docs/specs/012-collaboration/collab-race-hardening.md phase 6). Absent on hello.
+export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number; ref?: number };
+
+// A `ref` the room echoes: a positive safe integer, nothing else.
+export function isRoomOpRef(ref: unknown): ref is number {
+  return typeof ref === 'number' && Number.isSafeInteger(ref) && ref > 0;
+}
 
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
@@ -329,7 +336,8 @@ export type ClientMessage =
   // the room checks it against the one it issued and, if it still matches,
   // hands the baton to this new socket. Absent on every ordinary hello.
   | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
-  | { kind: 'op'; op: unknown }
+  // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
+  | { kind: 'op'; op: unknown; ref?: number }
   // Ask the room to move the baton (docs/specs/012-collaboration/facilitator.md). The room decides; the client
   // learns the answer from the `facilitator` frame like everybody else.
   | ({ kind: 'facilitator' } & FacilitatorAction)
@@ -604,7 +612,7 @@ export type RoomOp =
 // stays at the worker boundary.
 export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
-  | { kind: 'op'; op: RoomOp }
+  | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
   | { kind: 'identity'; participant: ParticipantPresence }
   | ({ kind: 'facilitator' } & FacilitatorAction);
