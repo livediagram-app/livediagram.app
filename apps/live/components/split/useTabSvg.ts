@@ -6,6 +6,7 @@ import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import type { ExportImageMap } from '@/lib/export-tab-images';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { svgFrameOf } from '@/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -29,9 +30,6 @@ function imageKey(tab: Tab): string {
   for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);
   return [...ids].sort().join(',');
 }
-
-const SIZE =
-  /<svg[^>]*\bwidth="([\d.]+)"[^>]*\bheight="([\d.]+)"[^>]*\bviewBox="(-?[\d.]+) (-?[\d.]+)/;
 
 // A tab drawn as the editor would show it (docs/specs/007-editor/split-view.md "The right pane"):
 // the export renderer's SVG, in the viewer's appearance, with the document's Plan items and the
@@ -77,12 +75,9 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       images: images?.map,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
     });
-    const size = SIZE.exec(markup);
     return {
       markup,
-      width: size ? Number(size[1]) : 800,
-      height: size ? Number(size[2]) : 600,
-      origin: { x: size ? Number(size[3]) : 0, y: size ? Number(size[4]) : 0 },
+      ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
   }, [deferredTab, appearance, images, plan, iconsReady]);
