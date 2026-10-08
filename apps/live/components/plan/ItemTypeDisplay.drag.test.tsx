@@ -52,6 +52,17 @@ describe('dragging a field on the card', () => {
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
   });
 
+  // A pointer whose capture was lost (a touch, as the editor re-renders) releases over another part: the window
+  // still hears it, so the drop lands rather than leaving the drag stuck.
+  it('drops in another part when the release lands there, not on the chip', () => {
+    const onChange = display();
+    const to = otherSlot('due');
+    startDrag('due', slotEl(to));
+    fireEvent.pointerUp(slotEl(to), { clientX: 60, clientY: 60, pointerId: 1 });
+    expect(onChange.mock.lastCall![0].compact[to]).toContain('due');
+    expect(document.querySelector('[data-drop-marker]')).toBeNull();
+  });
+
   it('takes a field off when it is dropped on Available Fields', () => {
     const onChange = display();
     startDrag('due', screen.getByRole('region', { name: 'Available Fields' }));

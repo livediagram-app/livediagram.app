@@ -173,10 +173,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - Each size draws its fields in **slots**, each holding fields in order:
   - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date
     and Assignee.
-  - **Compact**: **Beside the Title** (before it) and **Below the Title** (one row); it can draw Number, Type,
+  - **Compact**: **Beside the Title** (before it), **Below the Title** (one row) and **Bottom Right** (that row's
+    far end); it can draw Number, Type,
     Assignee, Priority, Start Date, Due Date, Votes and Comments.
   - **Detailed**: **Header** and **Header End** (one row above the title, at its start and its end), **Under the
-    Title** (its own lines) and **Footer** (one row at the foot); it can draw every card field. Any field goes in any
+    Title** (its own lines), **Footer** (one row at the foot) and **Bottom Right** (the footer's far end); it can
+    draw every card field. Any field goes in any
     part of a size that draws it; the person chooses where.
     A type's Display is, per size, which fields sit in which slot (`display: { compact: { lead: ['key'], row: ['due']
 } }`); a field in no slot is not shown.
@@ -191,8 +193,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   | Action                                      | title only | Number, Type, Assignee, Due, Comments                         | Number, Type, Assignee, Due, Checklist, Comments, Description                                     |
   | Any other (Bug, Story, a type someone adds) | title only | Number, Type, Assignee, Priority, Start, Due, Votes, Comments | every card field                                                                                  |
 
-  Each default places its fields where a board drew them before Display existed (Number and Type in the Header,
-  Priority at the Header End, Parent, Description and Labels Under the Title, the rest in the Footer). A built-in
+  Each default places its fields where they read best: Number and Type at the start (Beside the Title, or the
+  Header), Priority at the Header End, Parent, Description and Labels Under the Title, the Assignee at the
+  **Bottom Right** (Compact and Detailed; last After the Title on Minimal), the rest Below the Title or in the
+  Footer. A built-in
   type's defaults are read from code by its id, so a document that stored its catalogue before Display
   existed gets them too.
 
@@ -277,7 +281,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Under the card, **Available Fields**: a chip per field the type has, that
     this size can draw, not yet on the card ("Drag one onto the card, or press it to choose where it goes."): it
     drags onto any part, or, pressed (or Enter), opens a menu "Add {Field} to" with a row per part. Under them,
-    **Reset to Default** (shown once the size differs from its default), else "Showing the default for {Name}." A
+    **Reset to Default** (shown only once the size differs from its default; nothing in its place otherwise). A
     size equal to its default is stored as absent.
   - A problem is named beside Save, which waits for it: no name, a name another type has, or a custom field
     without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 64

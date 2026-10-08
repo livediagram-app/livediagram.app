@@ -80,3 +80,11 @@ describe('card display', () => {
     );
   });
 });
+
+describe('Compact’s bottom right', () => {
+  it('holds the assignee by default, and takes any compact field', () => {
+    expect(defaultCardLayout('task', 'compact').trail).toEqual(['assignee']);
+    expect(defaultCardLayout('task', 'compact').row).not.toContain('assignee');
+    expect(cardSlotFits('compact', 'trail', 'due')).toBe(true);
+  });
+});
