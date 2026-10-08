@@ -189,7 +189,7 @@ describe('workbenchRouteVerdict', () => {
 
 describe('normaliseWorkbenchName', () => {
   it('trims a name and keeps it within the cap', () => {
-    expect(normaliseWorkbenchName('  Spinner ')).toBe('Spinner');
+    expect(normaliseWorkbenchName('  Acme Editor ')).toBe('Acme Editor');
     expect(normaliseWorkbenchName('x'.repeat(WORKBENCH_NAME_MAX_LENGTH))).toHaveLength(40);
   });
 

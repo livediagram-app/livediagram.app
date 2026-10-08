@@ -17,7 +17,7 @@ export type WorkbenchSession = {
   level: WorkbenchRole;
   expiresAt: number;
   person: WorkbenchPerson;
-  // The workbench's name from `hello-ack`, for copy ("Reconnect in Spinner").
+  // The workbench's name from `hello-ack`, for copy ("Reconnect in Acme Editor").
   workbenchName: string;
   port: WorkbenchPort;
   // Why the page stopped editing, or null while it edits.

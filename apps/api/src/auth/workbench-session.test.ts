@@ -52,7 +52,7 @@ describe('resolveWorkbenchSession', () => {
                  VALUES ('tok1', 'user_1', 'h', NULL, 1, ${NOW + 1e9}, ${over.tokenRevoked ? 1 : 0},
                          ${over.tokenReadOnly ? 1 : 0})`);
     db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
-                 VALUES ('pair1', 'user_1', 'tok1', 'https://w.example', 'Spinner', 1)`);
+                 VALUES ('pair1', 'user_1', 'tok1', 'https://w.example', 'Acme Editor', 1)`);
     const secret = generateWorkbenchSecret();
     await insertWorkbenchSession(db.env, {
       id: 'abcdef12-0000-4000-8000-000000000000',

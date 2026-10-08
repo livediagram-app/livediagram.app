@@ -153,12 +153,12 @@ describe('runWorkbenchHandshake', () => {
 
     const running = runWorkbenchHandshake(win, dispatch);
     await vi.waitFor(() => expect(parent.postMessage).toHaveBeenCalled());
-    deliver({ type: 'livediagram:hello-ack', v: 1, name: 'Spinner' });
+    deliver({ type: 'livediagram:hello-ack', v: 1, name: 'Acme Editor' });
     const port = await running;
 
     expect(parent.postMessage).toHaveBeenCalledTimes(1);
     expect(parent.postMessage).toHaveBeenCalledWith({ type: 'livediagram:hello', v: 1 }, ORIGIN);
-    expect(events.at(-1)).toEqual({ type: 'acked', name: 'Spinner' });
+    expect(events.at(-1)).toEqual({ type: 'acked', name: 'Acme Editor' });
     expect(port?.origin).toBe(ORIGIN);
     expect(endSession).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalledWith('[workbench] handshake-ok', { originHost: '127.0.0.1' });
@@ -206,7 +206,7 @@ describe('useWorkbenchHandshake', () => {
     const { result } = renderHook(() => useWorkbenchHandshake(win));
 
     await waitFor(() => expect(result.current.phase.phase).toBe('binding'));
-    act(() => deliver({ type: 'livediagram:hello-ack', v: 1, name: 'Spinner' }));
+    act(() => deliver({ type: 'livediagram:hello-ack', v: 1, name: 'Acme Editor' }));
     await waitFor(() => expect(result.current.port).not.toBeNull());
     act(() => result.current.dispatch({ type: 'ended', reason: 'revoked' }));
 

@@ -78,10 +78,10 @@ const pair = (io: FakeIo, ...more: string[]) =>
 describe('workbench pair', () => {
   it('prints the link first, waits at the answered interval, and exits 0 once approved', async () => {
     const { io, sent, stdoutAtPoll } = host({ polls: ['pending', 'approved'] });
-    expect(await pair(io, '--name', ' Spinner ')).toBe(0);
-    expect(sent).toEqual([{ origin: ORIGIN, name: 'Spinner' }]);
+    expect(await pair(io, '--name', ' Acme Editor ')).toBe(0);
+    expect(sent).toEqual([{ origin: ORIGIN, name: 'Acme Editor' }]);
     expect(stdoutAtPoll[0]).toBe(`${PAIRING_URL}\n`);
-    expect(io.out()).toBe(`${PAIRING_URL}\npaired ${ORIGIN} as Spinner\n`);
+    expect(io.out()).toBe(`${PAIRING_URL}\npaired ${ORIGIN} as Acme Editor\n`);
     expect(io.slept).toEqual([5000, 5000]);
     expect(io.err()).toBe('Waiting for approval…\n');
   });
@@ -106,11 +106,11 @@ describe('workbench pair', () => {
     const { io } = host({
       created: {
         status: 'paired',
-        pairing: { id: 'p', tokenId: 't', origin: ORIGIN, name: 'Spinner', pairedAt: NOW },
+        pairing: { id: 'p', tokenId: 't', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
       },
     });
     expect(await pair(io)).toBe(0);
-    expect(io.out()).toBe(`paired ${ORIGIN} as Spinner\n`);
+    expect(io.out()).toBe(`paired ${ORIGIN} as Acme Editor\n`);
     expect(io.slept).toEqual([]);
   });
 

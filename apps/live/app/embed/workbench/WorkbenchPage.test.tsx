@@ -113,13 +113,13 @@ describe('WorkbenchPage', () => {
   });
 
   it('is still opening in the moment between the ack and its port', () => {
-    harness.initial = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+    harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     render(<WorkbenchPage />);
     expect(screen.getByRole('status').textContent).toBe('Opening your diagram…');
   });
 
   it('mounts the editor on the workbench surface, signed in as the person', () => {
-    harness.initial = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+    harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     harness.port = fakePort();
     render(<WorkbenchPage />);
     expect(screen.getByText('editor workbench as Webber ended null')).toBeTruthy();
@@ -138,7 +138,7 @@ describe('WorkbenchPage', () => {
   });
 
   it('ends the page when the editor finds the document trashed', () => {
-    harness.initial = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+    harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     harness.port = fakePort();
     render(<WorkbenchPage />);
 
@@ -148,7 +148,7 @@ describe('WorkbenchPage', () => {
   });
 
   it('tells the workbench why the page ended, once', () => {
-    harness.initial = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+    harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     const port = fakePort();
     harness.port = port;
     const { rerender } = render(<WorkbenchPage />);
@@ -162,7 +162,7 @@ describe('WorkbenchPage', () => {
   });
 
   it('ends the page when the api refuses the session, as revoked before its expiry', async () => {
-    harness.initial = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+    harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     harness.port = fakePort();
     render(<WorkbenchPage />);
     vi.stubGlobal(

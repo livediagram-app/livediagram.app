@@ -105,7 +105,7 @@ Something changed since you read? The changeset is refused as a conflict: read a
     summary: 'read what a person selected in a workbench',
     text: `Work beside a workbench
 
-A workbench (Spinner, an editor) shows a document live beside you. When the person writes
+A workbench (a coding tool or an editor) shows a document live beside you. When the person writes
 to you about it, the message carries a selection reference:
 
   [livediagram] "Home screen" \u203a tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)

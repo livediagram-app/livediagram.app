@@ -37,7 +37,7 @@ async function paired(db: SqliteD1): Promise<string> {
     ownerId: 'user_1',
     tokenId: 'tok1',
     origin: ORIGIN,
-    name: 'Spinner',
+    name: 'Acme Editor',
     code: 'code_aaaaaaaaaaaaaaaaaa',
     now: NOW,
   });
@@ -96,7 +96,7 @@ describe('pairing requests', () => {
     });
     const second = await openPairingRequest(db.env, {
       ...input,
-      name: 'Spinner',
+      name: 'Acme Editor',
       code: 'code_bbbbbbbbbbbbbbbbbb',
     });
 
@@ -108,7 +108,7 @@ describe('pairing requests', () => {
     expect(second).toEqual({ ...first, reused: true });
     expect(count(db, 'workbench_pairing_requests')).toBe(1);
     expect((await readPairingRequest(db.env, 'code_aaaaaaaaaaaaaaaaaa', NOW))?.name).toBe(
-      'Spinner',
+      'Acme Editor',
     );
   });
 
@@ -135,7 +135,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      name: 'Spinner',
+      name: 'Acme Editor',
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
     });
@@ -144,7 +144,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      name: 'Spinner',
+      name: 'Acme Editor',
       tokenName: 'livediagram CLI',
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
       status: 'pending',
@@ -173,7 +173,7 @@ describe('pairing requests', () => {
     expect(pairingId).toBe('pair1');
     expect(await findWorkbenchPairing(db.env, 'tok1', ORIGIN)).toMatchObject({
       id: 'pair1',
-      name: 'Spinner',
+      name: 'Acme Editor',
     });
     expect(again).toEqual({ outcome: 'answered' });
   });
@@ -349,7 +349,7 @@ describe('pairings', () => {
                  VALUES ('pair0', 'user_1', 'tok1', 'https://old.example', NULL, ${NOW - 10})`);
 
     expect(await listWorkbenchPairings(db.env, 'user_1', NOW)).toEqual([
-      { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Spinner', pairedAt: NOW },
+      { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
       {
         id: 'pair0',
         tokenId: 'tok1',

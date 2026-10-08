@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-A **workbench** is a developer tool that shows a livediagram document live beside a coding agent, such as Spinner. You draw in the editor right there, everything reaches livediagram at once, and when you type a message to your agent, the tool attaches what you had selected so the agent reads exactly those elements.
+A **workbench** is a developer tool that shows a livediagram document live beside a coding agent. You draw in the editor right there, everything reaches livediagram at once, and when you type a message to your agent, the tool attaches what you had selected so the agent reads exactly those elements.
 
 The editor in a workbench is signed in as you, for one document at a time. It has the canvas, the tab bar, the palette and the panels; account settings, sharing and your document library stay in livediagram itself, one click away through **Open in livediagram**.
 
@@ -24,10 +24,10 @@ The editor in a workbench is signed in as you, for one document at a time. It ha
 A workbench opens your documents through your [CLI](/help/developers/cli/) sign-in, and only after you have allowed it. The first time, the tool asks you to approve it, or you can pair it yourself:
 
 ```bash
-livediagram workbench pair --origin https://127.0.0.1:5175 --name Spinner
+livediagram workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor"
 ```
 
-Your browser opens a page asking **Allow Spinner at `https://127.0.0.1:5175` to open your documents?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
+Your browser opens a page asking **Allow Acme Editor at `https://127.0.0.1:5175` to open your documents?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
 
 Pairing belongs to one CLI sign-in and one address. If someone obtained your token, it would still open nothing in a tool you never allowed.
 

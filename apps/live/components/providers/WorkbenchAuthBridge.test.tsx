@@ -52,7 +52,7 @@ function sessionOf(secret = SECRET): WorkbenchSession {
     level: 'edit',
     expiresAt: Date.now() + 60_000,
     person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
-    workbenchName: 'Spinner',
+    workbenchName: 'Acme Editor',
     port: { origin: 'https://127.0.0.1:5175', send: vi.fn(), subscribe: vi.fn(), close: vi.fn() },
     ended: null,
     end: vi.fn(),

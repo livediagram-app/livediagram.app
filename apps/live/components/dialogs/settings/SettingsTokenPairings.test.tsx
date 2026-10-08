@@ -8,11 +8,11 @@ import { SettingsTokenPairings } from './SettingsTokenPairings';
 
 const NOW = Date.UTC(2026, 9, 7, 12);
 const DAY = 86_400_000;
-const SPINNER: WorkbenchPairing = {
+const ACME: WorkbenchPairing = {
   id: 'p1',
   tokenId: 'tok1',
   origin: 'https://127.0.0.1:5175',
-  name: 'Spinner',
+  name: 'Acme Editor',
   pairedAt: NOW - 2 * DAY,
 };
 const UNNAMED: WorkbenchPairing = {
@@ -43,12 +43,12 @@ describe('SettingsTokenPairings', () => {
   });
 
   it('lists each workbench with its name, origin in monospace and when it was paired', () => {
-    render(<SettingsTokenPairings pairings={[SPINNER, UNNAMED]} now={NOW} onUnpair={vi.fn()} />);
+    render(<SettingsTokenPairings pairings={[ACME, UNNAMED]} now={NOW} onUnpair={vi.fn()} />);
     const list = screen.getByRole('list', { name: 'Paired workbenches' });
     expect(screen.getByText('Paired workbenches')).toBeTruthy();
     const { first, second } = rows(list);
 
-    expect(within(first).getByText('Spinner')).toBeTruthy();
+    expect(within(first).getByText('Acme Editor')).toBeTruthy();
     const origin = within(first).getByText('https://127.0.0.1:5175');
     expect(origin.tagName).toBe('CODE');
     expect(origin.className).toContain('font-mono');
@@ -59,8 +59,8 @@ describe('SettingsTokenPairings', () => {
   });
 
   it('names each Unpair by the workbench and its origin', () => {
-    render(<SettingsTokenPairings pairings={[SPINNER, UNNAMED]} now={NOW} onUnpair={vi.fn()} />);
-    const unpair = screen.getByRole('button', { name: 'Unpair Spinner at https://127.0.0.1:5175' });
+    render(<SettingsTokenPairings pairings={[ACME, UNNAMED]} now={NOW} onUnpair={vi.fn()} />);
+    const unpair = screen.getByRole('button', { name: 'Unpair Acme Editor at https://127.0.0.1:5175' });
     expect(unpair.textContent).toBe('Unpair');
     expect(
       screen.getByRole('button', { name: 'Unpair Unnamed workbench at http://localhost:4000' }),
@@ -69,11 +69,11 @@ describe('SettingsTokenPairings', () => {
 
   it('asks before unpairing, then unpairs that pairing', () => {
     const onUnpair = vi.fn();
-    render(<SettingsTokenPairings pairings={[SPINNER]} now={NOW} onUnpair={onUnpair} />);
-    fireEvent.click(screen.getByRole('button', { name: /^Unpair Spinner at/ }));
+    render(<SettingsTokenPairings pairings={[ACME]} now={NOW} onUnpair={onUnpair} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Unpair Acme Editor at/ }));
     expect(onUnpair).not.toHaveBeenCalled();
     expect(
-      screen.getByText('Unpair Spinner? Its open diagrams stop editing until you allow it again.'),
+      screen.getByText('Unpair Acme Editor? Its open diagrams stop editing until you allow it again.'),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Unpair' }));
@@ -93,8 +93,8 @@ describe('SettingsTokenPairings', () => {
 
   it('cancels without unpairing', () => {
     const onUnpair = vi.fn();
-    render(<SettingsTokenPairings pairings={[SPINNER]} now={NOW} onUnpair={onUnpair} />);
-    fireEvent.click(screen.getByRole('button', { name: /^Unpair Spinner at/ }));
+    render(<SettingsTokenPairings pairings={[ACME]} now={NOW} onUnpair={onUnpair} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Unpair Acme Editor at/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onUnpair).not.toHaveBeenCalled();
     expect(screen.queryByText(/Its open diagrams stop editing/)).toBeNull();

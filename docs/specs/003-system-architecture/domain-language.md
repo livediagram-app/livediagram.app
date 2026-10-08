@@ -96,7 +96,7 @@ The words for diagrams living beside code ([Repositories](../027-repositories/RE
 | **bridge**              | One format's parser and serialiser, with the capabilities it expresses           | adapter, converter                     |
 | **compatibility**       | Whether a bound tab may hold residue: `relaxed` (default) or `strict`            | mode (that is the editor's)            |
 | **residue**             | What a bound tab holds that its source's format cannot express                   | extras, unsupported                    |
-| **workbench**           | A developer tool that frames the editor beside an agent (Spinner, VS Code)       | host (that is a profile's server), IDE |
+| **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code)       | host (that is a profile's server), IDE |
 | **selection reference** | The text naming what was selected, attached to a person's message to their agent | context, selection payload             |
 
 ## Community

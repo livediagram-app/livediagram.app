@@ -69,7 +69,7 @@ function mount(port: WorkbenchPort | null, initial: WorkbenchPhase) {
   });
 }
 
-const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
 const renews = (port: WorkbenchPort) =>
   vi.mocked(port.send).mock.calls.filter(([m]) => m.type === 'livediagram:renew').length;
 
