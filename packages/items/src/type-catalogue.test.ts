@@ -26,6 +26,7 @@ import {
   validateItemTypeCatalogue,
   detailsLabelOf,
   DETAILS_LABEL_DEFAULT,
+  ITEM_TYPE_CUSTOM_MAX,
 } from './type-catalogue';
 
 // docs/specs/026-plan/item-types.md.
@@ -163,9 +164,9 @@ describe('a Project’s dates', () => {
     expect(read?.types[0]?.fields).toEqual(['title', 'status', 'description', 'start', 'due']);
   });
 
-  it('come back even to a stored Project already at the field cap', () => {
+  it('come back even when that takes a stored Project past the field cap', () => {
     const builtIns = BUILT_IN_FIELD_IDS.filter((f) => f !== 'start' && f !== 'due');
-    const room = ITEM_TYPE_FIELDS_MAX - builtIns.length;
+    const room = Math.min(ITEM_TYPE_FIELDS_MAX - builtIns.length, ITEM_TYPE_CUSTOM_MAX);
     const custom = Array.from({ length: room }, (_, i) => ({
       id: `f-x${i}`,
       label: `X${i}`,
@@ -173,6 +174,7 @@ describe('a Project’s dates', () => {
     }));
     const full = { ...ITEM_TYPES[0], fields: [...builtIns, ...custom.map((c) => c.id)], custom };
     const read = readItemTypeCatalogue({ version: 1, types: [full] });
+    expect(read?.types[0]?.fields.length).toBeGreaterThan(ITEM_TYPE_FIELDS_MAX - 2);
     expect(read?.types[0]?.fields.slice(-2)).toEqual(['start', 'due']);
   });
 

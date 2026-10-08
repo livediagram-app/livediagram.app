@@ -7,7 +7,7 @@ import { ItemPanel } from './ItemPanel';
 const viewport = vi.hoisted(() => ({ mobile: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => viewport.mobile }));
 
-// docs/specs/026-plan/plan-board.md "Open an item": a parent's Child Cards sit on its first tab before
+// docs/specs/026-plan/plan-board.md "Open an item": a project's Linked as Parent sits on its first tab before
 // Comments, and the header's breadcrumb steps back; each says how it opened the next card.
 
 afterEach(() => {
@@ -29,7 +29,7 @@ const item = (id: string, key: number, type: string, fields: Item['fields'] = {}
   updatedBy: PERSON,
 });
 
-function panel(open: Item, trail: Item[], childCards: Item[], fresh = false) {
+function panel(open: Item, trail: Item[], linked: Item[], fresh = false) {
   const noop = vi.fn();
   const onOpenItem = vi.fn();
   render(
@@ -37,7 +37,6 @@ function panel(open: Item, trail: Item[], childCards: Item[], fresh = false) {
       item={open}
       types={ITEM_TYPES}
       statuses={[]}
-      projects={[]}
       people={[]}
       labels={[]}
       canEdit
@@ -52,7 +51,11 @@ function panel(open: Item, trail: Item[], childCards: Item[], fresh = false) {
       onClose={noop}
       comments={{ canComment: true, selfId: 'me', onComment: noop }}
       trail={trail}
-      childCards={childCards}
+      linkedGroups={
+        linked.length > 0
+          ? [{ fieldId: 'parent', label: 'Parent', fromTypes: ['task'], cards: linked }]
+          : []
+      }
       statusNames={new Map()}
       fresh={fresh}
     />,
@@ -93,10 +96,10 @@ describe('the item panel’s first focus', () => {
 });
 
 describe('the item panel’s navigation', () => {
-  it('lists a parent’s children before Comments and opens one as a ChildCard', () => {
+  it('lists a Project’s Linked as Parent before Comments and opens one as a ChildCard', () => {
     const project = item('p', 1, 'project');
     const onOpenItem = panel(project, [project], [item('c', 2, 'task')]);
-    const children = screen.getByRole('heading', { name: /Child Cards/ });
+    const children = screen.getByRole('heading', { name: /Linked as Parent/ });
     const comments = screen.getByText('Comments');
     expect(
       children.compareDocumentPosition(comments) & Node.DOCUMENT_POSITION_FOLLOWING,

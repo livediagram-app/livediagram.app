@@ -35,6 +35,7 @@ import type { PlanItems } from './usePlanItems';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
+import { useTypeForBoard } from './useTypeForBoard';
 import { moveStatusRefusal } from './status-refusal';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
@@ -108,10 +109,25 @@ export function usePlanSlice(opts: {
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
   // A new type filled from this one (Duplicate), or none.
   const [typeTemplateId, setTypeTemplateId] = useState<string | null>(null);
-  const editType = useCallback((typeId: string | 'new', fromId?: string) => {
-    setEditingTypeId(typeId);
-    setTypeTemplateId(typeId === 'new' && fromId ? fromId : null);
-  }, []);
+  // Create Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
+  const forBoard = useTypeForBoard(commit);
+  const { setTypeForBoard } = forBoard;
+  const editType = useCallback(
+    (typeId: string | 'new', fromId?: string) => {
+      setEditingTypeId(typeId);
+      setTypeTemplateId(typeId === 'new' && fromId ? fromId : null);
+      setTypeForBoard(null);
+    },
+    [setTypeForBoard],
+  );
+  const createTypeForBoard = useCallback(
+    (boardId: string, statuses: readonly string[]) => {
+      setEditingTypeId('new');
+      setTypeTemplateId(null);
+      setTypeForBoard({ boardId, statuses });
+    },
+    [setTypeForBoard],
+  );
 
   const people = useMemo(() => {
     const byId = new Map<string, ItemPerson>();
@@ -399,6 +415,7 @@ export function usePlanSlice(opts: {
       types: itemTypes.types,
       itemTypes,
       editType,
+      createTypeForBoard,
       status: planItems.status,
       self: planItems.self,
       people,
@@ -437,6 +454,7 @@ export function usePlanSlice(opts: {
       planItems.items,
       itemTypes,
       editType,
+      createTypeForBoard,
       planItems.status,
       planItems.self,
       planItems.refetch,
@@ -488,9 +506,12 @@ export function usePlanSlice(opts: {
     showItem: setOpenItemId,
     editingTypeId,
     typeTemplateId,
+    typeForBoard: forBoard.typeForBoard,
+    addTypeToBoard: forBoard.addTypeToBoard,
     closeTypeEditor: () => {
       setEditingTypeId(null);
       setTypeTemplateId(null);
+      setTypeForBoard(null);
     },
     dropPlanCardOnBoard,
   };

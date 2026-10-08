@@ -29,7 +29,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
-import { ItemChildCards, LinkedCardGroup } from './ItemChildCards';
+import { LinkedCardGroup } from './LinkedCards';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 import { ItemKeyTag, ItemTypePill } from './ItemPanelHeaderParts';
 import type { ItemOpenVia } from './item-trail';
@@ -57,8 +57,6 @@ type ItemPanelProps = {
   types: readonly ItemTypeDef[];
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
-  // The projects an item can sit under (its Parent).
-  projects: readonly Item[];
   people: readonly ItemPerson[];
   // Every label the document's items carry (the labels field's suggestions).
   labels: readonly string[];
@@ -83,8 +81,6 @@ type ItemPanelProps = {
   // The cards opened before this one from inside the panel, ending on it (docs/specs/026-plan/plan-board.md
   // "Breadcrumb").
   trail: readonly Item[];
-  // The cards that name this one as their Parent ("Child Cards").
-  childCards: readonly Item[];
   // The cards linking here through a Card field, a group per field (docs/specs/026-plan/item-types.md "Card fields").
   linkedGroups?: readonly LinkedGroup[];
   // Make a new card of `typeId` already linked here through the group's field.
@@ -139,7 +135,6 @@ function ItemPanelContent({
   item,
   types,
   statuses,
-  projects,
   people,
   labels,
   canEdit,
@@ -155,7 +150,6 @@ function ItemPanelContent({
   onEditType,
   comments,
   trail,
-  childCards,
   linkedGroups = NO_GROUPS,
   fresh = false,
   onAddLinked,
@@ -191,7 +185,6 @@ function ItemPanelContent({
     item,
     type,
     statuses,
-    projects,
     people,
     labels,
     canEdit,
@@ -201,18 +194,11 @@ function ItemPanelContent({
     ...(comments ? { comments } : {}),
   };
 
-  // Child Cards sit on the type's first tab, before Comments; a Project shows them even with none.
+  // The Linked as sections sit on the type's first tab, before Comments, even with no cards in them.
   const firstTabId = tabs[0]?.id;
-  const showsChildren = childCards.length > 0 || item.type === 'project' || linkedGroups.length > 0;
+  const showsChildren = linkedGroups.length > 0;
   const childSection = (
     <div key="child-cards">
-      <ItemChildCards
-        item={item}
-        childCards={childCards}
-        types={types}
-        statusNames={statusNames}
-        onOpen={(id) => onOpenItem(id, 'ChildCard')}
-      />
       {linkedGroups.map((g) => (
         <LinkedCardGroup
           key={g.fieldId}
@@ -404,7 +390,7 @@ function ItemPanelContent({
   );
 }
 
-// A first tab's fields with the Child Cards section placed before Comments (or last when it has none).
+// A first tab's fields with the Linked as sections placed before Comments (or last when it has none).
 function tabFieldsWithChildren(
   fields: readonly string[],
   mainField: (f: string) => ReactNode,

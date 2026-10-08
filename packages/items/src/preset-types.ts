@@ -1,7 +1,7 @@
 // Card types a board preset brings (docs/specs/026-plan/plan-mode.md "The palette"): a Bug Triage board takes Bugs,
 // a Sprint board Stories. Placing the board adds each one the document lacks to its catalogue, so the board's own
 // kind of card is there to add; a document that already has the type (by id) keeps its own.
-import type { ItemTypeDef } from './item-types';
+import { PARENT_FIELD, type ItemTypeDef } from './item-types';
 
 const WORK = [
   'title',
@@ -25,6 +25,7 @@ export const PRESET_CARD_TYPES: readonly ItemTypeDef[] = [
     glyph: 'bug',
     color: '#dc2626',
     fields: WORK,
+    custom: [PARENT_FIELD],
   },
   {
     id: 'story',
@@ -33,6 +34,7 @@ export const PRESET_CARD_TYPES: readonly ItemTypeDef[] = [
     glyph: 'story',
     color: '#7c3aed',
     fields: WORK,
+    custom: [PARENT_FIELD],
   },
 ];
 

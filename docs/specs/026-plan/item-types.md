@@ -95,7 +95,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     the CLI is told "the item's card type does not use that status"; making one in it is allowed. Putting a change
     back is never refused: a card restored from the Trash to the status it was trashed from, and an undo or redo
     (sent with `undo: true`, which the editor's undo and redo always set).
-- A type holds up to **24 fields** and up to **12 custom fields**. A catalogue holds up to **32 types**.
+- A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
+  type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
 - **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Date, Checkbox, Link (an `https://`
   URL), Choice (one of up to 20 named options) and Card (a link to one card of another type, below). Every value
   is a plain string, number or true/false, which the
@@ -103,8 +104,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   person kind. Their values are ordinary entries in the item's `fields`, under the custom
   field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
 - **Card fields** link a card to one other card, of the card type the field names (`linkType`): an Objective's
-  **Owner** links to a Person. The value is that card's id. The built-in **Parent** is the same kind of link, to a
-  Project, and both use one control and one way of listing what links where:
+  **Owner** links to a Person. The value is that card's id. **Parent** is one of them: Task (and the Bug and Story
+  types a board preset brings) carries a Card field named **Parent**, linking to Projects, under the one custom id
+  without `f-`, `parent`, so every card made before keeps its parent. Like any custom field it can be renamed,
+  linked to another type or removed, and another type can add one. A document whose stored catalogue named
+  `parent` as a built-in field reads it as this Card field. Every Card field uses one control and one way of listing
+  what links where:
   - **The control** (the card panel): one bordered field the width of its row, showing the linked card's type
     glyph in its colour, its own colour dot when it has one, its number as a quiet tag and its full title (cut only
     at the field's end, the whole "#1 Title" in a tooltip), a chevron, and an open arrow at its end (inside the
@@ -114,13 +119,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     a trashed or archived card), each with its glyph, number and title; with more than 8 a filter leads the list
     (by number or title). The arrows move, Enter picks, Escape closes the list (not the card), and a press outside
     closes it. Its accessible name is the field's ("Parent", "Owner").
-  - **On the linked card**: a Project's **Child Cards** (the cards naming it as Parent), then, for every Card
-    field that links to the card's type, a **Linked as {Field}** section ("Linked as Owner") listing the cards
+  - **On the linked card**: for every Card field that links to the card's type (Parent included: a Project's
+    "Linked as Parent" lists the cards under it), a **Linked as {Field}** section ("Linked as Owner") listing the cards
     pointing here (glyph, number, title, Archived, status, assignee; pressed, each opens), its count, an empty
     note ("No cards link here as Owner yet."), and **New {Type}** for each type whose field links here: it makes
     a card of that type already linked, in its type's Default State (else the first status its type uses), and
     opens it. These sit on the type's first tab, before Comments.
-  - **Filtering them**: a Child Cards or Linked as section whose cards hold more than one card type or state has a
+  - **Filtering them**: a Linked as section whose cards hold more than one card type or state has a
     filter row above its list: a **Card Type** menu ("All card types", then each type the list holds) when it holds
     more than one, and a **State** menu ("All states", then each state it holds, "No status" last) when it holds
     more than one; both start at All, are each viewer's own and unsaved, and while one narrows the list "N of M"
@@ -174,9 +179,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   What it shows at that size, and where, is its **type's Display** for that size, each field only when the card has
   a value for it. A board has no say over the fields (its old Show on Cards setting, kept in stored set-ups, is
   ignored).
+- A Display only ever holds the **fields the type has** (Number and Type always): a new type's default places only
+  its own fields (a type without a default of its own starts from every field a size draws, less the ones it lacks),
+  and a field taken off the type leaves the card, and its Display preview, at once.
 - Each size draws its fields in **slots**, each holding fields in order:
   - **Minimal**: **Before the Title** and **After the Title**, on its one line; it can draw Number, Priority, Due Date
-    and Assignee.
+    and Assignee. A built-in type's Minimal card shows none of them by default; a type of the person's own starts
+    with its Number Before the Title and its Assignee After the Title (when it has one).
   - **Compact**: **Beside the Title** (before it), **Below the Title** (one row) and **Bottom Right** (that row's
     far end); it can draw Number, Type,
     Assignee, Priority, Start Date, Due Date, Votes and Comments.
@@ -214,9 +223,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   dot (a clashing name is General's; a tab or custom field problem is Fields'; a missing name is not flagged, since
   a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
-  The title row ends with **Help** (the Card Types help article) and a close cross, which acts as Cancel. Every
-  button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
-  icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
+  The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
+  Cancel.
+  - **Show Me** runs a guided tour of making a card type, there and then, on the editor itself; it is never offered
+    or started on its own. It uses the shared tour (the step card, Back, Next and Skip, the ring around what it
+    points at with room to breathe, drawn over the editor), and each step opens the editor tab it is about and points at a real
+    control, which stays usable: the person types the name, picks a colour or adds a field while the step is up, and
+    their edits stay in the draft. The steps: **Name It, Then Give It a Look** (the General tab's Name, Colour and Glyph together, the
+    caret put in Name), **Lay Out Its Fields** (the Fields tab's layout), **Choose Its States** (the States tab),
+    **Arrange the Card** (the Display tab), then **Save It** (Save), and a closing card with a link to the Card Types article.
+    While it runs, Escape belongs to the tour (it never closes the editor). Telemetry: `UI` · `Started` ·
+    `CardTypeTour`, and `UI` · `Ended` · `CardTypeTourCompleted` or `CardTypeTourSkipped`. Every
+    button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
+    icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
   - **General**: **Name**, **Colour** (the twelve swatches, then **+** for a custom colour, which opens the custom colour picker in place
     (as in [Draw](../023-draw-mode/draw-mode.md)); a custom colour in force shows as a picked swatch before the +) and **Glyph**: one field-sized button showing the chosen glyph (on a tint of the type's colour), its
     name and a chevron, which opens a popover under it (above it when there is no room below), drawn over the editor so its
@@ -240,9 +259,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       empty. A new tab's name field takes focus. An empty group says so, and that any tab but Overview left
       empty is dropped when the type is saved.
   - Field rows alternate white and a light grey within their group, so a long list reads row by row. Each field
-    row leads with a **drag handle** (a grip), then its name, a lock beside the name for a field the
-    type always keeps (Title and Status, and a Project's Start and Due; its tooltip says "{Name} is always on this
-    type"), and, for a custom field, its kind. Dragging the handle (mouse, pen or touch alike) moves the field
+    row leads with a **drag handle** (a grip), then an icon of what it holds, then its name, and a lock beside the
+    name for a field the type always keeps (Title and Status, and a Project's Start and Due; its tooltip says "{Name}
+    is always on this type"). The icon is the Add Field kind tiles' own (a custom field's kind: Link to Card a card;
+    a built-in field the kind closest to it: Due Date a calendar, Estimate a #, Checklist a checkbox, Status,
+    Priority, Colour and Labels a list, Title text, Description and Comments long text, Votes a #), the Assignee a
+    person; its tooltip and accessible name name the kind ("Link to Card", "Date", "Person"). Dragging the handle (mouse, pen or touch alike) moves the field
     within its group: the row follows the pointer, the rows it passes slide aside, release places it and Escape
     puts it back. Title, Status and Votes have no handle, and every row keeps its slot so the names line up.
     The row ends with a custom field's **Edit** (a pencil), which opens its name, its options (Choice), its

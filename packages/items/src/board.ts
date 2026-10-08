@@ -10,7 +10,12 @@ import type { Item, ItemPerson } from './item';
 import { LANE_FIELD_BUILT_INS, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
 import type { ItemMove } from './item';
 import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
-import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import {
+  ITEM_TYPES,
+  LEGACY_PARENT_GROUPING,
+  PARENT_FIELD_ID,
+  type ItemTypeDef,
+} from './item-types';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, type Priority } from './fields';
 import { byRank } from './apply';
 import {
@@ -37,15 +42,7 @@ export type ColumnWidth = (typeof COLUMN_WIDTHS)[number];
 
 // 'field' groups by `swimlaneField`, any field the document's types offer (docs/specs/026-plan/plan-board.md
 // "Swimlanes by a field").
-export const SWIMLANE_BY = [
-  'none',
-  'assignee',
-  'type',
-  'priority',
-  'parent',
-  'status',
-  'field',
-] as const;
+export const SWIMLANE_BY = ['none', 'assignee', 'type', 'priority', 'status', 'field'] as const;
 export type SwimlaneBy = (typeof SWIMLANE_BY)[number];
 
 export const CARD_FIELDS = [
@@ -62,13 +59,12 @@ export const CARD_FIELDS = [
   'checklist',
   // How many comments an open thread holds (docs/specs/026-plan/items.md "Comments").
   'comments',
-  // A Detailed card's extras: two lines of its description, and the project it sits under.
+  // A Detailed card's extra: two lines of its description.
   'description',
-  'parent',
 ] as const;
-// A card field: a built-in one, or a card type's custom field by its id (`f-…`), placed by the type's Display
-// (docs/specs/026-plan/item-types.md "Card display").
-export type CustomCardField = `f-${string}`;
+// A card field: a built-in one, or a card type's custom field by its id (`f-…`, or the reserved `parent`), placed
+// by the type's Display (docs/specs/026-plan/item-types.md "Card display").
+export type CustomCardField = `f-${string}` | typeof PARENT_FIELD_ID;
 export type CardField = (typeof CARD_FIELDS)[number] | CustomCardField;
 export function isCustomCardField(field: string): field is CustomCardField {
   return CUSTOM_FIELD_ID_PATTERN.test(field);
@@ -172,7 +168,7 @@ export interface LaneHead {
   key: string;
   label: string;
   // What a drop into this lane sets (null clears the field). 'field': `fieldId`, a field lane's field.
-  field: 'assignee' | 'type' | 'priority' | 'parent' | 'status' | 'field' | null;
+  field: 'assignee' | 'type' | 'priority' | 'status' | 'field' | null;
   value: Item['fields'][string] | null;
   person?: ItemPerson;
   // A Project lane's own colour (docs/specs/026-plan/items.md "Colour"), a dot before its name.
@@ -338,14 +334,16 @@ export function boardShowsType(
   return types ? boardTakesType(setup, types, type) : setup.addTypes.includes(type);
 }
 
-// The types a board shows and takes, in the catalogue's order: its own, or every one. Never empty while
-// the catalogue is not: a board whose every named type has since been deleted takes every type again
-// (docs/specs/026-plan/plan-board.md "Card types a board shows").
+// The types a board shows and takes, in the catalogue's order: its own, or every one. A board can take none (an
+// empty list, set by turning its last type off: Add card then offers only Create Card Type); a board whose every
+// named type has since been deleted takes every type again (docs/specs/026-plan/plan-board.md "Card types a board
+// shows").
 export function boardAddTypes<T extends { id: string }>(
   setup: Pick<PlanBoardSetup, 'addTypes'>,
   types: readonly T[],
 ): T[] {
   if (!setup.addTypes) return [...types];
+  if (setup.addTypes.length === 0) return [];
   const own = types.filter((t) => setup.addTypes!.includes(t.id));
   return own.length ? own : [...types];
 }
@@ -410,10 +408,16 @@ function laneOf(
     case 'field': {
       if (!field) return { key: NO_LANE, label: '', field: null, value: null };
       const lane = fieldLane(field, laneValue(field, item));
-      // A Card field's row is named by the linked card (docs/specs/026-plan/item-types.md "Card fields").
+      // A Card field's row is named by the linked card, with its colour dot when it has a Colour
+      // (docs/specs/026-plan/item-types.md "Card fields").
       if (field.kind === 'card' && typeof lane.value === 'string') {
         const linked = linkedCard(items, lane.value);
-        return { ...lane, label: linked ? itemTitle(linked) : 'Missing card' };
+        const colour = linked ? itemColourOf(linked) : undefined;
+        return {
+          ...lane,
+          label: linked ? itemTitle(linked) : 'Missing card',
+          ...(colour ? { colour } : {}),
+        };
       }
       return lane;
     }
@@ -446,18 +450,6 @@ function laneOf(
         ? { key: `p:${p}`, label: PRIORITY_LABELS[p], field: 'priority', value: p }
         : { key: NO_LANE, label: 'No priority', field: 'priority', value: null };
     }
-    case 'parent': {
-      const parent = linkedCard(items, item.fields['parent']);
-      return parent
-        ? {
-            key: `e:${parent.id}`,
-            label: itemTitle(parent),
-            field: 'parent',
-            value: parent.id,
-            ...(itemColourOf(parent) ? { colour: itemColourOf(parent)! } : {}),
-          }
-        : { key: NO_LANE, label: 'No parent', field: 'parent', value: null };
-    }
   }
 }
 
@@ -489,9 +481,6 @@ function laneSort(
     }
     if (by === 'priority') {
       return PRIORITIES.indexOf(a.value as never) - PRIORITIES.indexOf(b.value as never);
-    }
-    if (by === 'parent') {
-      return (items.get(a.value as string)?.key ?? 0) - (items.get(b.value as string)?.key ?? 0);
     }
     return a.label.localeCompare(b.label);
   };
@@ -713,11 +702,15 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
   // read past.
   // Boards had their own voting once; a vote is now the tab's session vote on the cards
   // (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards"), so a stored `voting` is read past.
-  let swimlaneBy = (SWIMLANE_BY as readonly unknown[]).includes(input['swimlaneBy'])
-    ? (input['swimlaneBy'] as SwimlaneBy)
-    : 'none';
+  // Parent was a grouping of its own; it is a Card field now, so a board grouped by it groups by that field.
+  const legacyParent = input['swimlaneBy'] === LEGACY_PARENT_GROUPING;
+  let swimlaneBy = legacyParent
+    ? 'field'
+    : (SWIMLANE_BY as readonly unknown[]).includes(input['swimlaneBy'])
+      ? (input['swimlaneBy'] as SwimlaneBy)
+      : 'none';
   // A field lane keeps its field id while it is one a lane could name; the field itself may come and go.
-  const laneField = input['swimlaneField'];
+  const laneField = legacyParent ? PARENT_FIELD_ID : input['swimlaneField'];
   const swimlaneField =
     swimlaneBy === 'field' &&
     typeof laneField === 'string' &&

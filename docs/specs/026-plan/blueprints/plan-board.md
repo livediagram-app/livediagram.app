@@ -83,7 +83,8 @@ ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG 
                          rounded hover), ItemMeta (11px slate-400 created/edited lines); the aside is m-3 rounded-xl
                          bg-slate-50 ring-1; title 22px semibold tracking-tight
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
-ItemChildCards.tsx       a parent's Child Cards section: childrenOf rows (glyph, #key, title, status, Archived chip)
+LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section) and FilteredCards rows (glyph, #key, title,
+                         status, Archived chip)
 ItemTrailCrumbs.tsx      the breadcrumb of earlier cards (visibleTrail, folded "…"): in the header on a wide screen,
                          a row above it on a phone (a back chevron, no trailing separator)
 item-trail.ts            pure: stepTrail / liveTrail / visibleTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX, ITEM_TRAIL_SHOWN*
@@ -115,8 +116,8 @@ the items too.
 ## Card sizes
 
 - `CARD_SIZE_FIELDS`: minimal `[]`; compact key, type, assignee, priority, due, votes; detailed every field.
-  `cardFieldsAt(size, fields)` is what a face draws. `CARD_FIELDS` adds `description` (two lines) and `parent`
-  (the project's title). The Cards flyout dims a field tile outside the size's set (`disabled`), its setting kept.
+  `cardFieldsAt(size, fields)` is what a face draws. `CARD_FIELDS` adds `description` (two lines); Parent is a custom
+  card field (`CustomCardField` admits `parent`), placed by the type's Display (Task: detailed `body`). The Cards flyout dims a field tile outside the size's set (`disabled`), its setting kept.
 - `PlanCardFace` lays out the parts in `plan-card-parts.tsx`: frame `rounded-xl` with a hairline border, rest shadow
   `0 1px 2px / 0 1px 3px` slate at 6 % / 4 %, hover `shadow-md` and `-translate-y-px` (150 ms; none under reduced
   motion); no stripe: the type colour fills `KeyTag` (the #key, text white or `#18181b`, whichever
@@ -162,8 +163,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   alone; closing the panel leaves the trail stale until the next `openItem` resets it.
 - **Panel identity**: `ItemPanel` holds the `Dialog` and renders `ItemPanelContent key={item.id}`, so moving
   between cards keeps the Dialog mounted (no entrance animation again) while each card's tab and clock reset.
-- **Child cards**: `childrenOf(items, parentId)` = items whose `fields.parent === parentId`, status not `trash`,
-  sorted by `key`; computed in `PlanSheetsHost` for the open item only (one pass over the document's items).
+- **Linked cards**: `linkedCardsOf(open, items, types)` (card-links.ts), computed in `PlanSheetsHost` for the open
+  item only (one pass over the document's items); a Project's Linked as Parent is one of its groups.
 - **Maximised board**: `maximised-plan.ts` holds `{ id, kind } | null` (a visualisation maximises through it too,
   `PlanViewView` putting `MaximisePlanButton kind="View"` in every view header through `ViewHeaderEnd`), never synced, saved or journalled.
   `PlanBoardView` with `interactive` shows the header's Maximise Board button; pressed, `maximisePlanElement(id)` and
@@ -202,7 +203,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
   "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as Done",
   "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Move and Remove", "Keep It",
-  "Child Cards", "No cards sit under this project yet.", "Archived", "Card trail".
+  "Linked as {Field}", "No cards link here as {Field} yet.", "Archived", "Card trail".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
   input, field rows in the type's order, description textarea, checklist, footer "Created by (disc) X" and "Edited by (disc) Y, 2m", the disc `PersonDisc`.
@@ -216,7 +217,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   type colour key fill (the #key text meets 4.5:1 on it).
 - Reduced motion: no placeholder animation, no card lift shadow transition.
 - Breadcrumb: `nav aria-label="Card trail"` holding an `ol`; each crumb a `button` named "Back to #12 Website
-  relaunch"; separators and the fold are `aria-hidden` except the fold's sr-only "3 earlier cards". Child Cards: a
+  relaunch"; separators and the fold are `aria-hidden` except the fold's sr-only "3 earlier cards". Linked as: a
   `section` labelled by its heading, an `ul` of `button` rows named "Open #14 Write tests, In Progress".
 
 ## Web Experience
@@ -261,7 +262,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | A palette card lands only in a column       | `apps/live/hooks/plan/plan-card-drop.test.ts`                 |
 | Plan templates' boards                      | `apps/live/lib/template-boards.test.ts`                       |
 | Card trail steps, cut-back, cap; children   | `apps/live/components/plan/item-trail.test.ts`                |
-| Child Cards rows, empty state, open         | `apps/live/components/plan/ItemChildCards.test.tsx`           |
+| Linked as rows, empty state, open           | `apps/live/components/plan/LinkedCards.test.tsx`              |
 | Breadcrumb crumbs, fold, step back          | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`          |
 | Maximise, restore, Escape, unmount ends it  | `apps/live/hooks/plan/maximised-plan.test.ts`                 |
 | No remount, maximised size, one Escape      | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`       |

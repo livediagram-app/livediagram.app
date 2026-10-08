@@ -14,6 +14,7 @@ export * from './apply';
 export * from './board';
 export * from './board-card-types';
 export * from './card-links';
+export * from './legacy-parent';
 export * from './board-widgets';
 export * from './plan-views';
 export * from './plan-view-dates';

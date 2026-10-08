@@ -797,7 +797,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Items',
     summary:
-      "Move an item to a status and a place in that status's column (after or before another item), optionally setting or clearing a swimlane field (assignee, priority, parent) or its type.",
+      "Move an item to a status and a place in that status's column (after or before another item), optionally setting or clearing a swimlane field (assignee, priority, or any lane field: Labels, Estimate, Start, Due or a custom field such as Parent) or its type.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [ITEM_TAB_QUERY],

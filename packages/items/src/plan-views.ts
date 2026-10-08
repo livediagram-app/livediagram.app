@@ -17,7 +17,7 @@ import {
 import { GANTT_NAMES_MAX_PX, GANTT_NAMES_MIN_PX } from './plan-view-gantt';
 import { isGanttRowOrder } from './gantt-row-order';
 import { ITEM_TYPE_PATTERN } from './limits';
-import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 import { isCardSearchFilters } from './card-search';
 
 // The board widget kinds that read out rather than narrow a board or need its set-up
@@ -93,6 +93,7 @@ export function isPlanViewSettings(value: unknown): boolean {
   if (!isPlanViewId(v['view'])) return false;
   if (
     v['swimlaneBy'] !== undefined &&
+    v['swimlaneBy'] !== LEGACY_PARENT_GROUPING &&
     !(SWIMLANE_BY as readonly unknown[]).includes(v['swimlaneBy'])
   )
     return false;

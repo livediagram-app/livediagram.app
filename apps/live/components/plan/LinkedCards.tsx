@@ -1,8 +1,8 @@
 'use client';
 
-// The cards that point at the open card (docs/specs/026-plan/item-types.md "Card fields"): a Project's Child
-// Cards (the cards naming it as their Parent), and a section per Card field that links here ("Linked as Owner"),
-// each row opening that card in the panel, with a button to make a new one already linked. The host computes
+// The cards that point at the open card (docs/specs/026-plan/item-types.md "Card fields"): a section per Card field
+// that links here ("Linked as Owner"; a Project's "Linked as Parent" lists the cards under it), each row opening
+// that card in the panel, with a button to make a new one already linked. The host computes
 // the groups (linkedCardsOf in packages/items), so this only draws them.
 import { useId, useState } from 'react';
 import {
@@ -22,51 +22,6 @@ import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 const CHIP =
   'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 ring-inset whitespace-nowrap';
-
-export function ItemChildCards({
-  item,
-  childCards,
-  types,
-  statusNames,
-  onOpen,
-}: {
-  item: Item;
-  childCards: readonly Item[];
-  types: readonly ItemTypeDef[];
-  // Each status's column name, for a row's status chip.
-  statusNames: ReadonlyMap<string, string>;
-  onOpen: (itemId: string) => void;
-}) {
-  const headingId = useId();
-  // Only a Project offers the empty state: any other type with no children has nothing to say.
-  if (childCards.length === 0 && item.type !== 'project') return null;
-  return (
-    <section aria-labelledby={headingId} className="mb-8">
-      <h3
-        id={headingId}
-        className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-slate-800 dark:text-slate-100"
-      >
-        Child Cards
-        <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-          {childCards.length}
-        </span>
-      </h3>
-      {childCards.length === 0 ? (
-        <p className="text-[13px] text-slate-500 dark:text-slate-400">
-          No cards sit under this project yet.
-        </p>
-      ) : (
-        <FilteredCards
-          cards={childCards}
-          types={types}
-          statusNames={statusNames}
-          onOpen={onOpen}
-          label="Child Cards"
-        />
-      )}
-    </section>
-  );
-}
 
 // A list of linked cards with, when it holds more than one type or state, a filter by Card Type and by State
 // (docs/specs/026-plan/item-types.md "Card fields"): each menu lists only what the list holds, both start at All,

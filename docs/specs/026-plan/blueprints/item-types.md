@@ -29,9 +29,11 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 - `validateItemTypeCatalogue(input)`: version 1; 1 to `ITEM_TYPES_MAX` types; each `id` matches
   `ITEM_TYPE_PATTERN` and is not `item`; `label` 1 to 32 characters, unique ignoring case; `color` `#rrggbb`;
-  `glyph` in the set; `custom` up to 12, ids `CUSTOM_FIELD_ID_PATTERN` and unique, labels 1 to 32, kind known,
+  `glyph` in the set; `custom` up to 12 (`customFieldCount`, which never counts Parent), ids
+  `CUSTOM_FIELD_ID_PATTERN` (`f-` and a slug, or the reserved `parent`) and unique, labels 1 to 32, kind known,
   Choice 1 to 20 unique options of up to 40 characters; Card a `linkType` matching `ITEM_TYPE_PATTERN` (a type the
-  catalogue lacks is kept); `fields` only built-in or own custom ids, deduplicated,
+  catalogue lacks is kept); `fields` only built-in or own custom ids, deduplicated (a stored type naming `parent` without defining it gains
+  `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
 - `readItemTypeCatalogue(raw)`: a stored value (string or object) that validates, else null (built-ins).
@@ -68,16 +70,22 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   (`saveItemTypes`, offline-aware), kept as answered, reverted with "Couldn’t save the card types" on failure,
   and pushed as one undo step (undo and redo replay a save without a step).
 - `PlanContext`: `types`, `itemTypes`, `editType(id | 'new')`; `usePlanSlice` holds `editingTypeId`.
-- Card fields: `card-links.ts` (packages/items) is the one reading of links, Parent included: `PARENT_FIELD` /
-  `PARENT_LINK_TYPE`, `linkFieldsOfType(type)`, `linkCandidates(items, linkType, selfId)` (live, not archived, number
+- Parent: `PARENT_FIELD_ID` (`'parent'`) and `PARENT_FIELD` (`{ id: 'parent', label: 'Parent', kind: 'card',
+linkType: 'project' }`) in item-types.ts; Task and the preset Bug and Story carry it in `custom`. The old grouping
+  (`LEGACY_PARENT_GROUPING`, `swimlaneBy: 'parent'`) stays valid on boards, views and search filters and is read as
+  the field: `normaliseBoardSetup`, and `legacy-parent.ts` (`readGrouping`, `readCardSearchFilter`: `e:{id}` keys to
+  `f:"{id}"`, `readPlanViewSettings`, used by `PlanViewView` and `PlanViewMenuSection`).
+- Card fields: `card-links.ts` (packages/items) is the one reading of links: `linkFieldsOfType(type)`, `linkCandidates(items, linkType, selfId)` (live, not archived, number
   order, never self), `linkText` ("Missing card"), and `linkedCardsOf(target, items, types)`: groups
-  `{ fieldId, label, fromTypes, cards }`, Parent first (a Project only), then each Card field whose `linkType` is the
-  target's type, trashed cards left out. `LinkedCardField` (apps/live) is the shared control for Parent and every
-  Card field (`ItemFieldEditor`), an in-place listbox (inside the panel's focus trap) with a filter past
-  `LINK_FILTER_FROM` (8), Escape taken in the capture phase. `PlanSheetsHost` splits the groups into `childCards`
-  (Parent) and `linkedGroups` (`LinkedCardGroup` in ItemChildCards.tsx, `New {Type}` via `addItem` with the link
+  `{ fieldId, label, fromTypes, cards }`, one per Card field whose `linkType` is the target's type (Parent for a
+  Project), trashed cards left out. `LinkedCardField` (apps/live) is the shared control for every Card field
+  (`ItemFieldEditor`), an in-place listbox (inside the panel's focus trap) with a filter past
+  `LINK_FILTER_FROM` (8), Escape taken in the capture phase. `PlanSheetsHost` passes the groups as `linkedGroups`
+  (`LinkedCardGroup` in LinkedCards.tsx, `New {Type}` via `addItem` with the link
   set, first status the type uses, tracked `('Plan', 'Added', 'LinkedCard')`). `customFieldText(field, value, items)`
-  names a Card value; `LaneFieldKind` gains `card` (rows named by the linked card, number order).
+  names a Card value; `LaneFieldKind` gains `card` (rows named by the linked card with its `itemColourOf` dot, number
+  order; the Swimlanes tile draws the linked type's glyph). `PlanCardFace` draws a Card field as a pill: the linked
+  card's colour dot when it has one, else its type's glyph.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names, `newCardItemWrite`,

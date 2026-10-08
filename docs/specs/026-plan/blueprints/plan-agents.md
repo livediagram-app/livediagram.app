@@ -24,7 +24,7 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 - Names resolve in this order: exact id, then `statusKey` match on the name (case, spacing, punctuation aside).
 - `resolveFields` keys: built-in id, `statusKey` of an id, alias (`duedate`, `startdate`, `colour`, `label`,
   `assignedto`, `owner`), custom field id or name on the item's type. Values: `status` by column name, `assignee`
-  string by `personNamed`, `parent` and Card fields by item ref, `priority` lowercased when it is one of
+  string by `personNamed`, Card fields (Parent among them) by item ref, `priority` lowercased when it is one of
   `PRIORITIES`, `labels` string split on commas, Choice by option name; others as given (the api validates).
 - `applyItemChanges`: one plan read per call; changes in order, each seeing earlier ones' items; first refusal
   stops; answers `applied` lines naming the column (`in To Do`, or `(on no board)`).

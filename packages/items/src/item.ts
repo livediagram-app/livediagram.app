@@ -72,7 +72,7 @@ export interface ItemMove extends ItemPlace {
 }
 
 // The fields a swimlane drop may set or clear.
-export const SWIMLANE_FIELDS = ['assignee', 'priority', 'parent'] as const;
+export const SWIMLANE_FIELDS = ['assignee', 'priority'] as const;
 
 // The built-in fields a board can also lane by (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
 export const LANE_FIELD_BUILT_INS = ['labels', 'estimate', 'start', 'due'] as const;

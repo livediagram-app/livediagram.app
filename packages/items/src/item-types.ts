@@ -20,7 +20,6 @@ export type ItemFieldId =
   | 'start'
   | 'due'
   | 'checklist'
-  | 'parent'
   | 'votes'
   // A comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, written only by the
   // comment writes.
@@ -90,9 +89,22 @@ export interface ItemTypeDef {
   display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
 }
 
+// Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom
+// id without `f-`, so every card made while Parent was a built-in field keeps its value.
+export const PARENT_FIELD_ID = 'parent';
+export const PARENT_FIELD: CustomFieldDef = {
+  id: PARENT_FIELD_ID,
+  label: 'Parent',
+  kind: 'card',
+  linkType: 'project',
+};
+// Parent's own grouping, as boards, views and saved searches stored it before (legacy-parent.ts reads it as the
+// Parent field): still accepted, never written.
+export const LEGACY_PARENT_GROUPING = 'parent';
+
 // Parent right under Status and Assignee: what a piece of work belongs to is read with who has it.
 // No Start: only a Project, a bar on the Gantt chart, starts by default.
-const WORK: readonly ItemFieldId[] = [
+const WORK: readonly string[] = [
   'title',
   'description',
   'status',
@@ -131,6 +143,7 @@ const BUILT_IN_TYPES = [
     glyph: 'task',
     color: '#71717a',
     fields: WORK,
+    custom: [PARENT_FIELD],
   },
   {
     id: 'note',
@@ -161,7 +174,7 @@ const BUILT_IN_TYPES = [
 // Every built-in type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
 // the tuple, so each type stays addressable by position and its id literal.
 type WithComments<T extends readonly ItemTypeDef[]> = {
-  readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly ItemFieldId[] };
+  readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly string[] };
 };
 export const ITEM_TYPES = BUILT_IN_TYPES.map((t) => ({
   ...t,

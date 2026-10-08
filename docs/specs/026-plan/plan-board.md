@@ -38,10 +38,10 @@ Stored on the element, shared by everyone, undone like any element edit:
   for someone who may edit. It opens a popover under it holding the element menu's **Board** and **Cards** settings,
   each under a heading that opens it, one at a time (Board when it opens; opening one closes the other); it scrolls when taller than the window. A press
   outside or Escape closes it. Telemetry: `Plan` · `Opened` · `BoardSettings`.
-- **Swimlanes**: none, or grouped by assignee, type, priority, parent, status, or **any field** the card types the
-  board shows offer (see [Swimlanes by a field](#swimlanes-by-a-field)). The menu lists only what those types offer:
-  None and Status always, Type when it shows more than one type, Assignee, Priority, Parent and each field when one
-  of its types has it; a grouping already in use stays listed (and pressed) even once its types no longer offer it.
+- **Swimlanes**: none, or grouped by assignee, type, priority, status, or **any field** the card types the board
+  shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). The menu lists only what those
+  types offer: None and Status always, Type when it shows more than one type, Assignee, Priority and each field when
+  one of its types has it; a board stored grouping by `parent` reads as grouping by the Parent field; a grouping already in use stays listed (and pressed) even once its types no longer offer it.
   A Gantt chart's Swimlanes do the same for the card types it draws.
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
   checklist progress). Title always shows.
@@ -74,11 +74,11 @@ Where each is set, so a setting lives with what it changes, never in one central
   one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After**,
   then two ways to take it away. **Remove Column** (a column glyph) takes it off this board only, at once: the
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read
-  as No status, as any card of a state no board names). **Delete Status** (red, a bin) deletes the state: when it
+  as No status, as any card of a state no board names). **Delete Status** (a bin) deletes the state: when it
   holds cards (out of the Trash, on any board) it first opens a popover anchored to it: "Delete {Name}?", "Its N
   cards are in {Name}, on every board that shows it. Where should they go?", and two option cards, one picked:
   **Move to Another Column** (a menu of the board's other columns, the first picked; the default) or **Move to the
-  Trash** ("You can restore them from the Trash."). **Delete Status** in it (red, a bin) moves the cards as picked,
+  Trash** ("You can restore them from the Trash."). **Delete Status** in it (a bin) moves the cards as picked,
   then removes the column, and the state's column from every other board in the document; **Cancel** or Escape
   keeps it. Moving to the Trash moves every card of that state and announces "N cards moved to the Trash"; a card
   whose type leaves out the target column's state stays, as a move does. A state that holds no card is deleted
@@ -94,13 +94,13 @@ Where each is set, so a setting lives with what it changes, never in one central
   below; what a card shows at each size is its type's Display, [Card display](item-types.md#card-display)). Each of
   Swimlanes, Card Types and Card Size opens with a one-line info note (an "i" in a circle) saying what it does.
   New columns come from a column's **+ Add Column After**.
-- **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (at
-  least one stays on; none named is every type). A board shows only cards of those types, and takes only those:
+- **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (none
+  named is every type). The last one can be turned off too: the board then takes no type, shows no cards, and each
+  cell's Add card offers only **Create Card Type** (stored as an empty `addTypes`). A board shows only cards of those types, and takes only those:
   Add Card offers only them, a palette card of another type gets the red refused zone, and a card of another type
   dragged from another board is refused, each saying so ("This board shows Note, Idea and Action cards"). A card it
   hides is never moved, changed or deleted: it keeps its status and shows again the moment its type is turned back
-  on. A board whose chosen types have all since been deleted shows and takes every type again, so Add Card is
-  never empty. The board's count, widgets and quick filter count only the cards it shows. All Cards and Archive boards show
+  on. A board whose chosen types have all since been deleted (not turned off) shows and takes every type again. The board's count, widgets and quick filter count only the cards it shows. All Cards and Archive boards show
   every type unless their types are set. (Stored as `addTypes`; before this rule it limited new cards only, so a
   board that already named types now hides the others, which is what it says.)
   Defaults: Retro, Note and Idea (an action is tracked on a board of its own); Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
@@ -204,8 +204,9 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
 - **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text, Card) on any type in
   the document's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
   text and Link never group (each value is its own row), nor do Description, Checklist, Votes and Title.
-  Assignee, Type, Priority, Project and Status keep their own tiles. A **Card** field gives a row per linked card,
-  named by its title, in the linked cards' number order ("Missing card" for a link whose card is gone), then
+  Assignee, Type, Priority and Status keep their own tiles. A **Card** field (Parent among them) gives a row per
+  linked card, named by its title with the linked card's colour dot when it has a Colour, in the linked cards' number
+  order ("Missing card" for a link whose card is gone), then
   **No {Field}**; a drop into a row sets the link (item-types.md "Card fields").
 - **Its name** is the field's label on the first type in the catalogue that offers it (a custom field id is
   unique within a type; two types sharing an id read as one field).
@@ -279,7 +280,13 @@ In Plan mode:
   (taking the row's field). Arrow keys move between the tiles as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
-- **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** in red, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
+- **Create Card Type**: under the tiles, the menu ends in one full-width, smaller row, **Create Card Type** (the card types icon before it), for
+  someone who may edit while the catalogue has room for another type. It closes the menu and opens the type editor
+  on a new type whose statuses are only this board's columns' (every other status of the document turned off), so
+  its cards fit the board. Saving it adds it to this board's card types when the board takes a chosen few (a board
+  that takes every type already shows it); closing the editor makes nothing. Telemetry: `Plan` · `Added` ·
+  `CardType`, as any new type.
+- **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** last and styled as the rest, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Edit Card Type** (the card's type in the type editor),
@@ -293,28 +300,24 @@ In Plan mode:
   it puts the caret at the end of its **title**; on a phone focus rests on the panel itself, so no keyboard rises.
   The type picker never takes the first focus. Tab moves on through the controls.
   - **A card just made opens at once**: one this person adds with **Add Card**, places from the palette into a
-    column, or makes with **New {Type}** in a card's Child Cards or Linked as sections opens in its panel, its
+    column, or makes with **New {Type}** in a card's Linked as sections opens in its panel, its
     title ("New task") selected on a desktop so typing replaces it. A card made by someone else, brought back by
     undo or redo, duplicated, or made by a template or an agent is not opened. The card stays where it was
     placed.
   - **Look**: a thin band of the card type's colour across the panel's top edge (lifted on the dark chrome as
     the type stripes are), then a slim header with no rule under it, then the title, large (22 px, semibold),
-    a click away from editing. The main column's sections (Description, Checklist, Child Cards, Comments...)
+    a click away from editing. The main column's sections (Description, Checklist, Linked as Parent, Comments...)
     sit under 13 px semibold headings with generous space between them. An empty description is one quiet
     line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
-    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Child Cards** and **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
+    its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
-    it, without its votes, as the card menu's), **Archive** (or **Restore**), **Trash** (to the Trash) and **Edit Card Type** (closing the panel and opening the card's type in the type
-    editor), then, after a separator, **Help** (opening the Cards article), as icon-left rows, then the close button. Someone who
+    it, without its votes, as the card menu's), **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Edit Card Type** (closing the panel and opening the card's type in the type
+    editor), then, after a separator, **Help** (opening the Cards article), then, after another, **Trash** (to the Trash) at the bottom of the list, as icon-left rows, then the close button. Someone who
     may only view gets a ⋯ of Help alone.
-  - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
-  - **Child Cards**: a card that other cards name as their Parent lists them on its first tab, after that tab's
-    fields and before Comments, under **Child Cards** with their count. Each row shows the child's type glyph, key,
-    title and status (its column's name), in key order, and opens that child in the panel. Trashed children are
-    left out; an archived one stays, with an **Archived** chip. A Project with none says **No cards sit under this
-    project yet.**; any other type with none shows no section.
+  - **Parent** is a Card field (item-types.md "Card fields"): its control's open arrow opens the parent, and a
+    Project lists the cards under it in its **Linked as Parent** section, as any Card field's linked card does.
   - **Breadcrumb**: the panel remembers the cards opened from inside it (a Parent's Open, a child row, a crumb).
     Once it holds more than one, the header starts with a breadcrumb of the earlier ones. A crumb opens its card and
     drops the crumbs after it, and opening a card already in the trail goes back to it rather than repeating it.

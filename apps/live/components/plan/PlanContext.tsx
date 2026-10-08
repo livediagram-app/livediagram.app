@@ -33,6 +33,9 @@ export type PlanContextValue = {
   itemTypes: ItemTypesSlice;
   // Opens the type editor on a type, or on a new one (filled from `fromId` when duplicating).
   editType: (typeId: string | 'new', fromId?: string) => void;
+  // Create Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
+  // board once saved (docs/specs/026-plan/plan-board.md "Create Card Type").
+  createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
   status: PlanItemsStatus;
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).

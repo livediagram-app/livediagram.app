@@ -8,6 +8,8 @@ import {
   CUSTOM_FIELD_KINDS,
   FALLBACK_ITEM_TYPE,
   ITEM_TYPES,
+  PARENT_FIELD,
+  PARENT_FIELD_ID,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
@@ -22,6 +24,12 @@ import { HEX_COLOUR, isObj } from './validate';
 export const ITEM_TYPES_MAX = 32;
 export const ITEM_TYPE_FIELDS_MAX = 24;
 export const ITEM_TYPE_CUSTOM_MAX = 12;
+
+// How many custom fields count against ITEM_TYPE_CUSTOM_MAX: Parent never does, as it was a built-in field, so a
+// stored type already at the cap still reads (and saves) once it gains the Parent Card field.
+export function customFieldCount(custom: readonly unknown[]): number {
+  return custom.filter((c) => !isObj(c) || c['id'] !== PARENT_FIELD_ID).length;
+}
 export const ITEM_TYPE_LABEL_MAX = 32;
 export const CUSTOM_FIELD_LABEL_MAX = 32;
 export const CUSTOM_CHOICE_OPTIONS_MAX = 20;
@@ -60,7 +68,6 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'description',
   'status',
   'assignee',
-  'parent',
   'priority',
   'color',
   'labels',
@@ -87,7 +94,8 @@ export function requiredFieldsOf(typeId: string | undefined): readonly string[] 
   return own ? [...REQUIRED_TYPE_FIELDS, ...own] : REQUIRED_TYPE_FIELDS;
 }
 
-export const CUSTOM_FIELD_ID_PATTERN = /^f-[a-z0-9-]{1,30}$/;
+// A custom field's id: `f-` and a slug, or the reserved `parent` (PARENT_FIELD, a Card field).
+export const CUSTOM_FIELD_ID_PATTERN = /^(?:f-[a-z0-9-]{1,30}|parent)$/;
 
 // What is stored: the catalogue whole, with a version for later shapes.
 export interface ItemTypeCatalogue {
@@ -268,7 +276,8 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   const glyph = input['glyph'];
   if (!isPlanGlyphId(glyph)) return `${at}.glyph`;
   const customIn = input['custom'] ?? [];
-  if (!Array.isArray(customIn) || customIn.length > ITEM_TYPE_CUSTOM_MAX) return `${at}.custom`;
+  if (!Array.isArray(customIn) || customFieldCount(customIn) > ITEM_TYPE_CUSTOM_MAX)
+    return `${at}.custom`;
   const custom: CustomFieldDef[] = [];
   for (const [i, c] of customIn.entries()) {
     const field = readCustom(c, `${at}.custom[${i}]`);
@@ -278,6 +287,9 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   }
   const fieldsIn = input['fields'];
   if (!Array.isArray(fieldsIn)) return `${at}.fields`;
+  // Parent was a built-in field: a type stored then, naming it without defining it, gets the Parent Card field.
+  if (fieldsIn.includes(PARENT_FIELD_ID) && !custom.some((f) => f.id === PARENT_FIELD_ID))
+    custom.push(PARENT_FIELD);
   const known = new Set<string>([...BUILT_IN_FIELD_IDS, ...custom.map((f) => f.id)]);
   const fields: string[] = [...REQUIRED_TYPE_FIELDS];
   for (const f of fieldsIn) {

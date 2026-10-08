@@ -877,6 +877,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'This exact combination is never actually sent: declining the welcome tour on its very first card is recorded as the tour offer closing, not as an ended tour.',
   'UI|Ended|TourSkipped':
     'Someone skipped out of the welcome tour after it had already started (not on the very first card).',
+  'UI|Ended|CardTypeTourCompleted':
+    "Someone reached the end of the card type editor's Show Me tour.",
+  'UI|Ended|CardTypeTourSkipped':
+    "Someone left the card type editor's Show Me tour before its end.",
   'UI|Ended|PlanTourCompleted':
     "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PlanTourSkipped':
@@ -996,6 +1000,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
   'UI|Started|Tour':
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
+  'UI|Started|CardTypeTour':
+    'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|PlanTour':
     "Someone clicked past the Plan tour's first card, beginning its walkthrough on an example board.",
   'UI|Toggled|ActivityRevertPreviewOff':

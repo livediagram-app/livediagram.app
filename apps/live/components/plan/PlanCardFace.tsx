@@ -132,11 +132,8 @@ export function PlanCardFace({
   const due = item.fields['due'];
   const start = item.fields['start'];
   const description = item.fields['description'];
-  const parentId = item.fields['parent'];
-  const parent = plan ? linkedCard(plan.items, parentId) : undefined;
   // An item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside the type, never replacing it.
   const ownColour = itemColourOf(item);
-  const parentColour = parent ? itemColourOf(parent) : undefined;
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
@@ -194,17 +191,6 @@ export function PlanCardFace({
         ) : null;
       case 'labels':
         return labels.length > 0 ? <LabelChips key={f} labels={labels} /> : null;
-      case 'parent':
-        return parent ? (
-          <span key={f} className="flex min-w-0 items-center gap-1">
-            {parentColour ? (
-              <ColourDot colour={parentColour} />
-            ) : (
-              <PlanTypeGlyph glyph="project" size={11} />
-            )}
-            <span className="truncate">{itemTitle(parent)}</span>
-          </span>
-        ) : null;
       case 'description':
         return typeof description === 'string' && description.trim() ? (
           <p
@@ -224,9 +210,15 @@ export function PlanCardFace({
           def.kind === 'card' && def.linkType
             ? typeIn(plan?.types ?? ITEM_TYPES, def.linkType)
             : undefined;
+        // A linked card with its own Colour shows it (a Parent project's colour), else its type's glyph.
+        const linked =
+          def.kind === 'card' && plan ? linkedCard(plan.items, item.fields[def.id]) : undefined;
+        const linkedColour = linked ? itemColourOf(linked) : undefined;
         return (
           <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
-            {linkedType ? (
+            {linkedColour ? (
+              <ColourDot colour={linkedColour} />
+            ) : linkedType ? (
               <PlanTypeGlyph
                 glyph={linkedType.glyph}
                 size={11}

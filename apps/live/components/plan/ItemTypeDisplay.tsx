@@ -24,7 +24,7 @@ import {
   cardDisplayFields,
   cardLayoutFields,
   cardSlotFits,
-  defaultCardLayout,
+  typeDefaultCardLayout,
   sameCardLayout,
   typeCardLayout,
   typeOffersCardField,
@@ -187,7 +187,7 @@ export function ItemTypeDisplay({
   const available = [...cardDisplayFields(size), ...customCardFields(type)].filter(
     (f) => typeOffersCardField(type, f) && !placed.includes(f),
   );
-  const isDefault = sameCardLayout(size, layout, defaultCardLayout(type.id, size));
+  const isDefault = sameCardLayout(size, layout, typeDefaultCardLayout(type, size));
   const sample = useMemo(() => sampleCard(type), [type]);
   const palette = planPalette(useCanvasSurface());
   const setLayout = (next: CardLayout) => onChange({ ...display, [size]: next });
@@ -296,7 +296,7 @@ export function ItemTypeDisplay({
             aria-label={`Take ${label} off the card`}
             tabIndex={-1}
             // A touch screen has no hover: there the cross always shows.
-            className={`absolute -right-1 -top-1 z-10 hidden h-3 w-3 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow ring-1 ring-white hover:bg-red-600 dark:bg-slate-200 dark:text-slate-900 dark:ring-slate-900 dark:hover:bg-red-400 ${
+            className={`absolute -right-1 -top-1 z-10 hidden h-3 w-3 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow ring-1 ring-white hover:bg-slate-900 dark:bg-slate-200 dark:text-slate-900 dark:ring-slate-900 dark:hover:bg-white ${
               drag?.moving
                 ? ''
                 : 'group-hover/chip:flex group-focus-visible/chip:flex pointer-coarse:flex'

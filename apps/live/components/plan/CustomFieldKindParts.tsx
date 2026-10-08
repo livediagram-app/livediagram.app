@@ -3,7 +3,7 @@
 // New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the eight
 // kinds as a grid of icon tiles, one radio group, and a preview of the field as the card's panel will show it,
 // named as typed, with a sample value of its kind.
-import type { CustomFieldKind } from '@livediagram/items';
+import type { CustomFieldDef, CustomFieldKind } from '@livediagram/items';
 import { CheckIcon, lucideGlyph } from '@livediagram/ui';
 import { lucideHash, lucideList, lucideLink, lucideType } from '@livediagram/icons/lucide';
 import { CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
@@ -26,6 +26,34 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   choice: <ListIcon />,
   card: <PlanTypeGlyph glyph="ticket" size={16} />,
 };
+
+// What a built-in field holds, as the custom kind closest to it, so every row of the type editor wears the Add
+// Field popover's icons. The Assignee is a person, which no custom kind is (people are assigned there).
+const BUILT_IN_KINDS: Partial<Record<string, CustomFieldKind>> = {
+  title: 'text',
+  description: 'longtext',
+  status: 'choice',
+  priority: 'choice',
+  color: 'choice',
+  labels: 'choice',
+  estimate: 'number',
+  start: 'date',
+  due: 'date',
+  checklist: 'checkbox',
+  comments: 'longtext',
+  votes: 'number',
+};
+
+// A field's icon and the name of what it holds ("Link to Card", "Date", "Person"), for the type editor's rows.
+export function fieldIconOf(
+  id: string,
+  custom: Pick<CustomFieldDef, 'kind'> | undefined,
+): { node: React.ReactNode; name: string } {
+  if (!custom && id === 'assignee')
+    return { node: <PlanTypeGlyph glyph="person" size={16} />, name: 'Person' };
+  const kind = custom?.kind ?? BUILT_IN_KINDS[id] ?? 'text';
+  return { node: CUSTOM_KIND_ICONS[kind], name: CUSTOM_KIND_LABELS[kind] };
+}
 
 export function CustomFieldKindTiles({
   kinds,

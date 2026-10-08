@@ -12,7 +12,7 @@ import {
   type SwimlaneBy,
 } from './board';
 import type { Item } from './item';
-import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 
 // One filter: a grouping (and its field for a lane field) and the lane a card must fall in ('' is the empty lane).
 export interface CardSearchFilter {
@@ -28,7 +28,10 @@ const KEY_MAX = 200;
 export function isCardSearchFilter(v: unknown): v is CardSearchFilter {
   if (typeof v !== 'object' || v === null) return false;
   const f = v as Record<string, unknown>;
-  if (!(SWIMLANE_BY as readonly unknown[]).includes(f['by']) || f['by'] === 'none') return false;
+  // An old Parent filter stays valid (readCardSearchFilter reads it as the Parent field's).
+  const legacy = f['by'] === LEGACY_PARENT_GROUPING;
+  if (!legacy && (!(SWIMLANE_BY as readonly unknown[]).includes(f['by']) || f['by'] === 'none'))
+    return false;
   if (
     f['field'] !== undefined &&
     (typeof f['field'] !== 'string' || !f['field'] || f['field'].length > 64)
@@ -54,7 +57,6 @@ const GROUPING_LABELS: Partial<Record<SwimlaneBy, string>> = {
   status: 'State',
   assignee: 'Assignee',
   priority: 'Priority',
-  parent: 'Parent',
 };
 
 const sameField = (a: { by: SwimlaneBy; field?: string | undefined }, b: typeof a) =>

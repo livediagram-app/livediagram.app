@@ -1630,10 +1630,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
-        "const": "parent",
-        "type": "string"
-      },
-      {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]
@@ -10032,7 +10028,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "assignee",
       "type",
       "priority",
-      "parent",
       "status",
       "field"
     ],

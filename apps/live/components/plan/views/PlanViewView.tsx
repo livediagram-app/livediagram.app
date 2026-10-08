@@ -5,7 +5,13 @@
 // visualisation can be maximised to fill the screen for this person alone (plan-views.md "Maximised view").
 import { useMemo, useState } from 'react';
 import { PIE_PALETTE, type PlanViewRef, type ShapeElement } from '@livediagram/document';
-import { planViewMetric, viewShownTypes, type Item, type PlanViewId } from '@livediagram/items';
+import {
+  planViewMetric,
+  readPlanViewSettings,
+  viewShownTypes,
+  type Item,
+  type PlanViewId,
+} from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan, type PlanContextValue } from '../PlanContext';
 import { planOwnColours, planPalette, type PlanPalette } from '../plan-palette';
@@ -68,6 +74,12 @@ export function PlanViewView({
     if (shown.size === types.length && types.every((t) => shown.has(t.id))) return allItems;
     return new Map([...allItems].filter(([, it]) => shown.has(it.type)));
   }, [view, allItems, settingsTypes, types]);
+  // A view stored grouping or filtering by the old Parent grouping reads it as the Parent field (legacy-parent).
+  const stored = element.planView;
+  const settings = useMemo(
+    () => (stored ? readPlanViewSettings(stored) : { view }),
+    [stored, view],
+  );
   const props: PlanViewProps = {
     plan,
     items: shownItems,
@@ -78,7 +90,7 @@ export function PlanViewView({
     width: maximisedSize?.width ?? element.width,
     height: maximisedSize?.height ?? element.height,
     elementId: element.id,
-    settings: element.planView ?? { view },
+    settings,
   };
   const widget = planViewMetric(view);
   // Maximised, for this person only; a metric is too small to need it.

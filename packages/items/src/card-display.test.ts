@@ -10,6 +10,7 @@ import {
   sameCardLayout,
   typeCardDisplay,
   typeOffersCardField,
+  typeDefaultCardLayout,
 } from './card-display';
 import { ITEM_TYPES } from './item-types';
 import { validateItemTypeCatalogue } from './type-catalogue';
@@ -125,5 +126,59 @@ describe('custom fields on the card', () => {
       compact: { trail: ['f-person'] },
     });
     expect(readCardDisplay({ compact: { trail: ['f-Bad!'] } }, 'pet')).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Card display": a card shows only the fields its type has.
+describe('a layout of the fields a type has', () => {
+  const fresh = {
+    id: 'kudos',
+    label: 'Kudos',
+    newTitle: 'New kudos',
+    glyph: 'star',
+    color: '#000000',
+    fields: ['title', 'status', 'description', 'assignee'],
+  } as const;
+
+  it('gives a new type’s default only its own fields', () => {
+    for (const size of ['compact', 'detailed'] as const) {
+      const shown = cardLayoutFields(size, typeCardLayout(fresh, size));
+      expect(shown.every((f) => ['key', 'type', 'description', 'assignee'].includes(f))).toBe(true);
+      expect(shown).toContain('assignee');
+    }
+    expect(typeDefaultCardLayout(fresh, 'detailed')).toEqual(typeCardLayout(fresh, 'detailed'));
+  });
+
+  it('drops a placed field once the type no longer has it', () => {
+    const placed = {
+      ...fresh,
+      display: { compact: { row: ['priority', 'due'], trail: ['assignee'] } },
+    };
+    expect(typeCardLayout(placed as never, 'compact')).toEqual({ trail: ['assignee'] });
+  });
+});
+
+describe('a new type’s Minimal card', () => {
+  const own = {
+    id: 'kudos',
+    label: 'Kudos',
+    newTitle: 'New kudos',
+    glyph: 'star',
+    color: '#000000',
+    fields: ['title', 'status', 'assignee'],
+  } as const;
+
+  it('puts its Number before the title and its Assignee after it', () => {
+    expect(typeCardLayout(own, 'minimal')).toEqual({ lead: ['key'], trail: ['assignee'] });
+  });
+
+  it('keeps only the Number when the type has no Assignee', () => {
+    expect(typeCardLayout({ ...own, fields: ['title', 'status'] }, 'minimal')).toEqual({
+      lead: ['key'],
+    });
+  });
+
+  it('leaves a built-in type’s Minimal card bare', () => {
+    expect(typeCardLayout({ ...own, id: 'task' }, 'minimal')).toEqual({});
   });
 });

@@ -177,7 +177,6 @@ describe('the item panel’s Status', () => {
     item,
     type: task,
     statuses: STATUSES,
-    projects: [],
     people: [],
     canEdit: true,
     labels: [],

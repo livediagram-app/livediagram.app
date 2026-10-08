@@ -5,7 +5,6 @@
 import { useMemo } from 'react';
 import {
   ITEM_TYPES_MAX,
-  PARENT_FIELD,
   resolvedDefaultStatus,
   duplicateItemType,
   isArchived,
@@ -17,6 +16,7 @@ import {
   typeIn,
 } from '@livediagram/items';
 import { duplicateItem } from './duplicate-item';
+import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
 import { toggleFlag } from './item-flag';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
@@ -31,10 +31,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     () => [...ctx.statusNames].map(([status, name]) => ({ status, name })),
     [ctx.statusNames],
   );
-  const projects = useMemo(
-    () => [...ctx.items.values()].filter((i) => i.type === 'project').sort((a, b) => a.key - b.key),
-    [ctx.items],
-  );
   const item = plan.openItemId ? ctx.items.get(plan.openItemId) : undefined;
   // The open card's trail and children (docs/specs/026-plan/plan-board.md "Open an item"): one pass over the
   // items, only while a card is open, and only again when the items or the open card change.
@@ -43,17 +39,12 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     () => (openId ? liveTrail(plan.itemTrail, openId, ctx.items) : []),
     [plan.itemTrail, openId, ctx.items],
   );
-  // The cards linking to the open one (docs/specs/026-plan/item-types.md "Card fields"): its Parent children (a
-  // Project's Child Cards) and a group per Card field that links to its type, from one helper.
-  const linked = useMemo(() => {
+  // The cards linking to the open one (docs/specs/026-plan/item-types.md "Card fields"): a group per Card field
+  // that links to its type (a Project's Linked as Parent among them), from one helper.
+  const linkedGroups = useMemo(() => {
     const open = openId ? ctx.items.get(openId) : undefined;
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
-  const childCards = useMemo(
-    () => linked.find((g) => g.fieldId === PARENT_FIELD)?.cards ?? [],
-    [linked],
-  );
-  const linkedGroups = useMemo(() => linked.filter((g) => g.fieldId !== PARENT_FIELD), [linked]);
   // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
   if (plan.editingTypeId && ctx.canEdit) {
     const editing =
@@ -67,10 +58,17 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       const from = plan.typeTemplateId
         ? ctx.types.find((t) => t.id === plan.typeTemplateId)
         : undefined;
-      const template = !editing && from ? duplicateItemType(from, ctx.types) : undefined;
+      // Create Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
+      const forBoard = !editing && !from ? plan.typeForBoard : null;
+      const template =
+        !editing && from
+          ? duplicateItemType(from, ctx.types)
+          : forBoard
+            ? newTypeForBoard(forBoard, ctx.statusNames.keys())
+            : undefined;
       return (
         <ItemTypeEditor
-          key={`${plan.editingTypeId}:${plan.typeTemplateId ?? ''}`}
+          key={`${plan.editingTypeId}:${plan.typeTemplateId ?? ''}:${forBoard?.boardId ?? ''}`}
           type={editing ?? null}
           {...(template ? { template } : {})}
           types={ctx.types}
@@ -78,7 +76,9 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           canDelete={ctx.types.length > 1}
           onSave={(next) => {
             ctx.itemTypes.saveType(next);
-            track('Plan', editing ? 'Changed' : template ? 'Duplicated' : 'Added', 'CardType');
+            // Made from a board's Add a Card menu: that board takes it.
+            if (forBoard) plan.addTypeToBoard(forBoard.boardId, next.id);
+            track('Plan', editing ? 'Changed' : from ? 'Duplicated' : 'Added', 'CardType');
             plan.closeTypeEditor();
           }}
           onDelete={() => {
@@ -105,7 +105,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         item={item}
         types={ctx.types}
         statuses={statuses}
-        projects={projects}
         people={ctx.people}
         labels={allLabels}
         canEdit={ctx.canEdit}
@@ -120,7 +119,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onOpenItem={(id, via) => ctx.openItem(id, via)}
         fresh={plan.freshItemId === item.id}
         trail={trail}
-        childCards={childCards}
         linkedGroups={linkedGroups}
         onAddLinked={(group, typeId) => {
           // A new card of that type, already linked here, in its type's Default State (its own, else its built-in

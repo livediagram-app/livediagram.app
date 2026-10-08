@@ -50,11 +50,17 @@ describe('card search', () => {
     const child = item({ title: 'Write', parent: parent.id });
     const all = [parent, child];
     const tasks = searchCards(all, [{ by: 'type', key: 't:task' }]);
-    const values = searchValues(tasks, { by: 'parent' }, ITEM_TYPES, undefined, all);
+    const values = searchValues(
+      tasks,
+      { by: 'field', field: 'parent' },
+      ITEM_TYPES,
+      undefined,
+      all,
+    );
     expect(values.map((v) => [v.label, v.count])).toEqual([['Launch', 1]]);
     const picked = [
       { by: 'type', key: 't:task' },
-      { by: 'parent', key: values[0]!.key },
+      { by: 'field', field: 'parent', key: values[0]!.key },
     ] as const;
     expect(searchCards(all, picked).map((c) => c.fields['title'])).toEqual(['Write']);
   });

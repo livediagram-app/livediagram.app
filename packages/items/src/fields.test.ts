@@ -44,7 +44,6 @@ describe('validateFields', () => {
       [{ due: 'tomorrow' }, 'field_value_invalid'],
       [{ checklist: [{ text: 'a' }] }, 'field_value_invalid'],
       [{ checklist: 'a' }, 'field_value_invalid'],
-      [{ parent: 'x' }, 'field_value_invalid'],
       [{ votes: {} }, 'votes_read_only'],
       [{ 'bad key': 1 }, 'field_key_invalid'],
       [{ custom: { nested: 1 } }, 'field_value_invalid'],

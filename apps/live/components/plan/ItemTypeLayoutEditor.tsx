@@ -8,12 +8,14 @@
 // group adds a field into itself. Edits a draft; the type editor saves it.
 import { useState } from 'react';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { HANDLE_TOUCH, useHandleReorder } from '@/components/primitives/useHandleReorder';
-import { FieldMenu, GripIcon } from './ItemTypeFieldMenu';
+import { useHandleReorder } from '@/components/primitives/useHandleReorder';
+import { FieldRow } from './ItemTypeFieldRow';
+import { fieldIconOf } from './CustomFieldKindParts';
 import {
   BUILT_IN_FIELD_IDS,
   DETAILS_LABEL_DEFAULT,
   ITEM_TYPE_CUSTOM_MAX,
+  customFieldCount,
   ITEM_TYPE_FIELDS_MAX,
   ITEM_TYPE_TAB_LABEL_MAX,
   ITEM_TYPE_TABS_MAX,
@@ -22,18 +24,9 @@ import {
   newCustomFieldId,
   type ItemFieldId,
 } from '@livediagram/items';
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CloseIcon,
-  LockIcon,
-  PencilIcon,
-  PlusIcon,
-  Tooltip,
-} from '@livediagram/ui';
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@livediagram/ui';
 import {
   BUILT_IN_FIELD_LABELS,
-  CUSTOM_KIND_LABELS,
   CustomFieldForm,
   DASHED_ADD_BUTTON,
   ICON_BUTTON,
@@ -112,7 +105,7 @@ export function ItemTypeLayoutEditor({
                 key={id}
                 id={id}
                 label={labelOf(id)}
-                kind={c ? CUSTOM_KIND_LABELS[c.kind] : null}
+                icon={fieldIconOf(id, c)}
                 removable={!kept.includes(id) && !isRequired(id)}
                 editing={editing === id}
                 onEdit={c ? () => setEditing(editing === id ? null : id) : undefined}
@@ -175,7 +168,7 @@ export function ItemTypeLayoutEditor({
         >
           <NewFieldForm
             missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
-            canAddCustom={draft.custom.length < ITEM_TYPE_CUSTOM_MAX}
+            canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
             onAddBuiltIn={(id) => {
               onChange(addField(draft, id, group));
               setAdding(null);
@@ -374,118 +367,4 @@ function ReorderableRows({
   children: (drag: ReturnType<typeof useHandleReorder>) => React.ReactNode;
 }) {
   return <>{children(useHandleReorder(ids, onPlace))}</>;
-}
-
-// One field: a drag handle (a field that moves), its name with a lock when the type always keeps it, its kind,
-// Edit (a custom field) and a ⋯ menu: Move Up, Move Down, Move to each other group and Remove. Title and Status
-// stay put and never come off; a field the type always keeps (a Project's Start and Due) moves but never comes
-// off. The handle is for a pointer or a finger; the menu's Move Up and Move Down are the keyboard's way.
-// Rows alternate white and a light grey (odd and even in their group), so a long list reads row by row.
-function FieldRow({
-  id,
-  label,
-  kind,
-  removable,
-  editing,
-  onEdit,
-  moveTargets,
-  onMoveTo,
-  handle,
-  dragging,
-  style,
-  canUp,
-  canDown,
-  onMove,
-  onRemove,
-  children,
-}: {
-  id: string;
-  label: string;
-  kind: string | null;
-  // False for a field that never comes off (Title, Status, a type's kept fields): no Remove, and a lock.
-  removable: boolean;
-  editing: boolean;
-  onEdit?: () => void;
-  moveTargets: readonly { id: GroupId; label: string }[];
-  onMoveTo: (to: GroupId) => void;
-  // The handle's pointer handlers, for a field that can be dragged within its group.
-  handle?: ReturnType<ReturnType<typeof useHandleReorder>['handleProps']> | undefined;
-  dragging: boolean;
-  style?: React.CSSProperties | undefined;
-  canUp: boolean;
-  canDown: boolean;
-  onMove?: ((by: -1 | 1) => void) | undefined;
-  onRemove: () => void;
-  children?: React.ReactNode;
-}) {
-  const hasMenu = removable || moveTargets.length > 0 || (onMove && (canUp || canDown));
-  return (
-    <li
-      data-reorder-id={id}
-      style={style}
-      className={`rounded-lg border px-1.5 py-1 odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800 ${
-        dragging
-          ? 'border-brand-400 shadow-md dark:border-brand-500'
-          : 'border-slate-200 shadow-sm dark:border-slate-700'
-      }`}
-    >
-      <div className="flex min-h-8 items-center gap-1">
-        {handle ? (
-          <span
-            aria-hidden
-            {...handle}
-            className={`flex h-7 w-5 shrink-0 cursor-grab items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 active:cursor-grabbing dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300 ${HANDLE_TOUCH}`}
-          >
-            <GripIcon />
-          </span>
-        ) : (
-          <span aria-hidden className="h-7 w-5 shrink-0" />
-        )}
-        <span className="flex min-w-0 flex-1 items-center gap-1.5 text-[13px] font-medium text-slate-800 dark:text-slate-100">
-          <span className="truncate">{label}</span>
-          {!removable ? (
-            <Tooltip label={`${label} is always on this type`}>
-              <span
-                tabIndex={0}
-                aria-label={`${label} is always on this type`}
-                className="flex shrink-0 text-slate-400 dark:text-slate-400"
-              >
-                <LockIcon size={11} />
-              </span>
-            </Tooltip>
-          ) : null}
-          {kind ? (
-            <span className="shrink-0 text-[11px] font-normal text-slate-500 dark:text-slate-400">
-              {kind}
-            </span>
-          ) : null}
-        </span>
-        {onEdit ? (
-          <button
-            type="button"
-            className={`${ICON_BUTTON} ${editing ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300' : ''}`}
-            aria-label={editing ? `Done editing ${label}` : `Edit ${label}`}
-            aria-expanded={editing}
-            onClick={onEdit}
-          >
-            <PencilIcon size={13} />
-          </button>
-        ) : null}
-        {hasMenu ? (
-          <FieldMenu
-            label={label}
-            moveTargets={moveTargets}
-            onMoveTo={onMoveTo}
-            canUp={canUp}
-            canDown={canDown}
-            onMove={onMove}
-            onRemove={removable ? onRemove : undefined}
-          />
-        ) : (
-          <span aria-hidden className="h-7 w-7 shrink-0" />
-        )}
-      </div>
-      {children}
-    </li>
-  );
 }

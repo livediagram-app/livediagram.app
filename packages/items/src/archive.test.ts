@@ -187,3 +187,19 @@ describe('flags', () => {
     expect(isFlagged(base)).toBe(false);
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Card types a board shows": its last type turned off, a board takes none.
+describe('a board taking no card types', () => {
+  it('shows and takes none, and reads back as none', async () => {
+    const { boardAddTypes, boardTakesType, normaliseBoardSetup } = await import('./board');
+    const types = [{ id: 'project' }, { id: 'task' }];
+    expect(boardAddTypes({ addTypes: [] }, types)).toEqual([]);
+    expect(boardTakesType({ addTypes: [] }, types, 'task')).toBe(false);
+    const read = normaliseBoardSetup({
+      title: 'B',
+      columns: [{ id: 'c', status: 'todo' }],
+      addTypes: [],
+    });
+    expect(read?.addTypes).toEqual([]);
+  });
+});

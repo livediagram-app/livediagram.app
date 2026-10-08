@@ -30,6 +30,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { CardTypeTourStage, ShowMeButton, useCardTypeTour } from '@/components/tour/CardTypeTour';
 import { SheetRow } from './PlanModal';
 import { ColourSwatches } from './ColourSwatches';
 import { ItemTypeLayoutEditor } from './ItemTypeLayoutEditor';
@@ -103,6 +104,8 @@ export function ItemTypeEditor({
   // The Delete Type button while its confirmation is open.
   const [confirmingAt, setConfirmingAt] = useState<HTMLElement | null>(null);
   const [tab, setTab] = useState<TypeEditorTab>('general');
+  // Show Me: the tour of making a card type, run on this editor (docs/specs/026-plan/item-types.md).
+  const tour = useCardTypeTour(setTab);
   const others = types.filter((t) => t.id !== type?.id);
 
   const removedSome = start.fields.some((f) => !layout.fields.includes(f));
@@ -182,6 +185,8 @@ export function ItemTypeEditor({
       titleId={titleId}
       size="3xl"
       phoneSheet
+      // While Show Me runs, Escape is the tour's, never the editor's.
+      closeOnEscape={!tour.active}
       className="max-h-[min(46rem,calc(100dvh-2rem))] overflow-hidden"
     >
       <div className="flex items-center gap-2 px-5 pt-5 pb-2">
@@ -195,7 +200,8 @@ export function ItemTypeEditor({
           {/* Named for the type as saved, so the title stays put while its Name is edited. */}
           {type ? `Edit ${type.label} Card Type` : 'New Card Type'}
         </h2>
-        {/* Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
+        {/* Show Me, Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
+        <ShowMeButton tour={tour} />
         <HelpArticleLink article="planCardTypes" variant="labelled" />
         <DialogCloseButton compact onClick={onClose} />
       </div>
@@ -206,63 +212,73 @@ export function ItemTypeEditor({
         panels={{
           general: (
             <>
-              <SheetRow label="Name" htmlFor={`${titleId}-name`}>
-                <TextInput
-                  id={`${titleId}-name`}
-                  compact
-                  value={label}
-                  maxLength={ITEM_TYPE_LABEL_MAX}
-                  placeholder="Customer call"
-                  autoFocus={!type}
-                  onChange={(e) => setLabel(e.target.value)}
-                />
-              </SheetRow>
-              <SheetRow label="Colour">
-                <ColourSwatches allowCustom value={color} onChange={(c) => c && setColor(c)} />
-              </SheetRow>
-              <SheetRow label="Glyph">
-                <GlyphPicker value={glyph} colour={color} onChange={setGlyph} />
-              </SheetRow>
+              <div data-tour-id="card-type-general">
+                <SheetRow label="Name" htmlFor={`${titleId}-name`}>
+                  <TextInput
+                    id={`${titleId}-name`}
+                    compact
+                    // A card type's name is short (32 characters at most): the field is sized to it.
+                    className="max-w-xs"
+                    value={label}
+                    maxLength={ITEM_TYPE_LABEL_MAX}
+                    placeholder="Customer call"
+                    autoFocus={!type}
+                    onChange={(e) => setLabel(e.target.value)}
+                  />
+                </SheetRow>
+                <SheetRow label="Colour">
+                  <ColourSwatches allowCustom value={color} onChange={(c) => c && setColor(c)} />
+                </SheetRow>
+                <SheetRow label="Glyph">
+                  <GlyphPicker value={glyph} colour={color} onChange={setGlyph} />
+                </SheetRow>
+              </div>
             </>
           ),
           fields: (
             <>
-              <SheetRow label="Fields and Tabs">
-                <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
-                  Laid out as the card's panel shows them. Add, move or rename to change it.
-                </p>
-                <ItemTypeLayoutEditor
-                  typeId={type?.id}
-                  draft={layout}
-                  onChange={setLayout}
-                  detailsLabel={detailsLabel}
-                  onDetailsLabel={setDetailsLabel}
-                  removedSome={removedSome}
-                />
-              </SheetRow>
+              <div data-tour-id="card-type-fields">
+                <SheetRow label="Fields and Tabs">
+                  <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
+                    Laid out as the card's panel shows them. Add, move or rename to change it.
+                  </p>
+                  <ItemTypeLayoutEditor
+                    typeId={type?.id}
+                    draft={layout}
+                    onChange={setLayout}
+                    detailsLabel={detailsLabel}
+                    onDetailsLabel={setDetailsLabel}
+                    removedSome={removedSome}
+                  />
+                </SheetRow>
+              </div>
             </>
           ),
           display: (
-            <SheetRow label="Display">
-              <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
-            </SheetRow>
+            <div data-tour-id="card-type-display">
+              <SheetRow label="Display">
+                <ItemTypeDisplay type={draft} display={display} onChange={setDisplay} />
+              </SheetRow>
+            </div>
           ),
           statuses: (
             <>
-              <SheetRow label="States">
-                <ItemTypeStatuses
-                  statuses={statuses}
-                  excluded={excluded}
-                  onChange={(next) => {
-                    setExcluded(next);
-                    // Turning the Default State off clears it.
-                    if (next.includes(defaultStatus)) setDefaultStatus('');
-                  }}
-                  defaultStatus={defaultStatus}
-                  onDefaultStatus={setDefaultStatus}
-                  {...(type ? { typeId: type.id } : {})}
-                />
-              </SheetRow>
+              <div data-tour-id="card-type-states">
+                <SheetRow label="States">
+                  <ItemTypeStatuses
+                    statuses={statuses}
+                    excluded={excluded}
+                    onChange={(next) => {
+                      setExcluded(next);
+                      // Turning the Default State off clears it.
+                      if (next.includes(defaultStatus)) setDefaultStatus('');
+                    }}
+                    defaultStatus={defaultStatus}
+                    onDefaultStatus={setDefaultStatus}
+                    {...(type ? { typeId: type.id } : {})}
+                  />
+                </SheetRow>
+              </div>
             </>
           ),
         }}
@@ -273,7 +289,7 @@ export function ItemTypeEditor({
             <Button
               variant="secondary"
               // Duplicate Type, when there, sits beside it and ends the left group instead.
-              className={`text-rose-600 dark:text-rose-400 ${onDuplicate ? '' : 'mr-auto'}`}
+              className={onDuplicate ? undefined : 'mr-auto'}
               aria-haspopup="dialog"
               aria-expanded={confirmingAt !== null}
               onClick={(e) => setConfirmingAt(e.currentTarget)}
@@ -300,6 +316,7 @@ export function ItemTypeEditor({
           </Button>
           <Button
             variant="primary"
+            data-tour-id="card-type-save"
             disabled={!!problem}
             onClick={() => check.ok && onSave(check.catalogue.types[0]!)}
           >
@@ -308,6 +325,7 @@ export function ItemTypeEditor({
           </Button>
         </>
       </DialogFooter>
+      <CardTypeTourStage tour={tour} />
       {confirmingAt && type ? (
         <ConfirmPopover
           anchor={confirmingAt}
