@@ -54,6 +54,7 @@ import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { isPanThrough } from '@/hooks/canvas/pan-through';
 
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
@@ -392,6 +393,8 @@ function BoxedElementViewImpl({
       // z-fight (flicker) while the camera orbits.
       data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
       onPointerDown={(e) => {
+        // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
+        if (isPanThrough(e)) return;
         longPress.onPointerDown(e);
         handleShapeDown(e);
       }}

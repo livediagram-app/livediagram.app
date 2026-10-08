@@ -54,7 +54,9 @@ export function usePortalMenuPlacement(
   }, [pos, node]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    // A pointerdown, in the capture phase: the canvas cancels its own pointerdown (which stops the browser sending
+    // mousedown at all) and a touch sends none, so either would leave the menu open.
+    const handler = (e: PointerEvent) => {
       if (!node) return;
       // A MenuFlyoutSection portals its panel outside this menu but marks it
       // data-menu-flyout, so clicks inside the flyout count as inside the menu.
@@ -70,8 +72,8 @@ export function usePortalMenuPlacement(
         onClose();
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('pointerdown', handler, true);
+    return () => document.removeEventListener('pointerdown', handler, true);
   }, [onClose, anchor, node]);
 
   return pos ? { left: pos.left + adjust.x, top: pos.top + adjust.y } : null;

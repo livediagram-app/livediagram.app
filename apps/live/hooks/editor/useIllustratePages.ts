@@ -24,6 +24,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
@@ -66,20 +67,6 @@ export type IllustratePagesView = {
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: IllustratePageEdits;
 };
-
-// The Toolbar layout's strip lies over the canvas's top edge; the page centres below it.
-const TOP_STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
-
-/** How far a top strip laid over the canvas reaches down into it, in screen px. */
-function topStripInset(canvas: HTMLElement): number {
-  const strip = document.querySelector<HTMLElement>(TOP_STRIP_SELECTOR);
-  // Stood aside (a phone's page toolbar in its place): its room is the page's.
-  if (!strip || getComputedStyle(strip).visibility === 'hidden') return 0;
-  const c = canvas.getBoundingClientRect();
-  const s = strip.getBoundingClientRect();
-  const overlaps = s.bottom > c.top && s.top < c.top + c.height / 2;
-  return overlaps ? s.bottom - c.top : 0;
-}
 
 export function useIllustratePages(deps: {
   activeTab: Tab;

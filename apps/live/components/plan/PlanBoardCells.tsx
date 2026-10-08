@@ -3,6 +3,7 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { useLongPress } from '@/hooks/ui/useLongPress';
 import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
 import { ITEM_TYPES, itemAccessibleName, type Item, type LaneHead } from '@livediagram/items';
@@ -107,6 +108,7 @@ export function PlanBoardCard({
   onOpen,
   onKey,
   onMenu,
+  onLongPress,
 }: {
   item: Item;
   palette: PlanPalette;
@@ -124,8 +126,11 @@ export function PlanBoardCard({
   onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
   // A right-click (or the context-menu key) on the card, at a screen point.
   onMenu: (item: Item, at: { x: number; y: number }) => void;
+  // A finger held on the card (touch has no right-click): its menu, at the finger. Absent, a hold does nothing.
+  onLongPress?: (item: Item, at: { x: number; y: number }) => void;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
+  const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
   return (
     <>
       {placeholderBefore !== undefined ? (
@@ -136,13 +141,17 @@ export function PlanBoardCard({
         tabIndex={0}
         data-plan-card={item.id}
         aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item, types)}
-        className="rounded-lg outline-none transition-opacity focus-visible:ring-2"
+        // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls).
+        className="touch-none rounded-lg outline-none transition-opacity focus-visible:ring-2"
         style={{
           opacity: lifted ? 0.35 : 1,
           cursor: interactive ? 'grab' : undefined,
           ['--tw-ring-color' as string]: palette.focus,
         }}
-        onPointerDown={(e) => onPress(item.id, e)}
+        onPointerDown={(e) => {
+          if (onLongPress && !faceDown) hold.onPointerDown(e);
+          onPress(item.id, e);
+        }}
         onDoubleClick={(e) => {
           e.stopPropagation();
           onOpen();

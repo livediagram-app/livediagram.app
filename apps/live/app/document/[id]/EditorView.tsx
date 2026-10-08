@@ -285,7 +285,8 @@ export function EditorView() {
     // Plan offers its boards in the middle instead (docs/specs/026-plan/plan-mode.md "Starting a board").
     ctx.editorMode.mode !== 'plan' &&
     activeTab.elements.length === 0;
-  // A Plan tab with no board: the board types, in the middle of the canvas.
+  // An empty Plan tab: the board types, in the middle of the canvas. Anything already drawn (a board, a shape, a
+  // view) hides it; the palette's Boards still add one.
   const showPlanBoardPicker =
     hydrated &&
     !zenMode &&
@@ -293,7 +294,7 @@ export function EditorView() {
     !isReadOnly &&
     !templateGridOpen &&
     ctx.editorMode.mode === 'plan' &&
-    !activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'plan-board');
+    activeTab.elements.length === 0;
   // The photo draft awaiting a decision, and the session-local view state
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);

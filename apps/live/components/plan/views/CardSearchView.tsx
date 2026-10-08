@@ -9,7 +9,6 @@ import { useMemo } from 'react';
 import {
   CARD_SEARCH_FILTERS_MAX,
   itemAssignee,
-  itemStatus,
   itemTitle,
   searchCards,
   searchFields,
@@ -18,6 +17,7 @@ import {
   typeIn,
   type CardSearchFilter,
   type SwimlaneBy,
+  namedStatus,
 } from '@livediagram/items';
 import { CloseIcon } from '@livediagram/ui';
 import { AddFilterPicker } from '../AddFilterPicker';
@@ -147,7 +147,7 @@ export function CardSearchView({
           >
             {matching.map((card) => {
               const type = typeIn(types ?? [], card.type);
-              const status = itemStatus(card);
+              const status = namedStatus(card, statusNames);
               const assignee = itemAssignee(card);
               return (
                 <li key={card.id} style={{ borderColor: palette.border }}>
@@ -169,7 +169,7 @@ export function CardSearchView({
                       {itemTitle(card)}
                     </span>
                     <span className="shrink-0 text-[11px]" style={{ color: palette.muted }}>
-                      {status ? (statusNames.get(status) ?? status) : 'No status'}
+                      {status ? statusNames.get(status) : 'No status'}
                     </span>
                     {assignee ? <PersonDisc person={assignee} /> : null}
                   </button>

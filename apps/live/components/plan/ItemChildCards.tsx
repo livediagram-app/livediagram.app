@@ -8,11 +8,11 @@ import { useId, useState } from 'react';
 import {
   isArchived,
   itemAssignee,
-  itemStatus,
   itemTitle,
   typeIn,
   type Item,
   type ItemTypeDef,
+  namedStatus,
 } from '@livediagram/items';
 import { Button, ChevronRightIcon, PlusIcon, Select } from '@livediagram/ui';
 import type { LinkedGroup } from '@livediagram/items';
@@ -91,12 +91,12 @@ export function FilteredCards({
   const [typeId, setTypeId] = useState(ALL);
   const [status, setStatus] = useState(ALL);
   const typeIds = [...new Set(cards.map((c) => c.type))];
-  const statuses = [...new Set(cards.map((c) => itemStatus(c) ?? NO_STATUS))];
+  const statuses = [...new Set(cards.map((c) => namedStatus(c, statusNames) ?? NO_STATUS))];
   const filterable = typeIds.length > 1 || statuses.length > 1;
   const shown = cards.filter(
     (c) =>
       (typeId === ALL || c.type === typeId) &&
-      (status === ALL || (itemStatus(c) ?? NO_STATUS) === status),
+      (status === ALL || (namedStatus(c, statusNames) ?? NO_STATUS) === status),
   );
   const filtering = typeId !== ALL || status !== ALL;
   const statusName = (s: string) => (s === NO_STATUS ? 'No status' : (statusNames.get(s) ?? s));
@@ -187,8 +187,9 @@ function ChildRow({
   onOpen: (itemId: string) => void;
 }) {
   const type = typeIn(types, child.type);
-  const status = itemStatus(child);
-  const statusName = status ? (statusNames.get(status) ?? status) : 'No status';
+  // A state no board names reads as No status (namedStatus).
+  const status = namedStatus(child, statusNames);
+  const statusName = status ? statusNames.get(status) : 'No status';
   const assignee = itemAssignee(child);
   const title = itemTitle(child);
   return (

@@ -1,9 +1,10 @@
 'use client';
 
 // The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"): General, Fields, States and Display, one
-// panel showing at a time. A tab holding what stops Save carries a red dot. Arrow keys move between tabs, Home and
+// panel showing at a time, the underline sliding to the chosen tab. A tab holding what stops Save carries a red dot. Arrow keys move between tabs, Home and
 // End go to the ends, as a tablist does.
-import { useId, type KeyboardEvent, type ReactNode } from 'react';
+import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { SlidingTabUnderline } from '@/components/primitives/SlidingTabUnderline';
 
 export const TYPE_EDITOR_TABS = ['general', 'fields', 'statuses', 'display'] as const;
 export type TypeEditorTab = (typeof TYPE_EDITOR_TABS)[number];
@@ -28,6 +29,7 @@ export function ItemTypeEditorTabs({
   panels: Record<TypeEditorTab, ReactNode>;
 }) {
   const base = useId();
+  const listRef = useRef<HTMLDivElement>(null);
   const tabId = (t: TypeEditorTab) => `${base}-tab-${t}`;
   const panelId = (t: TypeEditorTab) => `${base}-panel-${t}`;
   const onKey = (e: KeyboardEvent) => {
@@ -52,9 +54,10 @@ export function ItemTypeEditorTabs({
   return (
     <>
       <div
+        ref={listRef}
         role="tablist"
         aria-label="Card type settings"
-        className="flex gap-1 border-b border-slate-100 px-5 dark:border-slate-800"
+        className="relative flex gap-1 border-b border-slate-100 px-5 dark:border-slate-800"
         onKeyDown={onKey}
       >
         {TYPE_EDITOR_TABS.map((t) => {
@@ -69,10 +72,10 @@ export function ItemTypeEditorTabs({
               aria-controls={panelId(t)}
               tabIndex={on ? 0 : -1}
               onClick={() => onTab(t)}
-              className={`relative -mb-px flex cursor-pointer items-center gap-1.5 border-b-2 px-3 py-2.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${
+              className={`relative flex cursor-pointer items-center gap-1.5 px-3 py-2.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${
                 on
-                  ? 'border-brand-500 text-slate-900 dark:text-slate-50'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                  ? 'text-slate-900 dark:text-slate-50'
+                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
               {TYPE_EDITOR_TAB_LABELS[t]}
@@ -86,6 +89,7 @@ export function ItemTypeEditorTabs({
             </button>
           );
         })}
+        <SlidingTabUnderline list={listRef} selected={tab} />
       </div>
       {TYPE_EDITOR_TABS.map((t) => (
         <div

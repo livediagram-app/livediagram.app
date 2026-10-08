@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
@@ -2025,6 +2026,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     planNeeded,
     itemTypes.types.map((t) => t.id),
   );
+  // One name, one state: duplicate states merge into the first. See useMergeDuplicateStatuses.
+  useMergeDuplicateStatuses({
+    tabs,
+    enabled: canEdit && planNeeded && tabs.every((t) => loadedTabIds.has(t.id)),
+    itemsReady: planItems.status === 'ready',
+    items: planItems.items,
+    tickTabs,
+    writeQuiet: planItems.writeQuiet,
+  });
   // A newly placed board brings its preset's card types (a Bug Triage board, Bug). See usePresetCardTypes.
   usePresetCardTypes({
     tabs,
@@ -2045,6 +2055,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     presence: planPresence.presence,
     publishPresence: planPresence.publish,
     commit,
+    commitTabs,
     select: setSelectedId,
     announce,
     addItemSlide: slideDeck.newItemSlide,

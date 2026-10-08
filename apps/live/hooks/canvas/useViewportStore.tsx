@@ -26,6 +26,11 @@ export function useViewportStore(): ViewportStore {
   return store;
 }
 
+// The store, or null outside an editor's canvas (a board drawn on a slide, say).
+export function useViewportStoreIfAny(): ViewportStore | null {
+  return useContext(ViewportStoreContext);
+}
+
 export function useViewportOf<T>(
   select: (view: View) => T,
   equal: (a: T, b: T) => boolean = Object.is,

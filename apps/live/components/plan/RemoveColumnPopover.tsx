@@ -1,10 +1,10 @@
 'use client';
 
-// Removing a column that holds cards (docs/specs/026-plan/plan-board.md "The board set-up"): a popover anchored to
-// Remove Column asking what happens to the cards first. Two option cards, one picked: move them to another column of
+// Deleting a state that holds cards (docs/specs/026-plan/plan-board.md "The board set-up"): a popover anchored to
+// Delete Status asking what happens to the cards first. Two option cards, one picked: move them to another column of
 // this board (picked in a menu), or move them to the Trash (where they can be restored). The cards are the state's,
-// so the choice reaches every board that shows it, and the popover says so. Cancel keeps the column; Remove Column
-// does the move, then removes it.
+// so the choice reaches every board that shows it, and the popover says so. Cancel keeps the state; Delete Status
+// does the move, then removes the state's column from every board.
 import { useId, useState, type ReactNode } from 'react';
 import type { PlanColumn } from '@livediagram/items';
 import { Button, Select, TrashIcon } from '@livediagram/ui';
@@ -39,17 +39,17 @@ export function RemoveColumnPopover({
   return (
     <AnchoredPopover
       anchor={anchor}
-      name={`Remove ${column.name}`}
+      name={`Delete ${column.name}`}
       width={POPOVER_PX}
       onClose={onCancel}
     >
       <div
         role="alertdialog"
-        aria-label={`Remove ${column.name}`}
+        aria-label={`Delete ${column.name}`}
         className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
       >
         <div>
-          <h3 className="text-[14px] font-semibold">Remove {column.name}?</h3>
+          <h3 className="text-[14px] font-semibold">Delete {column.name}?</h3>
           <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
             {cards} {cardCount === 1 ? 'is' : 'are'} in {column.name}, on every board that shows it.
             Where should {cardCount === 1 ? 'it' : 'they'} go?
@@ -109,7 +109,7 @@ export function RemoveColumnPopover({
             }
           >
             <TrashIcon size={14} />
-            Remove Column
+            Delete Status
           </Button>
         </div>
       </div>

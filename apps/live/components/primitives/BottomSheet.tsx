@@ -1,12 +1,13 @@
 'use client';
 
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { Portal, useSwipeDownDismiss, safeInset } from '@livediagram/ui';
+import { Portal, useSheetDrag, safeInset } from '@livediagram/ui';
 
 // A menu as a bottom sheet on a phone (docs/specs/007-editor/live-app.md "Menus are bottom sheets on
 // a phone"): the width of the screen (up to 32rem), docked to the bottom edge, at most 60% of its
 // height with its own scroll, clear of the home indicator, rising in. A grab handle across its top
-// drags it down and closes it past a threshold or on a flick (useSwipeDownDismiss). The element
+// drags it up to fill the screen below the top bar (and back down), or, from rest, down to close it
+// past a threshold or on a flick (useSheetDrag). The element
 // context menu and the tab menu render through it on a phone; each keeps its own outside-tap and
 // Escape handling, which reach the sheet through the forwarded ref.
 type BottomSheetProps = Omit<HTMLAttributes<HTMLDivElement>, 'className' | 'style'> & {
@@ -22,7 +23,7 @@ export const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(function
   { onClose, children, zClassName, flush = false, ...rest },
   ref,
 ) {
-  const swipe = useSwipeDownDismiss(onClose);
+  const sheet = useSheetDrag(onClose);
   return (
     <Portal>
       <div
@@ -31,8 +32,7 @@ export const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(function
         {...rest}
         style={{
           paddingBottom: safeInset('bottom'),
-          transform: swipe.offset > 0 ? `translateY(${swipe.offset}px)` : undefined,
-          transition: swipe.dragging ? 'none' : 'transform var(--transition-duration-micro) ease',
+          ...sheet.style,
         }}
         className={`fixed inset-x-0 bottom-0 ${zClassName} mx-auto flex max-h-[60dvh] w-full max-w-lg animate-sheet-up flex-col overflow-hidden rounded-t-2xl border border-b-0 border-slate-200 bg-white text-sm shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900`}
       >
@@ -40,7 +40,7 @@ export const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(function
         <div
           aria-hidden
           data-sheet-handle=""
-          {...swipe.handleProps}
+          {...sheet.handleProps}
           className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center"
         >
           <span className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />

@@ -93,6 +93,13 @@ export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';
 export { DialogCloseButton } from './dialog/DialogCloseButton';
 export { Portal } from './Portal';
-export { useSwipeDownDismiss } from './useSwipeDownDismiss';
+export {
+  useSheetDrag,
+  sheetRelease,
+  SHEET_DISMISS_PX,
+  SHEET_SNAP_PX,
+  SHEET_FULL_HEIGHT,
+  type SheetDrag,
+} from './useSheetDrag';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export * from './browser-repair';

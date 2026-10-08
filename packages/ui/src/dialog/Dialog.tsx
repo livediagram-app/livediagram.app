@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
-import { useSwipeDownDismiss } from '../useSwipeDownDismiss';
+import { useSheetDrag } from '../useSheetDrag';
 import { safeInset } from '../safe-area';
 
 // The shared modal shell (packages/ui, so the public sites use it too; the editor wraps it with its modal
@@ -100,7 +100,7 @@ export function Dialog({
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const swipe = useSwipeDownDismiss(onClose);
+  const sheet = useSheetDrag(onClose);
   // Whether the press now under way began on the backdrop itself.
   const pressedBackdrop = useRef(false);
   // Escape stays bound while open and reads closeOnEscape at the moment of the key: re-binding the listener
@@ -160,10 +160,7 @@ export function Dialog({
             phoneSheet
               ? {
                   paddingBottom: safeInset('bottom'),
-                  transform: swipe.offset > 0 ? `translateY(${swipe.offset}px)` : undefined,
-                  transition: swipe.dragging
-                    ? 'none'
-                    : 'transform var(--transition-duration-micro) ease',
+                  ...sheet.style,
                 }
               : undefined
           }
@@ -186,7 +183,7 @@ export function Dialog({
             <div
               aria-hidden
               data-sheet-handle=""
-              {...swipe.handleProps}
+              {...sheet.handleProps}
               className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center sm:hidden"
             >
               <span className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />

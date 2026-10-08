@@ -1,17 +1,19 @@
 'use client';
 
 // The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
-// Flag), Archive (or Restore) and Trash, as icon-left rows beside the panel's Close, so the header keeps only the item's
-// type, its key, Help and the two buttons.
+// Flag), Archive (or Restore) and Trash for someone who may edit, then Help for everyone, as icon-left rows beside
+// the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
 import { DuplicateIcon, TrashIcon } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { PlanTypeGlyph } from './plan-type-glyph';
 
 export function ItemPanelMenu({
   itemKey,
+  canEdit,
   archived,
   flagged,
   onDuplicate,
@@ -20,6 +22,8 @@ export function ItemPanelMenu({
   onTrash,
 }: {
   itemKey: number;
+  // Someone who may only view gets Help alone.
+  canEdit: boolean;
   archived: boolean;
   flagged: boolean;
   onDuplicate: () => void;
@@ -45,26 +49,43 @@ export function ItemPanelMenu({
       />
       {open ? (
         <PortalMenu anchor={button} placement="below" onClose={() => setOpen(false)}>
+          {canEdit ? (
+            <>
+              <MenuActionRow
+                plain
+                label="Duplicate"
+                icon={<DuplicateIcon />}
+                onClick={run(onDuplicate)}
+              />
+              <MenuActionRow
+                plain
+                label={flagged ? 'Remove Flag' : 'Flag'}
+                icon={<PlanTypeGlyph glyph="flag" size={14} />}
+                onClick={run(onFlag)}
+              />
+              <MenuActionRow
+                plain
+                label={archived ? 'Restore' : 'Archive'}
+                icon={<PlanBoardTileArt preset="archive" size={14} />}
+                onClick={run(onArchive)}
+              />
+              <MenuGroupSeparator />
+              <MenuActionRow
+                plain
+                danger
+                label="Trash"
+                icon={<TrashIcon />}
+                onClick={run(onTrash)}
+              />
+              <MenuGroupSeparator />
+            </>
+          ) : null}
           <MenuActionRow
             plain
-            label="Duplicate"
-            icon={<DuplicateIcon />}
-            onClick={run(onDuplicate)}
+            label="Help"
+            icon={<HelpMarkIcon />}
+            onClick={run(() => openHelpArticle('planCards'))}
           />
-          <MenuActionRow
-            plain
-            label={flagged ? 'Remove Flag' : 'Flag'}
-            icon={<PlanTypeGlyph glyph="flag" size={14} />}
-            onClick={run(onFlag)}
-          />
-          <MenuActionRow
-            plain
-            label={archived ? 'Restore' : 'Archive'}
-            icon={<PlanBoardTileArt preset="archive" size={14} />}
-            onClick={run(onArchive)}
-          />
-          <MenuGroupSeparator />
-          <MenuActionRow plain danger label="Trash" icon={<TrashIcon />} onClick={run(onTrash)} />
         </PortalMenu>
       ) : null}
     </>

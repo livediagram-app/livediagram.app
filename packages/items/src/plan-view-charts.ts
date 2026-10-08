@@ -1,8 +1,8 @@
 // The models behind the Due Calendar, Workload by Person, Status Breakdown and Priority by Status
 // (docs/specs/026-plan/plan-views.md "Visualisations"), each over the document's live cards. Pure.
-import { itemStatus, type Item, type ItemPerson } from './item';
+import type { Item, ItemPerson } from './item';
 import { PRIORITIES, isPriority, type Priority } from './fields';
-import { laneGroups, statusLabel, type SwimlaneBy } from './board';
+import { laneGroups, namedStatus, statusLabel, type SwimlaneBy } from './board';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { dayNumber, dayParts, MONTH_LONG, monthStart, shiftMonth } from './plan-view-dates';
 import { STATUS_PHASES, liveCards, phaseOf, type StatusPhase } from './plan-views';
@@ -123,16 +123,16 @@ export interface StatusSlice {
 // Statuses in the order the boards name them, then any other by count, then No status.
 export function statusMixModel(
   items: Iterable<Item>,
-  statusNames: ReadonlyMap<string, string> = new Map(),
+  statusNames?: ReadonlyMap<string, string>,
 ): { slices: StatusSlice[]; total: number } {
   const counts = new Map<string | null, number>();
   let total = 0;
   for (const it of liveCards(items)) {
-    const s = itemStatus(it) ?? null;
+    const s = namedStatus(it, statusNames) ?? null;
     counts.set(s, (counts.get(s) ?? 0) + 1);
     total += 1;
   }
-  const order = [...statusNames.keys()];
+  const order = [...(statusNames?.keys() ?? [])];
   const rank = (s: string | null) => {
     if (s === null) return Number.MAX_SAFE_INTEGER;
     const i = order.indexOf(s);

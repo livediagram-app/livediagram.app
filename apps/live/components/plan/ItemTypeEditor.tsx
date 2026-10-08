@@ -265,6 +265,7 @@ export function ItemTypeEditor({
                   }}
                   defaultStatus={defaultStatus}
                   onDefaultStatus={setDefaultStatus}
+                  {...(type ? { typeId: type.id } : {})}
                 />
               </SheetRow>
             </>

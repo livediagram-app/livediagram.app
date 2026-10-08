@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { FALLBACK_ITEM_TYPE, ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { planGlyphPath, PLAN_GLYPH_FALLBACK, PLAN_GLYPHS } from './glyphs';
 import {
+  builtInDefaultStatus,
+  resolvedDefaultStatus,
   defaultStatusOf,
   restoredCatalogue,
   withDefaultStatuses,
@@ -271,5 +273,25 @@ describe('restoring the built-in types', () => {
   it('removes the stored catalogue when the document added none', () => {
     expect(restoredCatalogue({ version: 1, types: [{ ...task, label: 'Chore' }] })).toBeNull();
     expect(restoredCatalogue(null)).toBeNull();
+  });
+});
+
+describe('a built-in type’s Default State', () => {
+  const names = new Map([
+    ['backlog~a1', 'Backlog'],
+    ['todo~a1', 'To do'],
+    ['done~a1', 'Done'],
+  ]);
+  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+
+  it('is the document’s state of its name, unless turned off, and never beats a chosen one', () => {
+    expect(builtInDefaultStatus(task, names)).toBe('todo~a1');
+    expect(builtInDefaultStatus({ id: 'project' }, names)).toBe('backlog~a1');
+    expect(builtInDefaultStatus({ id: 'idea' }, names)).toBeUndefined();
+    expect(builtInDefaultStatus({ id: 'custom' }, names)).toBeUndefined();
+    expect(builtInDefaultStatus({ ...task, excludedStatuses: ['todo~a1'] }, names)).toBeUndefined();
+    expect(resolvedDefaultStatus(task, names)).toBe('todo~a1');
+    expect(resolvedDefaultStatus({ ...task, defaultStatus: 'done~a1' }, names)).toBe('done~a1');
+    expect(resolvedDefaultStatus({ id: 'custom' }, names)).toBeUndefined();
   });
 });

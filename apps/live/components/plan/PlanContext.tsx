@@ -69,6 +69,8 @@ export type PlanContextValue = {
   // This person's owner id: the author id on their own comments, for the delete-own control.
   ownerId: string;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
+  // Delete Status: the state's columns off every board but `exceptBoardId` (the one deleting it updates itself).
+  removeStatusColumns: (status: string, exceptBoardId: string) => void;
   // A plan view's settings (the Gantt's swimlanes and names width): one element edit, synced and undoable.
   updateView: (viewId: string, settings: PlanViewRef) => void;
   // A card dragged off a board onto the canvas, at a canvas point: a Plan card is left there.

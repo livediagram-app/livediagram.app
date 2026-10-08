@@ -3,7 +3,8 @@
 // A Plan board's header (docs/specs/026-plan/board-widgets.md "The header"): the title, the board's
 // widgets, then Reveal and Retry when they apply, Maximise Board, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useKeepOnScreen } from '@/hooks/plan/useKeepOnScreen';
 import {
   itemTitle,
   widgetsOf,
@@ -102,10 +103,15 @@ export function PlanBoardHeader({
     onOpenItem,
   };
   const [renaming, setRenaming] = useState(false);
+  // The header's buttons stay on screen when the board runs past the canvas's right edge (a phone, zoomed in).
+  const headerRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  useKeepOnScreen(endRef, headerRef);
   const button =
     'h-7 shrink-0 rounded-md border px-2 text-[12px] font-medium transition enabled:cursor-pointer disabled:opacity-50';
   return (
     <div
+      ref={headerRef}
       data-board-header
       className="relative flex h-[52px] shrink-0 items-center gap-3 px-4"
       style={{ color: palette.text }}
@@ -189,7 +195,16 @@ export function PlanBoardHeader({
           ) : null}
         </div>
       ) : null}
-      {end}
+      {end ? (
+        // Moved left to stay on screen, it takes the board's surface and a shadow, so it reads over the header.
+        <div
+          ref={endRef}
+          className="relative z-10 flex shrink-0 items-center gap-3 rounded-lg data-[shifted]:bg-[var(--keep-bg)] data-[shifted]:shadow-md"
+          style={{ ['--keep-bg' as string]: palette.surface }}
+        >
+          {end}
+        </div>
+      ) : null}
       {trayOpen && projection.unplaced.length > 0 ? (
         <div
           className="absolute right-4 top-12 z-10 max-h-72 w-80 overflow-y-auto rounded-lg border p-2 shadow-lg"

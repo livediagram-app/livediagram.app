@@ -28,9 +28,7 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
-import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
-import { TrashClusterButton } from '@/components/canvas/TrashClusterButton';
-import { CardFinderClusterButton } from '@/components/canvas/CardFinderClusterButton';
+import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
@@ -613,13 +611,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* The Trash (docs/specs/026-plan/items.md "Trash"): Plan mode, left of Undo. */}
-            {!zenMode && !readOnly && props.editorMode === 'plan' ? (
-              <TrashClusterButton
-                popoverOpen={activeDockPanel === 'plan-trash'}
-                onTogglePopover={(button) => handleDockButtonClick('plan-trash', button, true)}
-              />
-            ) : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. */}
             {!zenMode && !readOnly ? (
               <UndoRedoClusterStrip
@@ -638,19 +629,24 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
               />
             ) : null}
-            {/* Cards (docs/specs/026-plan/items.md "Finding a card"): in Plan mode, before Card Types. */}
+            {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan
+                mode, one strip where Layers would be. */}
             {!zenMode && props.editorMode === 'plan' ? (
-              <CardFinderClusterButton
-                popoverOpen={activeDockPanel === 'plan-cards'}
-                onTogglePopover={(button) => handleDockButtonClick('plan-cards', button, true)}
-              />
-            ) : null}
-            {/* Card Types (docs/specs/026-plan/item-types.md): in Plan mode, where Layers would be. */}
-            {!zenMode && props.editorMode === 'plan' ? (
-              <CardTypesClusterButton
-                buttonRef={cardTypesButtonRef}
-                popoverOpen={activeDockPanel === 'card-types'}
-                onTogglePopover={(button) => handleDockButtonClick('card-types', button, true)}
+              <PlanCardsClusterStrip
+                finderOpen={activeDockPanel === 'plan-cards'}
+                onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
+                typesOpen={activeDockPanel === 'card-types'}
+                onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
+                typesButtonRef={cardTypesButtonRef}
+                // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
+                trash={
+                  !readOnly && !isMobile
+                    ? {
+                        open: activeDockPanel === 'plan-trash',
+                        onToggle: (button) => handleDockButtonClick('plan-trash', button, true),
+                      }
+                    : undefined
+                }
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}

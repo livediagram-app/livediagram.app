@@ -7,9 +7,11 @@ import {
   hasPlanInput,
   type EditorMode,
   type Element,
+  type Tab,
   type PlanViewRef,
 } from '@livediagram/document';
 import {
+  normaliseBoardSetup,
   TRASHED_FROM_FIELD,
   TRASH_STATUS,
   isTrashed,
@@ -54,6 +56,8 @@ export function usePlanSlice(opts: {
   teamPeople: readonly ItemPerson[];
   presence: ReadonlyMap<string, PlanCardPresence>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // Every tab's elements at once (a state deleted from every board). Absent, only the open tab's boards change.
+  commitTabs?: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
   addItemSlide?: (itemId: string) => void;
@@ -72,6 +76,7 @@ export function usePlanSlice(opts: {
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
   // and the context value, keep their identity and boards re-render only when Plan state changes.
   const commitRef = useLatest(opts.commit);
+  const commitTabsRef = useLatest(opts.commitTabs);
   const selectRef = useLatest(opts.select);
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
@@ -258,6 +263,38 @@ export function usePlanSlice(opts: {
     [commit],
   );
 
+  // Delete Status (docs/specs/026-plan/plan-board.md "Column settings"): the state's columns come off every other
+  // board in the document too, so no board keeps an empty column for a state that is gone.
+  const removeStatusColumns = useCallback(
+    (status: string, exceptBoardId: string) => {
+      const drop = (els: Element[]) => {
+        let changed = false;
+        const next = els.map((el) => {
+          if (el.id === exceptBoardId || el.type !== 'shape' || el.shape !== 'plan-board')
+            return el;
+          const setup = normaliseBoardSetup(el.planBoard);
+          if (!setup || !setup.columns.some((c) => c.status === status)) return el;
+          changed = true;
+          return {
+            ...el,
+            planBoard: { ...setup, columns: setup.columns.filter((c) => c.status !== status) },
+          };
+        });
+        return changed ? next : els;
+      };
+      const commitTabs = commitTabsRef.current;
+      if (commitTabs)
+        commitTabs((ts) =>
+          ts.map((t) => {
+            const elements = drop(t.elements);
+            return elements === t.elements ? t : { ...t, elements };
+          }),
+        );
+      else commitRef.current(drop);
+    },
+    [commitRef, commitTabsRef],
+  );
+
   const updateView = useCallback(
     (viewId: string, settings: PlanViewRef) => {
       commit((els) =>
@@ -389,6 +426,7 @@ export function usePlanSlice(opts: {
       commentItem,
       ownerId: planItems.ownerId,
       updateBoard,
+      removeStatusColumns,
       updateView,
       placeCardOut,
       removeCard,
@@ -427,6 +465,7 @@ export function usePlanSlice(opts: {
       commentItem,
       planItems.ownerId,
       updateBoard,
+      removeStatusColumns,
       updateView,
       placeCardOut,
       removeCard,

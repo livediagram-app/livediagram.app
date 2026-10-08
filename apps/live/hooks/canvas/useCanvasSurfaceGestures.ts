@@ -13,6 +13,7 @@ import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@/lib/debug-log';
+import { isPanThrough } from '@/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -123,6 +124,15 @@ export function useCanvasSurfaceGestures({
   //    Falls through so pointermove on <main> keeps broadcasting laser
   //    samples.
   //  - Select tool → drag draws a marquee for multi-select.
+  const startPan = (e: ReactPointerEvent) =>
+    setPan({
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startOffsetX: viewportOffset.x,
+      startOffsetY: viewportOffset.y,
+      movedRef: { current: false },
+    });
+
   const routePanOrMarquee = (e: ReactPointerEvent) => {
     const laserOnTouch = canvasTool === 'laser' && e.pointerType === 'touch';
     if (laserOnTouch) return;
@@ -132,13 +142,7 @@ export function useCanvasSurfaceGestures({
       canvasTool === 'laser' ||
       canvasTool === 'isometric';
     if (wantsPan) {
-      setPan({
-        startClientX: e.clientX,
-        startClientY: e.clientY,
-        startOffsetX: viewportOffset.x,
-        startOffsetY: viewportOffset.y,
-        movedRef: { current: false },
-      });
+      startPan(e);
     } else {
       setMarquee({
         startX: e.clientX,
@@ -401,6 +405,12 @@ export function useCanvasSurfaceGestures({
   const onContextMenuPointerUp = rightClick.onPointerUp;
 
   const onPointerDown = (e: ReactPointerEvent) => {
+    // A finger on a board's empty space pans, whatever the tool, and never opens the canvas menu
+    // (hooks/canvas/pan-through.ts).
+    if (isPanThrough(e)) {
+      startPan(e);
+      return;
+    }
     // Touch press-and-hold on the empty canvas opens the context menu
     // (touch has no right-click). Armed before the marquee / pan logic;
     // a finger that moves cancels it, so it never fights a drag.

@@ -291,5 +291,6 @@ export function usePlanCardDrag(opts: {
     [enabled],
   );
 
-  return { drag, pointer, onCardPointerDown };
+  // `cancelPress` drops a press before it becomes a drag or a click (a long-press opened the card's menu).
+  return { drag, pointer, onCardPointerDown, cancelPress: end };
 }

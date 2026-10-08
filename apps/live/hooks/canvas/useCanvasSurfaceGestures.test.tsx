@@ -186,3 +186,32 @@ describe('a long-press on the empty canvas', () => {
     expect(result.current.canvasLongPress.pressPoint).toEqual({ x: 70, y: 80 });
   });
 });
+
+// docs/specs/026-plan/plan-board.md "On a phone": a finger on a board's empty space pans the canvas.
+describe('a press that pans through an element', () => {
+  it('pans whatever the tool, from inside an element, and arms no menu', async () => {
+    const { markPanThrough } = await import('./pan-through');
+    vi.useFakeTimers();
+    const { result, setPan, setMarquee, onCanvasContextMenu } = setup('select');
+    const inner = document.createElement('div');
+    const nativeEvent = new Event('pointerdown');
+    const press = {
+      button: 0,
+      pointerType: 'touch',
+      clientX: 10,
+      clientY: 20,
+      target: inner,
+      currentTarget: document.createElement('main'),
+      nativeEvent,
+    } as unknown as ReactPointerEvent;
+    markPanThrough(press);
+    result.current.onPointerDown(press);
+    expect(setPan).toHaveBeenCalledWith(
+      expect.objectContaining({ startClientX: 10, startClientY: 20 }),
+    );
+    expect(setMarquee).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(LONG_PRESS_MS + 50));
+    expect(onCanvasContextMenu).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+});

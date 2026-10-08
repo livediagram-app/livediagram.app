@@ -22,6 +22,8 @@ export function PlanColumnHeader({
   onChange,
   onMoveCards,
   onTrashCards,
+  onDeleteStatus,
+  onFrame,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -30,6 +32,9 @@ export function PlanColumnHeader({
   onChange: (next: PlanBoardSetup, part: string) => void;
   onMoveCards: (fromStatus: string, toStatus: string) => void;
   onTrashCards: (status: string) => void;
+  onDeleteStatus?: ((status: string) => void) | undefined;
+  // A tap on the header (a phone): the view frames this column, given the header. Absent, a tap does nothing.
+  onFrame?: ((header: HTMLElement) => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Opened for a column just added: its name is selected, ready to type over.
@@ -51,6 +56,15 @@ export function PlanColumnHeader({
     <div
       className="group sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
       style={{ backgroundColor: palette.column }}
+      onClick={
+        onFrame
+          ? (e) => {
+              // The cog and its popover keep their own presses.
+              if ((e.target as HTMLElement).closest('button, [role="dialog"]')) return;
+              onFrame(e.currentTarget);
+            }
+          : undefined
+      }
     >
       <div
         className="mb-1.5 h-1 rounded-full"
@@ -110,6 +124,7 @@ export function PlanColumnHeader({
           onChange={onChange}
           onMoveCards={onMoveCards}
           onTrashCards={onTrashCards}
+          onDeleteStatus={onDeleteStatus}
           onClose={(restoreFocus) => {
             setOpen(false);
             setFresh(false);
