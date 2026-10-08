@@ -1,8 +1,9 @@
 # Repository link
 
-**Status: specified.** The link, the `index` and `files` mirror levels, pulling and watching are the first build
-(`plans/0046-workbench-live-diagram.md`); the merge, offline pushes and the git integration are
-the second (`plans/0047-repository-sync.md`).
+**Status: first slice built.** The link file, the `none`, `index` and `files` mirror levels, every sync state,
+`link init|status|ls`, `sync` (`--relocate`, `--dry-run`, `--all`) and `sync --watch` (CLI 0.2). Ahead: the merge of
+`ahead` and `diverged` documents, `local-new` creation, `sync --resolve`, the git hooks and the merge driver, and
+[Diagram sources](diagram-sources.md).
 
 A **repository link** binds a directory in a code repository to documents in livediagram, so the people and agents
 working in that repository find, read and change its diagrams without leaving it. livediagram is the **single source

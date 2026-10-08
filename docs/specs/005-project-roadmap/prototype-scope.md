@@ -66,7 +66,13 @@ The editor is real:
   edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Built and run from source; publishing to npm is ahead.
+  tools are verbs of the same catalogue. Published on npm as `@livediagram/cli`, with provenance.
+- **Repository links** ([Repository link](../027-repositories/repository-link.md)): `livediagram.toml` binds a
+  directory to a folder or documents; `livediagram sync` writes an `INDEX.md` agents find with a search, plus a
+  snapshot and a text outline per document at the `files` level, and `sync --watch` keeps them in step live.
+- **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
+  person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
+  frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
@@ -94,8 +100,8 @@ The editor is real:
 
 ## Next
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built, the CLI's publishing to npm,
-  its update check and its help centre article next.
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
+- **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
 - **Access levels** ([Share roles](../013-workspace/share-roles.md)): Viewer, Participant and Editor for share links and API tokens, with ownership as separate powers, replacing view/edit and the read-only flag.
 
 ## Later

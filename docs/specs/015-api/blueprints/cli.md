@@ -220,16 +220,17 @@ summary }`.
 
 ### Credentials
 
-| From   | Event                                  | To           | Effect                                                                                                                      |
-| ------ | -------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| none   | `auth login`, browser approves         | stored       | `loginWithBrowser`; `GET /api/tokens/current` verifies; stored                                                              |
-| none   | `auth login --device`, person approves | stored       | `loginWithDevice`; verified; stored                                                                                         |
-| none   | `auth login --with-token`              | stored       | stdin read, `isApiTokenFormat`, verified; stored                                                                            |
-| stored | any login succeeds                     | stored (new) | the replaced token is revoked with `DELETE /api/tokens/current` after the new one verifies; a failed revoke warns on stderr |
-| stored | `auth logout`                          | none         | `DELETE /api/tokens/current`, then forgotten; a 401 forgets too (CLI38)                                                     |
-| stored | `auth logout`, network failure         | stored       | kept; exit 7                                                                                                                |
-| env    | `auth logout`                          | env          | exit 2: the env token is not the CLI's to revoke (CLI38)                                                                    |
-| any    | api answers 401                        | same         | exit 4 with `livediagram auth login`                                                                                        |
+| From   | Event                                                   | To               | Effect                                                                                                                                                |
+| ------ | ------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| none   | `auth login`, browser approves                          | stored           | `loginWithBrowser`; `GET /api/tokens/current` verifies; stored                                                                                        |
+| none   | `auth login --device`, person approves                  | stored           | `loginWithDevice`; verified; stored                                                                                                                   |
+| none   | `auth login --with-token`                               | stored           | stdin read, `isApiTokenFormat`, verified; stored                                                                                                      |
+| stored | any login succeeds                                      | stored (new)     | the replaced token is revoked with `DELETE /api/tokens/current` after the new one verifies; a failed revoke warns on stderr                           |
+| stored | `auth logout`                                           | none             | `DELETE /api/tokens/current`, then forgotten; a 401 forgets too (CLI38)                                                                               |
+| stored | `auth logout`, network failure                          | stored           | kept; exit 7                                                                                                                                          |
+| env    | `auth logout`                                           | env              | exit 2: the env token is not the CLI's to revoke (CLI38)                                                                                              |
+| stored | api answers 401, the store holds a different token      | stored (re-read) | `transport.forCredential` re-reads the store (`resolveCredential`), retries the refused request once with the new token; debug `credential refreshed` |
+| any    | api answers 401 (env token, store unchanged or emptied) | same             | exit 4 with `livediagram auth login`                                                                                                                  |
 
 `auth status` warns on stderr when `expiresAt - now < TOKEN_EXPIRY_WARN_DAYS` days.
 
@@ -248,15 +249,16 @@ summary }`.
 
 ### The room stream (`wait`, `watch`)
 
-| From         | Event                               | To           | Effect                                                                                      |
-| ------------ | ----------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
-| idle         | start                               | connecting   | `POST .../room-ticket`; `new WebSocket(<ws base>/documents/:id/ws?t=<ticket>)`              |
-| connecting   | open                                | open         | nothing sent, ever: no `hello`, so it is no session (CLI32)                                 |
-| open         | `op` frame                          | open         | `classifyRoomOp`; `wait` may finish, `watch` prints a line                                  |
-| open         | close 4004                          | stopped      | exit 3, "the document was moved to the Trash"                                               |
-| open         | other close or error                | reconnecting | stderr `reconnecting…`; backoff `ROOM_RECONNECT_MIN_MS` doubling to `ROOM_RECONNECT_MAX_MS` |
-| reconnecting | reopened                            | open         | stderr names the `tab diff` that shows what was missed                                      |
-| any          | SIGINT, `--timeout`, a `wait` match | stopped      | socket closed with 1000; exit as below                                                      |
+| From         | Event                                          | To           | Effect                                                                                                                                          |
+| ------------ | ---------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| idle         | start                                          | connecting   | `POST .../room-ticket`; `new WebSocket(<ws base>/documents/:id/ws?t=<ticket>)`                                                                  |
+| connecting   | open                                           | open         | nothing sent, ever: no `hello`, so it is no session (CLI32)                                                                                     |
+| open         | `op` frame                                     | open         | `classifyRoomOp`; `wait` may finish, `watch` prints a line                                                                                      |
+| open         | close 4004                                     | stopped      | exit 3, "the document was moved to the Trash"                                                                                                   |
+| open         | other close or error                           | reconnecting | stderr `reconnecting…`; backoff `ROOM_RECONNECT_MIN_MS` doubling to `ROOM_RECONNECT_MAX_MS`                                                     |
+| reconnecting | reopened                                       | open         | stderr names the `tab diff` that shows what was missed                                                                                          |
+| connecting   | ticket answered `429`                          | reconnecting | retried with the backoff, never final; any other status below 500 ends the stream                                                               |
+| any          | SIGINT or SIGTERM, `--timeout`, a `wait` match | stopped      | socket closed with 1000; exit as below; `bin.ts` exits `EXIT_GRACE_MS` (250) after the command resolves, whatever a closing socket still awaits |
 
 - `wait --for comment` finishes at the first `el-delta` whose delta kind is a comment add.
 - `wait --for change` finishes after the first mutation-class or `changeset` op that is not a comment delta, once
