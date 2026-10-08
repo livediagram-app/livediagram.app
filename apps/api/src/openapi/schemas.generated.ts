@@ -6674,6 +6674,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemsTallyRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "votes": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "id",
+            "votes"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "type": "object"
+  },
   "JsonValue": {
     "anyOf": [
       {

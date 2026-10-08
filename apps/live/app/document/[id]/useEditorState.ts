@@ -1,5 +1,6 @@
 'use client';
 
+import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
@@ -69,7 +70,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, opensInOf } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
@@ -3084,6 +3085,18 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setVoteReviewIndex,
   });
 
+  // Ending a vote adds its Plan cards' dots to the cards (docs/specs/026-plan/items.md "Tally"): the host's editor,
+  // once, after the end lands. Undo does not take it back.
+  const endVoteAndTally = () => {
+    const vote = activeTab.vote;
+    const ending = !!vote?.active && isVoteHost(vote, voteSelfId, facilitator.isFacilitator);
+    endVote();
+    if (!ending || !vote) return;
+    void voteTallies(vote).then((tallies) => {
+      if (tallies.length) void planItems.writeQuiet({ kind: 'tally', tallies });
+    });
+  };
+
   // Keyboard nudge (docs/specs/008-canvas/canvas-and-palette.md Move). See useNudgeSelection for the
   // burst-coalescing + auto-rebind behaviour; this hook also owns
   // the timer-cleanup-on-unmount that the prior inline version
@@ -3494,7 +3507,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     extendTimer,
     clearTimer,
     startVote,
-    endVote,
+    endVote: endVoteAndTally,
     revealVote,
     clearVote,
     castVote,

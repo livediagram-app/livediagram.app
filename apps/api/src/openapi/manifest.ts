@@ -754,6 +754,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/items/tally',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "Add a session vote's tally to up to 200 cards: each a card id and its voters' dots. A card gone meanwhile is skipped. Needs edit access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemsTallyRequest',
+    responseSchema: 'ItemsResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/items/{itemId}',
     segment: 'documents',
     tag: 'Items',
