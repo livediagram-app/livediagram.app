@@ -63,7 +63,8 @@ export function TrashPanel({
           <>
             <div className="flex items-center justify-between px-0.5 text-[12px] text-slate-500 dark:text-slate-400">
               <span className="inline-flex items-center gap-1.5">
-                <CountBadge size="md" background="#e11d4826" color="#e11d48">
+                {/* Grey, as every neutral count: the Trash holds nothing urgent (destructive-actions.md). */}
+                <CountBadge size="md" background="#64748b26" color="#64748b">
                   {trashed.length}
                 </CountBadge>
                 {trashed.length === 1 ? 'card' : 'cards'} in the Trash

@@ -23,7 +23,14 @@ import {
   type BoardStatusTypes,
   type CardFinderShow,
 } from '@livediagram/items';
-import { CloseIcon, CountBadge, Tooltip, TrashIcon } from '@livediagram/ui';
+import {
+  CloseIcon,
+  CountBadge,
+  EmptyState,
+  PlanCardsIcon,
+  Tooltip,
+  TrashIcon,
+} from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SearchInput } from '@/components/primitives/SearchInput';
@@ -193,17 +200,13 @@ export function CardFinderPanel({
           ) : null}
         </div>
         {found.length === 0 ? (
-          <p
-            className={`flex ${LIST_HEIGHT} items-center justify-center px-2 text-center text-[12px] leading-snug text-slate-500 dark:text-slate-400`}
-          >
-            {live.length === 0
-              ? 'No cards yet. Add one from a board, or drag one in from the palette.'
-              : query.trim()
-                ? 'No cards match that search.'
-                : filters.length > 0
-                  ? 'No cards match these filters.'
-                  : 'Every card is on a board here.'}
-          </p>
+          // The shared empty state, as the Trash's, filling the list's fixed height.
+          <div className={`flex ${LIST_HEIGHT} flex-col [&>div]:flex-1`}>
+            <EmptyState
+              icon={<PlanCardsIcon size={18} />}
+              {...emptyCopy(live.length, query, filters.length)}
+            />
+          </div>
         ) : (
           <ul
             aria-label="Cards"
@@ -254,4 +257,26 @@ export function CardFinderPanel({
       </div>
     </MovablePanel>
   );
+}
+
+// What the list says when it shows no cards (docs/specs/026-plan/items.md "Find a card"): a title and a line,
+// as every empty state.
+export function emptyCopy(
+  cards: number,
+  query: string,
+  filters: number,
+): { title: string; description: string } {
+  if (cards === 0)
+    return {
+      title: 'No cards yet',
+      description: 'Add one from a board, or drag one in from the palette.',
+    };
+  if (query.trim())
+    return { title: 'No cards match', description: 'Try another word, a number or a card type.' };
+  if (filters > 0)
+    return {
+      title: 'No cards match these filters',
+      description: 'Remove a filter, or Clear Filters, to see more.',
+    };
+  return { title: 'Every card is on a board', description: 'None of them sits off a board here.' };
 }
