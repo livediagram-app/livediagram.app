@@ -279,8 +279,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     its name as typed ("Field name" until then) beside a sample value of its kind (Choice shows its first option,
     Link to Card the linked type's name). The field lands in that group
     (Votes always on the card). **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
-  - **States**: every status this tab's boards name, as a grid of checkbox rows (three to a row on desktop, two on
-    a tablet, one on a phone), each ticked while the type uses it (all ticked to start), with "N of M on" and
+  - **States**: every status the document's boards name, and any a card is in that no board names, grouped by the
+    board that shows it: a group per board (All Cards and Archive boards aside), headed by the board's title as it
+    is now (so a renamed board reads its new name) with "N of M on", holding its statuses in column order (a status
+    on two boards shows in both, and ticking it in one ticks it in both, as it is one status), then **No Board** for
+    any status no board names. Each group is a grid of checkbox rows (three to a row on desktop, two on a tablet,
+    one on a phone), each ticked while the type uses it (all ticked to start), with "N of M on" and
     **Select All** and **Deselect All** above them (each disabled when it would change nothing). Unticking one
     leaves it out; Select All turns every listed status back on (a left-out status no board lists any more stays
     left out); Deselect All turns them off in board order as far as the cap allows. All may be off, and then a note

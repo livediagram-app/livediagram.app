@@ -139,3 +139,21 @@ describe('document-wide statuses', () => {
     expect(documentStatusSignatures(tabs, 'a')).not.toBe(a);
   });
 });
+
+// docs/specs/026-plan/item-types.md "Editing a type": the boards the type editor's States groups by.
+describe('statusBoardsOfSetups', () => {
+  it('names each board with columns by its title, in board order, skipping All Cards and Archive', async () => {
+    const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = { ...presetSetup('kanban'), title: 'Team Board' };
+    const out = statusBoardsOfSetups([
+      kanban,
+      presetSetup('all-cards'),
+      presetSetup('archive'),
+      { ...kanban, columns: [] },
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]!.title).toBe('Team Board');
+    expect(out[0]!.statuses).toEqual(kanban.columns.map((c) => c.status));
+  });
+});

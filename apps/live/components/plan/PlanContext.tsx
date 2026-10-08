@@ -5,6 +5,7 @@
 // the actions a board takes. A context, like MindOutlineContext, because the consumers are element
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
+import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { PlanViewRef } from '@livediagram/document';
@@ -101,6 +102,8 @@ export type PlanContextValue = {
   // The card types the document's boards show under each status they name: what Not on a Board reads
   // (docs/specs/026-plan/items.md "Finding a card").
   statusTypes: BoardStatusTypes;
+  // Each board's title and the statuses it names, in board order: the type editor's States groups by them.
+  statusBoards: readonly StatusBoard[];
 };
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);

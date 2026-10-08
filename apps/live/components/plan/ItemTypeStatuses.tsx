@@ -1,7 +1,7 @@
 'use client';
 
-// The type editor's States (docs/specs/026-plan/item-types.md "Editing a type"): every status this tab's boards
-// name, as a grid of checkbox rows, ticked while the type uses it, with a count and Select All and Deselect All. A
+// The type editor's States (docs/specs/026-plan/item-types.md "Editing a type"): every status the document's boards
+// name, grouped under each board's title (No Board last for one only cards are in), as grids of checkbox rows, ticked while the type uses it, with a count and Select All and Deselect All. A
 // status unticked is one a card of this type can never move into (a new card is still made in any column). Stored as
 // what the type leaves out, so a status added later is open to every type. All may be unticked: such a card stays in
 // the status it is made in. A type leaves out at most ITEM_TYPE_EXCLUDED_STATUSES_MAX: at the cap a status still
@@ -34,6 +34,30 @@ export function deselectAllStates(
   return next;
 }
 
+// The statuses grouped by the boards that name them (docs/specs/026-plan/item-types.md "Editing a type"): a group per
+// board, under its title as it is now, holding its listed statuses in column order (a status on two boards shows in
+// both), then No Board for any listed status no board names. Without boards, one untitled group of every status.
+export function statusGroups(
+  statuses: readonly Status[],
+  boards: readonly { title: string; statuses: readonly string[] }[] | undefined,
+): { title: string | null; statuses: Status[] }[] {
+  if (!boards) return [{ title: null, statuses: [...statuses] }];
+  const byId = new Map(statuses.map((s) => [s.status, s]));
+  const onABoard = new Set<string>();
+  const groups: { title: string | null; statuses: Status[] }[] = [];
+  for (const b of boards) {
+    const listed = b.statuses.flatMap((id) => {
+      const s = byId.get(id);
+      return s ? [s] : [];
+    });
+    for (const s of listed) onABoard.add(s.status);
+    if (listed.length) groups.push({ title: b.title || 'Untitled Board', statuses: listed });
+  }
+  const loose = statuses.filter((s) => !onABoard.has(s.status));
+  if (loose.length) groups.push({ title: 'No Board', statuses: loose });
+  return groups;
+}
+
 export function ItemTypeStatuses({
   statuses,
   excluded,
@@ -41,6 +65,7 @@ export function ItemTypeStatuses({
   defaultStatus = '',
   onDefaultStatus,
   typeId,
+  boards,
 }: {
   // The statuses the boards name, in board order: id and name.
   statuses: readonly Status[];
@@ -51,6 +76,8 @@ export function ItemTypeStatuses({
   onDefaultStatus?: (status: string) => void;
   // The type's id: a built-in type's named Default State shows in place of None.
   typeId?: string;
+  // Each board's title and the statuses it names: the statuses are grouped under them (statusGroups).
+  boards?: readonly { title: string; statuses: readonly string[] }[];
 }) {
   const defaultId = useId();
   if (statuses.length === 0)
@@ -103,43 +130,39 @@ export function ItemTypeStatuses({
           Deselect All
         </Button>
       </div>
-      <div
-        role="group"
-        aria-label="States"
-        className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 md:grid-cols-3"
-      >
-        {statuses.map((s) => {
-          const on = !excluded.includes(s.status);
-          // At the cap a status still on stays on; one already off can always come back on.
-          const locked = on && full;
+      <div className="flex flex-col gap-3">
+        {statusGroups(statuses, boards).map((g, gi) => {
+          const groupOn = g.statuses.filter((x) => !excluded.includes(x.status)).length;
           return (
-            <button
-              key={s.status}
-              type="button"
-              role="checkbox"
-              aria-checked={on}
-              disabled={locked}
-              className={`flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                on
-                  ? 'border-brand-300 bg-brand-50 text-slate-900 hover:border-brand-400 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-slate-50'
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-200'
-              }`}
-              onClick={() =>
-                onChange(on ? [...excluded, s.status] : excluded.filter((x) => x !== s.status))
-              }
-            >
-              <span
-                aria-hidden
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition ${
-                  on
-                    ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-600 dark:bg-brand-600'
-                    : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'
-                }`}
+            <section key={`${gi}:${g.title ?? ''}`} aria-label={g.title ?? 'States'}>
+              {g.title !== null ? (
+                <h4 className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <span className="min-w-0 truncate">{g.title}</span>
+                  <span className="font-medium normal-case tracking-normal tabular-nums">
+                    {groupOn} of {g.statuses.length} on
+                  </span>
+                </h4>
+              ) : null}
+              <div
+                role="group"
+                aria-label={g.title ? `${g.title} states` : 'States'}
+                className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 md:grid-cols-3"
               >
-                {on ? <CheckIcon size={11} /> : null}
-              </span>
-              <span className="min-w-0 truncate">{s.name}</span>
-            </button>
+                {g.statuses.map((x) => (
+                  <StatusRow
+                    key={x.status}
+                    status={x}
+                    on={!excluded.includes(x.status)}
+                    full={full}
+                    onToggle={(on) =>
+                      onChange(
+                        on ? [...excluded, x.status] : excluded.filter((y) => y !== x.status),
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            </section>
           );
         })}
       </div>
@@ -186,5 +209,47 @@ export function ItemTypeStatuses({
         </div>
       ) : null}
     </div>
+  );
+}
+
+// One status as a checkbox row; at the cap a status still on stays on, one already off can always come back on.
+function StatusRow({
+  status,
+  on,
+  full,
+  onToggle,
+}: {
+  status: Status;
+  on: boolean;
+  full: boolean;
+  // Called with whether it was on (so it turns off).
+  onToggle: (wasOn: boolean) => void;
+}) {
+  const locked = on && full;
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={on}
+      disabled={locked}
+      className={`flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+        on
+          ? 'border-brand-300 bg-brand-50 text-slate-900 hover:border-brand-400 dark:border-brand-500/40 dark:bg-brand-500/10 dark:text-slate-50'
+          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-200'
+      }`}
+      onClick={() => onToggle(on)}
+    >
+      <span
+        aria-hidden
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition ${
+          on
+            ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-600 dark:bg-brand-600'
+            : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'
+        }`}
+      >
+        {on ? <CheckIcon size={11} /> : null}
+      </span>
+      <span className="min-w-0 truncate">{status.name}</span>
+    </button>
   );
 }

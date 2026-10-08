@@ -164,6 +164,7 @@ const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
 const PLAN_SETUP_PARTS = [
   'Title',
+  'BoardSetUp',
   'ColumnAdded',
   'ColumnRenamed',
   'ColumnReordered',

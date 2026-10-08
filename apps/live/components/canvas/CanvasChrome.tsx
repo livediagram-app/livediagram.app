@@ -360,6 +360,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     slidesPopoverEl,
     cardTypesPopoverEl,
     trashPopoverEl,
+    newCardPopoverEl,
     cardFinderPopoverEl,
     clusterPopovers,
     paletteTint,
@@ -529,6 +530,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : slidesPopoverEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
+      {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
@@ -639,6 +641,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
                 typesButtonRef={cardTypesButtonRef}
                 // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
+                newCard={
+                  !readOnly
+                    ? {
+                        open: activeDockPanel === 'plan-new-card',
+                        onToggle: (button) => handleDockButtonClick('plan-new-card', button, true),
+                      }
+                    : undefined
+                }
                 trash={
                   !readOnly && !isMobile
                     ? {

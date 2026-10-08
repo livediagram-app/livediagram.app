@@ -36,6 +36,9 @@ import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
+import type { StatusBoard } from './usePlanStatusNames';
+
+const NO_STATUS_BOARDS: readonly StatusBoard[] = [];
 import { moveStatusRefusal } from './status-refusal';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
@@ -68,6 +71,8 @@ export function usePlanSlice(opts: {
   statusPhases?: ReadonlyMap<string, StatusPhase>;
   // The card types the document's boards show under each status (the Cards panel's Not on a Board).
   statusTypes?: BoardStatusTypes;
+  // Each board's title and statuses (the type editor's States groups).
+  statusBoards?: readonly StatusBoard[];
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
   // Shows a refusal on screen (a toast): a canvas Plan card dropped where it cannot go.
@@ -448,6 +453,7 @@ export function usePlanSlice(opts: {
       statusNames: opts.statusNames,
       statusPhases: opts.statusPhases ?? NO_PHASES,
       statusTypes: opts.statusTypes ?? NO_STATUS_TYPES,
+      statusBoards: opts.statusBoards ?? NO_STATUS_BOARDS,
       ...(hasSlides ? { addItemSlide, addBoardSlide } : {}),
     }),
     [
@@ -490,6 +496,7 @@ export function usePlanSlice(opts: {
       opts.statusNames,
       opts.statusPhases,
       opts.statusTypes,
+      opts.statusBoards,
     ],
   );
 

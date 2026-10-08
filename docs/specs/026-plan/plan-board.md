@@ -35,8 +35,9 @@ Stored on the element, shared by everyone, undone like any element edit:
   the board's actions as icon-left rows: **Add to Slides** (the board as a slide; announces "Board added to the
   slides").
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) left of Maximise,
-  for someone who may edit. It opens a popover under it holding the element menu's **Board** and **Cards** settings,
-  each under a heading that opens it, one at a time (Board when it opens; opening one closes the other); it scrolls when taller than the window. A press
+  for someone who may edit. It opens a popover under it holding the same four sub-sections as the element menu's Board
+  (**Board Title**, **Board Swimlanes**, **Supported Cards**, **Card Layout**), each under a heading that opens it,
+  one at a time (Board Title when it opens; opening one closes the other); it scrolls when taller than the window. A press
   outside or Escape closes it. Telemetry: `Plan` · `Opened` · `BoardSettings`.
 - **Swimlanes**: none, or grouped by assignee, type, priority, status, or **any field** the card types the board
   shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). The menu lists only what those
@@ -85,14 +86,15 @@ Where each is set, so a setting lives with what it changes, never in one central
   at once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
   opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
   moves to it, anchored to its cog.
-- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
-  flyouts, each a stack of groups under the menu's small uppercase headings, a hairline apart: **Board**
-  (**Title**, with **Add to Slides** as an icon button beside it, the whole board as a slide,
-  [Presentation mode](../012-collaboration/presentation-mode.md#board-slides); **Swimlanes**, one grid: None,
-  Assignee, Type, Priority, Project, Status, then a tile per groupable field, named by the field and drawn
-  with its kind's glyph) and **Cards** (**Card Types**, below; **Card Size**: Minimal, Compact or Detailed,
-  below; what a card shows at each size is its type's Display, [Card display](item-types.md#card-display)). Each of
-  Swimlanes, Card Types and Card Size opens with a one-line info note (an "i" in a circle) saying what it does.
+- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as one
+  **Board** category (a flyout), holding four sub-sections, each a collapsible group under a small uppercase heading,
+  one open at a time (Board Title when it opens), as the cog shows them: **Board Title** (its **Title**; a board is
+  added to the slides from its own ⋯ menu, above), **Board Swimlanes** (**Group Rows By**, one grid: None, Assignee,
+  Type, Priority, Status, then a tile per groupable field, named by the field and drawn with its kind's glyph),
+  **Supported Cards** (**Card Types**, below; left out on an Archive board) and **Card Layout** (**Card Size**:
+  Minimal, Compact or Detailed; what a card shows at each size is its type's Display, [Card
+  display](item-types.md#card-display)). Group Rows By, Card Types and Card Size each open with a one-line info note
+  (an "i" in a circle) saying what it does.
   New columns come from a column's **+ Add Column After**.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (none
   named is every type). The last one can be turned off too: the board then takes no type, shows no cards, and each
@@ -108,8 +110,25 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **The To-do List board** (preset `todo`, after Kanban in the lists): two columns, **To Do** and **Done** (the done
   column), for Action cards only, Compact cards showing who has each action and when it is due (a to-do list is a
   dense list of short items, so Compact; its checklist is in the card), and the Completion and Due Soon widgets.
-- **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and the
-  **column picker**; its first pick or name makes the first column.
+- **Setup Board**: a board with no columns (the Blank board starts so) shows, in place of its columns, a **Setup
+  Board** card in the board's colours (a board glyph, the title, a line on what it is for, Help), with two steps
+  marked by a step bar (a done step ticked and clickable to go back):
+  1. **Card Types**: a tile per card type of the document (its glyph on a tint of its colour, its name, a tick when
+     on), every one on to start; **Select All** and **Clear**; under the tiles **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the tiles already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
+     **Next: Columns** needs at least one.
+  2. **Columns**: the columns chosen so far, top to bottom as the board will show them left to right, each a row
+     with a grip, its name, "Existing state" or "New", and a remove cross; "No columns yet. Add one below." while
+     there are none. A row is reordered by dragging its grip (mouse, pen or finger): a lifted copy follows the
+     pointer, the others close up and a dashed slot in the brand colour shows where it will land; release places
+     it, Escape puts it back; Alt+Up and Alt+Down on a grip move it by keyboard. Its heading counts them with a count badge. Then **Use an Existing State**, a chip per status the document has that is not chosen
+     (with **Add All**); then **Add a New State**, a name field and **Add** (Enter adds too): a name matching an
+     existing state uses it ("Uses the existing To Do state, so its cards show here."), one already chosen is
+     refused ("That column is already on the board."). At 12 columns adding stops ("A board holds up to 12
+     columns."). **Back** returns to step 1 with nothing lost.
+     **Create Board** (needs a column) writes the columns (an existing state keeps its status, so its cards show; a new
+     one has a status of its own) and the card types (every type is no `addTypes`; a chosen few are) as one change, one
+     undo step. Telemetry: `Plan` · `Changed` · `BoardSetUp`. Someone who may only view reads that the board is not
+     set up yet.
 - **The column picker** is how every column is added (the empty board, and a column's **+ Add Column After**):
   - **Use an Existing Status**: a chip per status the document's other boards use, or a card is in (out of the
     Trash) though no board names it, that this board lacks, named as

@@ -40,9 +40,9 @@ import {
 } from '@/hooks/plan/status-refusal';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
-import { PlanFirstColumn } from './PlanFirstColumn';
-import { addStatusColumn, addStatusColumns, pickableStatuses } from './column-status-picks';
-import { addFirstColumn } from './board-setup-edits';
+import { PlanSetupBoard } from './PlanSetupBoard';
+import { setUpBoard } from './setup-board';
+import { pickableStatuses } from './column-status-picks';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
@@ -356,26 +356,18 @@ export function PlanBoardView({
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
         {setup.columns.length === 0 ? (
-          <PlanFirstColumn
+          <PlanSetupBoard
             palette={palette}
             canEdit={canEdit}
-            setup={setup}
+            types={plan?.types ?? []}
             statusNames={pickable}
-            onAdd={(name) => {
-              const next = addFirstColumn(setup, name, pickable);
-              if (!next) return;
-              plan?.updateBoard(element.id, next);
-              trackSetup('ColumnAdded');
-            }}
-            onPick={(pick) => {
-              const added = addStatusColumn(setup, null, pick);
-              if (!added) return;
-              plan?.updateBoard(element.id, added.setup);
-              trackSetup('ColumnAdded');
-            }}
-            onPickAll={(picks) => {
-              plan?.updateBoard(element.id, addStatusColumns(setup, null, picks));
-              trackSetup('ColumnAdded');
+            {...(plan && plan.types.length < ITEM_TYPES_MAX
+              ? { onCreateType: () => plan.editType('new') }
+              : {})}
+            onSetUp={(columns, typeIds) => {
+              const all = (plan?.types ?? []).map((t) => t.id);
+              plan?.updateBoard(element.id, setUpBoard(setup, columns, typeIds, all));
+              trackSetup('BoardSetUp');
             }}
           />
         ) : (

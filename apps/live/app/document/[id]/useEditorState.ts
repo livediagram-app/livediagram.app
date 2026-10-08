@@ -2022,6 +2022,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     names: planStatusNames,
     phases: planStatusPhases,
     types: planStatusTypes,
+    boards: planStatusBoards,
   } = usePlanStatuses(
     tabs,
     activeId,
@@ -2065,6 +2066,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     statusNames: planStatusNames,
     statusPhases: planStatusPhases,
     statusTypes: planStatusTypes,
+    statusBoards: planStatusBoards,
     notify: toast.info,
   });
   // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").

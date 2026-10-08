@@ -39,7 +39,7 @@ right-click menu adds an **item slide**, the slide being that item rather than e
 
 ### Board slides
 
-A whole Plan board can be a slide too: **Add to Slides** in the board's **Board** flyout (its element menu,
+A whole Plan board can be a slide too: **Add to Slides** in the board's own **⋯** menu (in its header,
 [Plan board](../026-plan/plan-board.md)) adds a slide holding that board.
 
 - A board is an element, so a board slide is an ordinary slide: it belongs to the board's tab and names the board
