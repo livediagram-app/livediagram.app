@@ -25,7 +25,7 @@ export function AddCardButton({
   open?: boolean;
   onClosed?: () => void;
   onAdd: (card: NewCard) => void;
-  // The menu's Create Card Type row (AddCardPopover).
+  // The menu's Add New Card Type row (AddCardPopover).
   onCreateType?: (() => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);

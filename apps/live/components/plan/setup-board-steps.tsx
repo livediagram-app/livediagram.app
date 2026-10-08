@@ -10,9 +10,27 @@ import { matchStatus } from './column-status-picks';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars, type PlanPalette } from './plan-palette';
 import { columnFromName, setupColumnKey, type SetupColumn } from './setup-board';
+import { usePlan } from './PlanContext';
 import { SetupColumnList } from './SetupColumnList';
+import { AddCardTypeButton } from './AddCardTypeButton';
 
 const HEADING = 'text-[11px] font-semibold uppercase tracking-wider';
+
+// The board's colours as CSS variables, so a button's hover classes (a brand border and tint) win over them, where
+// inline colours would not.
+const boardVars = (palette: PlanPalette) =>
+  ({
+    '--line': palette.cardBorder,
+    '--muted': palette.muted,
+    '--ink': palette.text,
+    '--fill': palette.card,
+  }) as React.CSSProperties;
+// A bordered button in the board's colours: an existing state's tile, and Add.
+const BOARD_BUTTON =
+  'flex cursor-pointer items-center gap-1 border border-[var(--line)] bg-[var(--fill)] font-medium text-[var(--ink)] transition hover:border-brand-400 hover:bg-brand-50/60 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-brand-500/10 dark:hover:text-brand-300';
+// An existing state to add, a tile as the card types are.
+const STATE_TILE = `${BOARD_BUTTON} gap-2.5 rounded-xl px-2.5 py-2 text-left`;
+const ADD_BUTTON = `${BOARD_BUTTON} rounded-lg px-3 text-[13px]`;
 const LINK =
   'cursor-pointer rounded px-1.5 py-0.5 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 disabled:cursor-default disabled:opacity-40 dark:text-brand-300 dark:hover:bg-brand-500/10';
 
@@ -104,17 +122,7 @@ export function SetupTypesStep({
           );
         })}
       </div>
-      {onCreateType ? (
-        <button
-          type="button"
-          onClick={onCreateType}
-          className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-3 py-2 text-[13px] font-medium transition hover:border-brand-400 hover:text-brand-700 dark:hover:text-brand-300"
-          style={{ borderColor: palette.cardBorder, color: palette.muted }}
-        >
-          <PlusIcon size={12} />
-          Add New Card Type
-        </button>
-      ) : null}
+      {onCreateType ? <AddCardTypeButton onClick={onCreateType} palette={palette} /> : null}
       <p className="text-[12px] tabular-nums" style={{ color: palette.muted }}>
         {chosen.length === 0
           ? 'Pick at least one card type.'
@@ -151,6 +159,12 @@ export function SetupColumnsStep({
   const typed = columnFromName(name, chosen, statusNames);
   const reuses = name.trim() ? matchStatus(name, { columns: [] }, statusNames) : null;
   const add = (c: SetupColumn) => !full && onChange([...chosen, c]);
+  // The boards that show a state, by their titles as they are now.
+  const statusBoards = usePlan()?.statusBoards;
+  const boardsOf = (status: string) =>
+    (statusBoards ?? [])
+      .filter((b) => b.statuses.includes(status))
+      .map((b) => b.title || 'Untitled Board');
   const submit = () => {
     if (!typed || full) return;
     add(typed);
@@ -183,45 +197,6 @@ export function SetupColumnsStep({
         )}
       </div>
 
-      {existing.length > 0 ? (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <p className={HEADING} style={{ color: palette.muted }}>
-              Use an Existing State
-            </p>
-            {existing.length > 1 ? (
-              <button
-                type="button"
-                className={LINK}
-                disabled={full}
-                onClick={() => onChange([...chosen, ...existing].slice(0, max))}
-              >
-                Add All
-              </button>
-            ) : null}
-          </div>
-          <div role="group" aria-label="Existing states" className="flex flex-wrap gap-1.5">
-            {existing.map((c) => (
-              <button
-                key={c.status}
-                type="button"
-                disabled={full}
-                onClick={() => add(c)}
-                className="flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-medium transition hover:border-brand-400 disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  borderColor: palette.cardBorder,
-                  color: palette.text,
-                  backgroundColor: palette.card,
-                }}
-              >
-                <PlusIcon size={10} />
-                {c.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
       <div className="flex flex-col gap-1.5">
         <label htmlFor={inputId} className={HEADING} style={{ color: palette.muted }}>
           Add a New State
@@ -251,12 +226,8 @@ export function SetupColumnsStep({
             type="button"
             disabled={!typed || full}
             onClick={submit}
-            className="flex cursor-pointer items-center gap-1 rounded-lg border px-3 text-[13px] font-medium transition hover:border-brand-400 disabled:cursor-not-allowed disabled:opacity-40"
-            style={{
-              borderColor: palette.cardBorder,
-              backgroundColor: palette.card,
-              color: palette.text,
-            }}
+            className={ADD_BUTTON}
+            style={boardVars(palette)}
           >
             <PlusIcon size={12} />
             Add
@@ -272,6 +243,60 @@ export function SetupColumnsStep({
                 : ' '}
         </p>
       </div>
+
+      {existing.length > 0 ? (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <p className={HEADING} style={{ color: palette.muted }}>
+              Use an Existing State
+            </p>
+            {existing.length > 1 ? (
+              <button
+                type="button"
+                className={LINK}
+                disabled={full}
+                onClick={() => onChange([...chosen, ...existing].slice(0, max))}
+              >
+                Add All
+              </button>
+            ) : null}
+          </div>
+          {/* A tile per state, as the card types are: a plus, its name, and the boards that use it. */}
+          <div
+            role="group"
+            aria-label="Existing states"
+            className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+          >
+            {existing.map((c) => {
+              const where = boardsOf(c.status);
+              return (
+                <button
+                  key={c.status}
+                  type="button"
+                  disabled={full}
+                  onClick={() => add(c)}
+                  aria-label={`Add ${c.name}`}
+                  className={STATE_TILE}
+                  style={boardVars(palette)}
+                >
+                  <span
+                    aria-hidden
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
+                  >
+                    <PlusIcon size={12} />
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-[13px] font-semibold">{c.name}</span>
+                    <span className="truncate text-[11px] font-normal text-[var(--muted)]">
+                      {where.length ? `On ${where.join(', ')}` : 'Only cards are in it'}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

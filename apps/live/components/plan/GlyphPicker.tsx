@@ -27,10 +27,13 @@ export function GlyphPicker({
   value,
   colour,
   onChange,
+  inline = false,
 }: {
   value: string;
   colour: string;
   onChange: (glyph: string) => void;
+  // Drawn inside another field (the type editor's Name): just the glyph and a chevron, no border and no name.
+  inline?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   // Held in state so the popover anchors on its first render.
@@ -44,7 +47,11 @@ export function GlyphPicker({
         aria-label={`Glyph: ${name}`}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white py-1 pl-1 pr-2 text-left text-[13px] text-slate-800 transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-600"
+        className={
+          inline
+            ? 'flex h-8 shrink-0 cursor-pointer items-center gap-0.5 rounded-md py-0.5 pl-0.5 pr-1 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:hover:bg-slate-800'
+            : 'flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white py-1 pl-1 pr-2 text-left text-[13px] text-slate-800 transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-600'
+        }
         onClick={() => setOpen((v) => !v)}
         onKeyDown={(e) => {
           if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -60,7 +67,7 @@ export function GlyphPicker({
         >
           <PlanTypeGlyph glyph={value} size={16} />
         </span>
-        <span className="min-w-28 truncate">{name}</span>
+        {inline ? null : <span className="min-w-28 truncate">{name}</span>}
         <ChevronDownIcon className="shrink-0 text-slate-400" />
       </button>
       {open && trigger ? (

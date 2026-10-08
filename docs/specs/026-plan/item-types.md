@@ -173,6 +173,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   its order (the built-ins first, then added types in the order they were added).
 - Someone who may only view the document sees the list without the edit and add controls.
 
+## Add New Card Type
+
+- Wherever a card type can be added (the Card Types panel, a board's Add a Card menu, Setup Board) it is the same
+  control: a full-width dashed row, a plus and **Add New Card Type**, quiet until hovered, when it takes the brand
+  colour (border, tint and text). On a board it wears the board's colours; in a menu it is one of the menu's items.
+
 ## Card display
 
 - A card face is drawn at its board's **card size** (Minimal, Compact or Detailed; [Plan board](plan-board.md#the-board-set-up)).
@@ -236,9 +242,11 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     `CardTypeTour`, and `UI` · `Ended` · `CardTypeTourCompleted` or `CardTypeTourSkipped`. Every
     button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
     icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
-  - **General**: **Name**, **Colour** (the twelve swatches, then **+** for a custom colour, which opens the custom colour picker in place
-    (as in [Draw](../023-draw-mode/draw-mode.md)); a custom colour in force shows as a picked swatch before the +) and **Glyph**: one field-sized button showing the chosen glyph (on a tint of the type's colour), its
-    name and a chevron, which opens a popover under it (above it when there is no room below), drawn over the editor so its
+  - **General**: **Name**, one field holding the glyph and the name (no Glyph row of its own): at its start the chosen
+    glyph on a tint of the type's colour with a small chevron (named "Glyph: {Name}"), then the name typed after it,
+    the field no wider than a 32-character name needs; and **Colour** (the twelve swatches, then **+** for a custom
+    colour, which opens the custom colour picker in place (as in [Draw](../023-draw-mode/draw-mode.md)); a custom
+    colour in force shows as a picked swatch before the +). The glyph opens a popover under it (above it when there is no room below), drawn over the editor so its
     scrolling body never clips it: **Search
     glyphs** (focused on open) and, on the same row, a **Glyph category** menu (**All glyphs**, then the eight
     categories: **Work**, **People**, **Communication**, **Planning**, **Ideas and Notes**, **Status and Signals**,
@@ -281,18 +289,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (Votes always on the card). **Add Tab**, the same full-width dashed row under the groups, adds an unnamed tab.
   - **States**: every status the document's boards name, and any a card is in that no board names, grouped by the
     board that shows it: a group per board (All Cards and Archive boards aside), headed by the board's title as it
-    is now (so a renamed board reads its new name) with "N of M on", holding its statuses in column order (a status
+    is now (so a renamed board reads its new name) with "N of M states on", holding its statuses in column order (a status
     on two boards shows in both, and ticking it in one ticks it in both, as it is one status), then **No Board** for
     any status no board names. Each group is a grid of checkbox rows (three to a row on desktop, two on a tablet,
-    one on a phone), each ticked while the type uses it (all ticked to start), with "N of M on" and
+    one on a phone), each ticked while the type uses it (all ticked to start), with "N of M states on" and
     **Select All** and **Deselect All** above them (each disabled when it would change nothing). Unticking one
     leaves it out; Select All turns every listed status back on (a left-out status no board lists any more stays
     left out); Deselect All turns them off in board order as far as the cap allows. All may be off, and then a note
     says a card of this type stays in the state it is made in and can never be moved to another. With no columns
     on the tab's boards it says there are no states to choose from. At most 64 may be off: then every status still
     on is disabled, and a note says "A type can turn off at most 64 states. Turn one back on to turn off another."
-    Under them, **Default State**: a menu of **None** (for a built-in type whose named state the document has,
-    **{State} (Built-In Default)** instead, picked until another is chosen) and every state still on, in board order, with a line saying
+    Under them, **Default State**: a menu of every state still on, each once and by its own name, in board order,
+    after **None** (left out for a built-in type whose named state the document has: that state shows picked until
+    another is chosen, and a pick is saved as picked), with a line saying
     "Cards made outside a board start here; a card added to a board takes that column's state."
   - **Display**: the card sizes as a segmented control (**Minimal**, **Compact**, **Detailed**; Compact to start; its
     pill slides to the chosen size, as the Share dialog's Valid does),

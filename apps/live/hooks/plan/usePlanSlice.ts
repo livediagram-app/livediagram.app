@@ -114,7 +114,7 @@ export function usePlanSlice(opts: {
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
   // A new type filled from this one (Duplicate), or none.
   const [typeTemplateId, setTypeTemplateId] = useState<string | null>(null);
-  // Create Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
+  // Add New Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
   const forBoard = useTypeForBoard(commit);
   const { setTypeForBoard } = forBoard;
   const editType = useCallback(
@@ -125,6 +125,8 @@ export function usePlanSlice(opts: {
     },
     [setTypeForBoard],
   );
+  // The board showing Setup Board again (docs/specs/026-plan/plan-board.md "Setup Board"), for this person only.
+  const [setupBoardId, openBoardSetup] = useState<string | null>(null);
   const createTypeForBoard = useCallback(
     (boardId: string, statuses: readonly string[]) => {
       setEditingTypeId('new');
@@ -421,6 +423,8 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
+      setupBoardId,
+      openBoardSetup,
       status: planItems.status,
       self: planItems.self,
       people,
@@ -461,6 +465,7 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
+      setupBoardId,
       planItems.status,
       planItems.self,
       planItems.refetch,

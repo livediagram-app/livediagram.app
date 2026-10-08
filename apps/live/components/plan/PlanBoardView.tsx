@@ -41,7 +41,7 @@ import {
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
 import { PlanSetupBoard } from './PlanSetupBoard';
-import { setUpBoard } from './setup-board';
+import { setUpBoard, setupFromBoard } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
@@ -234,8 +234,10 @@ export function PlanBoardView({
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
-  // The Add a Card menu's Create Card Type: a new type with only this board's statuses, added to it once saved
-  // (docs/specs/026-plan/plan-board.md "Create Card Type"); not offered once the catalogue is full.
+  // Setup Board asked for again from the board's Board Title (a board that has columns), for this person only.
+  const settingUp = canEdit && plan?.setupBoardId === element.id;
+  // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
+  // (docs/specs/026-plan/plan-board.md "Add New Card Type"); not offered once the catalogue is full.
   const createType =
     plan && plan.types.length < ITEM_TYPES_MAX
       ? () =>
@@ -355,12 +357,23 @@ export function PlanBoardView({
         }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
-        {setup.columns.length === 0 ? (
+        {setup.columns.length === 0 || settingUp ? (
           <PlanSetupBoard
+            // Remounted when it is asked for again, so it starts from the board as it is then.
+            key={settingUp ? 'again' : 'first'}
             palette={palette}
             canEdit={canEdit}
             types={plan?.types ?? []}
             statusNames={pickable}
+            {...(settingUp
+              ? {
+                  initial: setupFromBoard(
+                    setup,
+                    boardAddTypes(setup, plan?.types ?? []).map((t) => t.id),
+                  ),
+                  onCancel: () => plan?.openBoardSetup(null),
+                }
+              : {})}
             {...(plan && plan.types.length < ITEM_TYPES_MAX
               ? { onCreateType: () => plan.editType('new') }
               : {})}
@@ -368,6 +381,7 @@ export function PlanBoardView({
               const all = (plan?.types ?? []).map((t) => t.id);
               plan?.updateBoard(element.id, setUpBoard(setup, columns, typeIds, all));
               trackSetup('BoardSetUp');
+              if (settingUp) plan?.openBoardSetup(null);
             }}
           />
         ) : (

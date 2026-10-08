@@ -24,7 +24,6 @@ import {
   CloseIcon,
   DialogCloseButton,
   DuplicateIcon,
-  TextInput,
   TrashIcon,
 } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -220,23 +219,22 @@ export function ItemTypeEditor({
             <>
               <div data-tour-id="card-type-general">
                 <SheetRow label="Name" htmlFor={`${titleId}-name`}>
-                  <TextInput
-                    id={`${titleId}-name`}
-                    compact
-                    // A card type's name is short (32 characters at most): the field is sized to it.
-                    className="max-w-xs"
-                    value={label}
-                    maxLength={ITEM_TYPE_LABEL_MAX}
-                    placeholder="Customer call"
-                    autoFocus={!type}
-                    onChange={(e) => setLabel(e.target.value)}
-                  />
+                  {/* The glyph and the name as one field: pick the glyph at its start, type the name after it. */}
+                  <div className="flex max-w-xs items-center gap-1 rounded-lg border border-slate-200 bg-white pl-1 pr-2 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900">
+                    <GlyphPicker value={glyph} colour={color} onChange={setGlyph} inline />
+                    <input
+                      id={`${titleId}-name`}
+                      value={label}
+                      maxLength={ITEM_TYPE_LABEL_MAX}
+                      placeholder="Customer call"
+                      autoFocus={!type}
+                      onChange={(e) => setLabel(e.target.value)}
+                      className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
+                    />
+                  </div>
                 </SheetRow>
                 <SheetRow label="Colour">
                   <ColourSwatches allowCustom value={color} onChange={(c) => c && setColor(c)} />
-                </SheetRow>
-                <SheetRow label="Glyph">
-                  <GlyphPicker value={glyph} colour={color} onChange={setGlyph} />
                 </SheetRow>
               </div>
             </>

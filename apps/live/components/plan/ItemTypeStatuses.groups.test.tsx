@@ -43,7 +43,7 @@ describe('the States tab', () => {
       <ItemTypeStatuses statuses={STATUSES} excluded={[]} onChange={onChange} boards={BOARDS} />,
     );
     const sprint = screen.getByRole('region', { name: 'Sprint' });
-    expect(within(sprint).getByText('2 of 2 on')).toBeTruthy();
+    expect(within(sprint).getByText('2 of 2 states on')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'No Board' })).toBeTruthy();
     expect(screen.getAllByRole('checkbox', { name: 'Done' })).toHaveLength(2);
     fireEvent.click(within(sprint).getByRole('checkbox', { name: 'Done' }));

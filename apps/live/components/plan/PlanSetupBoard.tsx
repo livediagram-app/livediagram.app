@@ -6,7 +6,7 @@
 // board is not set up yet.
 import { useState } from 'react';
 import { PLAN_COLUMNS_MAX, type ItemTypeDef } from '@livediagram/items';
-import { ChevronLeftIcon, Button, CheckIcon, PlanCardsIcon } from '@livediagram/ui';
+import { ChevronLeftIcon, Button, CheckIcon, GlyphDisc, PlanCardsIcon } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { PlanBoardTileArt } from './plan-tile-art';
 import type { PlanPalette } from './plan-palette';
@@ -16,9 +16,9 @@ import { SetupColumnsStep, SetupTypesStep } from './setup-board-steps';
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 type Step = 'types' | 'columns';
-const STEPS: { id: Step; label: string }[] = [
-  { id: 'types', label: 'Card Types' },
-  { id: 'columns', label: 'Columns' },
+const STEPS: { id: Step; label: string; hint: string }[] = [
+  { id: 'types', label: 'Card Types', hint: 'Which cards go on it' },
+  { id: 'columns', label: 'Columns', hint: 'The stages they move through' },
 ];
 
 export function PlanSetupBoard({
@@ -28,6 +28,8 @@ export function PlanSetupBoard({
   statusNames,
   onSetUp,
   onCreateType,
+  initial,
+  onCancel,
 }: {
   palette: PlanPalette;
   canEdit: boolean;
@@ -38,10 +40,16 @@ export function PlanSetupBoard({
   onSetUp: (columns: SetupColumn[], typeIds: string[]) => void;
   // Add New Card Type, under the card types (absent while the catalogue is full).
   onCreateType?: (() => void) | undefined;
+  // Run again on a board that has columns: what it starts from (the board as it is), and Cancel. Its last button
+  // then reads Save Board.
+  initial?: { columns: SetupColumn[]; typeIds: string[] } | undefined;
+  onCancel?: (() => void) | undefined;
 }) {
   const [step, setStep] = useState<Step>('types');
-  const [typeIds, setTypeIds] = useState<string[]>(() => types.map((t) => t.id));
-  const [columns, setColumns] = useState<SetupColumn[]>([]);
+  const [typeIds, setTypeIds] = useState<string[]>(
+    () => initial?.typeIds ?? types.map((t) => t.id),
+  );
+  const [columns, setColumns] = useState<SetupColumn[]>(() => initial?.columns ?? []);
   // A type made from here (Add New Card Type) joins the picks once it is saved: any type the catalogue gains while
   // the board is being set up starts ticked. Adjusted during render when the catalogue changes.
   const [known, setKnown] = useState<readonly ItemTypeDef[]>(types);
@@ -91,44 +99,58 @@ export function PlanSetupBoard({
 
         {canEdit ? (
           <>
-            {/* The steps: done ones ticked, the current one in the brand colour; a done step can be gone back to. */}
-            <ol aria-label="Steps" className="mt-4 flex shrink-0 items-center gap-2 px-5">
-              {STEPS.map((s, i) => {
+            {/* The steps as two equal tiles across the card: the current one tinted, a done one ticked (and a way
+                back), the next one quiet. */}
+            <ol
+              aria-label="Steps"
+              // A hairline under the steps sets them apart from the step itself.
+              className="mt-4 grid shrink-0 grid-cols-2 gap-2 border-b px-5 pb-4"
+              style={{ borderColor: palette.border }}
+            >
+              {STEPS.map((x, i) => {
                 const current = i === at;
                 const done = i < at;
                 return (
-                  <li key={s.id} className="flex min-w-0 flex-1 items-center gap-2">
+                  <li key={x.id} className="min-w-0">
                     <button
                       type="button"
                       aria-current={current ? 'step' : undefined}
                       disabled={!done}
-                      onClick={() => setStep(s.id)}
-                      className={`flex min-w-0 items-center gap-2 rounded-full text-[13px] font-medium ${
-                        done ? 'cursor-pointer' : 'cursor-default'
+                      onClick={() => setStep(x.id)}
+                      className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition ${
+                        current
+                          ? 'border-brand-400 bg-brand-50/70 dark:border-brand-500/60 dark:bg-brand-500/10'
+                          : done
+                            ? 'cursor-pointer hover:border-brand-300'
+                            : 'cursor-default'
                       }`}
-                      style={{ color: current || done ? palette.text : palette.muted }}
+                      style={current ? undefined : { borderColor: palette.cardBorder }}
                     >
-                      <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold tabular-nums ${
+                      <GlyphDisc
+                        size={24}
+                        className={`text-[12px] font-semibold tabular-nums ${
                           current || done ? 'bg-brand-500 text-white dark:bg-brand-600' : 'border'
                         }`}
-                        style={current || done ? undefined : { borderColor: palette.cardBorder }}
+                        style={
+                          current || done
+                            ? undefined
+                            : { borderColor: palette.cardBorder, color: palette.muted }
+                        }
                       >
-                        {done ? (
-                          <CheckIcon size={12} />
-                        ) : (
-                          <span className="text-optical-centre">{i + 1}</span>
-                        )}
+                        {done ? <CheckIcon size={12} /> : String(i + 1)}
+                      </GlyphDisc>
+                      <span className="flex min-w-0 flex-col">
+                        <span
+                          className="truncate text-[13px] font-semibold"
+                          style={{ color: current || done ? palette.text : palette.muted }}
+                        >
+                          {x.label}
+                        </span>
+                        <span className="truncate text-[11px]" style={{ color: palette.muted }}>
+                          {x.hint}
+                        </span>
                       </span>
-                      <span className="truncate">{s.label}</span>
                     </button>
-                    {i < STEPS.length - 1 ? (
-                      <span
-                        aria-hidden
-                        className={`h-0.5 flex-1 rounded-full ${done ? 'bg-brand-500' : ''}`}
-                        style={done ? undefined : { backgroundColor: palette.cardBorder }}
-                      />
-                    ) : null}
                   </li>
                 );
               })}
@@ -172,26 +194,33 @@ export function PlanSetupBoard({
                   Step 1 of 2
                 </span>
               )}
-              {step === 'types' ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  disabled={typeIds.length === 0}
-                  onClick={() => setStep('columns')}
-                >
-                  Next: Columns
-                </Button>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  disabled={columns.length === 0}
-                  onClick={() => onSetUp(columns, typeIds)}
-                >
-                  <CheckIcon size={12} />
-                  Create Board
-                </Button>
-              )}
+              <span className="flex items-center gap-2">
+                {onCancel ? (
+                  <Button variant="secondary" size="sm" onClick={onCancel}>
+                    Cancel
+                  </Button>
+                ) : null}
+                {step === 'types' ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={typeIds.length === 0}
+                    onClick={() => setStep('columns')}
+                  >
+                    Next: Columns
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={columns.length === 0}
+                    onClick={() => onSetUp(columns, typeIds)}
+                  >
+                    <CheckIcon size={12} />
+                    {initial ? 'Save Board' : 'Create Board'}
+                  </Button>
+                )}
+              </span>
             </footer>
           </>
         ) : (

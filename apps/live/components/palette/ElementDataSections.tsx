@@ -239,7 +239,11 @@ export function ElementDataSections({
           flyout, ahead of Tools, as every board-wide choice lives here. */}
       {shapeTarget?.shape === 'plan-board' ? (
         <>
-          <PlanBoardMenuSections element={shapeTarget} flyoutProps={flyoutProps} />
+          <PlanBoardMenuSections
+            element={shapeTarget}
+            flyoutProps={flyoutProps}
+            onClose={props.onClose}
+          />
         </>
       ) : null}
       {shapeTarget?.shape === 'plan-view' && shapeTarget.planView ? (

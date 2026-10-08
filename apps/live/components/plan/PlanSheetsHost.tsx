@@ -57,7 +57,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       const from = plan.typeTemplateId
         ? ctx.types.find((t) => t.id === plan.typeTemplateId)
         : undefined;
-      // Create Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
+      // Add New Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
       const forBoard = !editing && !from ? plan.typeForBoard : null;
       const template =
         !editing && from

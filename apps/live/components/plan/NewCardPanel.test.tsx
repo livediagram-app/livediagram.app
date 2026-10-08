@@ -52,7 +52,7 @@ describe('the New Card panel', () => {
   it('offers no Create Card Type (types are made from Edit Cards or a board)', () => {
     setPlan({});
     render(<NewCardPanel onPopoverClose={vi.fn()} />);
-    expect(screen.queryByRole('button', { name: 'Create Card Type' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add New Card Type' })).toBeNull();
   });
 
   it('is not there for someone who may only view', () => {

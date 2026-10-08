@@ -49,7 +49,8 @@ describe('Setup Board', () => {
     expect(screen.getByText('No columns yet. Add one below.')).toBeTruthy();
     const create = screen.getByRole('button', { name: 'Create Board' }) as HTMLButtonElement;
     expect(create.disabled).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'To Do' }));
+    // An existing state's tile names it and where it is used.
+    fireEvent.click(screen.getByRole('button', { name: 'Add To Do' }));
     const field = screen.getByLabelText('Add a New State');
     fireEvent.change(field, { target: { value: 'done' } });
     expect(screen.getByText(/Uses the existing Done state/)).toBeTruthy();
@@ -105,5 +106,33 @@ describe('Setup Board', () => {
     rerender(<PlanSetupBoard {...props} types={[...ITEM_TYPES, kudos]} />);
     expect(screen.getByRole('button', { name: /Kudos/ }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByText(`1 of ${ITEM_TYPES.length + 1} card types`)).toBeTruthy();
+  });
+
+  it('starts from the board when run again, with Cancel and Save Board', () => {
+    const onSetUp = vi.fn();
+    const onCancel = vi.fn();
+    render(
+      <PlanSetupBoard
+        palette={planPalette('light', {})}
+        canEdit
+        types={ITEM_TYPES}
+        statusNames={NAMES}
+        onSetUp={onSetUp}
+        initial={{
+          columns: [{ kind: 'existing', status: 'todo', name: 'To Do' }],
+          typeIds: ['task'],
+        }}
+        onCancel={onCancel}
+      />,
+    );
+    expect(screen.getByText(`1 of ${ITEM_TYPES.length} card types`)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save Board' }));
+    expect(onSetUp).toHaveBeenCalledWith(
+      [{ kind: 'existing', status: 'todo', name: 'To Do' }],
+      ['task'],
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onCancel).toHaveBeenCalled();
   });
 });

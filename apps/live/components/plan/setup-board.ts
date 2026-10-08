@@ -41,15 +41,43 @@ export function setUpBoard(
   allTypeIds: readonly string[],
   random: () => number = Math.random,
 ): PlanBoardSetup {
-  let next: PlanBoardSetup = setup;
+  // Run again on a board that has columns (Setup Board from its Board Title): a column it keeps keeps its id and its
+  // settings (name, WIP limit, colour, width); the rest are made afresh, in the order chosen. A column left out leaves
+  // this board only: its cards keep their state.
+  const kept = new Map(setup.columns.map((c) => [c.status, c]));
+  let next: PlanBoardSetup = { ...setup, columns: [] };
   for (const c of columns.slice(0, PLAN_COLUMNS_MAX)) {
-    if (c.kind === 'existing') {
+    const old = c.kind === 'existing' ? kept.get(c.status) : undefined;
+    if (old) {
+      next = { ...next, columns: [...next.columns, old] };
+    } else if (c.kind === 'existing') {
       next = addStatusColumn(next, null, { status: c.status, name: c.name })?.setup ?? next;
     } else {
       next = addColumnAfter(next, null, c.name, random)?.setup ?? next;
     }
   }
+  // The done column stays only while its column does.
+  if (next.doneColumnId && !next.columns.some((c) => c.id === next.doneColumnId)) {
+    const { doneColumnId: _gone, ...withoutDone } = next;
+    next = withoutDone;
+  }
   const { addTypes: _drop, ...rest } = next;
   const every = !typeIds || allTypeIds.every((id) => typeIds.includes(id));
   return every ? rest : { ...rest, addTypes: allTypeIds.filter((id) => typeIds.includes(id)) };
+}
+
+// What Setup Board starts from on a board that has columns: its columns, as existing states in its order, and the
+// card types it takes.
+export function setupFromBoard(
+  setup: PlanBoardSetup,
+  typeIds: readonly string[],
+): { columns: SetupColumn[]; typeIds: string[] } {
+  return {
+    columns: setup.columns.map((c) => ({
+      kind: 'existing' as const,
+      status: c.status,
+      name: c.name,
+    })),
+    typeIds: [...typeIds],
+  };
 }

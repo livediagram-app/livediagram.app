@@ -237,7 +237,7 @@ author redaction, and the same thread list, composer and resolve control the com
 
 - Plan mode's bottom-right strip holds, for someone who may edit, a **+** (**New Card**, with a hover card) between
   the Trash and Find a Card. It opens the **New Card** panel above it, pointing at it as the strip's other panels
-  do: a tile per card type of the document (no Create Card Type here). A pick makes a card of that type, off any
+  do: a tile per card type of the document (no Add New Card Type here). A pick makes a card of that type, off any
   board, in its type's starting status (its Default State, else the first status the type
   uses), titled as the type names a new card ("New task"), and opens it in the card panel with its title selected.
 - Telemetry: `Plan` · `Added` · the type, as any new card.

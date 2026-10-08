@@ -63,7 +63,7 @@ export function BoardSettingsButton({
             // A press in the settings is the popover's, never the canvas's or the board's.
             onPointerDown={stop}
           >
-            <PlanBoardSectionsPanel element={element} />
+            <PlanBoardSectionsPanel element={element} onClose={() => setAnchor(null)} />
           </div>
         </AnchoredPopover>
       ) : null}

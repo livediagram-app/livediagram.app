@@ -66,3 +66,34 @@ describe('columnFromName', () => {
     expect(columnFromName('blocked', chosen, names)).toBeNull();
   });
 });
+
+describe('Setup Board on a board that has columns', () => {
+  it('keeps a kept column’s settings, makes the new ones, drops the rest, and starts from the board', async () => {
+    const { setupFromBoard } = await import('./setup-board');
+    const board: PlanBoardSetup = {
+      ...empty,
+      doneColumnId: 'c-done',
+      columns: [
+        { id: 'c-todo', status: 'todo', name: 'To Do', wipLimit: 3, color: '#2563eb' },
+        { id: 'c-done', status: 'done', name: 'Done' },
+      ],
+      addTypes: ['task'],
+    };
+    const start = setupFromBoard(board, ['task']);
+    expect(start.columns).toEqual([
+      { kind: 'existing', status: 'todo', name: 'To Do' },
+      { kind: 'existing', status: 'done', name: 'Done' },
+    ]);
+    const next = setUpBoard(
+      board,
+      [{ kind: 'new', name: 'Waiting' }, start.columns[0]!],
+      ['task', 'note'],
+      ALL,
+      () => 0,
+    );
+    expect(next.columns.map((c) => c.name)).toEqual(['Waiting', 'To Do']);
+    expect(next.columns[1]).toEqual(board.columns[0]);
+    expect(next.doneColumnId).toBeUndefined();
+    expect(next.addTypes).toEqual(['task', 'note']);
+  });
+});

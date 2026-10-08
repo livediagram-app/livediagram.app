@@ -110,7 +110,7 @@ export function ItemTypeStatuses({
           aria-live="polite"
           className="text-[12px] font-medium text-slate-600 dark:text-slate-300"
         >
-          {onCount} of {statuses.length} on
+          {onCount} of {statuses.length} {statuses.length === 1 ? 'state' : 'states'} on
         </span>
         <Button
           variant="ghost"
@@ -139,7 +139,8 @@ export function ItemTypeStatuses({
                 <h4 className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   <span className="min-w-0 truncate">{g.title}</span>
                   <span className="font-medium normal-case tracking-normal tabular-nums">
-                    {groupOn} of {g.statuses.length} on
+                    {groupOn} of {g.statuses.length} {g.statuses.length === 1 ? 'state' : 'states'}{' '}
+                    on
                   </span>
                 </h4>
               ) : null}
@@ -190,10 +191,16 @@ export function ItemTypeStatuses({
             id={defaultId}
             className="w-full sm:w-64"
             selectClassName="text-[13px]"
-            value={defaultStatus && !excluded.includes(defaultStatus) ? defaultStatus : ''}
+            // Each state once, by its own name. A built-in type with no default chosen shows its built-in one picked
+            // (no None: it falls back to that anyway); what is picked is saved as picked.
+            value={
+              defaultStatus && !excluded.includes(defaultStatus)
+                ? defaultStatus
+                : (builtIn?.status ?? '')
+            }
             onChange={(e) => onDefaultStatus(e.target.value)}
           >
-            <option value="">{builtIn ? `${builtIn.name} (Built-In Default)` : 'None'}</option>
+            {builtIn ? null : <option value="">None</option>}
             {statuses
               .filter((s) => !excluded.includes(s.status))
               .map((s) => (

@@ -14,7 +14,14 @@ import {
   type CardSize,
   type PlanBoardSetup,
 } from '@livediagram/items';
-import { ChevronDownIcon, PlanCardsIcon, PlanIcon, TextInput, lucideGlyph } from '@livediagram/ui';
+import {
+  Button,
+  ChevronDownIcon,
+  PlanCardsIcon,
+  PlanIcon,
+  TextInput,
+  lucideGlyph,
+} from '@livediagram/ui';
 import { lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -42,9 +49,18 @@ function useBoard(element: ShapeElement) {
   return { setup, set };
 }
 
-// The Board section: its title. (A board is added to the slides from its own ⋯ menu.)
-export function PlanBoardSettings({ element }: { element: ShapeElement }) {
+// The Board Title section: its title, then Setup Board, which reopens the setup screen on the board, filled in with
+// it as it is, to change its card types and columns at once. (A board is added to the slides from its own ⋯ menu.)
+export function PlanBoardSettings({
+  element,
+  onClose,
+}: {
+  element: ShapeElement;
+  // Closes the menu or popover holding the section (Setup Board takes over the board itself).
+  onClose?: (() => void) | undefined;
+}) {
   const board = useBoard(element);
+  const plan = usePlan();
   const [title, setTitle] = useState(board?.setup.title ?? '');
   if (!board) return null;
   const { setup, set } = board;
@@ -68,6 +84,21 @@ export function PlanBoardSettings({ element }: { element: ShapeElement }) {
             else setTitle(setup.title);
           }}
         />
+        {/* Not on an All Cards or Archive board, which have no card types or columns of their own to set. */}
+        {setup.allCards || setup.archive || setup.columns.length === 0 ? null : (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="mt-2 w-full"
+            onClick={() => {
+              onClose?.();
+              plan?.openBoardSetup(element.id);
+            }}
+          >
+            <PlanIcon size={14} />
+            Setup Board
+          </Button>
+        )}
       </div>
     </MenuGroup>
   );
@@ -164,7 +195,7 @@ export const PLAN_BOARD_SECTIONS: readonly {
   id: 'board-title' | 'swimlanes' | 'supported-cards' | 'card-layout';
   title: string;
   icon: ReactNode;
-  Body: (props: { element: ShapeElement }) => ReactNode;
+  Body: (props: { element: ShapeElement; onClose?: (() => void) | undefined }) => ReactNode;
   shows: (setup: PlanBoardSetup) => boolean;
 }[] = [
   {
@@ -199,7 +230,14 @@ export const PLAN_BOARD_SECTIONS: readonly {
 
 // The four sections as one panel, each a collapsible group, one open at a time (Board Title when it opens): the
 // element menu's Board flyout and the board's own cog both show this.
-export function PlanBoardSectionsPanel({ element }: { element: ShapeElement }) {
+export function PlanBoardSectionsPanel({
+  element,
+  onClose,
+}: {
+  element: ShapeElement;
+  // Closes whatever holds the panel (the cog's popover, the element menu).
+  onClose?: (() => void) | undefined;
+}) {
   const [open, setOpen] = useState<string | null>('board-title');
   const setup = normaliseBoardSetup(element.planBoard);
   return (
@@ -213,7 +251,7 @@ export function PlanBoardSectionsPanel({ element }: { element: ShapeElement }) {
             open={open === id}
             onToggle={() => setOpen(open === id ? null : id)}
           >
-            <Body element={element} />
+            <Body element={element} onClose={onClose} />
           </BoardSettingsSection>
         ),
       )}
@@ -225,9 +263,11 @@ export function PlanBoardSectionsPanel({ element }: { element: ShapeElement }) {
 export function PlanBoardMenuSections({
   element,
   flyoutProps,
+  onClose,
 }: {
   element: ShapeElement;
   flyoutProps: (id: string) => FlyoutProps;
+  onClose?: (() => void) | undefined;
 }) {
   if (!useBoard(element)) return null;
   return (
@@ -239,7 +279,7 @@ export function PlanBoardMenuSections({
       {...flyoutProps('plan-board')}
     >
       <div className="flex flex-col py-1">
-        <PlanBoardSectionsPanel element={element} />
+        <PlanBoardSectionsPanel element={element} onClose={onClose} />
       </div>
     </MenuFlyoutSection>
   );
