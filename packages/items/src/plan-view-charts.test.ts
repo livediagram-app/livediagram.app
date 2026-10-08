@@ -74,7 +74,7 @@ describe('cards by field, by assignee', () => {
 });
 
 describe('status breakdown', () => {
-  it('orders statuses as the boards name them, then others, then No status', () => {
+  it('orders statuses as the boards name them, then No status (a state no board names among it)', () => {
     const names = new Map([
       ['todo', 'To do'],
       ['done', 'Done'],
@@ -90,9 +90,10 @@ describe('status breakdown', () => {
     expect(m.slices.map((s) => [s.label, s.count])).toEqual([
       ['To do', 2],
       ['Done', 1],
-      ['Review', 1],
-      ['No status', 1],
+      ['No status', 2],
     ]);
+    // Without names, every status stands.
+    expect(statusMixModel(cards).slices.map((s) => s.label)).toContain('Review');
     expect(m.total).toBe(5);
   });
 });

@@ -159,7 +159,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 
 - **Trash** is a status, `trash`, that no board shows (not in a column, not counted, not "not on this board", not
   on All Cards). A trashed item keeps the status it had under `trashedFrom`.
-- In Plan mode a **Trash** button sits in the bottom-right cluster, left of Undo, with a badge of how many cards
+- In Plan mode a **Trash** button leads the bottom-right cluster's Plan strip, on its left before **Find a
+  Card** and **Card Types** (not on a phone, whose cluster has no room for it: a card's menu still sends it to
+  the Trash), its count tucked into its corner; with a badge of how many cards
   it holds. While a card is dragged the button opens out into a dashed red **Drop to Trash** target, and while the
   card is over it fills red, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
   colours still change); a card let go there is trashed and the move is announced.
@@ -233,7 +235,8 @@ author redaction, and the same thread list, composer and resolve control the com
 
 ## Finding a card
 
-- **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
+- **Cards** is a button in Plan mode's bottom-right cluster, after the Trash in one strip with Card Types
+  (buttons in one frame, as Undo and Redo are, each opening its own panel); it opens a popover of every card
   in the document that is neither archived nor in the Trash, 44 rem wide on desktop (the screen less a margin on
   a phone) with a list 32 rem tall (less on a short screen) whatever it holds, so the panel keeps its size as a search
   narrows it, of every card type the catalogue has (custom types
@@ -241,7 +244,7 @@ author redaction, and the same thread list, composer and resolve control the com
   newest change first.
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
   description or card type name ("person" finds every Person card), ignoring case.
-- **All Cards** (the wider, three quarters) and **Not on a Board** switch between every card and the cards no board in the document shows,
+- **All Cards** (the wider: all the room **Not on a Board**, on one line at its own width, leaves) and **Not on a Board** switch between every card and the cards no board in the document shows,
   on any tab: those with no status, those whose status no column holds (the strays a renamed or removed column
   left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
   card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
@@ -251,8 +254,9 @@ author redaction, and the same thread list, composer and resolve control the com
   listed cards' types offer (Card Type among them while they hold more than one type), then one of its values among them with its count, so no filter leaves nothing. Every
   filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: "No cards match these filters."
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
-- Each row shows the type's glyph, the title, and the type and number under it; on desktop also its priority, its
-  due date ("Due 12 Oct"), its state as a chip ("No status" without one) and its assignee. Choosing one closes the popover and
+- Each row is the card as a board draws it at **Compact** size, laid out as its type's Display says, so a card
+  looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
+  narrows by it. Choosing one closes the popover and
   opens the card in the item panel.
 - Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
   puts that card in the Trash (restorable from there) without leaving the list.

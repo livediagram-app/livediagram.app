@@ -69,15 +69,18 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 - **A column's own settings** sit on the column: a cog at the far right of its head (shown on hover and focus,
   always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (none or
-  one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After** and
-  **Remove Column**. Removing a column whose state holds cards (out of the Trash, on any board) first opens
-  a popover anchored to Remove Column: "Remove {Name}?", "Its N cards are in {Name}, on every board that shows it.
-  Where should they go?", and two option cards, one picked: **Move to Another Column** (a menu of the board's other
-  columns, the first picked; the default) or **Move to the Trash** ("You can restore them from the Trash."). **Remove
-  Column** in it (red, a bin) moves the cards as picked, then removes the column; **Cancel** or Escape keeps it.
-  Moving to the Trash moves every card of that state and announces "N cards moved to the Trash"; a card whose type
-  leaves out the target column's state stays, as a move does. A column whose state holds no card is removed at
-  once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
+  one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After**,
+  then two ways to take it away. **Remove Column** (a column glyph) takes it off this board only, at once: the
+  state and its cards stay, so another board's column for it still shows them (where none does, the cards read
+  as No status, as any card of a state no board names). **Delete Status** (red, a bin) deletes the state: when it
+  holds cards (out of the Trash, on any board) it first opens a popover anchored to it: "Delete {Name}?", "Its N
+  cards are in {Name}, on every board that shows it. Where should they go?", and two option cards, one picked:
+  **Move to Another Column** (a menu of the board's other columns, the first picked; the default) or **Move to the
+  Trash** ("You can restore them from the Trash."). **Delete Status** in it (red, a bin) moves the cards as picked,
+  then removes the column, and the state's column from every other board in the document; **Cancel** or Escape
+  keeps it. Moving to the Trash moves every card of that state and announces "N cards moved to the Trash"; a card
+  whose type leaves out the target column's state stays, as a move does. A state that holds no card is deleted
+  at once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
   opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
   moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
@@ -135,7 +138,15 @@ Where each is set, so a setting lives with what it changes, never in one central
   when its own status holds no cards (out of the Trash), the cards of that status then showing in it; when its own
   status holds cards, or the board already has a column for that status, the rename is refused and the name put
   back, with a note under it: "A {Name} state already exists. Add it from Add Column, so its cards show here."
-  Boards from a template keep the template's statuses, and come with no cards. A board starts wide enough for every
+  Boards from a template keep the template's statuses, and come with no cards.
+  Whatever brings two states of one name into a document (a template's tab added beside a board, a pasted or
+  agent-written board, a document from before this rule), they **merge** into the first, in tab, board and
+  column order, so every client keeps the same one: each board takes the kept state (a board holding both keeps
+  the earlier column and drops the later), and the cards in the other, and a trashed card's state to restore
+  to, move to it, as one write. It is done by someone who may edit, once every tab and the cards have loaded,
+  with no undo step (undoing it would only split the cards again), and again whenever a duplicate appears
+  (`useMergeDuplicateStatuses`). A card type's Default State or turned-off states naming a merged-away state
+  are left as they are. A board starts wide enough for every
   column side by side at
   its narrowest (220px a slot, with the gaps between), never narrower than its default, so no new board scrolls. Archive and All Cards boards show cards by what they are, not by
   status, and keep their columns.
@@ -263,8 +274,8 @@ In Plan mode:
   own button; a bottom sheet titled "Add a Card" on a phone), as
   Illustrate's + opens "Add a page": a tile per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
-  (taking the row's field). Arrow keys move between the tiles as in every menu; Escape or an outside press
-  closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
+  (taking the row's field). Arrow keys move between the tiles as in every menu; Escape, a press anywhere
+  else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
 - **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** in red, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
@@ -291,9 +302,10 @@ In Plan mode:
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
     its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Child Cards** and **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
-  - **Header**: the type (a picker, with its glyph), the key, **Help** (the `?` with a small label), a **⋯** menu
-    of **Duplicate** (a copy right after it, without its votes, as the card menu's), **Archive** (or **Restore**)
-    and **Trash** (to the Trash), as icon-left rows, then the close button. Someone who may only view gets no ⋯.
+  - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
+    it, without its votes, as the card menu's), **Archive** (or **Restore**) and **Trash** (to the Trash), then,
+    after a separator, **Help** (opening the Cards article), as icon-left rows, then the close button. Someone who
+    may only view gets a ⋯ of Help alone.
   - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
   - **Child Cards**: a card that other cards name as their Parent lists them on its first tab, after that tab's
     fields and before Comments, under **Child Cards** with their count. Each row shows the child's type glyph, key,
@@ -315,7 +327,7 @@ In Plan mode:
     - the **current card** ends the trail and is not a link: its **Card Type** picker, a bordered pill with the
       type's glyph and a chevron (a plain label for someone who may not edit), then its number as a quiet
       monospace **#12** tag; pressing the tag copies "#12" and its tooltip says **Copied**.
-    - after a gap, **Help**, the **⋯** menu and **Close**, each named by a tooltip.
+    - after a gap, the **⋯** menu and **Close**, each named by a tooltip.
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
@@ -369,6 +381,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
   editor wears [zen mode](../007-editor/zen-mode.md)'s chrome (no header, tab bar, palette or panels).
   Everything on the board works as it does on the canvas: cards drag, open and add, and widgets filter. The
   header does not move the board while it is maximised.
+- On a touch screen, a finger on the maximised board's empty space scrolls the board (across and down), since
+  it covers the canvas there is nothing to pan; a finger on a card still picks it up.
 - **Restore Board** (a minimise icon, in the same place) or **Escape** puts it back. Escape restores only when
   no dialog (the item panel, a confirm) is open over the board; Escape in a dialog closes the dialog first. One
   Escape restores even with something selected: it restores and does nothing else (it does not also deselect).
@@ -395,10 +409,30 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - When its item is not in the document's store (deleted, or the tab came from another document) it draws "Item
   not found" in a dashed outline and offers to remove the card.
 
+## A state no board names
+
+- A card's state belongs to the columns that name it. When the last board or column naming a state goes, its
+  cards read as **No status** everywhere: their board rows and lanes, the Card Search and Cards panel, a card's
+  linked and child cards, its slide, the Gantt chart's state, the plan views' counts and the card's own
+  **Status** picker (which never offers a raw state id). The card keeps the state itself, so undoing the
+  board's or column's removal puts every card straight back; picking a state in the card's panel settles it, and an empty board still offers the
+  state (by its name) for its first column, which brings its cards back (`namedStatus`). The Trash says where a card came from only while
+  that state still has a column.
+
 ## On a phone
 
 - A finger on a board's empty space (between and below cards, column backgrounds) pans the canvas, as it does
-  anywhere else; a finger on a card picks the card up, and buttons and fields work as they do with a mouse.
+  anywhere else, whatever the tool: it never selects or moves the board, and holding it opens no menu. Only the
+  board's header moves the board, as with a mouse. A finger on a card picks the card up, and buttons and fields
+  work as they do with a mouse. Held still on a card (`LONG_PRESS_MS`), a finger opens the card's menu at the
+  finger, as a right-click does, for someone who may edit; lifting it then neither opens the card nor drags it.
+- A tap on a column's header (not its cog) frames that column: the view glides to fit it, header to the board's
+  foot, below the top strip, as a tap on a page does in Illustrate (`frameBoardColumn`). Not while the board is
+  maximised.
+- A board's header buttons (the ⋯, the settings cog, Maximise) stay on screen: when the board runs past the
+  canvas's right edge (zoomed in on a phone, or panned), they slide left to stay 8 px inside it, on the board's
+  surface with a shadow so they read over the header, never past the board's own left edge
+  (`useKeepOnScreen`). Elsewhere (a board on a slide) they stay where they are.
 - A board's body does not scroll under a finger (a native scroll would cancel a card's drag); a board with more
   cards than fit is made taller, or scrolled with a mouse or trackpad.
 

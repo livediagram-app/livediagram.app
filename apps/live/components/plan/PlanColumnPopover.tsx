@@ -17,7 +17,11 @@ import {
   useEscape,
 } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { Portal } from '@livediagram/ui';
+import { Portal, lucideGlyph } from '@livediagram/ui';
+import { lucideBetweenVerticalEnd } from '@livediagram/icons/lucide';
+
+// Remove Column's glyph: a column taken out from between its neighbours.
+const ColumnOffIcon = lucideGlyph(lucideBetweenVerticalEnd, 16);
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -99,6 +103,7 @@ export function PlanColumnPopover({
   onChange,
   onMoveCards,
   onTrashCards,
+  onDeleteStatus,
   onClose,
 }: {
   getAnchor: () => HTMLElement | null;
@@ -112,6 +117,8 @@ export function PlanColumnPopover({
   // Every card in the state to the Trash (a removed column's, when asked).
   onTrashCards: (status: string) => void;
   onClose: (restoreFocus: boolean) => void;
+  // Delete Status: the state's columns come off the document's other boards too.
+  onDeleteStatus?: ((status: string) => void) | undefined;
 }) {
   const mobile = useIsMobileViewport();
   const box = useRef<HTMLDivElement>(null);
@@ -397,6 +404,22 @@ export function PlanColumnPopover({
             }}
           />
         ) : null}
+        {/* Remove Column takes it off this board only: the state and its cards stay, so another board's column
+            for it still shows them. Delete Status deletes the state: its cards go where asked, and every board's
+            column for it goes. */}
+        {others.length > 0 ? (
+          <button
+            type="button"
+            className={ROW}
+            onClick={() => {
+              onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+              onClose(false);
+            }}
+          >
+            <ColumnOffIcon />
+            Remove Column
+          </button>
+        ) : null}
         {others.length > 0 ? (
           <button
             type="button"
@@ -407,12 +430,13 @@ export function PlanColumnPopover({
               if (stateCards > 0) setRemovingAt(e.currentTarget);
               else {
                 onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+                onDeleteStatus?.(column.status);
                 onClose(false);
               }
             }}
           >
             <TrashIcon size={16} />
-            Remove Column
+            Delete Status
           </button>
         ) : null}
         {removingAt ? (
@@ -426,6 +450,7 @@ export function PlanColumnPopover({
               if (choice.kind === 'move') onMoveCards(column.status, choice.to);
               else onTrashCards(column.status);
               onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+              onDeleteStatus?.(column.status);
               setRemovingAt(null);
               onClose(false);
             }}

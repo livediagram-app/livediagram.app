@@ -75,6 +75,10 @@ export type CardFaceEdit = {
   bit: (field: CardField, node: ReactNode) => ReactNode;
 };
 
+// How far the Display editor's dotted box (1 px border, 2 px padding) and chip (2 px padding) lower a chip's
+// middle: a Compact title beside them drops as much, so its first line stays level with them.
+const EDIT_CHIP_INSET_PX = 5;
+
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
 const FRAME =
   'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150 hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
@@ -230,14 +234,16 @@ export function PlanCardFace({
   const votePlaced = cardLayoutFields(size, layout).some((f) => f === 'votes' && show(f));
   const loneVote =
     voting && !votePlaced ? <VoteControl palette={palette} total={votes} voting={voting} /> : null;
-  // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle.
-  const titleText = (lines: 2 | 3, px: number, lineHeight?: number) => (
+  // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle; `inset`
+  // lowers it by as much as the editor's dotted box and chip padding raise the chips (EDIT_CHIP_INSET_PX).
+  const titleText = (lines: 2 | 3, px: number, lineHeight?: number, inset = 0) => (
     <span
       className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold ${lineHeight ? '' : 'leading-snug'}`}
       style={{
         color: palette.text,
         fontSize: px,
         ...(lineHeight ? { lineHeight: `${lineHeight}px` } : {}),
+        ...(inset ? { paddingTop: inset } : {}),
       }}
     >
       {title}
@@ -279,7 +285,7 @@ export function PlanCardFace({
                 </span>
               ))}
           {ownColour ? <ColourDot colour={ownColour} className="mt-1.5" /> : null}
-          {titleText(2, 13, 20)}
+          {titleText(2, 13, 20, edit ? EDIT_CHIP_INSET_PX : 0)}
           {flag}
         </div>
         {row.length || loneVote || edit ? (

@@ -7,7 +7,7 @@
 // the status it is made in. A type leaves out at most ITEM_TYPE_EXCLUDED_STATUSES_MAX: at the cap a status still
 // ticked cannot be unticked (Deselect All stops there too), and a note says why.
 import { useId } from 'react';
-import { ITEM_TYPE_EXCLUDED_STATUSES_MAX } from '@livediagram/items';
+import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, builtInDefaultStatus } from '@livediagram/items';
 import { Button, CheckIcon, Select } from '@livediagram/ui';
 
 type Status = { status: string; name: string };
@@ -40,6 +40,7 @@ export function ItemTypeStatuses({
   onChange,
   defaultStatus = '',
   onDefaultStatus,
+  typeId,
 }: {
   // The statuses the boards name, in board order: id and name.
   statuses: readonly Status[];
@@ -48,6 +49,8 @@ export function ItemTypeStatuses({
   // The Default State ('' for none), and its setter; without the setter the menu is left out.
   defaultStatus?: string;
   onDefaultStatus?: (status: string) => void;
+  // The type's id: a built-in type's named Default State shows in place of None.
+  typeId?: string;
 }) {
   const defaultId = useId();
   if (statuses.length === 0)
@@ -57,6 +60,14 @@ export function ItemTypeStatuses({
       </p>
     );
   const onCount = statuses.filter((s) => !excluded.includes(s.status)).length;
+  // A built-in type's Default State by name, as this document has it (none chosen falls back to it).
+  const builtInId = typeId
+    ? builtInDefaultStatus(
+        { id: typeId, excludedStatuses: excluded },
+        statuses.map((s) => [s.status, s.name] as const),
+      )
+    : undefined;
+  const builtIn = statuses.find((s) => s.status === builtInId);
   const full = excluded.length >= ITEM_TYPE_EXCLUDED_STATUSES_MAX;
   const allOn = onCount === statuses.length;
   const allOff =
@@ -159,7 +170,7 @@ export function ItemTypeStatuses({
             value={defaultStatus && !excluded.includes(defaultStatus) ? defaultStatus : ''}
             onChange={(e) => onDefaultStatus(e.target.value)}
           >
-            <option value="">None</option>
+            <option value="">{builtIn ? `${builtIn.name} (Built-In Default)` : 'None'}</option>
             {statuses
               .filter((s) => !excluded.includes(s.status))
               .map((s) => (

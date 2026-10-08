@@ -370,6 +370,15 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
 
 // A status as people read it (docs/specs/026-plan/plan-board.md "All Cards"): the name a column gives it,
 // else the status itself without a new board's suffix, words capitalised.
+// A card's status as the document has it (docs/specs/026-plan/plan-board.md "A state no board names"): one no
+// board in the document names any more (its board or column gone) reads as no status, so the card shows and
+// groups as No status; the card keeps it, so undoing the board's deletion puts the card straight back. Given no
+// names (a caller that has none), every status stands.
+export function namedStatus(item: Item, names?: ReadonlyMap<string, string>): string | undefined {
+  const s = itemStatus(item);
+  return s && (!names || names.has(s)) ? s : undefined;
+}
+
 export function statusLabel(status: string, names?: ReadonlyMap<string, string>): string {
   const named = names?.get(status);
   if (named) return named;
@@ -398,7 +407,7 @@ function laneOf(
       return lane;
     }
     case 'status': {
-      const s = itemStatus(item);
+      const s = namedStatus(item, statusNames);
       return s
         ? { key: `s:${s}`, label: statusLabel(s, statusNames), field: 'status', value: s }
         : { key: NO_LANE, label: 'No status', field: 'status', value: null };

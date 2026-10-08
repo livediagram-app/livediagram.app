@@ -5,13 +5,15 @@
 // each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
 // MenuTile grid, so arrow keys, Escape, focus return and an outside press behave as every other
-// menu does. On a phone it is a bottom sheet.
-import type { SyntheticEvent } from 'react';
+// menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
+// away. On a phone it is a bottom sheet.
+import { useEffect, useRef, type SyntheticEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useLatest } from '@/hooks/ui/useLatest';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
@@ -34,6 +36,19 @@ export function AddCardPopover({
   onClose: () => void;
 }) {
   const mobile = useIsMobileViewport();
+  // Closes on a wheel (a pan or a zoom) anywhere but the menu itself, which may scroll.
+  const box = useRef<HTMLDivElement>(null);
+  const close = useLatest(onClose);
+  useEffect(() => {
+    if (mobile) return;
+    const onWheel = (e: WheelEvent) => {
+      const menu = box.current?.ownerDocument.querySelector('[data-add-card-menu]');
+      if (e.target instanceof Node && menu?.contains(e.target)) return;
+      close.current();
+    };
+    document.addEventListener('wheel', onWheel, { capture: true, passive: true });
+    return () => document.removeEventListener('wheel', onWheel, { capture: true });
+  }, [mobile, close]);
   const choose = (type: ItemTypeDef) => {
     onClose();
     onAdd({ type: type.id, fields: { title: type.newTitle } });
@@ -79,10 +94,10 @@ export function AddCardPopover({
   return (
     // display: contents, so it lays out nothing; it only catches what bubbles out of the portal, and
     // keys typed in the menu never reach the canvas's shortcuts.
-    <div className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
+    <div ref={box} className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
       <PortalMenu anchor={anchor} placement="below-start" onClose={onClose} initialFocus="first">
         {/* No header: it opens right under its own Add card button, which names it. */}
-        {tiles}
+        <div data-add-card-menu="">{tiles}</div>
       </PortalMenu>
     </div>
   );

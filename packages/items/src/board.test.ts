@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   boardShowsType,
+  namedStatus,
   cardIsFaceDown,
   columnForStatus,
   normaliseBoardSetup,
@@ -287,5 +288,18 @@ describe('presets', () => {
     expect(presetSetupOrBlank('nope')).toEqual(presetSetup('blank'));
     expect(presetSetupOrBlank(undefined)).toEqual(presetSetup('blank'));
     expect(isPlanBoardPresetId('kanban')).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "A state no board names": a card whose state's board or column is gone groups
+// as No status, keeping the state itself.
+describe('namedStatus', () => {
+  it('reads a state no board names as none, and every state without names', () => {
+    const names = new Map([['todo', 'To do']]);
+    const gone = item({ title: 'G', status: 'next~ab12' });
+    expect(namedStatus(item({ title: 'T', status: 'todo' }), names)).toBe('todo');
+    expect(namedStatus(gone, names)).toBeUndefined();
+    expect(namedStatus(gone)).toBe('next~ab12');
+    expect(gone.fields['status']).toBe('next~ab12');
   });
 });

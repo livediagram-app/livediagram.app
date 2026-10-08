@@ -65,11 +65,12 @@ Plan must cost nothing to a document that does not use it:
 
 ## Starting a board
 
-- A Plan tab with no board shows, in the middle of the canvas, **Start with a Board**: a tile per board type, in the
+- An empty Plan tab (nothing on its canvas at all) shows, in the middle of the canvas, **Start with a Board**: a tile per board type, in the
   palette's order (Blank first, All Cards always last) and the Archive board left out, each a small picture of the board (its columns, its rows, cards in the
   colours of the types it takes) over its name and its full description, in the tab's light or dark look, as a new
   infographic page offers its layouts. Choosing one places that board,
-  empty, in the middle of the view. It is gone once the tab has a board, and never shown to someone who may only
+  empty, in the middle of the view. It is gone once the tab has anything on it (a board, or a
+  shape, a note or a view drawn first: the palette's Boards still add one), and never shown to someone who may only
   view. It keeps clear of the toolbar above and the bottom-right buttons below, scrolling inside itself when the
   tiles run taller than the room; on a phone it shows two tiles a row with shorter pictures.
 - Every list of board types (the palette's Boards, Start with a Board) is one list (`PLAN_BOARD_TILES`), and **All

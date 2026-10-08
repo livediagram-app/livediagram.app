@@ -132,6 +132,32 @@ describe('the States tab’s Default State', () => {
   });
 });
 
+describe('a built-in type’s Default State', () => {
+  it('shows its named state in place of None, until it is turned off', () => {
+    const { rerender } = render(
+      <ItemTypeStatuses
+        statuses={STATUSES}
+        excluded={[]}
+        onChange={vi.fn()}
+        onDefaultStatus={vi.fn()}
+        typeId="task"
+      />,
+    );
+    const first = () => (screen.getByLabelText('Default State') as HTMLSelectElement).options[0]!;
+    expect(first().textContent).toBe('To Do (Built-In Default)');
+    rerender(
+      <ItemTypeStatuses
+        statuses={STATUSES}
+        excluded={['todo']}
+        onChange={vi.fn()}
+        onDefaultStatus={vi.fn()}
+        typeId="task"
+      />,
+    );
+    expect(first().textContent).toBe('None');
+  });
+});
+
 describe('the item panel’s Status', () => {
   const task = { ...ITEM_TYPES.find((t) => t.id === 'task')!, excludedStatuses: ['done'] };
   const PERSON = { id: 'p1', name: 'Ali', color: '#2563eb' };
@@ -158,6 +184,14 @@ describe('the item panel’s Status', () => {
     onSave: vi.fn(),
     onPatch: vi.fn(),
     onOpenItem: vi.fn(),
+  });
+
+  // docs/specs/026-plan/plan-board.md "A state no board names": never its raw id.
+  it('shows a state no board names as No status, offering no raw id', () => {
+    render(<ItemFieldEditor f="status" ctx={ctx(make('next~ab12'))} />);
+    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
+    const names = screen.getAllByRole('option').map((o) => o.textContent);
+    expect(names).toEqual(['No status', 'To Do', 'Doing']);
   });
 
   it('offers only the statuses the type uses', () => {

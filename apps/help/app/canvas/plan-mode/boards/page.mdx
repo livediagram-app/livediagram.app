@@ -47,7 +47,7 @@ A board placed from the palette or the picker starts **empty**: its columns are 
 
 ## Columns
 
-<Figure caption="A column's cog opens its settings, from its name and colour down to Remove Column.">
+<Figure caption="A column's cog opens its settings, from its name and colour down to Remove Column and Delete Status.">
   <PlanColumnSettingsScene />
 </Figure>
 
@@ -59,7 +59,9 @@ Hover a column's head and press its cog (always there on a touch screen) to:
 - Set a **WIP Limit**: the count turns amber when the column holds more. It warns; it never refuses a card.
 - Make it **Counts as Done**, so its cards fill the board's Completion and count as done in charts.
 - Set its **Width**: one, two or three slots across the board.
-- **Move Left** or **Move Right**, **Add Column After**, or **Remove Column** (when its cards are anywhere, it asks where they go: to another column, or to the **Trash**, where you can restore them). A board's last column can't be removed.
+- **Move Left** or **Move Right**, or **Add Column After**.
+- **Remove Column** takes the column off this board only: the state and its cards stay, so another board's column for it still shows them.
+- **Delete Status** deletes the state itself: when it holds cards, it asks where they go (to another column, or to the **Trash**, where you can restore them), then the state's column comes off every board. A board's last column can't be removed or deleted.
 
 A board holds 1 to 12 columns. A board with no columns (a new Blank board) shows **No columns yet** and asks you to pick or name the first.
 

@@ -11,12 +11,12 @@ import {
   isPriority,
   itemAssignee,
   itemLabels,
-  itemStatus,
   itemTitle,
   statusLabel,
   typeIn,
   type Item,
   type ItemTypeDef,
+  namedStatus,
 } from '@livediagram/items';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { descriptionRuns } from './ItemDescription';
@@ -76,7 +76,7 @@ export function ItemSlideView({
   }
   const type = typeIn(types.length ? types : ITEM_TYPES, item.type);
   const accent = accentOn(type.color, palette);
-  const status = itemStatus(item);
+  const status = namedStatus(item, statusNames);
   const assignee = itemAssignee(item);
   const priority = item.fields['priority'];
   const due = item.fields['due'];

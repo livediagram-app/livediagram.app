@@ -101,6 +101,12 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
   shown in the badge's visibility legend on hover and focus and given to
   assistive technology as the badge's description. It stays a status, not a
   link: the legend explains it in place.
+- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus): **Who Can See This**, "From
+  just you to everyone, as you share it.", then the audiences as a ladder joined by a rail: **Private** (a lock),
+  **Shared** (a link), **Team** (people), **Public** (a globe), each a round tile in its tone over its name and
+  its sentence; the document's own state tinted in its tone and marked **Current** with a check. **Local only**
+  (its browser-window icon, amber) stands apart under a divider, the deliberate opt-out. For the eye only: the
+  badge carries the current state's words for assistive technology.
 - **Explorer.** Offline documents appear in Recent (and the other lists)
   alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.

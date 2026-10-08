@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import {
   ITEM_TYPES_MAX,
   PARENT_FIELD,
-  defaultStatusOf,
+  resolvedDefaultStatus,
   duplicateItemType,
   isArchived,
   isTrashed,
@@ -123,11 +123,11 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         childCards={childCards}
         linkedGroups={linkedGroups}
         onAddLinked={(group, typeId) => {
-          // A new card of that type, already linked here, in its type's Default State, else the first status its
-          // type uses; opened next.
+          // A new card of that type, already linked here, in its type's Default State (its own, else its built-in
+          // one by name), else the first status its type uses; opened next.
           const type = typeIn(ctx.types, typeId);
           const status =
-            defaultStatusOf(type) ??
+            resolvedDefaultStatus(type, ctx.statusNames) ??
             [...ctx.statusNames.keys()].find((st) => typeAllowsStatus(type, st)) ??
             'todo';
           const id = newItemId();

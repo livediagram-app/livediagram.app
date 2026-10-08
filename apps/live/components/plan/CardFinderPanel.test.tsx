@@ -40,7 +40,7 @@ function open(statusTypes?: ReadonlyMap<string, 'all' | ReadonlySet<string>>) {
   Object.assign(plan, {
     types: [...ITEM_TYPES, PERSON],
     items: new Map(items.map((i) => [i.id, i])),
-    statusNames: new Map(),
+    statusNames: new Map([['todo', 'To do']]),
     ...(statusTypes ? { statusTypes } : {}),
     canEdit: true,
     openItem: vi.fn(),
@@ -56,7 +56,8 @@ const rows = () =>
 describe('the Card Finder', () => {
   it('lists cards of custom types and finds them by the type’s name', () => {
     open();
-    expect(rows().some((r) => r.includes('Sam Reed') && r.includes('Person'))).toBe(true);
+    // Each row is the card's compact face, named for its title, type and number.
+    expect(screen.getByRole('button', { name: /^Open Sam Reed, Person #/ })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Search cards'), {
       target: { value: 'person' },
     });

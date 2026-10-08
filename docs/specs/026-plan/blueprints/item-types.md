@@ -158,7 +158,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
   Save. Copy: "Card Types", "+ Add Type", "Restore Built-In Types", "New Card Type", "Edit Card Type",
-  "+ Add Field", "Built-In Fields", "New Custom Field", "Add Custom Field", "Show on card", "Delete Type",
+  "+ Add Field", "Built-In Fields", "New Custom Field", "Add Custom Field", "Show on card", "Delete",
   "Keep as Item".
 
 ## Observability

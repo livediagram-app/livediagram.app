@@ -35,14 +35,14 @@ describe('removing a column with cards', () => {
     const { onRemove } = draw();
     expect(screen.getByText(/Its 3 cards are in To Do, on every board that shows it/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Move the cards to'), { target: { value: 'done' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Column' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Status' }));
     expect(onRemove).toHaveBeenCalledWith({ kind: 'move', to: 'done' });
   });
 
   it('moves them to the Trash when that is picked', () => {
     const { onRemove } = draw();
     fireEvent.click(screen.getByRole('radio', { name: 'Move to the Trash' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Column' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Status' }));
     expect(onRemove).toHaveBeenCalledWith({ kind: 'trash' });
   });
 

@@ -8,18 +8,16 @@
 // Plan mode's bottom-right cluster, like Card Types and the Trash.
 import { useMemo, useState } from 'react';
 import {
+  CARD_FIELDS,
   CARD_SEARCH_FILTERS_MAX,
   findCards,
   isOffBoard,
-  isPriority,
-  itemAssignee,
   searchCards,
   searchFields,
   searchFilterLabel,
   searchValues,
   type CardSearchFilter,
   type SwimlaneBy,
-  statusLabel,
   typeIn,
   itemTitle,
   type BoardStatusTypes,
@@ -30,11 +28,10 @@ import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { usePlan } from './PlanContext';
-import { PlanTypeGlyph } from './plan-type-glyph';
 import { AddFilterPicker } from './AddFilterPicker';
-import { PersonDisc } from './PersonDisc';
-import { PrioritySignal } from './plan-card-parts';
-import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
+import { planPalette } from './plan-palette';
+import { PlanCardFace } from './PlanCardFace';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The most rows drawn at once; a search narrows the rest.
 const CARD_FINDER_ROWS_MAX = 200;
@@ -44,18 +41,16 @@ const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 const filterKey = (f: { by: SwimlaneBy; field?: string | undefined }) =>
   f.by === 'field' ? `field:${f.field}` : f.by;
 
-// A due date as the row reads it: "12 Oct".
-const shortDate = (iso: string) => {
-  const d = new Date(`${iso}T00:00:00`);
-  return Number.isNaN(d.getTime())
-    ? iso
-    : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-};
-
 const SHOWS: { id: CardFinderShow; label: string }[] = [
   { id: 'all', label: 'All Cards' },
   { id: 'off-board', label: 'Not on a Board' },
 ];
+
+// The list's height, the same however many cards match (the panel never shrinks as a search narrows it). On a
+// phone it takes what the screen leaves: less the top bar and the floating toolbar under it (about 7.5rem), the
+// dock under the panel (about 4.5rem) and the panel's own heading, search, tabs and filters (about 13rem), so
+// the panel's top never runs under the toolbar.
+const LIST_HEIGHT = 'h-[min(60vh,32rem)] max-sm:h-[max(7rem,calc(100dvh-25rem))]';
 
 export function CardFinderPanel({
   popoverAnchor,
@@ -65,6 +60,8 @@ export function CardFinderPanel({
   onPopoverClose: () => void;
 }) {
   const plan = usePlan();
+  // The cards' colours, as the boards on this canvas draw them.
+  const palette = planPalette(useCanvasSurface());
   const [query, setQuery] = useState('');
   const [show, setShow] = useState<CardFinderShow>('all');
   // Field filters (a state, an assignee, a priority...), the person's own as the types are.
@@ -129,7 +126,7 @@ export function CardFinderPanel({
               role="radio"
               aria-checked={show === s.id}
               onClick={() => setShow(s.id)}
-              className={`flex ${s.id === 'all' ? 'flex-[3]' : 'flex-1'} items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition ${
+              className={`flex ${s.id === 'all' ? 'min-w-0 flex-1' : 'shrink-0 whitespace-nowrap px-4'} items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition ${
                 show === s.id
                   ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
@@ -196,7 +193,9 @@ export function CardFinderPanel({
           ) : null}
         </div>
         {found.length === 0 ? (
-          <p className="flex h-[min(60vh,32rem)] items-center justify-center px-2 text-center text-[12px] leading-snug text-slate-500 dark:text-slate-400">
+          <p
+            className={`flex ${LIST_HEIGHT} items-center justify-center px-2 text-center text-[12px] leading-snug text-slate-500 dark:text-slate-400`}
+          >
             {live.length === 0
               ? 'No cards yet. Add one from a board, or drag one in from the palette.'
               : query.trim()
@@ -209,59 +208,23 @@ export function CardFinderPanel({
           <ul
             aria-label="Cards"
             // The same height however many cards: the panel never shrinks as a search narrows it.
-            className="flex h-[min(60vh,32rem)] flex-col gap-0.5 overflow-y-auto"
+            className={`flex ${LIST_HEIGHT} flex-col gap-1.5 overflow-y-auto p-0.5`}
           >
             {found.slice(0, CARD_FINDER_ROWS_MAX).map((it) => {
               const type = typeIn(plan.types, it.type);
-              const status = typeof it.fields['status'] === 'string' ? it.fields['status'] : null;
               return (
-                <li
-                  key={it.id}
-                  // The whole row is the card: its hover and focus wash takes in the trash button too.
-                  className="group/row flex items-center gap-1 rounded-lg pr-1 transition hover:bg-slate-100 focus-within:bg-slate-100 dark:hover:bg-slate-800 dark:focus-within:bg-slate-800"
-                >
+                <li key={it.id} className="group/row flex items-center gap-2 pr-1">
                   <button
                     type="button"
                     onClick={() => {
                       onPopoverClose();
                       plan.openItem(it.id);
                     }}
-                    className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left focus-visible:outline-none"
+                    aria-label={`Open ${itemTitle(it) || 'Untitled'}, ${type.label} #${it.key}`}
+                    className="min-w-0 flex-1 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                   >
-                    <span
-                      aria-hidden
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
-                      style={accentVars(type.color)}
-                    >
-                      <PlanTypeGlyph glyph={type.glyph} size={14} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">
-                        {itemTitle(it) || 'Untitled'}
-                      </span>
-                      <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
-                        {type.label} #{it.key}
-                      </span>
-                    </span>
-                    {/* The wide panel's extra columns: where it stands, how urgent, when due, and whose. */}
-                    <span className="hidden shrink-0 items-center gap-2 sm:flex">
-                      {isPriority(it.fields['priority']) ? (
-                        <PrioritySignal priority={it.fields['priority']} label />
-                      ) : null}
-                      {typeof it.fields['due'] === 'string' ? (
-                        <span className="text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
-                          Due {shortDate(it.fields['due'])}
-                        </span>
-                      ) : null}
-                      <span className="max-w-[9rem] truncate rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        {status ? statusLabel(status, plan.statusNames) : 'No status'}
-                      </span>
-                      {itemAssignee(it) ? (
-                        <PersonDisc person={itemAssignee(it)!} />
-                      ) : (
-                        <span aria-hidden className="h-5 w-5" />
-                      )}
-                    </span>
+                    {/* The card as a board draws it at Compact size, laid out as its type's Display says. */}
+                    <PlanCardFace item={it} palette={palette} fields={CARD_FIELDS} size="compact" />
                   </button>
                   {plan.canEdit ? (
                     <Tooltip label="Move to Trash">

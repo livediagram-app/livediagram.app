@@ -5,7 +5,6 @@
 // panel beside it holds the fields in no tab, then who made the item and who last changed it. On a phone
 // it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
 // item wherever someone moves it, and closes if someone deletes it.
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
@@ -258,18 +257,16 @@ function ItemPanelContent({
         </span>
       ) : null}
       <span className="flex-1" />
-      <HelpArticleLink article="planCards" variant="labelled" />
-      {canEdit ? (
-        <ItemPanelMenu
-          itemKey={item.key}
-          archived={isArchived(item)}
-          flagged={isFlagged(item)}
-          onDuplicate={onDuplicate}
-          onFlag={onFlag}
-          onArchive={onArchive}
-          onTrash={onTrash}
-        />
-      ) : null}
+      <ItemPanelMenu
+        itemKey={item.key}
+        canEdit={canEdit}
+        archived={isArchived(item)}
+        flagged={isFlagged(item)}
+        onDuplicate={onDuplicate}
+        onFlag={onFlag}
+        onArchive={onArchive}
+        onTrash={onTrash}
+      />
       <DialogCloseButton compact onClick={onClose} />
     </div>
   );

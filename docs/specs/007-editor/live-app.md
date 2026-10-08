@@ -209,8 +209,10 @@ shared `ContextMenu`; and the tab menu, from a tab's `⋯` or a long-press on th
 `TabPortalMenu`) opens as a sheet (`BottomSheet`) docked to the bottom edge instead of a
 card hung off the long-press point, which covered the element it was about and ran under the tab
 bar. Full width (up to 32rem), at most 60% of the screen tall with its own scroll, clear of the
-home indicator, rising in (`animate-sheet-up`). A grab handle across its top drags it down:
-released past 80px, or flicked, it closes (`useSwipeDownDismiss`); otherwise it springs back.
+home indicator, rising in (`animate-sheet-up`). A grab handle across its top moves it, the sheet
+following the finger: dragged up past 48px (or flicked up) it fills the screen below the top bar, its handle
+still across its top; dragged down from there past 48px it returns to its own height; dragged down from its
+own height past 80px (or flicked down) it closes; anything less springs back (`useSheetDrag`).
 Outside taps and Escape close it as before. A section's flyout opens in place inside it.
 
 **A dialog closes from the backdrop only on a press that starts there.** Clicking the dim
@@ -222,7 +224,7 @@ away what was being edited (`Dialog`).
 the thing being edited sits behind it (Edit Outline), opens on a phone as a sheet docked to the
 bottom edge instead of filling the screen: full width, rounded at the top, at most 85% of the
 screen tall with its own scroll, clear of the home indicator, rising in (`animate-sheet-up`), with
-the same grab handle that drags it down to close it (`useSwipeDownDismiss`). It stays a modal
+the same grab handle, which fills the screen, returns or closes it as a menu's sheet does (`useSheetDrag`). It stays a modal
 dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
 desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
 

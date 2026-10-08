@@ -121,6 +121,46 @@ describe('usePlanSlice', () => {
     expect(result.current.context.ownerId).toBe('owner-me');
   });
 
+  // docs/specs/026-plan/plan-board.md "Column settings": Delete Status takes the state off every other board.
+  it('takes a deleted state’s columns off every other board, in every tab', () => {
+    const commitTabs = vi.fn();
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems,
+        itemTypes,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: () => {},
+        commitTabs,
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    const board = (id: string, statuses: string[]) => ({
+      id,
+      type: 'shape',
+      shape: 'plan-board',
+      planBoard: { title: id, columns: statuses.map((s) => ({ id: s, status: s, name: s })) },
+    });
+    const tabs = [
+      { id: 't1', elements: [board('here', ['todo', 'done']), board('other', ['todo', 'done'])] },
+      { id: 't2', elements: [board('far', ['done'])] },
+    ];
+    result.current.context.removeStatusColumns('todo', 'here');
+    const next = commitTabs.mock.calls[0]![0](tabs) as typeof tabs;
+    const cols = (t: number, i: number) =>
+      (
+        next[t]!.elements[i] as { planBoard: { columns: { status: string }[] } }
+      ).planBoard.columns.map((c) => c.status);
+    expect(cols(0, 0)).toEqual(['todo', 'done']);
+    expect(cols(0, 1)).toEqual(['done']);
+    expect(next[1]).toBe(tabs[1]);
+  });
+
   // docs/specs/026-plan/items.md "Trash": many cards go as one write, one card as its own patch.
   it('sends many cards to the Trash as one write, skipping trashed and missing ones', () => {
     const write = vi.fn(async () => true);

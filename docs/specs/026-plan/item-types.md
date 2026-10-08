@@ -60,6 +60,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   card with no status is made with none, so it waits as **not on board**. A Default State the type has turned off
   (in `excludedStatuses`) is ignored, as if absent; turning the Default State off in the editor clears it. An id no
   board names any more is kept: the card is made in it and shows as not on board until a board adds that status.
+- **A built-in type's Default State** is a state _name_, since a document's state ids are its own (`todo~k3f9`):
+  **Project** starts in **Backlog**; **Task**, **Action** and **Note** in **To Do**; **Idea** in **Ideas**
+  (`BUILT_IN_DEFAULT_STATE_NAMES`, by type id, so it holds for a built-in type stored in a document's catalogue
+  too). The editor resolves it to the document's state of that name (as names compare: "To do" and "TO DO"
+  match) when it makes a card, and when none has that name (or the type turns it off) it falls back as a type
+  without one does. A Default State chosen in the editor replaces it. The API and MCP do not see state names, so
+  there a built-in type's card made without a status is made with none, as before.
 - **Statuses a type leaves out** (`excludedStatuses`): a card of the type never moves into one. Kept as what is
   left out, so a status a board adds later is open to every type until a type leaves it out. An id no board names
   any more is kept, so the status keeps its exclusion if it comes back. A type may leave out every status: its cards
@@ -132,7 +139,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## The Card Types panel
 
-- In Plan mode, the bottom-right cluster has a **Card Types** button (the Cards glyph) where Diagram has Layers.
+- In Plan mode, the bottom-right cluster has a **Card Types** button (the Cards glyph) where Diagram has Layers,
+  the second of one strip with **Find a Card**.
   It opens the panel as a popover hanging above the button, as Layers does from its button; it closes on a
   press outside, a second press of the button, or leaving Plan mode.
 - **Edit Cards** opens it too: a button at the foot of the palette's Cards category (floating layout), and at
@@ -150,7 +158,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   " copy 2", " copy 3"... while the name is taken, shortened to fit 32 characters), and the same colour, glyph,
   fields, custom fields, tabs and Details name. Nothing is made until **Save**; **Cancel** drops it. With the
   catalogue full it is disabled and its tooltip says "The document has the most card types it can hold".
-  The type editor's footer offers **Duplicate Type** too, for a type that exists. Telemetry: `Plan` ·
+  The type editor's footer offers **Duplicate** too, for a type that exists. Telemetry: `Plan` ·
   `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end, with **Restore
   built-in types** under it once the catalogue is stored. The panel does not reorder types: the catalogue keeps
   its order (the built-ins first, then added types in the order they were added).
@@ -191,7 +199,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 ## Editing a type
 
 - **Add Type** and a row's edit open the **type editor**, a wide modal (60 rem, as the card panel; a sheet rising
-  from the bottom on a phone) in four **tabs** under its title: **General**, **Fields**, **States** and **Display** (the tab's own word for the statuses
+  from the bottom on a phone) in four **tabs** under its title (one underline that slides to the chosen tab): **General**, **Fields**, **States** and **Display** (the tab's own word for the statuses
   a type uses; boards, cards and filters still say Status). Its title names the type as saved, "Edit {Name} Card
   Type" ("Edit Note Card Type"), or "New Card Type" for a new one. It opens
   on General. Arrow keys, Home and End move between the tabs. A tab holding what stops Save carries a small red
@@ -199,7 +207,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Help** (the Card Types help article) and a close cross, which acts as Cancel. Every
-  button carries an icon: Save a tick, Cancel and the cross a cross, Delete Type a bin, Duplicate Type the copy
+  button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
   icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
   - **General**: **Name**, **Colour** (the twelve swatches, then **+** for a custom colour, which opens the custom colour picker in place
     (as in [Draw](../023-draw-mode/draw-mode.md)); a custom colour in force shows as a picked swatch before the +) and **Glyph**: one field-sized button showing the chosen glyph (on a tint of the type's colour), its
@@ -249,13 +257,16 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     says a card of this type stays in the state it is made in and can never be moved to another. With no columns
     on the tab's boards it says there are no states to choose from. At most 64 may be off: then every status still
     on is disabled, and a note says "A type can turn off at most 64 states. Turn one back on to turn off another."
-    Under them, **Default State**: a menu of **None** and every state still on, in board order, with a line saying
+    Under them, **Default State**: a menu of **None** (for a built-in type whose named state the document has,
+    **{State} (Built-In Default)** instead, picked until another is chosen) and every state still on, in board order, with a line saying
     "Cards made outside a board start here; a card added to a board takes that column's state."
-  - **Display**: the card sizes as a segmented control (**Minimal**, **Compact**, **Detailed**; Compact to start),
+  - **Display**: the card sizes as a segmented control (**Minimal**, **Compact**, **Detailed**; Compact to start; its
+    pill slides to the chosen size, as the Share dialog's Valid does),
     then the card itself, editable in place: a real card of this type at that size, drawn large (1.4 times, and
     wider than, a board's: 360 wide, so a long title has room) as a board draws it, across the tab, from a sample card (its title "Example {Name}", a person, High priority, due in
     three days, a label, an estimate, a checklist two of five done, a description, three votes, two comments), on a
-    board column's colour. Each **part** of the card is a dotted box, drawn even when empty (then reading its name),
+    board column's colour. Each **part** of the card is a dotted box, drawn even when empty (then a small target with no label, its name
+    kept for assistive technology),
     and each field's bit in it (the due pill, the avatar...) is a chip: it drags (mouse, pen or touch) to any part
     or another place in its own. While it drags, a copy of the field (its glyph and name) follows the pointer, the
     chip stays faded where it was, every part that takes it is outlined, the part under the pointer lit, and a
@@ -272,13 +283,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     without a name or a Choice without options, a tab without a name, or two tabs with one name, or more than 64
     statuses off (a type stored that way: "Too many states turned off: a type can turn off at most 64.", on the
     States tab).
-  - **Delete Type**, at the foot, for a type that is not the catalogue's last.
+  - **Delete** (one word, as is **Duplicate**, so a phone's footer keeps each on one line), at the foot, for a type that is not the catalogue's last.
   - **Save** applies the whole edit as one change; **Cancel** drops it.
 - Removing a field from a type, or deleting a custom field, never deletes values: items keep them, and they show
   again if the field returns. The type editor says so under the field list once a field is removed.
-- **Deleting a type** asks first, in a confirmation popover anchored to **Delete Type**: "Delete the {Name} type?",
+- **Deleting a type** asks first, in a confirmation popover anchored to **Delete**: "Delete the {Name} type?",
   and when cards (out of the Trash) have the type, "Its card will be moved to the Trash too." or "Its N cards will
-  be moved to the Trash too.". **Delete Type** in it deletes the type and moves those cards to the
+  be moved to the Trash too.". **Delete** in it deletes the type and moves those cards to the
   [Trash](items.md#trash), where they can be restored (as the fallback "Item", the type gone); Cancel or Escape
   leaves everything as it was. Cards already in the Trash stay there.
   A board that showed only the deleted type shows and takes every type again ([Plan board](plan-board.md#the-board-set-up)).

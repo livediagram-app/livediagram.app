@@ -85,3 +85,13 @@ describe('dragging a field on the card', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+describe('the card’s size', () => {
+  it('fits the card to a narrow tab, within its bounds', async () => {
+    const { cardZoomFor } = await import('./ItemTypeDisplay');
+    expect(cardZoomFor(undefined)).toBe(1.4);
+    expect(cardZoomFor(1000)).toBe(1.4);
+    expect(cardZoomFor(392)).toBe(1);
+    expect(cardZoomFor(200)).toBe(0.75);
+  });
+});

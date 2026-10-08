@@ -8,7 +8,6 @@ import {
   ITEM_TYPES,
   STATUS_PHASE_LABELS,
   itemColourOf,
-  itemStatus,
   itemTitle,
   phaseOf,
   statusLabel,
@@ -16,6 +15,7 @@ import {
   type ItemTypeDef,
   type LaneHead,
   type StatusPhase,
+  namedStatus,
 } from '@livediagram/items';
 import { Tooltip } from '@livediagram/ui';
 import type { PlanPalette } from '../plan-palette';
@@ -37,7 +37,7 @@ export function rowStatus(
   phases: ReadonlyMap<string, StatusPhase>,
   statusNames?: ReadonlyMap<string, string>,
 ): { name: string; phase: StatusPhase } | null {
-  const s = itemStatus(row.item);
+  const s = namedStatus(row.item, statusNames);
   if (!s) return null;
   return { name: statusLabel(s, statusNames), phase: phaseOf(row.item, phases) };
 }

@@ -16,6 +16,7 @@ import {
 } from './item-types';
 import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
 import { cutSlug, slugText, uniqueSlug } from './slug';
+import { statusNamed } from './status-names';
 import { HEX_COLOUR, isObj } from './validate';
 
 export const ITEM_TYPES_MAX = 32;
@@ -363,6 +364,37 @@ export function defaultStatusOf(
 ): string | undefined {
   const d = type?.defaultStatus;
   return d && typeAllowsStatus(type, d) ? d : undefined;
+}
+
+// A built-in type's Default State, by name (docs/specs/026-plan/item-types.md "An item type"): a document's state
+// ids are its own, so the name is matched to the document's state of that name. By type id, so it holds for a
+// built-in type stored in a document's catalogue too.
+export const BUILT_IN_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = {
+  project: 'Backlog',
+  task: 'To Do',
+  action: 'To Do',
+  note: 'To Do',
+  idea: 'Ideas',
+};
+
+// The built-in default's state in this document (`statusNames`: status id to name), or undefined: not a built-in
+// type, no state of that name, or one the type turns off.
+export function builtInDefaultStatus(
+  type: Pick<ItemTypeDef, 'id' | 'excludedStatuses'>,
+  statusNames: Iterable<readonly [string, string]>,
+): string | undefined {
+  const name = BUILT_IN_DEFAULT_STATE_NAMES[type.id];
+  const hit = name ? statusNamed(name, statusNames) : undefined;
+  return hit && typeAllowsStatus(type, hit.status) ? hit.status : undefined;
+}
+
+// The state a card of this type is made in outside a board, as the editor resolves it: its own Default State,
+// else its built-in one, else undefined.
+export function resolvedDefaultStatus(
+  type: Pick<ItemTypeDef, 'id' | 'defaultStatus' | 'excludedStatuses'>,
+  statusNames: Iterable<readonly [string, string]>,
+): string | undefined {
+  return defaultStatusOf(type) ?? builtInDefaultStatus(type, statusNames);
 }
 
 // Creates with no status of their own given their type's Default State (an API or MCP create); a create that

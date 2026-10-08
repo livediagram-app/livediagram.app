@@ -38,7 +38,9 @@ import {
 } from '@livediagram/items';
 import { Button, CloseIcon, PlusIcon } from '@livediagram/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { FIELD_GLYPHS } from './card-field-glyphs';
 import { CARD_FIELD_LABELS } from './board-setup-edits';
 import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
@@ -55,9 +57,19 @@ const SIZE_LABELS: Record<CardSize, string> = {
   detailed: 'Detailed',
 };
 // The card's width in the editor (wider than a board's 300, so a long title has room), and how much larger it is
-// drawn (CSS zoom, so its box grows too).
+// drawn (CSS zoom, so its box grows too): at most CARD_ZOOM, less where the tab is narrower (a phone), never
+// below CARD_ZOOM_MIN. CARD_GUTTER_PX is the column backdrop's padding either side.
 const CARD_PX = 360;
 const CARD_ZOOM = 1.4;
+const CARD_ZOOM_MIN = 0.75;
+const CARD_GUTTER_PX = 16;
+
+// The zoom that fits the card in `width` (the backdrop's), within its bounds; the largest until measured.
+export function cardZoomFor(width: number | undefined): number {
+  if (!width) return CARD_ZOOM;
+  const fit = (width - 2 * CARD_GUTTER_PX) / CARD_PX;
+  return Math.max(CARD_ZOOM_MIN, Math.min(CARD_ZOOM, fit));
+}
 
 const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
 
@@ -141,6 +153,9 @@ export function ItemTypeDisplay({
   const setLayout = (next: CardLayout) => onChange({ ...display, [size]: next });
 
   const card = useRef<HTMLDivElement>(null);
+  // The column backdrop, measured so the card fits it on a narrow screen.
+  const backdrop = useRef<HTMLDivElement>(null);
+  const zoom = cardZoomFor(useObservedSize(backdrop)?.width);
   const tray = useRef<HTMLElement>(null);
   const { drag, target, overTray, dragProps, ghost, pointer } = useCardFieldDrag({
     size,
@@ -202,7 +217,9 @@ export function ItemTypeDisplay({
           data-slot={slot}
           role="group"
           aria-label={label}
-          className={`flex min-h-7 min-w-16 flex-wrap items-center gap-1 rounded-md border border-dashed px-1 py-0.5 transition ${
+          className={`flex flex-wrap items-center gap-1 rounded-md border border-dashed px-1 py-0.5 transition ${
+            bits.length === 0 ? 'min-h-6 min-w-10' : 'min-h-7'
+          } ${
             slot === 'head' || slot === 'body' || slot === 'foot' || slot === 'row' ? 'flex-1' : ''
           } ${
             lit
@@ -212,15 +229,8 @@ export function ItemTypeDisplay({
                 : 'border-slate-300 dark:border-slate-600'
           }`}
         >
-          {lit ? (
-            withMarker(slot, bits)
-          ) : bits.length === 0 ? (
-            <span className="whitespace-nowrap px-0.5 text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              {label}
-            </span>
-          ) : (
-            bits
-          )}
+          {/* An empty part is a small target with no label (its name is for assistive technology). */}
+          {lit ? withMarker(slot, bits) : bits}
         </span>
       );
     },
@@ -246,7 +256,7 @@ export function ItemTypeDisplay({
             aria-label={`Take ${label} off the card`}
             tabIndex={-1}
             // A touch screen has no hover: there the cross always shows.
-            className={`absolute -right-2 -top-2 z-10 hidden h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow ring-2 ring-white hover:bg-red-600 dark:bg-slate-200 dark:text-slate-900 dark:ring-slate-900 dark:hover:bg-red-400 ${
+            className={`absolute -right-1 -top-1 z-10 hidden h-3 w-3 cursor-pointer items-center justify-center rounded-full bg-slate-700 text-white shadow ring-1 ring-white hover:bg-red-600 dark:bg-slate-200 dark:text-slate-900 dark:ring-slate-900 dark:hover:bg-red-400 ${
               drag?.moving
                 ? ''
                 : 'group-hover/chip:flex group-focus-visible/chip:flex pointer-coarse:flex'
@@ -254,7 +264,7 @@ export function ItemTypeDisplay({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setLayout(removeCardField(layout, field))}
           >
-            <CloseIcon size={10} />
+            <CloseIcon size={7} />
           </button>
         </span>
       );
@@ -270,17 +280,23 @@ export function ItemTypeDisplay({
       <div
         role="radiogroup"
         aria-label="Card size"
-        className="inline-flex self-start rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+        className="relative grid grid-cols-3 self-start rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
       >
+        {/* The selection slides to the picked size, as the Share dialog's Valid does. */}
+        <SegmentSlider
+          count={CARD_SIZES.length}
+          index={CARD_SIZES.indexOf(size)}
+          className="bg-white shadow-sm dark:bg-slate-900"
+        />
         {CARD_SIZES.map((z) => (
           <button
             key={z}
             type="button"
             role="radio"
             aria-checked={size === z}
-            className={`cursor-pointer rounded-md px-3 py-1 text-[13px] font-medium transition ${
+            className={`relative z-10 cursor-pointer rounded-md px-3 py-1 text-[13px] font-medium transition ${
               size === z
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-50'
+                ? 'text-slate-900 dark:text-slate-50'
                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
             }`}
             onClick={() => setSize(z)}
@@ -292,6 +308,7 @@ export function ItemTypeDisplay({
       <div className="flex flex-col gap-4">
         {/* The card, editable in place, on a board column's colour; scrolls sideways on a narrow screen. */}
         <div
+          ref={backdrop}
           className="flex justify-center overflow-x-auto rounded-xl px-4 py-6"
           style={{ backgroundColor: palette.column }}
         >
@@ -300,7 +317,7 @@ export function ItemTypeDisplay({
             role="group"
             aria-label={`${SIZE_LABELS[size]} card`}
             className="shrink-0"
-            style={{ width: CARD_PX, zoom: CARD_ZOOM }}
+            style={{ width: CARD_PX, zoom }}
           >
             <PlanCardFace
               item={sample}

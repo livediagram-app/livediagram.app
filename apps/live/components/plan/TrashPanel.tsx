@@ -100,7 +100,7 @@ export function TrashPanel({
                         </p>
                         <p className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                           {type.label} #{it.key}
-                          {typeof from === 'string'
+                          {typeof from === 'string' && plan.statusNames.has(from)
                             ? ` · from ${statusLabel(from, plan.statusNames)}`
                             : ''}{' '}
                           · {relativeSince(it.updatedAt, now)}

@@ -4,6 +4,10 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
+import { markPanThrough } from '@/hooks/canvas/pan-through';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
@@ -66,11 +70,15 @@ import { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 // The board body keeps its presses (cards, cells, buttons) from the canvas, except a finger on empty board,
-// which pans the canvas as it would anywhere else (docs/specs/026-plan/plan-board.md "On a phone").
+// which pans the canvas as it would anywhere else, never moving the board: only its header does that
+// (docs/specs/026-plan/plan-board.md "On a phone").
 export function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
   if (e.pointerType === 'touch') {
     const t = e.target as HTMLElement;
-    if (!t.closest('[data-plan-card], button, input, select, textarea, [role="button"]')) return;
+    if (!t.closest('[data-plan-card], button, input, select, textarea, [role="button"]')) {
+      markPanThrough(e);
+      return;
+    }
   }
   e.stopPropagation();
 }
@@ -126,6 +134,16 @@ export function PlanBoardView({
   const canEdit = !!plan?.canEdit;
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   const maximised = useMaximisedPlanId() === element.id;
+  // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Illustrate.
+  const viewport = useViewportStoreIfAny();
+  const phone = useIsMobileViewport();
+  const frameColumn =
+    phone && interactive && !maximised && viewport
+      ? (header: HTMLElement) => {
+          const board = header.closest<HTMLElement>('[data-plan-board]');
+          if (board) frameBoardColumn(header, board, element, viewport);
+        }
+      : null;
   useMaximisedPlanLifetime(element.id, maximised, interactive);
 
   const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
@@ -318,8 +336,12 @@ export function PlanBoardView({
       <div
         ref={bodyRef}
         // A scroll container resets touch-action, so without touch-none a finger on a card starts a native
-        // scroll and the browser cancels the drag; the canvas pans across empty board instead.
-        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${interactive ? 'touch-none' : ''}`}
+        // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, the
+        // board covers the canvas, so a finger on empty board scrolls the board itself; each card is touch-none
+        // on its own, so a finger on one still picks it up.
+        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${
+          interactive ? (maximised ? 'touch-pan-x touch-pan-y' : 'touch-none') : ''
+        }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
         {setup.columns.length === 0 ? (
@@ -377,6 +399,8 @@ export function PlanBoardView({
                   // One announcement for the cards whose type leaves the status out, never one each.
                   if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
                 }}
+                onFrame={frameColumn ?? undefined}
+                onDeleteStatus={(status) => plan?.removeStatusColumns(status, element.id)}
                 onTrashCards={(status) => {
                   if (!plan) return;
                   // Every card in the state, whatever board shows it (the column's removal moves them all).
@@ -489,6 +513,15 @@ export function PlanBoardView({
                                 onOpen={() => plan?.openItem(item.id)}
                                 onKey={onCardKey}
                                 onMenu={(it, at) => setMenu({ itemId: it.id, at })}
+                                {...(interactive && canEdit
+                                  ? {
+                                      onLongPress: (it: Item, at: { x: number; y: number }) => {
+                                        // The held press opens the menu instead of becoming a drag or a click.
+                                        drag.cancelPress();
+                                        setMenu({ itemId: it.id, at });
+                                      },
+                                    }
+                                  : {})}
                               />
                             ))}
                             {slotHere && slotHere.beforeId === null ? (

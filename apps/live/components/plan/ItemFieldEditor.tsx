@@ -128,11 +128,11 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
   if (!isBuiltInFieldId(f)) return null;
   switch (f) {
     case 'status': {
-      const status = typeof value === 'string' ? value : '';
-      const known =
-        status && !ctx.statuses.some((s) => s.status === status)
-          ? [{ status, name: status }, ...ctx.statuses]
-          : ctx.statuses;
+      // A state no board names any more reads as No status (docs/specs/026-plan/plan-board.md "A state no board
+      // names"), never as its raw id; the card keeps it until another is picked.
+      const raw = typeof value === 'string' ? value : '';
+      const status = ctx.statuses.some((s) => s.status === raw) ? raw : '';
+      const known = ctx.statuses;
       // Only the statuses this card type uses (docs/specs/026-plan/item-types.md "An item type"); a card already
       // in one it leaves out shows it, marked, and can move out of it but never back in.
       const options = known

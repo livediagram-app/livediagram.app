@@ -21,7 +21,10 @@ const item = (id: string, key: number, type: string, fields: Item['fields'] = {}
   createdBy: PERSON,
   updatedBy: PERSON,
 });
-const STATUS_NAMES = new Map([['doing', 'In Progress']]);
+const STATUS_NAMES = new Map([
+  ['doing', 'In Progress'],
+  ['review', 'Review'],
+]);
 
 function draw(parent: Item, childCards: Item[], onOpen = vi.fn()) {
   render(
@@ -45,7 +48,7 @@ describe('ItemChildCards', () => {
     expect(screen.getByRole('heading', { name: /Child Cards/ }).textContent).toContain('2');
     expect(within(screen.getByRole('list')).getByText('In Progress')).toBeTruthy();
     // A status no board names reads as itself.
-    expect(within(screen.getByRole('list')).getByText('review')).toBeTruthy();
+    expect(within(screen.getByRole('list')).getByText('Review')).toBeTruthy();
     expect(screen.getByText('Archived')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open #2 Card 2, In Progress' }));
     expect(onOpen).toHaveBeenCalledWith('c2');
