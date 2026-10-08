@@ -122,21 +122,21 @@ describe('SettingsTokensRow', () => {
         id: 'p1',
         tokenId: 'tok1',
         origin: 'https://127.0.0.1:5175',
-        name: 'Spinner',
+        name: 'Acme Editor',
         pairedAt: Date.now(),
       },
     ]);
     api.apiUnpairWorkbench.mockResolvedValue(undefined);
     render(<SettingsTokensRow row={ROW} />);
     const list = await screen.findByRole('list', { name: 'Paired workbenches' });
-    expect(within(list).getByText('Spinner')).toBeTruthy();
+    expect(within(list).getByText('Acme Editor')).toBeTruthy();
     // One list for the account, grouped in the client: the other token's card shows none.
     expect(screen.getAllByRole('list', { name: 'Paired workbenches' })).toHaveLength(1);
     expect(api.apiListWorkbenchPairings).toHaveBeenCalledTimes(1);
     expect(api.apiListWorkbenchPairings).toHaveBeenCalledWith('user_1');
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Unpair Spinner at https://127.0.0.1:5175' }),
+      screen.getByRole('button', { name: 'Unpair Acme Editor at https://127.0.0.1:5175' }),
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Unpair' }));
     await waitFor(() => expect(api.apiUnpairWorkbench).toHaveBeenCalledWith('user_1', 'p1'));

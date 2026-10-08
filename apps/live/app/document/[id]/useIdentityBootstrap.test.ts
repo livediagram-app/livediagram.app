@@ -51,7 +51,7 @@ function workbenchOf(over: Partial<WorkbenchSession> = {}): WorkbenchSession {
     level: 'edit',
     expiresAt: Date.now() + 60_000,
     person: PERSON,
-    workbenchName: 'Spinner',
+    workbenchName: 'Acme Editor',
     port: { origin: 'https://127.0.0.1:5175', send: vi.fn(), subscribe: vi.fn(), close: vi.fn() },
     ended: null,
     end: vi.fn(),

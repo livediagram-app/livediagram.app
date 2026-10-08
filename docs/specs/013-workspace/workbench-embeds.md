@@ -1,9 +1,9 @@
 # Workbench embeds (`/embed/workbench`)
 
-**Status: specified.** Built by `plans/0046-workbench-live-diagram.md`, with Spinner as the first workbench.
+**Status: built.** The api, the page, the pairing page and the CLI commands.
 
-A **workbench** is a developer tool that shows a document live beside an agent: Spinner first, then VS Code and
-other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
+A **workbench** is a developer tool that shows a document live beside an agent: an agent workbench first, then VS Code
+and other editors. A **workbench embed** is the editor inside that tool's frame, signed in as the person, so they draw
 there, everything they draw reaches livediagram at once, and their agent, working through the
 [CLI](../015-api/cli.md), sees the drawing and their selection. It is the signed-in sibling of the share-code
 [embed](embeds.md).
@@ -59,7 +59,7 @@ opens no session anywhere its owner has not approved.
    (or prints it when it cannot) and waits for the answer, as `auth login --device` waits. `workbench open` refused
    for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in livediagram".
 3. **Approve.** `<live origin>/workbench/pair?code=<code>` is an ordinary editor page (never framed), for a signed-in
-   person only, and only the token's owner may answer. It reads: "Allow **Spinner** at `https://127.0.0.1:5175` to
+   person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
    open your documents with the token **livediagram CLI**?", with **Allow** and **Don't allow**. The workbench name
    is the one the CLI sent, shown beside the origin, which is what is enforced.
 4. **Paired.** Allow records the pairing; the waiting command exits 0 and the workbench mints again. Don't allow, or
@@ -68,7 +68,7 @@ opens no session anywhere its owner has not approved.
 - A pairing lives as long as its token: revoking the token removes its pairings.
 - **Settings > API tokens** lists each token's paired workbenches (name, origin, when paired), each with
   **Unpair**, which ends that pairing's open sessions as revoking does.
-- Pairing is per origin, so Spinner on a laptop and on a LAN address pair separately.
+- Pairing is per origin, so one workbench on a laptop and on a LAN address pairs separately.
 
 ## What a workbench session may do
 
@@ -104,7 +104,7 @@ and accepted only from it. Unknown types are ignored, and logged once each.
 | Type                    | From      | Carries                                                              |
 | ----------------------- | --------- | -------------------------------------------------------------------- |
 | `livediagram:hello`     | page      | Nothing; asks the workbench to answer                                |
-| `livediagram:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Spinner")         |
+| `livediagram:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
 | `livediagram:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |
 | `livediagram:tab`       | page      | The tab now shown: `tabId`, `tabName`                                |
 | `livediagram:selection` | page      | The [selection reference](#the-selection-reference); empty when none |
@@ -141,20 +141,20 @@ read: livediagram tab view 3h9x2a --tab 0b34 --view show --ref 146b
   with `tab render`, and showing presence while it works. The agent skill sends an agent there when a message
   carries `[livediagram]`.
 
-## Spinner as a workbench
+## A workbench's side
 
-The contract Spinner builds against (its own specs hold the detail):
+What a workbench does to fit this contract (its own documentation holds the detail):
 
-- **A diagram tab.** Spinner opens a document in a file tab of kind `livediagram`: a `*.livediagram.json` mirror file
-  opens live (with its JSON one toggle away), and so does a livediagram document link in a transcript. Spinner's
-  server mints through the operator's own CLI (`livediagram workbench open ... --origin <dashboard origin> --json`),
-  so Spinner never holds a livediagram credential. A missing CLI or sign-in shows the one command that fixes it.
-- **Pairing.** An unpaired Spinner runs `livediagram workbench pair --origin <dashboard origin> --name Spinner` and
-  shows its URL as the "Approve in livediagram" button in the diagram tab, then opens the frame once it is paired.
-- **The composer chip.** While a diagram tab is the session's active file, the composer shows a chip naming the
-  document and what is selected ("Home screen · 3 selected", or "Home screen · whole tab"). Sending attaches the
-  selection reference to the message as text; the chip's × leaves it off that message.
-- **Reveal.** A transcript ref link the agent prints (`146b`) posts `livediagram:reveal` to the open diagram tab.
+- **Opening.** A workbench opens a document in a view of its own: from a `*.livediagram.json` mirror file (with its JSON
+  one step away) or from a livediagram document link. It mints through the person's own CLI
+  (`livediagram workbench open ... --origin <its origin> --json`), so it never holds a livediagram credential, and
+  shows the one command that fixes a missing CLI or sign-in.
+- **Pairing.** Unpaired, it runs `livediagram workbench pair --origin <its origin> --name <its name>` and shows the
+  printed URL as an "Approve in livediagram" button, then opens the frame once paired.
+- **The selection.** While a diagram is in view, the place the person types to their agent names the document and
+  what is selected ("Home screen · 3 selected", or "Home screen · whole tab"). Sending attaches the selection
+  reference to the message as text, and the person can leave it off any one message.
+- **Reveal.** A ref the agent prints (`146b`) can post `livediagram:reveal` to the open diagram.
 
 ## Limits
 

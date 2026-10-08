@@ -25,7 +25,7 @@ export async function workbenchDb(base: Partial<Env> = {}): Promise<SqliteD1> {
 
 export function pairToken(db: SqliteD1, tokenId = 'tok1', ownerId = 'user_1', id = 'pair1'): void {
   db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
-               VALUES ('${id}', '${ownerId}', '${tokenId}', '${ORIGIN}', 'Spinner', ${NOW})`);
+               VALUES ('${id}', '${ownerId}', '${tokenId}', '${ORIGIN}', 'Acme Editor', ${NOW})`);
 }
 
 export const rows = (db: SqliteD1, sql: string) =>

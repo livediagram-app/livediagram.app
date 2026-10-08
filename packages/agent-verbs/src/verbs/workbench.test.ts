@@ -184,7 +184,7 @@ describe('the workbench origin', () => {
 
 describe('the workbench name', () => {
   it('is trimmed, and absent when not given', () => {
-    expect(workbenchNameOf('  Spinner ', () => {})).toBe('Spinner');
+    expect(workbenchNameOf('  Acme Editor ', () => {})).toBe('Acme Editor');
     expect(workbenchNameOf(undefined, () => {})).toBeNull();
   });
 
@@ -209,8 +209,8 @@ describe('the workbench name', () => {
 
 describe('workbench pair', () => {
   it('prints the origin it paired, and the name when it has one', () => {
-    expect(workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: 'Spinner' })).toEqual([
-      `paired ${ORIGIN} as Spinner`,
+    expect(workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: 'Acme Editor' })).toEqual([
+      `paired ${ORIGIN} as Acme Editor`,
     ]);
     expect(workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null })).toEqual([
       `paired ${ORIGIN}`,

@@ -48,7 +48,7 @@ export function workbenchNameOf(input: string | undefined, log: Log): string | n
     status: 400,
     code: 'invalid_value',
     message: `--name takes 1 to ${WORKBENCH_NAME_MAX_LENGTH} characters`,
-    hint: '--name Spinner',
+    hint: '--name "Acme Editor"',
   });
 }
 
@@ -160,7 +160,7 @@ export const workbenchPair = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      `livediagram workbench pair --origin ${EXAMPLE_ORIGIN} --name Spinner`,
+      `livediagram workbench pair --origin ${EXAMPLE_ORIGIN} --name "Acme Editor"`,
       'livediagram workbench pair --origin http://localhost:5175 --json',
     ],
     prints: 'the approval link, then paired <origin> [as <name>]',

@@ -27,7 +27,7 @@ const PAIRING = {
   id: 'pair_contrast',
   tokenId: TOKEN.id,
   origin: 'https://127.0.0.1:5175',
-  name: 'Spinner',
+  name: 'Acme Editor',
   pairedAt: NOW - 2 * DAY,
 };
 const VIEWPORT = { width: 1280, height: 800 };
@@ -118,7 +118,7 @@ for (const scheme of ['dark', 'light'] as const) {
       );
       await page.goto('/explorer/home?settings=tokens');
       const pairings = page.getByRole('list', { name: 'Paired workbenches' });
-      await expect(pairings.getByText('Spinner')).toBeVisible();
+      await expect(pairings.getByText('Acme Editor')).toBeVisible();
       await expectScheme(page, scheme);
       await page.screenshot({ path: test.info().outputPath(`pair-settings-${scheme}.png`) });
       // The token card holding the row, so the audit judges this surface and nothing behind the dialog.

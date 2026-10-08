@@ -37,7 +37,7 @@ import { PairWorkbench } from './PairWorkbench';
 const CODE = 'AAAAAAAAAAAAAAAAAAAAAA';
 const REQUEST: WorkbenchPairingRequestView = {
   origin: 'https://127.0.0.1:5175',
-  name: 'Spinner',
+  name: 'Acme Editor',
   tokenName: 'livediagram CLI',
   expiresAt: Date.now() + 600_000,
   status: 'pending',
@@ -153,11 +153,11 @@ describe('PairWorkbench', () => {
     expect(await screen.findByRole('heading', { name: 'Allow this workbench?' })).toBeTruthy();
     const question = screen.getByText(/to open your documents with the token/);
     expect(question.textContent).toBe(
-      'Allow Spinner at https://127.0.0.1:5175 to open your documents with the token livediagram CLI?',
+      'Allow Acme Editor at https://127.0.0.1:5175 to open your documents with the token livediagram CLI?',
     );
     expect(question.querySelector('code')?.textContent).toBe('https://127.0.0.1:5175');
     expect([...question.querySelectorAll('strong')].map((s) => s.textContent)).toEqual([
-      'Spinner',
+      'Acme Editor',
       'livediagram CLI',
     ]);
     expect(
@@ -220,7 +220,7 @@ describe('PairWorkbench', () => {
 
     await act(async () => answer.resolve('approved'));
     expect(heading().textContent).toBe('Workbench allowed');
-    expect(screen.getByText('Return to Spinner; it carries on by itself.')).toBeTruthy();
+    expect(screen.getByText('Return to Acme Editor; it carries on by itself.')).toBeTruthy();
     expect(telemetry.track).toHaveBeenCalledTimes(1);
     expect(telemetry.track).toHaveBeenCalledWith('Token', 'Linked', 'Workbench');
   });

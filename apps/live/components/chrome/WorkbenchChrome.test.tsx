@@ -28,7 +28,7 @@ describe('WorkbenchOpenLink', () => {
 
 describe('WorkbenchReconnectLine', () => {
   it('says nothing while the session edits, in a polite live region', () => {
-    render(<WorkbenchReconnectLine workbenchName="Spinner" ended={null} />);
+    render(<WorkbenchReconnectLine workbenchName="Acme Editor" ended={null} />);
 
     const status = screen.getByRole('status');
     expect(status.getAttribute('aria-live')).toBe('polite');
@@ -36,13 +36,15 @@ describe('WorkbenchReconnectLine', () => {
   });
 
   it.each(['expired', 'revoked'] as const)('says how to edit again once %s', (ended) => {
-    render(<WorkbenchReconnectLine workbenchName="Spinner" ended={ended} />);
+    render(<WorkbenchReconnectLine workbenchName="Acme Editor" ended={ended} />);
 
-    expect(screen.getByRole('status').textContent).toBe('Reconnect in Spinner to keep editing.');
+    expect(screen.getByRole('status').textContent).toBe(
+      'Reconnect in Acme Editor to keep editing.',
+    );
   });
 
   it('leaves a trashed document to the deleted card', () => {
-    render(<WorkbenchReconnectLine workbenchName="Spinner" ended="trashed" />);
+    render(<WorkbenchReconnectLine workbenchName="Acme Editor" ended="trashed" />);
 
     expect(screen.getByRole('status').textContent).toBe('');
   });

@@ -146,7 +146,7 @@ describe('the pairing calls', () => {
   it('reads a pairing request as the signed-in person', async () => {
     const request = {
       origin: 'https://127.0.0.1:5175',
-      name: 'Spinner',
+      name: 'Acme Editor',
       tokenName: 'livediagram CLI',
       expiresAt: 5,
       status: 'pending',
@@ -197,7 +197,7 @@ describe('the pairing calls', () => {
       id: 'pair-1',
       tokenId: 'tok-1',
       origin: 'https://127.0.0.1:5175',
-      name: 'Spinner',
+      name: 'Acme Editor',
       pairedAt: 3,
     };
     answer = reply(200, { pairings: [pairing] });

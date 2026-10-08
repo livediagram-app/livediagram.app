@@ -64,7 +64,7 @@ describe('workbench pairing routes', () => {
 
       const res = await call(db, 'POST', 'pairing-requests', TOKEN, {
         origin: ORIGIN,
-        name: ' Spinner ',
+        name: ' Acme Editor ',
       });
 
       expect(res.status).toBe(200);
@@ -76,7 +76,7 @@ describe('workbench pairing routes', () => {
         interval: DEVICE_POLL_INTERVAL_S,
       });
       expect(rows(db, 'SELECT name FROM workbench_pairing_requests')).toEqual([
-        { name: 'Spinner' },
+        { name: 'Acme Editor' },
       ]);
     });
 
@@ -84,10 +84,10 @@ describe('workbench pairing routes', () => {
       const db = await workbenchDb();
       await call(db, 'POST', 'tickets', TOKEN, { documentId: 'doc1', origin: ORIGIN });
 
-      const pending = await ask(db, 'Spinner');
+      const pending = await ask(db, 'Acme Editor');
 
       expect(rows(db, 'SELECT code, name FROM workbench_pairing_requests')).toEqual([
-        { code: pending.code, name: 'Spinner' },
+        { code: pending.code, name: 'Acme Editor' },
       ]);
     });
 
@@ -99,7 +99,13 @@ describe('workbench pairing routes', () => {
 
       expect(await res.json()).toEqual({
         status: 'paired',
-        pairing: { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Spinner', pairedAt: NOW },
+        pairing: {
+          id: 'pair1',
+          tokenId: 'tok1',
+          origin: ORIGIN,
+          name: 'Acme Editor',
+          pairedAt: NOW,
+        },
       });
     });
 
@@ -141,7 +147,7 @@ describe('workbench pairing routes', () => {
   describe('the pairing page', () => {
     it('reads the request for its owner only', async () => {
       const db = await workbenchDb();
-      const { code } = await ask(db, 'Spinner');
+      const { code } = await ask(db, 'Acme Editor');
 
       const mine = await call(db, 'GET', `pairing-requests/${code}`, OWNER);
       const theirs = await call(db, 'GET', `pairing-requests/${code}`, {
@@ -154,7 +160,7 @@ describe('workbench pairing routes', () => {
       expect(await mine.json()).toEqual({
         request: {
           origin: ORIGIN,
-          name: 'Spinner',
+          name: 'Acme Editor',
           tokenName: 'livediagram CLI',
           expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
           status: 'pending',
@@ -166,7 +172,7 @@ describe('workbench pairing routes', () => {
 
     it('approves: the pairing is recorded and the poll reads approved', async () => {
       const db = await workbenchDb();
-      const { code } = await ask(db, 'Spinner');
+      const { code } = await ask(db, 'Acme Editor');
 
       const res = await call(db, 'POST', `pairing-requests/${code}/approve`, OWNER);
       const poll = await call(db, 'GET', `pairing-requests/${code}/status`, TOKEN);
@@ -177,7 +183,7 @@ describe('workbench pairing routes', () => {
           id: expect.stringMatching(/^[0-9a-f-]{36}$/),
           tokenId: 'tok1',
           origin: ORIGIN,
-          name: 'Spinner',
+          name: 'Acme Editor',
           pairedAt: NOW,
         },
       });
@@ -253,7 +259,7 @@ describe('workbench pairing routes', () => {
 
       expect(await res.json()).toEqual({
         pairings: [
-          { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Spinner', pairedAt: NOW },
+          { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
         ],
       });
       expect(token.status).toBe(401);

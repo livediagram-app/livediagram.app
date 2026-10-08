@@ -25,7 +25,7 @@ const RENEWED: WorkbenchSessionResponse = { ...SESSION, session: `lvw_${'b'.repe
 
 const redeeming: WorkbenchPhase = { phase: 'redeeming', ticket: TICKET, documentId: 'doc-1' };
 const binding: WorkbenchPhase = { phase: 'binding', session: SESSION };
-const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Spinner' };
+const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
 
 const run = (from: WorkbenchPhase, event: WorkbenchEvent) => workbenchTransition(from, event);
 
@@ -80,7 +80,7 @@ describe('workbenchTransition', () => {
   });
 
   it('mounts once the workbench answers', () => {
-    expect(run(binding, { type: 'acked', name: 'Spinner' })).toEqual(mounted);
+    expect(run(binding, { type: 'acked', name: 'Acme Editor' })).toEqual(mounted);
   });
 
   it('is unbound when nobody answers', () => {
@@ -110,13 +110,13 @@ describe('workbenchTransition', () => {
     expect(run(mounted, { type: 'ended', reason })).toEqual({
       phase: 'ended',
       session: SESSION,
-      name: 'Spinner',
+      name: 'Acme Editor',
       reason,
     });
   });
 
   const terminal: WorkbenchPhase[] = [
-    { phase: 'ended', session: SESSION, name: 'Spinner', reason: 'expired' },
+    { phase: 'ended', session: SESSION, name: 'Acme Editor', reason: 'expired' },
     { phase: 'unbound', origin: SESSION.origin },
     { phase: 'refused', cause: 'ticket' },
     { phase: 'failed' },
@@ -126,7 +126,7 @@ describe('workbenchTransition', () => {
     { type: 'redeemed', session: SESSION },
     { type: 'redeem-refused' },
     { type: 'redeem-failed' },
-    { type: 'acked', name: 'Spinner' },
+    { type: 'acked', name: 'Acme Editor' },
     { type: 'unanswered' },
     { type: 'renewed', session: RENEWED },
     { type: 'ended', reason: 'revoked' },
