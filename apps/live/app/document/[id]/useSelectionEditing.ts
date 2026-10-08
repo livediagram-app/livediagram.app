@@ -6,6 +6,7 @@ import {
   isBoxed,
   opensInlineLabelEditor,
   normalizeRuns,
+  trimLabel,
   truncateName,
   type Element,
   type TableElement,
@@ -146,7 +147,10 @@ export function useSelectionEditing(opts: {
     commit((els) => els.map((el) => (el.id === elementId ? { ...el, headerSize } : el)));
   };
 
-  const commitLabel = (elementId: string, label: string, runs?: TextRun[]) => {
+  const commitLabel = (elementId: string, typed: string, typedRuns?: TextRun[]) => {
+    // Saved without whitespace at either end (docs/specs/008-canvas/canvas-and-palette.md "Rich text
+    // labels"): a dangling newline or space serves no purpose, and the display drops a trailing one.
+    const { label, runs } = trimLabel(typed, typedRuns);
     // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): keep `richText` only when it carries
     // real overrides, otherwise strip it so a plain label round-trips as
     // plain JSON. `label` stays the plain-text mirror either way.

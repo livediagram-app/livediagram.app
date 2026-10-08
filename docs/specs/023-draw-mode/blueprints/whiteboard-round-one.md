@@ -381,13 +381,17 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
 
 ### Selecting on a whiteboard
 
-- `BoxedElementView`: `lineHit` = a pen stroke (`penWidth`, not a highlight) neither selected nor
-  multi-selected; the wrapper gets `pointer-events: none` and `FreehandSvg` a transparent
+- `BoxedElementView`: `hitLine` = a pen stroke (`penWidth`, not a highlight) or a path not in edit
+  mode, selected or not; neither selected nor multi-selected, the wrapper gets `pointer-events: none`
+  (`passThrough`). `FreehandSvg` gets a transparent
   `[data-stroke-hit]` path of `strokeHitWidth(penWidth, zoom)` (`STROKE_HIT_SCREEN_PX` = 6 a side) with
   `pointer-events: stroke`.
-- `BoxedElementView`: `shapeHit` = `outlineHit(element, { onWhiteboard, selected })`, true for a
-  `pickedByOutline` shape on a whiteboard (`useCanvasPicksByOutline`, the still-canvas context) neither
-  selected nor multi-selected. The wrapper gets `pointer-events: none` and renders `ShapeHitOutline`:
+- `BoxedElementView`: `shapeHit` = `outlineHit(element, { onWhiteboard, selected })`: for a
+  `pickedByOutline` shape on a whiteboard (`useCanvasPicksByOutline`, the still-canvas context)
+  `'outline'` when neither selected nor multi-selected (the wrapper gets `pointer-events: none`),
+  `'box-and-outline'` when selected (the wrapper catches too), else `null`. Either way it renders
+  `ShapeHitOutline`, so the band outside the box still reaches the shape once selected (a
+  double-click on a selected shape's line never falls to the board):
   an svg over the element's own box (stepped out by the wrapper's CSS `borderWidth`), one
   `[data-shape-hit="line"]` path of `hitOutlinePathData(lines)` at `strokeHitWidth(2 · halfWidth, zoom)`
   with `pointer-events: stroke`, and one `[data-shape-hit="fill"]` path per fill region with
@@ -996,6 +1000,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Shape outline: kinds, fill, radius, rotation, sweep                            | `packages/document/src/shape-hit.test.ts`, `svg-path-outline.test.ts`                    |
 | Unselected whiteboard shape picked by its outline, 6 px a side                 | `apps/live/components/canvas/ShapeHitOutline.test.tsx`                                   |
 | A double-click inside a shape edits it, selected or not                        | `whiteboard-edit-target.test.ts`, `e2e/whiteboard-shape-text-and-dots.spec.ts`           |
+| Selected: box and line both catch, outside the box too                         | `BoxedElementView.whiteboard-hit.test.tsx`                                               |
 | A tap is a round dot the pen's width                                           | `pen-stroke.test.ts`, `commit-freehand.test.ts`, `useWhiteboardPenGesture.test.tsx`      |
 | Pen versus touch on the canvas                                                 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                    |
 | A pinch discards a whiteboard stroke                                           | `apps/live/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                   |

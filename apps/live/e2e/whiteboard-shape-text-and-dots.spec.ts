@@ -48,7 +48,7 @@ test('a double-click inside a shape writes in it, selected or not', async ({
   pageErrors,
 }) => {
   await openBoard(page);
-  const rect = await drawShape(page, 'r', 200, 250, 200, 140);
+  const rect = await drawShape(page, 'r', 500, 250, 200, 140);
   const box = (await rect.boundingBox())!;
   const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 
@@ -56,15 +56,32 @@ test('a double-click inside a shape writes in it, selected or not', async ({
   await page.mouse.dblclick(centre.x, centre.y);
   await expect(rect.locator('[contenteditable="true"]')).toBeVisible();
   await expect(elements(page)).toHaveCount(1);
-  await page.keyboard.type('Inside');
+  await page.keyboard.type('Inside ');
+  await page.keyboard.press('Enter');
   await commit(page);
-  await expect(rect).toContainText('Inside');
+  // Saved without the dangling space and newline.
+  await expect(rect.getByText('Inside', { exact: true })).toBeVisible();
 
   // Selected by its outline first: the double-click inside still edits it.
   await page.mouse.click(box.x + 1, centre.y);
   await page.mouse.dblclick(centre.x, centre.y);
   await expect(rect.locator('[contenteditable="true"]')).toBeVisible();
   await expect(elements(page)).toHaveCount(1);
+  await commit(page);
+
+  // Selected, a double-click on the outer half of its line (outside the box) still edits it,
+  // never deselecting and reselecting it. Human timing: the page re-renders between clicks.
+  await page.mouse.click(box.x + 1, box.y + box.height / 4);
+  // A pause, as a person makes, so the selecting click never pairs with the double-click.
+  await page.waitForTimeout(600);
+  const edge = { x: box.x - 3, y: box.y + box.height / 4 };
+  await page.mouse.move(edge.x, edge.y);
+  await page.mouse.down({ clickCount: 1 });
+  await page.mouse.up({ clickCount: 1 });
+  await page.waitForTimeout(150);
+  await page.mouse.down({ clickCount: 2 });
+  await page.mouse.up({ clickCount: 2 });
+  await expect(rect.locator('[contenteditable="true"]')).toBeVisible();
   await commit(page);
 
   // Beside every shape the double-click still makes a text box.

@@ -511,12 +511,17 @@ Explorer Home's Jump back in.
 - **A pen stroke is picked by its drawn line**, not its box: a click within
   6 screen px of the line (either side, at any zoom) selects it, and a click
   elsewhere in its box passes through to whatever is beneath, or the board.
-  Once selected, its box drags and resizes it as any element's.
+  Once selected, its box drags and resizes it as any element's, and its line
+  still catches pointers outside the box, so a press on the line's outer half
+  stays on the stroke.
 - **A shape is picked by its drawn outline too** (rectangle, ellipse,
   diamond, cylinder, a recognised triangle or star, and every other shape
   kind): a click within 6 screen px of the outline selects it, and a click in
   its empty inside passes through to whatever is beneath, or the board. A
-  shape with a **visible fill** is also picked anywhere on its fill. Lines and
+  shape with a **visible fill** is also picked anywhere on its fill. Once
+  selected, its box catches pointers too and its outline still does, outside
+  the box as well: a double-click on a selected shape's line, either half of
+  it, opens its label, never deselecting and reselecting it. Lines and
   arrows are picked by their line, and paths by their line or fill
   ([Path tool](path-tool.md)). **Notes and text boxes** keep their whole box:
   they are filled or hold text. So does a kind that paints its own face (a
