@@ -3,10 +3,12 @@
 import { PlanCardsIcon, SearchIcon } from '@livediagram/ui';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 import { TrashDropTarget, TrashSegment, usePlanCardDragging } from './TrashClusterButton';
+import { NewCardSegment } from './NewCardClusterButton';
+import { usePlan } from '@/components/plan/PlanContext';
 
 // Plan mode's buttons in the bottom-right cluster, one strip as Undo and Redo are, where Layers sits in the other
 // modes: the **Trash** on its left (docs/specs/026-plan/items.md "Trash"; given only off a phone, to an editor),
-// then **Find a Card** (items.md "Finding a card"), the search over every card in the document, then **Card
+// then **New Card** (an editor's +, items.md "New Card"), then **Find a Card** (items.md "Finding a card"), the search over every card in the document, then **Card
 // Types** (docs/specs/026-plan/item-types.md "The Card Types panel"). Each opens its own panel above it. While a
 // card is dragged the Trash steps out of the strip as a wide drop target beside it.
 export function PlanCardsClusterStrip({
@@ -16,6 +18,7 @@ export function PlanCardsClusterStrip({
   onToggleTypes,
   typesButtonRef,
   trash,
+  newCard,
 }: {
   finderOpen: boolean;
   onToggleFinder: (button: HTMLElement) => void;
@@ -25,8 +28,11 @@ export function PlanCardsClusterStrip({
   typesButtonRef?: React.Ref<HTMLButtonElement>;
   // The Trash button: its panel's state and toggle. Absent, the strip has none.
   trash?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
+  // New Card: its panel's state and toggle, for an editor. Absent, the strip has none.
+  newCard?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
 }) {
   const dragging = usePlanCardDragging();
+  const canEdit = !!usePlan()?.canEdit;
   return (
     <>
       {trash && dragging ? <TrashDropTarget /> : null}
@@ -34,8 +40,16 @@ export function PlanCardsClusterStrip({
         {trash && !dragging ? (
           <TrashSegment popoverOpen={trash.open} onTogglePopover={trash.onToggle} />
         ) : null}
+        {newCard && canEdit ? (
+          <NewCardSegment
+            divided={!!trash && !dragging}
+            open={newCard.open}
+            onToggle={newCard.onToggle}
+          />
+        ) : null}
         <ClusterPopoverSegment
-          divided={!!trash && !dragging}
+          // A divider when a button sits to its left (the Trash, or an editor's New Card).
+          divided={(!!trash && !dragging) || (!!newCard && canEdit)}
           label="Find a Card"
           hoverTitle="Cards"
           hoverDescription="Every card in this document: search them, find the ones on no board, and open any of them."

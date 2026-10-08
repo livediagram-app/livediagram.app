@@ -47,7 +47,7 @@ PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, the
                          columns and rows grid, cards, keyboard, Add card per cell, the card menu
 PlanColumnHeader.tsx     a column's head: colour bar, name, count, and the cog (PlanColumnPopover)
 AddColumnPicker.tsx      the column picker (existing-status chips, Add All, the new-status field and its match note), used by
-                         PlanFirstColumn and the popover's + Add Column After; its pure part is column-status-picks.ts
+                         PlanSetupBoard and the popover's + Add Column After; its pure part is column-status-picks.ts
 AddColumnPickerPopover.tsx the picker hung from + Add Column After: a portal at z-popover (`data-add-column-picker`), placed by
                          @livediagram/ui `placeHint` with order right, left, bottom, top (8px gap, 8px margin) and an
                          arrow at its `arrowOffset`; its own capture Escape and outside press close it and refocus the

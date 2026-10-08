@@ -33,10 +33,13 @@ describe('a board’s settings cog', () => {
     const shut = (text: string) => !!screen.getByText(text).closest('[aria-hidden="true"]');
     expect(shut('Title')).toBe(false);
     expect(shut('Card Size')).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Cards', expanded: false }));
+    // Its four sections, as the element menu's.
+    for (const name of ['Board Swimlanes', 'Supported Cards', 'Card Layout'])
+      expect(screen.getByRole('button', { name, expanded: false })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Card Layout', expanded: false }));
     expect(shut('Card Size')).toBe(false);
     expect(shut('Title')).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Board', expanded: false }));
+    fireEvent.click(screen.getByRole('button', { name: 'Board Title', expanded: false }));
     fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
     expect(screen.queryByLabelText('Board title')).toBeNull();
   });

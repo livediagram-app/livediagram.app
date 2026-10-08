@@ -1,4 +1,4 @@
-// Create Card Type from a board's Add a Card menu (docs/specs/026-plan/plan-board.md "Create Card Type"): the type
+// Add New Card Type from a board's Add a Card menu (docs/specs/026-plan/plan-board.md "Add New Card Type"): the type
 // editor opens on a new type with only that board's statuses on, and saving it adds it to the board's card types.
 import { useCallback, useState } from 'react';
 import type { Element } from '@livediagram/document';

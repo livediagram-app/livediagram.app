@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import { newTypeForBoard, withTypeOnBoard } from './useTypeForBoard';
 
-// docs/specs/026-plan/plan-board.md "Create Card Type".
+// docs/specs/026-plan/plan-board.md "Add New Card Type".
 const board = (id: string, addTypes?: string[]): Element =>
   ({
     ...createShape('plan-board', 0, 0),

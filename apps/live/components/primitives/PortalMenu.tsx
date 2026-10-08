@@ -348,7 +348,7 @@ export function MenuActionButton({
   onClick,
 }: {
   label: string;
-  // Drawn before the label (Add a Card's Create Card Type).
+  // Drawn before the label.
   icon?: ReactNode;
   onClick: () => void;
 }) {

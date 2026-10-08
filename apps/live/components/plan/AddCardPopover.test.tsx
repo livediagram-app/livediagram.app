@@ -39,7 +39,7 @@ describe('closing Add a card', () => {
 });
 
 // docs/specs/026-plan/plan-board.md "Create Card Type": a full-width row under the tiles.
-describe('Create Card Type', () => {
+describe('Add New Card Type', () => {
   it('closes the menu and asks for a new type', () => {
     const onClose = vi.fn();
     const onCreateType = vi.fn();
@@ -54,13 +54,13 @@ describe('Create Card Type', () => {
         onClose={onClose}
       />,
     );
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Create Card Type' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Add New Card Type' }));
     expect(onClose).toHaveBeenCalled();
     expect(onCreateType).toHaveBeenCalled();
   });
 
   it('is not offered without a way to create one', () => {
     menu();
-    expect(screen.queryByRole('menuitem', { name: 'Create Card Type' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Add New Card Type' })).toBeNull();
   });
 });

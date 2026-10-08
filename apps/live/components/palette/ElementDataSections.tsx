@@ -104,15 +104,8 @@ import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
-const PlanCardsMenuSection = dynamic(
-  () => import('./PlanBoardMenuSection').then((m) => m.PlanCardsMenuSection),
-  { ssr: false },
-);
-
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
-// Plan pays nothing for it.
-const PlanBoardMenuSection = dynamic(
-  () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSection),
+const PlanBoardMenuSections = dynamic(
+  () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSections),
   { ssr: false },
 );
 
@@ -246,8 +239,11 @@ export function ElementDataSections({
           flyout, ahead of Tools, as every board-wide choice lives here. */}
       {shapeTarget?.shape === 'plan-board' ? (
         <>
-          <PlanBoardMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-board')} />
-          <PlanCardsMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-cards')} />
+          <PlanBoardMenuSections
+            element={shapeTarget}
+            flyoutProps={flyoutProps}
+            onClose={props.onClose}
+          />
         </>
       ) : null}
       {shapeTarget?.shape === 'plan-view' && shapeTarget.planView ? (

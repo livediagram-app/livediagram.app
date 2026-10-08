@@ -26,6 +26,10 @@ const CardFinderPanel = dynamic(
 const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
   ssr: false,
 });
+const NewCardPanel = dynamic(
+  () => import('@/components/plan/NewCardPanel').then((m) => m.NewCardPanel),
+  { ssr: false },
+);
 const CardTypesPanel = dynamic(
   () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
   { ssr: false },
@@ -97,6 +101,7 @@ export function useCanvasChromePanels({
   // The Card Types panel over its cluster button, in Plan mode (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
+  newCardPopoverEl: ReactNode;
   cardFinderPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
@@ -290,11 +295,13 @@ export function useCanvasChromePanels({
   const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
   const trashOpen = activeDockPanel === 'plan-trash' && planMode;
   const cardFinderOpen = activeDockPanel === 'plan-cards' && planMode;
+  const newCardOpen = activeDockPanel === 'plan-new-card' && planMode;
   useEffect(() => {
     if (
       (activeDockPanel === 'card-types' ||
         activeDockPanel === 'plan-trash' ||
-        activeDockPanel === 'plan-cards') &&
+        activeDockPanel === 'plan-cards' ||
+        activeDockPanel === 'plan-new-card') &&
       !planMode
     )
       closeDockPanel();
@@ -594,6 +601,9 @@ export function useCanvasChromePanels({
         popoverAnchor={activeDockAnchor ?? undefined}
         onPopoverClose={closeDockPanel}
       />
+    ) : null,
+    newCardPopoverEl: newCardOpen ? (
+      <NewCardPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
     ) : null,
     trashPopoverEl: trashOpen ? (
       <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />

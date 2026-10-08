@@ -2,18 +2,18 @@
 
 // The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the document's item
 // types, each with its glyph and colour, its name and how many items have it. A popover hanging above
-// its button in Plan mode's bottom-right cluster. Edit and Add Type open the type editor, Duplicate opens it on a
+// its button in Plan mode's bottom-right cluster. Edit and Add New Card Type open the type editor, Duplicate opens it on a
 // new type filled from that one; Restore built-in types puts the built-ins back. Someone who may only view sees
 // the list.
+import { AddCardTypeButton } from './AddCardTypeButton';
 import { useMemo, type ReactNode } from 'react';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { usePlan } from './PlanContext';
 import { ITEM_TYPES, ITEM_TYPES_MAX } from '@livediagram/items';
-import { Button, DuplicateIcon, PencilIcon, PlusIcon, Tooltip } from '@livediagram/ui';
+import { Button, DuplicateIcon, PencilIcon, Tooltip } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
-import { DASHED_ADD_BUTTON } from './ItemTypeFieldForms';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
 export function CardTypesPanel({
@@ -166,14 +166,7 @@ export function CardTypesPanel({
         </TypeGroup>
         {canEdit ? (
           <>
-            <button
-              type="button"
-              className={DASHED_ADD_BUTTON}
-              onClick={() => plan.editType('new')}
-            >
-              <PlusIcon />
-              Add Type
-            </button>
+            <AddCardTypeButton onClick={() => plan.editType('new')} />
             {itemTypes.catalogue ? (
               <Button
                 variant="ghost"

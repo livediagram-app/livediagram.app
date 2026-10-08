@@ -25,12 +25,12 @@ describe('the type editor’s States', () => {
     const { rerender } = render(
       <ItemTypeStatuses statuses={STATUSES} excluded={[]} onChange={onChange} />,
     );
-    expect(screen.getByText('3 of 3 on')).toBeTruthy();
+    expect(screen.getByText('3 of 3 states on')).toBeTruthy();
     expect(box('Done').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(box('Done'));
     expect(onChange).toHaveBeenLastCalledWith(['done']);
     rerender(<ItemTypeStatuses statuses={STATUSES} excluded={['done']} onChange={onChange} />);
-    expect(screen.getByText('2 of 3 on')).toBeTruthy();
+    expect(screen.getByText('2 of 3 states on')).toBeTruthy();
     fireEvent.click(box('Done'));
     expect(onChange).toHaveBeenLastCalledWith([]);
   });
@@ -133,18 +133,29 @@ describe('the States tab’s Default State', () => {
 });
 
 describe('a built-in type’s Default State', () => {
-  it('shows its named state in place of None, until it is turned off', () => {
+  it('lists each state once by its own name, its built-in default picked, until that is turned off', () => {
+    const onDefaultStatus = vi.fn();
     const { rerender } = render(
       <ItemTypeStatuses
         statuses={STATUSES}
         excluded={[]}
         onChange={vi.fn()}
-        onDefaultStatus={vi.fn()}
+        onDefaultStatus={onDefaultStatus}
         typeId="task"
       />,
     );
-    const first = () => (screen.getByLabelText('Default State') as HTMLSelectElement).options[0]!;
-    expect(first().textContent).toBe('To Do (Built-In Default)');
+    const menu = () => screen.getByLabelText('Default State') as HTMLSelectElement;
+    const labels = [...menu().options].map((o) => o.textContent);
+    expect(labels).toContain('To Do');
+    expect(labels.some((l) => l?.includes('Built-In'))).toBe(false);
+    expect(labels).not.toContain('None');
+    expect(new Set(labels).size).toBe(labels.length);
+    expect(menu().value).toBe('todo');
+    // What is picked is saved as picked.
+    fireEvent.change(menu(), { target: { value: 'todo' } });
+    expect(onDefaultStatus).toHaveBeenLastCalledWith('todo');
+    fireEvent.change(menu(), { target: { value: 'done' } });
+    expect(onDefaultStatus).toHaveBeenLastCalledWith('done');
     rerender(
       <ItemTypeStatuses
         statuses={STATUSES}
@@ -154,7 +165,7 @@ describe('a built-in type’s Default State', () => {
         typeId="task"
       />,
     );
-    expect(first().textContent).toBe('None');
+    expect(menu().options[0]!.textContent).toBe('None');
   });
 });
 

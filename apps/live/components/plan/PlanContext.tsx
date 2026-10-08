@@ -5,6 +5,7 @@
 // the actions a board takes. A context, like MindOutlineContext, because the consumers are element
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
+import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { PlanViewRef } from '@livediagram/document';
@@ -33,9 +34,12 @@ export type PlanContextValue = {
   itemTypes: ItemTypesSlice;
   // Opens the type editor on a type, or on a new one (filled from `fromId` when duplicating).
   editType: (typeId: string | 'new', fromId?: string) => void;
-  // Create Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
-  // board once saved (docs/specs/026-plan/plan-board.md "Create Card Type").
+  // Add New Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
+  // board once saved (docs/specs/026-plan/plan-board.md "Add New Card Type").
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
+  // Setup Board on a board that has columns (its Board Title's Setup Board): the board showing it, or null.
+  setupBoardId: string | null;
+  openBoardSetup: (boardId: string | null) => void;
   status: PlanItemsStatus;
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).
@@ -101,6 +105,8 @@ export type PlanContextValue = {
   // The card types the document's boards show under each status they name: what Not on a Board reads
   // (docs/specs/026-plan/items.md "Finding a card").
   statusTypes: BoardStatusTypes;
+  // Each board's title and the statuses it names, in board order: the type editor's States groups by them.
+  statusBoards: readonly StatusBoard[];
 };
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);

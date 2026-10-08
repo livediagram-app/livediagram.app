@@ -3,6 +3,7 @@
 // The type editor (docs/specs/026-plan/item-types.md "Editing a type"): a modal, a sheet rising from
 // the bottom on a phone. Name, colour, glyph and fields are edited as a draft; Save applies the whole
 // edit as one change, Cancel drops it. Delete Type, for a type with items, asks where they go first.
+import { pickableStatuses } from './column-status-picks';
 import { useId, useMemo, useState } from 'react';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
@@ -23,7 +24,6 @@ import {
   CloseIcon,
   DialogCloseButton,
   DuplicateIcon,
-  TextInput,
   TrashIcon,
 } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -95,11 +95,16 @@ export function ItemTypeEditor({
   const [display, setDisplay] = useState<CardDisplayDraft>(() => ({ ...start.display }));
   // The Default State: the status a card made outside a board starts in (none: '').
   const [defaultStatus, setDefaultStatus] = useState(start.defaultStatus ?? '');
-  const statusNames = usePlan()?.statusNames;
+  const plan = usePlan();
+  const statusNames = plan?.statusNames;
+  const planItems = plan?.items;
+  // The boards' statuses, then any a card is in that no board names (shown under No Board in States).
   const statuses = useMemo(
     () =>
-      [...(statusNames ?? new Map<string, string>())].map(([status, name]) => ({ status, name })),
-    [statusNames],
+      [
+        ...pickableStatuses(statusNames ?? new Map<string, string>(), planItems?.values() ?? []),
+      ].map(([status, name]) => ({ status, name })),
+    [statusNames, planItems],
   );
   // The Delete Type button while its confirmation is open.
   const [confirmingAt, setConfirmingAt] = useState<HTMLElement | null>(null);
@@ -214,23 +219,22 @@ export function ItemTypeEditor({
             <>
               <div data-tour-id="card-type-general">
                 <SheetRow label="Name" htmlFor={`${titleId}-name`}>
-                  <TextInput
-                    id={`${titleId}-name`}
-                    compact
-                    // A card type's name is short (32 characters at most): the field is sized to it.
-                    className="max-w-xs"
-                    value={label}
-                    maxLength={ITEM_TYPE_LABEL_MAX}
-                    placeholder="Customer call"
-                    autoFocus={!type}
-                    onChange={(e) => setLabel(e.target.value)}
-                  />
+                  {/* The glyph and the name as one field: pick the glyph at its start, type the name after it. */}
+                  <div className="flex max-w-xs items-center gap-1 rounded-lg border border-slate-200 bg-white pl-1 pr-2 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900">
+                    <GlyphPicker value={glyph} colour={color} onChange={setGlyph} inline />
+                    <input
+                      id={`${titleId}-name`}
+                      value={label}
+                      maxLength={ITEM_TYPE_LABEL_MAX}
+                      placeholder="Customer call"
+                      autoFocus={!type}
+                      onChange={(e) => setLabel(e.target.value)}
+                      className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
+                    />
+                  </div>
                 </SheetRow>
                 <SheetRow label="Colour">
                   <ColourSwatches allowCustom value={color} onChange={(c) => c && setColor(c)} />
-                </SheetRow>
-                <SheetRow label="Glyph">
-                  <GlyphPicker value={glyph} colour={color} onChange={setGlyph} />
                 </SheetRow>
               </div>
             </>
@@ -276,6 +280,7 @@ export function ItemTypeEditor({
                     defaultStatus={defaultStatus}
                     onDefaultStatus={setDefaultStatus}
                     {...(type ? { typeId: type.id } : {})}
+                    {...(plan?.statusBoards ? { boards: plan.statusBoards } : {})}
                   />
                 </SheetRow>
               </div>

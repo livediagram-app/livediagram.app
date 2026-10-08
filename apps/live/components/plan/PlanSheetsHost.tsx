@@ -5,17 +5,16 @@
 import { useMemo } from 'react';
 import {
   ITEM_TYPES_MAX,
-  resolvedDefaultStatus,
   duplicateItemType,
   isArchived,
   isTrashed,
   itemLabels,
   linkedCardsOf,
   newItemId,
-  typeAllowsStatus,
   typeIn,
 } from '@livediagram/items';
 import { duplicateItem } from './duplicate-item';
+import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
 import { toggleFlag } from './item-flag';
@@ -58,7 +57,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       const from = plan.typeTemplateId
         ? ctx.types.find((t) => t.id === plan.typeTemplateId)
         : undefined;
-      // Create Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
+      // Add New Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
       const forBoard = !editing && !from ? plan.typeForBoard : null;
       const template =
         !editing && from
@@ -124,10 +123,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           // A new card of that type, already linked here, in its type's Default State (its own, else its built-in
           // one by name), else the first status its type uses; opened next.
           const type = typeIn(ctx.types, typeId);
-          const status =
-            resolvedDefaultStatus(type, ctx.statusNames) ??
-            [...ctx.statusNames.keys()].find((st) => typeAllowsStatus(type, st)) ??
-            'todo';
+          const status = newCardStatus(type, ctx.statusNames);
           const id = newItemId();
           ctx.addItem({
             type: typeId,

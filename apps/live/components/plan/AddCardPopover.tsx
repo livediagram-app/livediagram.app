@@ -6,13 +6,13 @@
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
 // MenuTile grid, so arrow keys, Escape, focus return and an outside press behave as every other
 // menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
-// away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Create Card Type under the
+// away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Add New Card Type under the
 // tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
 import { useEffect, useRef, type SyntheticEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
-import { PlanCardsIcon } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { MenuActionButton, PortalMenu } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { AddCardTypeButton } from './AddCardTypeButton';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -54,43 +54,23 @@ export function AddCardPopover({
     document.addEventListener('wheel', onWheel, { capture: true, passive: true });
     return () => document.removeEventListener('wheel', onWheel, { capture: true });
   }, [mobile, close]);
-  const choose = (type: ItemTypeDef) => {
-    onClose();
-    onAdd({ type: type.id, fields: { title: type.newTitle } });
-  };
-  // A board taking no types yet offers only Create Card Type.
-  const tiles =
-    types.length === 0 ? null : (
-      <MenuTileGrid cols={3}>
-        {types.map((t) => (
-          <MenuTile
-            key={t.id}
-            label={t.label}
-            icon={
-              <span
-                className={`flex h-8 w-8 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
-                style={accentVars(t.color)}
-              >
-                <PlanTypeGlyph glyph={t.glyph} size={16} />
-              </span>
-            }
-            onClick={() => choose(t)}
-          />
-        ))}
-      </MenuTileGrid>
-    );
-  const createType = onCreateType ? (
-    <div className="mt-1.5 px-1 pb-1">
-      <MenuActionButton
-        label="Create Card Type"
-        icon={<PlanCardsIcon size={13} />}
-        onClick={() => {
-          onClose();
-          onCreateType();
-        }}
-      />
-    </div>
-  ) : null;
+  const choices = (
+    <AddCardChoices
+      types={types}
+      onAdd={(card) => {
+        onClose();
+        onAdd(card);
+      }}
+      {...(onCreateType
+        ? {
+            onCreateType: () => {
+              onClose();
+              onCreateType();
+            },
+          }
+        : {})}
+    />
+  );
 
   if (mobile) {
     return (
@@ -105,8 +85,7 @@ export function AddCardPopover({
           <p className="px-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
             Add a Card
           </p>
-          {tiles}
-          {createType}
+          {choices}
         </div>
       </BottomSheet>
     );
@@ -117,11 +96,50 @@ export function AddCardPopover({
     <div ref={box} className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
       <PortalMenu anchor={anchor} placement="below-start" onClose={onClose} initialFocus="first">
         {/* No header: it opens right under its own Add card button, which names it. */}
-        <div data-add-card-menu="">
-          {tiles}
-          {createType}
-        </div>
+        <div data-add-card-menu="">{choices}</div>
       </PortalMenu>
     </div>
+  );
+}
+
+// The choices themselves, shared by the Add a Card menu and the Plan strip's New Card panel: a tile per card type
+// (its glyph on a tint of its colour, its name), then, given a way to make one, a full-width Add New Card Type.
+export function AddCardChoices({
+  types,
+  onAdd,
+  onCreateType,
+}: {
+  types: readonly ItemTypeDef[];
+  onAdd: (card: NewCard) => void;
+  onCreateType?: () => void;
+}) {
+  return (
+    <>
+      {/* A board taking no types yet offers only Add New Card Type. */}
+      {types.length === 0 ? null : (
+        <MenuTileGrid cols={3}>
+          {types.map((t) => (
+            <MenuTile
+              key={t.id}
+              label={t.label}
+              icon={
+                <span
+                  className={`flex h-8 w-8 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+                  style={accentVars(t.color)}
+                >
+                  <PlanTypeGlyph glyph={t.glyph} size={16} />
+                </span>
+              }
+              onClick={() => onAdd({ type: t.id, fields: { title: t.newTitle } })}
+            />
+          ))}
+        </MenuTileGrid>
+      )}
+      {onCreateType ? (
+        <div className="mt-1.5 px-1 pb-1">
+          <AddCardTypeButton onClick={onCreateType} />
+        </div>
+      ) : null}
+    </>
   );
 }

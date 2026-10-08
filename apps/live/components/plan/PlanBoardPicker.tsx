@@ -2,7 +2,7 @@
 
 // A Plan tab with no board (docs/specs/026-plan/plan-mode.md "Starting a board"): the middle of the canvas
 // offers the board types, as a new infographic page offers its layouts. Each is a picture of the board
-// itself (its columns, its rows, cards in the colours of the types it takes) over its name and what it is
+// itself, drawn as what sets it apart (board-previews.tsx) over its name and what it is
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
 // left to the palette. Choosing one places that board, empty, in the
 // middle of the view. Gone once the tab has a board; never shown to someone who may only view.
@@ -17,6 +17,7 @@ import {
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { PLAN_BOARD_TILES } from '@/components/palette/palette-plan-tiles';
 import { accentOn, planPalette, type PlanPalette } from './plan-palette';
+import { BOARD_PREVIEWS } from './board-previews';
 
 // The most columns a preview draws.
 const PREVIEW_COLUMNS = 5;
@@ -24,6 +25,16 @@ const PREVIEW_COLUMNS = 5;
 const CARD_PATTERN = [3, 2, 3, 1, 2];
 
 function BoardPreview({ preset, palette }: { preset: PlanBoardPresetId; palette: PlanPalette }) {
+  const Picture = BOARD_PREVIEWS[preset];
+  return Picture ? (
+    <Picture palette={palette} />
+  ) : (
+    <GenericPreview preset={preset} palette={palette} />
+  );
+}
+
+// A board drawn from its preset (its columns, rows and card colours), for a preset with no picture of its own.
+function GenericPreview({ preset, palette }: { preset: PlanBoardPresetId; palette: PlanPalette }) {
   const setup = PLAN_BOARD_PRESETS[preset].setup;
   const colours = boardAddTypes(setup, ITEM_TYPES).map((t) => accentOn(t.color, palette));
   const columns = setup.columns.slice(0, PREVIEW_COLUMNS);

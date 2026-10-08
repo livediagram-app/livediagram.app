@@ -233,6 +233,15 @@ author redaction, and the same thread list, composer and resolve control the com
 - Telemetry: the canvas's own comment events with the type `Item`: `Comment · Added · Item`,
   `Comment · Deleted · Item`, `Comment · Resolved · Item` and `Comment · Unresolved · Item` (existing pairs).
 
+## New Card
+
+- Plan mode's bottom-right strip holds, for someone who may edit, a **+** (**New Card**, with a hover card) between
+  the Trash and Find a Card. It opens the **New Card** panel above it, pointing at it as the strip's other panels
+  do: a tile per card type of the document (no Add New Card Type here). A pick makes a card of that type, off any
+  board, in its type's starting status (its Default State, else the first status the type
+  uses), titled as the type names a new card ("New task"), and opens it in the card panel with its title selected.
+- Telemetry: `Plan` · `Added` · the type, as any new card.
+
 ## Finding a card
 
 - **Cards** is a button in Plan mode's bottom-right cluster, after the Trash in one strip with Card Types

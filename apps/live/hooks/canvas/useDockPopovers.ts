@@ -21,12 +21,21 @@ export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
   'card-types': 544,
+  // NewCardPanel's `w-72`.
+  'plan-new-card': 288,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
 // Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
-  'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types' | 'plan-trash' | 'plan-cards';
+  | 'explorer'
+  | 'layers'
+  | 'collaborate'
+  | 'slides'
+  | 'card-types'
+  | 'plan-trash'
+  | 'plan-cards'
+  | 'plan-new-card';
 
 export type { DockAnchor };
 

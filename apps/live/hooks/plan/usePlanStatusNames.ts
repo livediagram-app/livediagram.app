@@ -61,6 +61,19 @@ export function statusTypesOfSetups(
   return [...shown].map(([status, types]) => [status, types === 'all' ? 'all' : [...types].sort()]);
 }
 
+// A board's title and the statuses it names as columns, in board order (All Cards and Archive boards skipped): the
+// type editor's States groups its statuses under them (docs/specs/026-plan/item-types.md "Editing a type").
+export type StatusBoard = { title: string; statuses: readonly string[] };
+export function statusBoardsOfSetups(setups: readonly unknown[]): StatusBoard[] {
+  const out: StatusBoard[] = [];
+  for (const raw of setups) {
+    const setup = normaliseBoardSetup(raw);
+    if (!setup || setup.allCards || setup.archive || setup.columns.length === 0) continue;
+    out.push({ title: setup.title, statuses: setup.columns.map((c) => c.status) });
+  }
+  return out;
+}
+
 export function statusColumnsOf(elements: readonly Element[]): [string, string][] {
   return statusColumnsOfSetups(boardSetupsIn(elements));
 }
@@ -80,7 +93,7 @@ function sourceId(setups: readonly unknown[]): number {
 }
 
 export const STATUS_SIGNATURE_CACHE_MAX = 8;
-type Signatures = { names: string; phases: string; types: string };
+type Signatures = { names: string; phases: string; types: string; boards: string };
 const signatures = new Map<string, Signatures>();
 
 // `typeIds` is the catalogue's type ids, for the deleted-types rule; it is part of the cache key.
@@ -101,6 +114,7 @@ export function documentStatusSignatures(
     names: JSON.stringify(statusColumnsOfSetups(setups)),
     phases: JSON.stringify([...statusPhasesOf(setups)]),
     types: JSON.stringify(statusTypesOfSetups(setups, typeIds && new Set(typeIds))),
+    boards: JSON.stringify(statusBoardsOfSetups(setups)),
   };
   signatures.set(key, next);
   if (signatures.size > STATUS_SIGNATURE_CACHE_MAX)
@@ -108,7 +122,7 @@ export function documentStatusSignatures(
   return next;
 }
 
-const OFF: Signatures = { names: '[]', phases: '[]', types: '[]' };
+const OFF: Signatures = { names: '[]', phases: '[]', types: '[]', boards: '[]' };
 
 // The document's status names and phases, read only where Plan is in play
 // (docs/specs/026-plan/plan-mode.md "Cost"); each map keeps its identity while its signature does.
@@ -121,6 +135,7 @@ export function usePlanStatuses(
   names: ReadonlyMap<string, string>;
   phases: ReadonlyMap<string, StatusPhase>;
   types: BoardStatusTypes;
+  boards: readonly StatusBoard[];
 } {
   const sig = enabled ? documentStatusSignatures(tabs, activeId, typeIds) : OFF;
   const names = useMemo(() => new Map(JSON.parse(sig.names) as [string, string][]), [sig.names]);
@@ -138,5 +153,6 @@ export function usePlanStatuses(
       ),
     [sig.types],
   );
-  return { names, phases, types };
+  const boards = useMemo(() => JSON.parse(sig.boards) as StatusBoard[], [sig.boards]);
+  return { names, phases, types, boards };
 }
