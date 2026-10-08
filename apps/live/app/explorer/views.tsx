@@ -230,7 +230,7 @@ export function SharedList({
                 type="button"
                 onClick={() => onDismiss(s.id)}
                 aria-label={DISMISS_SHARED.ariaLabel(s.name)}
-                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-600 dark:hover:text-slate-200"
               >
                 <DismissSharedIcon />
               </button>

@@ -16,6 +16,7 @@ export function AddCardButton({
   open: openNow = false,
   onClosed,
   onAdd,
+  onCreateType,
 }: {
   palette: PlanPalette;
   types: readonly ItemTypeDef[];
@@ -24,6 +25,8 @@ export function AddCardButton({
   open?: boolean;
   onClosed?: () => void;
   onAdd: (card: NewCard) => void;
+  // The menu's Create Card Type row (AddCardPopover).
+  onCreateType?: (() => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // The button, as state: the menu hangs from it once it is mounted.
@@ -57,6 +60,7 @@ export function AddCardButton({
           anchor={button}
           types={types}
           onAdd={onAdd}
+          {...(onCreateType ? { onCreateType } : {})}
           onClose={() => {
             setOpen(false);
             onClosed?.();

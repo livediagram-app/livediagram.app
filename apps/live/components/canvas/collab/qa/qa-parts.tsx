@@ -222,11 +222,11 @@ export function RoundAction({
   description: string;
   onPress: () => void;
   textColor: string;
-  tone?: 'plain' | 'accent' | 'danger';
+  tone?: 'plain' | 'accent';
   children: React.ReactNode;
 }) {
   const press = usePressWithoutDrag(onPress);
-  const color = tone === 'accent' ? QA_ACCENT_INK : tone === 'danger' ? '#e11d48' : textColor;
+  const color = tone === 'accent' ? QA_ACCENT_INK : textColor;
   return (
     <HoverCard title={label} description={description}>
       <GlyphDisc

@@ -121,7 +121,9 @@ export function AnchoredPopover({
         aria-label={name}
         // A host popover's outside-press check leaves this one alone.
         data-anchored-popover
-        className="fixed z-[calc(var(--z-modal)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg"
+        // Over its dialog, and over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
+        // menu opened mid-tour is never dimmed.
+        className="fixed z-[calc(var(--z-modal)+2)] overflow-y-auto overscroll-contain rounded-lg shadow-lg"
         style={{
           width: `min(${width}px, calc(100vw - ${2 * EDGE}px))`,
           left: pos?.left ?? -9999,

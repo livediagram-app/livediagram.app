@@ -134,7 +134,12 @@ describe('resolveFields', () => {
     expect(resolveFields({ status: 'Review' }, bug, naming)).toMatchObject({
       code: 'status_unknown',
     });
-    expect(resolveFields({ parent: '#99' }, bug, naming)).toMatchObject({ code: 'item_unknown' });
+    expect(resolveFields({ Blocks: '#99' }, bug, naming)).toMatchObject({ code: 'item_unknown' });
+    // Parent is Task's Card field, so a card it names must exist; a type without it does not know it.
+    expect(resolveFields({ parent: '#99' }, ITEM_TYPES[1], naming)).toMatchObject({
+      code: 'item_unknown',
+    });
+    expect(resolveFields({ parent: '#99' }, bug, naming)).toMatchObject({ code: 'field_unknown' });
   });
 
   it('names an ambiguous item', () => {

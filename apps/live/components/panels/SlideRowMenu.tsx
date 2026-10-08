@@ -135,7 +135,6 @@ export function SlideRowMenu({
                     ? 'Remove this slide from the deck. The element stays on the canvas.'
                     : 'Remove this slide from the deck. The elements stay on the canvas.'
                 }
-                danger
                 onClick={() => {
                   // Hand the menu button up as the anchor so the panel can
                   // open the confirm beside it — the same pattern the

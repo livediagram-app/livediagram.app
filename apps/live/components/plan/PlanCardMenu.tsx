@@ -140,7 +140,7 @@ export function PlanCardMenu({
               icon={<PlanBoardTileArt preset="archive" size={16} />}
               onClick={act(onArchive)}
             />
-            <MenuActionRow plain label="Trash" icon={<TrashIcon />} danger onClick={act(onTrash)} />
+            <MenuActionRow plain label="Trash" icon={<TrashIcon />} onClick={act(onTrash)} />
           </>
         ) : null}
       </ContextMenu>

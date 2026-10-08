@@ -112,7 +112,6 @@ export const QaNoteRow = forwardRef<
           <RoundAction
             label="Remove"
             description="Takes this note off the board for everyone."
-            tone="danger"
             textColor={textColor}
             onPress={actions.onRemove}
           >

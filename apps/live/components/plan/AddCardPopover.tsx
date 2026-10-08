@@ -6,11 +6,13 @@
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
 // MenuTile grid, so arrow keys, Escape, focus return and an outside press behave as every other
 // menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
-// away. On a phone it is a bottom sheet.
+// away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Create Card Type under the
+// tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
 import { useEffect, useRef, type SyntheticEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
+import { PlanCardsIcon } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuActionButton, PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -26,6 +28,7 @@ export function AddCardPopover({
   anchor,
   types,
   onAdd,
+  onCreateType,
   onClose,
 }: {
   // The Add card button the menu hangs from.
@@ -33,6 +36,8 @@ export function AddCardPopover({
   // The types this board shows, in the document's order.
   types: readonly ItemTypeDef[];
   onAdd: (card: NewCard) => void;
+  // Create Card Type: absent, the row is not offered (a viewer, or a catalogue with no room).
+  onCreateType?: () => void;
   onClose: () => void;
 }) {
   const mobile = useIsMobileViewport();
@@ -53,25 +58,39 @@ export function AddCardPopover({
     onClose();
     onAdd({ type: type.id, fields: { title: type.newTitle } });
   };
-  const tiles = (
-    <MenuTileGrid cols={3}>
-      {types.map((t) => (
-        <MenuTile
-          key={t.id}
-          label={t.label}
-          icon={
-            <span
-              className={`flex h-8 w-8 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
-              style={accentVars(t.color)}
-            >
-              <PlanTypeGlyph glyph={t.glyph} size={16} />
-            </span>
-          }
-          onClick={() => choose(t)}
-        />
-      ))}
-    </MenuTileGrid>
-  );
+  // A board taking no types yet offers only Create Card Type.
+  const tiles =
+    types.length === 0 ? null : (
+      <MenuTileGrid cols={3}>
+        {types.map((t) => (
+          <MenuTile
+            key={t.id}
+            label={t.label}
+            icon={
+              <span
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+                style={accentVars(t.color)}
+              >
+                <PlanTypeGlyph glyph={t.glyph} size={16} />
+              </span>
+            }
+            onClick={() => choose(t)}
+          />
+        ))}
+      </MenuTileGrid>
+    );
+  const createType = onCreateType ? (
+    <div className="mt-1.5 px-1 pb-1">
+      <MenuActionButton
+        label="Create Card Type"
+        icon={<PlanCardsIcon size={13} />}
+        onClick={() => {
+          onClose();
+          onCreateType();
+        }}
+      />
+    </div>
+  ) : null;
 
   if (mobile) {
     return (
@@ -87,6 +106,7 @@ export function AddCardPopover({
             Add a Card
           </p>
           {tiles}
+          {createType}
         </div>
       </BottomSheet>
     );
@@ -97,7 +117,10 @@ export function AddCardPopover({
     <div ref={box} className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
       <PortalMenu anchor={anchor} placement="below-start" onClose={onClose} initialFocus="first">
         {/* No header: it opens right under its own Add card button, which names it. */}
-        <div data-add-card-menu="">{tiles}</div>
+        <div data-add-card-menu="">
+          {tiles}
+          {createType}
+        </div>
       </PortalMenu>
     </div>
   );

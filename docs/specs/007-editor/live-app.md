@@ -171,7 +171,7 @@ Non-destructive everyday actions (delete an element, clear a comment, undo a str
 - The change cascades (removes child rows, breaks cross-references, invalidates share links).
 - The change is invisible to other participants in the same room.
 
-The modal supports `danger` (rose-tinted confirm button) and `neutral` variants; default is `danger` because the current call sites are all destructive. Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
+Its confirm button is the brand primary button for every action, a delete included ([Destructive actions](../004-interface-design/destructive-actions.md): never red or yellow). Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
 
 ## Toasts
 

@@ -30,7 +30,6 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   start: 'Start Date',
   due: 'Due Date',
   checklist: 'Checklist',
-  parent: 'Parent',
   votes: 'Votes',
   comments: 'Comments',
   archived: 'Archived',

@@ -177,7 +177,7 @@ export function CommunitySection({
               >
                 Keep It
               </Button>
-              <Button variant="danger" size="xs" onClick={remove} disabled={removing}>
+              <Button variant="primary" size="xs" onClick={remove} disabled={removing}>
                 {removing ? 'Removing' : 'Remove'}
               </Button>
             </div>
@@ -196,7 +196,7 @@ export function CommunitySection({
                 Edit Listing
               </Button>
               <Button
-                variant="caution"
+                variant="secondary"
                 size="xs"
                 data-focus="actions"
                 onClick={() => ask(true, 'confirm')}

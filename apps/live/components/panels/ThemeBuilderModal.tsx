@@ -49,6 +49,5 @@ export function themeDeleteConfirm(name: string) {
     title: `Delete "${name}"?`,
     message: 'Documents using it fall back to the Default theme. This cannot be undone.',
     confirmLabel: 'Delete',
-    variant: 'danger' as const,
   };
 }

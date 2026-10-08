@@ -753,11 +753,8 @@ export function ImportMenu() {
       <Label x={mx + 14} y={my + 42} size={11} weight={700} tone="strong">
         Content
       </Label>
-      {[
-        ['Import', false],
-        ['Export', false],
-        ['Clear', true],
-      ].map(([label, danger], i) => {
+      {/* Clear is styled as its neighbours: a delete is never red. */}
+      {['Import', 'Export', 'Clear'].map((label, i) => {
         const tx = mx + 10 + i * 59;
         return (
           <g key={String(label)}>
@@ -780,7 +777,7 @@ export function ImportMenu() {
                     ? `M${tx + 27} ${my + 74} v-12 M${tx + 22} ${my + 67} l5 -5 l5 5 M${tx + 20} ${my + 78} h14`
                     : `M${tx + 21} ${my + 64} l12 12 M${tx + 33} ${my + 64} l-12 12`
               }
-              className={danger ? 'fill-none stroke-rose-500' : 'fill-none stroke-slate-500'}
+              className="fill-none stroke-slate-500"
               strokeWidth={1.6}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -792,7 +789,6 @@ export function ImportMenu() {
               size={10}
               weight={600}
               tone={i === 0 ? 'accent' : 'body'}
-              className={danger ? 'fill-rose-500' : undefined}
             >
               {String(label)}
             </Label>

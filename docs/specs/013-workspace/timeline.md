@@ -749,7 +749,7 @@ the Explorer's own handlers (`useTimelineEntityMenus`):
 | Document the Explorer can't resolve    | Open Document                                                                                            |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
-verbs last, red, under their own separator, the way the document menu
+verbs last, under their own separator (never red), the way the document menu
 keeps Delete. The first version gave these cards only the remove verb,
 on the argument that a ⋯ holding a single "Open" that duplicated the
 card's own click was a control that exists to look consistent. Half

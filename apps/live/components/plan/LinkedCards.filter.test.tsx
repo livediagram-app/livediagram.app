@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item } from '@livediagram/items';
-import { FilteredCards } from './ItemChildCards';
+import { FilteredCards } from './LinkedCards';
 
 // docs/specs/026-plan/item-types.md "Card fields": a card's linked cards, filtered by Card Type and State.
 afterEach(cleanup);
@@ -38,7 +38,7 @@ function draw(list = cards) {
       types={ITEM_TYPES}
       statusNames={names}
       onOpen={vi.fn()}
-      label="Child Cards"
+      label="Linked as Parent"
     />,
   );
 }
@@ -47,13 +47,13 @@ const rows = () => screen.queryAllByRole('listitem').map((li) => li.textContent)
 describe('filtering linked cards', () => {
   it('offers only the types and states the list holds, and narrows by each', () => {
     draw();
-    const typeMenu = screen.getByLabelText('Child Cards: Card Type') as HTMLSelectElement;
+    const typeMenu = screen.getByLabelText('Linked as Parent: Card Type') as HTMLSelectElement;
     expect([...typeMenu.options].map((o) => o.textContent)).toEqual([
       'All card types',
       'Task',
       'Note',
     ]);
-    const stateMenu = screen.getByLabelText('Child Cards: State') as HTMLSelectElement;
+    const stateMenu = screen.getByLabelText('Linked as Parent: State') as HTMLSelectElement;
     expect([...stateMenu.options].map((o) => o.textContent)).toEqual([
       'All states',
       'To Do',
@@ -69,10 +69,12 @@ describe('filtering linked cards', () => {
 
   it('says when nothing matches, and Clear Filters shows them all', () => {
     draw();
-    fireEvent.change(screen.getByLabelText('Child Cards: Card Type'), {
+    fireEvent.change(screen.getByLabelText('Linked as Parent: Card Type'), {
       target: { value: 'note' },
     });
-    fireEvent.change(screen.getByLabelText('Child Cards: State'), { target: { value: 'done' } });
+    fireEvent.change(screen.getByLabelText('Linked as Parent: State'), {
+      target: { value: 'done' },
+    });
     expect(screen.getByText('No cards match.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
     expect(rows()).toHaveLength(3);
@@ -80,6 +82,6 @@ describe('filtering linked cards', () => {
 
   it('shows no filters for a list with one type and one state', () => {
     draw([card('task', 'todo', 'A'), card('task', 'todo', 'B')]);
-    expect(screen.queryByLabelText('Child Cards: Card Type')).toBeNull();
+    expect(screen.queryByLabelText('Linked as Parent: Card Type')).toBeNull();
   });
 });

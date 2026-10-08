@@ -30,8 +30,6 @@ const ShapesBadge = lucideGlyph(lucideShapes, 28);
 
 const BUTTON =
   'rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:text-slate-300';
-const DANGER =
-  'rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-rose-300 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:text-slate-300';
 
 export function ShapeLibrariesPane() {
   const { libraries, status, reload } = useShapeLibraries();
@@ -92,7 +90,6 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
       title: 'Delete this shape library?',
       message: 'Its shapes leave My shapes; documents that use them keep them.',
       confirmLabel: 'Delete',
-      variant: 'danger',
     });
     if (ok) await deleteLibrary(library.id);
   };
@@ -145,7 +142,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
           type="button"
           aria-label={`Delete ${library.name}`}
           onClick={() => void remove()}
-          className={DANGER}
+          className={BUTTON}
         >
           Delete
         </button>
@@ -181,7 +178,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
                 type="button"
                 aria-label={`Delete ${titleOf(item, i)}`}
                 onClick={() => void deleteItem(library.id, item.id)}
-                className={DANGER}
+                className={BUTTON}
               >
                 Delete
               </button>

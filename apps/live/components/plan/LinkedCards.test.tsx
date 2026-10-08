@@ -2,9 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item } from '@livediagram/items';
-import { ItemChildCards, LinkedCardGroup } from './ItemChildCards';
-
-// docs/specs/026-plan/plan-board.md "Open an item", Child Cards.
+import { LinkedCardGroup } from './LinkedCards';
 
 afterEach(cleanup);
 
@@ -25,45 +23,6 @@ const STATUS_NAMES = new Map([
   ['doing', 'In Progress'],
   ['review', 'Review'],
 ]);
-
-function draw(parent: Item, childCards: Item[], onOpen = vi.fn()) {
-  render(
-    <ItemChildCards
-      item={parent}
-      childCards={childCards}
-      types={ITEM_TYPES}
-      statusNames={STATUS_NAMES}
-      onOpen={onOpen}
-    />,
-  );
-  return onOpen;
-}
-
-describe('ItemChildCards', () => {
-  it('lists each child with its status and opens it', () => {
-    const onOpen = draw(item('p', 1, 'project'), [
-      item('c2', 2, 'task', { status: 'doing', assignee: PERSON }),
-      item('c3', 3, 'task', { status: 'review', archived: true }),
-    ]);
-    expect(screen.getByRole('heading', { name: /Child Cards/ }).textContent).toContain('2');
-    expect(within(screen.getByRole('list')).getByText('In Progress')).toBeTruthy();
-    // A status no board names reads as itself.
-    expect(within(screen.getByRole('list')).getByText('Review')).toBeTruthy();
-    expect(screen.getByText('Archived')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Open #2 Card 2, In Progress' }));
-    expect(onOpen).toHaveBeenCalledWith('c2');
-  });
-
-  it('invites children on an empty Project', () => {
-    draw(item('p', 1, 'project'), []);
-    expect(screen.getByText('No cards sit under this project yet.')).toBeTruthy();
-  });
-
-  it('shows nothing on another type without children', () => {
-    draw(item('t', 1, 'task'), []);
-    expect(screen.queryByText('Child Cards')).toBeNull();
-  });
-});
 
 // docs/specs/026-plan/item-types.md "Card fields": a section per Card field linking here.
 describe('LinkedCardGroup', () => {
@@ -92,6 +51,31 @@ describe('LinkedCardGroup', () => {
     expect(onOpen).toHaveBeenCalledWith('o1');
     fireEvent.click(screen.getByRole('button', { name: 'New Task' }));
     expect(onAdd).toHaveBeenCalledWith('task');
+  });
+
+  it('lists a Project’s cards as Linked as Parent, each with its status and Archived', () => {
+    render(
+      <LinkedCardGroup
+        group={{
+          fieldId: 'parent',
+          label: 'Parent',
+          fromTypes: ['task'],
+          cards: [
+            item('c2', 2, 'task', { status: 'doing', assignee: PERSON }),
+            item('c3', 3, 'task', { status: 'review', archived: true }),
+          ],
+        }}
+        types={ITEM_TYPES}
+        statusNames={STATUS_NAMES}
+        canAdd
+        onOpen={vi.fn()}
+        onAdd={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: /Linked as Parent/ }).textContent).toContain('2');
+    expect(within(screen.getByRole('list')).getByText('In Progress')).toBeTruthy();
+    expect(within(screen.getByRole('list')).getByText('Review')).toBeTruthy();
+    expect(screen.getByText('Archived')).toBeTruthy();
   });
 
   it('says so when nothing links here yet, and offers no New to a viewer', () => {

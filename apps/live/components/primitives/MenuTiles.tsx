@@ -25,8 +25,6 @@ type MenuToolButtonProps = {
   disabled?: boolean;
   // Highlight a toggle whose state is "on" (e.g. a locked tab).
   active?: boolean;
-  // Destructive action (e.g. Delete) — rose tone, matching MenuItem.
-  danger?: boolean;
 };
 
 export function MenuToolButton({
@@ -36,7 +34,6 @@ export function MenuToolButton({
   onClick,
   disabled,
   active,
-  danger,
 }: MenuToolButtonProps) {
   // In a command menu: a menu item (checkable when it shows an on state), disabled by
   // aria-disabled so the roving keys still reach it (D50).
@@ -45,9 +42,7 @@ export function MenuToolButton({
     ? 'cursor-not-allowed text-slate-300 dark:text-slate-400'
     : active
       ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300'
-      : danger
-        ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15'
-        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
+      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
   return (
     <HoverCard title={label} description={description}>
       <button
@@ -70,7 +65,7 @@ export function MenuToolButton({
 
 // A tile button: icon stacked OVER its label, centred. The action shape
 // menus use so they read as a grid of buttons rather than a list of rows.
-// `danger` tints it red (Delete); `active` gives it the brand-fill pressed
+// A delete looks like every other tile (never red); `active` gives it the brand-fill pressed
 // tone. `preserveFocus` preventDefaults mousedown so clicking it can't blur a
 // contentEditable behind it (the rich-text toolbar's menu needs the live
 // selection to survive). Shared by the editor context menu + rich-text menu.
@@ -80,7 +75,6 @@ export function MenuTile({
   count,
   labelStyle,
   onClick,
-  danger = false,
   disabled = false,
   active,
   preserveFocus = false,
@@ -98,7 +92,6 @@ export function MenuTile({
   // previews itself.
   labelStyle?: CSSProperties;
   onClick: () => void;
-  danger?: boolean;
   disabled?: boolean;
   active?: boolean;
   preserveFocus?: boolean;
@@ -121,25 +114,13 @@ export function MenuTile({
       disabled={inCommandMenu ? undefined : disabled}
       aria-pressed={inCommandMenu ? undefined : active}
       className={`flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:opacity-40 ${
-        danger
-          ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
-          : active
-            ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+        active
+          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+          : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
       }`}
     >
       {icon !== undefined ? (
-        <span
-          className={
-            danger
-              ? 'text-rose-500 dark:text-rose-300'
-              : active
-                ? ''
-                : 'text-slate-400 dark:text-slate-400'
-          }
-        >
-          {icon}
-        </span>
+        <span className={active ? '' : 'text-slate-400 dark:text-slate-400'}>{icon}</span>
       ) : null}
       <span style={labelStyle}>
         {label}

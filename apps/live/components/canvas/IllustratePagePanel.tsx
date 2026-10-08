@@ -335,12 +335,10 @@ function NameField({
 function ActionButton({
   label,
   onClick,
-  danger = false,
   children,
 }: {
   label: string;
   onClick?: () => void;
-  danger?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -350,11 +348,7 @@ function ActionButton({
         aria-label={label}
         disabled={!onClick}
         onClick={onClick}
-        className={`flex h-8 flex-1 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-transparent ${
-          danger
-            ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-        }`}
+        className={`flex h-8 flex-1 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100`}
       >
         {children}
       </button>
@@ -400,7 +394,6 @@ function PageActions({
       </ActionButton>
       <ActionButton
         label={`Delete ${noun}`}
-        danger
         onClick={
           removePage
             ? () => {

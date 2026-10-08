@@ -54,7 +54,7 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                         |
 | `color`           | colour    | One of the twelve Plan swatches (`#2563eb`...): the item's own colour, shown beside its type colour, never instead ([Colour](#colour))                                |
 | `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                        |
-| `parent`          | item ref  | Another item's id (a Project), resolved within the same document; edited and listed as a link field (item-types.md "Card fields")                                     |
+| `parent`          | card link | Another item's id (a Project): the Card field named Parent that Task carries (item-types.md "Card fields"), under its reserved id                                     |
 | `votes`           | votes     | Per-person counts `{ [personId]: n }`: the tallies of ended session votes, written only by a vote's end                                                               |
 | `comments`        | comments  | The card's conversation: the same comment thread a canvas element carries (`{ comments, resolved }`), written only through the comment writes ([Comments](#comments)) |
 
@@ -81,8 +81,8 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   Project Planner's Roadmap tab show it on their cards.
 - **Colour** (`color`) sits before Start on Projects by default, so projects can be colour coded; any other type
   can add it in the type editor. See [Colour](#colour).
-- **Parent** sits right under Status and Assignee on a Task, and in that place in the type editor's list of
-  built-in fields: what a piece of work belongs to is read alongside who has it.
+- **Parent** (a Card field linking to Projects, item-types.md "Card fields") sits right under Status and Assignee
+  on a Task: what a piece of work belongs to is read alongside who has it.
 - Every built-in type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A document whose
   own catalogue predates it adds it in the type editor, like any built-in field.
 - A bug is a Task labelled `bug`.
@@ -161,9 +161,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   on All Cards). A trashed item keeps the status it had under `trashedFrom`.
 - In Plan mode a **Trash** button leads the bottom-right cluster's Plan strip, on its left before **Find a
   Card** and **Card Types** (not on a phone, whose cluster has no room for it: a card's menu still sends it to
-  the Trash), its count tucked into its corner; with a badge of how many cards
-  it holds. While a card is dragged the button opens out into a dashed red **Drop to Trash** target, and while the
-  card is over it fills red, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
+  the Trash), its count tucked into its corner; with a grey badge of how many cards
+  it holds. While a card is dragged the button opens out into a dashed **Drop to Trash** target, and while the
+  card is over it fills with the brand colour, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
   colours still change); a card let go there is trashed and the move is announced.
 - **Every way of deleting a card trashes it**: **Trash** in its menu and in the item panel's ⋯ menu (named
   **Trash**, not Delete), the Delete key on a focused card, and the drop on the Trash button. Each closes an open

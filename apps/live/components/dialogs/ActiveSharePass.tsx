@@ -274,7 +274,7 @@ export function ActiveSharePass({
             disabled={busy}
             aria-label="Revoke link"
             aria-expanded={revokeAnchor !== null}
-            className="rounded-md p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+            className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <TrashIcon />
           </button>

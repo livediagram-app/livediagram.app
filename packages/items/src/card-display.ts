@@ -133,23 +133,58 @@ const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly
   },
 };
 
+// A type of the person's own starts Minimal with its Number before the title and its Assignee after it (each when
+// the type has it); Compact and Detailed with every field the size draws (less those the type lacks).
+const OWN_TYPE_MINIMAL: readonly CardField[] = ['key', 'assignee'];
+
 function genericFields(size: CardSize): readonly CardField[] {
-  return size === 'minimal' ? [] : size === 'compact' ? CARD_SIZE_FIELDS.compact : CARD_FIELDS;
+  return size === 'minimal'
+    ? OWN_TYPE_MINIMAL
+    : size === 'compact'
+      ? CARD_SIZE_FIELDS.compact
+      : CARD_FIELDS;
 }
 
-// A size's default layout for a type.
+// A size's default layout for a type. A built-in type keeps its own (Minimal: none).
 export function defaultCardLayout(typeId: string, size: CardSize): CardLayout {
-  return cardLayoutFrom(size, BUILT_IN_FIELDS[typeId]?.[size] ?? genericFields(size));
+  const builtIn = BUILT_IN_FIELDS[typeId];
+  const fields = builtIn
+    ? (builtIn[size] ?? (size === 'minimal' ? [] : genericFields(size)))
+    : genericFields(size);
+  return cardLayoutFrom(size, fields);
 }
 
-// A type's layout at a size: its own, else its default.
+// A layout less the fields the type does not have (docs/specs/026-plan/item-types.md "Card display"): a new type's
+// default starts from every field a size can draw, and a field taken off the type leaves its place on the card.
+function offeredLayout(
+  type: Pick<ItemTypeDef, 'fields' | 'custom'>,
+  size: CardSize,
+  layout: CardLayout,
+): CardLayout {
+  const out: Partial<Record<CardSlot, CardField[]>> = {};
+  for (const slot of CARD_SLOTS[size]) {
+    const kept = (layout[slot] ?? []).filter((f) => typeOffersCardField(type, f));
+    if (kept.length) out[slot] = kept;
+  }
+  return out;
+}
+
+// A type's default layout at a size, of the fields it has.
+export function typeDefaultCardLayout(
+  type: Pick<ItemTypeDef, 'id' | 'fields' | 'custom'>,
+  size: CardSize,
+): CardLayout {
+  return typeCardLayout({ ...type, display: undefined }, size);
+}
+
+// A type's layout at a size: its own, else its default, of the fields it has.
 export function typeCardLayout(
-  type: Pick<ItemTypeDef, 'id' | 'display' | 'custom'>,
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'fields' | 'custom'>,
   size: CardSize,
 ): CardLayout {
   const own = type.display?.[size];
-  if (own) return own;
-  const base = defaultCardLayout(type.id, size);
+  if (own) return offeredLayout(type, size, own);
+  const base = offeredLayout(type, size, defaultCardLayout(type.id, size));
   // A custom field ticked Show on card, before the Display placed custom fields, starts Under the Title on a
   // Detailed card, where it was drawn then.
   const shown =
@@ -161,7 +196,7 @@ export function typeCardLayout(
 
 // The fields a type's cards show at a size.
 export function typeCardDisplay(
-  type: Pick<ItemTypeDef, 'id' | 'display' | 'custom'>,
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'fields' | 'custom'>,
   size: CardSize,
 ): readonly CardField[] {
   return cardLayoutFields(size, typeCardLayout(type, size));

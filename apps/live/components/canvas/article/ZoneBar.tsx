@@ -133,7 +133,7 @@ export function ZoneBar({
       {onRemove ? (
         <>
           <Sep />
-          <Choice label={drawing ? 'Delete drawing' : 'Delete'} danger onPress={onRemove}>
+          <Choice label={drawing ? 'Delete drawing' : 'Delete'} onPress={onRemove}>
             <TrashIcon className="h-4 w-4" />
           </Choice>
         </>
@@ -149,13 +149,11 @@ function Sep() {
 function Choice({
   label,
   pressed,
-  danger,
   onPress,
   children,
 }: {
   label: string;
   pressed?: boolean;
-  danger?: boolean;
   onPress: () => void;
   children: ReactNode;
 }) {
@@ -164,14 +162,12 @@ function Choice({
       <button
         type="button"
         aria-label={label}
-        aria-pressed={danger ? undefined : pressed}
+        aria-pressed={pressed}
         onClick={onPress}
         className={`flex h-7 w-7 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
-          danger
-            ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
-            : pressed
-              ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+          pressed
+            ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
         }`}
       >
         {children}

@@ -255,7 +255,7 @@ export function useTimelineEntityMenus(): {
                 label: 'Decline Invite',
                 icon: <CloseIcon size={11} />,
                 onClick: () => void declineInvite(invite),
-                danger: true,
+                destructive: true,
               },
             );
           }
@@ -283,14 +283,14 @@ export function useTimelineEntityMenus(): {
           label: 'Leave Team',
           icon: <CloseIcon size={11} />,
           onClick: () => void leaveTeam(team),
-          danger: true,
+          destructive: true,
         });
         if (team.myRole === 'admin') {
           items.push({
             label: 'Delete Team',
             icon: <TrashIcon size={12} />,
             onClick: () => void deleteTeam(team),
-            danger: true,
+            destructive: true,
           });
         }
         return { subject: team.name, items };
@@ -311,7 +311,7 @@ export function useTimelineEntityMenus(): {
               label: 'Revoke Token',
               icon: <TrashIcon size={12} />,
               onClick: () => void revokeToken(token.id),
-              danger: true,
+              destructive: true,
             });
           }
           return { subject: token?.name ?? undefined, items };
@@ -332,7 +332,7 @@ export function useTimelineEntityMenus(): {
                 label: 'Delete Theme',
                 icon: <TrashIcon size={12} />,
                 onClick: () => void removeTheme(theme.id, theme.name),
-                danger: true,
+                destructive: true,
               },
             );
           }

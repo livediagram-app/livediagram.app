@@ -44,7 +44,6 @@ function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComme
       item={item}
       types={types}
       statuses={[]}
-      projects={[]}
       people={[]}
       labels={[]}
       canEdit
@@ -58,7 +57,6 @@ function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComme
       onArchive={noop}
       onClose={noop}
       trail={[item]}
-      childCards={[]}
       statusNames={new Map()}
       {...(withComments
         ? { comments: { canComment: true, selfId: 'owner-me', onComment: noop } }

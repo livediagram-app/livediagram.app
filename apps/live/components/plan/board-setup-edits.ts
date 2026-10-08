@@ -6,6 +6,7 @@ import {
   statusNamed,
   statusTitleCase,
   type CardField,
+  type CustomCardField,
   type ColumnWidth,
   type PlanBoardSetup,
   type PlanColumn,
@@ -28,13 +29,13 @@ export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   assignee: 'Assignee',
   type: 'Type',
   priority: 'Priority',
-  parent: 'Project',
   status: 'Status',
   // The tile reads the field's own name (PlanBoardMenuSection); this names the setting.
   field: 'By a Field',
 };
 
-export const CARD_FIELD_LABELS: Record<CardField, string> = {
+// The built-in card fields' names; a custom field (Parent among them) is named by its type.
+export const CARD_FIELD_LABELS: Record<Exclude<CardField, CustomCardField>, string> = {
   key: 'Number',
   type: 'Type',
   assignee: 'Assignee',
@@ -47,7 +48,6 @@ export const CARD_FIELD_LABELS: Record<CardField, string> = {
   checklist: 'Checklist',
   comments: 'Comments',
   description: 'Description',
-  parent: 'Project',
 };
 
 export const COLUMN_NAME_MAX = 40;

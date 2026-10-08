@@ -585,7 +585,7 @@ export function PlanColumnSettingsScene() {
       <Label x={174} y={210} size={11} weight={600} tone="accent">
         + Add Column After
       </Label>
-      <Label x={174} y={234} size={11} weight={600} className="fill-rose-500">
+      <Label x={174} y={234} size={11} weight={600} tone="body">
         Remove Column
       </Label>
     </Scene>
@@ -605,7 +605,7 @@ function Arrow2({ from, to }: { from: [number, number]; to: [number, number] }) 
 }
 
 /** The card panel: a breadcrumb back to the project, the type and number, Help, the ⋯ menu and close;
- *  the title over the type's tabs and description; Child Cards; Details on the right. */
+ *  the title over the type's tabs and description; Linked as Parent; Details on the right. */
 export function PlanCardPanelScene() {
   return (
     <Scene w={420} h={260} bg="plain">
@@ -657,7 +657,7 @@ export function PlanCardPanelScene() {
       <TextBar x={24} y={118} w={170} />
       <TextBar x={24} y={130} w={120} tone="faint" />
       <Label x={24} y={154} size={10} weight={700} tone="body">
-        Child Cards 2
+        Linked as Parent 2
       </Label>
       {[0, 1].map((i) => (
         <g key={i}>
@@ -763,7 +763,7 @@ export function PlanCardMenuScene() {
       <line x1={156} y1={108} x2={324} y2={108} className="stroke-slate-200" />
       <line x1={156} y1={150} x2={324} y2={150} className="stroke-slate-200" />
       <rect x={154} y={192} width={172} height={21} rx={5} className="fill-white" />
-      <Label x={162} y={203} size={11} className="fill-rose-500">
+      <Label x={162} y={203} size={11} tone="body">
         Trash
       </Label>
     </Scene>

@@ -55,6 +55,7 @@ import {
   VOTING,
   WELCOME_TOUR,
   PLAN_TOUR,
+  CARD_TYPE_TOUR,
   POWER_USER_OFFER,
   NEW_VERSION_PROMPT,
 } from './metric-catalogue';
@@ -89,6 +90,7 @@ export const GROUPS: MetricGroup[] = [
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
       PLAN_TOUR,
+      CARD_TYPE_TOUR,
       POWER_USER_OFFER,
       NEW_VERSION_PROMPT,
     ],

@@ -105,8 +105,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   rows come back if the type does).
 - A row per accepted card, in the chart's own **row order** when one is set (see [Row order](#row-order)), else
   earliest start (or due date) first, then by number; the row names it, its colour dot
-  when it has a Colour, `#12` and its title, with its child cards' progress `done/total` (cards whose `parent`
-  is the row's card).
+  when it has a Colour, `#12` and its title, with its child cards' progress `done/total` (cards whose Parent field,
+  `parent`, is the row's card).
 - A card with a **start** and a **due date** is a bar between them, in its own
   [Colour](items.md#colour) when it has one, else its card type's colour, the share of its
   children done filled solid. One with only a due date is a milestone diamond on that day; only a start, a
@@ -224,8 +224,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 - Once **Workload by Person** (the same `workload` view, renamed). A row per value of the field it groups by, as a
   board's swimlanes group ([Swimlanes](plan-board.md#the-board-set-up)): **Assignee** unless set (a person's disc and
-  name, most cards first), or Priority, Type, Status, Parent, Labels, Estimate, Start Date, Due Date or any grouping
-  custom field. The empty group ("No assignee", "No priority"...) is last. Each bar is as long as its cards against
+  name, most cards first), or Priority, Type, Status, Labels, Estimate, Start Date, Due Date or any grouping custom
+  field (Parent among them). The empty group ("No assignee", "No priority"...) is last. Each bar is as long as its cards against
   the fullest row, split into Not Started, In Progress and Done, with the total at its end.
 - Its element menu's **View** flyout has **Group By**, the board's Swimlanes grid without None, listing what the
   view's card types offer (stored as `swimlaneBy` and `swimlaneField`; Assignee is the default, not stored).
@@ -254,8 +254,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   the document's order; a row opens its card as any view's entry does. The header counts them: `12 cards`.
 - A **filter** is a field and a value, shown as a chip ("Card Type: Project", "State: Done", "Assignee: No
   assignee") with a cross that removes it; a card must match every filter. A field is any of a board's groupings
-  (Card Type, State, Assignee, Priority, Parent) or lane fields (Labels, Estimate, Start Date, Due Date, any grouping
-  custom field), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
+  (Card Type, State, Assignee, Priority) or lane fields (Labels, Estimate, Start Date, Due Date, any grouping
+  custom field, Parent among them), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
   assignee") included. At most 8 filters.
 - **Add Filter** (a dashed pill with a plus) opens a popover drawn over the page, so it reads at its own size
   whatever the canvas zoom: first the fields still worth filtering, those the matching cards' types offer (all

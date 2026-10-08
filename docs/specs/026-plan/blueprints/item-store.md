@@ -85,7 +85,8 @@ interface ItemMove extends ItemPlace {
 
 - `ItemCreate.key` and `votes` are accepted only to restore an item (undo, sync); `validateVotes` bounds the votes
   (`ITEM_VOTERS_MAX`, `ITEM_VOTES_PER_PERSON_MAX`).
-- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`, `parent`); `type` moves a
+- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`), `LANE_FIELD_BUILT_INS` or a
+  custom field id (Parent's `parent` among them); `type` moves a
   type swimlane.
 
 ### Validation (`validateFields(fields, mode)`)
@@ -133,7 +134,8 @@ key between always exists. Ties (equal ranks after concurrent inserts) order by 
 
 - `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy;
 cardFields: CardField[]; hideWriting: boolean }` (a stored `voting` is read past: a vote is the tab's session vote).
-- `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'parent'`.
+- `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'status' | 'field'` (a stored
+  `'parent'` reads as `'field'` with `swimlaneField: 'parent'`).
 - No scope: a `scope` an older board stored is read past. Types are the one filter: the types `boardAddTypes(setup, types)`
   resolves (every type when `addTypes` is absent or names none still in the catalogue) drops an item of a type the board does not show, before columns, lanes,
   unplaced and counts, on every board kind (All Cards and Archive included, when they name types). The board's

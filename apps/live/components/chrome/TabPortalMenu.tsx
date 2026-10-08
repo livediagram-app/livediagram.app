@@ -381,7 +381,6 @@ export function PortalMenu({
                     : "Delete this tab. Its content can't be recovered."
                 }
                 onClick={() => setConfirmingDelete(true)}
-                danger
                 disabled={!canDelete || locked}
               />
             </div>
@@ -446,7 +445,6 @@ export function PortalMenu({
               <MenuTile
                 icon={<ClearIcon />}
                 label="Clear"
-                danger
                 onClick={onClearContent}
                 disabled={!canClearContent}
               />

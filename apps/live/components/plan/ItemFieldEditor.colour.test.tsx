@@ -28,7 +28,6 @@ function ctx(item: Item, over: Partial<ItemFieldContext> = {}): ItemFieldContext
     item,
     type: project,
     statuses: [],
-    projects: [],
     people: [],
     canEdit: true,
     labels: [],
@@ -140,12 +139,5 @@ describe('the item panel Colour field', () => {
     });
     expect(screen.queryByRole('radio')).toBeNull();
     expect(c.onSave).not.toHaveBeenCalled();
-  });
-
-  it("shows a parent project's colour dot beside its picker", () => {
-    const parent = make({ title: 'Launch', color: '#ea580c' }, 'item0002');
-    const child = make({ title: 'Kid', parent: parent.id });
-    render(<ItemFieldEditor f="parent" ctx={ctx(child, { projects: [parent] })} />);
-    expect(screen.getByRole('img', { name: 'Orange colour' })).toBeTruthy();
   });
 });

@@ -183,7 +183,7 @@ export function DeleteAccountDialog({
               Cancel
             </Button>
             <Button
-              variant="danger"
+              variant="primary"
               onClick={handleDelete}
               disabled={!emailsMatch || phase === 'submitting'}
               className="shadow-sm"

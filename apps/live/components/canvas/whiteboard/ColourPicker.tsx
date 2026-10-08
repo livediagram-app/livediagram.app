@@ -194,7 +194,7 @@ function YourColour({
 function RemoveMenu({ onRemove }: { onRemove: () => void }) {
   return (
     <div data-flyout-child="">
-      <MenuActionRow plain danger label="Remove" icon={<TrashIcon />} onClick={onRemove} />
+      <MenuActionRow plain label="Remove" icon={<TrashIcon />} onClick={onRemove} />
     </div>
   );
 }

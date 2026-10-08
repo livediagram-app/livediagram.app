@@ -71,13 +71,11 @@ export function Trigger({
 // Large, tappable menu row (icon + label). Min height 36px for touch.
 function MenuButton({
   label,
-  danger,
   disabled,
   onClick,
   children,
 }: {
   label: string;
-  danger?: boolean;
   disabled?: boolean;
   onClick: () => void;
   children: ReactNode;
@@ -91,11 +89,7 @@ function MenuButton({
         e.stopPropagation();
         onClick();
       }}
-      className={`flex h-9 w-full items-center gap-2 whitespace-nowrap rounded-md px-2.5 text-left text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger
-          ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950'
-          : 'text-slate-700 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700'
-      }`}
+      className={`flex h-9 w-full items-center gap-2 whitespace-nowrap rounded-md px-2.5 text-left text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 text-slate-700 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700`}
     >
       <span className="shrink-0">{children}</span>
       {label}
@@ -160,7 +154,6 @@ export function TableHeaderMenu({
       <MenuSeparator />
       <MenuButton
         label={isCol ? 'Delete column' : 'Delete row'}
-        danger
         disabled={count <= 1}
         onClick={() => onDelete(index)}
       >

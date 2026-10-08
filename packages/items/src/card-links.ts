@@ -1,14 +1,10 @@
-// Links between cards (docs/specs/026-plan/item-types.md "Card fields"): the built-in Parent (a card under a Project)
-// and every Card field a type adds (an Objective's Owner, linking to a Person). One way to read them: the cards a
+// Links between cards (docs/specs/026-plan/item-types.md "Card fields"): every Card field a type has, Parent (Task's,
+// linking to Projects) among them, and any a type adds (an Objective's Owner, linking to a Person). One way to read them: the cards a
 // link field may point at, and, for a card, the groups of cards that point at it. Pure.
 import type { Item } from './item';
 import { itemTitle } from './item';
 import { isArchived, isTrashed, linkedCard } from './board';
 import type { ItemTypeDef } from './item-types';
-
-// The built-in link: a card's Parent, always a Project.
-export const PARENT_FIELD = 'parent';
-export const PARENT_LINK_TYPE = 'project';
 
 // A link field as a card's panel sees it: the field, its label, and the card type it points at.
 export interface LinkField {
@@ -17,11 +13,10 @@ export interface LinkField {
   linkType: string;
 }
 
-// The link fields a type offers: Parent when it has it, then its Card fields, in the type's field order.
+// The link fields a type offers: its Card fields, in the type's field order.
 export function linkFieldsOfType(type: ItemTypeDef): LinkField[] {
   const out: LinkField[] = [];
   for (const f of type.fields) {
-    if (f === PARENT_FIELD) out.push({ id: f, label: 'Parent', linkType: PARENT_LINK_TYPE });
     const c = type.custom?.find((x) => x.id === f);
     if (c?.kind === 'card' && c.linkType)
       out.push({ id: c.id, label: c.label, linkType: c.linkType });
@@ -42,13 +37,13 @@ export function linkCandidates(items: Iterable<Item>, linkType: string, selfId?:
 export interface LinkedGroup {
   fieldId: string;
   label: string;
-  // The types whose cards link here through this field (Parent: any type offering it).
+  // The types whose cards link here through this field.
   fromTypes: string[];
   cards: Item[];
 }
 
-// The cards that point at `target`, grouped by the field they point through: Parent first (only when the target
-// is a Project), then each Card field whose type links to the target's type, in catalogue order. A group is
+// The cards that point at `target`, grouped by the field they point through: each Card field whose type links to
+// the target's type (Parent, for a Project), in catalogue order. A group is
 // listed even with no cards, so the panel can offer to make the first; trashed cards are left out.
 export function linkedCardsOf(
   target: Item,
@@ -57,12 +52,6 @@ export function linkedCardsOf(
 ): LinkedGroup[] {
   const groups: LinkedGroup[] = [];
   const byField = new Map<string, LinkedGroup>();
-  if (target.type === PARENT_LINK_TYPE) {
-    const g: LinkedGroup = { fieldId: PARENT_FIELD, label: 'Parent', fromTypes: [], cards: [] };
-    for (const t of types) if (t.fields.includes(PARENT_FIELD)) g.fromTypes.push(t.id);
-    groups.push(g);
-    byField.set(PARENT_FIELD, g);
-  }
   for (const t of types)
     for (const c of t.custom ?? []) {
       if (c.kind !== 'card' || c.linkType !== target.type || !t.fields.includes(c.id)) continue;
@@ -78,11 +67,7 @@ export function linkedCardsOf(
   for (const it of items.values()) {
     if (it.id === target.id || isTrashed(it)) continue;
     for (const g of groups)
-      if (
-        it.fields[g.fieldId] === target.id &&
-        (g.fieldId === PARENT_FIELD || g.fromTypes.includes(it.type))
-      )
-        g.cards.push(it);
+      if (it.fields[g.fieldId] === target.id && g.fromTypes.includes(it.type)) g.cards.push(it);
   }
   for (const g of groups) g.cards.sort((a, b) => a.key - b.key);
   return groups;

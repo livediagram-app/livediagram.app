@@ -158,6 +158,7 @@ export function PlanCardsSettings({ element }: { element: ShapeElement }) {
           <TypeToggleTiles
             types={plan.types}
             selected={allowed}
+            allowNone
             onChange={(next) => {
               const every = plan.types.every((x) => next.includes(x.id));
               const { addTypes: _drop, ...rest } = setup;

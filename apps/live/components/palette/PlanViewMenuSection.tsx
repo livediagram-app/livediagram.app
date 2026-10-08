@@ -20,6 +20,7 @@ import {
   viewEligibleTypes,
   viewNeeds,
   viewShownTypes,
+  readPlanViewSettings,
 } from '@livediagram/items';
 import { InfoNote, SwimlaneTiles, TypeToggleTiles } from './plan-menu-parts';
 
@@ -37,7 +38,8 @@ export function PlanViewMenuSection({
   sectionProps: (id: string) => SectionProps;
 }) {
   const plan = usePlan();
-  const settings = element.planView;
+  // The old Parent grouping reads as the Parent field (legacy-parent).
+  const settings = element.planView ? readPlanViewSettings(element.planView) : undefined;
   if (!plan || !plan.canEdit || !settings) return null;
   const view = settings.view;
   const gantt = view === 'gantt';

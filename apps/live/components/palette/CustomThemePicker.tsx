@@ -99,7 +99,6 @@ export function CustomThemePicker({
         title: `Delete "${theme?.name ?? 'theme'}"?`,
         message: 'Documents using it fall back to the Default theme. This cannot be undone.',
         confirmLabel: 'Delete',
-        variant: 'danger',
       })
     ) {
       if (themeId === id) onSelect('brand');

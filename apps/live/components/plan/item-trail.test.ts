@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Item } from '@livediagram/items';
 import { ITEM_TRAIL_MAX, liveTrail, stepTrail, visibleTrail } from './item-trail';
 
-// docs/specs/026-plan/plan-board.md "Open an item": the Breadcrumb's trail (a parent's Child Cards: card-links.test.ts in packages/items).
+// docs/specs/026-plan/plan-board.md "Open an item": the Breadcrumb's trail (a project's Linked as Parent: card-links.test.ts in packages/items).
 
 const PERSON = { id: 'p', name: 'Sam', color: '#2563eb' };
 const item = (id: string, key: number, fields: Item['fields'] = {}): Item => ({

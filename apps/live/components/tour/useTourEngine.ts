@@ -252,6 +252,8 @@ export function useTourEngine<Api>({
     targetRect,
     // The bookend cards sit outside the step count: "1 of N" is the first real step.
     countableSteps: steps.filter((s) => !s.card).length,
+    // Whether the tour opens on a welcome card (an offered tour) or straight on its first step (Show Me).
+    hasWelcome: steps[0]?.card === 'welcome',
     start,
     stop,
     next,

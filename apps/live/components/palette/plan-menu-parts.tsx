@@ -9,6 +9,7 @@ import {
   laneFieldsOf,
   swimlaneGroupingsFor,
   type ItemTypeDef,
+  type LaneField,
   type LaneFieldKind,
   type SwimlaneBy,
 } from '@livediagram/items';
@@ -44,7 +45,6 @@ const ROW_GLYPHS: Record<SwimlaneBy, string> = {
   assignee: 'person',
   type: 'task',
   priority: 'flag',
-  parent: 'project',
   status: 'action',
   field: 'note',
 };
@@ -58,6 +58,13 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   card: 'person',
   text: 'note',
 };
+
+// A field lane's tile glyph: a Card field draws the type it links to (Parent, a project), any other its kind's.
+function laneGlyph(f: LaneField, types: readonly ItemTypeDef[]): string {
+  const linked =
+    f.kind === 'card' && f.linkType ? types.find((t) => t.id === f.linkType) : undefined;
+  return linked?.glyph ?? LANE_KIND_GLYPHS[f.kind];
+}
 
 // The Swimlanes grid: built in, then any field the shown card types offer, in one grid (one grouping each).
 export function SwimlaneTiles({
@@ -105,7 +112,7 @@ export function SwimlaneTiles({
       {lanes.map((f) => (
         <MenuTile
           key={f.id}
-          icon={<PlanTypeGlyph glyph={LANE_KIND_GLYPHS[f.kind]} size={16} />}
+          icon={<PlanTypeGlyph glyph={laneGlyph(f, allTypes ?? types)} size={16} />}
           label={f.label}
           active={by === 'field' && field === f.id}
           onClick={() => onPick('field', f.id)}
@@ -116,14 +123,17 @@ export function SwimlaneTiles({
 }
 
 // A tile per card type, pressed when `selected` holds it; a press toggles it, and the last one pressed cannot be
-// let go (at least one type stays on). `onChange` gets the new list, in catalogue order.
+// let go (at least one type stays on) unless `allowNone`. `onChange` gets the new list, in catalogue order.
 export function TypeToggleTiles({
   types,
   selected,
+  allowNone = false,
   onChange,
 }: {
   types: readonly ItemTypeDef[];
   selected: readonly string[];
+  // A board may turn its last type off (it then adds one with Create Card Type); a view keeps one on.
+  allowNone?: boolean;
   onChange: (next: string[]) => void;
 }) {
   return (
@@ -132,7 +142,8 @@ export function TypeToggleTiles({
         const on = selected.includes(t.id);
         // At least one type stays on. The last one keeps its pressed look (a disabled tile is dimmed, which read
         // as not selected); pressing it changes nothing.
-        const last = on && selected.filter((id) => types.some((x) => x.id === id)).length <= 1;
+        const last =
+          !allowNone && on && selected.filter((id) => types.some((x) => x.id === id)).length <= 1;
         return (
           <MenuTile
             key={t.id}

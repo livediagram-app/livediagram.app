@@ -25,6 +25,7 @@ import {
   boardAddTypes,
   newItemId,
   isTrashed,
+  ITEM_TYPES_MAX,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -233,6 +234,16 @@ export function PlanBoardView({
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
+  // The Add a Card menu's Create Card Type: a new type with only this board's statuses, added to it once saved
+  // (docs/specs/026-plan/plan-board.md "Create Card Type"); not offered once the catalogue is full.
+  const createType =
+    plan && plan.types.length < ITEM_TYPES_MAX
+      ? () =>
+          plan.createTypeForBoard(
+            element.id,
+            setup.columns.map((c) => c.status),
+          )
+      : undefined;
 
   const columnName = (s: string) => setup.columns.find((c) => c.status === s)?.name ?? s;
 
@@ -522,13 +533,17 @@ export function PlanBoardView({
                                 refused={held?.refused}
                               />
                             ) : null}
-                            {canEdit && !loading && !setup.archive && cellTypes.length ? (
+                            {canEdit &&
+                            !loading &&
+                            !setup.archive &&
+                            (cellTypes.length || createType) ? (
                               <AddCardButton
                                 palette={palette}
                                 types={cellTypes}
                                 label={firstEmpty ? 'Add your first card' : 'Add card'}
                                 open={isAdding}
                                 onClosed={closeAdding}
+                                onCreateType={createType}
                                 onAdd={({ type, fields }) => {
                                   // Opened at once to be named (plan-board.md "Open an item").
                                   const id = newItemId();

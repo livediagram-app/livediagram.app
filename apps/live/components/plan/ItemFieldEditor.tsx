@@ -6,7 +6,6 @@
 import { Select } from '@livediagram/ui';
 import {
   ITEM_TYPES,
-  PARENT_LINK_TYPE,
   customFieldOf,
   isBuiltInFieldId,
   linkCandidates,
@@ -47,7 +46,6 @@ export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   start: 'Start',
   due: 'Due',
   checklist: 'Checklist',
-  parent: 'Parent',
   description: 'Description',
   comments: 'Comments',
 };
@@ -71,7 +69,6 @@ export type ItemFieldContext = {
   item: Item;
   type: ItemTypeDef;
   statuses: readonly { status: string; name: string }[];
-  projects: readonly Item[];
   people: readonly ItemPerson[];
   canEdit: boolean;
   // Every label the document's items carry, offered while a label is typed.
@@ -231,25 +228,6 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       return <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
     case 'checklist':
       return <ChecklistEditor value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
-    case 'parent':
-      // A Project the card sits under: the same control as every Card field (LinkedCardField).
-      return (
-        <LinkedCardField
-          id={id}
-          label="Parent"
-          value={value}
-          candidates={
-            ctx.projects.length > 0
-              ? ctx.projects.filter((e) => e.id !== item.id)
-              : linkCandidates(items.values(), PARENT_LINK_TYPE, item.id)
-          }
-          items={items}
-          types={types}
-          disabled={disabled}
-          onSave={(v) => onSave(f, v)}
-          onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
-        />
-      );
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':

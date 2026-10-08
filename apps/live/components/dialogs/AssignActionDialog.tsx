@@ -333,7 +333,7 @@ export function AssignActionDialog({
           {onDelete && editing ? (
             <Button
               type="button"
-              variant={confirmingDelete ? 'danger' : 'secondary'}
+              variant={confirmingDelete ? 'primary' : 'secondary'}
               onClick={() => (confirmingDelete ? onDelete() : setConfirmingDelete(true))}
               className="mr-auto"
             >

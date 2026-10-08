@@ -5,8 +5,9 @@ import type { Item, ItemFields } from '@livediagram/items';
 import { PlanCardFace } from './PlanCardFace';
 import { dueState, keyTextOn } from './plan-card-parts';
 import { contrastRatio } from '@livediagram/document';
-import { PLAN_TYPE_COLOURS } from '@livediagram/items';
+import { ITEM_TYPES, PLAN_TYPE_COLOURS } from '@livediagram/items';
 import { planPalette } from './plan-palette';
+import { PlanProvider, type PlanContextValue } from './PlanContext';
 
 // The card face's layout (docs/specs/026-plan/plan-board.md "What the board shows"): the type chip, the priority's
 // signal bars, the footer's pills, label chips, and an item's own colour beside its type.
@@ -107,6 +108,31 @@ describe('the card face', () => {
 });
 
 describe('the card number', () => {
+  // docs/specs/026-plan/item-types.md "Card fields": Parent is Task's Card field, drawn where its Display puts it.
+  it('draws a Parent as its project, with the project’s own colour dot', () => {
+    const launch = { ...card({ title: 'Launch', color: '#ea580c' }, 'project'), id: 'p1' };
+    const plain = { ...card({ title: 'Plain' }, 'project'), id: 'p2' };
+    const items = new Map([launch, plain].map((i) => [i.id, i]));
+    const draw = (parent: string) =>
+      render(
+        <PlanProvider value={{ items, types: ITEM_TYPES } as unknown as PlanContextValue}>
+          <PlanCardFace
+            item={card({ parent })}
+            palette={planPalette('light', {})}
+            fields={ALL}
+            size="detailed"
+          />
+        </PlanProvider>,
+      );
+    draw('p1');
+    expect(screen.getByLabelText('Parent: Launch')).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Orange colour' })).toBeTruthy();
+    cleanup();
+    draw('p2');
+    expect(screen.getByLabelText('Parent: Plain')).toBeTruthy();
+    expect(screen.queryByRole('img', { name: /colour$/ })).toBeNull();
+  });
+
   it('reads at 4.5:1 or better on every type colour', () => {
     for (const c of PLAN_TYPE_COLOURS)
       expect(contrastRatio(c, keyTextOn(c))).toBeGreaterThanOrEqual(4.5);

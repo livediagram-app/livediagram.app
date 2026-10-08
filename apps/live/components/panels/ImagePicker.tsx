@@ -221,7 +221,7 @@ export function ImagePicker({
           <button
             type="button"
             onClick={onRemove}
-            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 dark:border-slate-700 dark:text-rose-300 dark:hover:bg-rose-500/15"
+            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             Remove from element
           </button>
@@ -305,7 +305,7 @@ function GalleryTile({
         type="button"
         onClick={onDelete}
         aria-label={`Delete ${image.originalName ?? 'image'}`}
-        className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-rose-700 shadow transition hover:bg-rose-50 group-hover:block dark:bg-slate-900/90 dark:text-rose-300 dark:hover:bg-rose-500/15"
+        className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-slate-500 shadow transition hover:bg-slate-100 hover:text-slate-700 group-hover:block dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
       >
         <TrashIcon />
       </button>

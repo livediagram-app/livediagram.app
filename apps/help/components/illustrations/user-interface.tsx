@@ -420,14 +420,7 @@ export function ContextualToolbar() {
       <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
       <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
     </g>,
-    <path
-      key="delete"
-      d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3"
-      className="stroke-rose-500"
-      strokeWidth={1.6}
-      fill="none"
-      strokeLinecap="round"
-    />,
+    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
   ];
   return (
     <Scene w={420} h={210}>
@@ -464,14 +457,7 @@ export function MultiSelectToolbar() {
       <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
       <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
     </g>,
-    <path
-      key="delete"
-      d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3"
-      className="stroke-rose-500"
-      strokeWidth={1.6}
-      fill="none"
-      strokeLinecap="round"
-    />,
+    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
   ];
   return (
     <Scene w={420} h={220}>

@@ -14,6 +14,8 @@ export function TourStage<Api>({
   copy,
   welcomeArt,
   layoutPicker,
+  layer = 'overlay',
+  pad = 6,
 }: {
   engine: TourEngine<Api>;
   // The popover's label before "step N of M" ("Tour", "Plan tour").
@@ -22,6 +24,11 @@ export function TourStage<Api>({
   welcomeArt?: ReactNode;
   // Shown on the welcome card under its copy (the welcome tour's panel layout choice).
   layoutPicker?: ReactNode;
+  // 'modal' draws the ring over a dialog, for a tour of one (the card type editor's Show Me): just above the
+  // dialog, just below the menus its controls open (AnchoredPopover), which stay lit.
+  layer?: 'overlay' | 'modal';
+  // The room between the target and its ring, in px (a dialog's tightly packed rows want more).
+  pad?: number;
 }) {
   const { step, stepIndex, targetRect } = engine;
   if (!engine.active || !step) return null;
@@ -48,20 +55,20 @@ export function TourStage<Api>({
         // first appearance.
         <div
           aria-hidden
-          className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-long ease-out dark:border-brand-500"
+          className={`pointer-events-none fixed ${layer === 'modal' ? 'z-[calc(var(--z-modal)+1)]' : 'z-[var(--z-overlay)]'} animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-long ease-out dark:border-brand-500`}
           style={{
-            left: targetRect.left - 6,
-            top: targetRect.top - 6,
-            width: targetRect.width + 12,
-            height: targetRect.height + 12,
+            left: targetRect.left - pad,
+            top: targetRect.top - pad,
+            width: targetRect.width + pad * 2,
+            height: targetRect.height + pad * 2,
             boxShadow: '0 0 0 100vmax rgba(15, 23, 42, 0.4)',
           }}
         />
       ) : null}
       <TourPopover
-        // The bookend cards have no number; real steps count from 1
-        // (welcome occupies index 0, so a step's index IS its number).
-        stepNumber={step.card ? 0 : stepIndex}
+        // The bookend cards have no number; real steps count from 1 (welcome occupies index 0, so a step's
+        // index IS its number; a tour without one counts from its first step).
+        stepNumber={step.card ? 0 : stepIndex + (engine.hasWelcome ? 0 : 1)}
         stepCount={engine.countableSteps}
         stepId={step.id}
         stepDir={engine.stepDir}
@@ -73,7 +80,7 @@ export function TourStage<Api>({
         {...(copy ? { copy } : {})}
         {...(welcomeArt ? { welcomeArt } : {})}
         layoutPicker={step.card === 'welcome' ? layoutPicker : undefined}
-        onBack={stepIndex > 1 && !step.card ? engine.back : undefined}
+        onBack={stepIndex > (engine.hasWelcome ? 1 : 0) && !step.card ? engine.back : undefined}
         onNext={engine.next}
         onSkip={engine.skip}
       />

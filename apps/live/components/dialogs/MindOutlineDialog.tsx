@@ -59,7 +59,7 @@ function RemoveQuestion({
         <Button size="sm" variant="secondary" onClick={onKeep}>
           Keep Editing
         </Button>
-        <Button size="sm" variant="danger" autoFocus onClick={onRemove}>
+        <Button size="sm" variant="primary" autoFocus onClick={onRemove}>
           Remove
         </Button>
       </div>

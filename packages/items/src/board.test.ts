@@ -123,7 +123,7 @@ describe('projectBoard', () => {
     expect(p.lanes[0]).toMatchObject({ field: 'assignee', value: ALI });
   });
 
-  it('groups by type, priority and parent', () => {
+  it('groups by type, priority and the Parent field', () => {
     const epic = item({ title: 'Epic', status: 'x' }, { type: 'project' });
     const items = [
       epic,
@@ -138,8 +138,11 @@ describe('projectBoard', () => {
       projectBoard({ ...setup, swimlaneBy: 'priority' }, map(items)).lanes.map((l) => l.label),
     ).toEqual(['Urgent', 'Low', 'No priority']);
     expect(
-      projectBoard({ ...setup, swimlaneBy: 'parent' }, map(items)).lanes.map((l) => l.label),
-    ).toEqual(['Epic', 'No parent']);
+      projectBoard(
+        { ...setup, swimlaneBy: 'field', swimlaneField: 'parent' },
+        map(items),
+      ).lanes.map((l) => l.label),
+    ).toEqual(['Epic', 'No Parent']);
   });
 
   it("gives a project's lane its own Colour, and no other lane one", () => {
@@ -152,7 +155,10 @@ describe('projectBoard', () => {
       item({ title: 'b', status: 'todo', parent: plain.id }),
       item({ title: 'c', status: 'todo' }),
     ];
-    const lanes = projectBoard({ ...setup, swimlaneBy: 'parent' }, map(items)).lanes;
+    const lanes = projectBoard(
+      { ...setup, swimlaneBy: 'field', swimlaneField: 'parent' },
+      map(items),
+    ).lanes;
     expect(lanes.map((l) => l.colour)).toEqual(['#dc2626', undefined, undefined]);
   });
 

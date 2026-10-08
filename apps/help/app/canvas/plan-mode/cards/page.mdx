@@ -5,7 +5,7 @@ import { PlanCardMenuScene, PlanCardPanelScene } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'Cards',
   description:
-    'Plan cards in livediagram: adding cards, the card panel with its tabs and Details, child cards and the breadcrumb, comments, flags, finding any card, the Trash, Archive, and presenting a card as a slide.',
+    'Plan cards in livediagram: adding cards, the card panel with its tabs and Details, linked cards and the breadcrumb, comments, flags, finding any card, the Trash, Archive, and presenting a card as a slide.',
   path: '/help/canvas/plan-mode/cards/',
 });
 
@@ -30,7 +30,7 @@ A board shows and offers only the card types set in its menu's **Card Types**; c
 
 Click a card (in Plan mode), or double-click it in the other modes, to open its panel. It closes with **Escape** or the close button, and every change saves as you make it.
 
-<Figure caption="The card panel: a breadcrumb back to the project, the card's tabs and Child Cards on the left, Details on the right.">
+<Figure caption="The card panel: a breadcrumb back to the project, the card's tabs and Linked as Parent on the left, Details on the right.">
   <PlanCardPanelScene />
 </Figure>
 
@@ -38,7 +38,7 @@ Click a card (in Plan mode), or double-click it in the other modes, to open its 
 - **On the left:** the title, then the card type's **tabs** (Overview by default) and their fields. The **description** is rich text: bold, italic, underline, strikethrough, size, colour, headings, links, and bullet or numbered lists, from the toolbar over it or the usual shortcuts. It reads as text until you click it.
 - **On the right, in Details:** status, assignee and parent, then priority, labels, estimate, due date and, on a project, start date (a start after the due date says **Starts after it is due**). Labels are coloured chips, with the document's labels offered as you type. **Open** beside a parent takes you to it. At the foot: who made the card and who last changed it.
 - **A checklist** shows its progress ("2 of 5"); tick steps, edit them in place, and **Add a step**.
-- **Child Cards:** a card that other cards name as their parent (usually a project) lists them on its first tab, each with its number, title and status. Click one to open it in the same panel. Trashed children are left out; an archived one shows an **Archived** chip.
+- **Linked as Parent:** a project lists the cards under it (the cards whose **Parent** is that project) on its first tab, each with its number, title and status. Click one to open it in the same panel, or **New Task** to make one already under it. Trashed cards are left out; an archived one shows an **Archived** chip.
 - **Find your way back:** as you move from a card to its parent or a child, the top of the panel keeps a breadcrumb of where you have been. Click a card in it to go straight back. It shows the nearest three (one on a phone), with earlier ones folded into **…**. Opening a card from a board starts a new trail.
 - **The ⋯ menu** holds **Duplicate**, **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Trash**.
 

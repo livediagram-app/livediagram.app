@@ -1,5 +1,4 @@
-// The item panel's card trail and a parent's child cards (docs/specs/026-plan/plan-board.md "Open an item":
-// Breadcrumb, Child Cards). Pure, so the slice, the host and the header read one set of rules.
+// The item panel's card trail (docs/specs/026-plan/plan-board.md "Open an item": Breadcrumb). Pure, so the slice, the host and the header read one set of rules.
 import { isTrashed, type Item } from '@livediagram/items';
 
 // How a card was opened from inside the item panel: each steps the trail rather than starting a new one, and

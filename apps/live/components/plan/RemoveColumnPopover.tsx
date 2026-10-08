@@ -90,7 +90,6 @@ export function RemoveColumnPopover({
             onPick={() => setKind('trash')}
             icon={<TrashIcon size={16} />}
             title="Move to the Trash"
-            danger
           >
             <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
               You can restore them from the Trash.
@@ -102,7 +101,7 @@ export function RemoveColumnPopover({
             Cancel
           </Button>
           <Button
-            variant="danger"
+            variant="primary"
             size="sm"
             onClick={() =>
               onRemove(kind === 'move' && to ? { kind: 'move', to } : { kind: 'trash' })
@@ -123,20 +122,16 @@ function Option({
   onPick,
   icon,
   title,
-  danger = false,
   children,
 }: {
   on: boolean;
   onPick: () => void;
   icon: ReactNode;
   title: string;
-  danger?: boolean;
   children: ReactNode;
 }) {
   const ring = on
-    ? danger
-      ? 'border-rose-300 bg-rose-50/70 dark:border-rose-500/50 dark:bg-rose-500/10'
-      : 'border-brand-400 bg-brand-50/70 dark:border-brand-500/60 dark:bg-brand-500/10'
+    ? 'border-brand-400 bg-brand-50/70 dark:border-brand-500/60 dark:bg-brand-500/10'
     : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600';
   return (
     <div className={`rounded-lg border px-2.5 py-2 transition ${ring}`}>
@@ -150,20 +145,12 @@ function Option({
         <span
           aria-hidden
           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-            on
-              ? danger
-                ? 'border-rose-500 dark:border-rose-400'
-                : 'border-brand-600 dark:border-brand-400'
-              : 'border-slate-300 dark:border-slate-600'
+            on ? 'border-brand-600 dark:border-brand-400' : 'border-slate-300 dark:border-slate-600'
           }`}
         >
-          {on ? (
-            <span
-              className={`h-2 w-2 rounded-full ${danger ? 'bg-rose-500 dark:bg-rose-400' : 'bg-brand-600 dark:bg-brand-400'}`}
-            />
-          ) : null}
+          {on ? <span className="h-2 w-2 rounded-full bg-brand-600 dark:bg-brand-400" /> : null}
         </span>
-        <span className={danger ? 'text-rose-700 dark:text-rose-300' : ''}>{icon}</span>
+        <span>{icon}</span>
         {title}
       </button>
       <div className="pl-6">{children}</div>

@@ -88,13 +88,7 @@ export function FieldMenu({
           {onRemove ? (
             <>
               {reorder || moveTargets.length > 0 ? <MenuGroupSeparator /> : null}
-              <MenuActionRow
-                plain
-                danger
-                label="Remove"
-                icon={<TrashIcon />}
-                onClick={run(onRemove)}
-              />
+              <MenuActionRow plain label="Remove" icon={<TrashIcon />} onClick={run(onRemove)} />
             </>
           ) : null}
         </PortalMenu>
