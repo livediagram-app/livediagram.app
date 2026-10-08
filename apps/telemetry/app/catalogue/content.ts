@@ -760,13 +760,6 @@ export const PLAN_ITEMS_OPENED = chart(
   'An item opened in the item panel, from a board or a Plan card.',
 );
 
-export const PLAN_VOTES = chart(
-  'Plan',
-  'Voted',
-  'Votes Cast',
-  'A vote added (Up) or taken back (Down) on a voting board.',
-);
-
 export const PLAN_ITEMS_DELETED = chart(
   'Plan',
   'Deleted',
@@ -824,7 +817,6 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_ITEMS_ADDED,
     PLAN_ITEMS_MOVED,
     PLAN_ITEMS_OPENED,
-    PLAN_VOTES,
     PLAN_ITEMS_DELETED,
     PLAN_ITEMS_RESTORED,
     PLAN_REMOVED,

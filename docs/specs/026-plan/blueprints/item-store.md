@@ -132,7 +132,7 @@ key between always exists. Ties (equal ranks after concurrent inserts) order by 
 ### Board projection (`projectBoard(setup, items, quick?)`)
 
 - `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy;
-cardFields: CardField[]; voting: { on: boolean; budget?: number }; hideWriting: boolean }`.
+cardFields: CardField[]; hideWriting: boolean }` (a stored `voting` is read past: a vote is the tab's session vote).
 - `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'parent'`.
 - No scope: a `scope` an older board stored is read past. Types are the one filter: the types `boardAddTypes(setup, types)`
   resolves (every type when `addTypes` is absent or names none still in the catalogue) drops an item of a type the board does not show, before columns, lanes,
@@ -222,16 +222,16 @@ WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by
 All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
 (tag `Items`), DTOs in `packages/api-schema/src/items.ts` (`ItemsResponse { items, rev }`, `ItemResponse { item, rev }`).
 
-| Method | Path                  | Gate        | Body                                                         | Answers             |
-| ------ | --------------------- | ----------- | ------------------------------------------------------------ | ------------------- |
-| GET    | `/items[?tabId=]`     | read        |                                                              | `ItemsResponse`     |
-| POST   | `/items`              | edit        | `ItemCreate`                                                 | 201 `ItemResponse`  |
-| POST   | `/items/bulk`         | edit        | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
-| POST   | `/items/patches`      | edit        | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
-| POST   | `/items/:itemId`      | edit        | `ItemPatch`                                                  | `ItemResponse`      |
-| POST   | `/items/:itemId/move` | edit        | `ItemMove`                                                   | `ItemResponse`      |
-| POST   | `/items/:itemId/vote` | participate | `{ delta: 1 \| -1 }`                                         | `ItemResponse`      |
-| DELETE | `/items/:itemId`      | edit        |                                                              | 204                 |
+| Method | Path                  | Gate | Body                                                         | Answers             |
+| ------ | --------------------- | ---- | ------------------------------------------------------------ | ------------------- |
+| GET    | `/items[?tabId=]`     | read |                                                              | `ItemsResponse`     |
+| POST   | `/items`              | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
+| POST   | `/items/bulk`         | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
+| POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
+| POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
+| POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
+| POST   | `/items/tally`        | edit | `{ items: { id, votes }[] }` ≤ `ITEM_BULK_MAX`               | `ItemsResponse`     |
+| DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
 

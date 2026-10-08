@@ -41,7 +41,6 @@ describe('the cards not on the board', () => {
         onQuick={vi.fn()}
         canFilterMine={null}
         canEdit
-        votesLeft={null}
         loadFailed={false}
         widgetDropAt={null}
         flashWidget={null}

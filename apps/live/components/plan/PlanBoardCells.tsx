@@ -110,7 +110,6 @@ export function PlanBoardCard({
   setupFields,
   cardSize,
   faceDown,
-  voting,
   presence,
   interactive,
   onPress,
@@ -128,7 +127,6 @@ export function PlanBoardCard({
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
   faceDown: boolean;
-  voting: Parameters<typeof PlanCardFace>[0]['voting'];
   presence: Parameters<typeof PlanCardFace>[0]['presence'];
   interactive: boolean;
   onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
@@ -191,7 +189,6 @@ export function PlanBoardCard({
           faceDown={faceDown}
           muted={done}
           presence={presence}
-          voting={faceDown ? undefined : voting}
         />
         {cardVote ? (
           <ElementVoteOverlay

@@ -1461,7 +1461,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "types",
       "wip",
       "due",
-      "votes",
       "points",
       "priorities",
       "unassigned",
@@ -6583,22 +6582,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ItemVoteRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "delta": {
-        "enum": [
-          1,
-          -1
-        ],
-        "type": "number"
-      }
-    },
-    "required": [
-      "delta"
-    ],
-    "type": "object"
-  },
   "ItemsBulkRequest": {
     "additionalProperties": false,
     "properties": {
@@ -8103,21 +8086,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "title": {
         "type": "string"
       },
-      "voting": {
-        "additionalProperties": false,
-        "properties": {
-          "budget": {
-            "type": "number"
-          },
-          "on": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "on"
-        ],
-        "type": "object"
-      },
       "widgets": {
         "items": {
           "$ref": "#/components/schemas/BoardWidgetKind"
@@ -8130,7 +8098,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "columns",
       "swimlaneBy",
       "cardFields",
-      "voting",
       "hideWriting"
     ],
     "type": "object"

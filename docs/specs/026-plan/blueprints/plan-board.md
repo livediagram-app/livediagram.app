@@ -69,7 +69,7 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
-PlanCardFace.tsx         a card face (custom fields as chips where Display places them), and its vote control
+PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
 PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)

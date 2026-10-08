@@ -268,26 +268,26 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 
 `WORKBENCH_ROUTES` (`:doc` is the session's document; a document route naming any other id is `other-document`):
 
-| Method           | Path under `/api`                                                                                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                                     |
-| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`, `custom-themes`, `shape-libraries`                                                         |
-| POST             | `images`                                                                                                                                                                              |
-| GET              | `images/:id` (the route then requires `?d=:doc`)                                                                                                                                      |
-| GET, PUT         | `documents/:doc`                                                                                                                                                                      |
-| GET, PUT, DELETE | `documents/:doc/tabs/:tabId`                                                                                                                                                          |
-| PUT              | `documents/:doc/tabs/:tabId/name`                                                                                                                                                     |
-| POST             | `documents/:doc/tabs/:tabId/changesets`, `documents/:doc/changesets/:changesetId/revert`                                                                                              |
-| GET              | `documents/:doc/changesets`, `documents/:doc/changesets/:changesetId`, `documents/:doc/comments`                                                                                      |
-| GET              | `documents/:doc/tabs/:tabId/render.svg`, `documents/:doc/tabs/:tabId/comment-pictures`                                                                                                |
-| POST             | `documents/:doc/tabs/:tabId/comments`, `.../comments/:commentId/reply`, `.../resolve`, `.../reopen`                                                                                   |
-| DELETE           | `documents/:doc/tabs/:tabId/comments/:commentId`                                                                                                                                      |
-| POST             | `documents/:doc/tabs/:tabId/qa`, `documents/:doc/room-ticket`                                                                                                                         |
-| GET, POST        | `documents/:doc/items`                                                                                                                                                                |
-| POST             | `documents/:doc/items/bulk`, `items/:itemId`, `items/:itemId/move`, `items/:itemId/vote`, `items/:itemId/comments`, `items/:itemId/comments/resolve`, `items/:itemId/comments/reopen` |
-| DELETE           | `documents/:doc/items/:itemId`, `documents/:doc/items/:itemId/comments/:commentId`                                                                                                    |
-| PUT              | `documents/:doc/item-types`                                                                                                                                                           |
-| DELETE           | `workbench/sessions/current`                                                                                                                                                          |
+| Method           | Path under `/api`                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                              |
+| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`, `custom-themes`, `shape-libraries`                                                  |
+| POST             | `images`                                                                                                                                                                       |
+| GET              | `images/:id` (the route then requires `?d=:doc`)                                                                                                                               |
+| GET, PUT         | `documents/:doc`                                                                                                                                                               |
+| GET, PUT, DELETE | `documents/:doc/tabs/:tabId`                                                                                                                                                   |
+| PUT              | `documents/:doc/tabs/:tabId/name`                                                                                                                                              |
+| POST             | `documents/:doc/tabs/:tabId/changesets`, `documents/:doc/changesets/:changesetId/revert`                                                                                       |
+| GET              | `documents/:doc/changesets`, `documents/:doc/changesets/:changesetId`, `documents/:doc/comments`                                                                               |
+| GET              | `documents/:doc/tabs/:tabId/render.svg`, `documents/:doc/tabs/:tabId/comment-pictures`                                                                                         |
+| POST             | `documents/:doc/tabs/:tabId/comments`, `.../comments/:commentId/reply`, `.../resolve`, `.../reopen`                                                                            |
+| DELETE           | `documents/:doc/tabs/:tabId/comments/:commentId`                                                                                                                               |
+| POST             | `documents/:doc/tabs/:tabId/qa`, `documents/:doc/room-ticket`                                                                                                                  |
+| GET, POST        | `documents/:doc/items`                                                                                                                                                         |
+| POST             | `documents/:doc/items/bulk`, `items/:itemId`, `items/:itemId/move`, `items/tally`, `items/:itemId/comments`, `items/:itemId/comments/resolve`, `items/:itemId/comments/reopen` |
+| DELETE           | `documents/:doc/items/:itemId`, `documents/:doc/items/:itemId/comments/:commentId`                                                                                             |
+| PUT              | `documents/:doc/item-types`                                                                                                                                                    |
+| DELETE           | `workbench/sessions/current`                                                                                                                                                   |
 
 Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
 `community`, `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `documents` (the library),

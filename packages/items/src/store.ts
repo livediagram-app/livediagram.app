@@ -9,7 +9,6 @@ import {
   applyMove,
   applyPatch,
   applyTally,
-  applyVote,
   byRank,
   inversePatch,
   makeItem,
@@ -30,7 +29,6 @@ export type ItemWrite =
   // Many items changed as one write (a card type's or a removed column's cards to the Trash).
   | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
   | { kind: 'move'; id: string; move: ItemMove; undo?: true }
-  | { kind: 'vote'; id: string; delta: 1 | -1 }
   // A session vote's tally added to cards' votes when the vote ends (not undoable).
   | { kind: 'tally'; tallies: ItemTally[] }
   | { kind: 'delete'; id: string };
@@ -130,9 +128,7 @@ export function applyItemWrite(
   const next =
     write.kind === 'patch'
       ? applyPatch(item, write.patch, base)
-      : write.kind === 'move'
-        ? applyMove(item, write.move, state.items, base)
-        : applyVote(item, ctx.by.id, write.delta, base);
+      : applyMove(item, write.move, state.items, base);
   return {
     ok: true,
     state: { ...state, items: replaced(state.items, next), rev: state.rev + 1 },
@@ -188,10 +184,10 @@ export function refetchedItemStore(
 }
 
 // The writes that undo `write`, made against `before` and answered with `made` (a create's items as
-// made, so its redo restores the same ids and keys). Null: not undoable (a vote is taken back by
-// voting minus, docs/specs/026-plan/items.md "Undo").
+// made, so its redo restores the same ids and keys). Null: not undoable (a vote's tally, docs/specs/026-plan/items.md
+// "Undo").
 export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): ItemWrite[] | null {
-  if (write.kind === 'vote' || write.kind === 'tally') return null;
+  if (write.kind === 'tally') return null;
   if (write.kind === 'create') return write.creates.map((c) => ({ kind: 'delete', id: c.id! }));
   if (write.kind === 'patches') {
     // Each item's old values, last patch first, as one write.

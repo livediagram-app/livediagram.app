@@ -122,21 +122,6 @@ export function applyMove(
   };
 }
 
-// A person's votes never drop below zero; a zero count is dropped.
-export function applyVote(item: Item, personId: string, delta: 1 | -1, ctx: WriteContext): Item {
-  const votes = itemVotes(item);
-  const next = Math.max(0, (votes[personId] ?? 0) + delta);
-  if (next === 0) delete votes[personId];
-  else votes[personId] = next;
-  return {
-    ...item,
-    fields: { ...item.fields, votes },
-    rev: item.rev + 1,
-    updatedAt: ctx.now,
-    updatedBy: ctx.by,
-  };
-}
-
 // A session vote's tally added to a card's votes (docs/specs/026-plan/items.md "Tally"): each voter's dots added to
 // what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX.
 export function applyTally(

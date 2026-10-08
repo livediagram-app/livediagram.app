@@ -41,6 +41,9 @@ export type BoardSpec = {
 export type RailItem =
   | { kind: 'sticky'; text: string }
   | { kind: 'timer'; minutes: number }
+  // A session vote with this many dots each, cast on the board's cards (docs/specs/012-collaboration/session-tools.md
+  // "Voting on Plan cards").
+  | { kind: 'vote'; dots: number }
   | { kind: 'picker'; label: string }
   | { kind: 'temperature'; label: string };
 
@@ -332,13 +335,14 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             'Review last retro’s actions',
             'Write notes while the timer runs: they stay hidden',
             'Reveal together',
-            'Vote: 5 each',
+            'Press Vote: 5 dots each, on the cards',
             'Turn the top votes into Actions',
             'Archive the notes when done',
           ]),
         },
         { kind: 'temperature', label: 'How did the sprint feel?' },
         { kind: 'timer', minutes: 5 },
+        { kind: 'vote', dots: 5 },
       ],
     },
     {
@@ -438,11 +442,12 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           ],
           swimlaneBy: 'none',
           cardFields: ['assignee', 'labels', 'votes'],
-          voting: { on: true, budget: 5 },
           addTypes: ['idea'],
-          widgets: ['votes', 'top-voted'],
+          widgets: ['top-voted'],
         },
       },
+      // Ideas are voted on with the tab's session vote (docs/specs/026-plan/plan-templates.md "Content Calendar").
+      rail: [{ kind: 'vote', dots: 5 }],
     },
     {
       name: 'Production',
@@ -674,7 +679,6 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           ],
           swimlaneBy: 'none',
           cardFields: ['labels', 'votes'],
-          voting: { on: true },
           addTypes: ['idea'],
           widgets: ['top-voted', 'types', 'filter'],
         },
@@ -684,11 +688,12 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           kind: 'sticky',
           text: steps('How this works', [
             'Add each request as an Idea',
-            'Vote on what matters',
+            'Press Vote, and vote on what matters',
             'Review the top voted each week',
             'Planned moves it to Delivery',
           ]),
         },
+        { kind: 'vote', dots: 3 },
       ],
     },
     {

@@ -236,14 +236,6 @@ export function usePlanSlice(opts: {
     })();
   }, [planItems.items, write]);
 
-  const vote = useCallback(
-    (itemId: string, delta: 1 | -1) => {
-      void write({ kind: 'vote', id: itemId, delta });
-      track('Plan', 'Voted', delta === 1 ? 'Up' : 'Down');
-    },
-    [write],
-  );
-
   const commentFn = planItems.comment;
   const commentItem = useCallback(
     (itemId: string, action: ItemCommentAction) => void commentFn(itemId, action),
@@ -422,7 +414,6 @@ export function usePlanSlice(opts: {
       moveItem,
       patchItem,
       deleteItem,
-      vote,
       commentItem,
       ownerId: planItems.ownerId,
       updateBoard,
@@ -461,7 +452,6 @@ export function usePlanSlice(opts: {
       moveItem,
       patchItem,
       deleteItem,
-      vote,
       commentItem,
       planItems.ownerId,
       updateBoard,

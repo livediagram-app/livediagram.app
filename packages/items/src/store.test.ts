@@ -107,9 +107,6 @@ describe('applyItemWrite', () => {
       ok(applyItemWrite(s, { kind: 'move', id: a.id, move: { status: 'done' } }, ctx)).items[0]!
         .fields['status'],
     ).toBe('done');
-    expect(
-      ok(applyItemWrite(s, { kind: 'vote', id: a.id, delta: 1 }, ctx)).items[0]!.fields['votes'],
-    ).toEqual({ [ALI.id]: 1 });
     expect(applyItemWrite(s, { kind: 'delete', id: 'nope' }, ctx)).toEqual({
       ok: false,
       error: 'item_not_found',
@@ -144,7 +141,6 @@ describe('inverseItemWrites', () => {
   const s: ItemStoreState = { items: [a, b], rev: 1, nextKey: 9 };
 
   it('undoes each write kind', () => {
-    expect(inverseItemWrites(s, { kind: 'vote', id: a.id, delta: 1 })).toBeNull();
     expect(inverseItemWrites(s, { kind: 'patch', id: 'missing', patch: {} })).toBeNull();
     expect(
       inverseItemWrites(s, {
