@@ -48,7 +48,9 @@ The connection gives your AI tool these tools:
 - **Share a document**: turn a document into a [share link](/help/collaboration/sharing/) to hand to someone.
 - **Rename a document** and **Delete a document**: tidy your library from the AI tool. Delete moves the document to the [Trash](/help/account-and-data/trash/).
 - **List the Trash** and **Restore a document**: bring back something deleted by mistake, by you or by the AI.
-- **List items** and **Change items**: read and update the cards on a document's [Plan](/help/canvas/plan-mode/) boards (add a task, move it to another status, change its fields).
+- **List items** and **Change items**: read and update the cards on a document's [Plan](/help/canvas/plan-mode/) boards (add a task, move it to another column, change its fields). The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and livediagram refuses a column, card type or field the document doesn't have instead of filing a card where no board shows it.
+- **Add a board** and **Change a board**: put a Plan board on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns or choose which card types it shows.
+- **Change card types**: add, edit or delete the [card types](/help/canvas/plan-mode/items/) a document's boards hold, with their own fields. Deleting a type moves its cards to the Trash, as it does in the editor.
 
 For building the picture, the AI can just describe the **graph** (the nodes and what connects to what) and livediagram lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what, or hand over the same thing as **Mermaid** text (a flowchart, state diagram, or ER diagram). It can group related boxes into labelled sections and choose a flow, a tree (an org chart), or a mind map. Box labels are kept to short headings: when the AI writes a long sentence, the box shows the heading and the full text goes into the box's note, so a chatty AI doesn't fill your diagram with paragraphs.
 

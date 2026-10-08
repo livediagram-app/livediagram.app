@@ -45,6 +45,9 @@ export const readDocumentOutput = {
         ),
     })
     .describe('The tab that was read.'),
+  tabs: z
+    .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
+    .describe('Every tab of the document, in order: pass one as tabId to read it.'),
   url,
 };
 
@@ -72,6 +75,9 @@ export const listTemplatesOutput = {
 
 export const createDocumentOutput = {
   id: documentId,
+  documentId: documentId.describe(
+    'The document id again, under the name the other tools take it by.',
+  ),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
@@ -102,11 +108,15 @@ export const addTabOutput = {
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
   url,
+  note: z.string().optional().describe('Said when a template has more tabs than add_tab adds.'),
   ...changesetAnswer,
 };
 
 export const updateDocumentOutput = {
   id: documentId,
+  documentId: documentId.describe(
+    'The document id again, under the name the other tools take it by.',
+  ),
   tabId: tabId.describe('The tab that was edited.'),
   url,
   ...changesetAnswer,
@@ -171,28 +181,5 @@ export const restoreDocumentOutput = {
   restored: z.literal('document').describe('Always "document": tabs have no Trash.'),
   id: documentId,
   name: z.string().nullable().describe('The restored document name, or null if unknown.'),
-  url,
-};
-
-// The item tools (docs/specs/026-plan/plan-mode.md "Agents").
-const itemOut = z.object({
-  ref: z.string().describe('The item’s number as people say it, "#12".'),
-  id: z.string().describe('The item id.'),
-  type: z.string().describe('task, story, bug, epic, note, idea, action, risk, or a later type.'),
-  status: z.string().nullable().describe('Its status: the column it sits in, or null.'),
-  title: z.string().describe('The title.'),
-  fields: z.record(z.string(), z.unknown()).describe('Every field, title and status included.'),
-});
-
-export const listItemsOutput = {
-  count: z.number().describe('How many items are listed.'),
-  items: z.array(itemOut).describe('The items, by number.'),
-  url,
-};
-
-export const changeItemsOutput = {
-  applied: z
-    .array(z.string())
-    .describe('One line per change: + added, ~ changed, → moved, - deleted.'),
   url,
 };

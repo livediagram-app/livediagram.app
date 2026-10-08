@@ -139,7 +139,10 @@ Every change is **one changeset**, applied all or nothing and checked against th
 ```bash
 livediagram comment ls "Shop"
 livediagram comment add "Shop" api "Should this be idempotent?"
-livediagram item ls "Shop"                       # Plan items, by number such as #12
+livediagram item ls "Shop"                       # Plan boards and their items, by number such as #12
+livediagram item add "Shop" "Fix login" --status "In Progress" --type Bug
+livediagram board add "Shop" --columns "Ideas,Doing,Shipped"
+livediagram type ls "Shop"                       # card types and their fields
 livediagram wait "Shop" --for comment --timeout 600
 livediagram watch "Shop"                         # stream changes until you stop it
 ```

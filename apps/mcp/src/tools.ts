@@ -24,6 +24,7 @@ import {
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
+  templateTabs,
   validTemplateKinds,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -58,7 +59,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
-import { registerItemTools } from './item-tools';
+import { registerPlanTools } from './plan-tools';
 import {
   mcpAddTab,
   mcpCreateDocument,
@@ -75,7 +76,7 @@ import {
 
 export function registerTools(server: McpServer, env: Env): void {
   // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
-  registerItemTools(server, env);
+  registerPlanTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra as Extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
@@ -180,6 +181,7 @@ export function registerTools(server: McpServer, env: Env): void {
     return imageResult(
       {
         id,
+        documentId: id,
         name: args.name,
         tabCount: tabs.length,
         tabIds,
@@ -255,6 +257,7 @@ export function registerTools(server: McpServer, env: Env): void {
         rev: tab.rev,
         text: answer.text,
         lint: lintLineOf(answer.lint),
+        ...templateNote(args.template),
       },
       tab,
       { env, token },
@@ -306,6 +309,7 @@ export function registerTools(server: McpServer, env: Env): void {
     return imageResult(
       {
         id: args.documentId,
+        documentId: args.documentId,
         tabId,
         url: deepLink(args.documentId),
         changesetId: answer.changeset?.id ?? null,
@@ -381,12 +385,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // a 4xx (bad id, last tab) is model-correctable and not reported.
       if (res.status >= 500) reportApiFailure(env, `Http${res.status}`);
       return errorResult(
-        `Could not delete (${res.status}). ` +
-          (args.tabId
-            ? 'A document must keep at least one tab — you cannot delete the last one.'
-            : res.status === 410
-              ? 'It is already in the Trash (see list_trash).'
-              : 'Check the document id and that you own it.'),
+        `Could not delete (${res.status}). ${deleteRefusal(res.status, Boolean(args.tabId))}`,
       );
     }
     return textResult(
@@ -442,4 +441,30 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
+}
+
+// Why a delete was refused, by what was deleted and the status.
+export function deleteRefusal(status: number, tab: boolean): string {
+  if (status === 410) return 'It is already in the Trash (see list_trash).';
+  if (status === 403) return 'You may view this document but not change it.';
+  if (status === 404)
+    return tab
+      ? 'No such tab in this document: read_document lists its tabs.'
+      : 'No such document, or it is not yours: find_documents lists them.';
+  return tab
+    ? 'A document must keep at least one tab: you cannot delete the last one.'
+    : 'Check the document id and that you own it.';
+}
+
+// add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the
+// template has more, so the caller knows where the rest are.
+export function templateNote(template: string | undefined): { note?: string } {
+  const kind = template ? resolveTemplate(template) : null;
+  const tabs = kind ? templateTabs(kind) : [];
+  if (tabs.length < 2) return {};
+  return {
+    note:
+      `The ${template} template has ${tabs.length} tabs; add_tab added its first. ` +
+      'create_document with this template makes all of them.',
+  };
 }

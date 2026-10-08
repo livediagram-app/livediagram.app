@@ -187,7 +187,14 @@ element argument. For a standard artefact (kanban, flowchart, SWOT,
 gantt, wireframe, ...) check list_templates first and pass its kind as
 "template" on create_document / add_tab — the hand-tuned scaffold beats
 rebuilding one from raw elements — then fill in real labels with
-update_document.`;
+update_document. Plan boards hold cards (items), which have their own tools:
+list_items reads a document's boards, their columns by name, its cards and its
+card types; change_items adds, edits and moves cards, naming columns, card
+types, fields and people as the board shows them; add_board puts a board on a
+tab (a preset or columns by name) and change_board changes one (title, columns,
+the card types it shows); change_card_types adds and edits card types and their
+custom fields. A board shows only the card types it takes. A Plan template (kanban, project-planner, bug-triage)
+makes a document with boards ready to fill.`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -545,63 +552,4 @@ export const renameDocumentShape = {
     .string()
     .optional()
     .describe('Rename this tab within the document instead of the document itself.'),
-};
-
-// The item tools (docs/specs/026-plan/plan-mode.md "Agents"): list_items and change_items.
-const itemDocumentId = z.string().describe('The document (from find_documents).');
-const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
-const fieldsArg = z
-  .record(z.string(), z.unknown())
-  .describe(
-    'Fields to set: title, description, status, assignee {id,name,color}, priority (urgent|high|medium|low), ' +
-      'labels [..], estimate (0-999), start and due (YYYY-MM-DD), color (one of the twelve Plan swatches: ' +
-      '#18181b #71717a #2563eb #eab308 #dc2626 #16a34a #7c3aed #d97706 #0d9488 #db2777 #ea580c #0891b2), ' +
-      "checklist [{text,done}], parent (a Project item id), a card type's Card field (its f-… id, set to the " +
-      'id of one card of the type it links to), or any other key.',
-  );
-
-export const listItemsShape = {
-  documentId: itemDocumentId,
-  type: z
-    .string()
-    .optional()
-    .describe(
-      'Only items of this type: project, task, note, idea, action, or one the document adds.',
-    ),
-  status: z.string().optional().describe("Only items with this status (a board's column)."),
-};
-
-const change = z.discriminatedUnion('op', [
-  z.object({
-    op: z.literal('add'),
-    title: z.string().min(1),
-    type: z.string().default('task'),
-    status: z.string().optional().describe('The column it starts in, at the end.'),
-    fields: fieldsArg.optional(),
-  }),
-  z.object({
-    op: z.literal('set'),
-    item: itemRef,
-    fields: fieldsArg.optional(),
-    clear: z.array(z.string()).optional().describe('Fields to clear, by name (never title).'),
-    type: z.string().optional(),
-  }),
-  z.object({
-    op: z.literal('move'),
-    item: itemRef,
-    status: z.string().describe('The status (column) it moves to.'),
-    before: itemRef
-      .optional()
-      .describe('The item it lands before; the end of the column when absent.'),
-  }),
-  z.object({ op: z.literal('delete'), item: itemRef }),
-]);
-
-export const changeItemsShape = {
-  documentId: itemDocumentId,
-  changes: z
-    .array(change)
-    .min(1)
-    .max(50)
-    .describe('Applied in order; each sees the ones before it.'),
 };

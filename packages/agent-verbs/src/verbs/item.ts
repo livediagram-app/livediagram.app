@@ -3,18 +3,20 @@
 // named by its key ("#12") or an id prefix (resolveItemRef), as people say it.
 
 import { z } from 'zod';
-import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
-import { ApiError } from '@livediagram/api-client';
 import {
   itemStatus,
   itemSummary,
   itemTitle,
-  resolveItemRef,
+  resolveItem,
   type Item,
   type ItemFields,
 } from '@livediagram/items';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
-import { columns, documentOf, itemsPath } from './shared';
+import { applyItemChanges, type ItemChange } from '../plan/item-changes';
+import { FIELD_HINT } from '../plan/api-refusal';
+import { planListing } from '../plan/plan-listing';
+import { readPlanState, type PlanState } from '../plan/plan-state';
+import { columns, documentOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livediagram URL');
 const itemArg = z.string().describe('The item, by its number (#12) or an id prefix');
@@ -37,28 +39,27 @@ const outOf = (item: Item) => ({
   fields: item.fields as Record<string, unknown>,
 });
 
-async function storeOf(
+async function planOf(
   ctx: VerbContext,
   doc: string,
-): Promise<{ documentId: string; items: Item[] }> {
+): Promise<{ documentId: string; state: PlanState }> {
   const document = await documentOf(ctx, doc);
-  const { items } = await ctx.api.json<ItemsResponse>(itemsPath(document.id));
-  return { documentId: document.id, items };
+  return { documentId: document.id, state: await readPlanState(ctx.api, document.id) };
 }
 
-function find(items: Item[], ref: string): Item {
-  const found = resolveItemRef(items, ref);
-  if (found.ok) return found.item;
-  throw new VerbRefusal({
-    status: 404,
-    code: found.reason === 'ambiguous' ? 'ambiguous' : 'not_found',
-    message:
-      found.reason === 'ambiguous'
-        ? `${JSON.stringify(ref)} names more than one item:`
-        : `no item ${JSON.stringify(ref)}`,
-    lines: found.matches.map(itemSummary),
-    hint: 'list them with: livediagram item ls <doc>',
-  });
+// One change through the Plan engine (docs/specs/026-plan/plan-agents.md): names resolved as the MCP resolves
+// them, a refusal as the verb's.
+async function changeOne(ctx: VerbContext, doc: string, change: ItemChange): Promise<Item | null> {
+  const { documentId, state } = await planOf(ctx, doc);
+  const result = await applyItemChanges(ctx.api, documentId, [change], state);
+  if (result.refusal)
+    throw new VerbRefusal({
+      status: 400,
+      code: result.refusal.code,
+      message: result.refusal.message,
+      hint: 'list the columns, card types and fields with: livediagram item ls <doc>',
+    });
+  return result.touched[0] ?? null;
 }
 
 // `key=value` pairs into fields: numbers stay numbers, `labels` splits on commas, the rest is text.
@@ -71,7 +72,7 @@ export function fieldsFromPairs(pairs: readonly string[]): ItemFields {
         status: 400,
         code: 'usage',
         message: `expected key=value, got ${JSON.stringify(pair)}`,
-        hint: 'for example: priority=high labels=ux,api estimate=3',
+        hint: `for example: priority=high labels=ux,api estimate=3. ${FIELD_HINT}`,
       });
     const key = pair.slice(0, at);
     const raw = pair.slice(at + 1);
@@ -88,29 +89,6 @@ export function fieldsFromPairs(pairs: readonly string[]): ItemFields {
   return fields;
 }
 
-async function refused<T>(work: () => Promise<T>): Promise<T> {
-  try {
-    return await work();
-  } catch (err) {
-    // A card type that leaves the status out (docs/specs/026-plan/item-types.md "An item type").
-    if (err instanceof ApiError && err.status === 400 && err.code === 'status_excluded')
-      throw new VerbRefusal({
-        status: 400,
-        code: 'status_excluded',
-        message: "the item's card type does not use that status",
-        hint: 'pick another status, or allow it on the card type (Edit Card Type, Statuses)',
-      });
-    if (err instanceof ApiError && err.status === 400)
-      throw new VerbRefusal({
-        status: 400,
-        code: err.code ?? 'invalid',
-        message: `the api refused it: ${err.code ?? 'invalid'}`,
-        hint: 'fields: title, description, status, assignee, priority (urgent|high|medium|low), labels, estimate, start and due (YYYY-MM-DD), color (a Plan swatch, #2563eb...)',
-      });
-    throw err;
-  }
-}
-
 const lineOut = z.object({ item: itemOut, text: z.string() });
 
 export const itemLs = defineVerb({
@@ -124,18 +102,32 @@ export const itemLs = defineVerb({
     type: z.string().optional().describe('Only items of this type (task, note, project...)'),
     status: z.string().optional().describe('Only items with this status (a column)'),
   }),
-  output: z.object({ items: z.array(itemOut) }),
+  output: z.object({ items: z.array(itemOut), boards: z.array(z.string()) }),
   listKey: 'items',
   run: async (ctx, input) => {
-    const { items } = await storeOf(ctx, input.doc);
-    const shown = items
-      .filter((i) => !input.type || i.type === input.type)
-      .filter((i) => !input.status || itemStatus(i) === input.status)
-      .sort((a, b) => a.key - b.key);
-    return { items: shown.map(outOf) };
+    const { state } = await planOf(ctx, input.doc);
+    const listing = planListing(state, input);
+    const keys = new Map(state.items.map((i) => [i.id, i.key]));
+    // A board's line: its title and each column with its card count ("Sprint: To Do 2 · Done 1").
+    const boards = listing.boards.map(
+      (b) => `${b.title}: ${b.columns.map((c) => `${c.name} ${c.cards.length}`).join(' · ')}`,
+    );
+    return {
+      boards: listing.hint ? [listing.hint] : boards,
+      items: listing.items.map((i) => ({
+        id: i.id,
+        key: keys.get(i.id)!,
+        type: i.type,
+        status: i.column ?? i.status,
+        title: i.title,
+        fields: i.fields,
+      })),
+    };
   },
-  text: ({ items }) =>
-    columns(items.map((i) => [`#${i.key}`, i.type, i.status ?? '-', JSON.stringify(i.title)])),
+  text: ({ items, boards }) => [
+    ...boards,
+    ...columns(items.map((i) => [`#${i.key}`, i.type, i.status ?? '-', JSON.stringify(i.title)])),
+  ],
   quiet: ({ items }) => items.map((i) => `#${i.key}`),
   cli: {
     positionals: ['doc'],
@@ -165,19 +157,14 @@ export const itemAdd = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const { documentId } = await storeOf(ctx, input.doc);
-    const fields = { ...fieldsFromPairs(input.fields), title: input.title };
-    const { item } = await refused(() =>
-      ctx.api.json<ItemResponse>(itemsPath(documentId), {
-        method: 'POST',
-        body: JSON.stringify({
-          type: input.type,
-          fields,
-          ...(input.status ? { place: { status: input.status } } : {}),
-        }),
-      }),
-    );
-    return { item: outOf(item), text: `+ ${itemSummary(item)}` };
+    const item = await changeOne(ctx, input.doc, {
+      op: 'add',
+      title: input.title,
+      type: input.type,
+      ...(input.status ? { status: input.status } : {}),
+      fields: fieldsFromPairs(input.fields),
+    });
+    return { item: outOf(item!), text: `+ ${itemSummary(item!)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
@@ -205,19 +192,14 @@ export const itemSet = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const { documentId, items } = await storeOf(ctx, input.doc);
-    const target = find(items, input.item);
-    const { item } = await refused(() =>
-      ctx.api.json<ItemResponse>(`${itemsPath(documentId)}/${encodeURIComponent(target.id)}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          set: fieldsFromPairs(input.fields),
-          ...(input.clear.length ? { clear: input.clear } : {}),
-          ...(input.type ? { type: input.type } : {}),
-        }),
-      }),
-    );
-    return { item: outOf(item), text: `~ ${itemSummary(item)}` };
+    const item = await changeOne(ctx, input.doc, {
+      op: 'set',
+      item: input.item,
+      fields: fieldsFromPairs(input.fields),
+      ...(input.clear.length ? { clear: input.clear } : {}),
+      ...(input.type ? { type: input.type } : {}),
+    });
+    return { item: outOf(item!), text: `~ ${itemSummary(item!)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
@@ -245,16 +227,13 @@ export const itemMove = defineVerb({
   }),
   output: lineOut,
   run: async (ctx, input) => {
-    const { documentId, items } = await storeOf(ctx, input.doc);
-    const target = find(items, input.item);
-    const before = input.before ? find(items, input.before).id : null;
-    const { item } = await refused(() =>
-      ctx.api.json<ItemResponse>(`${itemsPath(documentId)}/${encodeURIComponent(target.id)}/move`, {
-        method: 'POST',
-        body: JSON.stringify({ status: input.status, before }),
-      }),
-    );
-    return { item: outOf(item), text: `→ ${itemSummary(item)} in ${input.status}` };
+    const item = await changeOne(ctx, input.doc, {
+      op: 'move',
+      item: input.item,
+      status: input.status,
+      ...(input.before ? { before: input.before } : {}),
+    });
+    return { item: outOf(item!), text: `→ ${itemSummary(item!)} in ${input.status}` };
   },
   text: ({ text }) => [text],
   quiet: ({ item }) => [`#${item.key}`],
@@ -276,13 +255,25 @@ export const itemRm = defineVerb({
   input: z.object({ doc: docArg, item: itemArg }),
   output: z.object({ id: z.string(), text: z.string() }),
   run: async (ctx, input) => {
-    const { documentId, items } = await storeOf(ctx, input.doc);
-    const target = find(items, input.item);
-    const res = await ctx.api.fetch(`${itemsPath(documentId)}/${encodeURIComponent(target.id)}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) throw new ApiError(res.status, await res.text());
-    return { id: target.id, text: `- ${itemSummary(target)}` };
+    const { documentId, state } = await planOf(ctx, input.doc);
+    const target = resolveItem(input.item, state.items);
+    if (!target.ok)
+      throw new VerbRefusal({
+        status: 404,
+        code: target.code,
+        message: target.message,
+        hint: 'list them with: livediagram item ls <doc>',
+      });
+    const id = target.item.id;
+    const result = await applyItemChanges(ctx.api, documentId, [{ op: 'delete', item: id }], state);
+    if (result.refusal)
+      throw new VerbRefusal({
+        status: 400,
+        code: result.refusal.code,
+        message: result.refusal.message,
+        hint: 'list them with: livediagram item ls <doc>',
+      });
+    return { id, text: `- ${itemSummary(target.item)}` };
   },
   text: ({ text }) => [text],
   quiet: ({ id }) => [id],

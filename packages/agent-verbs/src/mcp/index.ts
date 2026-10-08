@@ -2,4 +2,5 @@
 // its tools as verbs, their schemas, and the texts it serves with them.
 export * from './schema';
 export * from './output-schema';
+export * from './plan-schema';
 export * from '../verbs/mcp-tools';

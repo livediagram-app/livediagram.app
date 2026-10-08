@@ -683,6 +683,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: 'ItemTypesResponse',
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
+  // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
+  {
+    method: 'GET',
+    path: '/documents/{id}/plan',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "The document's Plan boards, in tab then canvas order, with their columns; the statuses they name, each once with its column name; and the card types. A tab-scoped link passes tabId and gets that tab's boards.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    responseSchema: 'PlanResponse',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
   // The item store (docs/specs/026-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
   {
     method: 'GET',

@@ -303,8 +303,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   Card popover offers the types the board shows, and its title field's `name:` prefix matches a type's name
   (`customer call:` too).
 - **A board's rows By Card Type** follow the catalogue's order and names.
-- **Agents** see the type ids on items, as before; an item made by an agent with a type the catalogue lacks
-  draws as "Item".
+- **Agents** read the catalogue with `list_items` and change it with `change_card_types`, naming types and fields
+  as people do ([Plan for agents](plan-agents.md)); an agent naming a type the catalogue lacks is refused. An item
+  stored with a type the catalogue lacks (made before that rule, or whose type was deleted) draws as "Item".
 
 ## Collaboration
 

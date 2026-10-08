@@ -163,7 +163,7 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Eleven tools. The search/view capability is two tools (find, then read); create,
+Sixteen tools: eleven for documents and five for Plan boards ([§4.9b](#49b-the-plan-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
 share, rename, and delete complete the CRUD verbs, with list_trash and
@@ -546,16 +546,23 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
-### 4.9b `list_items` and `change_items`
+### 4.9b The Plan tools
 
-The items Plan boards show ([Items](../026-plan/items.md), [Plan mode](../026-plan/plan-mode.md#agents)):
+The cards Plan boards show, the boards and the card types ([Plan for agents](../026-plan/plan-agents.md),
+[Items](../026-plan/items.md)). Everything is named as the board shows it (a column by name, a card type by name,
+custom fields by name, a person by name, an item by number `#12`); the server resolves the ids and refuses an
+unknown name with the ones there are.
 
-- **`list_items`** (read): a document's items, by number, narrowed by `type` and `status`. Titles and fields are
-  people's writing, read as data.
+- **`list_items`** (read): the document's boards with their columns and the cards in each, the items with their
+  column names, and the card types with their fields; narrowed by card type or column, by name. A document with no
+  board answers a hint saying how to get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
-  `{ item }`. Items are named by number (`#12`) or id prefix, as the CLI's `item` verbs name them
-  (`resolveItemRef`). A refusal answers what was applied before it. Each change reaches open boards at once.
+  `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
+- **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset.
+- **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
+- **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
+  changes (`add`, `set`, `delete`, `restore_built_ins`), checked whole and saved once.
 
 ### 4.10 Prompts (discoverability)
 
@@ -639,14 +646,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the eleven tools, and each is a preset in
+Three behaviours cover the sixteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                 |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`       |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`                                  |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                              |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`                                    |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`                                          |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -726,23 +733,30 @@ prose, and serialised as the first text block, for clients that only read
 render a preview (`read_document`, `create_document`, `add_tab`,
 `update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
-and no `structuredContent`; MCP exempts errors from the output schema.
+and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
+such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its
+code or status: a document in the Trash, a view-only grant, an id that names nothing) and a named input error
+(a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
+says why by its status (no such tab, view only, the last tab).
 
-| Tool               | Result object                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
-| `read_document`    | `id`, `name`, `tab { id, name, elements[] }`, `url`                                                       |
-| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_document`  | `id`, `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                     |
-| `add_tab`          | `documentId`, `tabId`, `name`, `url`                                                                      |
-| `update_document`  | `id`, `tabId`, `url`                                                                                      |
-| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
-| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
-| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
-| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
-| `list_items`       | `count`, `items[]` of `{ ref, id, type, status, title, fields }`, `url`                                   |
-| `change_items`     | `applied[]` (one line per change), `url`                                                                  |
+| Tool                | Result object                                                                                                                                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `find_documents`    | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                                                                                                                                       |
+| `read_document`     | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                     |
+| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                                                                               |
+| `create_document`   | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                       |
+| `add_tab`           | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                                                                                |
+| `update_document`   | `id` and `documentId` (the same), `tabId`, `url`                                                                                                                                                                        |
+| `share_document`    | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                                                                                                                 |
+| `rename_document`   | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                                                                                                                          |
+| `delete_document`   | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                                                                                                                          |
+| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                                                                       |
+| `restore_document`  | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
+| `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, columns[] { name, status, wipLimit?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url` |
+| `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                             |
+| `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
+| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
+| `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

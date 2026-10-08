@@ -187,7 +187,7 @@ with a Board**.
   id prefix.
 - A document made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_document`) gets the
   same tabs and boards, with no cards, as one made in the editor ([Plan templates](plan-templates.md)).
-- A text `board` view of a tab's Plan boards for agents is a later step; `list_items` reads the same items.
+- How agents read the plan, name columns, card types and fields, and change card types: [Plan for agents](plan-agents.md).
 
 ## Telemetry
 

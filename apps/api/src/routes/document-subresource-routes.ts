@@ -31,6 +31,7 @@ import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleItemRoutes } from './item-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
+import { handlePlanRoute } from './plan-route';
 import {
   deniedOnTab,
   gateEdit,
@@ -195,6 +196,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // The document's type catalogue (docs/specs/026-plan/item-types.md).
   const itemTypes = await handleItemTypeRoutes(ctx);
   if (itemTypes) return itemTypes;
+  // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
+  const plan = await handlePlanRoute(ctx);
+  if (plan) return plan;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).
