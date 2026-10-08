@@ -143,6 +143,9 @@ medium, else thick; text `<= 16` sm, `<= 22` md, else lg.
    `LandContext.colour` counts it under "Colours that couldn't be read were drawn in ink" (degraded)
    and lands it as ink.
 3. OKLCH of the hex. `L <= INK_MAX_LIGHTNESS && C <= INK_MAX_CHROMA` → ink.
+   Then a hex that is exactly a stock colour's own version for either board (`STOCK_VERSIONS`, from
+   `penColourHex`) → `{ kind: 'stock', name }`: dark-board Yellow is lighter than
+   `STOCK_LIGHTNESS_RANGE`, and a board exported and imported again keeps its names.
 4. `C >= max(STOCK_MIN_CHROMA, PEN_NEUTRAL_CHROMA)` and `L` inside `STOCK_LIGHTNESS_RANGE`: the
    nearest stock colour `penColourAtHue(h)` (the snap's own, `packages/document/src/pen-colours.ts`;
    ties to the earlier); when `penColourHueDistance(h, it) <= STOCK_HUE_TOLERANCE_DEG` →

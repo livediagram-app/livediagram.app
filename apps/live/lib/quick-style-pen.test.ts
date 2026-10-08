@@ -18,11 +18,11 @@ import {
 } from './quick-style-pen';
 
 // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": pen strokes and the pen in
-// hand take their colour and width from the panel: quick choices only, the eight stock colours (Ink
+// hand take their colour and width from the panel: quick choices only, the nine stock colours (Ink
 // first), adaptive, then the tab's custom colours when there are any; the pens' named widths.
 const INK = '#1c1917';
 const palette: PenPalette = { board: 'light', ink: INK, custom: [] };
-const EIGHT = ['Ink', 'Blue', 'Red', 'Orange', 'Green', 'Teal', 'Violet', 'Pink'];
+const STOCK = ['Ink', 'Blue', 'Red', 'Orange', 'Yellow', 'Green', 'Teal', 'Violet', 'Pink'];
 const stroke = (extra: object = {}) =>
   ({
     ...createFreehand(
@@ -48,12 +48,12 @@ describe('isPenStroke', () => {
 });
 
 describe('strokesPenStyle', () => {
-  it('names the strokes, offers the eight stock colours, and reads the shared values', () => {
+  it('names the strokes, offers the nine stock colours, and reads the shared values', () => {
     const style = strokesPenStyle(
       [stroke({ penColour: 'red' }), stroke({ penColour: 'red' })],
       palette,
     )!;
-    expect(style.colour.options.map((o) => o.name)).toEqual(EIGHT);
+    expect(style.colour.options.map((o) => o.name)).toEqual(STOCK);
     expect(style.colour.options[0]!.swatch).toBe(INK);
     expect(style.colour.options[2]!.swatch).toBe(penColourHex('red', 'light'));
     expect(style.colour.custom).toEqual([]);
@@ -158,9 +158,9 @@ describe('heldPenStyle', () => {
     expect(style.subject).toEqual({ kind: 'pen', id: 'main', name: 'Marker 1' });
   });
 
-  it('gives another pen the eight stock colours, the ink among them, and the tab\u2019s customs', () => {
+  it('gives another pen the nine stock colours, the ink among them, and the tab\u2019s customs', () => {
     const style = heldPenStyle(second!, { ...palette, custom: ['#ff6b00'] });
-    expect(style.colour.options.map((o) => o.name)).toEqual(EIGHT);
+    expect(style.colour.options.map((o) => o.name)).toEqual(STOCK);
     expect(style.colour.custom.map((o) => o.value)).toEqual(['#ff6b00']);
     expect(style.colour.value).toBe('blue');
     // A marker holding the ink shows the ink as its choice.

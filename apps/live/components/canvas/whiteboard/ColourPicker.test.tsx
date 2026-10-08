@@ -41,7 +41,7 @@ const rgb = (hex: string) => {
 };
 
 describe('ColourPicker', () => {
-  it('shows the eight stock colours, Ink first, each named and tuned for the board', () => {
+  it('shows the nine stock colours, Ink first, each named and tuned for the board', () => {
     const { stock } = setup();
     const swatches = within(stock()).getAllByRole('button');
     expect(swatches.map((b) => b.getAttribute('aria-label'))).toEqual([
@@ -49,6 +49,7 @@ describe('ColourPicker', () => {
       'Blue',
       'Red',
       'Orange',
+      'Yellow',
       'Green',
       'Teal',
       'Violet',

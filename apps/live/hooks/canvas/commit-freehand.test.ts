@@ -98,9 +98,31 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setSelectedId).not.toHaveBeenCalled();
   });
 
-  it('keeps the pen in hand after a tap too short to draw', () => {
+  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  it('lands a tap as a dot: a one-point stroke in the pen, with the pen kept in hand', () => {
+    const s = setup(pen({ colour: 'blue' }));
+    s.commit([{ x: 40, y: 60 }], false, { pressures: [0.7], streamline: 0.5 });
+    expect(s.elements).toHaveLength(1);
+    const dot = s.elements[0] as FreehandElement;
+    expect(dot).toMatchObject({ type: 'freehand', penWidth: 4, penColour: 'blue', closed: false });
+    expect(strokePointCount(dot.packedPoints)).toBe(1);
+    expect(dot.x).toBeLessThan(40);
+    expect(dot.x + dot.width).toBeGreaterThan(40);
+    expect(dot.y).toBeLessThan(60);
+    expect(dot.y + dot.height).toBeGreaterThan(60);
+    expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
+    expect(s.setSelectedId).not.toHaveBeenCalled();
+  });
+
+  it('never reads a dot as a shape, even with recognition on', () => {
+    const s = setup(pen({ recognise: true }));
+    s.commit([{ x: 40, y: 60 }], false);
+    expect(s.elements[0]?.type).toBe('freehand');
+  });
+
+  it('lands nothing for no points, and keeps the pen in hand', () => {
     const s = setup(pen());
-    s.commit([{ x: 1, y: 1 }], false);
+    s.commit([], false);
     expect(s.elements).toHaveLength(0);
     expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
   });

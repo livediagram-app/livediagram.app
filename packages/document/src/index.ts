@@ -581,6 +581,8 @@ export * from './anchor-layouts';
 export * from './shape-outline';
 export * from './svg-path-outline';
 export * from './shape-hit';
+// The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
+export * from './label-body';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './geometry';

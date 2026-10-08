@@ -1,7 +1,7 @@
 'use client';
 
 // A marker's colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"), top to
-// bottom: the eight stock colours in one row (Ink first, the default), each in its version for the
+// bottom: the nine stock colours in one row (Ink first, the default), each in its version for the
 // board it is shown on; Your colours, the custom ones, newest first; and + at the end of that row,
 // which opens the custom picker in place. Arrow keys move through a row; Enter picks. A custom
 // colour's menu (right-click, long-press, Shift+F10 or the context-menu key) removes it from Your
@@ -22,7 +22,7 @@ import { MenuActionRow, PortalMenu } from '@/components/primitives/PortalMenu';
 import { CustomColourEditor } from './CustomColourEditor';
 import { FlyoutHeading } from './WhiteboardFlyout';
 
-// The stock colours: the ink (null), then the seven named ones.
+// The stock colours: the ink (null), then the eight named ones.
 const STOCK: readonly (PenColour | null)[] = [null, ...PEN_COLOUR_NAMES];
 
 export function ColourPicker({
@@ -63,7 +63,7 @@ export function ColourPicker({
     row.focus(pending.at);
   }, [yours, row]);
   return (
-    // As wide as the widest row (eight of Your colours and +), so the flyout never resizes.
+    // As wide as the widest row (the nine stock colours, or eight of Your colours and +), so the flyout never resizes.
     <div className="flex w-[248px] flex-col gap-3" data-colour-picker="">
       <div role="group" aria-label="Colours">
         <FlyoutHeading className="mb-1.5">Colours</FlyoutHeading>

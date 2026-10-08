@@ -72,8 +72,11 @@ export type PenStroke = {
 
 // Every point carries its pressure explicitly: perfect-freehand would give a
 // pressureless FIRST point a quarter, thinning the start of a constant stroke.
+// A lone point (a tap) is given twice: alone, perfect-freehand would draw a stub to the point 1 px
+// right and down of it; twice, the centre line is that one point and the outline a round dot.
 function inputOf(stroke: PenStroke): number[][] {
-  return stroke.points.map((p, i) => [p.x, p.y, stroke.pressures?.[i] ?? PEN_MID_PRESSURE]);
+  const input = stroke.points.map((p, i) => [p.x, p.y, stroke.pressures?.[i] ?? PEN_MID_PRESSURE]);
+  return input.length === 1 ? [input[0]!, input[0]!] : input;
 }
 
 function optionsOf(stroke: PenStroke): StrokeOptions {

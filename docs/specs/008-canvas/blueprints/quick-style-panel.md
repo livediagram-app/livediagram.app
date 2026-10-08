@@ -353,13 +353,14 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
 - Toolbar (compact): the same surface with no header; rows at `density="compact"`.
 - The width never follows the content, and a swatch row never wraps or clips: `panelFrame(docked,
-paletteWidth, penRows)` derives it in px from the named measures in `quick-style-metrics.ts`
+paletteWidth)` derives it in px from the named measures in `quick-style-metrics.ts`
   (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8,
-  `QUICK_FLOATING_PADDING_PX` 10, `QUICK_FLOATING_GAP_PX` 4, `QUICK_ROW_TARGETS` 7 or 8 with pen
-  rows): compact is `targets · 24 + 2 · 8 + 2 · 1` (186 px, or 210 px with pen rows) with the
-  padding set from the same constant; Floating with no Palette on screen is
-  `8 · 24 + 7 · 4 + 2 · 10 + 2 · 1` (242 px), its body padded by `QUICK_FLOATING_PADDING_PX`;
-  Floating with a Palette takes the Palette's width.
+  `QUICK_FLOATING_PADDING_PX` 10, `QUICK_FLOATING_GAP_PX` 4, `QUICK_ROW_TARGETS` 9: the widest of a
+  theme row's 8 and the stock colours, `1 + PEN_COLOUR_NAMES.length`): compact is
+  `targets · 24 + 2 · 8 + 2 · 1` (234 px) with the padding set from the same constant; Floating
+  with no Palette on screen is `targets · 24 + (targets − 1) · 4 + 2 · 10 + 2 · 1` (270 px), its
+  body padded by `QUICK_FLOATING_PADDING_PX`; Floating with a Palette takes the Palette's width
+  (256 px, room for nine targets spread `space-between`).
 - Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon

@@ -91,7 +91,7 @@ Boxed elements carry three optional colour fields:
 
 All stored as CSS-compatible colour strings (typically `#rrggbb`).
 
-A **stock colour** (Ink, Blue, Red, Orange, Green, Teal, Violet, Pink) is stored by name instead, in
+A **stock colour** (Ink, Blue, Red, Orange, Yellow, Green, Teal, Violet, Pink) is stored by name instead, in
 `penColour` (the line) or `penTextColour` (the text), and drawn in its version for the canvas; an
 own colour in `strokeColor` / `textColor` wins over a name
 ([One look](../007-editor/editor-modes.md#one-look)). The context menu's **Text**, **Border**, **Line**
@@ -550,6 +550,8 @@ Twenty-one general-purpose and device shape kinds are covered here, all rendered
 | `parallelogram` | SVG overlay drawing `polygon points="20,0 100,0 80,100 0,100"`. Input / output in flowcharts.                                                                                                                                      | Free        |
 | `hexagon`       | SVG overlay drawing `polygon points="25,0 75,0 100,50 75,100 25,100 0,50"` (flat-top). Preparation / labelled milestone.                                                                                                           | Free        |
 | `document`      | SVG overlay drawing a rectangle with a wavy bottom edge (two cubic curves). Output document in flowcharts.                                                                                                                         | Free        |
+
+A cylinder's label sits on the front of its body, from under the lid (27% down the box) to over the base (97%), so more lines grow down the body, never up over the lid: on the canvas, while editing and in every export (`labelBodyInset`).
 
 Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind — only the geometry differs. Fill / stroke colours can be overridden per element via the element's right-click context menu (Colours category).
 

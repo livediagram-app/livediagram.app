@@ -1,6 +1,6 @@
 // The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "The
 // quick style panel stays"): the colour and width of the selected marker strokes, or, with nothing
-// selected, of the marker in hand. Quick choices only: Marker colour is the eight stock colours (Ink
+// selected, of the marker in hand. Quick choices only: Marker colour is the nine stock colours (Ink
 // first), adaptive per board, then, only when custom colours are used on this tab, a second section
 // of them, most recently drawn first; Marker width is the pens' named widths.
 import {
@@ -99,7 +99,7 @@ const inkOption = (palette: PenPalette): PenColourOption => ({
   name: 'Ink',
   swatch: palette.ink,
 });
-/** The whiteboard's colours as choices: Ink, the seven stock colours, adaptive per board. */
+/** The whiteboard's colours as choices: Ink, the eight hued stock colours, adaptive per board. */
 export const stockOptions = (palette: PenPalette): PenColourOption[] => [
   inkOption(palette),
   ...PEN_COLOUR_NAMES.map((c) => optionOf(c, palette)),

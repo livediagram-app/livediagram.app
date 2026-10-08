@@ -64,6 +64,7 @@ import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
+import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
@@ -602,7 +603,18 @@ function CanvasView(props: CanvasProps) {
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
-    onCanvasDoubleClick,
+    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target).
+    onCanvasDoubleClick: (x, y) =>
+      routeBoardDoubleClick(
+        {
+          whiteboard: props.editorMode === 'draw',
+          elements,
+          layers: tabLayers,
+          inertIds: props.layerInertIds,
+        },
+        { x, y },
+        { edit: props.onBeginEdit, board: onCanvasDoubleClick },
+      ),
   });
 
   // Auto-focus the canvas surface on mount so clipboard paste works

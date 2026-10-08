@@ -107,7 +107,7 @@ level with its tile.
   it is how a shape, line or text box gets another colour or width once
   drawn, since the pens colour only their own strokes. In Draw mode its
   **Stroke** and **Text colour** rows offer the **stock colours**, the same
-  choices as Marker colour: **Ink** first, then the seven hued colours (each
+  choices as Marker colour: **Ink** first, then the eight hued colours (each
   stored by name, drawn in its version for the canvas), then the tab's custom
   colours section when there is one. Ink is stored by name like the others; a
   line with no colour of its own wears its theme default, so no choice is
@@ -118,7 +118,7 @@ level with its tile.
   board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
   Bold). The quick style panel is **quick choices only**: no colour picker in
-  it. **Marker colour** is the same **eight stock colours** as the marker's
+  it. **Marker colour** is the same **nine stock colours** as the marker's
   picker, adaptive like them. Below them, **a second section of custom
   colours appears only when custom colours are used on this whiteboard
   tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
@@ -363,8 +363,8 @@ Explorer Home's Jump back in.
   press on the marker already in hand opens its **colour picker** (a flyout
   on the board side of it, like the others). For Marker 1 it holds the width only.
 - **The colour picker** (Markers 2 and 3), top to bottom:
-  - **Eight stock colours** in one row: **Ink, Blue, Red, Orange, Green,
-    Teal, Violet, Pink**, the same eight as the quick style panel's.
+  - **Nine stock colours** in one row: **Ink, Blue, Red, Orange, Yellow,
+    Green, Teal, Violet, Pink**, the same nine as the quick style panel's.
     **Ink comes first: it is the default colour**, and Markers 2 and 3 can
     take it too (the same ink at another width, say), not only Marker 1.
   - **Every stock colour adapts to the board.** It is stored by name, not as
@@ -373,6 +373,11 @@ Explorer Home's Jump back in.
     against its board (WCAG 1.4.11 with room to spare). So none is ever too
     close to either board, and two people in different appearances both see
     every stroke clearly.
+  - **Yellow is the lightest hue**, so on the dark board it is a golden
+    yellow, far over the others' contrast (12:1, `YELLOW_DARK_CONTRAST`):
+    at their 6:1 it would read as mustard. On the light board no yellow is
+    both light and readable, so it is a deep gold there, like the others at
+    6:1.
   - **Your colours:** up to **eight** custom colours, most recently used
     first, kept in the user's synced preferences; using a custom colour puts
     it at the front, so picking it again is one press. A custom colour is one
@@ -447,6 +452,10 @@ Explorer Home's Jump back in.
   (Strokes are not drawn with a non-scaling stroke: browsers disagree about
   whether that undoes a zoomed canvas, which made a finished stroke thinner
   than the one being drawn in Safari.)
+- **A tap is a dot.** A press lifted where it went down leaves a round dot
+  of the pen's colour, as wide as the pen's line, centred where it touched:
+  a one-point stroke, drawn like any other, never read as a shape. The pen
+  stays in hand, so taps in a row leave a row of dots.
 - **No guides for pens.** A pen draws freely: no alignment guides while it
   is drawn, and no snapping of the first point to a neighbour. Guides and
   snapping stay for shapes and lines from the Shapes flyout.
@@ -512,6 +521,14 @@ Explorer Home's Jump back in.
   ([Path tool](path-tool.md)). **Notes and text boxes** keep their whole box:
   they are filled or hold text. So does a kind that paints its own face (a
   chart, a panel, an icon, a web component).
+- **A double-click anywhere inside a shape writes in it**, selected or not,
+  though a single click there passes through: on the bare board, a
+  double-click inside the topmost outline-picked shape there (by its drawn
+  outline, following its rotation) opens that shape's label editor, unless
+  the shape is locked, on a hidden or locked layer, or has no label to edit.
+  Beside every shape, a double-click makes a text box as on any canvas. (A
+  selected shape's first click puts it down, so its second reaches the board:
+  the same rule edits it.)
 - The **outline is the one drawn**, not the box: an ellipse by its curve, a
   diamond by its four edges, a cylinder by its body and rim, following the
   shape's rotation.
@@ -568,8 +585,8 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
 - **Adaptive colours:** colour comes across the way the pens store it. A
   near-black line is the board's **ink** (no colour of its own), so it shows
   dark on the light board and light on the dark one, whatever board it was
-  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Green,
-  Teal, Violet, Pink) lands by its name and is drawn in the version for each
+  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Yellow,
+  Green, Teal, Violet, Pink) lands by its name and is drawn in the version for each
   viewer's board. Anything else keeps its exact hex, a custom colour, and shows
   in the quick style panel's custom colours.
 - **Named colours on every mark:** a stock colour is stored by name on a
@@ -726,7 +743,7 @@ pattern behind it, never the colour of what is already there.
 - **Ink** is the drawing colour, the same on every theme: `#1c1917` on a
   light canvas, `#e2e8f0` on a dark one (`PEN_INK`), at least 4.5:1 against
   either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like the
-  seven hued stock colours.
+  eight hued stock colours.
 - **Marker 1** draws in Ink, and so does any pen stroke or text box with no
   colour of its own, in both modes. Markers 2 and 3 keep the colour they drew
   with.
@@ -766,11 +783,10 @@ light and dark boards like everything drawn with the stock colours.
   - A **neutral** colour (chroma under 0.05: black, grey, white, slate)
     becomes **Ink**, the board's own.
   - Any other colour becomes the stock colour **nearest in hue** (Blue, Red,
-    Orange, Green, Teal, Violet, Pink); a tie goes to the earlier in the
+    Orange, Yellow, Green, Teal, Violet, Pink); a tie goes to the earlier in the
     picker's order. Lightness and chroma are not compared: each stock colour
     takes its lightness from the board it is shown on. So a magenta lands on
-    Pink, a brown on Orange, a yellow on whichever of Orange and Green is
-    nearer in hue.
+    Pink, a brown on Orange, a yellow on Yellow.
 - **Never touched:** elements already in a stock colour or the ink,
   highlighter strokes (their recipe owns their colour), fills (a whiteboard
   has no stock fills), text on a fill (a filled shape's label, a sticky

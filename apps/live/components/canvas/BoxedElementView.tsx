@@ -18,6 +18,7 @@ import {
   ownColours,
   isSelfDrawingShape,
   isUprightTitle,
+  labelBodyInset,
   uprightTitleStrip,
   voteKeyOf,
   type ShapeMarker,
@@ -52,6 +53,7 @@ import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAni
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
+import { clearingInset } from '@/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
@@ -602,7 +604,8 @@ function BoxedElementViewImpl({
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}
-        contentInset={indicators.layout?.inset}
+        // Clear of the indicators and on the label body (a cylinder's, under its lid).
+        contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
         textColor={textColor}
         textSize={textSize}
         alignX={alignX}

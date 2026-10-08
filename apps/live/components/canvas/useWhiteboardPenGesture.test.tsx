@@ -116,6 +116,18 @@ describe('useWhiteboardPenGesture', () => {
     expect(s.onCommitFreehand.mock.calls[0]![0]).toHaveLength(2);
   });
 
+  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  it('commits a tap, a press lifted where it went down, as a one-point stroke', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const s = setup();
+    s.press(40, 60, 'pen', 0.7);
+    s.send(pointer('pointerup', { x: 40, y: 60 }));
+    expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
+    const [points, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    expect(points).toEqual([{ x: 30, y: 40 }]);
+    expect(ink.pressures).toHaveLength(1);
+  });
+
   it('ignores another pointer: a second finger neither draws nor ends the stroke', () => {
     const s = setup();
     s.press(10, 20);
