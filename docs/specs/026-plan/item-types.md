@@ -117,7 +117,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     muted; a link whose card is gone reads **Missing card**. Pressing it (or Enter, Space or an arrow key) drops
     a list under it: **None**, then the live cards of the linked type in number order (never the card itself, nor
     a trashed or archived card), each with its glyph, number and title; with more than 8 a filter leads the list
-    (by number or title). The arrows move, Enter picks, Escape closes the list (not the card), and a press outside
+    (by number or title). The list is the field's width (the side column clips anything wider), and
+    each card shows its whole title, wrapping onto up to three lines; a
+    longer title ends in an ellipsis at the third, and a long unbroken word breaks rather than overflow. Each option's
+    accessible name is its full number and title. The arrows move, Enter picks, Escape closes the list (not the card), and a press outside
     closes it. Its accessible name is the field's ("Parent", "Owner").
   - **On the linked card**: for every Card field that links to the card's type (Parent included: a Project's
     "Linked as Parent" lists the cards under it), a **Linked as {Field}** section ("Linked as Owner") listing the cards

@@ -4,8 +4,9 @@
 // and every Card field use this one control. One bordered field the full width of its row: the linked card's glyph
 // in its type's colour (and its own colour dot), its number as a quiet tag and its full title, a chevron to choose,
 // and an open arrow at the end, inside the same border, that opens the linked card. Choosing drops a list under
-// the field (in place, so the panel's focus trap keeps it): a filter, None, then the candidate cards. Keys: Enter or
-// Space opens it, the arrows move, Enter picks, Escape closes.
+// the field (in place, so the panel's focus trap keeps it): a filter, None, then the candidate cards, each with its
+// whole title (wrapping to three lines). Keys: Enter or Space opens it,
+// the arrows move, Enter picks, Escape closes.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   itemColourOf,
@@ -193,6 +194,8 @@ export function LinkedCardField({
         ) : null}
       </div>
       {open ? (
+        // The field's width: the side column clips anything wider, and the list stays in place for the panel's focus
+        // trap. Long titles wrap instead (below).
         <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
           {candidates.length > LINK_FILTER_FROM ? (
             <input
@@ -230,24 +233,31 @@ export function LinkedCardField({
                   id={`${listId}-${i}`}
                   role="option"
                   aria-selected={selected}
+                  // The full number and title, whatever the clamp hides.
+                  aria-label={card ? `#${card.key} ${itemTitle(card)}` : 'None'}
                   onPointerMove={() => setActive(i)}
                   onClick={() => pick(card)}
-                  className={`flex cursor-pointer items-center gap-1.5 px-2 py-1.5 text-[13px] ${
+                  className={`flex cursor-pointer items-start gap-1.5 px-2 py-1.5 text-[13px] leading-snug ${
                     i === active ? 'bg-slate-100 dark:bg-slate-800' : ''
                   } ${selected ? 'font-semibold' : ''}`}
                 >
                   {card && t ? (
                     <>
+                      {/* Glyph and number sit level with the title's first line. */}
                       <span
-                        className={`shrink-0 ${ACCENT_TEXT}`}
+                        className={`mt-[2px] shrink-0 ${ACCENT_TEXT}`}
                         style={accentVars(itemColourOf(card) ?? t.color)}
                       >
                         <PlanTypeGlyph glyph={t.glyph} size={14} />
                       </span>
-                      <span className="shrink-0 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                      <span className="mt-[2px] shrink-0 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
                         #{card.key}
                       </span>
-                      <span className="min-w-0 flex-1 truncate">{itemTitle(card)}</span>
+                      {/* The whole title, wrapping to three lines; a longer one ends in an ellipsis, and an unbroken
+                          string breaks rather than overflow. */}
+                      <span className="line-clamp-3 min-w-0 flex-1 [overflow-wrap:anywhere]">
+                        {itemTitle(card)}
+                      </span>
                     </>
                   ) : (
                     <span className="text-slate-500 dark:text-slate-400">None</span>

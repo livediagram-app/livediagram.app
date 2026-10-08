@@ -109,3 +109,23 @@ describe('LinkedCardField', () => {
     expect(onSave).toHaveBeenCalledWith('c3');
   });
 });
+
+// The list shows each card's whole title, however long (docs/specs/026-plan/item-types.md "Card fields").
+describe('a long card title in the list', () => {
+  const long =
+    'Relaunch the marketing website with new pricing, onboarding emails and a refreshed brand '
+      .repeat(3)
+      .trim();
+  const unbroken = 'x'.repeat(120);
+
+  it('wraps to three lines rather than cutting off, and names the whole card', () => {
+    field(undefined, [card('a', 1, long), card('b', 2, unbroken)]);
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
+    const option = screen.getByRole('option', { name: `#1 ${long}` });
+    const title = option.querySelector('.line-clamp-3');
+    expect(title?.textContent).toBe(long);
+    expect(title?.className).toContain('[overflow-wrap:anywhere]');
+    expect(option.className).not.toContain('truncate');
+    expect(screen.getByRole('option', { name: `#2 ${unbroken}` })).toBeTruthy();
+  });
+});
