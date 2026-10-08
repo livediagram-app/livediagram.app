@@ -14,11 +14,12 @@ import {
   mergeBoardStatuses,
   mergedStatusPatches,
   normaliseBoardSetup,
+  statusColumnsOfSetups,
   type Item,
   type ItemWrite,
 } from '@livediagram/items';
 import { debugLog } from '@/lib/debug-log';
-import { documentBoardSetups, statusColumnsOfSetups } from './usePlanStatusNames';
+import { documentBoardSetups } from './usePlanStatusNames';
 
 export function useMergeDuplicateStatuses(opts: {
   tabs: readonly Tab[];
