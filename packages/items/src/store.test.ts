@@ -343,6 +343,9 @@ describe('itemIdsOfWrite', () => {
       }),
     ).toEqual(['p', 'q']);
     expect(itemIdsOfWrite({ kind: 'delete', id: 'd' })).toEqual(['d']);
+    expect(itemIdsOfWrite({ kind: 'tally', tallies: [{ id: 't', votes: { p: 1 } }] })).toEqual([
+      't',
+    ]);
   });
 });
 
