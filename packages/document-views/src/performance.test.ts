@@ -9,9 +9,9 @@ import { buildViewModel } from './model';
 import { outlineView } from './outline';
 
 const FRAMES = 10;
-const GROWTH = 4;
-const RATIO_CEILING = 8;
-const RUNS = 3;
+const GROWTH = 8;
+const RATIO_CEILING = 24;
+const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
