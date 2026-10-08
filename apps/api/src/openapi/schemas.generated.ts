@@ -1581,22 +1581,63 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "CardField": {
-    "enum": [
-      "key",
-      "type",
-      "assignee",
-      "priority",
-      "labels",
-      "estimate",
-      "start",
-      "due",
-      "votes",
-      "checklist",
-      "comments",
-      "description",
-      "parent"
-    ],
-    "type": "string"
+    "anyOf": [
+      {
+        "const": "key",
+        "type": "string"
+      },
+      {
+        "const": "type",
+        "type": "string"
+      },
+      {
+        "const": "assignee",
+        "type": "string"
+      },
+      {
+        "const": "priority",
+        "type": "string"
+      },
+      {
+        "const": "labels",
+        "type": "string"
+      },
+      {
+        "const": "estimate",
+        "type": "string"
+      },
+      {
+        "const": "start",
+        "type": "string"
+      },
+      {
+        "const": "due",
+        "type": "string"
+      },
+      {
+        "const": "votes",
+        "type": "string"
+      },
+      {
+        "const": "checklist",
+        "type": "string"
+      },
+      {
+        "const": "comments",
+        "type": "string"
+      },
+      {
+        "const": "description",
+        "type": "string"
+      },
+      {
+        "const": "parent",
+        "type": "string"
+      },
+      {
+        "$ref": "#/components/schemas/CustomCardField"
+      }
+    ]
   },
   "CardSearchFilter": {
     "additionalProperties": false,
@@ -2696,6 +2737,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "expiresAt"
     ],
     "type": "object"
+  },
+  "CustomCardField": {
+    "type": "string"
   },
   "CustomFieldDef": {
     "additionalProperties": false,
@@ -6280,6 +6324,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 },
                 "type": "array"
               },
+              "footEnd": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
               "head": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
@@ -6328,6 +6378,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 },
                 "type": "array"
               },
+              "footEnd": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
               "head": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
@@ -6371,6 +6427,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "type": "array"
               },
               "foot": {
+                "items": {
+                  "$ref": "#/components/schemas/CardField"
+                },
+                "type": "array"
+              },
+              "footEnd": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
                 },
@@ -6609,6 +6671,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "items",
       "rev"
+    ],
+    "type": "object"
+  },
+  "ItemsTallyRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "votes": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "id",
+            "votes"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "items"
     ],
     "type": "object"
   },

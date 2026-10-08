@@ -781,3 +781,48 @@ describe('changing many items at once', () => {
     expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
   });
 });
+
+// docs/specs/026-plan/items.md "Tally": a session vote's dots added to cards when it ends.
+describe('a vote’s tally', () => {
+  it('adds each voter’s dots to the cards, skipping a card gone meanwhile', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/tally',
+      body: {
+        items: [
+          { id: a.id, votes: { p1: 2, p2: 1 } },
+          { id: 'missing-id', votes: { p1: 1 } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((i) => i.fields['votes'])).toEqual([{ p1: 2, p2: 1 }]);
+    expect(relayed).toHaveLength(1);
+    await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 1 } }] } });
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
+  });
+
+  it('refuses a malformed tally, and needs edit access', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    for (const items of [
+      [],
+      [{ votes: { p: 1 } }],
+      [{ id: a.id }],
+      [{ id: a.id, votes: { p: 0 } }],
+      [{ id: a.id, votes: { [''.padEnd(65, 'x')]: 1 } }],
+    ])
+      expect((await call({ path: '/items/tally', body: { items } })).status).toBe(400);
+    expect(
+      (
+        await call({
+          path: '/items/tally',
+          code: 'VIEW',
+          owner: 'guest',
+          body: { items: [{ id: a.id, votes: { p: 1 } }] },
+        })
+      ).status,
+    ).toBe(403);
+    expect((await call({ method: 'GET', path: '/items/tally' })).status).toBe(405);
+  });
+});

@@ -59,6 +59,7 @@ import {
   type ItemCaller,
 } from './item-route-kit';
 import { patches } from './item-patches-route';
+import { tally } from './item-tally-route';
 import { readBody, type RouteContext } from './context';
 
 function readPlace(raw: unknown): ItemPlace | ItemRejection {
@@ -343,6 +344,8 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
     return method === 'POST' ? bulk(ctx, documentId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'patches')
     return method === 'POST' ? patches(ctx, documentId) : methodNotAllowed();
+  if (segments.length === 5 && segments[4] === 'tally')
+    return method === 'POST' ? tally(ctx, documentId) : methodNotAllowed();
   const itemId = segments[4]!;
   if (segments.length === 5) {
     // A field patch is a POST: the api's CORS (responses.ts) admits GET, POST, PUT and DELETE.

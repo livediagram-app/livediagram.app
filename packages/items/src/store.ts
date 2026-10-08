@@ -8,6 +8,7 @@ import { itemStatus, itemVotes } from './item';
 import {
   applyMove,
   applyPatch,
+  applyTally,
   applyVote,
   byRank,
   inversePatch,
@@ -30,9 +31,13 @@ export type ItemWrite =
   | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
   | { kind: 'move'; id: string; move: ItemMove; undo?: true }
   | { kind: 'vote'; id: string; delta: 1 | -1 }
+  // A session vote's tally added to cards' votes when the vote ends (not undoable).
+  | { kind: 'tally'; tallies: ItemTally[] }
   | { kind: 'delete'; id: string };
 
 export type ItemPatchOf = { id: string; patch: ItemPatch };
+// One card's tally: each voter's (pseudonymous person id) dots.
+export type ItemTally = { id: string; votes: Record<string, number> };
 
 export type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full';
 
@@ -77,6 +82,23 @@ export function applyItemWrite(
       ok: true,
       state: { items: pool, rev: state.rev + 1, nextKey },
       upserts: made,
+      removed: [],
+    };
+  }
+  if (write.kind === 'tally') {
+    const byId = new Map(state.items.map((i) => [i.id, i]));
+    const changed: string[] = [];
+    for (const { id, votes } of write.tallies) {
+      const item = byId.get(id);
+      // A card gone meanwhile is skipped: the rest of the tally still lands.
+      if (!item) continue;
+      byId.set(id, applyTally(item, votes, base));
+      changed.push(id);
+    }
+    return {
+      ok: true,
+      state: { ...state, items: state.items.map((i) => byId.get(i.id)!), rev: state.rev + 1 },
+      upserts: [...new Set(changed)].map((id) => byId.get(id)!),
       removed: [],
     };
   }
@@ -145,7 +167,7 @@ export function mergeItemChanges(
 // made, so its redo restores the same ids and keys). Null: not undoable (a vote is taken back by
 // voting minus, docs/specs/026-plan/items.md "Undo").
 export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): ItemWrite[] | null {
-  if (write.kind === 'vote') return null;
+  if (write.kind === 'vote' || write.kind === 'tally') return null;
   if (write.kind === 'create') return write.creates.map((c) => ({ kind: 'delete', id: c.id! }));
   if (write.kind === 'patches') {
     // Each item's old values, last patch first, as one write.

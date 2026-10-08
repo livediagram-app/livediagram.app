@@ -13,6 +13,7 @@ import type {
 } from './item';
 import { itemStatus, itemVotes } from './item';
 import { compareRank, rankBetween } from './rank';
+import { ITEM_VOTERS_MAX, ITEM_VOTES_PER_PERSON_MAX } from './limits';
 
 export interface WriteContext {
   now: number;
@@ -127,6 +128,28 @@ export function applyVote(item: Item, personId: string, delta: 1 | -1, ctx: Writ
   const next = Math.max(0, (votes[personId] ?? 0) + delta);
   if (next === 0) delete votes[personId];
   else votes[personId] = next;
+  return {
+    ...item,
+    fields: { ...item.fields, votes },
+    rev: item.rev + 1,
+    updatedAt: ctx.now,
+    updatedBy: ctx.by,
+  };
+}
+
+// A session vote's tally added to a card's votes (docs/specs/026-plan/items.md "Tally"): each voter's dots added to
+// what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX.
+export function applyTally(
+  item: Item,
+  tally: Readonly<Record<string, number>>,
+  ctx: WriteContext,
+): Item {
+  const votes = itemVotes(item);
+  for (const [personId, n] of Object.entries(tally)) {
+    if (!(n > 0)) continue;
+    if (!(personId in votes) && Object.keys(votes).length >= ITEM_VOTERS_MAX) continue;
+    votes[personId] = Math.min(ITEM_VOTES_PER_PERSON_MAX, (votes[personId] ?? 0) + Math.floor(n));
+  }
   return {
     ...item,
     fields: { ...item.fields, votes },
