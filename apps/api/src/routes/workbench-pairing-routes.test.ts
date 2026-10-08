@@ -99,7 +99,13 @@ describe('workbench pairing routes', () => {
 
       expect(await res.json()).toEqual({
         status: 'paired',
-        pairing: { id: 'pair1', tokenId: 'tok1', origin: ORIGIN, name: 'Acme Editor', pairedAt: NOW },
+        pairing: {
+          id: 'pair1',
+          tokenId: 'tok1',
+          origin: ORIGIN,
+          name: 'Acme Editor',
+          pairedAt: NOW,
+        },
       });
     });
 

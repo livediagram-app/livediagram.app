@@ -60,7 +60,9 @@ describe('SettingsTokenPairings', () => {
 
   it('names each Unpair by the workbench and its origin', () => {
     render(<SettingsTokenPairings pairings={[ACME, UNNAMED]} now={NOW} onUnpair={vi.fn()} />);
-    const unpair = screen.getByRole('button', { name: 'Unpair Acme Editor at https://127.0.0.1:5175' });
+    const unpair = screen.getByRole('button', {
+      name: 'Unpair Acme Editor at https://127.0.0.1:5175',
+    });
     expect(unpair.textContent).toBe('Unpair');
     expect(
       screen.getByRole('button', { name: 'Unpair Unnamed workbench at http://localhost:4000' }),
@@ -73,7 +75,9 @@ describe('SettingsTokenPairings', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Unpair Acme Editor at/ }));
     expect(onUnpair).not.toHaveBeenCalled();
     expect(
-      screen.getByText('Unpair Acme Editor? Its open diagrams stop editing until you allow it again.'),
+      screen.getByText(
+        'Unpair Acme Editor? Its open diagrams stop editing until you allow it again.',
+      ),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Unpair' }));

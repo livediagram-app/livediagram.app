@@ -128,7 +128,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | Term                | Identifier                                                            | Meaning                                                                    |
 | ------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Workbench           | the frame's parent, known by its origin                               | A developer tool that frames the editor beside an agent                    |
-| Workbench name      | `name` (pairing, request), `hello-ack.name`                           | The tool's display name ("Acme Editor"), shown in copy, never enforced         |
+| Workbench name      | `name` (pairing, request), `hello-ack.name`                           | The tool's display name ("Acme Editor"), shown in copy, never enforced     |
 | Origin              | `WorkbenchOrigin` (branded string), `parseWorkbenchOrigin`            | `scheme://host[:port]`, the enforced identity of a workbench               |
 | Pairing request     | `workbench_pairing_requests` row, `PairingRequestStatus`              | One ask to pair a token with an origin, answered once                      |
 | Pairing code        | `code` (`?code=`)                                                     | The request's public handle in the pairing URL                             |

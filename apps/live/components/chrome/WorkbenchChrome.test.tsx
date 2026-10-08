@@ -38,7 +38,9 @@ describe('WorkbenchReconnectLine', () => {
   it.each(['expired', 'revoked'] as const)('says how to edit again once %s', (ended) => {
     render(<WorkbenchReconnectLine workbenchName="Acme Editor" ended={ended} />);
 
-    expect(screen.getByRole('status').textContent).toBe('Reconnect in Acme Editor to keep editing.');
+    expect(screen.getByRole('status').textContent).toBe(
+      'Reconnect in Acme Editor to keep editing.',
+    );
   });
 
   it('leaves a trashed document to the deleted card', () => {

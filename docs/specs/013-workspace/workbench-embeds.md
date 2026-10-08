@@ -104,7 +104,7 @@ and accepted only from it. Unknown types are ignored, and logged once each.
 | Type                    | From      | Carries                                                              |
 | ----------------------- | --------- | -------------------------------------------------------------------- |
 | `livediagram:hello`     | page      | Nothing; asks the workbench to answer                                |
-| `livediagram:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")         |
+| `livediagram:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
 | `livediagram:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |
 | `livediagram:tab`       | page      | The tab now shown: `tabId`, `tabName`                                |
 | `livediagram:selection` | page      | The [selection reference](#the-selection-reference); empty when none |

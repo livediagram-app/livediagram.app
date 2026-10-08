@@ -66,7 +66,10 @@ describe('parseWorkbenchMessage', () => {
 
   it('accepts a hello-ack and trims its name', () => {
     expect(
-      parseWorkbenchMessage({ type: 'livediagram:hello-ack', v: 1, name: '  Acme Editor ' }, 'to-page'),
+      parseWorkbenchMessage(
+        { type: 'livediagram:hello-ack', v: 1, name: '  Acme Editor ' },
+        'to-page',
+      ),
     ).toEqual({ type: 'livediagram:hello-ack', v: 1, name: 'Acme Editor' });
   });
 
