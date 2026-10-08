@@ -33,6 +33,7 @@ import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
 import { resolveStockColours } from './stock-colours';
 import { DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
+import { labelBodyInset } from './label-body';
 
 export const EXPORT_PADDING = 32;
 // A tab that stores no canvas colour is on the Default theme: its light canvas.
@@ -283,9 +284,12 @@ export function describeBoxedExport(
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
-  // A page's body starts under its masthead, so its label does too.
+  // A page's body starts under its masthead, so its label does too; a cylinder's label sits on its
+  // body, under the lid and over the base (labelBodyInset).
   const isPage = el.type === 'shape' && el.shape === 'page';
-  const bodyTop = isPage ? pageBodyTop(el, pad) : el.y;
+  const body = labelBodyInset(el);
+  const bodyTop = isPage ? pageBodyTop(el, pad) : el.y + body.top;
+  const bodyBottom = el.y + el.height - body.bottom;
   // ...and inside its border, lining up with the masthead.
   const bodyInset = isPage ? borderOf(el).width : 0;
   // A workshop note exports in capitals, exactly as the board paints it
@@ -340,8 +344,8 @@ export function describeBoxedExport(
           alignY === 'top'
             ? bodyTop + pad + baseSize / 2
             : alignY === 'bottom'
-              ? el.y + el.height - pad - baseSize / 2
-              : (bodyTop + el.y + el.height) / 2,
+              ? bodyBottom - pad - baseSize / 2
+              : (bodyTop + bodyBottom) / 2,
         anchor: alignX === 'right' ? 'end' : alignX === 'left' ? 'start' : 'middle',
         valign: alignY,
         maxWidth: labelMaxWidth(el, pad),
@@ -390,6 +394,9 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
 // exactly as `describeBoxedExport` lays the label out (a page's body starts under its masthead).
 export function labelRoom(el: BoxedElement): { width: number; height: number } {
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
-  const bodyTop = el.type === 'shape' && el.shape === 'page' ? pageBodyTop(el, pad) : el.y;
-  return { width: labelMaxWidth(el, pad), height: el.y + el.height - pad - (bodyTop + pad) };
+  const body = labelBodyInset(el);
+  const bodyTop =
+    el.type === 'shape' && el.shape === 'page' ? pageBodyTop(el, pad) : el.y + body.top;
+  const bodyBottom = el.y + el.height - body.bottom;
+  return { width: labelMaxWidth(el, pad), height: bodyBottom - pad - (bodyTop + pad) };
 }

@@ -8,6 +8,9 @@ import {
   labelMeasure,
 } from './svg-render-primitives';
 import { pageBodyTop } from './svg-render-page';
+import { describeBoxedExport } from './svg-render-describe';
+import { defaultPadding } from './colors';
+import { labelBodyInset } from './label-body';
 
 // The headless label measure and the label's room (docs/specs/024-agents/blueprints/diagram-lint.md LN4, LN5):
 // what the lint and every headless render wrap with.
@@ -67,9 +70,40 @@ describe('labelRoom', () => {
     });
   });
 
+  // docs/specs/008-canvas/canvas-and-palette.md "Shape primitives": on the body, under the lid.
+  it("keeps a cylinder's room to its body, under the lid and over the base", () => {
+    const cyl = { ...createShape('cylinder', 0, 0), width: 100, height: 200 } as BoxedElement;
+    const pad = PADDING_PX[cyl.padding ?? defaultPadding(cyl)];
+    const body = labelBodyInset(cyl);
+    expect(labelRoom(cyl).height).toBeCloseTo(200 - body.top - body.bottom - 2 * pad, 9);
+  });
+
   it("starts a page's room under its masthead", () => {
     const page = { ...createShape('page', 0, 0), width: 300, height: 400 } as BoxedElement;
     const pad = PADDING_PX[page.padding ?? 'lg'];
     expect(labelRoom(page).height).toBe(400 - pad - (pageBodyTop(page as never, pad) + pad));
+  });
+});
+
+describe('describeBoxedExport label on a cylinder', () => {
+  const cyl = {
+    ...createShape('cylinder', 10, 20),
+    width: 100,
+    height: 200,
+    label: 'Orders',
+  } as BoxedElement;
+  const body = labelBodyInset(cyl);
+  const pad = PADDING_PX[cyl.padding ?? defaultPadding(cyl)];
+
+  it('centres the label on the body, not the box', () => {
+    const { label } = describeBoxedExport({ ...cyl, textAlignY: 'middle' } as BoxedElement);
+    expect(label!.y).toBeCloseTo(20 + (body.top + 200 - body.bottom) / 2, 9);
+  });
+
+  it('tops the label under the lid and bottoms it over the base', () => {
+    const top = describeBoxedExport({ ...cyl, textAlignY: 'top' } as BoxedElement).label!;
+    const bottom = describeBoxedExport({ ...cyl, textAlignY: 'bottom' } as BoxedElement).label!;
+    expect(top.y).toBeCloseTo(20 + body.top + pad + top.size / 2, 9);
+    expect(bottom.y).toBeCloseTo(20 + 200 - body.bottom - pad - bottom.size / 2, 9);
   });
 });

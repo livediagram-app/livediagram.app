@@ -18,6 +18,7 @@ import {
   ownColours,
   isSelfDrawingShape,
   isUprightTitle,
+  labelBodyInset,
   uprightTitleStrip,
   voteKeyOf,
   type ShapeMarker,
@@ -52,6 +53,7 @@ import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAni
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
+import { clearingInset } from '@/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
@@ -271,17 +273,19 @@ function BoxedElementViewImpl({
   const variant = describeVariant(element, ringed, isMultiSelected, remoteBorderColor, surface);
   // A whiteboard pen stroke and a path are picked by their drawn line, not their box
   // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
-  // once selected, the box drags either as any element.
-  const lineHit =
-    ((element.type === 'freehand' &&
+  // once selected, the box drags either as any element, and the line still catches pointers
+  // outside the box, so a press on its outer half never falls to the board.
+  const selected = isSelected || isMultiSelected;
+  const hitLine =
+    (element.type === 'freehand' &&
       element.penWidth !== undefined &&
       element.pen !== 'highlighter') ||
-      element.type === 'path') &&
-    !isSelected &&
-    !isMultiSelected;
+    (element.type === 'path' && !isEditing);
   // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
   const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
+  const shapeHit = outlineHit(element, { onWhiteboard, selected });
+  // Not yet selected, only the drawn line picks it: the rest of its box lets pointers through.
+  const passThrough = (hitLine && !selected) || shapeHit === 'outline';
 
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
@@ -473,9 +477,9 @@ function BoxedElementViewImpl({
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
         ...(clipPath ? { clipPath } : {}),
-        // Only the drawn line picks a pen stroke not yet selected (its hit
-        // line, in FreehandSvg); the rest of its box lets pointers through.
-        ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
+        // Only the drawn line picks an element not yet selected (its hit
+        // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
+        ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -566,7 +570,7 @@ function BoxedElementViewImpl({
       {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
       <ElementFaceRouter
-        lineHit={lineHit}
+        hitLine={hitLine}
         element={element}
         isEditing={isEditing}
         isSelected={isSelected}
@@ -602,7 +606,8 @@ function BoxedElementViewImpl({
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}
-        contentInset={indicators.layout?.inset}
+        // Clear of the indicators and on the label body (a cylinder's, under its lid).
+        contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
         textColor={textColor}
         textSize={textSize}
         alignX={alignX}
@@ -615,7 +620,7 @@ function BoxedElementViewImpl({
         labelFrame={labelFrame}
       />
 
-      {shapeHit ? (
+      {shapeHit && element.type === 'shape' ? (
         <ShapeHitOutline
           element={element}
           borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}

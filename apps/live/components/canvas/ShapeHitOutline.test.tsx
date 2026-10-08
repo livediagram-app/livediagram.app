@@ -77,22 +77,24 @@ describe('ShapeHitOutline', () => {
 describe('outlineHit', () => {
   const free = { onWhiteboard: true, selected: false };
 
-  it('picks an unselected whiteboard shape by its outline', () => {
-    expect(outlineHit(shape(), free)).toBe(true);
-    expect(outlineHit(shape({ shape: 'square' }), free)).toBe(true);
+  it('picks an unselected whiteboard shape by its outline alone', () => {
+    expect(outlineHit(shape(), free)).toBe('outline');
+    expect(outlineHit(shape({ shape: 'square' }), free)).toBe('outline');
   });
 
-  it('gives a selected shape its box back, for dragging', () => {
-    expect(outlineHit(shape(), { ...free, selected: true })).toBe(false);
+  // A selected shape drags by its box, and its line still catches outside the box, so a
+  // double-click on the line's outer half reaches the shape, never the board.
+  it('gives a selected shape its box back and keeps its outline', () => {
+    expect(outlineHit(shape(), { ...free, selected: true })).toBe('box-and-outline');
   });
 
   it('keeps whole-box picking on a diagram tab', () => {
-    expect(outlineHit(shape(), { ...free, onWhiteboard: false })).toBe(false);
+    expect(outlineHit(shape(), { ...free, onWhiteboard: false })).toBeNull();
   });
 
   it('keeps the box of a note, a text box and a kind that paints its own face', () => {
     const note = { id: 'n', type: 'sticky', x: 0, y: 0, width: 100, height: 100 } as Element;
-    expect(outlineHit(note, free)).toBe(false);
-    expect(outlineHit(shape({ shape: 'pie-chart' }), free)).toBe(false);
+    expect(outlineHit(note, free)).toBeNull();
+    expect(outlineHit(shape({ shape: 'pie-chart' }), free)).toBeNull();
   });
 });

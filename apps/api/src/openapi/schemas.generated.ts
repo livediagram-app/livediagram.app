@@ -5692,11 +5692,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "HuedPenColourName": {
-    "description": "The seven hued stock colours, each tuned per board.",
+    "description": "The eight hued stock colours, each tuned per board.",
     "enum": [
       "blue",
       "red",
       "orange",
+      "yellow",
       "green",
       "teal",
       "violet",

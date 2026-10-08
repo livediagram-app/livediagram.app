@@ -36,6 +36,7 @@ Scope, by file:
 | `packages/document/src/shape-hit.ts`                              | A shape's hit outline: `shapeHitOutline`, `shapeTouchesBrush`             |
 | `packages/document/src/svg-path-outline.ts`                       | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
 | `apps/live/components/canvas/ShapeHitOutline.tsx`                 | `outlineHit`, the invisible outline that picks an unselected shape        |
+| `apps/live/lib/whiteboard-edit-target.ts`                         | `shapeToEditAt`, `routeBoardDoubleClick`: a double-click inside a shape   |
 | `apps/live/lib/draw-mode.ts`                                      | `PendingDraw` whiteboard pen variant and arrow `ends`; `isHeldPenIntent`  |
 | `apps/live/lib/draw-commit.ts`                                    | `buildDrawnArrow` takes `ends` and `unpainted`                            |
 | `apps/live/hooks/canvas/commit-freehand.ts`                       | The whiteboard pen commit                                                 |
@@ -142,8 +143,9 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 ### Pen commit (`makeCommitFreehand`, `variant: 'whiteboard'`)
 
 1. The points arrive as the live stroke's raw samples, with its `ink` (`pressures` for a pen,
-   `streamline`; see [Pen ink](#pen-ink)), and are used as they are: never simplified. Fewer than 2
-   points: keep the pen armed, commit nothing.
+   `streamline`; see [Pen ink](#pen-ink)), and are used as they are: never simplified. No points:
+   keep the pen armed, commit nothing. One point (a tap) is a stroke like any other and lands as a
+   dot; the gesture commits it too (`useWhiteboardPenGesture` commits any stroke with a sample).
 2. `recognise` and `recogniseBoardStroke({ points, pressures, width, streamline })` (its centre
    line, confidence >= 0.4):
    - `line` → arrow, `arrowEnds: 'none'`, the pen's colour (Ink by name for the main pen),
@@ -250,14 +252,15 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
   unlocked; captioned "Marker stroke" / "N marker strokes"), else `heldPenStyle(pen, palette)` when
   nothing is selected and `whiteboardDock.tool === 'pen'`. `PenPalette = { board, ink, custom }`:
   the viewer's appearance, its ink and `tabCustomColours(activeTab.elements)`.
-  - Marker colour: Ink, then `PEN_COLOUR_NAMES` (Blue, Red, Orange, Green, Teal, Violet, Pink),
+  - Marker colour: Ink, then `PEN_COLOUR_NAMES` (Blue, Red, Orange, Yellow, Green, Teal, Violet,
+    Pink),
     each swatch `penColourCss(colour, board, ink)`, for the strokes and for Marker 2 or 3 in hand;
     Marker 1: Ink alone, so every pen has both rows.
   - **Custom colours** (`testId` `quick-style-marker-custom`), only when `custom` is not empty:
     `tabCustomColours` walks the tab's elements from the last (the most recently drawn) and takes
     the `#rrggbb` `strokeColor` of pen strokes, shapes and lines, lower-cased and deduplicated, at most
     `TAB_CUSTOM_COLOURS_MAX` (8). No Remove there: it reflects the tab.
-  - Both colour rows are `QuickRadioRow` with `columns = QUICK_ROW_TARGETS.pen` (8): a grid of
+  - Both colour rows are `QuickRadioRow` with `columns = QUICK_ROW_TARGETS` (9): a grid of
     24 px columns, touching in compact and `space-between` in Floating, so a shorter row lines up
     under the full one.
   - A stroke's value is `strokeColor` (lower case) ?? `penColour` ?? Ink; `applyPenStyle` sets Ink by
@@ -275,14 +278,15 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
 Spec: draw-mode.md "The colour picker". Pure data in `packages/document/src/pen-colours.ts` (a leaf
 module: no value imports).
 
-- Stock colours: Ink (`null`, `WHITEBOARD_INK`), then `PEN_COLOURS`, seven `{ id, label, hue,
-chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (145, 0.16), teal
-  (190, 0.12), violet (295, 0.19), pink (350, 0.18). `PenColourName` is the id; `PEN_COLOUR_NAMES`
+- Stock colours: Ink (`null`, `WHITEBOARD_INK`), then `PEN_COLOURS`, eight `{ id, label, hue,
+chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), yellow (90,
+  0.18, dark board `YELLOW_DARK_CONTRAST` = 12), green (145, 0.16), teal (190, 0.12), violet (295,
+  0.19), pink (350, 0.18). `PenColourName` is the id; `PEN_COLOUR_NAMES`
   in that order.
 - A version per board (`PEN_BOARDS` = `WHITEBOARD_BOARD`): lightness walks in from the board's far
   end (light: L = 0.05 + i · 0.0045; dark: L = 0.98 − i · 0.0045; i = 0..200) at the colour's chroma,
-  reduced by 0.005 until inside sRGB, keeping the last colour at least `PEN_STOCK_CONTRAST` (6:1)
-  on the board, so each is over the spec's 4.5:1 and the light board's version is darker than the
+  reduced by 0.005 until inside sRGB, keeping the last colour at least its `contrast` for the board,
+  else `PEN_STOCK_CONTRAST` (6:1), on the board (yellow: `#775d01` light, `#fdca04` dark), so each is over the spec's 4.5:1 and the light board's version is darker than the
   dark board's. Built once at module load into a table; `penColourHex(name, board)` reads it.
 - `penColourLabel` "Blue"; `isPenColourName`; `isCustomPenColour` (`#rrggbb`);
   `penColourCss(colour | null, board, ink)` (null is the ink, a name its version, a hex itself);
@@ -313,7 +317,8 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   Written off the freshest stored preferences, only when changed. `updatePen` remembers every colour
   change; the quick style panel remembers a stroke restyle.
 - `ColourPicker` (`components/canvas/whiteboard/ColourPicker.tsx`), in the flyout of Markers 2 and 3
-  above the Width row, 248 px wide (eight of Your colours and +): "Colours", the eight stock colours
+  above the Width row, 248 px wide (the nine stock colours, or eight of Your colours and +):
+  "Colours", the nine stock colours
   as 24 px buttons with 20 px chips, `aria-label` the colour's label, `aria-pressed` the colour in
   force (Ink for `null`); "Your colours", a button per custom hex ("Custom #ff6b00") and "Add a
   custom colour" (+), which toggles `CustomColourEditor` in place. `useSwatchRowKeys(count)`: roving
@@ -376,13 +381,17 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
 
 ### Selecting on a whiteboard
 
-- `BoxedElementView`: `lineHit` = a pen stroke (`penWidth`, not a highlight) neither selected nor
-  multi-selected; the wrapper gets `pointer-events: none` and `FreehandSvg` a transparent
+- `BoxedElementView`: `hitLine` = a pen stroke (`penWidth`, not a highlight) or a path not in edit
+  mode, selected or not; neither selected nor multi-selected, the wrapper gets `pointer-events: none`
+  (`passThrough`). `FreehandSvg` gets a transparent
   `[data-stroke-hit]` path of `strokeHitWidth(penWidth, zoom)` (`STROKE_HIT_SCREEN_PX` = 6 a side) with
   `pointer-events: stroke`.
-- `BoxedElementView`: `shapeHit` = `outlineHit(element, { onWhiteboard, selected })`, true for a
-  `pickedByOutline` shape on a whiteboard (`useCanvasPicksByOutline`, the still-canvas context) neither
-  selected nor multi-selected. The wrapper gets `pointer-events: none` and renders `ShapeHitOutline`:
+- `BoxedElementView`: `shapeHit` = `outlineHit(element, { onWhiteboard, selected })`: for a
+  `pickedByOutline` shape on a whiteboard (`useCanvasPicksByOutline`, the still-canvas context)
+  `'outline'` when neither selected nor multi-selected (the wrapper gets `pointer-events: none`),
+  `'box-and-outline'` when selected (the wrapper catches too), else `null`. Either way it renders
+  `ShapeHitOutline`, so the band outside the box still reaches the shape once selected (a
+  double-click on a selected shape's line never falls to the board):
   an svg over the element's own box (stepped out by the wrapper's CSS `borderWidth`), one
   `[data-shape-hit="line"]` path of `hitOutlinePathData(lines)` at `strokeHitWidth(2 · halfWidth, zoom)`
   with `pointer-events: stroke`, and one `[data-shape-hit="fill"]` path per fill region with
@@ -418,6 +427,16 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   the inverse), `penCursor`. `WhiteboardPrefs.cursor` (parsed, default `nib-crosshair`), `setCursor`
   (`Draw·Changed·CursorDot | CursorCrosshair`), the Settings flyout's Cursor row, and
   `useWhiteboardPenCursor(pendingDraw, variant, zoom)` (strokePx = pen width x zoom) feeding the Canvas cursor style.
+- A double-click on the bare board (`useCanvasSurfaceGestures.onWrapperDoubleClick`, the target the
+  wrapper itself) goes through `routeBoardDoubleClick` (`lib/whiteboard-edit-target.ts`): with
+  `editorMode === 'draw'`, `shapeToEditAt(paint order, point, layerInertIds)` walks the elements
+  of `layerBands(elements, tabLayers)` (hidden layers out) from the top and returns the first
+  `pickedByOutline` shape that is not `locked`, not inert, `opensInlineLabelEditor(kind)`, and
+  `pointInsideOutline(el, point, 0)` (its anchor outline, rotation undone); found, it logs
+  `[whiteboard] double-click inside <kind> edits it` and calls `onBeginEdit(id)` (which selects
+  it and keeps every guard: read-only, held by another, format painter). Not found, or in Diagram
+  mode: `onCanvasDoubleClick` (a new text box). A selected shape's first click settles as a
+  deselect, so the second click and the double-click reach the board and take this path.
 
 ### Recognition preview
 
@@ -612,7 +631,9 @@ other pointer records none (D10, D14). `streamline = PEN_STREAMLINE[pointer]`.
 **Outline** (`pen-stroke.ts`), for `PenStroke = { points, pressures?, width, streamline }`:
 
 - Input: `[x, y, pressures[i] ?? 0.5]` per point, the pressure always explicit (perfect-freehand
-  would give a pressureless first point 0.25, thinning the start).
+  would give a pressureless first point 0.25, thinning the start). A lone point is given twice:
+  alone, perfect-freehand draws a stub to the point 1 px right and down of it; twice, its centre
+  line is one point and its outline a round dot `width` across, centred on the point.
 - Options: `size = penStrokeSize(width) = width / (2 · sin(π/4))`, `thinning: 0.6`,
   `smoothing: 0.5`, `streamline`, `easing: t => sin(t·π/2)`, `simulatePressure: false`,
   `last: true`. perfect-freehand's radius at pressure p is `size · easing(0.5 − 0.6 · (0.5 − p))`,
@@ -940,7 +961,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Stock colours drawn for the canvas                                             | `packages/document/src/stock-colours.test.ts`                                            |
 | Stroke touch and partial split                                                 | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Pen ink: width at pressure, outline, centre line                               | `packages/document/src/pen-stroke.test.ts`                                               |
-| Eight stock colours, each version 4.5:1 or more, darker on the light board     | `packages/document/src/pen-colours.test.ts`                                              |
+| Nine stock colours, each version 4.5:1 or more, darker on the light board      | `packages/document/src/pen-colours.test.ts`                                              |
 | `penColour` validated; projected per board; kept by erase pieces               | `validate.test.ts`, `whiteboard.test.ts`, `whiteboard-stroke.test.ts`                    |
 | Canvas and export draw the named colour for the canvas                         | `apps/live/lib/stock-colour-projector.test.ts`, `export-as-seen.test.ts`                 |
 | Marker prefs: ink for any marker, names, custom hex, old colours read as names | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |
@@ -948,7 +969,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Your colours newest first, eight, Remove, synced                               | `pen-colour-memory.test.ts`, `useWhiteboard.test.tsx`                                    |
 | Picker: stock row, row keys, Your colours and Remove, custom, reserved warning | `components/canvas/whiteboard/ColourPicker.test.tsx`, `lib/hsv.test.ts`                  |
 | Marker glyph and cursor in the resolved colour, ink included                   | `WhiteboardDock.test.tsx`, `useWhiteboardPenCursor.test.tsx`                             |
-| Marker rows: eight stock colours, the tab's customs, Marker 1                  | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`          |
+| Marker rows: nine stock colours, the tab's customs, Marker 1                   | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`          |
 | Swatch rows one line, never clipped, both layouts, both engines                | `e2e/quick-style-swatch-rows.spec.ts`                                                    |
 | Settled ink unchanged as samples arrive (no trim)                              | `packages/document/src/pen-stroke.test.ts`                                               |
 | Freehand box on whole canvas px, points round-trip                             | `packages/document/src/freehand.test.ts`                                                 |
@@ -978,6 +999,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Eraser steps                                                                   | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
 | Shape outline: kinds, fill, radius, rotation, sweep                            | `packages/document/src/shape-hit.test.ts`, `svg-path-outline.test.ts`                    |
 | Unselected whiteboard shape picked by its outline, 6 px a side                 | `apps/live/components/canvas/ShapeHitOutline.test.tsx`                                   |
+| A double-click inside a shape edits it, selected or not                        | `whiteboard-edit-target.test.ts`, `e2e/whiteboard-shape-text-and-dots.spec.ts`           |
+| Selected: box and line both catch, outside the box too                         | `BoxedElementView.whiteboard-hit.test.tsx`                                               |
+| A tap is a round dot the pen's width                                           | `pen-stroke.test.ts`, `commit-freehand.test.ts`, `useWhiteboardPenGesture.test.tsx`      |
 | Pen versus touch on the canvas                                                 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                    |
 | A pinch discards a whiteboard stroke                                           | `apps/live/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                   |
 | Line / arrow heads, no colour                                                  | `apps/live/lib/draw-commit.test.ts`                                                      |

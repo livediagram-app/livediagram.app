@@ -3,7 +3,7 @@
 // The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "The
 // quick style panel stays"): colour and width for the selected marker strokes, or for the marker in
 // hand when nothing is selected, so picking up a marker already offers its style. Quick choices
-// only: Marker colour is the eight stock colours, Ink first; Custom colours, the tab's own, follow
+// only: Marker colour is the nine stock colours, Ink first; Custom colours, the tab's own, follow
 // only when the tab has any; then Marker width.
 
 import { PenWidthIcon } from './whiteboard/PenWidthIcon';

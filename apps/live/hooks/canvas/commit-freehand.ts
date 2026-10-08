@@ -88,7 +88,10 @@ export function makeCommitFreehand({
     const disarm = () => {
       if (!whiteboardPen) setPendingDraw(null);
     };
-    if (editsBlocked || rawPoints.length < 2) {
+    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-draw-mode/draw-mode.md
+    // "Pens"). Every other pen needs a line.
+    const fewestPoints = whiteboardPen ? 1 : 2;
+    if (editsBlocked || rawPoints.length < fewestPoints) {
       disarm();
       return;
     }
@@ -96,7 +99,7 @@ export function makeCommitFreehand({
     // A whiteboard stroke keeps its raw samples; anything else is simplified here
     // (lib/pen-smoothing).
     const simplified = whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom);
-    if (simplified.length < 2) {
+    if (simplified.length < fewestPoints) {
       disarm();
       return;
     }

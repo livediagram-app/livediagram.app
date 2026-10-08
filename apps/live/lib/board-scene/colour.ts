@@ -3,10 +3,12 @@
 // name (adaptive per board), or its exact hex (a custom colour). Fills stay hex; a sticky's fill
 // takes the nearest sticky preset's paper.
 import {
+  PEN_COLOUR_NAMES,
   PEN_NEUTRAL_CHROMA,
   STICKY_PRESETS,
   hexOklch,
   penColourAtHue,
+  penColourHex,
   penColourHueDistance,
   type PenColourName,
 } from '@livediagram/document';
@@ -29,6 +31,15 @@ export const STOCK_LIGHTNESS_RANGE: readonly [number, number] = [0.3, 0.8];
 // ... within this many degrees of a stock colour's hue (Excalidraw's orange is 12.6 from stock
 // orange and its pink 16.5 from stock pink; its teal, 19 from green, stays custom).
 export const STOCK_HUE_TOLERANCE_DEG = 18;
+
+// A stock colour's own versions are that colour, whatever the band says: Yellow's dark-board version
+// is lighter than any line colour the band reads, and a board exported and imported again keeps
+// its names.
+const STOCK_VERSIONS: ReadonlyMap<string, PenColourName> = new Map(
+  PEN_COLOUR_NAMES.flatMap((name) =>
+    (['light', 'dark'] as const).map((board) => [penColourHex(name, board), name] as const),
+  ),
+);
 
 export type ResolvedColour =
   | { kind: 'ink' }
@@ -53,6 +64,8 @@ function resolveHex(hex: string): ResolvedColour {
   const ok = sceneOklch(hex);
   if (!ok) return { kind: 'unreadable' };
   if (ok.l <= INK_MAX_LIGHTNESS && ok.c <= INK_MAX_CHROMA) return { kind: 'ink' };
+  const version = STOCK_VERSIONS.get(normaliseHex(hex));
+  if (version) return { kind: 'stock', name: version };
   const [minL, maxL] = STOCK_LIGHTNESS_RANGE;
   if (ok.c >= Math.max(STOCK_MIN_CHROMA, PEN_NEUTRAL_CHROMA) && ok.l >= minL && ok.l <= maxL) {
     const nearest = penColourAtHue(ok.h);

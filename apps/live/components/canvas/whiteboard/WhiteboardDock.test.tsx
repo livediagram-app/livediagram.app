@@ -164,8 +164,8 @@ describe('WhiteboardDock drawing tools', () => {
       model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'second' } }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
-    // The colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the eight stock colours.
-    expect(screen.getByTestId('stock-colours').querySelectorAll('button')).toHaveLength(8);
+    // The colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the nine stock colours.
+    expect(screen.getByTestId('stock-colours').querySelectorAll('button')).toHaveLength(9);
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { colour: 'violet' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));

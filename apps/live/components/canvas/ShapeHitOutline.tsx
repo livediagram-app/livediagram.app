@@ -10,19 +10,22 @@ import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 /**
- * Whether the element is picked by its drawn outline right now: a shape of an
- * outline kind, on a whiteboard, not selected (a selected shape drags by its box).
+ * How a shape is picked on a whiteboard: by its drawn outline alone, or, once selected, by its box
+ * too (it drags by its box). Either way its outline catches pointers, outside the box as well, so a
+ * double-click on a selected shape's line reaches the shape. Null: by its box alone (a diagram
+ * tab, or a kind that is not picked by its outline).
  */
 export function outlineHit(
   element: Element,
   at: { onWhiteboard: boolean; selected: boolean },
-): element is ShapeElement {
-  return at.onWhiteboard && !at.selected && pickedByOutline(element);
+): 'outline' | 'box-and-outline' | null {
+  if (!at.onWhiteboard || !pickedByOutline(element)) return null;
+  return at.selected ? 'box-and-outline' : 'outline';
 }
 
-// A whiteboard shape not yet selected is picked by its drawn outline, not its box
-// (docs/specs/023-draw-mode/draw-mode.md "Selecting"): its wrapper lets pointers
-// through, and this invisible copy of the outline (shape-hit.ts, the eraser's same
+// A whiteboard shape is picked by its drawn outline (docs/specs/023-draw-mode/draw-mode.md
+// "Selecting"): not yet selected, its wrapper lets pointers through; selected, its box catches them
+// too. This invisible copy of the outline (shape-hit.ts, the eraser's same
 // geometry) catches them 6 screen px either side of the line, plus anywhere on a
 // visible fill. It rides inside the wrapper, so it turns with the shape.
 //

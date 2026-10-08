@@ -689,7 +689,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/draw-mode/',
         title: 'Three markers in hand',
         description:
-          'Keys 1, 2 and 3 pick up three markers, each Fine, Medium or Bold. Marker 1 is ink; the other two take any of eight stock colours or a colour of your own.',
+          'Keys 1, 2 and 3 pick up three markers, each Fine, Medium or Bold. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
       },
       {
         art: <PressureArt />,

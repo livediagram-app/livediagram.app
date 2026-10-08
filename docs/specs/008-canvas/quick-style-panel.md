@@ -49,14 +49,14 @@ Each layout keeps its dress. In the Floating layout the panel wears the Palette'
 same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
 header with its title ("Quick style") and a help link. It is not draggable and has no collapse
 button of its own; it leaves when the selection does. In the Toolbar layout it is
-**compact** (no header, 210 px wide): the colour swatches draw a little smaller (20 px) but each
-still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), eight to a row with the
+**compact** (no header, 234 px wide): the colour swatches draw a little smaller (20 px) but each
+still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), nine to a row with the
 targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
-rows change, nor when the editor mode changes: every colour row lays out on the same eight columns
-(the theme's seven and Ink in Diagram mode, Ink and the seven stock colours in Draw mode, a
-Background row's seven in the first seven), a row of swatches never wraps and is never clipped (the
+rows change, nor when the editor mode changes: every colour row lays out on the same nine columns
+(the theme's seven and Ink in the first eight in Diagram mode, Ink and the eight hued stock colours
+in Draw mode, a Background row's seven in the first seven), a row of swatches never wraps and is never clipped (the
 width counts the swatches, their gaps, the padding and the border exactly). In the Floating layout
-with no Palette on screen it is 242 px, room for eight swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
+with no Palette on screen it is 270 px, room for nine swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
 Floating, and a 1 px border a side.) The panel-opacity preference
 ([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
 
@@ -272,7 +272,7 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the seven hued
+- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
   colours and the tab's custom colours, as Marker colour offers them
   ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
   Ink included, is stored by name and marked by name, each swatch in its version for the canvas.

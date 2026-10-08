@@ -4,7 +4,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, openStartBlank, test } fr
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
 // it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
 // Checked in the Toolbar and Floating layouts, for a diagram's eight-swatch rows (the theme's seven and Ink) and Draw mode's
-// Marker colour rows (the eight stock colours, and the tab's eight custom colours).
+// Marker colour rows (the nine stock colours, and the tab's eight custom colours).
 
 type Layout = 'floating' | 'toolbar';
 const PREFS_KEY = 'livediagram:user-preferences:v1';
@@ -85,7 +85,7 @@ for (const layout of ['toolbar', 'floating'] as const) {
       expectNoPageErrors(pageErrors);
     });
 
-    test('a whiteboard’s Marker colour rows: eight stock colours and eight customs, one line each', async ({
+    test('a whiteboard’s Marker colour rows: nine stock colours and eight customs, one line each', async ({
       page,
       pageErrors,
     }) => {
@@ -109,7 +109,7 @@ for (const layout of ['toolbar', 'floating'] as const) {
       await page.mouse.click(810, 180);
       await expect(panel(page).getByText('Marker stroke')).toBeVisible();
       const rows = await rowsFit(page);
-      expect(rows.find((r) => r.name === 'Marker colour')?.count).toBe(8);
+      expect(rows.find((r) => r.name === 'Marker colour')?.count).toBe(9);
       expect(rows.find((r) => r.name === 'Custom colours')?.count).toBe(8);
       expectFit(rows);
       expectNoPageErrors(pageErrors);

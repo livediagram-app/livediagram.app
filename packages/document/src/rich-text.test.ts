@@ -10,6 +10,7 @@ import {
   runsPlainText,
   stripListPrefixes,
   toggleFormatInRange,
+  trimLabel,
   type TextRun,
 } from './rich-text';
 
@@ -266,5 +267,40 @@ describe('applyListStyle on an empty line', () => {
     expect(
       runsPlainText(applyListStyle([{ text: 'a\n\nb' }], 'bullet', { start: 0, end: 4 })),
     ).toBe('• a\n\n• b');
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Rich text labels": a label is saved without whitespace
+// at either end, newlines and spaces alike: it serves no purpose, and the display would drop a
+// trailing newline anyway.
+describe('trimLabel', () => {
+  it('drops whitespace at either end: newlines, blank lines and spaces', () => {
+    expect(trimLabel('Testing\ntest\ntest\n').label).toBe('Testing\ntest\ntest');
+    expect(trimLabel('\n \nTesting\ntest\n\n  \n').label).toBe('Testing\ntest');
+    expect(trimLabel('\r\nTesting\r\n').label).toBe('Testing');
+  });
+
+  it('keeps blank lines and spaces inside', () => {
+    expect(trimLabel('One\n\nTwo').label).toBe('One\n\nTwo');
+    expect(trimLabel('  two  words \n').label).toBe('two  words');
+    expect(trimLabel('\t end  \n').label).toBe('end');
+  });
+
+  it('leaves a label of only whitespace empty, and an untouched label as it is', () => {
+    expect(trimLabel('\n  \n').label).toBe('');
+    expect(trimLabel(' \n', [{ text: ' \n', bold: true }])).toEqual({ label: '', runs: [] });
+    expect(trimLabel('Plain').label).toBe('Plain');
+  });
+
+  it('slices the runs to the same text, keeping every surviving character\u2019s formatting', () => {
+    const runs: TextRun[] = [{ text: '\nBold', bold: true }, { text: ' and plain\n\n' }];
+    const out = trimLabel(runsPlainText(runs), runs);
+    expect(out.label).toBe('Bold and plain');
+    expect(out.runs).toEqual([{ text: 'Bold', bold: true }, { text: ' and plain' }]);
+    expect(runsPlainText(out.runs!)).toBe(out.label);
+  });
+
+  it('passes no runs through as none', () => {
+    expect(trimLabel('A\n').runs).toBeUndefined();
   });
 });

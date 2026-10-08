@@ -101,6 +101,26 @@ describe('penStrokePath', () => {
     expect(penStrokePath({ points: [], width: 1.5, streamline: 0.2 })).toBe('');
   });
 
+  // docs/specs/023-draw-mode/draw-mode.md "Pens": a tap with a pen leaves a dot.
+  for (const pressures of [undefined, [0.5]]) {
+    it(`draws a lone point as a round dot the pen's width, centred on it (pressures ${pressures ? 'yes' : 'no'})`, () => {
+      const dot = penStrokeOutline({
+        points: [{ x: 10, y: 20 }],
+        pressures,
+        width: 2.5,
+        streamline: 0.5,
+      });
+      const xs = dot.map((p) => p.x);
+      const ys = dot.map((p) => p.y);
+      const across = Math.max(...xs) - Math.min(...xs);
+      const down = Math.max(...ys) - Math.min(...ys);
+      expect(across).toBeCloseTo(2.5, 1);
+      expect(down).toBeCloseTo(2.5, 1);
+      expect((Math.max(...xs) + Math.min(...xs)) / 2).toBeCloseTo(10, 1);
+      expect((Math.max(...ys) + Math.min(...ys)) / 2).toBeCloseTo(20, 1);
+    });
+  }
+
   it('is the same stroke wherever it is drawn: a shift moves every number by the shift', () => {
     const moved = {
       ...stroke,

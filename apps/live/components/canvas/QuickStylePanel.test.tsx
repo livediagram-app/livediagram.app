@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { QuickStylePanel, panelFrame } from './QuickStylePanel';
+import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
@@ -308,7 +309,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     };
     render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
     const stroke = screen.getByRole('radiogroup', { name: 'Stroke' });
-    expect(within(stroke).getAllByRole('radio')).toHaveLength(8);
+    expect(within(stroke).getAllByRole('radio')).toHaveLength(9);
     expect(within(stroke).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
       'true',
     );
@@ -346,7 +347,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
   });
 
-  it('offers the eight stock colours, and Custom colours only when the tab uses some', () => {
+  it('offers the nine stock colours, and Custom colours only when the tab uses some', () => {
     // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only.
     const { unmount } = render(
       <QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" />,
@@ -356,7 +357,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       within(colour)
         .getAllByRole('radio')
         .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['Ink', 'Blue', 'Red', 'Orange', 'Green', 'Teal', 'Violet', 'Pink']);
+    ).toEqual(['Ink', 'Blue', 'Red', 'Orange', 'Yellow', 'Green', 'Teal', 'Violet', 'Pink']);
     expect(screen.queryByRole('radiogroup', { name: 'Custom colours' })).toBeNull();
     expect(screen.queryByRole('button', { name: /more colours/i })).toBeNull();
     unmount();
@@ -402,8 +403,8 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       unmount();
       return width;
     };
-    expect(widthOf(0)).toBe('210px');
-    expect(widthOf(1)).toBe('210px');
+    expect(widthOf(0)).toBe('234px');
+    expect(widthOf(1)).toBe('234px');
   });
 
   it('keeps Marker width at the same height for every pen', () => {
@@ -428,12 +429,14 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
 // docs/specs/008-canvas/quick-style-panel.md "Where it sits": a swatch row never wraps and is never
 // clipped, so the width counts the targets, their gaps, the padding and the border exactly.
 describe('panelFrame', () => {
-  it('is one width in every mode: eight targets, compact or Floating, or the Palette’s', () => {
-    // Eight touching 24 px targets (the theme's seven and Ink, or the pens' eight), 8 px
-    // padding and a 1 px border each side, so switching mode never resizes the panel.
-    expect(panelFrame(false, false).width).toBe(8 * 24 + 2 * 8 + 2 * 1);
-    // Floating spreads eight with 4 px gaps inside 10 px padding.
-    expect(panelFrame(true, false).width).toBe(8 * 24 + 7 * 4 + 2 * 10 + 2 * 1);
+  it('is one width in every mode: nine targets, compact or Floating, or the Palette’s', () => {
+    // Nine touching 24 px targets (the stock colours, Ink and eight, the widest row; the theme's
+    // seven and Ink leave the last empty), 8 px padding and a 1 px border each side, so switching
+    // mode never resizes the panel.
+    expect(QUICK_ROW_TARGETS).toBe(9);
+    expect(panelFrame(false, false).width).toBe(9 * 24 + 2 * 8 + 2 * 1);
+    // Floating spreads nine with 4 px gaps inside 10 px padding.
+    expect(panelFrame(true, false).width).toBe(9 * 24 + 8 * 4 + 2 * 10 + 2 * 1);
     // With a Palette on screen the Palette's width is the panel's.
     expect(panelFrame(true, true).width).toBeUndefined();
   });
