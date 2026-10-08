@@ -1,5 +1,5 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
-// contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), move, vote and delete under
+// contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), a vote's tally (item-tally-route.ts), move and delete under
 // /api/documents/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
 // same doors. Every write applies the pure functions of @livediagram/items, lands guarded by the item's rev
 // (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
@@ -16,7 +16,6 @@ import {
   isSwimlaneSettable,
   applyMove,
   applyPatch,
-  applyVote,
   fieldsWithinBounds,
   isValidItemId,
   isValidItemType,
@@ -44,7 +43,6 @@ import {
   updateItemAtRev,
 } from '../db';
 import { badRequest, forbidden, json, methodNotAllowed, noContent } from '../responses';
-import { refuseGuestVoteOverCap } from '../vote-integrity';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
   excludedStatus,
@@ -300,24 +298,6 @@ async function move(ctx: RouteContext, documentId: string, itemId: string): Prom
   );
 }
 
-async function vote(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'participate');
-  if (caller instanceof Response) return caller;
-  const body = await readBody(ctx);
-  if (body instanceof Response) return body;
-  if (body.delta !== 1 && body.delta !== -1) return badRequest('delta must be 1 or -1');
-  const delta = body.delta;
-  // A guest's +1 counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);
-  // taking a vote back never does.
-  if (delta === 1) {
-    const refused = await refuseGuestVoteOverCap(ctx, documentId, caller.owner);
-    if (refused) return refused;
-  }
-  return writeItem(ctx, caller, itemId, (item, by) =>
-    applyVote(item, by.id, delta, { now: Date.now(), by }),
-  );
-}
-
 async function remove(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'edit');
   if (caller instanceof Response) return caller;
@@ -354,9 +334,11 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
     return methodNotAllowed();
   }
   if (segments[5] === 'comments') return handleItemCommentRoutes(ctx, documentId, itemId);
-  if (segments.length === 6 && (segments[5] === 'move' || segments[5] === 'vote')) {
+  // A card is voted on through the tab's session vote, its tally added at the end (`/items/tally`); the old
+  // per-card vote route is gone (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards").
+  if (segments.length === 6 && segments[5] === 'move') {
     if (method !== 'POST') return methodNotAllowed();
-    return segments[5] === 'move' ? move(ctx, documentId, itemId) : vote(ctx, documentId, itemId);
+    return move(ctx, documentId, itemId);
   }
   return null;
 }

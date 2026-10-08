@@ -1413,7 +1413,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',
   'Plan|Opened':
     'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',
-  'Plan|Voted': 'Someone voted for a card on a voting Plan board (Up), or took a vote back (Down).',
   'Plan|Deleted': 'Someone deleted an item (its type is the value).',
   'Plan|Changed':
     "Someone changed a Plan board's set-up, a card type, a project's colour or a timeline view: the value names the part (columns, WIP limits, rows, scope, card fields, voting, hide writing, or a timeline's dates, scale, rows or types).",

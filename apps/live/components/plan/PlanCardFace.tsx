@@ -16,7 +16,6 @@ import {
   ITEM_TYPES,
   itemVoteTotal,
   typeIn,
-  itemVotes,
   itemColourOf,
   cardFieldsAt,
   type CardField,
@@ -25,7 +24,6 @@ import {
   typeCardDisplay,
   type ItemTypeDef,
   typeCardLayout,
-  cardLayoutFields,
   type CardSlot,
   isCustomCardField,
 } from '@livediagram/items';
@@ -48,9 +46,7 @@ import {
   StartPill,
   TypeChip,
   TypeDot,
-  VoteControl,
   checklistProgress,
-  type VotingProps,
 } from './plan-card-parts';
 
 export type PlanCardFaceProps = {
@@ -62,8 +58,6 @@ export type PlanCardFaceProps = {
   faceDown?: boolean;
   muted?: boolean;
   presence?: PlanCardPresence;
-  // Voting on the card's board: the viewer's own count, and whether they may vote.
-  voting?: VotingProps;
   // A type to draw it as instead of the catalogue's (the type editor's Display preview, a draft not yet saved).
   typeOverride?: ItemTypeDef;
   // The type editor's Display (docs/specs/026-plan/item-types.md "Editing a type"): the card drawn as its own layout
@@ -94,7 +88,6 @@ export function PlanCardFace({
   faceDown,
   muted,
   presence,
-  voting,
   typeOverride,
   edit,
 }: PlanCardFaceProps) {
@@ -187,10 +180,9 @@ export function PlanCardFace({
         return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
       case 'comments':
         return <CommentsPill key={f} item={item} palette={palette} />;
+      // The votes the card has gathered from ended session votes, read-only.
       case 'votes':
-        return voting ? (
-          <VoteControl key={f} palette={palette} total={votes} voting={voting} />
-        ) : votes > 0 ? (
+        return votes > 0 ? (
           <MetaPill key={f} palette={palette} label={votes === 1 ? '1 vote' : `${votes} votes`}>
             <span aria-hidden>▲ {votes}</span>
           </MetaPill>
@@ -253,7 +245,7 @@ export function PlanCardFace({
     }
   };
   // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card
-  // display"). A voting board's vote control always shows, at the end of the last row, when Votes has no slot.
+  // display").
   const layout = typeCardLayout(type, size);
   const slotBits = (slot: CardSlot, big = false): ReactNode[] =>
     (layout[slot] ?? [])
@@ -262,9 +254,6 @@ export function PlanCardFace({
       .filter(Boolean);
   // A slot as drawn: its bits, or, in the editor, its dotted box (drawn even when empty).
   const zone = (slot: CardSlot, bits: ReactNode[]) => (edit ? edit.slot(slot, bits) : bits);
-  const votePlaced = cardLayoutFields(size, layout).some((f) => f === 'votes' && show(f));
-  const loneVote =
-    voting && !votePlaced ? <VoteControl palette={palette} total={votes} voting={voting} /> : null;
   // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle; `inset`
   // lowers it by as much as the editor's dotted box and chip padding raise the chips (EDIT_CHIP_INSET_PX).
   const titleText = (lines: 2 | 3, px: number, lineHeight?: number, inset = 0) => (
@@ -281,7 +270,7 @@ export function PlanCardFace({
     </span>
   );
 
-  // Minimal: one line, the title between its Before and After slots (and the vote control on a voting board).
+  // Minimal: one line, the title between its Before and After slots.
   if (size === 'minimal') {
     return (
       <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
@@ -295,7 +284,6 @@ export function PlanCardFace({
           style={{ color: palette.muted }}
         >
           {zone('trail', slotBits('trail'))}
-          {loneVote}
         </span>
       </div>
     );
@@ -321,13 +309,12 @@ export function PlanCardFace({
           {titleText(2, 13, 20, edit ? EDIT_CHIP_INSET_PX : 0)}
           {flag}
         </div>
-        {row.length || trail.length || loneVote || edit ? (
+        {row.length || trail.length || edit ? (
           <div
             className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
             style={{ color: palette.muted }}
           >
             {zone('row', row)}
-            {loneVote}
             {trail.length || edit ? (
               <span className="ml-auto flex items-center gap-1.5">{zone('trail', trail)}</span>
             ) : null}
@@ -371,10 +358,9 @@ export function PlanCardFace({
           {zone('body', body)}
         </div>
       ) : null}
-      {foot.length || footEnd.length || loneVote || edit ? (
+      {foot.length || footEnd.length || edit ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
           {zone('foot', foot)}
-          {loneVote}
           {footEnd.length || edit ? (
             <span className="ml-auto flex items-center gap-1">{zone('footEnd', footEnd)}</span>
           ) : null}
@@ -382,8 +368,4 @@ export function PlanCardFace({
       ) : null}
     </div>
   );
-}
-
-export function myVotes(item: Item, personId: string | undefined): number {
-  return personId ? (itemVotes(item)[personId] ?? 0) : 0;
 }

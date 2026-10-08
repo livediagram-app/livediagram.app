@@ -46,7 +46,6 @@ function ctx(over: Partial<WidgetContext> = {}): WidgetContext {
     quick: {},
     onQuick: vi.fn(),
     canFilterMine: 'sam',
-    votesLeft: 2,
     trayOpen: false,
     onToggleTray: vi.fn(),
     now: new Date(2026, 9, 5),
@@ -87,14 +86,6 @@ describe('BoardWidgetView', () => {
     expect(screen.getByText('due soon')).toBeTruthy();
   });
 
-  it('shows votes left as pips within the budget', () => {
-    draw('votes');
-    expect(screen.getByRole('img').getAttribute('aria-label')).toBe('2 votes left of 3');
-    cleanup();
-    const { container } = draw('votes', ctx({ votesLeft: null }));
-    expect(container.firstChild).toBeNull();
-  });
-
   it('filters and toggles Only Mine', () => {
     const c = ctx();
     draw('filter', c);
@@ -107,7 +98,7 @@ describe('BoardWidgetView', () => {
   });
 
   it('reads plainly when there is nothing to show', () => {
-    const empty = ctx({ items: [], setup: { ...presetSetup('blank'), voting: { on: false } } });
+    const empty = ctx({ items: [], setup: presetSetup('blank') });
     draw('people', empty);
     expect(screen.getByText('No people yet')).toBeTruthy();
     cleanup();

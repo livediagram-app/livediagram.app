@@ -18,7 +18,6 @@ import {
   PLAN_COLUMNS_MAX,
   PLAN_COLUMN_NAME_MAX,
   PLAN_TITLE_MAX,
-  PLAN_VOTE_BUDGET_MAX,
   PLAN_WIP_MAX,
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
@@ -116,7 +115,6 @@ export interface PlanBoardSetup {
   addTypes?: string[];
   // The header's widgets in order (docs/specs/026-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
-  voting: { on: boolean; budget?: number };
   hideWriting: boolean;
 }
 
@@ -669,21 +667,6 @@ export function cardIsFaceDown(
   return setup.hideWriting && item.createdBy.id !== viewerId;
 }
 
-// Votes the viewer has spent on this board's items.
-export function votesSpent(projection: BoardProjection, viewerId: string): number {
-  let n = 0;
-  for (const c of projection.columns)
-    for (const l of c.lanes)
-      for (const it of l.items) {
-        const v = it.fields['votes'];
-        if (v && typeof v === 'object' && !Array.isArray(v)) {
-          const mine = (v as Record<string, unknown>)[viewerId];
-          if (typeof mine === 'number') n += mine;
-        }
-      }
-  return n;
-}
-
 export type BoardSetupRejection = 'setup_invalid' | 'columns_invalid' | 'column_invalid';
 
 // Validates a stored set-up; normalises it (drops a duplicate status, unknown
@@ -722,8 +705,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
   // No columns is a board waiting for its first (docs/specs/026-plan/plan-board.md "The board set-up").
   // Every board shows every card (docs/specs/026-plan/plan-board.md): a `scope` an older board stored is
   // read past.
-  const votingIn = isObj(input['voting']) ? input['voting'] : {};
-  const budget = votingIn['budget'];
+  // Boards had their own voting once; a vote is now the tab's session vote on the cards
+  // (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards"), so a stored `voting` is read past.
   let swimlaneBy = (SWIMLANE_BY as readonly unknown[]).includes(input['swimlaneBy'])
     ? (input['swimlaneBy'] as SwimlaneBy)
     : 'none';
@@ -758,15 +741,6 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
       ? { cardSize: input['cardSize'] }
       : {}),
-    voting: {
-      on: votingIn['on'] === true,
-      ...(typeof budget === 'number' &&
-      Number.isInteger(budget) &&
-      budget >= 1 &&
-      budget <= PLAN_VOTE_BUDGET_MAX
-        ? { budget }
-        : {}),
-    },
     hideWriting: input['hideWriting'] === true,
   };
 }

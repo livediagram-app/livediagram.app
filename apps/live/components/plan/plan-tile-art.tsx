@@ -225,7 +225,6 @@ const WIDGET_ART: Record<BoardWidgetKind, React.ReactNode> = {
       <path d="M11 6.75V11l3 2" />
     </>
   ),
-  votes: <path d="M11 4.5 17.5 13h-4v5h-5v-5h-4z" />,
   // A stack of points rising.
   points: <path d="M3 18h16M5 18v-4M9.5 18V10M14 18v-6M18.5 18V5" />,
   // Three flags, tallest first.

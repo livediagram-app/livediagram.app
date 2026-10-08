@@ -48,9 +48,6 @@ export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & Item
 // POST /api/documents/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it.
 export type ItemsTallyRequest = { items: { id: string; votes: Record<string, number> }[] };
 
-// POST /api/documents/:id/items/:itemId/vote.
-export type ItemVoteRequest = { delta: 1 | -1 };
-
 // The room op every item write sends (system kind). `upserts` and `removed` are empty for a
 // session scoped to one tab: it refetches the items its tab shows.
 export type ItemsRoomOp = { kind: 'items'; upserts: Item[]; removed: string[]; rev: number };

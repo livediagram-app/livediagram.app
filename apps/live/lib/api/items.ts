@@ -125,8 +125,6 @@ export async function writeItem(
     }
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
-    case 'vote':
-      return one(await post(scope, `${id}/vote`, { delta: write.delta }, 'item vote'));
     case 'delete': {
       await apiDelete(itemsUrl(scope, id), scope.ownerId, {
         action: 'item delete',

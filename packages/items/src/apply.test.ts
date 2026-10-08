@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   applyMove,
   applyPatch,
-  applyVote,
   columnItems,
   inversePatch,
   makeItem,
@@ -97,17 +96,6 @@ describe('item writes', () => {
     expect(cleared.type).toBe('bug');
     // Status kept when the move only reorders.
     expect(applyMove(a, { after: null }, [a, c], ctx).fields['status']).toBe('todo');
-  });
-
-  it('votes per person, never below zero', () => {
-    const a = item({ title: 'a' });
-    const one = applyVote(a, 'p1', 1, ctx);
-    expect(one.fields['votes']).toEqual({ p1: 1 });
-    const two = applyVote(applyVote(one, 'p1', 1, ctx), 'p2', 1, ctx);
-    expect(two.fields['votes']).toEqual({ p1: 2, p2: 1 });
-    expect(applyVote(applyVote(two, 'p2', -1, ctx), 'p2', -1, ctx).fields['votes']).toEqual({
-      p1: 2,
-    });
   });
 
   it('makes 12-character ids', () => {
