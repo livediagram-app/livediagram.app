@@ -201,8 +201,10 @@ verified end-to-end and turned on properly, not carried as dormant code.
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
   merge on a tab PUT (`mergeRoomLedger`, driven by `X-Room-Cursor`), the
   view-role comment relay (`relayElementDelta`) and share-link broadcasts.
-- `apps/live` — `tab-broadcast-ops.ts` (emit) + the room `onOp` handler (apply);
-  `lib/api/room.ts` (auto-reconnect, seq/epoch tracking, the outbox);
+- `apps/live` — `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
+  ledger deltas sequenced before its PUT, its element ops after) + the room
+  `onOp` handler (apply); `lib/api/room.ts` (auto-reconnect, seq/epoch
+  tracking, the outbox, `sequence` and its `ref`);
   `useRoomConnection` (`onResync` → `useRoomResync`, an in-place re-fetch, +
   telemetry).
 
