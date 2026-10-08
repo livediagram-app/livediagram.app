@@ -754,6 +754,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/items/tally',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "Add a session vote's tally to up to 200 cards: each a card id and its voters' dots. A card gone meanwhile is skipped. Needs edit access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemsTallyRequest',
+    responseSchema: 'ItemsResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/items/{itemId}',
     segment: 'documents',
     tag: 'Items',
@@ -790,20 +804,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'ItemMoveRequest',
     responseSchema: 'ItemResponse',
     statuses: [200, 400, 401, 403, 404, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/items/{itemId}/vote',
-    segment: 'documents',
-    tag: 'Items',
-    summary:
-      "Add (1) or take back (-1) one of the caller's votes on an item. Needs participate access. A guest's +1 answers 429 vote_limit once its network holds the most guest voters the document takes; an account is never capped.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [ITEM_TAB_QUERY],
-    requestSchema: 'ItemVoteRequest',
-    responseSchema: 'ItemResponse',
-    statuses: [200, 400, 401, 403, 404, 409, 410, 429],
   },
   {
     method: 'POST',

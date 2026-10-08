@@ -46,6 +46,7 @@ import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
+import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 
 // Stable empty-array constant for the `remoteSelectors` prop on the
 // (very common) "no remote participants have this element selected"
@@ -419,292 +420,318 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
   // it mounts; every element view portals its grips into them.
   const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
+  // The vote as a board's cards see it (CardVoteContext): their stepper reads it, keyed by card.
+  const voteSelfId = participantKey(selfParticipant);
+  const cardVote = useMemo<CardVote | null>(
+    () =>
+      tabVote
+        ? {
+            vote: tabVote,
+            selfId: voteSelfId,
+            voteMax,
+            layers: tabLayers,
+            reviewActive: voteReview != null,
+            focusKey: voteReview?.focusId ?? null,
+            onCast: readOnly ? undefined : onCastVote,
+            onRetract: readOnly ? undefined : onRetractVote,
+          }
+        : null,
+    [tabVote, voteSelfId, voteMax, tabLayers, voteReview, readOnly, onCastVote, onRetractVote],
+  );
   return (
-    <SelectionGripsContext.Provider value={gripHosts}>
-      {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
+    <CardVoteProvider value={cardVote}>
+      <SelectionGripsContext.Provider value={gripHosts}>
+        {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
             all reference url(#arrowhead) — defs are document-scoped
             in SVG so a single defs node lets every arrow render
             with the same marker. */}
-      {hasArrows ? (
-        <svg className="absolute" style={{ width: 0, height: 0, overflow: 'visible' }} aria-hidden>
-          <ArrowDefs />
-        </svg>
-      ) : null}
+        {hasArrows ? (
+          <svg
+            className="absolute"
+            style={{ width: 0, height: 0, overflow: 'visible' }}
+            aria-hidden
+          >
+            <ArrowDefs />
+          </svg>
+        ) : null}
 
-      {/* Render elements in their natural array order so
+        {/* Render elements in their natural array order so
             `bringToFront` / `sendToBack` reorder arrows relative to
             boxed elements (instead of all arrows perpetually stacking
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {/* Illustrate mode cuts elements off at the page edges (IllustratePageClip); not in the
+        {/* Illustrate mode cuts elements off at the page edges (IllustratePageClip); not in the
           isometric view, whose 3D stack a clip would flatten. */}
-      <IllustratePageClip
-        pages={
-          props.illustratePages && props.canvasTool !== 'isometric'
-            ? props.illustratePages.pages
-            : null
-        }
-        // A page under a layout preview shows only the preview.
-        hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
-        elements={elements}
-      >
-        {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
-          // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
-          // translucent while its materialised copy holds the start
-          // position, multiplied over any per-layer opacity.
-          const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-          // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
-          // is NOT part of it recedes, so the notes the photo brought are the
-          // most visible thing on the board. A render-time style, local to the
-          // importing session — the board itself is untouched.
-          const isDraftNote = element.type === 'sticky' && element.esDraft === true;
-          const draftFade = draftView && !isDraftNote ? 0.5 : 1;
-          const effOpacity = ghostFactor * layerOpacity * draftFade;
-          if (element.type === 'arrow') {
-            return (
-              <Fragment key={element.id}>
-                <svg
-                  className="absolute inset-0 h-full w-full"
-                  // Tagged so isometric mode can lift arrows just off the base
-                  // plane (globals.css [data-iso] rule): an arrow's surface is
-                  // coplanar with the boxes it crosses under preserve-3d, and
-                  // coplanar layers z-fight — which is what made a FLOWING arrow
-                  // shimmer in isometric while a static one looked fine (the
-                  // animation repaints every frame, so the fight is visible
-                  // continuously rather than only while the camera orbits).
-                  data-arrow-svg=""
-                  // An arrow travels whole or not at all in the preview (see
-                  // insert-between.ts): one that straddles the insertion point
-                  // stretches, which a transform cannot express, so it waits for
-                  // the drop.
-                  data-insert-shift={insertShift.animates ? '' : undefined}
-                  style={{
-                    pointerEvents: 'none',
-                    overflow: 'visible',
-                    ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                    ...(insertShift.xFor(element.id)
-                      ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
-                      : {}),
-                  }}
-                >
-                  <SelectableArrowView
-                    arrow={element}
-                    frame={
-                      (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).frame
-                    }
-                    holes={
-                      (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).holes
-                    }
-                    labelRender={
-                      preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)
-                    }
-                    draftLayout={arrowLabels.draftLayout}
-                    isPaintMode={isPaintMode}
-                    isEditing={element.id === editingId}
-                    editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                    tabLocked={tabLocked}
-                    readOnly={readOnly}
-                    onSelect={h.handleArrowSelect}
-                    onContextSelect={h.handleElementContextSelect}
-                    onBeginEndpointDrag={h.onBeginEndpointDrag}
-                    onBeginEdit={h.onBeginEdit}
-                    onCommitLabel={h.onCommitLabel}
-                    onCancelEdit={h.onCancelEdit}
-                    onBeginCurveDrag={h.onBeginArrowCurveDrag}
-                    onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
-                    onBeginArrowBend={h.onBeginArrowBend}
-                    onDeleteCurvePoint={h.onDeleteCurvePoint}
-                    onBeginElbowDrag={h.onBeginArrowElbowDrag}
-                    onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                    fontFamily={resolveFontStack(element.font) ?? tabFontStack}
-                  />
-                </svg>
-                <FreeArrowFrame
-                  arrow={element}
-                  elements={elements}
-                  standsDown={
-                    element.id === editingId ||
-                    element.id === props.reshapingArrowId ||
-                    readOnly ||
-                    tabLocked ||
-                    isPaintMode
-                  }
-                  onBeginArrowTranslate={h.onBeginArrowTranslate}
-                  onBeginArrowScale={h.onBeginArrowScale}
-                />
-              </Fragment>
-            );
+        <IllustratePageClip
+          pages={
+            props.illustratePages && props.canvasTool !== 'isometric'
+              ? props.illustratePages.pages
+              : null
           }
-          if (!isBoxed(element)) return null;
-          return (
-            <SelectableBoxedView
-              key={element.id}
-              editingId={editingId}
-              element={element}
-              // Paint index, used only by isometric mode to stagger each element
-              // onto its own z-plane (globals.css --iso-z): coplanar layers
-              // z-fight under preserve-3d, which is the flicker.
-              isoDepth={isoDepth}
-              insertShiftX={insertShift.xFor(element.id)}
-              insertShiftAnimates={insertShift.animates}
-              // Resolved once here, where both the vote and the tab's layers
-              // are in scope, rather than threading `layers` down to the
-              // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
-              votableInVote={isVotableInVote(element, tabVote, tabLayers)}
-              layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-              // The draft treatment, and the "already here" badge on a note the
-              // photo matched (with what it read, when that differed).
-              photoDraft={isDraftNote}
-              photoMatched={draftView?.matchedIds.has(element.id) === true}
-              photoReadAs={draftView?.differences.get(element.id)}
-              onPlainClick={h.handleElementClick}
-              remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
-              isEditing={element.id === editingId}
-              editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-              isPaintMode={isPaintMode}
-              tabLocked={tabLocked}
-              tabSummaries={tabSummaries}
-              readOnly={readOnly}
-              onBeginDrag={h.onBeginDrag}
-              onShiftSelect={h.onShiftSelect}
-              vote={tabVote}
-              selfId={participantKey(selfParticipant)}
-              voteMax={voteMax}
-              voteReviewActive={voteReview != null}
-              isVoteFocus={voteReview?.focusId === element.id}
-              onCastVote={h.onCastVote}
-              onRetractVote={h.onRetractVote}
-              onBeginEdit={h.onBeginEdit}
-              onCommitLabel={h.onCommitLabel}
-              onSetTextAlign={h.onSetTextAlign}
-              onCommitTable={h.onCommitTable}
-              onCommitHeaderSize={h.onCommitHeaderSize}
-              onSnapSeam={h.onSnapSeam}
-              onSetRailLabel={h.onSetRailLabel}
-              onToggleChecklistItem={h.onToggleChecklistItem}
-              onSetPageHeading={h.onSetPageHeading}
-              onSetWebRows={h.onSetWebRows}
-              onSetHeroCaptionLine={h.onSetHeroCaptionLine}
-              chartPalette={chartPalette}
-              onCancelEdit={h.onCancelEdit}
-              onFollowLink={h.onFollowLink}
-              onPressModeButton={h.onPressModeButton}
-              onPressFocusButton={h.onPressFocusButton}
-              onPressSessionButton={h.onPressSessionButton}
-              sessionStartBlocked={sessionStartBlocked}
-              timerState={timerState}
-              tabTimer={tabTimer ?? null}
-              onSetSessionConfig={h.onSetSessionConfig}
-              onOpenElementSettings={h.onOpenElementSettings}
-              commentSelfId={commentSelfId}
-              commentActions={commentActionsFor?.(element.id)}
-              actionSelfId={actionSelfId}
-              actionActions={actionActionsFor?.(element.id)}
-              timerControls={timerControls}
-              revealedForMe={revealedIds?.has(element.id)}
-              onToggleReveal={h.onToggleReveal}
-              onRollPicker={h.onRollPicker}
-              collab={collab}
-              chairSitters={chairSitters}
-              // Mode Buttons light up for the mode they hand out, and the
-              // canvas-tool union is WIDER than the mode vocabulary: Slide Deck
-              // (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a SelectionMode.
-              // Narrow rather than widen — a "Switch to Slide Deck" button is
-              // exactly what docs/specs/012-collaboration/presentation-mode.md rules out.
-              activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
-              onEnterPortal={h.onEnterPortal}
-              onFireReaction={h.onFireReaction}
-              reactionBurst={reactionBursts?.get(element.id)}
-              onReactionBurstDone={h.onReactionBurstDone}
-              onOpenComments={h.onOpenComments}
-              onOpenAction={h.onOpenAction}
-              onOpenNote={h.onOpenNote}
-              onEditLink={h.onEditLink}
-              onEditCode={h.onEditCode}
-              onDropIcon={h.onDropIcon}
-              onLinkCell={h.onLinkCell}
-              imageContext={imageContext}
-              onContextSelect={h.handleElementContextSelect}
-              // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
-              // the face, so it outranks the tab default — but not an explicit
-              // per-element font, which is a deliberate author choice.
-              fontFamily={
-                resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
-              }
-            />
-          );
-        })}
-      </IllustratePageClip>
+          // A page under a layout preview shows only the preview.
+          hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
+          elements={elements}
+        >
+          {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
+            // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
+            // translucent while its materialised copy holds the start
+            // position, multiplied over any per-layer opacity.
+            const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
+            // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
+            // is NOT part of it recedes, so the notes the photo brought are the
+            // most visible thing on the board. A render-time style, local to the
+            // importing session — the board itself is untouched.
+            const isDraftNote = element.type === 'sticky' && element.esDraft === true;
+            const draftFade = draftView && !isDraftNote ? 0.5 : 1;
+            const effOpacity = ghostFactor * layerOpacity * draftFade;
+            if (element.type === 'arrow') {
+              return (
+                <Fragment key={element.id}>
+                  <svg
+                    className="absolute inset-0 h-full w-full"
+                    // Tagged so isometric mode can lift arrows just off the base
+                    // plane (globals.css [data-iso] rule): an arrow's surface is
+                    // coplanar with the boxes it crosses under preserve-3d, and
+                    // coplanar layers z-fight — which is what made a FLOWING arrow
+                    // shimmer in isometric while a static one looked fine (the
+                    // animation repaints every frame, so the fight is visible
+                    // continuously rather than only while the camera orbits).
+                    data-arrow-svg=""
+                    // An arrow travels whole or not at all in the preview (see
+                    // insert-between.ts): one that straddles the insertion point
+                    // stretches, which a transform cannot express, so it waits for
+                    // the drop.
+                    data-insert-shift={insertShift.animates ? '' : undefined}
+                    style={{
+                      pointerEvents: 'none',
+                      overflow: 'visible',
+                      ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
+                      ...(insertShift.xFor(element.id)
+                        ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
+                        : {}),
+                    }}
+                  >
+                    <SelectableArrowView
+                      arrow={element}
+                      frame={
+                        (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).frame
+                      }
+                      holes={
+                        (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).holes
+                      }
+                      labelRender={
+                        preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)
+                      }
+                      draftLayout={arrowLabels.draftLayout}
+                      isPaintMode={isPaintMode}
+                      isEditing={element.id === editingId}
+                      editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
+                      tabLocked={tabLocked}
+                      readOnly={readOnly}
+                      onSelect={h.handleArrowSelect}
+                      onContextSelect={h.handleElementContextSelect}
+                      onBeginEndpointDrag={h.onBeginEndpointDrag}
+                      onBeginEdit={h.onBeginEdit}
+                      onCommitLabel={h.onCommitLabel}
+                      onCancelEdit={h.onCancelEdit}
+                      onBeginCurveDrag={h.onBeginArrowCurveDrag}
+                      onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
+                      onBeginArrowBend={h.onBeginArrowBend}
+                      onDeleteCurvePoint={h.onDeleteCurvePoint}
+                      onBeginElbowDrag={h.onBeginArrowElbowDrag}
+                      onBeginLabelDrag={h.onBeginArrowLabelDrag}
+                      fontFamily={resolveFontStack(element.font) ?? tabFontStack}
+                    />
+                  </svg>
+                  <FreeArrowFrame
+                    arrow={element}
+                    elements={elements}
+                    standsDown={
+                      element.id === editingId ||
+                      element.id === props.reshapingArrowId ||
+                      readOnly ||
+                      tabLocked ||
+                      isPaintMode
+                    }
+                    onBeginArrowTranslate={h.onBeginArrowTranslate}
+                    onBeginArrowScale={h.onBeginArrowScale}
+                  />
+                </Fragment>
+              );
+            }
+            if (!isBoxed(element)) return null;
+            return (
+              <SelectableBoxedView
+                key={element.id}
+                editingId={editingId}
+                element={element}
+                // Paint index, used only by isometric mode to stagger each element
+                // onto its own z-plane (globals.css --iso-z): coplanar layers
+                // z-fight under preserve-3d, which is the flicker.
+                isoDepth={isoDepth}
+                insertShiftX={insertShift.xFor(element.id)}
+                insertShiftAnimates={insertShift.animates}
+                // Resolved once here, where both the vote and the tab's layers
+                // are in scope, rather than threading `layers` down to the
+                // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
+                votableInVote={isVotableInVote(element, tabVote, tabLayers)}
+                layerOpacity={effOpacity < 1 ? effOpacity : undefined}
+                // The draft treatment, and the "already here" badge on a note the
+                // photo matched (with what it read, when that differed).
+                photoDraft={isDraftNote}
+                photoMatched={draftView?.matchedIds.has(element.id) === true}
+                photoReadAs={draftView?.differences.get(element.id)}
+                onPlainClick={h.handleElementClick}
+                remoteSelectors={
+                  remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS
+                }
+                isEditing={element.id === editingId}
+                editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
+                isPaintMode={isPaintMode}
+                tabLocked={tabLocked}
+                tabSummaries={tabSummaries}
+                readOnly={readOnly}
+                onBeginDrag={h.onBeginDrag}
+                onShiftSelect={h.onShiftSelect}
+                vote={tabVote}
+                selfId={participantKey(selfParticipant)}
+                voteMax={voteMax}
+                voteReviewActive={voteReview != null}
+                isVoteFocus={voteReview?.focusId === element.id}
+                onCastVote={h.onCastVote}
+                onRetractVote={h.onRetractVote}
+                onBeginEdit={h.onBeginEdit}
+                onCommitLabel={h.onCommitLabel}
+                onSetTextAlign={h.onSetTextAlign}
+                onCommitTable={h.onCommitTable}
+                onCommitHeaderSize={h.onCommitHeaderSize}
+                onSnapSeam={h.onSnapSeam}
+                onSetRailLabel={h.onSetRailLabel}
+                onToggleChecklistItem={h.onToggleChecklistItem}
+                onSetPageHeading={h.onSetPageHeading}
+                onSetWebRows={h.onSetWebRows}
+                onSetHeroCaptionLine={h.onSetHeroCaptionLine}
+                chartPalette={chartPalette}
+                onCancelEdit={h.onCancelEdit}
+                onFollowLink={h.onFollowLink}
+                onPressModeButton={h.onPressModeButton}
+                onPressFocusButton={h.onPressFocusButton}
+                onPressSessionButton={h.onPressSessionButton}
+                sessionStartBlocked={sessionStartBlocked}
+                timerState={timerState}
+                tabTimer={tabTimer ?? null}
+                onSetSessionConfig={h.onSetSessionConfig}
+                onOpenElementSettings={h.onOpenElementSettings}
+                commentSelfId={commentSelfId}
+                commentActions={commentActionsFor?.(element.id)}
+                actionSelfId={actionSelfId}
+                actionActions={actionActionsFor?.(element.id)}
+                timerControls={timerControls}
+                revealedForMe={revealedIds?.has(element.id)}
+                onToggleReveal={h.onToggleReveal}
+                onRollPicker={h.onRollPicker}
+                collab={collab}
+                chairSitters={chairSitters}
+                // Mode Buttons light up for the mode they hand out, and the
+                // canvas-tool union is WIDER than the mode vocabulary: Slide Deck
+                // (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a SelectionMode.
+                // Narrow rather than widen — a "Switch to Slide Deck" button is
+                // exactly what docs/specs/012-collaboration/presentation-mode.md rules out.
+                activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
+                onEnterPortal={h.onEnterPortal}
+                onFireReaction={h.onFireReaction}
+                reactionBurst={reactionBursts?.get(element.id)}
+                onReactionBurstDone={h.onReactionBurstDone}
+                onOpenComments={h.onOpenComments}
+                onOpenAction={h.onOpenAction}
+                onOpenNote={h.onOpenNote}
+                onEditLink={h.onEditLink}
+                onEditCode={h.onEditCode}
+                onDropIcon={h.onDropIcon}
+                onLinkCell={h.onLinkCell}
+                imageContext={imageContext}
+                onContextSelect={h.handleElementContextSelect}
+                // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
+                // the face, so it outranks the tab default — but not an explicit
+                // per-element font, which is a deliberate author choice.
+                fontFamily={
+                  resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
+                }
+              />
+            );
+          })}
+        </IllustratePageClip>
 
-      {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+        {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}
-      {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-        <DrawnArrowPreview
-          arrow={props.previewDrawnArrow(
-            props.pendingDraw,
-            drawDrag.startX,
-            drawDrag.startY,
-            drawDrag.currentX,
-            drawDrag.currentY,
-          )}
-          elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-          occluders={drawnElements}
-          draftLayout={arrowLabels.draftLayout}
-          fontFamily={tabFontStack}
-          withDefs={!hasArrows}
-        />
-      ) : null}
+        {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+          <DrawnArrowPreview
+            arrow={props.previewDrawnArrow(
+              props.pendingDraw,
+              drawDrag.startX,
+              drawDrag.startY,
+              drawDrag.currentX,
+              drawDrag.currentY,
+            )}
+            elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+            occluders={drawnElements}
+            draftLayout={arrowLabels.draftLayout}
+            fontFamily={tabFontStack}
+            withDefs={!hasArrows}
+          />
+        ) : null}
 
-      {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+        {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
-      <AgentFocusOverlay elements={elements} />
+        <AgentFocusOverlay elements={elements} />
 
-      {remoteCursors.map((c) => (
-        <ZoomedRemoteCursor key={c.id} cursor={c} />
-      ))}
+        {remoteCursors.map((c) => (
+          <ZoomedRemoteCursor key={c.id} cursor={c} />
+        ))}
 
-      {/* Laser overlay sits inside the viewport-transformed wrapper
+        {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-      <ZoomedLaserOverlay trails={laserTrails} />
+        <ZoomedLaserOverlay trails={laserTrails} />
 
-      {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+        {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
-      <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+        <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
-      {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
+        {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
-      <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
-        <LayerSelectionChrome
-          selectionInput={props.selectionInput}
-          elements={elements}
-          editingId={editingId}
-          nextNote={
-            props.esBoard && props.onAddNextNote
-              ? {
-                  blocked:
-                    readOnly || tabLocked || props.createBlocked === true || insertShift.animates,
-                  onAdd: props.onAddNextNote,
-                }
-              : null
-          }
-          pluses={{
-            quickRingOpen,
-            setQuickRingOpen,
-            openOnHover: settings.quickAddOnHover === true,
-            onSpawnConnect,
-            onStartArrow,
-            onStartPencil,
-            onAddRailPoint,
-            onAddTableRow,
-            onAddTableColumn,
-            onAppendWebRow,
-          }}
-          onBeginDrag={onBeginDrag}
-        />
-      </SelectionGripsLayer>
-    </SelectionGripsContext.Provider>
+        <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+          <LayerSelectionChrome
+            selectionInput={props.selectionInput}
+            elements={elements}
+            editingId={editingId}
+            nextNote={
+              props.esBoard && props.onAddNextNote
+                ? {
+                    blocked:
+                      readOnly || tabLocked || props.createBlocked === true || insertShift.animates,
+                    onAdd: props.onAddNextNote,
+                  }
+                : null
+            }
+            pluses={{
+              quickRingOpen,
+              setQuickRingOpen,
+              openOnHover: settings.quickAddOnHover === true,
+              onSpawnConnect,
+              onStartArrow,
+              onStartPencil,
+              onAddRailPoint,
+              onAddTableRow,
+              onAddTableColumn,
+              onAppendWebRow,
+            }}
+            onBeginDrag={onBeginDrag}
+          />
+        </SelectionGripsLayer>
+      </SelectionGripsContext.Provider>
+    </CardVoteProvider>
   );
 }

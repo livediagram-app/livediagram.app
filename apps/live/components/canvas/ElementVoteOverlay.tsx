@@ -1,9 +1,4 @@
-import {
-  canCastVote,
-  voteHidesTallies,
-  type BoxedElement,
-  type TabVote,
-} from '@livediagram/document';
+import { canCastVote, voteHidesTallies, type TabVote } from '@livediagram/document';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 
@@ -11,9 +6,12 @@ import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 // tally pill on the element's bottom-right corner — live count,
 // brand-filled when it holds your dots (click to retract one) — and the
 // amber winner ring shown once the vote is revealed. Renders nothing
-// until at least one dot has landed on this element.
+// until at least one dot has landed on this element. Keyed by a vote key, not an element: an element's own id, or
+// a Plan card's `item:<id>` (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards"), so a card on a
+// board carries the same stepper.
 export function ElementVoteOverlay({
-  element,
+  voteKey,
+  name,
   vote,
   selfId,
   voteMax,
@@ -23,7 +21,10 @@ export function ElementVoteOverlay({
   onRetractVote,
   onCastVote,
 }: {
-  element: BoxedElement;
+  // The key its dots go under in `votes` (voteKeyOf / itemVoteKey).
+  voteKey: string;
+  // What the stepper's buttons call it ("Add a dot to {name}").
+  name: string;
   vote: TabVote | null | undefined;
   selfId: string | null | undefined;
   voteMax: number | null | undefined;
@@ -40,13 +41,13 @@ export function ElementVoteOverlay({
   // Dot-vote tally for this element: total dots, how many are mine, and
   // whether it is a revealed winner.
   const myVotes =
-    vote && selfId ? (vote.votes[element.id]?.filter((id) => id === selfId).length ?? 0) : 0;
+    vote && selfId ? (vote.votes[voteKey]?.filter((id) => id === selfId).length ?? 0) : 0;
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): with "hide running counts" on, the pill counts
   // only YOUR dots until the results are revealed — so you can still see
   // and retract what you spent, but a climbing total can't snowball the
   // room. "Show results" swaps every pill back to the true tally.
   const tallyHidden = voteHidesTallies(vote);
-  const voteTotal = tallyHidden ? myVotes : vote ? (vote.votes[element.id]?.length ?? 0) : 0;
+  const voteTotal = tallyHidden ? myVotes : vote ? (vote.votes[voteKey]?.length ?? 0) : 0;
   const isVoteWinner = !!vote?.revealed && voteTotal > 0 && voteTotal === (voteMax ?? 0);
   // While casting is OPEN, every votable element carries a stepper —
   // minus, the count, plus — showing 0 when nothing has landed yet. The
@@ -60,7 +61,7 @@ export function ElementVoteOverlay({
   // Budget, and the one-dot-per-item rule when the vote has it (docs/specs/012-collaboration/session-tools.md).
   // Either disables plus rather than hiding it, so the control doesn't move
   // under the pointer mid-vote.
-  const canCast = !!vote && !!selfId && canCastVote(vote, selfId, element.id);
+  const canCast = !!vote && !!selfId && canCastVote(vote, selfId, voteKey);
   return (
     <>
       {isVoteFocus ? (
@@ -106,9 +107,9 @@ export function ElementVoteOverlay({
             }
           >
             <VoteStepButton
-              label={`Remove a dot from ${element.label ?? 'this element'}`}
+              label={`Remove a dot from ${name}`}
               disabled={myVotes === 0}
-              onClick={() => onRetractVote?.(element.id)}
+              onClick={() => onRetractVote?.(voteKey)}
             >
               &minus;
             </VoteStepButton>
@@ -124,9 +125,9 @@ export function ElementVoteOverlay({
               {voteTotal}
             </span>
             <VoteStepButton
-              label={`Add a dot to ${element.label ?? 'this element'}`}
+              label={`Add a dot to ${name}`}
               disabled={!canCast}
-              onClick={() => onCastVote?.(element.id)}
+              onClick={() => onCastVote?.(voteKey)}
             >
               +
             </VoteStepButton>

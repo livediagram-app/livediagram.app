@@ -269,32 +269,10 @@ describe('changing items', () => {
     expect(laned.body.item.fields).toMatchObject({ 'f-stage': 'Won', labels: ['auth'] });
   });
 
-  it('votes per person, never below zero, from a view link too', async () => {
-    const mine = await itemPersonId('visitor');
-    const vote = (delta: number) =>
-      call<ItemResponse>({
-        path: `/items/${item.id}/vote`,
-        owner: 'visitor',
-        code: 'VIEW',
-        body: { delta },
-      });
-    expect((await vote(1)).body.item.fields['votes']).toEqual({ [mine]: 1 });
-    await vote(-1);
-    expect((await vote(-1)).body.item.fields['votes']).toEqual({});
-    expect((await call({ path: `/items/${item.id}/vote`, body: { delta: 2 } })).status).toBe(400);
-  });
-
-  // docs/specs/012-collaboration/vote-integrity.md: guest voters are capped per network per document; one already in
-  // can keep voting, and taking a vote back is never refused.
-  it('caps guest voters per network, and never refuses taking a vote back', async () => {
-    const vote = (owner: string, delta: number) =>
-      call({ path: `/items/${item.id}/vote`, owner, code: 'VIEW', body: { delta } });
-    for (let i = 0; i < 100; i++) expect((await vote(`guest-${i}`, 1)).status).toBe(200);
-    const late = await vote('guest-late', 1);
-    expect(late.status).toBe(429);
-    expect(late.body).toEqual({ error: 'vote_limit' });
-    expect((await vote('guest-0', 1)).status).toBe(200);
-    expect((await vote('guest-late', -1)).status).toBe(200);
+  // docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": a card is voted on through the tab's
+  // session vote; the per-card vote route is gone.
+  it('has no per-card vote route', async () => {
+    expect((await call({ path: `/items/${item.id}/vote`, body: { delta: 1 } })).status).toBe(404);
   });
 
   it('deletes and relays the removal', async () => {
@@ -797,5 +775,50 @@ describe('changing many items at once', () => {
     expect([...written.landed]).toEqual([a.id]);
     expect(written.rev).toBe(await db.getItemsRev(sql.env, 'd1'));
     expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
+  });
+});
+
+// docs/specs/026-plan/items.md "Tally": a session vote's dots added to cards when it ends.
+describe('a vote’s tally', () => {
+  it('adds each voter’s dots to the cards, skipping a card gone meanwhile', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/tally',
+      body: {
+        items: [
+          { id: a.id, votes: { p1: 2, p2: 1 } },
+          { id: 'missing-id', votes: { p1: 1 } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((i) => i.fields['votes'])).toEqual([{ p1: 2, p2: 1 }]);
+    expect(relayed).toHaveLength(1);
+    await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 1 } }] } });
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
+  });
+
+  it('refuses a malformed tally, and needs edit access', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    for (const items of [
+      [],
+      [{ votes: { p: 1 } }],
+      [{ id: a.id }],
+      [{ id: a.id, votes: { p: 0 } }],
+      [{ id: a.id, votes: { [''.padEnd(65, 'x')]: 1 } }],
+    ])
+      expect((await call({ path: '/items/tally', body: { items } })).status).toBe(400);
+    expect(
+      (
+        await call({
+          path: '/items/tally',
+          code: 'VIEW',
+          owner: 'guest',
+          body: { items: [{ id: a.id, votes: { p: 1 } }] },
+        })
+      ).status,
+    ).toBe(403);
+    expect((await call({ method: 'GET', path: '/items/tally' })).status).toBe(405);
   });
 });

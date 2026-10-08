@@ -32,5 +32,4 @@ export const ITEM_TYPE_PATTERN = /^[a-z][a-z0-9-]{0,31}$/;
 export const PLAN_COLUMNS_MAX = 12;
 export const PLAN_COLUMN_NAME_MAX = 40;
 export const PLAN_WIP_MAX = 99;
-export const PLAN_VOTE_BUDGET_MAX = 99;
 export const PLAN_TITLE_MAX = 80;

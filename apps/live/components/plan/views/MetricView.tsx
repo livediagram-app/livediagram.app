@@ -32,7 +32,6 @@ export function MetricView({
     quick: NO_QUICK,
     onQuick: noop,
     canFilterMine: null,
-    votesLeft: null,
     trayOpen: false,
     onToggleTray: noop,
     now: new Date(),

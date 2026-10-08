@@ -278,7 +278,6 @@ export function metricBoard(
     ...(hasDone ? { doneColumnId: 'done' } : {}),
     swimlaneBy: 'none',
     cardFields: [],
-    voting: { on: false },
     hideWriting: false,
   };
   const cards = liveCards(items).map((it) => ({

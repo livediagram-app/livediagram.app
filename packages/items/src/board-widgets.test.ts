@@ -16,13 +16,13 @@ describe('board widgets', () => {
     expect(readBoardWidgets(['filter', 'nope', 'count', 'filter', 3])).toEqual(['filter', 'count']);
     expect(readBoardWidgets('count')).toBeUndefined();
     expect(isBoardWidgetKind('due')).toBe(true);
-    expect(BOARD_WIDGET_KINDS).toHaveLength(15);
+    expect(BOARD_WIDGET_KINDS).toHaveLength(14);
   });
 
-  it('shows the default set on a board that names none, with Votes Left when it votes', () => {
-    expect(widgetsOf({ voting: { on: false } })).toEqual([...DEFAULT_BOARD_WIDGETS]);
-    expect(widgetsOf({ voting: { on: true } })).toEqual([...DEFAULT_BOARD_WIDGETS, 'votes']);
-    expect(widgetsOf({ widgets: [], voting: { on: true } })).toEqual([]);
+  it('shows the default set on a board that names none, and reads a stored Votes Left past', () => {
+    expect(widgetsOf({})).toEqual([...DEFAULT_BOARD_WIDGETS]);
+    expect(widgetsOf({ widgets: [] })).toEqual([]);
+    expect(readBoardWidgets(['votes', 'count'])).toEqual(['count']);
   });
 
   it('places a new widget at a place, and moves one the board has', () => {
@@ -74,7 +74,7 @@ describe('preset widgets', () => {
     const { presetSetup } = await import('./presets');
     expect(presetSetup('sprint').widgets).toContain('points');
     expect(presetSetup('bug-triage').widgets).toContain('unassigned');
-    expect(presetSetup('retro').widgets).toEqual(['votes', 'top-voted']);
+    expect(presetSetup('retro').widgets).toEqual(['top-voted']);
     // No columns, so no done column: nothing to measure yet (docs/specs/026-plan/board-widgets.md "Defaults").
     expect(presetSetup('blank').widgets).toEqual([]);
     expect(presetSetup('roadmap').widgets).not.toContain('progress');

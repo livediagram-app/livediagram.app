@@ -4,6 +4,8 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { isCardVotableInVote } from '@livediagram/document';
+import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
@@ -18,7 +20,6 @@ import {
   cardIsFaceDown,
   normaliseBoardSetup,
   projectBoard,
-  votesSpent,
   type Item,
   type QuickFilter,
   boardAddTypes,
@@ -49,7 +50,6 @@ import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
-import { myVotes } from './PlanCardFace';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
 import { planOwnColours, planPalette } from './plan-palette';
@@ -134,6 +134,12 @@ export function PlanBoardView({
   const canEdit = !!plan?.canEdit;
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   const maximised = useMaximisedPlanId() === element.id;
+  // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
+  const tabCardVote = useCardVote();
+  const cardVote =
+    tabCardVote && isCardVotableInVote(element, tabCardVote.vote, tabCardVote.layers, false)
+      ? tabCardVote
+      : null;
   // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Illustrate.
   const viewport = useViewportStoreIfAny();
   const phone = useIsMobileViewport();
@@ -223,11 +229,6 @@ export function PlanBoardView({
   const lanes = projection.lanes;
   const withLanes = projection.swimlanes;
   const self = plan?.self ?? null;
-  const spent = self ? votesSpent(projection, self.id) : 0;
-  const votesLeft =
-    setup.voting.on && setup.voting.budget !== undefined
-      ? Math.max(0, setup.voting.budget - spent)
-      : null;
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
@@ -308,7 +309,6 @@ export function PlanBoardView({
         onQuick={setQuick}
         canFilterMine={self?.id ?? null}
         canEdit={canEdit}
-        votesLeft={votesLeft}
         loadFailed={plan?.status === 'error'}
         onRetry={() => plan?.retry()}
         onReveal={() => {
@@ -497,22 +497,13 @@ export function PlanBoardView({
                                 setupFields={CARD_FIELDS}
                                 cardSize={setup.cardSize}
                                 faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
-                                voting={
-                                  setup.voting.on
-                                    ? {
-                                        mine: myVotes(item, self?.id),
-                                        canVote: !!plan?.canVote && !!self,
-                                        budgetLeft: votesLeft,
-                                        onVote: (d) => plan?.vote(item.id, d),
-                                      }
-                                    : undefined
-                                }
                                 presence={plan?.presence.get(item.id)}
                                 interactive={interactive}
                                 onPress={onCardPress}
                                 onOpen={() => plan?.openItem(item.id)}
                                 onKey={onCardKey}
                                 onMenu={(it, at) => setMenu({ itemId: it.id, at })}
+                                cardVote={cardVote}
                                 {...(interactive && canEdit
                                   ? {
                                       onLongPress: (it: Item, at: { x: number; y: number }) => {

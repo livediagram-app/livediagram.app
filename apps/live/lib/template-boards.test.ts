@@ -58,7 +58,7 @@ describe('plan templates', () => {
       planBoard: PlanBoardSetup;
     };
     expect(board.planBoard.hideWriting).toBe(true);
-    expect(board.planBoard.voting).toEqual({ on: true, budget: 5 });
+    expect('voting' in board.planBoard).toBe(false);
     expect(retro.some((el) => el.type === 'sticky')).toBe(true);
   });
 });

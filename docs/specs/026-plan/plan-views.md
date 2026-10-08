@@ -48,7 +48,7 @@ board ([Board widgets](board-widgets.md)), each free on the canvas:
 | Stale Cards | Cards not done that nobody changed in 14 days          |
 
 - Each is drawn exactly as in a board's header, on a small card of the canvas theme's board colours, sized to
-  it (260 × 64 to start). Filter, Only Mine, Not on Board, WIP Alerts and Votes Left need a board and are
+  it (260 × 64 to start). Filter, Only Mine, Not on Board and WIP Alerts need a board and are
   not offered.
 - A metric narrows nothing: pressing a person, a type or a priority does nothing. Completion with no
   Done phase reads **No done column**, and offers no set-up.

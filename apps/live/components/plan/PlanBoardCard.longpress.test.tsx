@@ -39,7 +39,6 @@ function card(onLongPress?: (it: Item, at: { x: number; y: number }) => void) {
       setupFields={[]}
       cardSize="compact"
       faceDown={false}
-      voting={undefined}
       presence={undefined}
       interactive
       onPress={onPress}

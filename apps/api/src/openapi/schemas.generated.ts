@@ -1461,7 +1461,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "types",
       "wip",
       "due",
-      "votes",
       "points",
       "priorities",
       "unassigned",
@@ -6583,22 +6582,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ItemVoteRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "delta": {
-        "enum": [
-          1,
-          -1
-        ],
-        "type": "number"
-      }
-    },
-    "required": [
-      "delta"
-    ],
-    "type": "object"
-  },
   "ItemsBulkRequest": {
     "additionalProperties": false,
     "properties": {
@@ -6671,6 +6654,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "items",
       "rev"
+    ],
+    "type": "object"
+  },
+  "ItemsTallyRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "votes": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "id",
+            "votes"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "items"
     ],
     "type": "object"
   },
@@ -8072,21 +8086,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "title": {
         "type": "string"
       },
-      "voting": {
-        "additionalProperties": false,
-        "properties": {
-          "budget": {
-            "type": "number"
-          },
-          "on": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "on"
-        ],
-        "type": "object"
-      },
       "widgets": {
         "items": {
           "$ref": "#/components/schemas/BoardWidgetKind"
@@ -8099,7 +8098,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "columns",
       "swimlaneBy",
       "cardFields",
-      "voting",
       "hideWriting"
     ],
     "type": "object"

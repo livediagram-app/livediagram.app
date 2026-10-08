@@ -177,8 +177,9 @@ with a Board**.
   person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
   drawn only for people in the presence list.
 - Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
-- Facilitation on a board (voting, a vote budget, hide writing and reveal) lives in the board's set-up, so a retro
-  needs no separate session tool.
+- Facilitation on a board (hide writing and reveal) lives in the board's set-up, and voting is the tab's session
+  vote on the cards, so a retro needs nothing
+  beyond the board and the tab's Vote.
 
 ## Agents
 
@@ -193,8 +194,7 @@ with a Board**.
 
 - Switching to Plan, Opens in Plan and the template filter fire the existing mode events with `ModePlan`,
   `OpensInPlan` and `TemplateModePlan`.
-- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel),
-  `Voted` (`Up` / `Down`), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
+- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
 

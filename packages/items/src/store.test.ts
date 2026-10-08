@@ -10,6 +10,7 @@ import {
   storeAsCreates,
   withCreateIds,
   type ItemStoreState,
+  type ItemWrite,
 } from './store';
 import { ITEMS_MAX } from './limits';
 import { ALI, item } from './test-items';
@@ -106,9 +107,6 @@ describe('applyItemWrite', () => {
       ok(applyItemWrite(s, { kind: 'move', id: a.id, move: { status: 'done' } }, ctx)).items[0]!
         .fields['status'],
     ).toBe('done');
-    expect(
-      ok(applyItemWrite(s, { kind: 'vote', id: a.id, delta: 1 }, ctx)).items[0]!.fields['votes'],
-    ).toEqual({ [ALI.id]: 1 });
     expect(applyItemWrite(s, { kind: 'delete', id: 'nope' }, ctx)).toEqual({
       ok: false,
       error: 'item_not_found',
@@ -143,7 +141,6 @@ describe('inverseItemWrites', () => {
   const s: ItemStoreState = { items: [a, b], rev: 1, nextKey: 9 };
 
   it('undoes each write kind', () => {
-    expect(inverseItemWrites(s, { kind: 'vote', id: a.id, delta: 1 })).toBeNull();
     expect(inverseItemWrites(s, { kind: 'patch', id: 'missing', patch: {} })).toBeNull();
     expect(
       inverseItemWrites(s, {
@@ -346,6 +343,9 @@ describe('itemIdsOfWrite', () => {
       }),
     ).toEqual(['p', 'q']);
     expect(itemIdsOfWrite({ kind: 'delete', id: 'd' })).toEqual(['d']);
+    expect(itemIdsOfWrite({ kind: 'tally', tallies: [{ id: 't', votes: { p: 1 } }] })).toEqual([
+      't',
+    ]);
   });
 });
 
@@ -360,5 +360,54 @@ describe('undoing a move of a card with no status', () => {
     for (const back of inverseItemWrites(before, move)!)
       state = ok(applyItemWrite(state, back, ctx));
     expect(state.items[0]!.fields['status']).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/items.md "Tally": a session vote's dots added to cards when it ends.
+describe('a tally write', () => {
+  const two: ItemStoreState = {
+    items: [
+      item({ title: 'a', votes: { p: 2 } }, { id: 'a', key: 1 }),
+      item({ title: 'b' }, { id: 'b', key: 2 }),
+    ],
+    rev: 1,
+    nextKey: 3,
+  };
+
+  it('adds each voter’s dots, skips a card gone meanwhile, and is not undoable', () => {
+    const write: ItemWrite = {
+      kind: 'tally',
+      tallies: [
+        { id: 'a', votes: { p: 1, q: 3 } },
+        { id: 'gone', votes: { p: 1 } },
+        { id: 'b', votes: { q: 0 } },
+      ],
+    };
+    const s = ok(applyItemWrite(two, write, ctx));
+    expect(s.items[0]!.fields['votes']).toEqual({ p: 3, q: 3 });
+    expect(s.items[1]!.fields['votes']).toEqual({});
+    expect((s.upserts as { id: string }[]).map((i) => i.id)).toEqual(['a', 'b']);
+    expect(inverseItemWrites(two, write)).toBeNull();
+  });
+
+  it('caps a voter’s count and the number of voters', () => {
+    const capped = ok(
+      applyItemWrite(two, { kind: 'tally', tallies: [{ id: 'a', votes: { p: 500 } }] }, ctx),
+    );
+    expect((capped.items[0]!.fields['votes'] as Record<string, number>)['p']).toBe(99);
+    const crowd = Object.fromEntries(Array.from({ length: 499 }, (_, i) => [`v${i}`, 1]));
+    const full = ok(
+      applyItemWrite(two, { kind: 'tally', tallies: [{ id: 'a', votes: crowd }] }, ctx),
+    );
+    const more = ok(
+      applyItemWrite(
+        full,
+        { kind: 'tally', tallies: [{ id: 'a', votes: { late: 1, p: 1 } }] },
+        ctx,
+      ),
+    );
+    const votes = more.items[0]!.fields['votes'] as Record<string, number>;
+    expect(votes['late']).toBeUndefined();
+    expect(votes['p']).toBe(3);
   });
 });
