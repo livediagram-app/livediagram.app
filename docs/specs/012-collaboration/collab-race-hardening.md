@@ -263,6 +263,19 @@ The set-up now moves the way the other multi-writer fields do:
   board whose `planBoard` changed, beside the element ops, in the granular path and the bulk
   (whole-tab) path alike. A column cog, the Board and Cards flyouts, a widget added from the
   palette, and undo or redo all reach peers the same way.
+- **The room has the delta before the save is written.** The ledger can only protect a change it
+  holds when a peer's save reads it, so a save sends every op the ledger records (`el-delta`,
+  `vote`) first, waits until the room confirms it sequenced each one, and only then PUTs; its
+  element ops still follow the PUT. The other deltas meet this by going out at the press, 600 ms
+  before any save. Sent after the PUT, as the board delta first was, two people saving at once
+  could each write before either delta reached the room: the later write merged nothing and erased
+  the earlier rename from D1, while both screens, converged by the deltas, never saved again.
+  The confirmation is the `cursor` frame the room already sends the sender of each ordered op,
+  carrying back the `ref` the client put on the op. A room that does not confirm within
+  `ROOM_SEQUENCE_ACK_TIMEOUT_MS` (a socket down or a slow room) does not hold the save back; it is
+  logged, and the save goes through as before. Peers therefore see a board change before D1 holds
+  it; a save that then fails sends the same delta again with its retry, and applying it twice
+  lands on the same board.
 - **A column move keeps a concurrent add.** The order names the columns the sender had; a column
   only the receiver has (added meanwhile by someone else) stays beside the column it followed.
 - **Receivers keep their own set-up through a peer's whole-element copy** (`mergeIncomingElement`),

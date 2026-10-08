@@ -2,6 +2,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
+import type { connectRoom } from '@/lib/api-client';
+
+type Room = ReturnType<typeof connectRoom>;
 
 // The autosave stands down while a peer's op has reached the baseline but not yet this render's `tabs`
 // (docs/specs/012-collaboration/collab-race-hardening.md), and re-arms on the render that carries it. The
@@ -50,7 +53,7 @@ function setup() {
     loadedTabIdsRef: { current: new Set(['t1']) },
     remoteOpJournalRef: journal,
     previewingRef: { current: false },
-    roomRef: { current: null },
+    roomRef: { current: null as Room | null },
   };
   // Stable, as the real state setters are: a fresh function each render would re-run the save
   // effect on every render and hide whether it re-runs for the right reason.
@@ -78,7 +81,7 @@ function setup() {
       changesetSeen,
       noteTabRevision,
     });
-  return { journal, useSubject };
+  return { journal, refs, useSubject };
 }
 
 // The selection reference names the revision the editor knows (docs/specs/013-workspace/blueprints/
@@ -251,6 +254,61 @@ describe('hasUnsavedChanges', () => {
       initialProps: { tabs: [tab('saved')], n: 0 },
     });
     expect(result.current.hasUnsavedChanges()).toBe(false);
+  });
+});
+
+// docs/specs/012-collaboration/collab-race-hardening.md phase 6: a Plan board's set-up delta is in the
+// room's ledger before the save that carries it is written, so a peer's concurrent save merges it.
+describe('useAutosave and a board delta', () => {
+  const boardTab = (todo: string): Tab =>
+    ({
+      id: 't1',
+      name: 'A',
+      elements: [
+        {
+          id: 'b1',
+          type: 'shape',
+          shape: 'plan-board',
+          x: 0,
+          y: 0,
+          width: 10,
+          height: 10,
+          planBoard: {
+            columns: [{ id: 'todo', status: 'todo', name: todo }],
+            swimlaneBy: 'none',
+          },
+        },
+      ],
+    }) as unknown as Tab;
+
+  it('writes once the room has sequenced it, with the cursor of the snapshot', async () => {
+    const { refs, useSubject } = setup();
+    refs.lastSavedTabsRef.current = [boardTab('To Do')];
+    let confirm: (ok: boolean) => void = () => {};
+    const room = {
+      send: vi.fn(),
+      cursor: vi.fn(() => ({ epoch: 'e', seq: 4 })),
+      sequence: vi.fn(() => new Promise<boolean>((resolve) => (confirm = resolve))),
+    };
+    refs.roomRef.current = room as unknown as Room;
+    renderHook(({ tabs }) => useSubject(tabs, 0), {
+      initialProps: { tabs: [boardTab('Ready')] },
+    });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(room.sequence).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'el-delta', elementId: 'b1' }),
+    );
+    expect(apiSaveTab).not.toHaveBeenCalled();
+
+    room.cursor.mockReturnValue({ epoch: 'e', seq: 5 });
+    await act(async () => confirm(true));
+    expect(apiSaveTab).toHaveBeenCalledWith(
+      'me',
+      'd1',
+      expect.anything(),
+      null,
+      expect.objectContaining({ roomCursor: { epoch: 'e', seq: 4 } }),
+    );
   });
 });
 

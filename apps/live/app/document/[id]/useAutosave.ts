@@ -24,7 +24,7 @@ import { saveFailureStatus } from './save-failure';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
-import { tabBroadcastOps } from './tab-broadcast-ops';
+import { saveTabAndRelay } from './tab-save-flow';
 import {
   baselineAfterSave,
   closeSaveWindow,
@@ -274,31 +274,27 @@ export function useAutosave(opts: {
       const roomCursor = roomRef.current?.cursor() ?? null;
       const writes: Promise<unknown>[] = [];
       for (const t of changedTabs) {
-        // The ops are derived NOW, against what peers have at the snapshot,
-        // not when the PUT lands: by then the baseline may hold a peer's
-        // newer copy of an element, and diffing our snapshot against it would
-        // broadcast our older copy over theirs.
+        // Granular ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0), derived from the last state
+        // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
         const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
-        const ops = tabBroadcastOps(before, t);
         writes.push(
-          apiSaveTab(selfId, documentId, t, sessionShareCode, {
-            // A loaded tab's content is authoritative, so an empty body is
-            // an intentional clear (reset-canvas / delete-all) the server
-            // backstop should accept; an unloaded placeholder is never in
-            // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
-            allowEmpty: loadedTabIdsRef.current.has(t.id),
-            roomCursor,
-            // From the same render as `t`, never ahead of it (useChangesetSeen).
-            ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
-          }).then((rev) => {
+          saveTabAndRelay(
+            before,
+            t,
+            () => roomRef.current,
+            () =>
+              apiSaveTab(selfId, documentId, t, sessionShareCode, {
+                // A loaded tab's content is authoritative, so an empty body is
+                // an intentional clear (reset-canvas / delete-all) the server
+                // backstop should accept; an unloaded placeholder is never in
+                // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
+                allowEmpty: loadedTabIdsRef.current.has(t.id),
+                roomCursor,
+                // From the same render as `t`, never ahead of it (useChangesetSeen).
+                ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
+              }),
+          ).then((rev) => {
             if (rev !== null) noteRevision(t.id, rev);
-            // Broadcast granular element ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0) derived from
-            // the last state peers saw so concurrent different-element edits
-            // merge instead of the whole tab clobbering. Falls back to a
-            // whole-`tab` op for a new tab or a bulk change (tabBroadcastOps).
-            for (const op of ops) {
-              roomRef.current?.send({ kind: 'op', op });
-            }
           }),
         );
       }

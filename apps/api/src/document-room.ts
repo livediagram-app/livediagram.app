@@ -4,6 +4,7 @@ import {
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
   isPresenceOpKind,
+  isRoomOpRef,
   parseBuildId,
   isSystemOpKind,
 } from '@livediagram/api-schema';
@@ -855,8 +856,11 @@ export class DocumentRoom implements DurableObject {
         const op = stampCommentAuthor(opForTheWire(msg.op), sender);
         const seq = this.sequenceMutation(sender.id, op, ws);
         // The relay skips the sender, so tell it the seq its op took: its own
-        // ops are already applied, and a reconnect must not replay them.
-        this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq });
+        // ops are already applied, and a reconnect must not replay them. The
+        // op's `ref` comes back with it, so a save waiting on this op knows the
+        // ledger has it (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
+        const ref = isRoomOpRef(msg.ref) ? { ref: msg.ref } : {};
+        this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq, ...ref });
         if (opKind === 'poll-start' || opKind === 'poll-end') this.poll.noteLifecycle(op);
       }
     }
