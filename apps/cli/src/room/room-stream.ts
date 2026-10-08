@@ -38,8 +38,8 @@ const socketUrl = (apiBase: string, documentId: string, ticket: string) =>
   `${apiBase.replace(/^http/, 'ws')}/documents/${encodeURIComponent(documentId)}/ws?t=${encodeURIComponent(ticket)}`;
 
 // A refusal of the ticket is final (the document is gone, or the token may not read it); anything else is the
-// network, and is retried.
-const isFinal = (err: unknown) => err instanceof ApiError && err.status < 500;
+// network, and is retried. A 429 is the host asking for patience, never a refusal.
+const isFinal = (err: unknown) => err instanceof ApiError && err.status < 500 && err.status !== 429;
 
 export function openRoomStream(deps: Deps): RoomStream {
   const { io, api, documentId, log } = deps;

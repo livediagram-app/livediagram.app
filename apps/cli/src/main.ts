@@ -136,7 +136,13 @@ async function runOnline(
       hint: UPGRADE_HINT,
     });
   }
-  const api = http.forToken(credential.token);
+  // A stored credential is read again if the api refuses it mid-command; an env token cannot change.
+  const api = http.forCredential(
+    credential.token,
+    credential.source === 'env'
+      ? null
+      : async () => (await resolveCredential(io, profile.name))?.token ?? null,
+  );
   if (verb.id === 'auth.status') return status(io, profile, api, credential.source);
   if (verb.id === 'auth.logout') return logout(io, profile, api, credential.source);
   if (verb.id === 'api')

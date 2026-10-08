@@ -141,6 +141,9 @@ In order of precedence:
   14 days of expiry. `auth logout` revokes the token and forgets it.
 - A host without sign-in has no tokens, so the CLI cannot act there and says so in one line, as the MCP is absent
   there ([Public API and API tokens](public-api-and-tokens.md) §3.7). The CLI never acts as a guest.
+- A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
+  `sync --watch` ran) is read again from the store, and the refused request is retried once with the new token.
+  `LIVEDIAGRAM_TOKEN` is never re-read.
 - `LIVEDIAGRAM_TOKEN` goes to whichever host is active; set `LIVEDIAGRAM_HOST` beside it for a self-host.
 
 ## Profiles and self-hosting
