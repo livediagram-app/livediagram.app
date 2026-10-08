@@ -27,6 +27,11 @@ vi.mock('@/lib/api-client', () => ({
   SessionTokenUnavailableError: class SessionTokenUnavailableError extends Error {},
 }));
 
+const timing = vi.hoisted(() => ({ end: vi.fn(), cancel: vi.fn(), endAfterPaint: vi.fn() }));
+const sampleSaveTiming = vi.hoisted(() => vi.fn(() => true));
+const startEditorTiming = vi.hoisted(() => vi.fn(() => timing));
+vi.mock('@/lib/timing', () => ({ sampleSaveTiming, startEditorTiming }));
+
 const { useAutosave } = await import('./useAutosave');
 const { createRemoteOpJournal } = await import('./save-baseline');
 
@@ -340,5 +345,41 @@ describe('useAutosave and changesets', () => {
       null,
       expect.not.objectContaining({ changesetSeen: expect.anything() }),
     );
+  });
+});
+
+// The Save timing (docs/specs/017-telemetry/timing-telemetry.md): Saving to Saved, sampled, never a
+// failed save.
+describe('useAutosave Save timing', () => {
+  beforeEach(() => {
+    Object.values(timing).forEach((fn) => fn.mockClear());
+    startEditorTiming.mockClear();
+    sampleSaveTiming.mockReset().mockReturnValue(true);
+  });
+
+  it('ends when the save lands', async () => {
+    const { useSubject } = setup();
+    renderHook(({ tabs }) => useSubject(tabs, 0), { initialProps: { tabs: [tab('mine')] } });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(startEditorTiming).toHaveBeenCalledWith('Save');
+    expect(timing.end).toHaveBeenCalledTimes(1);
+  });
+
+  it('is dropped when the sampler holds it', async () => {
+    sampleSaveTiming.mockReturnValue(false);
+    const { useSubject } = setup();
+    renderHook(({ tabs }) => useSubject(tabs, 0), { initialProps: { tabs: [tab('mine')] } });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(timing.end).not.toHaveBeenCalled();
+    expect(timing.cancel).toHaveBeenCalled();
+  });
+
+  it('is dropped for a failed save', async () => {
+    apiSaveTab.mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')));
+    const { useSubject } = setup();
+    renderHook(({ tabs }) => useSubject(tabs, 0), { initialProps: { tabs: [tab('mine')] } });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(timing.end).not.toHaveBeenCalled();
+    expect(timing.cancel).toHaveBeenCalled();
   });
 });

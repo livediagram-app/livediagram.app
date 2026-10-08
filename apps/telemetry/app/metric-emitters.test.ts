@@ -9,6 +9,7 @@ import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
 import { GROUPS as COMMUNITY } from './CommunityView';
 import { GROUPS as DASHBOARD } from './DashboardView';
+import { GROUPS as TIMINGS } from './TimingsView';
 import {
   CUSTOM_THEME_METRICS,
   CUSTOM_THEME_TYPES,
@@ -91,6 +92,7 @@ const ALL: MetricGroup[] = [
   ...EXCEPTIONS,
   ...HELP,
   ...COMMUNITY,
+  ...TIMINGS,
 ];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.

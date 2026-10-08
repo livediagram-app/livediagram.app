@@ -10,6 +10,7 @@ import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';
+import { startEditorTiming } from '@/lib/timing';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Lazy per-tab content load (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx.
@@ -151,6 +152,9 @@ export function usePerTabLoad(opts: {
         next.delete(targetId);
         return next;
       });
+    // How long the switch took (docs/specs/017-telemetry/timing-telemetry.md): the fetch to the first
+    // frame with the content in place. Only the loads that count Tab·Loaded; a failure records nothing.
+    const timing = startEditorTiming('TabLoad');
     apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode)
       .then((loaded) => {
         if (cancelled) return;
@@ -182,6 +186,7 @@ export function usePerTabLoad(opts: {
         // emit: it's a background sweep, not a user viewing a tab.
         track('Tab', 'Loaded');
         adoptLoadedTab(loaded);
+        timing.endAfterPaint();
         // Either way the load is now committed — local state has been
         // consulted. Keep the id in the loaded-set so subsequent
         // tab switches don't refetch.
@@ -208,6 +213,7 @@ export function usePerTabLoad(opts: {
       });
     return () => {
       cancelled = true;
+      timing.cancel();
       // StrictMode double-invoke + cleanup-before-promise-resolve
       // used to lock the tab in "loaded but empty" state forever:
       // the first run added the id and was cancelled before the

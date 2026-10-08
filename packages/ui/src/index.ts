@@ -32,6 +32,7 @@ export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
+export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';

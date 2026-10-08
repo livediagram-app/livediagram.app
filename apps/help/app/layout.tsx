@@ -13,6 +13,7 @@ import {
   PageViewBoot,
   PUBLIC_VIEWPORT,
   SITE_URL,
+  WebVitalsBoot,
 } from '@livediagram/ui';
 
 // The livediagram help centre (docs/specs/018-help/help-app.md). Indexable static site served
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <JsonLd data={webSiteJsonLd()} />
         <ErrorTelemetryBoot />
         <PageViewBoot />
+        <WebVitalsBoot />
         <Header />
         <main className="flex-1 pb-16">{children}</main>
         <Footer />

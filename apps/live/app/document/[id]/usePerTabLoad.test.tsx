@@ -11,6 +11,9 @@ vi.mock('@/lib/api-client', () => ({
   },
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const timing = vi.hoisted(() => ({ endAfterPaint: vi.fn(), cancel: vi.fn(), end: vi.fn() }));
+const startEditorTiming = vi.hoisted(() => vi.fn(() => timing));
+vi.mock('@/lib/timing', () => ({ startEditorTiming }));
 
 import { usePerTabLoad } from './usePerTabLoad';
 
@@ -239,5 +242,38 @@ describe('usePerTabLoad and changesets', () => {
     );
     await flush();
     expect(noteChangesetSeen).toHaveBeenCalledWith('t2', 3);
+  });
+});
+
+// The TabLoad timing (docs/specs/017-telemetry/timing-telemetry.md): ends on screen for a load that
+// counted Tab·Loaded, never for a failure.
+describe('usePerTabLoad TabLoad timing', () => {
+  beforeEach(() => {
+    apiLoadTab.mockReset();
+    startEditorTiming.mockReset().mockReturnValue(timing);
+    Object.values(timing).forEach((fn) => fn.mockReset());
+  });
+
+  it('ends after paint once the content is in place', async () => {
+    apiLoadTab.mockResolvedValue({ id: 't2', name: 'T2', elements: [] });
+    setup();
+    await flush();
+    expect(startEditorTiming).toHaveBeenCalledWith('TabLoad');
+    expect(timing.endAfterPaint).toHaveBeenCalledTimes(1);
+  });
+
+  it('never ends for a failed load', async () => {
+    apiLoadTab.mockRejectedValue(new Error('500'));
+    setup();
+    await flush();
+    expect(timing.endAfterPaint).not.toHaveBeenCalled();
+  });
+
+  it('is dropped when the editor moves on before the content lands', async () => {
+    apiLoadTab.mockReturnValue(new Promise(() => {}));
+    const { unmount } = setup();
+    unmount();
+    expect(timing.cancel).toHaveBeenCalled();
+    expect(timing.endAfterPaint).not.toHaveBeenCalled();
   });
 });

@@ -70,6 +70,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
     "The Explorer's filters: which kind of filter a person reached for (words, Opens in, Kind, Template, Made by AI, Edited, People, Space), from a chip, a suggestion or a typed token. Never what they typed or picked.",
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
+  Timing:
+    "How long the key moments take: a document opening, a tab switch, a save, the live room connecting and reconnecting, and every page's Core Web Vitals. Bucketed in the browser, so never a raw number.",
 };
 
 // Per-category colour used by every chart so the category-share bar,
@@ -133,6 +135,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Editor: '#6d28d9',
   // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
   Explorer: '#155e75',
+  // Deep teal-green, a stopwatch: apart from Email's teal and Cta's green.
+  Timing: '#047857',
 };
 export const categoryColor = (c: string, appearance: Appearance = 'light') =>
   forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);

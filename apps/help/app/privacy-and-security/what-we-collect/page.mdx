@@ -37,6 +37,12 @@ Every page on livediagram.app (the landing pages, the help centre, the Community
 
 There is no referrer, no record of which pages one person visited in what order, and no cookie. The same Settings switch below turns page views off along with everything else.
 
+## How long things take
+
+To learn whether livediagram feels fast, a few key moments are timed in your browser: a document opening, switching to a tab, a save, joining a document's live session, and how quickly each page loads and responds (its Core Web Vitals). Only the _range_ a timing fell in is sent, like "under one second", never the exact time, as the same three fields: for example `Timing`, `Measured`, `DocumentLoad.Under1000ms`.
+
+A timing is never sent while the page is in the background, saves are timed at most once a minute, and the Settings switch below turns timings off along with everything else. The dashboard's Timings view shows the results.
+
 ## Which button brought you in
 
 The buttons on our public pages that open the editor (the header's Choose Template, a template card in the landing page's gallery, a feature page's Start drawing) each carry a short label in their link naming _which button_ it is, like `Home.Header`. When the New Document page opens from one, it counts that arrival, removes the label from the address bar straight away, and counts once more if you go on to create a document. That is how we learn which buttons actually help people get started.

@@ -30,6 +30,7 @@ import {
 } from '@livediagram/api-schema';
 
 export { onPageHide } from './page-hide';
+export * from './timing';
 
 const FLUSH_DELAY_MS = 10_000;
 const MAX_BUFFER = 25;
@@ -104,6 +105,7 @@ export function createTelemetryEmitter(opts: {
   let retryBuffer: TelemetryEvent[] = [];
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
   let listenersAttached = false;
+  let hiddenFlushQueued = false;
 
   function armTimer(): void {
     if (flushTimer !== null) return;
@@ -196,6 +198,20 @@ export function createTelemetryEmitter(opts: {
     if (!isOptedIn()) return;
     buffer.push({ category, action, type: type ?? null });
     ensureListeners();
+    // Tracked while the page is hidden: the page-hide flush has already run, and the page may never
+    // come back, so send it by beacon at the end of this task. This is where the Web Vitals that
+    // finalise on hide (INP, CLS) arrive (docs/specs/017-telemetry/timing-telemetry.md); deferring to
+    // a microtask sends a burst of them as one beacon, not one each.
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      if (!hiddenFlushQueued) {
+        hiddenFlushQueued = true;
+        queueMicrotask(() => {
+          hiddenFlushQueued = false;
+          flush(true);
+        });
+      }
+      return;
+    }
     if (buffer.length >= MAX_BUFFER) {
       flush();
       return;

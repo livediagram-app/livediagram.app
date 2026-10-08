@@ -21,6 +21,7 @@ import { opForTheWire } from '@livediagram/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { getGuestSelfSig } from '../local-identity';
+import { startEditorTiming } from '../timing';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -192,6 +193,20 @@ export function connectRoom(
     for (const settle of waiting) settle(sequenced);
   };
 
+  // How long the room takes to come alive, and to come back after a drop
+  // (docs/specs/017-telemetry/timing-telemetry.md): to the first roster frame, retries and back-off
+  // included. A connection that is closed or never lands records nothing.
+  let connectTiming: ReturnType<typeof startEditorTiming> | null = startEditorTiming('RoomConnect');
+  let reconnectTiming: ReturnType<typeof startEditorTiming> | null = null;
+  const settleTimings = (live: boolean) => {
+    for (const timing of [connectTiming, reconnectTiming]) {
+      if (live) timing?.end();
+      else timing?.cancel();
+    }
+    connectTiming = null;
+    reconnectTiming = null;
+  };
+
   const applyOp = (from: string, op: RoomOp, seq?: number, epoch?: string) => {
     if (typeof seq === 'number') lastSeq = seq;
     if (typeof epoch === 'string') lastEpoch = epoch;
@@ -229,6 +244,7 @@ export function connectRoom(
       try {
         const msg = JSON.parse(e.data) as RoomIncoming;
         if (msg.kind === 'presence') {
+          settleTimings(true);
           const frame = splitPresenceFrame(msg);
           handlers.onPresence(frame.participants, frame.agents);
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
@@ -267,24 +283,36 @@ export function connectRoom(
     ws.addEventListener('close', (event: CloseEvent) => {
       settleAll(false);
       handlers.onClose?.();
-      if (closed) return;
+      if (closed) {
+        settleTimings(false);
+        return;
+      }
       if (event?.code === DOCUMENT_TRASHED_CLOSE) {
         closed = true;
+        settleTimings(false);
         handlers.onDocumentTrashed?.();
         return;
       }
       if (event?.code === ACCESS_CHANGED_CLOSE) {
         closed = true;
+        settleTimings(false);
         handlers.onAccessChanged?.();
         return;
       }
       if (event?.code === WORKBENCH_ENDED_CLOSE) {
         closed = true;
+        settleTimings(false);
         handlers.onWorkbenchEnded?.();
         return;
       }
       if (!socketOpened) handlers.onRefused?.();
-      if (attempts >= MAX_RECONNECT_ATTEMPTS) return;
+      // A live session dropped by itself: time the outage until the roster is back.
+      if (socketOpened && connectTiming === null)
+        reconnectTiming ??= startEditorTiming('RoomReconnect');
+      if (attempts >= MAX_RECONNECT_ATTEMPTS) {
+        settleTimings(false);
+        return;
+      }
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
       attempts++;
       reconnectTimer = setTimeout(open, delay);
@@ -349,6 +377,7 @@ export function connectRoom(
     },
     close: () => {
       closed = true;
+      settleTimings(false);
       outbox = [];
       settleAll(false);
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);

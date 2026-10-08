@@ -17,6 +17,7 @@
 
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
+import { isTimingType } from './timing-telemetry';
 
 export const TELEMETRY_CATEGORIES = [
   'Document',
@@ -171,6 +172,11 @@ export const TELEMETRY_CATEGORIES = [
   // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
   // the Community app. Never a title, tag or id.
   'Community',
+  // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
+  // (a document opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
+  // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
+  // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
+  'Timing',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -271,6 +277,9 @@ export const TELEMETRY_ACTIONS = [
   'Liked',
   'Unliked',
   'Reported',
+  // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
+  // 'Timing' category.
+  'Measured',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
@@ -306,6 +315,8 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   if (e.category === 'Cta') {
     return (e.action === 'Opened' || e.action === 'Created') && isCtaSource(e.type);
   }
+  // A timing is only ever a known metric with one of its own buckets (docs/specs/017-telemetry/timing-telemetry.md).
+  if (e.category === 'Timing') return e.action === 'Measured' && isTimingType(e.type);
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }

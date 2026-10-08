@@ -32,8 +32,9 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
-import { armLoadWatchdog, setLoadStep } from '@/lib/load-progress';
+import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
+import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
 import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
 import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
 import { loadWorkbenchDocument } from './workbench-bootstrap';
@@ -238,11 +239,22 @@ export function useIdentityBootstrap(opts: {
         },
         { warn: (type) => track('Error', 'Warning', type) },
       );
+    // How long the document took to open (docs/specs/017-telemetry/timing-telemetry.md): from when it
+    // was asked for to the first frame painted after the load reached `done`. A password retry is not
+    // timed (its wait is a person typing), and a load that failed, never got there, or was superseded
+    // by a later run records nothing.
     const run = (watchdog: ReturnType<typeof armLoadWatchdog>, load: () => Promise<void>) =>
       void (async () => {
+        const timing =
+          passwordRetry === 0
+            ? startEditorTiming('DocumentLoad', { from: documentLoadOrigin() })
+            : null;
         try {
           await load();
+          if (live() && getLoadProgress().step === 'done') timing?.endAfterPaint();
+          else timing?.cancel();
         } catch (err) {
+          timing?.cancel();
           // Anything the load throws outside its handled branches ends on the load-error screen, never
           // on the opening screen forever.
           console.error('[load] the document load threw', err);
@@ -251,6 +263,7 @@ export function useIdentityBootstrap(opts: {
           setLoadingDocument(false);
         } finally {
           watchdog.finish();
+          if (live()) noteDocumentLoadEnded();
         }
       })();
     if (workbench) {

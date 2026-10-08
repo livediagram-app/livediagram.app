@@ -114,6 +114,21 @@ describe('createTelemetryEmitter', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('sends events tracked while the page is hidden by beacon, a burst as one', async () => {
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    documentTarget.visibilityState = 'hidden';
+    documentTarget.fire('visibilitychange');
+    expect(sendBeacon).toHaveBeenCalledTimes(1);
+    // The Web Vitals that finalise on hide land after the page-hide flush ran.
+    emitter.track('Timing', 'Measured', 'Cls.Live.Under0p1');
+    emitter.track('Timing', 'Measured', 'Inp.Live.Under200ms');
+    await Promise.resolve();
+    expect(sendBeacon).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(10_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('flushes on pagehide too (the beacon iteration-9 conversions rely on)', () => {
     const emitter = makeEmitter();
     emitter.track('Document', 'Moved', 'SavedToCloud');

@@ -13,6 +13,7 @@ import {
   SITE_URL,
   SITE_DESCRIPTION,
   SITE_TITLE,
+  WebVitalsBoot,
 } from '@livediagram/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 import { RETURNING_BOOT_SCRIPT } from '@livediagram/api-schema';
@@ -153,6 +154,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <JsonLd data={JSON_LD} />
         <PageViewBoot />
+        <WebVitalsBoot />
         {children}
       </body>
     </html>
