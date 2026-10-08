@@ -7,7 +7,13 @@
 //
 // board.ts reads the type catalogue, which reads this, so nothing here touches board.ts's values while the modules
 // load: they are read inside functions.
-import { CARD_FIELDS, CARD_SIZE_FIELDS, type CardField, type CardSize } from './board';
+import {
+  CARD_FIELDS,
+  CARD_SIZE_FIELDS,
+  isCustomCardField,
+  type CardField,
+  type CardSize,
+} from './board';
 import type { ItemTypeDef } from './item-types';
 
 export type CardSlot = 'lead' | 'trail' | 'row' | 'head' | 'headEnd' | 'body' | 'foot' | 'footEnd';
@@ -56,9 +62,13 @@ export function cardDisplayFields(size: CardSize): readonly CardField[] {
   return CARD_SIZE_FIELDS[size];
 }
 
-// Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where).
+// Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where). A custom field
+// fits any slot of any size.
 export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): boolean {
-  return CARD_SLOTS[size].includes(slot) && CARD_SIZE_FIELDS[size].includes(field);
+  return (
+    CARD_SLOTS[size].includes(slot) &&
+    (isCustomCardField(field) || CARD_SIZE_FIELDS[size].includes(field))
+  );
 }
 
 // A set of fields placed where a board drew them, in its order.
@@ -134,23 +144,42 @@ export function defaultCardLayout(typeId: string, size: CardSize): CardLayout {
 
 // A type's layout at a size: its own, else its default.
 export function typeCardLayout(
-  type: Pick<ItemTypeDef, 'id' | 'display'>,
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'custom'>,
   size: CardSize,
 ): CardLayout {
-  return type.display?.[size] ?? defaultCardLayout(type.id, size);
+  const own = type.display?.[size];
+  if (own) return own;
+  const base = defaultCardLayout(type.id, size);
+  // A custom field ticked Show on card, before the Display placed custom fields, starts Under the Title on a
+  // Detailed card, where it was drawn then.
+  const shown =
+    size === 'detailed'
+      ? (type.custom ?? []).filter((c) => c.onCard).map((c) => c.id as CardField)
+      : [];
+  return shown.length ? { ...base, body: [...(base.body ?? []), ...shown] } : base;
 }
 
 // The fields a type's cards show at a size.
 export function typeCardDisplay(
-  type: Pick<ItemTypeDef, 'id' | 'display'>,
+  type: Pick<ItemTypeDef, 'id' | 'display' | 'custom'>,
   size: CardSize,
 ): readonly CardField[] {
   return cardLayoutFields(size, typeCardLayout(type, size));
 }
 
-// A field the type can show: one it offers (Number and Type always; the rest when in its fields).
-export function typeOffersCardField(type: Pick<ItemTypeDef, 'fields'>, field: CardField): boolean {
+// A field the type can show: one it offers (Number and Type always; the rest when in its fields), a custom field
+// when the type has it.
+export function typeOffersCardField(
+  type: Pick<ItemTypeDef, 'fields' | 'custom'>,
+  field: CardField,
+): boolean {
+  if (isCustomCardField(field)) return (type.custom ?? []).some((c) => c.id === field);
   return field === 'key' || field === 'type' || type.fields.includes(field);
+}
+
+// The type's custom fields a size can place, in the type's order.
+export function customCardFields(type: Pick<ItemTypeDef, 'custom'>): CardField[] {
+  return (type.custom ?? []).map((c) => c.id as CardField);
 }
 
 export function sameCardLayout(size: CardSize, a: CardLayout, b: CardLayout): boolean {

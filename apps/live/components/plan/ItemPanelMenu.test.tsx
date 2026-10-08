@@ -51,6 +51,26 @@ describe('ItemPanelMenu', () => {
     expect(screen.getByRole('menuitem', { name: 'Remove Flag' })).toBeTruthy();
   });
 
+  it('opens the card’s type from Edit Card Type, for an editor', () => {
+    const onEditType = vi.fn();
+    render(
+      <ItemPanelMenu
+        itemKey={7}
+        canEdit
+        archived={false}
+        flagged={false}
+        onDuplicate={vi.fn()}
+        onFlag={vi.fn()}
+        onArchive={vi.fn()}
+        onTrash={vi.fn()}
+        onEditType={onEditType}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Card Type' }));
+    expect(onEditType).toHaveBeenCalledOnce();
+  });
+
   it('flags the card', () => {
     const fns = open();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Flag' }));

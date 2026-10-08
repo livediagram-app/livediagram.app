@@ -280,6 +280,7 @@ In Plan mode:
 - **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** in red, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
+  **Edit Card Type** (the card's type in the type editor),
   **Move to** another column of the board, and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
   Open alone; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
   inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
@@ -303,8 +304,8 @@ In Plan mode:
     its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Child Cards** and **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Created by and Edited by close it, small and
     quiet under a hairline. On a phone the layout is unchanged: one column, Details the first tab.
   - **Header**: the type (a picker, with its glyph), the key, a **⋯** menu of **Duplicate** (a copy right after
-    it, without its votes, as the card menu's), **Archive** (or **Restore**) and **Trash** (to the Trash), then,
-    after a separator, **Help** (opening the Cards article), as icon-left rows, then the close button. Someone who
+    it, without its votes, as the card menu's), **Archive** (or **Restore**), **Trash** (to the Trash) and **Edit Card Type** (closing the panel and opening the card's type in the type
+    editor), then, after a separator, **Help** (opening the Cards article), as icon-left rows, then the close button. Someone who
     may only view gets a ⋯ of Help alone.
   - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
   - **Child Cards**: a card that other cards name as their Parent lists them on its first tab, after that tab's

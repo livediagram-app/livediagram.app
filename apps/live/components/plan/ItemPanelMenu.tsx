@@ -4,7 +4,7 @@
 // Flag), Archive (or Restore) and Trash for someone who may edit, then Help for everyone, as icon-left rows beside
 // the panel's Close, so the header keeps only the item's type, its key and the two buttons.
 import { useState } from 'react';
-import { DuplicateIcon, TrashIcon } from '@livediagram/ui';
+import { DuplicateIcon, PlanCardsIcon, TrashIcon } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
@@ -20,6 +20,7 @@ export function ItemPanelMenu({
   onFlag,
   onArchive,
   onTrash,
+  onEditType,
 }: {
   itemKey: number;
   // Someone who may only view gets Help alone.
@@ -30,6 +31,8 @@ export function ItemPanelMenu({
   onFlag: () => void;
   onArchive: () => void;
   onTrash: () => void;
+  // Opens the card's type in the type editor; absent, no row.
+  onEditType?: (() => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Held in state so the menu anchors on its first render.
@@ -77,6 +80,14 @@ export function ItemPanelMenu({
                 icon={<TrashIcon />}
                 onClick={run(onTrash)}
               />
+              {onEditType ? (
+                <MenuActionRow
+                  plain
+                  label="Edit Card Type"
+                  icon={<PlanCardsIcon size={16} />}
+                  onClick={run(onEditType)}
+                />
+              ) : null}
               <MenuGroupSeparator />
             </>
           ) : null}

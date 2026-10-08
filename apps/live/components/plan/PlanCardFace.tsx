@@ -27,9 +27,11 @@ import {
   typeCardLayout,
   cardLayoutFields,
   type CardSlot,
+  isCustomCardField,
 } from '@livediagram/items';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
+import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -104,7 +106,8 @@ export function PlanCardFace({
   // display"): both must allow a field.
   const typeShows = typeCardDisplay(type, size);
   const shown = cardFieldsAt(size, fields).filter((f) => typeShows.includes(f));
-  const show = (f: CardField) => shown.includes(f);
+  // A custom field shows wherever the type's Display places it (the board's field list names built-ins only).
+  const show = (f: CardField) => (isCustomCardField(f) ? typeShows.includes(f) : shown.includes(f));
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   if (faceDown) {
     return (
@@ -219,6 +222,34 @@ export function PlanCardFace({
             {description}
           </p>
         ) : null;
+      default: {
+        // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
+        const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        const text = def ? customFieldText(def, item.fields[def.id], plan?.items) : null;
+        if (!def || !text) return null;
+        const linkedType =
+          def.kind === 'card' && def.linkType
+            ? typeIn(plan?.types ?? ITEM_TYPES, def.linkType)
+            : undefined;
+        return (
+          <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
+            {linkedType ? (
+              <PlanTypeGlyph
+                glyph={linkedType.glyph}
+                size={11}
+                color={accentOn(linkedType.color, palette)}
+              />
+            ) : (
+              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
+                {CUSTOM_KIND_ICONS[def.kind]}
+              </span>
+            )}
+            <span aria-hidden className="max-w-[10rem] truncate">
+              {text}
+            </span>
+          </MetaPill>
+        );
+      }
     }
   };
   // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card
@@ -306,15 +337,7 @@ export function PlanCardFace({
     );
   }
 
-  // Detailed: a header (start and end), the title, what sits under it, the type's on-card custom fields, a footer.
-  // Custom fields marked Show on card, with a value (docs/specs/026-plan/item-types.md "An item type").
-  const onCard = (type.custom ?? []).flatMap((f) => {
-    const text = f.onCard ? customFieldText(f, item.fields[f.id], plan?.items) : null;
-    // A Card field's value is drawn with the linked card's type glyph, in its colour.
-    const linkedType =
-      f.kind === 'card' && f.linkType ? typeIn(plan?.types ?? ITEM_TYPES, f.linkType) : undefined;
-    return text ? [{ id: f.id, label: f.label, text, linkedType }] : [];
-  });
+  // Detailed: a header (start and end), the title, what sits under it, a footer (start and end).
   const head = slotBits('head', true);
   const headEnd = slotBits('headEnd', true);
   const body = slotBits('body');
@@ -347,30 +370,6 @@ export function PlanCardFace({
         >
           {zone('body', body)}
         </div>
-      ) : null}
-      {onCard.length > 0 ? (
-        <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
-          {onCard.map((f) => (
-            <div key={f.id} className="contents">
-              <dt className="truncate" style={{ color: palette.muted }}>
-                {f.label}
-              </dt>
-              <dd
-                className="flex min-w-0 items-center gap-1 truncate font-medium"
-                style={{ color: palette.text }}
-              >
-                {f.linkedType ? (
-                  <PlanTypeGlyph
-                    glyph={f.linkedType.glyph}
-                    size={11}
-                    color={accentOn(f.linkedType.color, palette)}
-                  />
-                ) : null}
-                {f.text}
-              </dd>
-            </div>
-          ))}
-        </dl>
       ) : null}
       {foot.length || footEnd.length || loneVote || edit ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">

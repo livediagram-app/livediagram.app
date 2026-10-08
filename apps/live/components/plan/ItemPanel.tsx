@@ -76,6 +76,8 @@ type ItemPanelProps = {
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
+  // Edit Card Type in the ⋯ menu: closes the panel and opens the card's type in the type editor.
+  onEditType?: (() => void) | undefined;
   // The card's comments (docs/specs/026-plan/items.md "Comments").
   comments?: ItemCommentsContext;
   // The cards opened before this one from inside the panel, ending on it (docs/specs/026-plan/plan-board.md
@@ -150,6 +152,7 @@ function ItemPanelContent({
   onFlag,
   onArchive,
   onClose,
+  onEditType,
   comments,
   trail,
   childCards,
@@ -266,6 +269,7 @@ function ItemPanelContent({
         onFlag={onFlag}
         onArchive={onArchive}
         onTrash={onTrash}
+        onEditType={onEditType}
       />
       <DialogCloseButton compact onClick={onClose} />
     </div>

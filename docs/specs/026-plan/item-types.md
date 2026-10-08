@@ -125,8 +125,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     more than one, and a **State** menu ("All states", then each state it holds, "No status" last) when it holds
     more than one; both start at All, are each viewer's own and unsaved, and while one narrows the list "N of M"
     shows beside them. A filter matching nothing says "No cards match." with **Clear Filters**.
-  - **On the card face**: a Card field marked Show on card reads "{Field}: {linked title}" with the linked type's
-    glyph.
+  - **On the card face**: a Card field placed by the type's Display reads its linked card's title with the linked
+    type's glyph, in its colour.
   - **Boards** can lay their rows by a Card field (Swimlanes by a field): a row per linked card (named by its
     title, in number order) and **No {Field}**; dropping a card into a row sets the link.
   - Deleting, trashing or archiving a linked card never clears the links: they read **Missing card** until the
@@ -134,8 +134,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **Tabs**: a type has up to **6 tabs**, each with a name of 1 to 24 characters, unique in the type ignoring
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.
-- **On the card**: a custom field marked **Show on card** is drawn on the card face, after the built-in fields
-  the board shows (one line: its name and value). The board's card fields still choose the built-in ones.
+- **On the card**: a custom field goes on the card face where the type's **Display** places it, like any field:
+  every custom field is in Display's **Available Fields** (its kind's icon and its name), fits any part of any
+  size, and draws as a chip of its kind's icon and its value (a linked card's glyph and title), named "{Field}:
+  {value}" for assistive technology; with no value it is not drawn. A field ticked **Show on card** before Display
+  placed custom fields starts Under the Title on Detailed cards, until the type's Detailed layout is changed; the
+  tick is gone from the field's settings.
 
 ## The Card Types panel
 
@@ -242,7 +246,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     within its group: the row follows the pointer, the rows it passes slide aside, release places it and Escape
     puts it back. Title, Status and Votes have no handle, and every row keeps its slot so the names line up.
     The row ends with a custom field's **Edit** (a pencil), which opens its name, its options (Choice), its
-    **Links To** (Card) and **Show on card** in its row, and a **⋯** menu headed by the field's name: **Move
+    **Links To** (Card) in its row, and a **⋯** menu headed by the field's name: **Move
     Up** and **Move Down** (the keyboard's way to reorder), **Move to {group}** for each other group (Details
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a

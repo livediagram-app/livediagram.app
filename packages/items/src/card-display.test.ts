@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  typeCardLayout,
+  customCardFields,
   cardDisplayFields,
   cardLayoutFields,
   cardSlotFits,
@@ -86,5 +88,42 @@ describe('Compact’s bottom right', () => {
     expect(defaultCardLayout('task', 'compact').trail).toEqual(['assignee']);
     expect(defaultCardLayout('task', 'compact').row).not.toContain('assignee');
     expect(cardSlotFits('compact', 'trail', 'due')).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "On the card": custom fields are placed like any field.
+describe('custom fields on the card', () => {
+  const type = {
+    id: 'pet',
+    label: 'Pet',
+    fields: ['title'],
+    custom: [
+      { id: 'f-person', label: 'Person', kind: 'text' as const },
+      { id: 'f-old', label: 'Old', kind: 'text' as const, onCard: true },
+    ],
+  };
+
+  it('fits any slot, is offered only by its own type, and lists in the type’s order', () => {
+    expect(cardSlotFits('minimal', 'trail', 'f-person')).toBe(true);
+    expect(typeOffersCardField(type, 'f-person')).toBe(true);
+    expect(typeOffersCardField(type, 'f-other')).toBe(false);
+    expect(customCardFields(type)).toEqual(['f-person', 'f-old']);
+  });
+
+  it('keeps a field ticked Show on card Under the Title on Detailed, until Detailed is set', () => {
+    expect(typeCardLayout(type, 'detailed').body?.at(-1)).toBe('f-old');
+    expect(typeCardLayout(type, 'compact').body).toBeUndefined();
+    expect(
+      typeCardLayout({ ...type, display: { detailed: { foot: ['f-person'] } } }, 'detailed'),
+    ).toEqual({
+      foot: ['f-person'],
+    });
+  });
+
+  it('reads a stored Display holding a custom field, and refuses a malformed id', () => {
+    expect(readCardDisplay({ compact: { trail: ['f-person'] } }, 'pet')).toEqual({
+      compact: { trail: ['f-person'] },
+    });
+    expect(readCardDisplay({ compact: { trail: ['f-Bad!'] } }, 'pet')).toBeNull();
   });
 });

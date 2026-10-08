@@ -67,7 +67,13 @@ export const CARD_FIELDS = [
   'description',
   'parent',
 ] as const;
-export type CardField = (typeof CARD_FIELDS)[number];
+// A card field: a built-in one, or a card type's custom field by its id (`f-…`), placed by the type's Display
+// (docs/specs/026-plan/item-types.md "Card display").
+export type CustomCardField = `f-${string}`;
+export type CardField = (typeof CARD_FIELDS)[number] | CustomCardField;
+export function isCustomCardField(field: string): field is CustomCardField {
+  return CUSTOM_FIELD_ID_PATTERN.test(field);
+}
 
 // How much of each card a board draws (docs/specs/026-plan/plan-board.md "The board set-up"): the title
 // only, one line, or every field it shows. Absent is Detailed.
