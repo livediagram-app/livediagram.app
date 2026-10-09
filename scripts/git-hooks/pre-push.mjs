@@ -21,6 +21,41 @@ const FORMATTED = /\.(?:ts|tsx|js|jsx|json|md|yml|yaml)$/;
 // A file in no workspace: docs, root config, workflows. Only the help app's guards read these.
 const OUTSIDE_WORKSPACES = /^(?!apps\/|packages\/)/;
 
+// How many characters of file paths one check may carry. Windows executes
+// pnpm's `.cmd` shim through cmd.exe, whose whole command line stops at 8191
+// characters: a branch that touches 250 files blew past it and the push died
+// with "The command line is too long." before a single check ran (measured on
+// the self-hosted-runtime branch). Batches are sized by characters rather than
+// by count, because characters are what the limit counts, and the margin
+// leaves room for `pnpm exec prettier --check `.
+const MAX_COMMAND_CHARS = 6000;
+
+/**
+ * Split file paths into batches that each fit a command line.
+ *
+ * @param {string[]} files
+ * @param {number} limit
+ * @returns {string[][]}
+ */
+export function batchByChars(files, limit = MAX_COMMAND_CHARS) {
+  /** @type {string[][]} */
+  const batches = [];
+  /** @type {string[]} */
+  let current = [];
+  let length = 0;
+  for (const file of files) {
+    if (current.length > 0 && length + file.length + 1 > limit) {
+      batches.push(current);
+      current = [];
+      length = 0;
+    }
+    current.push(file);
+    length += file.length + 1;
+  }
+  if (current.length > 0) batches.push(current);
+  return batches;
+}
+
 /** @typedef {{ label: string, args: string[] }} Step */
 
 /**
@@ -34,9 +69,13 @@ export function prePushPlan(changedFiles, coverageFilters) {
   /** @type {Step[]} */
   const steps = [];
   const formatted = changedFiles.filter((f) => FORMATTED.test(f));
-  if (formatted.length > 0) {
-    steps.push({ label: 'format', args: ['exec', 'prettier', '--check', ...formatted] });
-  }
+  const batches = batchByChars(formatted);
+  batches.forEach((batch, index) => {
+    steps.push({
+      label: batches.length > 1 ? `format (${index + 1}/${batches.length})` : 'format',
+      args: ['exec', 'prettier', '--check', ...batch],
+    });
+  });
   steps.push(
     {
       label: 'lint and typecheck',
