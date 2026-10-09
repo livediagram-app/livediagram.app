@@ -80,13 +80,24 @@ describe('the themed scrollbar', () => {
     const offenders: string[] = [];
     const walk = (dir: string) => {
       for (const name of readdirSync(dir)) {
-        if (name === 'node_modules' || name.startsWith('.') || name === 'out' || name === 'dist')
+        if (
+          name === 'node_modules' ||
+          name.startsWith('.') ||
+          name === 'out' ||
+          name === 'dist' ||
+          // A self-hosted run mounts a built site at apps/server/data-static
+          // (docker-compose.yml). It is build output like `out` and `dist`, it is
+          // never committed, and on CI it does not exist.
+          name.startsWith('data-')
+        )
           continue;
         const path = join(dir, name);
         if (statSync(path).isDirectory()) walk(path);
         else if (/\.(tsx?|css)$/.test(name) && !name.endsWith('.test.ts')) {
           const text = readFileSync(path, 'utf8');
-          const rel = relative(repo, path);
+          // Posix separators: `relative` answers with backslashes on Windows,
+          // and the exemption below is a comparison against a repo path.
+          const rel = relative(repo, path).replaceAll('\\', '/');
           if (rel === 'packages/tailwind-config/theme.css') continue;
           // A per-surface hide is allowed; any other webkit scrollbar styling
           // or a private scrollbar class is a second dialect.
