@@ -6,6 +6,7 @@ import {
   elementHasText,
   elementKindLabel,
   elementSupportsText,
+  isBoxed,
   isMindNode,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -189,9 +190,10 @@ export function CanvasSelectionToolbars({
                     }
                   : undefined
             }
-            // Close to the element whenever no "+" sits in the gap: read-only, and kinds that show none (a Plan
-            // board or card, an annotation, an event-storming board).
-            compact={readOnly || !showPlus}
+            // Close to the element whenever no "+" sits in the gap: read-only, and boxed kinds that show none (a
+            // Plan board or card, an annotation, an event-storming board). An arrow keeps the wide gap: its move
+            // frame sits there, and a toolbar over it would take the press that drags the arrow.
+            compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
           />
         </div>
       ) : null}

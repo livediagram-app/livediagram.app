@@ -60,4 +60,14 @@ describe('selection toolbar gap', () => {
     expect(compactFor(square)).toBe(false);
     expect(compactFor(square, true)).toBe(true);
   });
+
+  it('keeps the wide gap on an arrow, whose move frame sits in it', () => {
+    const arrow = {
+      id: 'ar',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 200, y: 0 },
+    } as Element;
+    expect(compactFor(arrow)).toBe(false);
+  });
 });

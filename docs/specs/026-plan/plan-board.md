@@ -644,6 +644,7 @@ A board can be set to **fill its tab**: the tab becomes the board, for everyone,
   overlap.
 - A selected board or Plan card has no quick-connect pluses: its cards are its content, not nodes to chain from.
   With no plus to clear, its selection toolbar sits close above it (the 16 px gap read-only views use, not 48 px).
+  Only boxed elements close the gap this way: an arrow keeps 48 px, as its move frame sits in that gap.
 
 ## Both elements everywhere
 
