@@ -23,6 +23,7 @@ import { MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
 
 // A data row's colour (a pie slice, a legend row): its chip, shaped like the chart's own, opening
 // the one colour picker (docs/specs/004-interface-design/colour-picker.md): the strong standard
@@ -81,10 +82,6 @@ export function PieDataEditor({
   const colorAt = (i: number, s: PieSlice) => s.color ?? palette[i % palette.length]!;
   const patch = (i: number, p: Partial<PieSlice>) =>
     setRows((r) => r.map((s, j) => (j === i ? { ...s, ...p } : s)));
-  // Compact bordered field for the slice rows. The line editor lives in its own
-  // (roomier) dialog now, so this is no longer shared.
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
@@ -98,14 +95,14 @@ export function PieDataEditor({
               onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
             />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={s.label}
               placeholder="Label"
               onChange={(e) => patch(i, { label: e.target.value })}
               onBlur={() => onChange(rows)}
             />
             <input
-              className={`${cellInput} w-12 text-right tabular-nums`}
+              className={`${MENU_CELL_INPUT} w-12 text-right tabular-nums`}
               type="number"
               min={0}
               value={s.value}
@@ -152,8 +149,6 @@ export function LegendDataEditor({
 }) {
   const [rows, setRows] = useFollowingDraft<LegendItem[]>(items);
   const colorAt = (i: number, item: LegendItem) => item.color ?? palette[i % palette.length]!;
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
@@ -170,7 +165,7 @@ export function LegendDataEditor({
               onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
             />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={item.label}
               placeholder="Label"
               onChange={(e) =>
@@ -271,15 +266,13 @@ export function EntityFieldsEditor({
   onChange: (fields: EntityField[]) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<EntityField[]>(fields);
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
         {rows.map((f, i) => (
           <div key={i} className="flex items-center gap-1">
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={f.name}
               placeholder="name"
               aria-label={`Field ${i + 1} name`}
@@ -290,7 +283,7 @@ export function EntityFieldsEditor({
               onBlur={() => onChange(rows)}
             />
             <input
-              className={`${cellInput} w-[5.5rem]`}
+              className={`${MENU_CELL_INPUT} w-[5.5rem]`}
               value={f.type ?? ''}
               placeholder="type"
               aria-label={`Field ${i + 1} type`}
@@ -319,7 +312,7 @@ export function EntityFieldsEditor({
         type="button"
         disabled={rows.length >= ENTITY_MAX_FIELDS}
         onClick={() => onChange([...rows, { name: '' }])}
-        className="mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15"
+        className={MENU_ADD_ROW_BUTTON}
       >
         Add field
       </button>
@@ -339,8 +332,6 @@ export function ChecklistRowsEditor({
   onToggle?: (index: number) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<ChecklistItem[]>(items);
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
@@ -358,7 +349,7 @@ export function ChecklistRowsEditor({
               className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-brand-500"
             />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={item.text}
               placeholder="Task"
               maxLength={CHECKLIST_MAX_TEXT}
@@ -383,7 +374,7 @@ export function ChecklistRowsEditor({
         type="button"
         disabled={rows.length >= CHECKLIST_MAX_ITEMS}
         onClick={() => onChange([...rows, { text: '', done: false }])}
-        className="mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15"
+        className={MENU_ADD_ROW_BUTTON}
       >
         + Add row
       </button>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CheckIcon, Glyph, useMenu, type MenuInitialFocus } from '@livediagram/ui';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // The zoom-percentage button in the middle of the ZoomControls dock
 // (desktop only — it's hidden below `sm`, like the readout it replaced).
@@ -139,7 +140,7 @@ function ZoomPresets({
                 className={`group flex items-center justify-between rounded-lg px-3 py-1.5 text-xs font-medium tabular-nums transition ${
                   active
                     ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                    : TOOLBAR_CONTROL_REST
                 }`}
               >
                 {levelPercent}%{active ? <CheckIcon aria-hidden /> : null}

@@ -5,6 +5,7 @@
 // focus from it.
 import type { ReactNode } from 'react';
 import { HoverCard } from '@livediagram/ui';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 export function MindOutlineToolButton({
   label,
@@ -35,7 +36,7 @@ export function MindOutlineToolButton({
         className={`flex h-8 w-8 items-center justify-center rounded-md transition disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent ${
           pressed
             ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+            : TOOLBAR_CONTROL_REST
         }`}
       >
         {children}

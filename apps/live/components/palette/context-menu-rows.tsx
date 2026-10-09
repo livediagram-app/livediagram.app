@@ -25,6 +25,7 @@ import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideCircleDot } from '@livediagram/icons/lucide';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
 // live in context-menu-data-rows.tsx; re-exported so importers keep
@@ -182,7 +183,7 @@ export function TextToggle({
       className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
         active
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+          : TOOLBAR_CONTROL_REST
       }`}
     >
       {children}

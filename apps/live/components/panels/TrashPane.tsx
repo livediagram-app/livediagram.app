@@ -15,6 +15,7 @@ import { InfoNote } from '@/components/primitives/InfoNote';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/lib/trash-groups';
 import type { TrashController } from '@/hooks/persistence/useTrash';
+import { LIST_CARD } from '@/components/primitives/surface-classes';
 
 type Confirming =
   | { kind: 'purge'; id: string; name: string; group: TrashGroup; anchor: HTMLElement }
@@ -45,11 +46,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
         />
       ) : (
         groups.map((group) => (
-          <section
-            key={group.key}
-            aria-labelledby={`trash-${group.key}`}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
-          >
+          <section key={group.key} aria-labelledby={`trash-${group.key}`} className={LIST_CARD}>
             <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-700/60">
               <div className="min-w-0">
                 <h2

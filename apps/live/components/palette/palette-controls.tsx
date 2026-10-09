@@ -9,6 +9,7 @@ import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // The theme-tinted palette tile + its tint context moved to
 // PaletteIconButton.tsx; re-exported so existing imports keep working.
@@ -40,7 +41,7 @@ export function SizeButton({
     'flex w-full cursor-pointer items-center justify-center rounded-md px-1.5 py-1 text-xs font-medium transition';
   const styled = active
     ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
+    : TOOLBAR_CONTROL_REST;
   const button = (
     <button
       type="button"
@@ -76,7 +77,7 @@ export function PatternButton({
     'flex w-full cursor-pointer flex-col items-center gap-1 rounded-md px-1 py-2 transition';
   const styled = active
     ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
+    : TOOLBAR_CONTROL_REST;
   return (
     <button
       type="button"

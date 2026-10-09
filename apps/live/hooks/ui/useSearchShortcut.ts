@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { useLatest } from './useLatest';
 import { useShortcutsEnabled } from './useShortcutsEnabled';
+import { isTypingTarget } from '@/lib/typing-target';
 
 // The Search panel's shortcut, Cmd/Ctrl+K or Cmd/Ctrl+. (docs/specs/007-editor/command-palette.md
 // "Shortcut"), for surfaces outside the editor. The editor binds the same chords inside its own
@@ -16,15 +17,6 @@ export function isSearchChord(e: KeyboardEvent): boolean {
   return e.key === '.' || e.key.toLowerCase() === 'k';
 }
 
-function isTextTarget(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement ||
-    (target instanceof HTMLElement && target.isContentEditable)
-  );
-}
-
 export function useSearchShortcut(onOpenSearch: () => void): void {
   const { enabled } = useShortcutsEnabled();
   const open = useLatest(onOpenSearch);
@@ -32,7 +24,7 @@ export function useSearchShortcut(onOpenSearch: () => void): void {
     if (!enabled) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || !isSearchChord(e)) return;
-      if (isTextTarget(e.target) || anyModalOpen()) return;
+      if (isTypingTarget(e.target) || anyModalOpen()) return;
       e.preventDefault();
       open.current();
     };

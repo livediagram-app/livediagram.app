@@ -1,6 +1,7 @@
 'use client';
 
 import { HoverCard, RedoIcon, UndoIcon } from '@livediagram/ui';
+import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
 
 // The Undo / Redo strip in the bottom-right cluster: the leftmost item,
 // before Layers + Theme & Canvas. Edit sessions only: undo / redo aren't
@@ -27,7 +28,7 @@ export function UndoRedoClusterStrip({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={CLUSTER_STRIP}
     >
       <HoverCard title="Undo" description="Undo last edit.">
         <button

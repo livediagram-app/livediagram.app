@@ -25,6 +25,12 @@ export function bytesToBase64Url(bytes: Uint8Array | ArrayBuffer): string {
   return bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// `count` bytes from the platform CSPRNG, URL-safe base64 encoded: the one way every secret the
+// workers and the CLI mint (API tokens, PKCE verifiers, pairing codes, nonces) is spelled.
+export function randomBase64Url(count: number): string {
+  return bytesToBase64Url(crypto.getRandomValues(new Uint8Array(count)));
+}
+
 const BASE64_RE = /^[A-Za-z0-9+/_-]*={0,2}$/;
 
 // Either alphabet, padding optional: the inverse of both encoders above. Null

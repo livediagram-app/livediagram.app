@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -59,7 +60,7 @@ export function ToolbarDropdown({
           className={`flex h-8 items-center gap-0.5 rounded-md px-1.5 transition ${
             open
               ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+              : TOOLBAR_CONTROL_REST
           }`}
         >
           {trigger}

@@ -16,6 +16,7 @@ import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-ha
 import type { Env } from '../types';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 import { firstTabCountSql, isEmptyCount } from './tabs';
+import { DAY_MS } from '@livediagram/items';
 
 // Where each document lives and what its thumbnail needs. A shared document's team and folder
 // are the owner's filing, so they are not disclosed.
@@ -76,8 +77,6 @@ export const MARKED_MAKING = `(e.event_type IN ('document_created', 'document_du
   AND json_extract(e.snapshot, '$.markUsed') IS 1)`;
 
 // ---------- Jump back in ----------------------------------------------
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 type JumpBackInRow = PlaceRow & { use_days: number; last_used_at: number };
 

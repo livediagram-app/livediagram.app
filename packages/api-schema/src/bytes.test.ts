@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
+import { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
 
 // Vectors from RFC 4648 §10, plus the bytes that differ between the standard
 // and URL-safe alphabets (0xfb 0xff encodes to `+/8` / `-_8`).
@@ -61,5 +61,18 @@ describe('base64ToBytes', () => {
   it('round-trips bytesToBase64Url', () => {
     const bytes = new Uint8Array(40).map((_, i) => (i * 37) % 256);
     expect([...base64ToBytes(bytesToBase64Url(bytes))!]).toEqual([...bytes]);
+  });
+});
+
+describe('randomBase64Url', () => {
+  it('encodes the requested number of random bytes, URL-safe and unpadded', () => {
+    const token = randomBase64Url(32);
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(base64ToBytes(token)?.length).toBe(32);
+    expect(randomBase64Url(16)).toHaveLength(22);
+  });
+
+  it('differs from one call to the next', () => {
+    expect(randomBase64Url(16)).not.toBe(randomBase64Url(16));
   });
 });

@@ -27,6 +27,7 @@ import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
 import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
 import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
+import { LIST_CARD } from '@/components/primitives/surface-classes';
 
 const NO_FOLDERS: readonly Folder[] = [];
 
@@ -212,7 +213,7 @@ export function TeamSharedDocuments({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div className={LIST_CARD}>
       {/* ---------- Breadcrumb + new-folder ---------- */}
       <TeamLibraryHeader
         crumbs={crumbs}

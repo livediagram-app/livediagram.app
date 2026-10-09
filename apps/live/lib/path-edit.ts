@@ -13,6 +13,7 @@ import {
   type Element,
   type PathAnchor,
   type PathElement,
+  pointDistance,
 } from '@livediagram/document';
 import { STROKE_HIT_SCREEN_PX } from './whiteboard-tool';
 
@@ -68,8 +69,6 @@ export function visibleHandles(
   return out;
 }
 
-const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
-
 /** What a press at `p` lands on: a visible handle, a node, a segment, or empty space. */
 export function pathEditHit(
   anchors: readonly PathAnchor[],
@@ -84,7 +83,7 @@ export function pathEditHit(
   let best: PathEditHit = { kind: 'empty' };
   let bestD = radius;
   for (const h of visibleHandles(anchors, closed, selected)) {
-    const d = dist(p, handleOf(anchors[h.node]!, h.side)!);
+    const d = pointDistance(p, handleOf(anchors[h.node]!, h.side)!);
     if (d <= bestD) {
       bestD = d;
       best = { kind: 'handle', ...h };
@@ -94,7 +93,7 @@ export function pathEditHit(
   // hides the node.
   let node = -1;
   anchors.forEach((a, i) => {
-    const d = dist(p, a);
+    const d = pointDistance(p, a);
     if (d <= bestD) {
       bestD = d;
       node = i;

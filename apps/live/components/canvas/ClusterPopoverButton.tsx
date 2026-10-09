@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { HoverCard } from '@livediagram/ui';
+import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 
 // A bottom-right cluster button that opens a panel as a popover hanging ABOVE it, as the Layers
 // button does, and shows pressed while it is open: Slides in Illustrate mode, Card Types in Plan
@@ -42,7 +43,7 @@ export function ClusterStrip({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={CLUSTER_STRIP}
     >
       {children}
     </div>
@@ -75,7 +76,7 @@ export function ClusterPopoverSegment({
       } ${
         popoverOpen
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+          : CLUSTER_CONTROL_REST
       }`}
     >
       {icon}

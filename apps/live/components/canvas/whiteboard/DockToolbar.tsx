@@ -17,6 +17,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
+import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Roving = { focusKey: string; setFocusKey: (key: string) => void };
 const RovingContext = createContext<Roving>({ focusKey: '', setFocusKey: () => {} });
@@ -165,11 +166,5 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
 );
 
 export function DockDivider(props: Record<`data-${string}`, string>) {
-  return (
-    <span
-      {...props}
-      aria-hidden
-      className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700"
-    />
-  );
+  return <span {...props} aria-hidden className={TOOLBAR_DIVIDER} />;
 }

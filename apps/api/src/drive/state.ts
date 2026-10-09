@@ -9,6 +9,7 @@
 import {
   base64ToBytes,
   bytesToBase64Url,
+  randomBase64Url,
   DRIVE_STATE_TTL_MS,
   isLoopbackHostname,
 } from '@livediagram/api-schema';
@@ -70,7 +71,7 @@ export async function signDriveState(
     sub,
     redirectUri,
     exp: now + DRIVE_STATE_TTL_MS,
-    nonce: bytesToBase64Url(crypto.getRandomValues(new Uint8Array(16))),
+    nonce: randomBase64Url(16),
   };
   const body = bytesToBase64Url(enc.encode(JSON.stringify(payload)));
   return `${body}.${await signature(key, body)}`;

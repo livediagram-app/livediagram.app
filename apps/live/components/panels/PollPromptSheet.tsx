@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react';
 import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livediagram/api-schema';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { SOLID_BRAND_DARK_CONTROL, Portal } from '@livediagram/ui';
+import { isTypingTarget } from '@/lib/typing-target';
 
 export function PollPromptSheet({
   poll,
@@ -48,14 +49,7 @@ export function PollPromptSheet({
       // Escape listener attaches when the mode starts, possibly after this
       // one), so the decision waits until the whole dispatch has run.
       if (anyModalOpen()) return;
-      const el = document.activeElement;
-      if (
-        el instanceof HTMLTextAreaElement ||
-        el instanceof HTMLInputElement ||
-        el instanceof HTMLSelectElement ||
-        (el instanceof HTMLElement && el.isContentEditable)
-      )
-        return;
+      if (isTypingTarget(document.activeElement)) return;
       timer = window.setTimeout(() => {
         if (!e.defaultPrevented) onAnswer(null);
       }, 0);

@@ -27,6 +27,11 @@ export function pointInRect(r: Rect, p: Point): boolean {
   return p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
 }
 
+// Straight-line distance between two points.
+export function pointDistance(a: Point, b: Point): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 // Distance from `p` to the segment a-b (not the infinite line through it). A
 // degenerate segment (a and b within 1e-9 squared) measures to `a`.
 export function distToSegment(p: Point, a: Point, b: Point): number {

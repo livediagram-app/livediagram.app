@@ -3,7 +3,7 @@
 // Tickets and sessions are stored as SHA-256 hex only; a pairing code is a public handle stored in the clear.
 
 import {
-  bytesToBase64Url,
+  randomBase64Url,
   sha256Hex,
   WORKBENCH_PAIRING_CODE_BYTES,
   WORKBENCH_SESSION_PREFIX,
@@ -13,12 +13,6 @@ import {
 import { readWorkbenchSession } from '../db/workbench';
 import type { WorkbenchContext } from '../routes/context';
 import type { Env } from '../types';
-
-function randomBase64Url(bytes: number): string {
-  const buffer = new Uint8Array(bytes);
-  crypto.getRandomValues(buffer);
-  return bytesToBase64Url(buffer);
-}
 
 export const generateWorkbenchTicket = () => randomBase64Url(WORKBENCH_TICKET_BYTES);
 export const generatePairingCode = () => randomBase64Url(WORKBENCH_PAIRING_CODE_BYTES);

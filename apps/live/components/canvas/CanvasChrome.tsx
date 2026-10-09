@@ -61,6 +61,7 @@ import { panelEnabled } from '@/lib/user-preferences';
 import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -672,7 +673,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+                className={CLUSTER_STRIP}
               >
                 <HoverCard
                   title="Theme & canvas"
