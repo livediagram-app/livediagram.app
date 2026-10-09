@@ -236,6 +236,10 @@ describe('a colour picked with +', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Use' }));
     expect(addCustomColour).toHaveBeenCalledWith('#abcdef');
     expect(onPick).toHaveBeenCalledWith('#abcdef');
+    // Focus goes back to +, never to the page, where Escape would reach the canvas.
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Add a custom colour' }),
+    );
   });
 
   it('records nothing for a swatch picked from the groups', () => {

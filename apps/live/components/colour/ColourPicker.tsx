@@ -5,7 +5,7 @@
 // colours, and Custom colours ending in +, which opens the custom colour editor in place. Leading
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
 // arrows move through every swatch, Enter or Space picks.
-import { useContext, useId, useState, type FocusEvent } from 'react';
+import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
 import { PlusIcon, Tooltip } from '@livediagram/ui';
 import { isHexColour } from '@livediagram/document';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
@@ -63,6 +63,9 @@ export function ColourPicker({
   onPreviewEnd,
 }: ColourPickerProps) {
   const [editorOpen, setEditorOpen] = useState(false);
+  // + takes focus back when the editor closes, so it never drops to the page (where Escape would reach
+  // the canvas and drop the tool in hand, rather than close the surface the picker sits in).
+  const plusRef = useRef<HTMLButtonElement>(null);
   // A colour picked with + becomes one of the document's custom colours (none outside the editor).
   const addCustomColour = useContext(EditorContext)?.addCustomColour;
   const headingId = useId();
@@ -155,6 +158,7 @@ export function ColourPicker({
               {yoursGroup ? (
                 <Tooltip label="Add a custom colour">
                   <button
+                    ref={plusRef}
                     type="button"
                     aria-label="Add a custom colour"
                     aria-expanded={editorOpen}
@@ -179,6 +183,7 @@ export function ColourPicker({
           onUse={(hex) => {
             setEditorOpen(false);
             const picked = hex.toLowerCase();
+            plusRef.current?.focus();
             addCustomColour?.(picked);
             onPick(picked);
           }}
