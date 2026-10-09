@@ -59,7 +59,10 @@ describe('writers of tabs', () => {
       }
       for (const file of sourceFiles(src)) {
         const n = readFileSync(file, 'utf8').match(WRITES_TABS)?.length ?? 0;
-        if (n > 0) found[relative(APPS, file)] = n;
+        // Posix separators in the key: `relative` answers with backslashes on
+        // Windows, and the census is a comparison against the table above, not a
+        // platform-specific path.
+        if (n > 0) found[relative(APPS, file).replaceAll('\\', '/')] = n;
       }
     }
     expect(found).toEqual(KNOWN_WRITERS);
