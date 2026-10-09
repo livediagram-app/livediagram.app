@@ -19,7 +19,7 @@ import {
   illustratePageFitBox,
   illustratePagesOf,
   layOutIllustratePages,
-  withContentPaginated,
+  withContentOnAPage,
   type EditorMode,
   type LaidOutPage,
   type Tab,
@@ -140,31 +140,30 @@ export function useIllustratePages(deps: {
   const centre = useEffectEvent(() =>
     frame(layOutIllustratePages(illustratePagesOf(activeTab))[0]),
   );
-  // Entering the mode with content off the first page and no pages yet lays the content out into
-  // pages (withContentPaginated, docs/specs/007-editor/illustrate-pages.md "Into pages"): one
-  // edit, so one undo puts it back, said in a toast. Then the view frames the first page.
-  const paginate = useEffectEvent(() => {
+  // Entering the mode with a board that does not fit its first page puts it onto a page made
+  // around it, where it is (withContentOnAPage, docs/specs/007-editor/illustrate-pages.md "Into
+  // pages"): no element moves, resizes or scales. One edit, so one undo takes the page away, said
+  // in a toast. Then the view frames the first page.
+  const putOnAPage = useEffectEvent(() => {
     if (!canEdit || activeTab.locked === true) return;
-    const laid = withContentPaginated(activeTab);
-    if (!laid) return;
-    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentPaginated(t) ?? t) : t)));
-    const n = laid.pages.length;
-    deps.toastInfo(
-      n === 1
-        ? 'Laid out onto a page. Undo puts it back.'
-        : `Laid out into ${n} pages. Undo puts it back.`,
-    );
-    track('Tab', 'Changed', 'PagesLaidOut');
-    debugLog('[illustrate-page] content laid out into pages', { tabId, pages: n });
+    const placed = withContentOnAPage(activeTab);
+    if (!placed) return;
+    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentOnAPage(t) ?? t) : t)));
+    deps.toastInfo('Put onto a page that fits it. Undo takes the page away.');
+    track('Tab', 'Changed', 'PageFitToContent');
+    debugLog('[illustrate-page] content put onto a page', {
+      tabId,
+      size: placed.pages[0]?.size ?? 'a4',
+    });
   });
   useEffect(() => {
     if (!on || !tabLoaded) return;
     const raf = requestAnimationFrame(() => centre());
     return () => cancelAnimationFrame(raf);
   }, [on, tabLoaded, tabId]);
-  // Its own effect so an editor role that resolves after the tab has loaded still lays out.
+  // Its own effect so an editor role that resolves after the tab has loaded still gets the page.
   useEffect(() => {
-    if (on && tabLoaded && canEdit) paginate();
+    if (on && tabLoaded && canEdit) putOnAPage();
   }, [on, tabLoaded, tabId, canEdit]);
 
   // The pages laid out once per change to the stored pages, so everything drawn from them (the
@@ -252,6 +251,7 @@ export function useIllustratePages(deps: {
       onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
+      toastInfo: deps.toastInfo,
     }),
   };
 }

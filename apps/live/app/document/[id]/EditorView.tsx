@@ -437,7 +437,7 @@ export function EditorView() {
           }
           onCopyTabTo={linkActiveTabTo}
           onToggleLockTab={toggleActiveTabLock}
-          opensInFor={ctx.opensInFor}
+          modeChoiceFor={ctx.modeChoiceFor}
           onReorder={reorderTabs}
           // A tab-scoped visitor edits their tab's content at most, never the
           // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).

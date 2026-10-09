@@ -776,7 +776,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/illustrate/',
         title: 'Turn any diagram into pages',
         description:
-          'Switch a diagram, mind map or sketch to Illustrate mode and it lands on pages, a page for each part, scaled to fit. One undo puts it back.',
+          'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
       },
       {
         art: <IllustrateExportArt />,

@@ -72,15 +72,17 @@ export function editorModeSwitchable(tab: ModeTab | undefined): boolean {
   return !isEventStormingTab(tab);
 }
 
-/** The mode a person who has not switched on this tab sees it in. */
+/** The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md "Where
+ *  the mode lives"): its stored mode, Diagram when absent or unreadable, always Diagram on an
+ *  event-storming board. */
 export function opensInOf(tab: ModeTab | undefined): EditorMode {
   if (!editorModeSwitchable(tab)) return DEFAULT_EDITOR_MODE;
   return parseEditorMode(tab?.opensIn) ?? DEFAULT_EDITOR_MODE;
 }
 
-// "Opens in" (docs/specs/007-editor/editor-modes.md): the mode a general tab opens in, for
-// everyone. Switches nobody's current mode. The same tab when nothing changes; an event-storming
-// board opens in Diagram and is never given an opening mode.
+// The tab's mode set (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the mode only.
+// The same tab when nothing changes; an event-storming board is always Diagram and is never given
+// a mode. A switch also brings what the mode brings: withEditorModeSwitched (editor-mode-switch.ts).
 export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: EditorMode): T {
   if (!editorModeSwitchable(tab) || opensInOf(tab) === mode) return tab;
   return { ...tab, opensIn: mode };

@@ -185,11 +185,20 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 // PNG / PDF helpers — shared canvas rendering
 // ---------------------------------------------------------------------
 
+// The largest canvas side every browser draws (Safari and Firefox stop at 16384 px; Chrome 32767).
+export const MAX_EXPORT_CANVAS_SIDE = 16384;
+
+/** The scale an image export draws at: `wanted`, lowered so neither side of a `w` x `h` drawing
+ *  passes MAX_EXPORT_CANVAS_SIDE. */
+export function exportScale(wanted: number, w: number, h: number): number {
+  const longest = Math.max(w, h, 1);
+  return Math.min(wanted, MAX_EXPORT_CANVAS_SIDE / longest);
+}
+
 export async function renderTabToCanvas(
   tab: Tab,
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
-  const scale = opts.scale ?? 2; // default 2× for crisp output
   const frame = opts.page
     ? pageExportFrame(opts.page, {
         ruling: pageRulingOf(tab, opts.page),
@@ -226,6 +235,9 @@ export async function renderTabToCanvas(
   // element / arrow drawer stays in plain canvas coordinates.
   const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
+  // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
+  // Content page reaches 19200 px, docs/specs/007-editor/illustrate-pages.md "Sizes").
+  const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
   const canvas = document.createElement('canvas');

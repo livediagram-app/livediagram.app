@@ -1,6 +1,6 @@
 // Feature art for Illustrate's pages (docs/specs/019-marketing/marketing-site.md,
 // docs/specs/007-editor/illustrate-pages.md, article-pages.md): pages in three formats, a page
-// placed from the layout picker, backgrounds painted from the theme, a diagram laid out onto pages,
+// placed from the layout picker, backgrounds painted from the theme, a diagram split onto pages,
 // and the export (the article page lives in ./article). Each is a small mock of the real surface, built on
 // ./page-kit so a page reads as paper on the canvas in light and in dark.
 
@@ -514,7 +514,7 @@ function Node({ x, y, w = 22, label }: { x: number; y: number; w?: number; label
   );
 }
 
-/** Turn any diagram into pages: a flow on the canvas, switched to Illustrate, lands a page per part. */
+/** Turn any diagram into pages: a flow on the canvas, switched to Illustrate and split, a page per part. */
 export function IllustrateIntoPagesArt() {
   return (
     <Frame canvas>
@@ -574,7 +574,7 @@ export function IllustrateIntoPagesArt() {
           />
         </g>
         <g transform="translate(56 0)">
-          {/* A page for each part, scaled to fit. */}
+          {/* A page for each part, each at its own size. */}
           {[
             { x: 132, label: 'Page 1', nodes: ['Idea', 'Draft'] },
             { x: 172, label: 'Page 2', nodes: ['Review', 'Ship'] },

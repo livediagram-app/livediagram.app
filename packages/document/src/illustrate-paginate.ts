@@ -1,25 +1,35 @@
-// Laying a tab's content out into Illustrate pages (docs/specs/007-editor/illustrate-pages.md
-// "Into pages"), for a tab entering the mode with content that does not fit inside its first page:
-// the content is split into clusters (things joined by arrows, and things close together), the
-// clusters are put in reading order, and each gets a page of its own, turned to suit its shape,
-// its content scaled down to fit where it must and centred. Pure: tab in, tab out, one edit.
-import { endpointPosition } from './geometry';
+// Putting a tab's content onto Illustrate pages (docs/specs/007-editor/illustrate-pages.md "Into
+// pages"). Entering the mode never moves, resizes or scales an element: a board that does not fit
+// its first page gets one page made around it, where it is (withContentOnAPage). Split Into Pages
+// is the explicit action that breaks a Fit to Content page into one page per cluster (things
+// joined by arrows, and things close together), in reading order, each cluster moved onto its own
+// page and never scaled (withPageSplit). Pure: tab in, tab out, one edit.
+import { elementIndexFor, endpointPosition } from './geometry';
 import {
+  illustratePageAt,
   illustratePagesOf,
   layOutIllustratePages,
   MAX_ILLUSTRATE_PAGES,
   nextIllustratePageId,
+  pageDimensions,
+  pageMargin,
+  withIllustratePages,
   type IllustratePage,
 } from './illustrate-page';
-import { withContentFittedToPage } from './illustrate-page-content';
+import {
+  elementAnchorPoint,
+  elementIdsOnPage,
+  withContentFittedToPage,
+} from './illustrate-page-content';
+import { clampPageSide, FIT_PAGE_MAX_SIDE } from './illustrate-page-fit';
 import { isBoxed, type Element, type Tab } from './index';
 
 // Two things this close (canvas px, edge to edge) belong together.
 export const PAGINATE_CLUSTER_GAP = 120;
-// The most pages laying content out makes (docs/specs/007-editor/illustrate-pages.md "Into pages").
+// The most pages Split Into Pages makes (docs/specs/007-editor/illustrate-pages.md "Into pages").
 export const PAGINATE_MAX_PAGES = 20;
-// Wider than this many times its height, a cluster takes a landscape page.
-const LANDSCAPE_RATIO = 1.1;
+// Wider than this many times its height, content takes a landscape page.
+export const LANDSCAPE_RATIO = 1.1;
 
 type Box = { x: number; y: number; r: number; b: number };
 
@@ -95,13 +105,6 @@ export function contentClusters(elements: Element[], gap = PAGINATE_CLUSTER_GAP)
   return rows.flatMap((row) => row.sort((a, b) => a.box.x - b.box.x).map((c) => c.ids));
 }
 
-// Under this share of its area on the pages, a cluster counts as stray.
-const STRAY_SHARE = 0.5;
-
-const overlapArea = (a: Box, r: { x: number; y: number; width: number; height: number }) =>
-  Math.max(0, Math.min(a.r, r.x + r.width) - Math.max(a.x, r.x)) *
-  Math.max(0, Math.min(a.b, r.y + r.height) - Math.max(a.y, r.y));
-
 const unionBox = (boxes: Box[]): Box =>
   boxes.reduce((a, b) => ({
     x: Math.min(a.x, b.x),
@@ -111,94 +114,131 @@ const unionBox = (boxes: Box[]): Box =>
   }));
 
 /**
- * The tab laid out into pages, or null when there is nothing to do (docs/specs/007-editor/
- * illustrate-pages.md "Into pages"):
- * - with no pages stored, content that does not fit inside the first page is laid out afresh;
- * - with pages stored, each cluster less than half on the pages (by area) is stray: stray clusters
- *   go onto new pages after the last, or the tab is laid out afresh when nothing else is on a page.
- * At most PAGINATE_MAX_PAGES new pages (and never past MAX_ILLUSTRATE_PAGES): clusters past the
- * last page share it.
+ * The page made around content with these bounds (docs/specs/007-editor/illustrate-pages.md "Into
+ * pages"): an infographic page, landscape when the content is wider than LANDSCAPE_RATIO times its
+ * height; A4 when the content fits A4's margin box that way round, else Fit to Content, the
+ * content's bounds plus the page's margin all round (within the Fit to Content limits).
  */
-export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
+export function pageAround(box: Box, id: string): IllustratePage {
+  const w = Math.max(0, box.r - box.x);
+  const h = Math.max(0, box.b - box.y);
+  const orientation = w > h * LANDSCAPE_RATIO ? 'landscape' : 'portrait';
+  const a4: IllustratePage = { id, orientation, kind: 'infographic' };
+  const paper = pageDimensions(a4);
+  const am = pageMargin(a4);
+  if (w <= paper.width - 2 * am && h <= paper.height - 2 * am) return a4;
+  // The margin is a share of the page's short side, which the margin itself grows: start from the
+  // content's short side and widen until the page's own margin is no more than what was left.
+  let m = Math.ceil(Math.min(w, h) * 0.07);
+  for (;;) {
+    const page: IllustratePage = {
+      id,
+      orientation,
+      size: 'fit',
+      fit: {
+        width: clampPageSide(Math.ceil(w + 2 * m)),
+        height: clampPageSide(Math.ceil(h + 2 * m)),
+      },
+      kind: 'infographic',
+    };
+    const own = pageMargin(page);
+    // Past the largest side nothing more is gained: the content runs off the page, unscaled.
+    const capped = page.fit!.width === FIT_PAGE_MAX_SIDE || page.fit!.height === FIT_PAGE_MAX_SIDE;
+    if (own <= m || capped) return page;
+    m = own;
+  }
+}
+
+const contentBox = (tab: Pick<Tab, 'elements'>, ids?: ReadonlySet<string>): Box | null => {
+  const els = ids ? tab.elements.filter((el) => ids.has(el.id)) : tab.elements;
+  if (els.length === 0) return null;
+  return unionBox(els.map((el) => boundsOf(el, tab.elements)));
+};
+
+/**
+ * The tab with its content put onto a page on entering Illustrate mode, or null when there is
+ * nothing to do (docs/specs/007-editor/illustrate-pages.md "Into pages"). No element moves:
+ * - with no pages stored, content that does not fit inside the first page gets one page made
+ *   around all of it, anchored on its centre (the row anchor);
+ * - with pages stored, none an article page or locked and nothing on any page, the stored pages
+ *   are replaced by that one page;
+ * - otherwise null: content off the pages stays where it is.
+ */
+export function withContentOnAPage<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
 ): (T & { pages: IllustratePage[] }) | null {
-  if (tab.elements.length === 0) return null;
+  const box = contentBox(tab);
+  if (!box) return null;
   const stored = Array.isArray(tab.pages) ? illustratePagesOf(tab) : null;
   const laid = layOutIllustratePages(illustratePagesOf(tab));
-  const boxOf = (el: Element) => boundsOf(el, tab.elements);
   if (!stored) {
     // Nothing to do while everything already fits inside the first page (edges included).
     const r = laid[0]!.rect;
-    const fits = tab.elements.every((el) => {
-      const b = boxOf(el);
-      return (
-        b.x >= r.x - 1 && b.y >= r.y - 1 && b.r <= r.x + r.width + 1 && b.b <= r.y + r.height + 1
-      );
-    });
-    return fits ? null : paginate(tab, tab.elements, []);
+    const fits =
+      box.x >= r.x - 1 &&
+      box.y >= r.y - 1 &&
+      box.r <= r.x + r.width + 1 &&
+      box.b <= r.y + r.height + 1;
+    if (fits) return null;
+  } else {
+    if (stored.some((p) => p.flow || p.locked)) return null;
+    const index = elementIndexFor(tab.elements);
+    const onAPage = tab.elements.some((el) =>
+      illustratePageAt(laid, elementAnchorPoint(el, index)),
+    );
+    if (onAPage) return null;
   }
-  // A cluster less than half on the pages (by area) is stray: it gets a page of its own.
-  const byId = new Map(tab.elements.map((el) => [el.id, el]));
-  const strayIds = contentClusters(tab.elements).filter((ids) => {
-    // A line (a straight arrow, a rule) has no area: grown a pixel each way, so its share is real.
-    const raw = unionBox(ids.map((id) => boxOf(byId.get(id)!)));
-    const box = { x: raw.x - 1, y: raw.y - 1, r: raw.r + 1, b: raw.b + 1 };
-    const area = (box.r - box.x) * (box.b - box.y);
-    const onPages = laid.reduce((sum, p) => sum + overlapArea(box, p.rect), 0);
-    return onPages / area < STRAY_SHARE;
-  });
-  if (strayIds.length === 0) return null;
-  const stray = new Set(strayIds.flat());
-  const content = tab.elements.filter((el) => stray.has(el.id));
-  // An article page is never empty: its writing is no element, and it keeps its page.
-  const pagesEmpty = stray.size === tab.elements.length && !stored.some((p) => p.flow);
-  return pagesEmpty
-    ? paginate({ ...tab, pages: undefined }, tab.elements, [])
-    : paginate(tab, content, stored);
+  const page: IllustratePage = {
+    ...pageAround(box, nextIllustratePageId(stored ?? [])),
+    rowAt: { x: Math.round((box.x + box.r) / 2), y: Math.round((box.y + box.b) / 2) },
+  };
+  const { pageOrientation: _legacy, ...rest } = tab;
+  void _legacy;
+  return { ...(rest as T), pages: [page] };
 }
 
-// `content` laid onto new pages after `kept` (the tab's pages that stay).
-function paginate<T extends Pick<Tab, 'elements'>>(
-  tab: T & { pages?: unknown },
-  content: Element[],
-  kept: IllustratePage[],
-): T & { pages: IllustratePage[] } {
-  const room = Math.min(MAX_ILLUSTRATE_PAGES - kept.length, PAGINATE_MAX_PAGES);
-  // No room for another page: the clusters share the last page, centred and fitted there.
-  if (room <= 0) {
-    const last = kept[kept.length - 1]!;
-    const out = { ...tab, pages: kept } as T & { pages: IllustratePage[] };
-    return withContentFittedToPage(out, new Set(content.map((el) => el.id)), last.id, {
-      centre: true,
-    });
-  }
+/**
+ * The tab with a Fit to Content page split into one page per cluster of its content, or null when
+ * there is nothing to split (docs/specs/007-editor/illustrate-pages.md "Split Into Pages"): the
+ * page is replaced, in its place in the row, by a page made around each cluster in reading order,
+ * the cluster moved onto it, centred and never scaled; the pages after it move along. At most
+ * PAGINATE_MAX_PAGES pages (and never past MAX_ILLUSTRATE_PAGES): clusters past the last share it.
+ */
+export function withPageSplit<T extends Pick<Tab, 'elements'>>(
+  tab: T & { pages?: unknown; pageOrientation?: unknown },
+  pageId: string,
+): (T & { pages: IllustratePage[] }) | null {
+  const pages = illustratePagesOf(tab);
+  const index = pages.findIndex((p) => p.id === pageId);
+  const target = pages[index];
+  if (!target || target.size !== 'fit' || target.locked) return null;
+  const ids = elementIdsOnPage(tab.elements, layOutIllustratePages(pages), pageId);
+  const content = tab.elements.filter((el) => ids.has(el.id));
   const clusters = contentClusters(content);
+  if (clusters.length < 2) return null;
+  const room = Math.min(MAX_ILLUSTRATE_PAGES - (pages.length - 1), PAGINATE_MAX_PAGES);
   const capped =
     clusters.length <= room
       ? clusters
       : [...clusters.slice(0, room - 1), clusters.slice(room - 1).flat()];
-  const byId = new Map(tab.elements.map((el) => [el.id, el]));
   const added: IllustratePage[] = [];
-  for (const ids of capped) {
-    const box = ids
-      .map((id) => boundsOf(byId.get(id)!, tab.elements))
-      .reduce((a, b) => ({
-        x: Math.min(a.x, b.x),
-        y: Math.min(a.y, b.y),
-        r: Math.max(a.r, b.r),
-        b: Math.max(a.b, b.b),
-      }));
-    const wide = box.r - box.x > (box.b - box.y) * LANDSCAPE_RATIO;
-    added.push({
-      id: nextIllustratePageId([...kept, ...added]),
-      orientation: wide ? 'landscape' : 'portrait',
-    });
+  for (const group of capped) {
+    const box = contentBox(tab, new Set(group))!;
+    added.push(pageAround(box, nextIllustratePageId([...pages, ...added])));
   }
-  // The pages stored without moving anything (the content is off the new ones as yet), then each
-  // cluster fitted into its page.
-  let out = { ...tab, pages: [...kept, ...added] } as T & { pages: IllustratePage[] };
-  capped.forEach((ids, i) => {
-    out = withContentFittedToPage(out, new Set(ids), added[i]!.id, { centre: true });
+  // The new pages take the split page's place first: its content stays put (its page is gone) while
+  // the pages after move along with theirs, and the row anchor stays (withIllustratePages). Then
+  // each cluster is moved onto its page, centred, at its own size.
+  let out = withIllustratePages(tab, [
+    ...pages.slice(0, index),
+    ...added,
+    ...pages.slice(index + 1),
+  ]);
+  capped.forEach((group, i) => {
+    out = withContentFittedToPage(out, new Set(group), added[i]!.id, {
+      centre: true,
+      keepSize: true,
+    });
   });
   return out;
 }

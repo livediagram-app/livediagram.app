@@ -406,11 +406,13 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
 
 ### Leaving Illustrate (`useLeaveIllustrate`)
 
-Wraps `useSwitchSetsOpensIn(useEditorMode(...))`. `setMode(next)` asks (sets `pending`) only when
-the mode is `'illustrate'`, `next` is not, the person may edit, the tab is unlocked and has an
-article; else it switches. `convert`: per flow, `flush()` then `blocksByPage()`; `ArticlesToPages`;
-one `commitTabs(withArticlesAsPages(t, splits))`; then switches. `keep` switches; `cancel` clears.
-Shift+D reaches the wrapped `setMode`; Opens in uses the raw one, so it never asks.
+Wraps `useEditorMode(...)`. `setMode(next)` asks (sets `pending`) only when the mode is
+`'illustrate'`, `next` is not, the person may edit, the tab is unlocked and has an article; else it
+switches. `convert`: per flow, `takeBlocks()` then `blocksByPage()`; `ArticlesToPages`; then ONE
+switch, `rawSet(pending, t => withArticlesAsPages(t', splits))`, so the conversion and the switch
+are one tab edit (one undo puts the tab back in Illustrate with its articles). `keep` switches;
+`cancel` clears. Shift+D and the tab menu's Mode on the active tab reach the wrapped `setMode`, so
+they ask too.
 
 ### Collaboration
 
@@ -618,32 +620,32 @@ ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] â€
 
 ## Testing
 
-| Spec rule                                                                                                           | Test                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Writing read defensively, caps, style fields, cache, words, a new article                                           | `packages/document/src/article-flow.test.ts` "article writing: reading it"                       |
-| Block ops: round trip, no resend, two writers merge and converge, missing neighbours, a peer's ops read defensively | `article-flow.test.ts` "article writing: block ops"                                              |
-| Numbered lists by level, bullets restart                                                                            | `article-flow.test.ts` "list markers"                                                            |
-| Article as a unit: add, remove, move, duplicate, grow and shrink                                                    | `packages/document/src/article-pages.test.ts` "articles in the row"                              |
-| A duplicated article's notes point at the copied markers                                                            | `article-pages.test.ts` "a duplicated article keeps its margin notes to itself"                  |
-| First page's choice                                                                                                 | `article-pages.test.ts` "the first page's own choice of kind"                                    |
-| Zones settle with their elements, never swap, drawing clip, objects whole                                           | `packages/document/src/article-zones.test.ts`                                                    |
-| Margin notes: place, follow, stack, untint, go with their text                                                      | `packages/document/src/article-notes.test.ts`                                                    |
-| Turn Into Pages                                                                                                     | `packages/document/src/article-to-page.test.ts`                                                  |
-| Article pages read, flow fallback, kept together                                                                    | `packages/document/src/illustrate-page.test.ts` "page kinds"                                     |
-| Blocks to editor and back, identity kept                                                                            | `apps/live/lib/article/article-convert.test.ts`                                                  |
-| Pasted Markdown, safe links only, plain text                                                                        | `apps/live/lib/article/article-markdown.test.ts`                                                 |
-| Writing synced as block ops, frames, never in tab-meta, merge keeps ours                                            | `apps/live/app/document/[id]/tab-broadcast-ops.test.ts` "articles"                               |
-| A peer's block ops applied, malformed frames ignored, late writing for a removed article dropped, removal           | `apps/live/app/document/[id]/room-op-apply.test.ts` "documents"                                  |
-| Caret by block and offset                                                                                           | `apps/live/lib/article/article-caret.test.ts`                                                    |
-| Collaborators' carets: names, freshness, tab scope, leaving                                                         | `apps/live/lib/article/article-carets-store.test.ts`                                             |
-| Peer carets drawn as decorations, follow their block                                                                | `apps/live/lib/article/article-peers.test.ts`                                                    |
-| Caret broadcast throttled, null on leaving, hidden by a vote                                                        | `apps/live/hooks/collab/useArticleCaretBroadcast.test.tsx`                                       |
-| `article-caret` on the wire                                                                                         | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts` |
-| Into pages never takes an article's pages                                                                           | `packages/document/src/illustrate-paginate.test.ts` "into pages never loses an article"          |
-| Export cuts a drawing at its zone                                                                                   | `apps/live/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"       |
-| A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                       | `apps/live/components/canvas/article/useTouchPagePan.test.tsx`                                   |
-| Reading frame                                                                                                       | `apps/live/lib/viewport.test.ts` "computeReadingFrame"                                           |
-| Article edits through the page panel (add, turn, paint, move, delete)                                               | `apps/live/hooks/editor/illustrate-page-edits.test.ts` "documents"                               |
+| Spec rule                                                                                                           | Test                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Writing read defensively, caps, style fields, cache, words, a new article                                           | `packages/document/src/article-flow.test.ts` "article writing: reading it"                            |
+| Block ops: round trip, no resend, two writers merge and converge, missing neighbours, a peer's ops read defensively | `article-flow.test.ts` "article writing: block ops"                                                   |
+| Numbered lists by level, bullets restart                                                                            | `article-flow.test.ts` "list markers"                                                                 |
+| Article as a unit: add, remove, move, duplicate, grow and shrink                                                    | `packages/document/src/article-pages.test.ts` "articles in the row"                                   |
+| A duplicated article's notes point at the copied markers                                                            | `article-pages.test.ts` "a duplicated article keeps its margin notes to itself"                       |
+| First page's choice                                                                                                 | `article-pages.test.ts` "the first page's own choice of kind"                                         |
+| Zones settle with their elements, never swap, drawing clip, objects whole                                           | `packages/document/src/article-zones.test.ts`                                                         |
+| Margin notes: place, follow, stack, untint, go with their text                                                      | `packages/document/src/article-notes.test.ts`                                                         |
+| Turn Into Pages                                                                                                     | `packages/document/src/article-to-page.test.ts`                                                       |
+| Article pages read, flow fallback, kept together                                                                    | `packages/document/src/illustrate-page.test.ts` "page kinds"                                          |
+| Blocks to editor and back, identity kept                                                                            | `apps/live/lib/article/article-convert.test.ts`                                                       |
+| Pasted Markdown, safe links only, plain text                                                                        | `apps/live/lib/article/article-markdown.test.ts`                                                      |
+| Writing synced as block ops, frames, never in tab-meta, merge keeps ours                                            | `apps/live/app/document/[id]/tab-broadcast-ops.test.ts` "articles"                                    |
+| A peer's block ops applied, malformed frames ignored, late writing for a removed article dropped, removal           | `apps/live/app/document/[id]/room-op-apply.test.ts` "documents"                                       |
+| Caret by block and offset                                                                                           | `apps/live/lib/article/article-caret.test.ts`                                                         |
+| Collaborators' carets: names, freshness, tab scope, leaving                                                         | `apps/live/lib/article/article-carets-store.test.ts`                                                  |
+| Peer carets drawn as decorations, follow their block                                                                | `apps/live/lib/article/article-peers.test.ts`                                                         |
+| Caret broadcast throttled, null on leaving, hidden by a vote                                                        | `apps/live/hooks/collab/useArticleCaretBroadcast.test.tsx`                                            |
+| `article-caret` on the wire                                                                                         | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts`      |
+| Into pages never takes an article's pages                                                                           | `packages/document/src/illustrate-paginate.test.ts` "never replaces a locked page or an article page" |
+| Export cuts a drawing at its zone                                                                                   | `apps/live/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"            |
+| A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                       | `apps/live/components/canvas/article/useTouchPagePan.test.tsx`                                        |
+| Reading frame                                                                                                       | `apps/live/lib/viewport.test.ts` "computeReadingFrame"                                                |
+| Article edits through the page panel (add, turn, paint, move, delete)                                               | `apps/live/hooks/editor/illustrate-page-edits.test.ts` "documents"                                    |
 
 Not covered by a unit test (browser-checked): `ArticleEditor` (keys, input rules, slash menu,
 measure and commit timing, paste into an empty block), `PageToolbar` placement and hover,

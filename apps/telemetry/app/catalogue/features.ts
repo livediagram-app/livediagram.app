@@ -365,8 +365,8 @@ export const ILLUSTRATE_PAGE_BUILDING = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Built',
-  'A layout put onto an Illustrate page, a page duplicated or moved, or a tab laid out into pages.',
-  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
+  'A layout put onto an Illustrate page, a page duplicated, moved or split, or a board put onto a page.',
+  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut', 'PageFitToContent'] },
 );
 
 // Leaving Illustrate past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving

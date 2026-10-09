@@ -363,7 +363,7 @@ export function TabMenu() {
   const mx = 150;
   const my = 14;
   const mw = 200;
-  const rows = ['Organise', 'Content', 'Opens in', 'Cleanup'];
+  const rows = ['Organise', 'Content', 'Mode', 'Cleanup'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />

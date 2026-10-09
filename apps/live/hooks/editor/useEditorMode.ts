@@ -1,39 +1,35 @@
-// The editor mode a person works in on a tab (docs/specs/007-editor/editor-modes.md).
+// The tab's editor mode in the editor (docs/specs/007-editor/editor-modes.md "Where the mode
+// lives").
 //
 // Contract:
-// - `useEditorMode(tab, { canEdit })` returns `{ mode, setMode, canSwitch, canEdit }` for that tab.
-//   `canEdit` comes from the editor's one answer (useViewPreview) and is handed back, so the switch
-//   reads the very value the editor resolved with.
-// - `mode` is the person's remembered choice for the tab, else the mode the tab opened in on
-//   this page (usePinTabOpening), else the tab's opening mode (`tab.opensIn`), else 'diagram'. Event-storming boards are always 'diagram'. A visitor who
-//   cannot edit (`canEdit: false`, the view role) always gets the opening mode.
-// - `canSwitch` is true only for an editor on a general tab; the mode switch shows only then.
-// - `setMode(next)` fires `Editor · Changed · ModeDiagram | ModeDraw | ModeIllustrate` and then applies: it
-//   remembers the choice in this browser for this tab (never on the tab itself, so nobody else
-//   is affected). A no-op when the switch is not offered or `next` is already the mode.
-// - Every caller on the page shares one store: the switch and the editor always agree.
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
-import { parseEditorMode, opensInOf, type EditorMode } from '@livediagram/document';
+// - `useEditorMode(tab, { canEdit, commitTabs, toastInfo })` returns `{ mode, setMode, canSwitch,
+//   canEdit }` for the active tab. `canEdit` comes from the editor's one answer (useViewPreview)
+//   and is handed back, so the switch reads the very value the editor resolved with.
+// - `mode` is the tab's own mode (resolveEditorMode), the same for everyone on it.
+// - `canSwitch` is true only for an editor on a general, unlocked tab; the mode switch shows only
+//   then.
+// - `setMode(next, alsoChange?)` fires `Editor · Changed · Mode<Next>` and then commits ONE tab edit:
+//   `alsoChange` (what leaving a mode brings, such as articles turned into pages), then the mode
+//   with what entering it brings (withEditorModeSwitched). One undo puts the tab back in the mode
+//   it was in, for everyone. A no-op when the switch is not offered or `next` is already the mode.
+import { useCallback } from 'react';
 import {
-  openedMode,
-  pinOpening,
-  readRememberedMode,
-  rememberMode,
-  resolveEditorMode,
-  subscribeEditorModes,
-  type EditorModeTab,
-} from '@/lib/editor-mode-store';
+  editorModeLabel,
+  withEditorModeSwitched,
+  type EditorMode,
+  type Tab,
+} from '@livediagram/document';
+import { resolveEditorMode, type EditorModeTab } from '@/lib/editor-mode-store';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export type EditorModeState = {
   mode: EditorMode;
-  setMode: (next: EditorMode) => void;
+  setMode: (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => void;
   canSwitch: boolean;
   canEdit: boolean;
 };
 
-const nothingStored = () => '|';
 // The telemetry type a switch into each mode fires.
 const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
@@ -42,49 +38,53 @@ const MODE_EVENT: Record<EditorMode, string> = {
   plan: 'ModePlan',
 };
 
-const modeOrNull = (v: string | undefined): EditorMode | null => parseEditorMode(v) ?? null;
-
-export function useEditorMode(
-  tab: EditorModeTab | undefined,
-  { canEdit }: { canEdit: boolean },
-): EditorModeState {
-  const tabId = tab?.id;
-  // One primitive snapshot of both stored values, so the store re-renders only on a change.
-  const stored = useSyncExternalStore(
-    subscribeEditorModes,
-    () => (tabId ? `${readRememberedMode(tabId) ?? ''}|${openedMode(tabId) ?? ''}` : '|'),
-    nothingStored,
-  );
-  const [remembered, opened] = stored.split('|').map(modeOrNull) as [
-    EditorMode | null,
-    EditorMode | null,
-  ];
-  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, opened, canEdit });
-  const setMode = useCallback(
-    (next: EditorMode) => {
-      if (!canSwitch || !tabId || next === mode) return;
-      track('Editor', 'Changed', MODE_EVENT[next]);
-      debugLog('[editor-mode] switched', { from: mode, to: next });
-      rememberMode(tabId, next);
-    },
-    [canSwitch, tabId, mode],
-  );
-  return { mode, setMode, canSwitch, canEdit };
+/** Reports a switch into `next`, before it applies (docs/specs/007-editor/editor-modes.md
+ *  "Telemetry"): the switch, Shift+D and the tab menu's Mode all send it. */
+export function trackModeSwitch(next: EditorMode): void {
+  track('Editor', 'Changed', MODE_EVENT[next]);
 }
 
-// Pins the mode a tab opened in, once its content has loaded (before then a placeholder carries no
-// opening mode): from then on an Opens in change, by anyone, switches nobody on this page. Called
-// once, by the editor, for the active tab.
-export function usePinTabOpening(tab: EditorModeTab | undefined, loaded: boolean): void {
+/** The tab switched as one edit: `alsoChange` first, then the mode and what it brings. Whether
+ *  entering Illustrate put the board onto a page comes back with it. */
+export function switchedTab(
+  tab: Tab,
+  next: EditorMode,
+  alsoChange?: (tab: Tab) => Tab,
+): { tab: Tab; pagedContent: boolean } {
+  return withEditorModeSwitched(alsoChange ? alsoChange(tab) : tab, next);
+}
+
+export function useEditorMode(
+  tab: (EditorModeTab & Pick<Tab, 'elements'>) | undefined,
+  deps: {
+    canEdit: boolean;
+    commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
+    toastInfo: (message: string) => void;
+  },
+): EditorModeState {
+  const { canEdit, commitTabs, toastInfo } = deps;
   const tabId = tab?.id;
-  const opening = opensInOf(tab);
-  // Read so a release (a template deciding afresh) re-pins on the next render.
-  const pinned = useSyncExternalStore(
-    subscribeEditorModes,
-    () => (tabId ? openedMode(tabId) : null),
-    () => null,
+  const { mode, canSwitch } = resolveEditorMode({ tab, canEdit });
+  const setMode = useCallback(
+    (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => {
+      if (!canSwitch || !tabId || next === mode) return;
+      trackModeSwitch(next);
+      let paged = false;
+      commitTabs((ts) =>
+        ts.map((t) => {
+          if (t.id !== tabId) return t;
+          const out = switchedTab(t, next, alsoChange);
+          paged = out.pagedContent;
+          return out.tab;
+        }),
+      );
+      if (paged) {
+        toastInfo(`Put onto a page that fits it. Undo switches back to ${editorModeLabel(mode)}.`);
+        track('Tab', 'Changed', 'PageFitToContent');
+      }
+      debugLog('[editor-mode] switched', { tabId, from: mode, to: next, paged });
+    },
+    [canSwitch, tabId, mode, commitTabs, toastInfo],
   );
-  useEffect(() => {
-    if (tabId && loaded && pinned === null) pinOpening(tabId, opening);
-  }, [tabId, loaded, opening, pinned]);
+  return { mode, setMode, canSwitch, canEdit };
 }

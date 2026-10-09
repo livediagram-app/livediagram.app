@@ -1,6 +1,6 @@
 // Editor-mode illustrations for the Canvas article on Editor Modes (docs/specs/018-help/help-app.md,
-// docs/specs/007-editor/editor-modes.md): the tab menu's Opens in section open on the four modes
-// (chrome/OpensInMenuSection.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
+// docs/specs/007-editor/editor-modes.md): the tab menu's Mode section open on the four modes
+// (chrome/TabModeMenuSection.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
 // confirmation card that hangs from the mode switch when an editor leaves Illustrate on a tab with
 // pages (dialogs/LeaveIllustrateConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
 // editor-mode-switch.tsx. Real labels throughout: the modes' names and one-line descriptions from the
@@ -67,7 +67,7 @@ function ModeMark({
   return <g transform={`scale(${scale}) translate(-12 -12)`}>{body}</g>;
 }
 
-// The four modes as Opens in lists them: name, then the catalogue's description, wrapped.
+// The four modes as the tab menu's Mode lists them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
   { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
@@ -75,10 +75,10 @@ const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
 ];
 
-/** The tab menu with its Opens in section open (Content and Cleanup closed around it): the four modes, each with its mark, name and what
+/** The tab menu with its Mode section open (Content and Cleanup closed around it): the four modes, each with its mark, name and what
  *  it is for, a dot on the one the tab opens in (Draw), above the tab bar whose pill leads with the
  *  same mark. */
-export function OpensInScene() {
+export function TabModeMenuScene() {
   const mx = 150;
   const my = 10;
   const mw = 252;
@@ -124,12 +124,12 @@ export function OpensInScene() {
           />
         </g>
       ))}
-      {/* Opens in, open: its header carries the current mode's mark */}
+      {/* Mode, open: its header carries the current mode's mark */}
       <g transform={`translate(${mx + 20} ${headerY + sectionH / 2})`}>
         <ModeMark mode={current} className="stroke-slate-600" scale={0.55} />
       </g>
       <Label x={mx + 32} y={headerY + sectionH / 2} size={11} weight={600} tone="strong">
-        Opens in
+        Mode
       </Label>
       <path
         d={`M${mx + mw - 20} ${headerY + sectionH / 2 + 2} l4 -4 l4 4`}

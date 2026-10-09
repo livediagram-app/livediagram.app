@@ -24,6 +24,7 @@ import {
   PAGE_NAME_MAX,
   withDuplicatedPage,
   withIllustratePages,
+  withPageSplit,
   withPageContentReplaced,
   withPageInkFor,
   withContentFittedToPage,
@@ -63,6 +64,9 @@ export type IllustratePageEdits = {
   canDuplicate: (pageId: string) => boolean;
   // Absent while there is only one unit (one page, or one document).
   removePage?: (pageId: string) => void;
+  // A Fit to Content page split into one page per cluster of its content, nothing scaled
+  // (docs/specs/007-editor/illustrate-pages.md "Split Into Pages").
+  splitPage: (pageId: string) => void;
   // Whether the page's unit can move left / right (not at the row's end).
   canMove: (pageId: string, by: -1 | 1) => boolean;
   // Puts a layout onto the page in place of everything on it (the panel asks first when there is
@@ -106,6 +110,7 @@ export function illustratePageEdits({
   onArticleCreated,
   onLayoutPlaced,
   mayEdit = () => true,
+  toastInfo = () => {},
 }: {
   tabId: string;
   current: readonly IllustratePage[];
@@ -122,6 +127,8 @@ export function illustratePageEdits({
   onGoTo: (pageId: string) => void;
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
+  // What a page action says it did (Split Into Pages).
+  toastInfo?: (message: string) => void;
 }): IllustratePageEdits {
   // A locked tab, or a person no longer editing, takes no page edit.
   const commitTab = (change: TabChange) => {
@@ -223,10 +230,17 @@ export function illustratePageEdits({
       debugLog('[illustrate-page] size refused: the logo artboard', { tabId, pageId, size });
       return;
     }
+    // Fit to Content's sides come from content: no page chooses it (docs/specs/007-editor/
+    // illustrate-pages.md "Sizes").
+    if (size === 'fit') {
+      debugLog('[illustrate-page] size refused: fit to content', { tabId, pageId });
+      return;
+    }
     track('Tab', 'Changed', 'PageSize');
     claimArticleLayout(pageId);
     reshapePage(pageId, (p) => {
-      const { size: _drop, ...rest } = p;
+      // Leaving Fit to Content leaves its sides behind with it.
+      const { size: _drop, fit: _sides, ...rest } = p;
       return size === 'a4' ? rest : { ...rest, size };
     });
     onGoTo(pageId);
@@ -405,6 +419,31 @@ export function illustratePageEdits({
     debugLog('[illustrate-page] page removed', { tabId, pageId });
   };
 
+  // One page per cluster of the page's content, each cluster at its own size; the view goes to the
+  // first. One tab edit.
+  const splitPage = (pageId: string) => {
+    if (refusedLocked(pageId, 'split')) return;
+    // Read inside the commit (it runs at once), as Duplicate reads its copy's id.
+    let made = 0;
+    let first: string | undefined;
+    commitTab((t) => {
+      const before = illustratePagesOf(t);
+      const out = withPageSplit(t, pageId);
+      made = out ? out.pages.length - before.length + 1 : 0;
+      first = out?.pages[before.findIndex((p) => p.id === pageId)]?.id;
+      return out;
+    });
+    if (made === 0) {
+      toastInfo('This page is one group: nothing to split.');
+      debugLog('[illustrate-page] split: one group', { tabId, pageId });
+      return;
+    }
+    track('Tab', 'Changed', 'PagesLaidOut');
+    toastInfo(`Split into ${made} pages. Undo puts it back.`);
+    if (first) onGoTo(first);
+    debugLog('[illustrate-page] page split', { tabId, pageId, pages: made });
+  };
+
   // Laid out in the page's content box (the page less its margins), one tab edit.
   const applyLayout = (pageId: string, layoutId: PageLayoutId) => {
     if (refusedLocked(pageId, 'layout')) return;
@@ -460,6 +499,7 @@ export function illustratePageEdits({
       return current.length + size <= MAX_ILLUSTRATE_PAGES;
     },
     removePage: units.length > 1 ? removePage : undefined,
+    splitPage,
     applyLayout,
     contentCount,
     isLocked,

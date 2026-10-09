@@ -12,7 +12,8 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | ------------------- | --------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab in Illustrate mode (`IllustratePage`), stored in `Tab.pages` in row order.             |
 | **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide** or **logo** page.   |
-| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px.                                  |
+| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.   |
+| **row anchor**      | Where the row of pages sits on the canvas (`IllustratePage.rowAt`): the first page's centre.              |
 | **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                 |
 | **page background** | What the sheet is painted with (`PageBackground`): a solid colour or a two-stop gradient, plus a pattern. |
 | **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.     |
@@ -80,7 +81,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
   and **Layouts** (a slide page's Layouts are the slide layouts; an article page: **Page** and
   **Style**, [Article pages](article-pages.md) "Article style"; a logo page: **Page**, **Layouts**
-  and **Logo**, [Logo pages](logo-pages.md) "The page panel"), then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
+  and **Logo**, [Logo pages](logo-pages.md) "The page panel"), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
   (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
   the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
@@ -102,10 +103,17 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
 
 ## A page
 
-`IllustratePage = { id, orientation, size?, background?, name?, kind?, flow? }`. Every field after
-`orientation` is optional and absent on a page that never set it:
+`IllustratePage = { id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow? }`. Every
+field after `orientation` is optional and absent on a page that never set it:
 
-- `size` absent is **A4**.
+- `size` absent is **A4**. `fit` (`{ width, height }`, whole canvas px) is present exactly on a page
+  in the **Fit to Content** size (`size: 'fit'`, "Sizes"); a stored `fit` page without a valid `fit`
+  is read as A4.
+- `rowAt` (`{ x, y }`, whole canvas px) is the **row anchor**: the first page's centre. Absent is the
+  canvas origin. It is a property of the row, carried by one page (any one, so moving or turning
+  pages keeps it); only the first page found carrying it counts, any other is dropped. A page edit
+  that would lose it (deleting the page that carries it) hands it to the new first page, so the row
+  stays where it is.
 - `background` absent is the **paper**: white in light chrome, slate-900 in dark, as before.
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
 - `kind` absent is **infographic**; `flow` is present exactly on an article page (its article's
@@ -136,6 +144,7 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 | `slide`         | Slide (16:9)                 | 1080 x 1920            | Slides, landscape only   |
 | `slide-classic` | Classic slide (4:3)          | 1080 x 1440            | Slides for 4:3 screens   |
 | `logo`          | 1024 x 1024                  | 1024 x 1024            | Logos, logo pages only   |
+| `fit`           | Fit to Content               | its own (`fit`)        | A board put onto a page  |
 
 - **Which sizes a page offers** depends on its kind. An **infographic** page: A4, US Letter, A3,
   Square, Post, Story and **Slide** (16:9). An **article** page: the first six. A **slide** page:
@@ -146,6 +155,15 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   infographic page keeps whatever orientation it had, so turning it back to a paper size restores
   it; a slide page's is always landscape.
 - The size tiles sit four to a row.
+- **Fit to Content** (`fit`) is the page made around a board that does not fit a paper size ("Into
+  pages"): its sides are its own (`IllustratePage.fit`), the content's bounds plus the page margin
+  all round, so nothing on it is scaled. Each side is clamped to **200** to **19200** px
+  (`FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`; 19200 px is 14400 pt, the largest page a PDF holds).
+  - It is offered only on an infographic page **already in it**, as its first tile; its sides come
+    from content, so no other page can choose it. Choosing another size leaves it for good (its
+    content re-fits as any size change does).
+  - It has no orientation, like a square: no Portrait / Landscape choice and no turn.
+  - Its label is **Fit to Content**; its tile hint "Sized around the board it was made for".
 
 - Paper sizes are at the CSS 96 px per inch; screen sizes are their own pixels.
 - A **square** page has no orientation: its panel shows no Portrait / Landscape choice, and it keeps
@@ -157,7 +175,7 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
 - The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Infographic|Article|Slide|Logo>`.
-  Only the paper sizes (A4, US Letter, A3) add the orientation: a square has none, and the post,
+  Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
   story and slide labels already say which way they face. The kind always ends it. No `Page n`
   while there is one page and no name.
 
@@ -368,6 +386,9 @@ article**, **Move article left / right**, **Delete article**.
   neighbour); both sides' content moves with them. Disabled at the row's ends.
 - **Delete page**: removes the page **and everything on it** (arrows pinned to it too); the pages
   after it close the gap. Offered while there is more than one page.
+- **Split Into Pages** (a Fit to Content page only): splits the page into one page per cluster of
+  its content, nothing scaled ("Into pages" › "Split Into Pages"). Its icon button sits first in
+  the action row, tooltip **Split Into Pages**.
 - **Rename**: the panel's name field; empty clears the name.
 - Each is one tab edit (one undo step, synced to everyone). At the page limit (**100** pages,
   `MAX_ILLUSTRATE_PAGES`) Duplicate is disabled (also when an article's copy would pass it), like
@@ -477,7 +498,7 @@ pages). Mermaid, Markdown, Excalidraw and draw.io are diagram formats and are no
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLocked`, `PageUnlocked`,
-`PagesLaidOut`, `SlidePageAdded`, `PageKindInfographic` / `PageKindArticle` / `PageKindSlide`
+`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`, `PageKindInfographic` / `PageKindArticle` / `PageKindSlide`
 (the first page's own choice);
 `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF` (one page) and
 `IllustratePNGPages / IllustrateSVGPages / IllustratePDFPages` (all pages);
@@ -486,27 +507,53 @@ A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".
 
 ## Into pages
 
-- When a tab enters Illustrate mode (a switch, or opening in it), an editor's client lays its
-  loose content out into pages (a viewer or a locked tab is left alone):
-  - **No pages stored**, and content that does **not fit inside the first page**: the whole tab is
-    laid out afresh.
-  - **Pages stored**: each cluster (below) less than half on the pages, by area, is **stray**.
-    Stray clusters go onto new pages after the last; or, when nothing else is on a page and no
-    page is an article page (its writing keeps it in use), the tab is laid out afresh (the stored
-    pages replaced). A cluster mostly on a page that bleeds off
-    its edge is left as it is.
-  - So content left in the surround is gathered onto pages the next time the tab enters the mode.
-  - The content splits into **clusters**: elements joined by a pinned arrow, and elements within
-    120 px of each other (edge to edge), belong together.
-  - Clusters go in **reading order**: rows top to bottom (a cluster joins a row while its top is
-    above the row's first cluster's bottom), each row left to right.
-  - Each cluster gets an **A4 page**, landscape when it is more than 1.1 times wider than tall,
-    portrait otherwise; its content is centred on the page and, where it does not fit the margin
-    box, scaled down as one (text elements' text and arrows' bends with it).
-  - At most 20 pages (`PAGINATE_MAX_PAGES`), all infographic pages: clusters past the twentieth share the last page.
-- It is **one edit**: one undo puts the tab back. A toast says so: "Laid out into n pages. Undo
-  puts it back." (or "Laid out onto a page." for one). Telemetry: `Tab · Changed · PagesLaidOut`.
-- The modes share their elements, so the Diagram view shows the new arrangement too.
+Switching mode changes no content ([Domain language](../003-system-architecture/domain-language.md)
+"Mode"): entering Illustrate never moves, resizes or scales an element. A board that does not fit
+its page is put onto a page made to fit it instead.
+
+- When a tab enters Illustrate mode, its content is put onto a page (a viewer or a locked tab is
+  left alone):
+  - **An editor's switch** does it in the **same tab edit** as the switch ([Editor
+    modes](editor-modes.md) "Where the mode lives"), so one undo puts the tab back in the mode it
+    was in, with no page.
+  - **A tab already in Illustrate** when an editor opens it (made in Illustrate by an import or
+    the api with content off its page) gets the page as an edit of its own.
+  - Either way the rules are:
+    - **No pages stored**, and content that does **not fit inside the first page**: one page is
+      made **around all of the content, where it is**. The row anchor (`rowAt`) is the content's
+      centre, so the page sits over the content and nothing moves.
+    - **Pages stored**, none of them an article page or locked, and **no element on any page**:
+      the stored pages are replaced by one page made around the content, as above.
+    - Otherwise nothing happens: content left in the surround stays where it is.
+- **The page made around content** is an infographic page, landscape when the content is more than
+  1.1 times wider than tall (`LANDSCAPE_RATIO`), portrait otherwise. It is **A4** when the content
+  fits A4's margin box in that orientation, and otherwise **Fit to Content** ("Sizes"): the
+  content's bounds plus the margin all round. Past `FIT_PAGE_MAX_SIDE` the page stops growing and
+  the content runs off its edge, still unscaled.
+- A toast tells the editor who switched: "Put onto a page that fits it. Undo switches back to
+  <Mode>." (the mode it came from); for a tab opened in Illustrate, "Put onto a page that fits it.
+  Undo takes the page away." Telemetry: `Tab · Changed · PageFitToContent`.
+- The Diagram view draws no pages, so it looks exactly as it did.
+
+### Split Into Pages
+
+A page action on a **Fit to Content** page ("Page actions"), for a board that reads better as
+separate pages. It is explicit: never run on entering the mode.
+
+- The page's content (every element whose centre is on it) splits into **clusters**: elements
+  joined by a pinned arrow, and elements within 120 px of each other (edge to edge)
+  (`PAGINATE_CLUSTER_GAP`), belong together.
+- Clusters go in **reading order**: rows top to bottom (a cluster joins a row while its top is above
+  the row's first cluster's bottom), each row left to right.
+- The page is replaced, in its place in the row, by **one page per cluster**, each made around its
+  cluster as above (A4 or Fit to Content, landscape or portrait) with the cluster **moved** onto it,
+  centred, **never scaled**. The pages after it move along with their content.
+- At most 20 pages (`PAGINATE_MAX_PAGES`), and never past `MAX_ILLUSTRATE_PAGES`: clusters past the
+  last share it (its page made around them together).
+- With one cluster there is nothing to split: the page is left as it is and a toast says "This
+  page is one group: nothing to split."
+- It is **one edit**. A toast: "Split into n pages. Undo puts it back." Telemetry:
+  `Tab · Changed · PagesLaidOut`.
 
 ## Slides
 

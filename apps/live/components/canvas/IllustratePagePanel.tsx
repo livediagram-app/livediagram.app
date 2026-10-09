@@ -13,6 +13,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DuplicateIcon,
+  SplitPagesIcon,
   Tooltip,
   TrashIcon,
   useClickOutside,
@@ -386,6 +387,14 @@ function PageActions({
   const noun = page.flow ? 'article' : page.kind === 'slide' ? 'slide' : 'page';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
+      {page.size === 'fit' && (
+        <ActionButton
+          label="Split Into Pages"
+          onClick={page.locked !== true ? () => edit.splitPage(page.id) : undefined}
+        >
+          <SplitPagesIcon className="h-4 w-4" />
+        </ActionButton>
+      )}
       <ActionButton
         label={`Duplicate ${noun}`}
         onClick={

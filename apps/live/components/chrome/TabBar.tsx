@@ -25,7 +25,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 });
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
-import type { OpensInChoice } from './OpensInMenuSection';
+import type { TabModeChoice } from './TabModeMenuSection';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change
 // theme / background, and tidy the layout. (Add-element actions used to live
@@ -112,9 +112,9 @@ type TabBarProps = {
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
-  // The tab menu's Opens in choice for a tab (docs/specs/007-editor/editor-modes.md), absent
+  // The tab menu's Mode choice for a tab (docs/specs/007-editor/editor-modes.md), absent
   // where it is not offered (an event-storming board, a visitor who cannot edit).
-  opensInFor?: (tab: Tab) => OpensInChoice | undefined;
+  modeChoiceFor?: (tab: Tab) => TabModeChoice | undefined;
   // Move `sourceId` next to `targetId`. `placeBefore` (default true) picks
   // which side of the target it lands on — the tab bar sets it from the
   // pointer position so the drop matches the insertion caret. Omitting it
@@ -193,7 +193,7 @@ export function TabBar({
   otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
-  opensInFor,
+  modeChoiceFor,
   onReorder,
   readOnly = false,
   isOutOfScope,
@@ -247,7 +247,7 @@ export function TabBar({
     canDelete: tabs.length > 1,
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
-    opensIn: opensInFor?.(tab),
+    modeChoice: modeChoiceFor?.(tab),
     // A Plan tab's cards are its document's items: it is not added to another document
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
