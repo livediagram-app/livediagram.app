@@ -92,7 +92,7 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(6);
+    ).toHaveCount(5);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
@@ -167,7 +167,7 @@ test.describe('Power user mode', () => {
     pageErrors,
   }) => {
     await openEditor(page);
-    // Before: alignment guides off (left alone later), layout Floating.
+    // Before: alignment guides off (left alone later), auto-attach arrows on (the default).
     await openSettings(page);
     await dialog(page).getByRole('switch', { name: 'Alignment Guides' }).click();
     await closeSettings(page);
@@ -177,20 +177,19 @@ test.describe('Power user mode', () => {
     let prefs = await storedPrefs(page);
     expect(prefs).toMatchObject({
       powerUserMode: true,
-      panelLayout: 'toolbar',
+      autoRebindArrows: true,
       alignmentGuides: true,
     });
 
     // Change one preset setting while the mode is on, reached from the readout.
-    await dialog(page).getByRole('button', { name: 'Change Panel Layout in Panels' }).click();
-    await dialog(page).getByRole('radio', { name: 'Floating' }).click();
-    await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
+    await dialog(page).getByRole('button', { name: 'Change Auto-Attach Arrows in Editor' }).click();
+    await dialog(page).getByRole('switch', { name: 'Auto-Attach Arrows' }).click();
     const readout = dialog(page).getByRole('list', { name: 'Set By Power User Mode' });
     await expect(readout.getByRole('listitem').first()).toContainText(
-      'Changed: kept when you switch off',
+      'Restored when you switch off',
     );
     await expect(readout.getByRole('listitem').nth(1)).toContainText(
-      'Restored when you switch off',
+      'Changed: kept when you switch off',
     );
     await dialog(page).getByRole('switch', { name: 'Power User Mode' }).click();
     await closeSettings(page);
@@ -201,7 +200,7 @@ test.describe('Power user mode', () => {
     // Untouched: back to what it was.
     expect(prefs.alignmentGuides).toBe(false);
     // Changed: the user's change stays.
-    expect(prefs.panelLayout).toBe('floating');
+    expect(prefs.autoRebindArrows).toBe(false);
     // Minimal chrome is off with the mode.
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
     expectNoPageErrors(pageErrors);

@@ -20,11 +20,8 @@ export type QuickOption<V> = {
   overridden?: boolean;
 };
 
-// Compact (Toolbar): 20 px chips in touching 24 px targets, so the row
-// is exactly seven targets wide (a longer row widens the panel; a row never wraps). Roomy (Floating): 24 px chips spread across
-// the Palette's width. Every target is 24 x 24 px either way (WCAG 2.5.8).
-export type QuickRowDensity = 'compact' | 'roomy';
-
+// 20 px chips in touching 24 px targets, so the row is exactly as many targets wide as it has
+// (a longer row widens the panel; a row never wraps). Every target is 24 x 24 px (WCAG 2.5.8).
 export function QuickRadioRow<V extends string | number>({
   title,
   showTitle,
@@ -32,7 +29,6 @@ export function QuickRadioRow<V extends string | number>({
   value,
   onChoose,
   onOptionContext,
-  density = 'roomy',
   testId,
   columns,
 }: {
@@ -43,10 +39,9 @@ export function QuickRadioRow<V extends string | number>({
   onChoose: (value: V) => void;
   // Right-click, Shift+F10 or the context-menu key on an option.
   onOptionContext?: (value: V, button: HTMLButtonElement) => void;
-  density?: QuickRowDensity;
   testId: string;
-  // Swatches on a grid of this many 24 px columns (spread in the roomy layout, touching in the
-  // compact one), so a shorter row lines up under a full one. Unset: a flex row. On a row of
+  // Swatches on a grid of this many 24 px columns, touching, so a shorter row lines up under a
+  // full one. Unset: a flex row. On a row of
   // buttons, how many share the row (unset: three).
   columns?: number;
 }) {
@@ -85,7 +80,6 @@ export function QuickRadioRow<V extends string | number>({
   };
 
   const isSwatchRow = options.some((o) => o.swatch !== undefined);
-  const compact = density === 'compact';
   return (
     <div className="flex flex-col gap-1">
       {showTitle ? (
@@ -104,9 +98,7 @@ export function QuickRadioRow<V extends string | number>({
           isSwatchRow && columns
             ? 'grid'
             : isSwatchRow
-              ? compact
-                ? 'flex'
-                : 'flex justify-between gap-1'
+              ? 'flex'
               : columns
                 ? 'grid gap-1'
                 : 'grid grid-cols-3 gap-1'
@@ -115,7 +107,7 @@ export function QuickRadioRow<V extends string | number>({
           isSwatchRow && columns
             ? {
                 gridTemplateColumns: `repeat(${columns}, ${QUICK_TARGET_PX}px)`,
-                justifyContent: compact ? 'start' : 'space-between',
+                justifyContent: 'start',
               }
             : columns
               ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }
@@ -157,7 +149,6 @@ export function QuickRadioRow<V extends string | number>({
                   <SwatchChip
                     colour={o.swatch}
                     checked={checked}
-                    compact={compact}
                     overridden={o.overridden === true}
                   />
                 ) : (
@@ -176,21 +167,17 @@ export function QuickRadioRow<V extends string | number>({
 function SwatchChip({
   colour,
   checked,
-  compact,
   overridden,
 }: {
   colour: string;
   checked: boolean;
-  compact: boolean;
   overridden: boolean;
 }) {
   return (
     <span
       aria-hidden
       style={{ backgroundColor: colour }}
-      className={`relative block rounded-[5px] border border-black/15 transition dark:border-white/20 ${
-        compact ? 'h-5 w-5' : 'h-6 w-6'
-      } ${
+      className={`relative block rounded-[5px] border border-black/15 transition dark:border-white/20 h-5 w-5 ${
         checked
           ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-brand-300 dark:ring-offset-slate-900'
           : 'group-hover:scale-110'

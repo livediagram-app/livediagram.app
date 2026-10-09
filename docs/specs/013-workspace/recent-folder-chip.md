@@ -50,7 +50,7 @@ supposed to navigate away from.
 
 ## Scope: the Explorer page only
 
-The editor's floating Explorer panel does **not** get the chip.
+The editor's Explorer does **not** get the chip.
 
 Its Recent list is five rows in a ~256 px rail, where a chip would crowd out
 the thing you came for — the document name. Its folder sections are also

@@ -341,7 +341,7 @@ test('an armed note tile shows the note it will add and places it there', async 
   const zoom = rowBox.height / rowNote.height;
   const aimY = rowBox.y + rowBox.height / 2 + (LANE_PITCH + 7) * zoom;
 
-  await page.getByRole('option', { name: 'Add Command note' }).first().click();
+  await page.getByRole('button', { name: 'Add Command note' }).first().click();
   await expect(page.getByText('Click to place a command note')).toBeVisible();
   const ghost = page.getByTestId('stamp-ghost');
   await page.mouse.move(700, aimY);

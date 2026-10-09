@@ -17,7 +17,7 @@ import {
 
 // --- AI ---------------------------------------------------------------------
 
-/** The floating AI Assistant panel: the Ask / Clean mode buttons with the
+/** The AI Assistant panel: the Ask / Clean mode buttons with the
  *  Connect agent link, the context line, the prompt box, and Send. Reused
  *  across the AI articles. */
 export function AiPanel() {

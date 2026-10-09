@@ -4,42 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { Tooltip, Portal } from '@livediagram/ui';
 
 const VIEWPORT_MARGIN_PX = 12;
-// The gap between the Palette panel's content and a flyout opened beside it: the panel's own
-// padding (10px) plus the 12px the editor's floating surfaces keep between them.
-const BESIDE_GAP_PX = 22;
-
-// A flyout beside the Palette panel (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
-// shows"): on the side of the panel with more room, its top level with the opener's, kept inside
-// the viewport; its tip on the edge facing the panel, level with the opener's centre. Pure, from
-// measured rects and the flyout's layout size.
-export function besidePanel(
-  panel: { left: number; right: number },
-  opener: { top: number; height?: number },
-  flyout: { offsetWidth: number; offsetHeight: number },
-  viewport: { width: number; height: number } = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  },
-): { left: number; top: number; side: 'left' | 'right'; tipTop: number } {
-  const roomLeft = panel.left;
-  const roomRight = viewport.width - panel.right;
-  const side = roomLeft >= roomRight ? 'left' : 'right';
-  const left =
-    side === 'left'
-      ? Math.max(VIEWPORT_MARGIN_PX, panel.left - BESIDE_GAP_PX - flyout.offsetWidth)
-      : Math.min(
-          viewport.width - VIEWPORT_MARGIN_PX - flyout.offsetWidth,
-          panel.right + BESIDE_GAP_PX,
-        );
-  const top = Math.max(
-    VIEWPORT_MARGIN_PX,
-    Math.min(opener.top, viewport.height - VIEWPORT_MARGIN_PX - flyout.offsetHeight),
-  );
-  const centre = opener.top + (opener.height ?? 0) / 2 - top;
-  const tipTop = Math.max(TIP_INSET_PX, Math.min(centre, flyout.offsetHeight - TIP_INSET_PX));
-  return { left, top, side, tipTop };
-}
-
 // How close the tip may come to a corner of the card (its rounding is 12px).
 const TIP_INSET_PX = 14;
 
@@ -49,23 +13,18 @@ function FlyoutTip({
   edge,
   offset,
 }: {
-  edge: 'top' | 'bottom' | 'left' | 'right';
-  // Along the edge, in px from the card's left (top / bottom) or top (left / right) edge.
+  edge: 'top' | 'bottom';
+  // Along the edge, in px from the card's left edge.
   offset: number;
 }) {
-  const place = {
-    top: '-top-[6px] border-l border-t',
-    bottom: '-bottom-[6px] border-b border-r',
-    left: '-left-[6px] border-b border-l',
-    right: '-right-[6px] border-r border-t',
-  }[edge];
+  const place = edge === 'top' ? '-top-[6px] border-l border-t' : '-bottom-[6px] border-b border-r';
   // Centred on the offset: the square is 10px.
   const at = offset - 5;
   return (
     <span
       aria-hidden
       data-flyout-tip={edge}
-      style={edge === 'top' || edge === 'bottom' ? { left: at } : { top: at }}
+      style={{ left: at }}
       className={`pointer-events-none absolute h-2.5 w-2.5 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${place}`}
     />
   );
@@ -103,18 +62,18 @@ export function offDock(
 // The gap between the dock and a flyout off it.
 const OFF_DOCK_GAP_PX = 8;
 
-export type FlyoutPlacement = 'below' | 'above' | 'beside';
+export type FlyoutPlacement = 'below' | 'above';
 
 type Place = {
   left: number;
   top: number;
-  tip: { edge: 'top' | 'bottom' | 'left' | 'right'; offset: number };
+  tip: { edge: 'top' | 'bottom'; offset: number };
 };
 
 // A Draw tool's settings (a pen, the eraser, Shapes, a slot's menu, Settings). Always portalled
 // and placed in screen px from its opener, so it draws at design size whatever the toolbar UI
-// scale zooms the dock to (docs/specs/007-editor/ui-scale.md) and escapes the Palette panel's
-// scroll clip: off the dock's board side, or beside the panel. The dock never moves for it. Focus
+// scale zooms the dock to (docs/specs/007-editor/ui-scale.md) and escapes the dock's scroll clip:
+// off the dock's board side. The dock never moves for it. Focus
 // moves into it on open; Escape closes it and hands focus back to its opener; a press outside
 // closes it without stealing focus.
 export function WhiteboardFlyout({
@@ -165,15 +124,6 @@ export function WhiteboardFlyout({
     if (!node || !wrapEl || !opener) return;
     const wrap = wrapEl.getBoundingClientRect();
     const btn = opener.getBoundingClientRect();
-    if (placement === 'beside') {
-      const at = besidePanel(wrap, btn, node);
-      setPlace({
-        left: at.left,
-        top: at.top,
-        tip: { edge: at.side === 'left' ? 'right' : 'left', offset: at.tipTop },
-      });
-      return;
-    }
     const below = placement === 'below';
     const at = offDock(wrap, btn, node, below);
     setPlace({

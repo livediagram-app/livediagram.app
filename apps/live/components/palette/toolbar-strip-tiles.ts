@@ -81,7 +81,7 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
 // browser. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology', 'behaviour']);
+const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology', 'behaviour', 'my-shapes']);
 
 function allTilesFor(
   categoryId: string,

@@ -15,16 +15,16 @@ each be sized on their own (see "The setting"):
 
 **Panels** (`panels`):
 
-- **Every panel**: each `MovablePanel`, floating, docked into a corner,
-  dragged, or open as a popover (the Toolbar layout's Explorer, the Layers /
+- **Every panel**: each `MovablePanel`, docked into a corner,
+  dragged, or open as a popover (the Explorer, the Layers /
   Collaborate cluster popovers).
-  That covers the Explorer, Palette, AI, Layers, Map, Collaborate
+  That covers the Explorer, AI, Layers, Map, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
 
 **Toolbar** (`toolbar`):
 
-- **The Toolbar layout's strip** ([Toolbar layout](toolbar-layout.md)) and that layout's
+- **The Toolbar strip** ([Toolbar layout](toolbar-layout.md)) and the
   top-left Explorer menu button. The strip's More popover does not scale: it is a menu opened
   from the strip, so it stays at its design size like every other menu (see below).
 
@@ -37,9 +37,8 @@ each be sized on their own (see "The setting"):
 Nothing else scales: not the canvas or its elements (the canvas has its
 own zoom), the tab bar and footer, the editor header, dialogs (Settings
 included), context menus, tooltips and hover cards, toasts, the selection
-toolbars that sit on elements. (The Toolbar layout's Draw-mode dock is the strip's twin and
-draws at the **toolbar** scale, its flyouts at design size; the Floating layout's Draw tools sit in the Palette panel and
-scale with the panels.) Menus and tooltips
+toolbars that sit on elements. (Draw mode's dock is the strip's twin and
+draws at the **toolbar** scale, its flyouts at design size.) Menus and tooltips
 opened FROM a scaled surface portal out of it, so they stay at their
 design size too.
 
@@ -84,8 +83,8 @@ value as a percentage ("110%"):
 | Row                  | Footnote                                                                                                                                                                                   | Event                  |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
 | UI Scale             | "Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below." | `UiScale`              |
-| Panel Scale          | "Every panel, floating or opened from a button, and the Quick Style panel."                                                                                                                | `UiScalePanels`        |
-| Toolbar Scale        | "The Toolbar layout's strip and its menu button."                                                                                                                                          | `UiScaleToolbar`       |
+| Panel Scale          | "Every panel, docked or opened from a button, and the Quick Style panel."                                                                                                                  | `UiScalePanels`        |
+| Toolbar Scale        | "The toolbar strip and its menu button."                                                                                                                                                   | `UiScaleToolbar`       |
 | Corner Buttons Scale | "The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom."                                                                                                           | `UiScaleCornerButtons` |
 
 - A part's slider shows its own value, or the master's while it has none.

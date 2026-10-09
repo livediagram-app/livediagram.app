@@ -2,7 +2,6 @@
 
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
-import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
 import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
@@ -13,7 +12,6 @@ import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
-import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -22,7 +20,6 @@ import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -51,7 +48,6 @@ export function EditorCanvasHost() {
     activeLayerId,
     layerInertIds,
     layerCounts,
-    layersPanelPosition,
     pollPanelPosition,
     setPollPanelPosition,
     votePanelPosition,
@@ -79,9 +75,6 @@ export function EditorCanvasHost() {
     voteResults,
     jumpToVoteResult,
     livePoll,
-    setLayersPanelPosition,
-    layersMinimized,
-    setLayersMinimized,
     setActiveLayer,
     addLayer,
     renameLayer,
@@ -211,7 +204,6 @@ export function EditorCanvasHost() {
     workbenchMode,
     endVote,
     exitFormatTool,
-    explorerPosition,
     fitToScreen,
     folders,
     followLink,
@@ -245,7 +237,6 @@ export function EditorCanvasHost() {
     openDocument,
     openNote,
     openTemplatePicker,
-    palettePosition,
     pauseTimer,
     pendingDraw,
     redo,
@@ -293,7 +284,6 @@ export function EditorCanvasHost() {
     setDocumentList,
     setDocumentName,
     setEditingId,
-    setExplorerPosition,
     setExportOpen,
     setExportScope,
     setCodeEditOpenForId,
@@ -301,7 +291,6 @@ export function EditorCanvasHost() {
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
-    setPalettePosition,
     setRailLabelSelected,
     setSelectedId,
     toggleChecklistItem,
@@ -314,7 +303,6 @@ export function EditorCanvasHost() {
     tidyMindMap,
     abandonMindNode,
     setTextAlignSelected,
-    setUserPreferences,
     setViewportOffset,
     setViewportZoom,
     sharedDocuments,
@@ -406,9 +394,6 @@ export function EditorCanvasHost() {
   // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
-  // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
-  const isMobile = useIsMobileViewport();
-  const panelLayout = resolvePanelLayout(userPreferences, { mobile: isMobile });
   // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
   // true when the row's element is that kind of card, now centred in view.
   const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
@@ -448,11 +433,6 @@ export function EditorCanvasHost() {
     setContextMenu,
   });
 
-  // Preference writes (the Settings save): see usePreferenceHandlers.
-  const { onChangeSettings } = usePreferenceHandlers({
-    setUserPreferences,
-    selfParticipantId: selfParticipant?.id ?? null,
-  });
   // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
   // preview. Resolved here rather than in the panel so the panel stays a
   // renderer and never reaches into the tab.
@@ -690,8 +670,6 @@ export function EditorCanvasHost() {
         editingId={editingId}
         editCursorAtEnd={editCursorAtEnd}
         formatSourceId={formatSourceId}
-        palettePosition={palettePosition}
-        explorerPosition={explorerPosition}
         canUndo={canUndo && !activeTabLocked}
         canRedo={canRedo && !activeTabLocked}
         onAddShape={addShape}
@@ -737,17 +715,9 @@ export function EditorCanvasHost() {
         onCommitPathEdit={commitPathEdit}
         onDressPath={styleNewElement}
         settings={userPreferences}
-        onChangeSettings={onChangeSettings}
-        // Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's panels and swaps the
-        // Palette + Explorer for the strip and menu button. A phone always shows it.
-        toolbarLayout={panelLayout === 'toolbar'}
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
         onRedo={redo}
-        onMovePalette={(x, y) => setPalettePosition({ x, y })}
-        onResetPalette={() => setPalettePosition(null)}
-        onMoveExplorer={(x, y) => setExplorerPosition({ x, y })}
-        onResetExplorer={() => setExplorerPosition(null)}
         documentList={documentList}
         folders={folders}
         sharedDocuments={sharedDocuments}
@@ -766,10 +736,6 @@ export function EditorCanvasHost() {
         layers={layers}
         activeLayerId={activeLayerId}
         layerCounts={layerCounts}
-        layersPanelPosition={layersPanelPosition}
-        layersMinimized={layersMinimized}
-        onMoveLayersPanel={(x, y) => setLayersPanelPosition({ x, y })}
-        onResetLayersPanel={() => setLayersPanelPosition(null)}
         pollPanel={
           // Results are for the host and for anyone who has responded
           // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
@@ -846,12 +812,6 @@ export function EditorCanvasHost() {
         )}
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
-        onToggleLayersMinimized={() => {
-          // Emit only the open transition; closing isn't a feature-reach
-          // signal (the dock / popover layouts count in useDockPopovers).
-          if (layersMinimized) track('Layer', 'Opened', 'Panel');
-          setLayersMinimized((v) => !v);
-        }}
         // Bottom-dock paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): the same CanvasThemeDialog the
         // canvas right-click menu opens, one click from the chrome. Opens on
         // the Theme tab; the dialog's tab strip reaches Canvas from there.

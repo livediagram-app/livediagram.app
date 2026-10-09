@@ -85,11 +85,6 @@ export type UserPreferences = {
   // popover can hide them. Missing / undefined / true === shown (the
   // default); an explicit false hides them.
   aiSuggestedPrompts?: boolean;
-  // Panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the
-  // default) or 'toolbar' (the Palette as a top strip, no Explorer panel).
-  // Read it through `resolvePanelLayout`, which maps a retired or unknown
-  // value to the default.
-  panelLayout?: PanelLayout;
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
   // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
@@ -273,32 +268,6 @@ export function toggleRecentExcluded(prefs: UserPreferences, documentId: string)
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
-
-// The panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers them.
-export const PANEL_LAYOUTS = ['floating', 'toolbar'] as const;
-export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
-
-// The layout in force. `panelLayout` wins when it is one we know; anything
-// else (unset, the retired 'minimal', or a value from a newer client) reads
-// as the default rather than as a crash.
-//
-// Pass `mobile` for the layout a phone actually shows: Floating is desktop
-// only, so there it (and so the unset default) becomes Toolbar (docs/specs/007-editor/toolbar-layout.md).
-// The stored value is untouched, so the same user still gets Floating back
-// on a desktop.
-export function resolvePanelLayout(
-  prefs: UserPreferences,
-  { mobile = false }: { mobile?: boolean } = {},
-): PanelLayout {
-  const v = prefs.panelLayout;
-  const stored =
-    v && (PANEL_LAYOUTS as readonly string[]).includes(v) ? (v as PanelLayout) : 'floating';
-  return mobile ? 'toolbar' : stored;
-}
-
-export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): UserPreferences {
-  return { ...prefs, panelLayout: layout };
-}
 
 // The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
 // default, so only an explicit `false` turns the on-move rebind off. The

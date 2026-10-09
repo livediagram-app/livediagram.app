@@ -1,6 +1,6 @@
 # Progress elements
 
-Two canvas elements for showing a 0–100 percentage: a **horizontal progress bar** and a **donut progress ring**. They're added from the floating palette's **Data** category (captions "Progress" and "Donut", [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)) and behave like any other shape (move, resize, colour, copy, format-paint, theme).
+Two canvas elements for showing a 0–100 percentage: a **horizontal progress bar** and a **donut progress ring**. They're added from the palette's **Data** category (captions "Progress" and "Donut", [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)) and behave like any other shape (move, resize, colour, copy, format-paint, theme).
 
 ## Model
 

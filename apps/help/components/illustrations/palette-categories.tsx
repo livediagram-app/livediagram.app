@@ -1,13 +1,13 @@
-// Scenes for the palette's Popular, Write, Stickers and Technology articles: the floating palette
-// showing each category's body. Tile captions are the real ones (palette-tile-defs `caption`, or
+// Scenes for the palette's Popular, Write, Stickers and Technology articles: the palette body
+// (as More opens it) showing each category. Tile captions are the real ones (palette-tile-defs `caption`, or
 // the label less "Add"), Popular's twelve come from palette-layouts, the sticker badges from
 // packages/icons/src/sticker-catalog.ts, and the technology marks from tech-icon-catalog.ts.
 
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene, Tile } from './primitives';
 
-/** The floating palette: its title bar, then the header band (selection mode on the left, the
- *  category picker on the right) the body hangs under. */
+/** The palette body as a panel: its title bar, then the header band (selection mode on the
+ *  left, the category picker on the right) the body hangs under. */
 function PaletteFrame({
   category,
   h,

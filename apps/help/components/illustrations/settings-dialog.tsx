@@ -209,66 +209,19 @@ export function SettingsEditorPane({ highlight }: { highlight?: EditorRowKey }) 
   );
 }
 
-/** Settings > Panels: the Panel Layout choice (its two pictures) and the Panel Opacity slider. */
-export function SettingsPanelsPane({
-  highlight,
-}: {
-  highlight?: 'panel-layout' | 'panel-opacity';
-}) {
+/** Settings > Panels: the Panel Opacity slider. */
+export function SettingsPanelsPane({ highlight }: { highlight?: 'panel-opacity' }) {
   return (
     <SettingsFrame active="Panels">
-      {highlight === 'panel-layout' && <RowHighlight y={76} h={92} />}
-      {highlight === 'panel-opacity' && <RowHighlight y={174} h={40} />}
-      <RowLabel y={88} hot={highlight === 'panel-layout'}>
-        Panel Layout
-      </RowLabel>
-      {/* Floating (ringed, the desktop default) and Toolbar, drawn as the row draws them. */}
-      {[
-        { x: 166, label: 'Floating', on: true },
-        { x: 282, label: 'Toolbar', on: false },
-      ].map((o) => (
-        <g key={o.label}>
-          <rect
-            x={o.x}
-            y={98}
-            width={100}
-            height={50}
-            rx={6}
-            className={o.on ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
-            strokeWidth={o.on ? 2 : 1.5}
-          />
-          {o.on ? (
-            <>
-              <rect x={o.x + 6} y={104} width={18} height={30} rx={3} className="fill-slate-200" />
-              <rect x={o.x + 74} y={104} width={20} height={26} rx={3} className="fill-slate-200" />
-            </>
-          ) : (
-            <>
-              <rect x={o.x + 6} y={104} width={10} height={10} rx={2} className="fill-slate-200" />
-              <rect x={o.x + 22} y={104} width={60} height={8} rx={3} className="fill-slate-200" />
-            </>
-          )}
-          <rect x={o.x + 70} y={138} width={24} height={6} rx={2} className="fill-slate-200" />
-          <Label
-            x={o.x + 50}
-            y={159}
-            size={10}
-            anchor="middle"
-            weight={o.on ? 700 : 500}
-            tone={o.on ? 'accent' : 'muted'}
-          >
-            {o.label}
-          </Label>
-        </g>
-      ))}
-      <RowLabel y={194} hot={highlight === 'panel-opacity'}>
+      {highlight === 'panel-opacity' && <RowHighlight y={68} h={40} />}
+      <RowLabel y={88} hot={highlight === 'panel-opacity'}>
         Panel Opacity
       </RowLabel>
       {/* The slider, at 70%: its range runs from 30% to 100%. */}
-      <rect x={250} y={192} width={104} height={4} rx={2} className="fill-slate-200" />
-      <rect x={250} y={192} width={59} height={4} rx={2} className="fill-brand-500" />
-      <circle cx={309} cy={194} r={6.5} className="fill-white stroke-brand-500" strokeWidth={2} />
-      <Label x={388} y={195} size={10} anchor="end" weight={600} tone="body">
+      <rect x={250} y={86} width={104} height={4} rx={2} className="fill-slate-200" />
+      <rect x={250} y={86} width={59} height={4} rx={2} className="fill-brand-500" />
+      <circle cx={309} cy={88} r={6.5} className="fill-white stroke-brand-500" strokeWidth={2} />
+      <Label x={388} y={89} size={10} anchor="end" weight={600} tone="body">
         70%
       </Label>
     </SettingsFrame>

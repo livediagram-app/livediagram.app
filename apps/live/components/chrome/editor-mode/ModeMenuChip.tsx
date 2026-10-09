@@ -19,23 +19,18 @@ import {
 import { ModeKeyHint } from './ModeKeyHint';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
-// showing the current mode's glyph and a chevron (and, `labelled`, its name), that opens a menu DOWNWARD (it sits in
+// showing the current mode's glyph and a chevron, that opens a menu DOWNWARD (it sits in
 // the top chrome), one compact row per mode from the catalogue (glyph and name, at the
 // palette dropdowns' size; no hover card, which would cover the menu), a check on the
-// current mode, and Shift+D on the row the key leads to. The chip wears the Toolbar
-// layout's faint dropdown tint (docs/specs/007-editor/toolbar-layout.md "Look"), so it reads as a
-// menu. `align` picks the edge the menu hangs from, so it opens into the room beside its host.
+// current mode, and Shift+D on the row the key leads to. The chip wears the
+// strip's faint dropdown tint (docs/specs/007-editor/toolbar-layout.md "Look"), so it reads as a
+// menu. The menu hangs from the chip's left edge, into the room beside the menu button.
 //
 // Menu button pattern (docs/specs/004-interface-design/menus.md): the chip is a menu button, the rows
 // are `menuitemradio`, and the shared hooks give it the menu keyboard: opening focuses the checked
 // row, choosing or Escape returns focus to the chip, Tab closes it. An outside press closes it.
 
-export function ModeMenuChip({
-  mode,
-  onChange,
-  align = 'left',
-  labelled = false,
-}: EditorModeSwitchProps & { align?: 'left' | 'right'; labelled?: boolean }) {
+export function ModeMenuChip({ mode, onChange }: EditorModeSwitchProps) {
   const {
     open,
     close,
@@ -81,12 +76,9 @@ export function ModeMenuChip({
           if (!open) readZoom();
           onTriggerKeyDown(event);
         }}
-        className={`flex w-full items-center gap-1 rounded-md px-1.5 transition-colors ${
-          labelled ? 'h-6 justify-start text-xs font-medium' : 'h-9 justify-center'
-        } ${TOOLBAR_TRIGGER_TONE} ${MODE_SWITCH_FOCUS}`}
+        className={`flex w-full items-center gap-1 rounded-md px-1.5 transition-colors h-9 justify-center ${TOOLBAR_TRIGGER_TONE} ${MODE_SWITCH_FOCUS}`}
       >
         <Icon aria-hidden />
-        {labelled ? <span className="text-optical-centre flex-1 text-left">{label}</span> : null}
         <ChevronDownIcon
           aria-hidden
           className={`transition-transform duration-micro motion-reduce:transition-none ${
@@ -102,7 +94,6 @@ export function ModeMenuChip({
           chip={chip}
           initialFocus={initialFocus}
           hostZoom={hostZoom}
-          align={align}
           onChange={onChange}
           onClose={close}
         />
@@ -118,7 +109,6 @@ function ModeMenu({
   chip,
   initialFocus,
   hostZoom,
-  align,
   onChange,
   onClose,
 }: {
@@ -128,7 +118,6 @@ function ModeMenu({
   chip: HTMLElement | null;
   initialFocus: MenuInitialFocus;
   hostZoom: number;
-  align: 'left' | 'right';
   onChange: EditorModeSwitchProps['onChange'];
   onClose: () => void;
 }) {
@@ -144,7 +133,7 @@ function ModeMenu({
       {...surfaceProps}
       data-tour-id="editor-mode-menu"
       style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
-      className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-(--z-popover) mt-1.5 w-max min-w-36 outline-none ${MENU_PANEL}`}
+      className={`absolute left-0 top-full z-(--z-popover) mt-1.5 w-max min-w-36 outline-none ${MENU_PANEL}`}
     >
       {modes.map((option) => {
         const checked = option === mode;

@@ -5,8 +5,7 @@ Status: shipped
 ## What
 
 A per-document menu item, **Hide from Recent** / **Show in Recent**, in both
-Explorer surfaces (the `/explorer` route and the editor's floating Explorer
-panel). A hidden document never appears in Recent however recently it was
+Explorer surfaces (the `/explorer` route and the editor's Explorer). A hidden document never appears in Recent however recently it was
 opened or edited, and behaves exactly as before everywhere else — folders,
 search, direct links, sharing, teams.
 

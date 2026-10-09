@@ -14,12 +14,8 @@ import {
 import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { PanelTitle } from '@/components/primitives/MovablePanelHeader';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
-import type { QuickStyleLayout } from '@/lib/quick-style-placement';
 import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,
@@ -46,8 +42,6 @@ import { QuickHighlighterRows } from './QuickHighlighterRows';
 import {
   QUICK_BORDER_PX,
   QUICK_COMPACT_PADDING_PX,
-  QUICK_FLOATING_GAP_PX,
-  QUICK_FLOATING_PADDING_PX,
   QUICK_ROW_TARGETS,
   QUICK_TARGET_PX,
 } from './quick-style-metrics';
@@ -56,7 +50,6 @@ import {
   FlowingLineGlyph,
   IconAlignGlyph,
   QuickRadioRow,
-  type QuickRowDensity,
   TextAlignGlyph,
   type QuickOption,
 } from './quick-style-rows';
@@ -147,7 +140,6 @@ const stop = (e: PointerEvent | React.MouseEvent) => e.stopPropagation();
 export function QuickStylePanel({
   quickStyle,
   hidden,
-  layout,
   showTitles,
   powerUser = false,
 }: {
@@ -155,8 +147,6 @@ export function QuickStylePanel({
   // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
   // or strokes a whiteboard's pen rows style.
   powerUser?: boolean;
-  // Floating wears the Palette's own panel dress; Toolbar keeps it compact. Always on the left edge.
-  layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
   // Section titles; on unless a caller turns them off. The rows keep their
@@ -164,7 +154,6 @@ export function QuickStylePanel({
   showTitles?: boolean;
 }) {
   const isMobile = useIsMobileViewport();
-  const minimalChrome = useMinimalChrome();
   // UI scale (docs/specs/007-editor/ui-scale.md): zoomed at the root, so the
   // placement's screen-px spot is converted to the panel's own px.
   const scale = useUiScale('panels');
@@ -175,7 +164,7 @@ export function QuickStylePanel({
   const { view } = quickStyle;
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
-  const spot = useQuickStylePlacement(panelRef, active, layout);
+  const spot = useQuickStylePlacement(panelRef, active);
   const [editing, setEditing] = useState<Editing | null>(null);
   // A popover outlives neither the panel nor its swatch.
   const editingGone =
@@ -183,8 +172,7 @@ export function QuickStylePanel({
     (!active || !editing.anchor.isConnected || !view?.sections[ROW_OF(editing.role).section]);
   if (editingGone) setEditing(null);
   if (!active) return null;
-  const docked = layout === 'floating';
-  const frame = panelFrame(docked, !!spot?.width);
+  const frame = panelFrame();
   const editedSwatch = editing
     ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
@@ -196,9 +184,7 @@ export function QuickStylePanel({
       aria-label="Quick style"
       data-quick-style-panel=""
       data-testid="quick-style-panel"
-      data-layout={layout}
-      // A panel in every layout, so the panel-opacity preference
-      // (docs/specs/007-editor/user-preferences.md) applies to it as to the Palette.
+      // A panel, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md) applies to it.
       data-panel-translucent=""
       onPointerDown={stop}
       onDoubleClick={stop}
@@ -211,41 +197,19 @@ export function QuickStylePanel({
         width: frame.width,
         padding: frame.padding,
         ...(spot
-          ? {
-              left: px(spot.left),
-              top: px(spot.top),
-              ...(spot.width ? { width: px(spot.width) } : {}),
-            }
+          ? { left: px(spot.left), top: px(spot.top) }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' as const }),
       }}
       className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${frame.className}`}
     >
-      {docked && !minimalChrome ? (
-        // The Palette's header language (MovablePanelHeader), minus the drag
-        // and collapse: the panel follows the Palette rather than moving itself.
-        // Minimal chrome hides a panel's title and help button, which would
-        // leave this header an empty strip, so it goes; the region keeps its
-        // name and the section titles stay.
-        <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pb-1.5 pt-2 dark:border-slate-800">
-          <PanelTitle title="Quick style" />
-          <HelpArticleLink article="quickStylePanel" />
-        </div>
-      ) : null}
-      <div
-        data-quick-style-body=""
-        className={
-          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto' : 'contents'
-        }
-        style={docked ? { padding: QUICK_FLOATING_PADDING_PX } : undefined}
-      >
+      <div data-quick-style-body="" className="contents">
         <QuickStyleSections
           view={view}
           quickStyle={quickStyle}
           showTitles={titles}
           showSubject={!powerUser}
-          density={docked ? 'roomy' : 'compact'}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
         {view.targetIds.length > 0 ? (
@@ -292,19 +256,10 @@ export function QuickStylePanel({
 // A fixed width, never the content's (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
 // switching between a one-colour and an eight-colour row, or between modes, must not resize the panel, and a swatch row
 // never wraps and is never clipped, so the width counts the targets, their gaps, the padding and
-// the border exactly. Compact rows put their targets side by side, touching; Floating spreads them
-// with a gap, and takes the Palette's width when a Palette is on screen.
-export function panelFrame(
-  docked: boolean,
-  paletteWidth: boolean,
-): { className: string; width?: number; padding?: number } {
+// the border exactly. The rows put their targets side by side, touching.
+export function panelFrame(): { className: string; width: number; padding: number } {
   const targets = QUICK_ROW_TARGETS;
   const border = 2 * QUICK_BORDER_PX;
-  if (docked) {
-    if (paletteWidth) return { className: '' };
-    const row = targets * QUICK_TARGET_PX + (targets - 1) * QUICK_FLOATING_GAP_PX;
-    return { className: '', width: row + 2 * QUICK_FLOATING_PADDING_PX + border };
-  }
   return {
     className: 'gap-2.5',
     width: targets * QUICK_TARGET_PX + 2 * QUICK_COMPACT_PADDING_PX + border,
@@ -317,14 +272,12 @@ function QuickStyleSections({
   quickStyle,
   showTitles,
   showSubject,
-  density,
   onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
   showSubject: boolean;
-  density: QuickRowDensity;
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
   // Slot 0 is the way back to the theme and is never overridden.
@@ -343,19 +296,13 @@ function QuickStyleSections({
         <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">{caption}</p>
       ) : null}
       {view.pen ? (
-        <QuickPenRows
-          pen={view.pen}
-          quickStyle={quickStyle}
-          showTitles={showTitles}
-          density={density}
-        />
+        <QuickPenRows pen={view.pen} quickStyle={quickStyle} showTitles={showTitles} />
       ) : null}
       {view.highlighter ? (
         <QuickHighlighterRows
           highlighter={view.highlighter}
           quickStyle={quickStyle}
           showTitles={showTitles}
-          density={density}
         />
       ) : null}{' '}
       {COLOUR_ROWS.map((row) => {
@@ -375,7 +322,6 @@ function QuickStyleSections({
               testId={row.testId}
               section={board}
               showTitles={showTitles}
-              density={density}
               onChoose={
                 row.role === 'stroke' ? quickStyle.setBoardStroke : quickStyle.setBoardTextColour
               }
@@ -391,7 +337,6 @@ function QuickStyleSections({
             showTitle={showTitles}
             options={swatchOptions(colours.swatches, 'ink' in colours ? colours.ink : undefined)}
             columns={QUICK_ROW_TARGETS}
-            density={density}
             onOptionContext={editFor(row.role)}
             value={colours.value}
             onChoose={(value) => {
@@ -408,7 +353,6 @@ function QuickStyleSections({
           title="Stroke width"
           testId="quick-style-width"
           showTitle={showTitles}
-          density={density}
           options={QUICK_WIDTHS.map((w) => ({
             value: w,
             name: WIDTH_NAMES[w],
@@ -437,7 +381,6 @@ function QuickStyleSections({
           title="Corners"
           testId="quick-style-corners"
           showTitle={showTitles}
-          density={density}
           columns={QUICK_CORNERS.length}
           options={QUICK_CORNERS.map((c) => ({
             value: c,
@@ -453,7 +396,6 @@ function QuickStyleSections({
           title="Text alignment"
           testId="quick-style-text-align"
           showTitle={showTitles}
-          density={density}
           options={QUICK_TEXT_ALIGNS.map((a) => ({
             value: a,
             name: TEXT_ALIGN_NAMES[a],
@@ -468,7 +410,6 @@ function QuickStyleSections({
           title="Icon alignment"
           testId="quick-style-icon-align"
           showTitle={showTitles}
-          density={density}
           options={QUICK_ICON_ALIGNS.map((a) => ({
             value: a,
             name: ICON_ALIGN_NAMES[a],

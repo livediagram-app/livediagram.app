@@ -205,7 +205,7 @@ parser normalises:
   becomes a document: the page header's **Import from** toolbar holds a
   Microsoft Whiteboard button ([Folders](../013-workspace/folders.md)). It opens
   the **Import from Microsoft Whiteboard** dialog holding the import panel. The
-  floating Explorer panel does not carry it (its header would crowd); the
+  editor's Explorer does not carry it (its header would crowd); the
   Explorer page is the one home.
 - **The icon is an original glyph**, a whiteboard with a drawn stroke on a blue
   tile, not Microsoft's logo: the repo ships no vendor trademark marks

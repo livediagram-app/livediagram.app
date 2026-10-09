@@ -113,12 +113,16 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   await expect(page.getByRole('article', { name: 'House shapes' })).toBeVisible();
   await shot(page, '2-explorer');
 
-  // Place both shapes from the palette's My shapes: one box, then two boxes and their connection.
+  // Place both shapes from the palette's My shapes, in the strip's More popover: one box, then two
+  // boxes and their connection.
   await startBlankDocument(page);
   await page.getByRole('button', { name: 'Palette category' }).click();
   await page.locator('[data-option-id="my-shapes"]').click();
+  await page.getByRole('button', { name: 'More My shapes' }).click();
   await page.getByRole('button', { name: 'Insert Service from House shapes' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(1);
+  // Placing a shape puts More away (docs/specs/007-editor/toolbar-layout.md "More"), so open it again.
+  await page.getByRole('button', { name: 'More My shapes' }).click();
   await page.getByRole('button', { name: 'Insert Request from House shapes' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(4);
   // Two clicks in a row never cover one another (spec "Consecutive clicks never cover one another").

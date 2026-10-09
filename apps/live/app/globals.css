@@ -105,7 +105,7 @@
 
 /*
  * Themed palette previews. The filled palette tiles (shapes / devices /
- * annotation in CommandPalette) set `--tile-fill` to the active theme's
+ * annotation on the palette) set `--tile-fill` to the active theme's
  * element fill and carry this class on their glyph wrapper; the rule paints
  * the otherwise-hollow shape outlines (`fill="none"` SVG paths) with that
  * fill so each tile previews the real themed element. `fill` is an inherited

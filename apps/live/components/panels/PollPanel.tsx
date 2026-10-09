@@ -32,7 +32,6 @@ export function PollPanel({
   onMoveTo,
   onReset,
   dock,
-  stackBelowY,
 }: {
   poll: LivePoll;
   answers: Map<string, string | null>;
@@ -43,9 +42,6 @@ export function PollPanel({
   // leaves the plain End alone.
   onKeepResults?: () => void;
   onDismiss: () => void;
-  // Measured bottom of the Palette, so the panel stacks beneath it in
-  // the legacy (non-docking) layout the same way Collaborate / AI do.
-  stackBelowY?: number;
 } & MovablePanelPlacementProps) {
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
 
@@ -56,7 +52,6 @@ export function PollPanel({
       position={position}
       defaultCorner="top-right-stacked"
       width="w-auto sm:w-64"
-      stackBelowY={stackBelowY}
       onMoveTo={onMoveTo}
       onReset={onReset}
       {...dock}

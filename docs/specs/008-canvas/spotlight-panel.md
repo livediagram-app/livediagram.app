@@ -12,7 +12,7 @@ The defaults suit a dense canvas on a laptop. They are wrong for a projector in 
 
 ## Where it lives
 
-A normal floating panel ([Panel corner docking](../007-editor/panel-docking.md)) with the same treatment as the Laser Panel: Palette width, homed **top-right under the Palette**, joining and leaving the corner stack with the mode rather than sitting there, in both panel layouts. Spotlight itself is desktop-only (it relies on hover and on left/right-click), so in practice the panel is too.
+A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)) with the same treatment as the Laser Panel: the standard panel width, homed **top-right**, joining and leaving the corner stack with the mode rather than sitting there. Spotlight itself is desktop-only (it relies on hover and on left/right-click), so in practice the panel is too.
 
 ## The settings
 

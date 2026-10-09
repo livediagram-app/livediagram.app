@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShapeDrawing } from './useShapeDrawing';
 import { createSelectionStore } from '@/lib/selection-store';
 import { DEFAULT_WHITEBOARD_PREFS, saveWhiteboardPrefs } from '@/lib/whiteboard-prefs';

@@ -11,121 +11,38 @@ import {
   Panel,
   Dialog,
   Tabs,
-  Tile,
   Label,
   TextBar,
 } from './primitives';
+import { MenuCard, Strip } from './toolbar-layout';
 
-/** A compact palette panel reused by several canvas scenes. */
-function MiniPalette({ x, y }: { x: number; y: number }) {
-  return (
-    <Panel x={x} y={y} w={104} h={112} title="PALETTE">
-      <Tile x={x + 10} y={y + 36} active>
-        <rect
-          x={-7}
-          y={-7}
-          width={14}
-          height={14}
-          rx={2}
-          className="stroke-white"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-      <Tile x={x + 42} y={y + 36}>
-        <circle r={7} className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 74} y={y + 36}>
-        <path
-          d="M0 -8 L8 0 L0 8 L-8 0 Z"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-      <Tile x={x + 10} y={y + 70}>
-        <path d="M-8 -6 h16 v12 h-16 Z" className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 42} y={y + 70}>
-        <ellipse rx={8} ry={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 74} y={y + 70}>
-        <path
-          d="M-7 -7 h14 l-3 14 h-8 Z"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-    </Panel>
-  );
-}
-
-/** The canvas with the floating palette docked top-right and a small flow on
+/** The canvas with the menu button and the palette strip across the top and a small flow on
  *  it: the editor at a glance. */
 export function CanvasOverview() {
   return (
     <Scene w={420} h={240}>
+      <MenuCard x={8} y={16} />
+      <Strip x={78} y={16} />
       <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
       <Shape x={172} y={92} w={84} h={48} kind="diamond" />
       <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
       <Arrow from={[124, 116]} to={[172, 116]} />
       <Arrow from={[214, 140]} to={[214, 172]} />
-      <Panel x={288} y={20} w={112} h={132} title="PALETTE">
-        <Tabs x={296} y={50} items={['Shapes', 'Tools']} active={0} tabW={48} h={20} />
-        <Tile x={298} y={80} active>
-          <rect
-            x={-7}
-            y={-7}
-            width={14}
-            height={14}
-            rx={2}
-            className="stroke-white"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={330} y={80}>
-          <circle r={7} className="stroke-brand-500" strokeWidth={2} fill="none" />
-        </Tile>
-        <Tile x={362} y={80}>
-          <path
-            d="M0 -8 L8 0 L0 8 L-8 0 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={298} y={112}>
-          <path
-            d="M-8 -6 h16 v12 h-16 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={330} y={112}>
-          <path d="M-7 7 L7 -7" className="stroke-brand-500" strokeWidth={2} />
-        </Tile>
-        <Tile x={362} y={112}>
-          <path d="M-7 0 h14 M0 -7 v14" className="stroke-brand-500" strokeWidth={2} />
-        </Tile>
-      </Panel>
       <Cursor x={150} y={150} name="You" />
     </Scene>
   );
 }
 
-/** Dropping a shape from the palette onto the canvas (a curved drag trail to a
- *  freshly placed, still-selected shape). */
+/** Dropping a shape from the palette strip onto the canvas (a curved drag trail from the
+ *  square tile to a freshly placed, still-selected shape). */
 export function AddingElements() {
   return (
-    <Scene w={420} h={220}>
-      <MiniPalette x={20} y={28} />
-      <Arrow from={[128, 80]} to={[238, 110]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={92} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={92} w={96} h={56} />
-      <Cursor x={300} y={120} colour="brand" />
+    <Scene w={420} h={200}>
+      <Strip x={58} y={16} />
+      <Arrow from={[198, 52]} to={[250, 104]} kind="curved" tone="muted" dashed />
+      <Shape x={250} y={104} w={96} h={56} kind="rect" />
+      <SelectionBox x={250} y={104} w={96} h={56} />
+      <Cursor x={300} y={132} colour="brand" />
     </Scene>
   );
 }

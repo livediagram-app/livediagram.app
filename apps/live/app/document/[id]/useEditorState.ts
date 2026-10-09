@@ -88,7 +88,7 @@ import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
@@ -381,7 +381,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // hook is invoked further down (after `tick`, `commit`,
   // `applyFormatFromSource` and the rest of the drag dependencies
   // exist).
-  // Floating-panel layout (positions + open/visible flags) is one
+  // Panel layout (positions + open/visible flags) is one
   // cohesive slice — see usePanelLayout. Spread wholesale into the
   // returned view-model (see the return below).
   const panelLayout = usePanelLayout();
@@ -1209,7 +1209,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   // Their libraries (docs/specs/013-workspace/team-shared-documents.md): one sweep per team. Feeds the search
-  // panel's folder group AND the floating Explorer panel (team folder
+  // panel's folder group AND the Explorer popover (team folder
   // tree + team documents in Recent + the current team document).
   const {
     teamFolders,

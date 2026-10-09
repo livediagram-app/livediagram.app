@@ -16,20 +16,6 @@ card were removed once this tour proved the better introduction.
   with a centred **welcome offer card**: "Show me around" starts the tour,
   "No thanks" dismisses it. There is no wizard toggle; the offer IS the
   opt-in, and declining must be one obvious, equal-weight click.
-- **The welcome card also picks the panel layout.** Under its copy sit
-  the two Panel Layout drawings from Settings (Floating / Toolbar,
-  [Toolbar layout](toolbar-layout.md)), one button each, the one in
-  force ringed. A pick applies at once (the card's backdrop is a light
-  tint, so the editor visibly changes behind it) and is written like the
-  Settings row writes it, so it holds whether the tour is then taken or
-  declined. The tour's steps follow the layout in force when it starts, so
-  the Toolbar variants (below) kick in for a Toolbar pick. A phone shows
-  no picker: Floating is desktop only, which leaves Toolbar as the only
-  layout there, so there is nothing to choose ([Toolbar layout](toolbar-layout.md)). The options,
-  the phone restriction, the write, and
-  the telemetry token all come from the Settings row
-  (`choiceRow('panelLayout')`), so the two surfaces cannot disagree
-  (`TourLayoutPicker`).
 - **Once ever per user.** However the offer ends (declined, skipped
   mid-tour, or completed), the synced `tourSeen` user preference
   ([User preferences](user-preferences.md)) stops it ever reappearing — the
@@ -63,16 +49,16 @@ flag, so a mid-rerun reload re-offers the same way.
 
 A welcome offer card, then eight steps in palette → mode → explorer →
 canvas → tabs → theme order (six on mobile, where the mode step and the
-theme-canvas step are skipped; five on an **event-storming board**, which hides the palette header
+theme-canvas step are skipped; five on an **event-storming board**, which hides the strip's pickers
 and offers no mode switch, and so drops the two dropdown steps and the mode
 step; four when it is both), and a closing "you're ready" card. The bookend
 cards sit outside the step count. Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
 
-0. **Welcome** (the offer): centred card, the panel layout picker, then
+0. **Welcome** (the offer): centred card, then
    "Show me around" / "No thanks".
-1. **The Palette**: the floating panel where every element comes from.
+1. **The Palette**: the strip across the top where every element comes from.
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
    Eraser / ...) and explains mode switching. No "default" claim in the
    copy — desktop defaults to Select but mobile to Hand.
@@ -82,8 +68,7 @@ live in `apps/live/components/tour/tour-steps.ts`):
    category dropdown already tells that story.
 4. **Diagram & Draw**: opens the editor mode switch's menu
    ([Editor modes](editor-modes.md#the-mode-switch)) and highlights the switch
-   and its menu as one region, wherever the layout puts it (the Palette's
-   title row, or beside the Toolbar layout's menu button). The copy says
+   and its menu as one region, beside the menu button. The copy says
    what each mode is for and that Shift+D steps through them; the step
    switches nobody's mode. Skipped on an event-storming board, which offers
    no switch, and on a phone, which shows none (it switches from the tab menu's Opens in).
@@ -137,25 +122,19 @@ alone.
   lazy-loaded chunks. A step whose target never appears is skipped rather
   than wedging the tour; if an open menu is dismissed mid-step (outside
   click), the step re-prepares itself.
-- **A target has to render to count.** Chrome a surface hides stays in the
-  DOM (the event-storming board's palette header band is `display:none`,
-  [Event storming](../021-event-storming/event-storming.md)), so an anchor with no client rects is
+- **A target has to render to count.** Chrome a surface hides can stay in the
+  DOM (`display:none`), so an anchor with no client rects is
   treated as absent — it is never clicked and never measured. That is the
   safety net; the step list itself is filtered up front (`tourStepsFor`,
   by viewport and tab kind) so the "N of M" count stays honest instead
   of a hidden step burning its timeout mid-tour.
-- **Collapsed panels**: a Floating panel collapsed to its banner is
-  expanded via its header toggle before its step is measured.
-- **Toolbar panel layout** ([Toolbar layout](toolbar-layout.md), desktop and
-  phone): there is no Explorer panel to point at, so the Explorer step
+- **The strip and the menu button** ([Toolbar layout](toolbar-layout.md)): the Explorer step
   presses the top-left menu button (`data-tour-id="dock-explorer"`, whose
   card wraps the button; `clickTour` presses the button inside a wrapping
-  anchor), rings the button and its popover as one region, and swaps its
-  copy for one that names the menu button (`TourStep.toolbar`, merged by
-  `tourStepsFor`). Leaving the step closes the popover. The Palette step
+  anchor), rings the button and its popover as one region, and its copy
+  names the menu button. Leaving the step closes the popover. The Palette step
   anchors to the strip's card, not the full-width row it is centred in; the
-  selection-mode and category steps use the strip's own pickers. Every other
-  step is the same in all layouts.
+  selection-mode and category steps use the strip's own pickers.
 - Advancing closes whatever the previous step opened (dropdowns, context
   menu, popovers); finishing or skipping restores a quiet editor.
 
@@ -166,9 +145,6 @@ Existing enums only, covering the whole funnel:
 - **Offer**: `'UI'/'Opened'/'TourOffer'` when the welcome card shows
   (first run and Settings relaunch alike); `'UI'/'Closed'/'TourOffer'` on
   "No thanks".
-- **Layout pick** on the welcome card: the Settings row's own
-  `'UI'/'Changed'/'PanelLayout<Option>'` ([Toolbar layout](toolbar-layout.md)), fired before the
-  write.
 - **Start**: `'UI'/'Started'/'Tour'` on accept.
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry
   (`TourStepPalette`, `TourStepSelectionModes`, `TourStepCategories`,

@@ -9,7 +9,7 @@ import { BorderStrokeIcon } from '@/components/palette/palette-style-previews';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
 import { HIGHLIGHTER_WIDTHS, type HighlighterWidthId } from '@/lib/highlighter-config';
 import type { QuickHighlighterStyle } from '@/lib/quick-style-highlighter';
-import { QuickRadioRow, type QuickRowDensity } from './quick-style-rows';
+import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 
 // The widths drawn with the border-width previews, thinnest first.
@@ -23,12 +23,10 @@ export function QuickHighlighterRows({
   highlighter,
   quickStyle,
   showTitles,
-  density,
 }: {
   highlighter: QuickHighlighterStyle;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
-  density: QuickRowDensity;
 }) {
   return (
     <>
@@ -36,7 +34,6 @@ export function QuickHighlighterRows({
         title="Highlighter colour"
         testId="quick-style-highlighter-colour"
         showTitle={showTitles}
-        density={density}
         options={highlighter.colour.options.map((o) => ({ ...o, content: null }))}
         columns={QUICK_ROW_TARGETS}
         value={highlighter.colour.value}
@@ -46,7 +43,6 @@ export function QuickHighlighterRows({
         title="Highlighter width"
         testId="quick-style-highlighter-width"
         showTitle={showTitles}
-        density={density}
         options={HIGHLIGHTER_WIDTHS.map((w) => ({
           value: w.id,
           name: w.label,

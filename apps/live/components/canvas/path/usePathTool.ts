@@ -16,7 +16,7 @@ import {
 import type { PendingDraw } from '@/lib/draw-mode';
 import { rubberBand } from '@/lib/path-draw';
 import { sharedNodeType, toWorld } from '@/lib/path-edit';
-import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';

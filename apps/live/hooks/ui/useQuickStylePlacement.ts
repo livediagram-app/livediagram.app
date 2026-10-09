@@ -7,18 +7,12 @@
 // never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import {
-  placeQuickStylePanel,
-  type QuickStyleLayout,
-  type Rect,
-} from '@/lib/quick-style-placement';
+import { placeQuickStylePanel, type Rect } from '@/lib/quick-style-placement';
 import { debugLog } from '@/lib/debug-log';
 
 const AREA_SELECTOR = 'main[data-canvas-a11y-root]';
-// The floating Palette panel, whose width the Floating layout's panel wears.
-const PALETTE_SELECTOR = '[data-tour-id="palette"][data-floating-panel]';
-// The Palette in each of its forms, every other floating panel or dock
-// popover, the Toolbar strip's More popover and the bottom-right cluster.
+// The palette strip, every panel or dock popover, the strip's More popover
+// and the bottom-right cluster.
 const OBSTACLE_SELECTOR =
   '[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel], [data-zoom-cluster]';
 
@@ -29,17 +23,11 @@ const toRect = (r: DOMRect): Rect => ({
   height: r.height,
 });
 
-export type QuickStyleSpot = {
-  left: number;
-  top: number;
-  // In the Floating layout, the panel takes the Palette's width.
-  width: number | null;
-};
+export type QuickStyleSpot = { left: number; top: number };
 
 export function useQuickStylePlacement(
   panelRef: RefObject<HTMLElement | null>,
   active: boolean,
-  layout: QuickStyleLayout,
 ): QuickStyleSpot | null {
   const [spot, setSpot] = useState<QuickStyleSpot | null>(null);
 
@@ -53,55 +41,34 @@ export function useQuickStylePlacement(
       Array.from(document.querySelectorAll<HTMLElement>(OBSTACLE_SELECTOR)).filter(
         (el) => el !== panel && !panel.contains(el) && !el.contains(panel),
       );
-    const paletteEl = () =>
-      layout === 'floating' ? document.querySelector<HTMLElement>(PALETTE_SELECTOR) : null;
 
     const measure = () => {
       const obstacles = obstacleEls()
         .map((el) => toRect(el.getBoundingClientRect()))
         .filter((r) => r.width > 0 && r.height > 0);
-      const palette = paletteEl();
-      const anchorRect = palette ? toRect(palette.getBoundingClientRect()) : null;
-      const anchor = anchorRect && anchorRect.width > 0 ? anchorRect : null;
       const box = panel.getBoundingClientRect();
-      // The NATURAL height, not the capped one: measuring a scrolling panel
-      // as if that were its size would lift the cap, and the next pass put
-      // it back, forever.
-      const body = panel.querySelector<HTMLElement>('[data-quick-style-body]');
-      const natural = body ? box.height - body.clientHeight + body.scrollHeight : box.height;
-      const width = anchor ? anchor.width : null;
+      // The panel never scrolls (one compact form), so its box is its natural size.
       const placed = placeQuickStylePanel({
         area: toRect(area.getBoundingClientRect()),
-        panel: { width: width ?? box.width, height: natural },
+        panel: { width: box.width, height: box.height },
         obstacles,
       });
       if (placed.fallback) {
-        debugLog('[quick-style] placement fallback', { layout, obstacles: obstacles.length });
+        debugLog('[quick-style] placement fallback', { obstacles: obstacles.length });
       }
-      setSpot((prev) =>
-        prev && prev.left === placed.left && prev.top === placed.top && prev.width === width
-          ? prev
-          : { left: placed.left, top: placed.top, width },
-      );
+      // Whole pixels: a centred panel otherwise lands on a half pixel and every glyph in it blurs
+      // (docs/specs/007-editor/toolbar-layout.md "Look").
+      const left = Math.round(placed.left);
+      const top = Math.round(placed.top);
+      setSpot((prev) => (prev && prev.left === left && prev.top === top ? prev : { left, top }));
       // Watch whatever chrome exists now; a panel that mounts later arrives
       // with a pointer or key gesture, which re-runs this. Only newly seen
       // elements are observed: observe() always delivers an initial
       // notification, so re-observing every pass would re-run this forever.
       watchResizes(new Set<Element>([area, panel, ...obstacleEls()]));
-      // A dragged Palette moves by its inline style: follow it live.
-      if (palette !== watchedPalette) {
-        mutationObserver.disconnect();
-        watchedPalette = palette;
-        if (palette)
-          mutationObserver.observe(palette, {
-            attributes: true,
-            attributeFilter: ['style', 'class'],
-          });
-      }
     };
 
     let resizeWatched = new Set<Element>();
-    let watchedPalette: HTMLElement | null = null;
     const watchResizes = (next: Set<Element>) => {
       for (const el of resizeWatched) if (!next.has(el)) resizeObserver.unobserve(el);
       for (const el of next) if (!resizeWatched.has(el)) resizeObserver.observe(el);
@@ -117,7 +84,6 @@ export function useQuickStylePlacement(
       });
     };
     const resizeObserver = new ResizeObserver(schedule);
-    const mutationObserver = new MutationObserver(schedule);
     measure();
     const events = ['resize', 'livediagram:panel-layout-changed'] as const;
     for (const ev of events) window.addEventListener(ev, schedule);
@@ -135,12 +101,11 @@ export function useQuickStylePlacement(
     return () => {
       if (frame) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
-      mutationObserver.disconnect();
       for (const ev of events) window.removeEventListener(ev, schedule);
       for (const ev of captured) window.removeEventListener(ev, schedule, true);
       window.removeEventListener('transitionend', onTransitionEnd, true);
     };
-  }, [active, panelRef, layout]);
+  }, [active, panelRef]);
 
   return spot;
 }

@@ -1,7 +1,7 @@
 // Palette category scenes for the Components, Devices and Icons articles (docs/specs/018-help/help-app.md,
 // drawing docs/specs/010-palette/palette-top-level-categories.md and docs/specs/010-palette/palette-category-browse.md).
 //
-// Drawn as the floating palette really shows them: a header band with the
+// Drawn as the palette body (More's popover) shows them: a header band with the
 // category dropdown on the right, then the category body. Components and
 // Devices are rows (a glyph chip, the tile's caption and its one-line blurb),
 // Components with its Web Elements group opened in place; Icons is a search

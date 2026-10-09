@@ -15,15 +15,14 @@ flipped from its row in Settings, and it follows the account across devices.
 
 Switching the mode **on** writes these values, once:
 
-| Setting              | Preference key       | Value     |
-| -------------------- | -------------------- | --------- |
-| Panel layout         | `panelLayout`        | `toolbar` |
-| Alignment guides     | `alignmentGuides`    | on        |
-| Auto-attach arrows   | `autoRebindArrows`   | on        |
-| Welcome tour         | `tourSeen`           | seen      |
-| Plan tour            | `planTourSeen`       | seen      |
-| AI suggested prompts | `aiSuggestedPrompts` | off       |
-| Minimal chrome       | `minimalChrome`      | on        |
+| Setting              | Preference key       | Value |
+| -------------------- | -------------------- | ----- |
+| Alignment guides     | `alignmentGuides`    | on    |
+| Auto-attach arrows   | `autoRebindArrows`   | on    |
+| Welcome tour         | `tourSeen`           | seen  |
+| Plan tour            | `planTourSeen`       | seen  |
+| AI suggested prompts | `aiSuggestedPrompts` | off   |
+| Minimal chrome       | `minimalChrome`      | on    |
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
 ([Motion](../004-interface-design/motion.md)).
@@ -35,7 +34,7 @@ Panel opacity is not part of the preset. Motion is not part of the mode: every t
   the key). A setting the user changed while the mode was on keeps their change.
 - **What is stored.** Switching on records, per preset setting, the value before and the value written
   (`powerUserBaseline`). "Did the user change it?" is answered by comparing the current value with the value written,
-  so it holds whichever surface made the change (Settings, the tour's layout picker, another device). A setting changed
+  so it holds whichever surface made the change (Settings, another device). A setting changed
   and then changed back to the preset's value counts as untouched.
 - **One setting can span several keys.** A preset setting names the keys it writes; they are compared and restored
   together, so they never disagree. Every setting in today's preset writes one key.
@@ -54,8 +53,8 @@ The mode's row sits in Editor, under a **Power User** heading. While the mode is
 directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
-2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Panel
-   Layout, Alignment Guides, Auto-Attach Arrows, Show Welcome Tour, Suggested Prompts), each with its current value
+2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
+   Guides, Auto-Attach Arrows, Show Welcome Tour, Suggested Prompts), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise
@@ -75,7 +74,7 @@ the interface, and leaves the controls:
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Search, Settings and appearance controls show their icons only.
 - **The "Tabs" label** before the tab pills is hidden.
-- **Panel titles and help buttons.** Floating panels (Explorer, Palette, Map, Layers, ...) hide their
+- **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.

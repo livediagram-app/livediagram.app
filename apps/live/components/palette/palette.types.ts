@@ -1,12 +1,9 @@
-import type { ReactNode } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { ShapeKind } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
-import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 
 export type CanvasTool =
   | 'pan'
@@ -25,11 +22,9 @@ export type CanvasTool =
   // not something one person should do to another.
   | 'slide-deck';
 
-export type CommandPaletteProps = {
-  // Draw mode's tools (WhiteboardDock, variant 'panel'): shown in place of the pickers and the
-  // catalogue, in the same panel (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  drawTools?: ReactNode;
-  position: { x: number; y: number } | null;
+// The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
+// handlers every tile calls, and the tab's state the tiles read.
+export type PaletteProps = {
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
   // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for whichever tool preceded it. Fired when
@@ -41,14 +36,6 @@ export type CommandPaletteProps = {
   // current tool selected. Omit to hide the entry; exit stays on the zoom
   // dock (the only chrome left in zen).
   onToggleZen?: () => void;
-  onMoveTo: (x: number, y: number) => void;
-  onReset: () => void;
-  // User preferences + a write-through setter, for the Palette settings
-  // popover (gear in the header, left of reset). Holds the canvas-behaviour
-  // toggles (auto-attach arrows, alignment guides) that used to live in the
-  // Settings dialog. See docs/specs/007-editor/user-preferences.md.
-  settings: UserPreferences;
-  onChangeSettings: (next: UserPreferences) => void;
   // True when the active tab has no elements. Disables the canvas tools that
   // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
   canvasEmpty?: boolean;
@@ -137,11 +124,6 @@ export type CommandPaletteProps = {
   // canvas drag. Only populated when user-preferences.drawToAdd is
   // on; otherwise null and no button shows the pressed treatment.
   pendingDraw?: PendingDraw | null;
-  // Optional callback fired with the palette's current bounding box
-  // whenever it changes (via MovablePanel's ResizeObserver). Canvas
-  // wires this up so the Comments + AI panels can stack below the
-  // palette as it changes height.
-  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // Fired after a tile is used, so a surface that hangs the palette in a
   // popover (the Toolbar strip's More) can put it away.
   onTileUsed?: () => void;
@@ -150,6 +132,4 @@ export type CommandPaletteProps = {
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the
   // Default theme) leaves the palette in its default slate look. See docs/specs/008-canvas/canvas-and-palette.md.
   themeTint?: PaletteTint;
-  // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
-  dock?: MovablePanelDockProps;
 };

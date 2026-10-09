@@ -1,7 +1,7 @@
 import { lucideSparkles } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
-// CommandPalette's tab definitions so the palette file reads as wiring
+// the palette's category definitions so the palette file reads as wiring
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
 

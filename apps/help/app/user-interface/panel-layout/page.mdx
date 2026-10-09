@@ -5,29 +5,30 @@ import { PanelLayout } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Panel Layout',
   description:
-    'Where each panel and control sits around the livediagram canvas, how to drag panels to another corner, and how the Toolbar layout and phones differ.',
+    'Where each panel and control sits around the livediagram canvas, how to drag a corner panel to another corner, and what changes on a phone.',
   path: '/help/user-interface/panel-layout/',
 });
 
 <ArticleLayout
   title="Panel Layout"
-  description="The floating panels and fixed controls that frame the canvas, and how to arrange them."
+  description="The toolbar, panels and fixed controls that frame the canvas, and how to arrange them."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-Everything around the canvas is a **panel** or a fixed control. The canvas itself fills the screen, and the panels float on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe.
+Everything around the canvas is a toolbar, a **panel** or a fixed control. The canvas itself fills the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe. The layout is the same on a computer, a tablet and a phone.
 
-<Figure caption="The canvas fills the screen: Explorer top-left, Palette top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
+<Figure caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, a Vote panel docked top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
   <PanelLayout />
 </Figure>
 
 ## What sits where
 
-- **Top-left**: the [Explorer](/help/explorer/explorer-panel/), your documents and folders.
-- **Top-right**: the [Palette](/help/palette/), for adding things and picking a selection mode. The AI, Poll and Vote panels open here too when they are in use.
+- **Top-left**: the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your documents and folders) under it. On a computer the [editor mode](/help/canvas/editor-modes/) switch sits beside it.
+- **Top centre**: the [palette strip](/help/palette/toolbar-layout/), for picking a selection mode and adding things to the canvas. In [Draw mode](/help/canvas/draw-mode/) its dock takes the strip's place.
+- **Top-right**: the AI, Poll and Vote panels and the tool panels, when they are in use, below the strip when it reaches that far.
 - **Bottom-left**: the [Map](/help/user-interface/minimap/), once a tab has a few elements.
-- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, **Layers**, **Collaborate** (while the tab has a comment or an action), the **Theme & canvas** paintbrush, and the [zoom controls](/help/user-interface/zoom-controls/). The Layers and Collaborate panels open from their buttons here.
+- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, **Layers**, **Collaborate** (while the tab has a comment or an action), the **Theme & canvas** paintbrush, and the [zoom controls](/help/user-interface/zoom-controls/). Layers and Collaborate open as popovers over their buttons, and close when you press the button again.
 - **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick controls](/help/user-interface/quick-controls/) (Search, Settings, appearance) at its right-hand end.
 - **Next to a selection**: the [toolbar](/help/user-interface/toolbar/), and the [Quick Style panel](/help/canvas/quick-style-panel/) for a shape or arrow.
 
@@ -35,17 +36,15 @@ The tool panels (Laser, Spotlight, Eraser, Format, Avatar and Slide Deck) appear
 
 ## Put panels in the corner you want
 
-On a computer, the floating panels can be dragged by their header to any corner of the screen: the Palette, Explorer, Layers, Collaborate, AI Assistant and Map panels, the tool panels, and the Poll and Vote panels that appear while a [session tool](/help/collaboration/session-tools/) is running. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays free-floating right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
+The corner panels can be dragged by their header to any corner of the screen: the AI Assistant and Map panels, the tool panels, and the Poll and Vote panels that appear while a [session tool](/help/collaboration/session-tools/) is running. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
 
-Your arrangement is remembered on this device, so a reload restores it. Once a panel has moved from its default spot, a **Reset position** button in its header sends it back. Each panel can also be collapsed from its header, to a slim banner or back into its button.
+Your arrangement is remembered on this device, so a reload restores it. Once a panel has moved from its default spot, a **Reset position** button in its header sends it back. Each panel can also be collapsed from its header to a slim banner.
 
-The bottom-right buttons and the bottom bar stay where they are.
+The palette strip, the menu button, the bottom-right buttons and the bottom bar stay where they are.
 
-## The Toolbar layout and phones
+## On a phone
 
-Prefer less floating? Set **Panel Layout** to **Toolbar** in [Settings](/help/user-interface/settings/) (under **Panels**): the Palette becomes one strip across the top of the canvas, and the Explorer opens from a menu button at its left. See [Toolbar Layout](/help/palette/toolbar-layout/).
-
-A phone always uses the Toolbar layout. There, panels can't be dragged: tap a panel's header to collapse or expand it, and Layers and Collaborate open as pop-overs above their buttons.
+On a phone the menu button sits in a card of its own at the left of the strip, without the mode switch, and the strip's tiles swipe sideways. Tap a panel's header to collapse or expand it. See [Toolbar Layout](/help/palette/toolbar-layout/#on-a-phone).
 
 [Panel Opacity](/help/palette/panel-opacity/) fades every panel so the canvas shows through, and **UI Scale** under **Appearance** makes them bigger or smaller.
 

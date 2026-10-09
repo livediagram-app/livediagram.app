@@ -28,7 +28,7 @@ import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
 import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 

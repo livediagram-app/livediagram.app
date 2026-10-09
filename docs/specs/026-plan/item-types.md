@@ -155,8 +155,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   the second of one strip with **Find a Card**.
   It opens the panel as a popover hanging above the button, as Layers does from its button; it closes on a
   press outside, a second press of the button, or leaving Plan mode.
-- **Edit Cards** opens it too: a button at the foot of the palette's Cards category (floating layout), and at
-  the end of the Toolbar layout's strip while Cards is chosen.
+- **Edit Cards** opens it too: a button at the end of the Toolbar strip while Cards is chosen.
 - The panel is 34 rem (544 px) wide on desktop, two types to a row; on a phone the screen's width less a margin,
   one to a row. It lists the
   catalogue in two groups under small headings: **Built-In Types** (Project, Task, Note, Idea and Action, edited or

@@ -107,8 +107,7 @@ adding `TechIconDef` entries.
 
 ## Palette — the Technology tab
 
-A new tab in `PaletteTabBar` (`CommandPalette.tsx`), alongside Shapes / Tools /
-Devices / Icons. It mirrors the Icons tab: a search box over a grid of
+A palette category, alongside Shapes / Devices / Icons. It mirrors the Icons tab: a search box over a grid of
 **provider** category tiles you drill into (AWS / Azure / Cloudflare / Firebase
 / Generic), with a breadcrumb back — see [Browsing the palette by category](palette-category-browse.md), which replaced the provider
 filter dropdown this originally shipped with. Clicking a tile adds the icon at

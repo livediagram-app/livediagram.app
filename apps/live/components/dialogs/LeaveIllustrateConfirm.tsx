@@ -27,7 +27,7 @@ const GAP = 10;
 // Where the card sits with no switch to hang from: this far down the screen.
 const FALLBACK_TOP = 72;
 
-// The mode switch on screen: the Palette header's chip or the Toolbar layout's.
+// The mode switch on screen, beside the menu button.
 function visibleModeSwitch(): HTMLElement | null {
   for (const el of Array.from(
     document.querySelectorAll<HTMLElement>('[data-tour-id="editor-mode"]'),

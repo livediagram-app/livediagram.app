@@ -46,8 +46,8 @@ Arrow keys move between them, Enter or a press chooses, Escape or an outside pre
 infographic page takes the last infographic page's size and orientation (else A4 portrait); a new
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
 slide's size (else 16:9), landscape. The popover is the same on
-a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. In the
-Toolbar layout the strip ends, after a divider, with the same **+** (Add page), opening the same
+a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. The Toolbar
+strip ends, after a divider, with the same **+** (Add page), opening the same
 popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
 row's own **+** adds a page.
 

@@ -10,14 +10,14 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
 - On `dragstart` of a palette tile, the browser's default drag image is
   suppressed (a 1×1 transparent image) so the only thing the user sees is
   the canvas ghost.
-- While dragging over the **canvas** (not over a floating panel), a
+- While dragging over the **canvas** (not over a panel or the strip), a
   translucent, brand-tinted ghost follows the cursor:
   - It is the shape's real silhouette (`ShapeGlyph` — a circle previews as a
     circle, a cylinder as a cylinder) inside a dashed brand footprint.
   - Sized to the shape's `SHAPE_DEFAULT_SIZE` × the current zoom, and
     **centred on the cursor** — matching where `dropPaletteItem` places the
     element (it centres on the drop point).
-- Over a floating panel (a "changed my mind" drag back to the palette) the
+- Over a panel or the strip (a "changed my mind" drag back to the palette) the
   ghost hides, mirroring the existing `usePaletteDrop` no-drop guard.
 - On `drop` / `dragend` / `Escape`, the ghost clears.
 - Decorative only: it respects reduce-motion (the global rule collapses its
@@ -35,8 +35,7 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
   (`components/palette/palette-tile-drag.ts`): shapes (`kind` or `kind|choice`) and sticky notes on
   the palette mime with the ghost preview, line icons, Technology icons and stickers on their own
   mimes. Every rendering of a tile uses it: the grid tile, the Toolbar strip's tile, and the list
-  row, wherever a category body draws them, in the Floating Palette or the Toolbar strip's More
-  popover, including what a body's own search turns up (Behaviour's rows; the Icons, Stickers and
+  row, wherever a category body draws them, in the Toolbar strip's More popover, including what a body's own search turns up (Behaviour's rows; the Icons, Stickers and
   Technology catalogues' tiles drag on their own mimes). Tiles that arm a gesture (Text, the pens,
   Polygon, Arrow) offer no drag.
 - Every drag source clears the preview on `dragend`.

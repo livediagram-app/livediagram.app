@@ -69,13 +69,13 @@ export type MovablePanelProps = {
   // Optional action controls rendered inside the header's button group,
   // immediately to the LEFT of the reset-position button. Unlike
   // `headerExtra` (which sits before the button group, by the title),
-  // this slots into the same tight cluster as reset / minimise — for
+  // this slots into the same tight cluster as reset / collapse — for
   // panel-scoped affordances that belong with the chrome buttons (the
   // Palette's settings popover trigger). Only rendered in the desktop
   // floating-panel header; the popover has no header.
   headerActions?: ReactNode;
   // The help article this panel is explained by (docs/specs/018-help/contextual-help-links.md). Rendered as the
-  // `?` chrome button beside reset / minimise, in BOTH the desktop header and
+  // `?` chrome button beside reset / collapse, in BOTH the desktop header and
   // the popover's header band, so the help we already wrote is reachable from
   // the feature it documents rather than only by searching for it.
   //
@@ -84,40 +84,18 @@ export type MovablePanelProps = {
   // moves around between panels teaches people not to look for it.
   helpArticle?: import('@/lib/help-articles').HelpArticleKey;
   // When provided, a "restore default" button appears to the left of
-  // the minimise button. Wired by the caller to clear position state
+  // the collapse button. Wired by the caller to clear position state
   // so the panel snaps back to its default corner.
   onReset?: () => void;
   onMoveTo: (x: number, y: number) => void;
-  // Optional: only called by the legacy dock-button minimise path
-  // (the Layers panel uses it). Collapsible panels manage
-  // their own banner state internally and never invoke this.
-  onMinimize?: () => void;
-  // When set AND the panel is at its default corner (position is null)
-  // AND defaultCorner is 'top-right-stacked', the panel's top is
-  // computed as `stackBelowY + 16` (16 = gap-4) instead of the
-  // hardcoded top-[15rem]. This lets the caller stack a panel
-  // dynamically beneath another resizable panel (the Comments / AI
-  // panels sitting below the Palette, which changes height as it
-  // collapses / expands). User drags break out of stacking
-  // (position becomes non-null and explicit left/top win).
-  stackBelowY?: number;
-  // Optional ResizeObserver-driven callback fired with the panel's
-  // current bounding box when it mounts and every time its size
-  // changes. The Palette uses this so the Comments / AI panels can stack
-  // beneath it; `bottomY` is the absolute offset (in offsetParent
-  // coords) of the panel's bottom edge, so the consumer can hand it
-  // back as `stackBelowY` and the panel above and below align
-  // independently of which corner / top-utility class the upper
-  // panel uses (top-2 on mobile vs top-4 on desktop).
-  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // When true the panel can collapse to a banner (title row only)
   // via its header button, on both mobile and desktop. The button's
   // icon flips between dash (collapse) and plus (expand) so the
   // same slot is the entry point in both directions. Mobile starts
   // collapsed by default; desktop starts expanded. Either stays as set
-  // until the user clicks the button again. Replaces the dock-button minimise mechanism for opted-in
-  // panels: the banner stays in the corner so the affordance is
-  // always visible. See docs/specs/008-canvas/canvas-and-palette.md "Collapse to banner".
+  // until the user clicks the button again. The banner stays in the corner
+  // so the affordance is always visible. See docs/specs/007-editor/panel-docking.md
+  // "Collapse to banner".
   collapsible?: boolean;
   // When true, start collapsed on first paint regardless of viewport.
   // Default (undefined / false) preserves the historical behaviour:
@@ -152,12 +130,6 @@ export type MovablePanelProps = {
   // … tab panels grow rather than showing a scrollbar (their content is
   // bounded; searchable tabs scroll their own inner grid).
   growBody?: boolean;
-  // Stack this panel above its siblings. Every panel shares --z-panel, so
-  // without it the order is whatever the DOM order happens to be — which is
-  // how a panel mounted later ended up covering the palette. Only the palette
-  // sets it today; a second claimant means the panels need a real focus-raise
-  // rather than a second bump.
-  elevated?: boolean;
   // --- Corner docking (docs/specs/007-editor/panel-docking.md, desktop only) ---
   // When true the panel renders as a static flex child of its corner
   // stack container (no absolute positioning / corner class), so the

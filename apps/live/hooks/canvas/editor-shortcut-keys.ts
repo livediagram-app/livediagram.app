@@ -6,7 +6,7 @@
 // these tables directly.
 
 import type { Selection } from '@/lib/selection-store';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { WhiteboardShapeId } from '@/lib/whiteboard-tool';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';

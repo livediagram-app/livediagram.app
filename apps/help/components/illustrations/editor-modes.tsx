@@ -6,7 +6,8 @@
 // editor-mode-switch.tsx. Real labels throughout: the modes' names and one-line descriptions from the
 // mode catalogue (packages/document/src/editor-mode.ts), and the card's title, sentence and buttons.
 
-import { Scene, Label, Panel, Button } from './primitives';
+import { Scene, Label, Button } from './primitives';
+import { MenuCard } from './toolbar-layout';
 
 type Mode = 'Diagram' | 'Draw' | 'Illustrate' | 'Plan';
 
@@ -217,52 +218,28 @@ export function OpensInScene() {
   );
 }
 
-/** Leaving Illustrate on a tab with pages: the card hanging from the Palette header's mode switch,
- *  asking "Switch to Diagram?", with Cancel and Switch (the Diagram mark on it). */
+/** Leaving Illustrate on a tab with pages: the card hanging from the mode switch beside the menu
+ *  button, asking "Switch to Diagram?", with Cancel and Switch (the Diagram mark on it). */
 export function LeaveIllustrateScene() {
-  const chipX = 300;
-  const chipW = 92;
-  const cx = 112;
+  const cx = 24;
   const cy = 50;
   const cw = 292;
   const ch = 120;
-  const pointerX = chipX + chipW / 2;
+  // The centre of the mode switch in the top-left card (MenuCard at 12, 8).
+  const pointerX = 55;
   return (
-    <Scene w={420} h={200}>
+    <Scene w={460} h={200}>
+      <MenuCard x={12} y={8} />
       {/* An Illustrate page on the canvas */}
-      <rect x={18} y={40} width={80} height={112} rx={2} className="fill-white stroke-slate-200" />
-      <rect x={30} y={70} width={10} height={20} className="fill-brand-200" />
-      <rect x={44} y={58} width={10} height={32} className="fill-brand-400" />
-      <rect x={58} y={76} width={10} height={14} className="fill-brand-200" />
-      <rect x={30} y={102} width={52} height={5} rx={2.5} className="fill-slate-300" />
-      <rect x={30} y={114} width={38} height={5} rx={2.5} className="fill-slate-300" />
-      <Label x={18} y={30} size={10} tone="muted">
+      <rect x={350} y={40} width={80} height={112} rx={2} className="fill-white stroke-slate-200" />
+      <rect x={362} y={70} width={10} height={20} className="fill-brand-200" />
+      <rect x={376} y={58} width={10} height={32} className="fill-brand-400" />
+      <rect x={390} y={76} width={10} height={14} className="fill-brand-200" />
+      <rect x={362} y={102} width={52} height={5} rx={2.5} className="fill-slate-300" />
+      <rect x={362} y={114} width={38} height={5} rx={2.5} className="fill-slate-300" />
+      <Label x={390} y={170} size={10} tone="muted" anchor="middle">
         A4 · Portrait · Infographic
       </Label>
-      {/* The Palette panel, its title row holding the mode switch on Illustrate */}
-      <Panel x={176} y={8} w={232} h={184} title="PALETTE" />
-      <rect
-        x={chipX}
-        y={11}
-        width={chipW}
-        height={17}
-        rx={5}
-        className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1}
-      />
-      <g transform={`translate(${chipX + 11} 19.5)`}>
-        <ModeMark mode="Illustrate" className="stroke-brand-600" scale={0.5} />
-      </g>
-      <Label x={chipX + 21} y={20} size={10} weight={600} tone="accent">
-        Illustrate
-      </Label>
-      <path
-        d={`M${chipX + chipW - 14} 18 l3 3 l3 -3`}
-        fill="none"
-        className="stroke-brand-600"
-        strokeWidth={1.3}
-        strokeLinecap="round"
-      />
       {/* The card, pointing up at the switch */}
       <rect
         x={cx}

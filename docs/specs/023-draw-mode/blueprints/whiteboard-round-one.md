@@ -232,12 +232,9 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
 - `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
   `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `format`): not
   rendered.
-- `panelEls.palette` (the Floating layout's Palette panel) stays, its body Draw's groups
-  (`drawTools`) in place of the catalogue ([whiteboard-dock](whiteboard-dock.md)).
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
-- The dock renders when `toolbarActive && whiteboard && !readOnly && !chromeHidden` (the Toolbar
-  layout's only).
+- The dock renders when `whiteboard && whiteboardDock && !readOnly && !chromeHidden`.
 
 ### Quick style panel on a whiteboard
 
@@ -261,7 +258,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
     the `#rrggbb` `strokeColor` of pen strokes, shapes and lines, lower-cased and deduplicated, at most
     `TAB_CUSTOM_COLOURS_MAX` (8). No Remove there: it reflects the tab.
   - Both colour rows are `QuickRadioRow` with `columns = QUICK_ROW_TARGETS` (9): a grid of
-    24 px columns, touching in compact and `space-between` in Floating, so a shorter row lines up
+    24 px columns, touching, so a shorter row lines up
     under the full one.
   - A stroke's value is `strokeColor` (lower case) ?? `penColour` ?? Ink; `applyPenStyle` sets Ink by
     clearing both, a name as `penColour` (clearing `strokeColor`), a hex as `strokeColor` (clearing
@@ -897,15 +894,13 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Presentation and UX
 
 - Dock: top centre (or bottom, by choice), three groups; placement, separators and copy in
-  [whiteboard-dock](whiteboard-dock.md); in the Floating layout the groups fill the Palette panel
-  instead, as captioned tiles. Dock buttons 36 × 36 px (the strip's tiles) on the editor's panel
+  [whiteboard-dock](whiteboard-dock.md). Dock buttons 36 × 36 px (the strip's tiles) on the editor's panel
   surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
-- Flyouts sit on the board side of their button (beside the Palette panel in the Floating
-  layout), never move the dock, and point at their button with a tip; portalled and `fixed`,
+- Flyouts sit on the board side of their button, never move the dock, and point at their button with a tip; portalled and `fixed`,
   placed with `left` / `top` in viewport px, clamped 12 px inside the viewport (measured from the
-  layout size before paint, since the pop-in starts at `scale(0)`): `offDock` / `besidePanel` in
+  layout size before paint, since the pop-in starts at `scale(0)`): `offDock` in
   [whiteboard-dock](whiteboard-dock.md).
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
@@ -918,9 +913,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Accessibility
 
 - Each group a `role="toolbar"` ("Drawing tools", "Shapes", "Settings"),
-  `aria-orientation="horizontal"` (none on a Palette panel tile grid); roving tabindex per group:
-  one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump, and in a tile grid
-  ArrowUp / ArrowDown a row ([whiteboard-dock](whiteboard-dock.md)).
+  `aria-orientation="horizontal"`; roving tabindex per group:
+  one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump ([whiteboard-dock](whiteboard-dock.md)).
 - Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");
   flyout openers carry `aria-expanded` and `aria-controls`.
 - A flyout is a `role="group"` labelled by its title; opening moves focus to its selected control;
@@ -934,7 +928,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Web Experience
 
 - Zero layout shift: the dock is `position: absolute` over the canvas, fixed button sizes, flyouts
-  portalled and `fixed` (off the dock's board side, or beside the Palette panel); nothing in the
+  portalled and `fixed` (off the dock's board side); nothing in the
   page flow changes when a tool or flyout toggles.
 - INP: dock handlers set state only; erase work is per sample and bbox-filtered.
 - LCP: no new asset on first paint; the dock renders with the canvas.
@@ -970,7 +964,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Picker: stock row, row keys, Your colours and Remove, custom, reserved warning | `components/canvas/whiteboard/ColourPicker.test.tsx`, `lib/hsv.test.ts`                  |
 | Marker glyph and cursor in the resolved colour, ink included                   | `WhiteboardDock.test.tsx`, `useWhiteboardPenCursor.test.tsx`                             |
 | Marker rows: nine stock colours, the tab's customs, Marker 1                   | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`          |
-| Swatch rows one line, never clipped, both layouts, both engines                | `e2e/quick-style-swatch-rows.spec.ts`                                                    |
+| Swatch rows one line, never clipped, both engines                              | `e2e/quick-style-swatch-rows.spec.ts`                                                    |
 | Settled ink unchanged as samples arrive (no trim)                              | `packages/document/src/pen-stroke.test.ts`                                               |
 | Freehand box on whole canvas px, points round-trip                             | `packages/document/src/freehand.test.ts`                                                 |
 | Pen stroke svg in canvas coordinates                                           | `apps/live/components/canvas/freehand-svg.test.tsx`                                      |

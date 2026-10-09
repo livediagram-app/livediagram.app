@@ -215,8 +215,11 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   const staggered = copies.find((n) => n.id !== pasted[0]!.id)!;
   expect(staggered).toMatchObject({ x: row[0]!.x + 24, y: row[0]!.y });
 
-  // Over a floating panel is not over the canvas either: staggered again.
-  const panelRow = (await page.getByText('Add from photo').first().boundingBox())!;
+  // Over the Palette strip is not over the canvas either: staggered again.
+  const panelRow = (await page
+    .getByRole('button', { name: 'Add from photo' })
+    .first()
+    .boundingBox())!;
   await page.mouse.move(panelRow.x + 10, panelRow.y + 10);
   await page.keyboard.press('ControlOrMeta+v');
   await expect(notes).toHaveCount(7);

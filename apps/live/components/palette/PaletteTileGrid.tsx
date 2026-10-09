@@ -19,7 +19,7 @@ import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
 // category body and the Toolbar strip share one tile implementation.
 
-// The editor add-handlers a tile can invoke, bundled once in CommandPalette
+// The editor add-handlers a tile can invoke, bundled once in usePaletteCatalogue
 // (with the mobile-close / draw-armed wrapping already applied) and threaded
 // to every grid.
 export type PaletteTileActions = {

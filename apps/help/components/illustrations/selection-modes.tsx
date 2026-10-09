@@ -1,5 +1,5 @@
 // Selection-mode illustrations (docs/specs/018-help/help-app.md): the palette's canvas-tool picker
-// as the editor actually draws it (a trigger in the palette's header band that
+// as the editor actually draws it (a trigger at the start of the palette strip that
 // opens a tile grid in three bands), the panels each tool opens while it is
 // active, the pixel character Avatar mode walks, and the isometric orbit
 // button. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
@@ -60,14 +60,23 @@ function Chevron({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The top of the floating Palette: its title bar, then the header band with
- *  the canvas-tool picker on the left (showing the chosen tool) and the
- *  category picker on the right. Sits at the top of every mode scene. */
+/** The start of the palette strip across the top of the canvas: the canvas-tool picker on the
+ *  left (showing the chosen tool) and the category picker beside it. Sits at the top of every
+ *  mode scene. */
 export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number; tool: ToolKey }) {
   const t = TOOLS.find((o) => o.key === tool) ?? TOOLS[0];
   const w = 236;
   return (
-    <Panel x={x} y={y} w={w} h={58} title="PALETTE">
+    <g>
+      <rect
+        x={x}
+        y={y + 22}
+        width={w}
+        height={36}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
       <rect
         x={x + 8}
         y={y + 28}
@@ -96,7 +105,7 @@ export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number
         Popular
       </Label>
       <Chevron x={x + w - 16} y={y + 40} />
-    </Panel>
+    </g>
   );
 }
 
@@ -201,7 +210,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
 type PanelRow = { label: string; value: string; amber?: boolean };
 
 /** A tool's own panel (Eraser, Format, Laser, Spotlight): a titled panel that
- *  stacks under the Palette while the tool is active, a preview strip at the
+ *  docks top-right while the tool is active, a preview strip at the
  *  top, then one collapsed row per setting naming its current value. */
 function ToolPanel({
   x,

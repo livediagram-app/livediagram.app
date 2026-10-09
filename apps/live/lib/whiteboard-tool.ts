@@ -2,7 +2,7 @@
 // which dock tool is in hand, derived from the editor's own canvas tool and
 // armed intent so the two can never disagree, plus the intents the dock arms
 // and the pen-versus-touch routing rule.
-import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { INK_PEN_COLOUR, type Element } from '@livediagram/document';
 import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen } from './whiteboard-prefs';

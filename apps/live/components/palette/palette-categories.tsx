@@ -37,7 +37,7 @@ import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
  * palette changed — by the time it was noticed it was offering a Tools category that no longer
  * existed and hiding six that did.
  *
- * Order IS layout: PaletteTabBar renders the dropdown straight from this
+ * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
  * 1 Structure, 2 Decorate, 3 Dynamic, 4 Plan; Plan mode lists its band first).
  */

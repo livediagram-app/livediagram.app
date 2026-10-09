@@ -63,13 +63,13 @@ describe('Power User Mode children', () => {
     expect(
       minimal.compareDocumentPosition(readout) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(within(readout).getAllByRole('listitem')).toHaveLength(6);
-    expect(within(readout).getByText('Toolbar')).toBeTruthy();
+    expect(within(readout).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(readout).getAllByText('On').length).toBeGreaterThan(0);
   });
 
   it('goes to a preset setting in its own row', () => {
     const onGoToRow = renderEditor(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Panels' }));
-    expect(onGoToRow).toHaveBeenCalledWith('panels', 'panelLayout');
+    fireEvent.click(screen.getByRole('button', { name: 'Change Alignment Guides in Editor' }));
+    expect(onGoToRow).toHaveBeenCalledWith('editor', 'alignmentGuides');
   });
 });

@@ -19,10 +19,10 @@ export function PanelTitle({ title }: { title: string }) {
   );
 }
 
-// The floating panel's header row, lifted out of MovablePanel: the
-// drag handle (the whole row), the title, the caller's extra header
-// content / actions, the reset-position button, and the collapse /
-// minimize toggle with its plus / dash glyphs. Pure render — all the
+// The panel's header row, lifted out of MovablePanel: the drag handle (the
+// whole row), the title, the caller's extra header content / actions, the
+// reset-position button, and a collapsible panel's collapse toggle with its
+// plus / dash glyphs. Pure render — all the
 // state stays in MovablePanel, which mounts this once per panel.
 export function MovablePanelHeader({
   headerRef,
@@ -37,7 +37,6 @@ export function MovablePanelHeader({
   collapsible,
   effectiveCollapsed,
   onToggleCollapsed,
-  onMinimize,
 }: {
   headerRef: RefObject<HTMLDivElement | null>;
   beginDrag: (e: ReactPointerEvent) => void;
@@ -51,7 +50,6 @@ export function MovablePanelHeader({
   collapsible: boolean;
   effectiveCollapsed: boolean;
   onToggleCollapsed: () => void;
-  onMinimize?: () => void;
 }) {
   const minimalChrome = useMinimalChrome();
   return (
@@ -106,56 +104,44 @@ export function MovablePanelHeader({
             </button>
           </HoverCard>
         ) : null}
-        <HoverCard
-          title={
-            collapsible
-              ? effectiveCollapsed
+        {collapsible ? (
+          <HoverCard
+            title={
+              effectiveCollapsed
                 ? `Expand ${title.toLowerCase()}`
                 : `Collapse ${title.toLowerCase()}`
-              : `Minimize ${title.toLowerCase()}`
-          }
-          description={
-            collapsible
-              ? effectiveCollapsed
-                ? 'Show the panel body.'
-                : 'Hide the panel body, keep the banner.'
-              : 'Collapse to a dock button.'
-          }
-        >
-          <button
-            type="button"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => {
-              if (collapsible) {
-                onToggleCollapsed();
-                return;
-              }
-              onMinimize?.();
-            }}
-            aria-label={
-              collapsible
-                ? effectiveCollapsed
+            }
+            description={
+              effectiveCollapsed ? 'Show the panel body.' : 'Hide the panel body, keep the banner.'
+            }
+          >
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={onToggleCollapsed}
+              aria-label={
+                effectiveCollapsed
                   ? `Expand ${title.toLowerCase()}`
                   : `Collapse ${title.toLowerCase()}`
-                : `Minimize ${title.toLowerCase()}`
-            }
-            className="relative flex h-5 w-5 touch-target items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            {collapsible && effectiveCollapsed ? (
-              // Plus glyph: expand the body. Same 12 x 12 grid as
-              // the dash so the button slot doesn't visually
-              // jitter when the icon flips.
-              <Glyph size={12} units={12}>
-                <line x1="6" y1="2.5" x2="6" y2="9.5" />
-                <line x1="2.5" y1="6" x2="9.5" y2="6" />
-              </Glyph>
-            ) : (
-              <Glyph size={12} units={12}>
-                <line x1="2.5" y1="6" x2="9.5" y2="6" />
-              </Glyph>
-            )}
-          </button>
-        </HoverCard>
+              }
+              className="relative flex h-5 w-5 touch-target items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              {effectiveCollapsed ? (
+                // Plus glyph: expand the body. Same 12 x 12 grid as
+                // the dash so the button slot doesn't visually
+                // jitter when the icon flips.
+                <Glyph size={12} units={12}>
+                  <line x1="6" y1="2.5" x2="6" y2="9.5" />
+                  <line x1="2.5" y1="6" x2="9.5" y2="6" />
+                </Glyph>
+              ) : (
+                <Glyph size={12} units={12}>
+                  <line x1="2.5" y1="6" x2="9.5" y2="6" />
+                </Glyph>
+              )}
+            </button>
+          </HoverCard>
+        ) : null}
       </div>
     </div>
   );

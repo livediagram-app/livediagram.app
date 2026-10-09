@@ -128,7 +128,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { panelLayout: 'toolbar', telemetryEnabled: false };
+    const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
@@ -271,12 +271,12 @@ describe('settings catalogue', () => {
 
   it('switches power user mode through the preset, not a bare flag', () => {
     const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ panelLayout: 'floating' } as UserPreferences, true);
-    expect(on.panelLayout).toBe('toolbar');
+    const on = row.write({ alignmentGuides: false } as UserPreferences, true);
+    expect(on.alignmentGuides).toBe(true);
     expect(on.minimalChrome).toBe(true);
     expect(row.read(on)).toBe(true);
     const off = row.write(on, false);
-    expect(off).toEqual({ panelLayout: 'floating' });
+    expect(off).toEqual({ alignmentGuides: false });
     expect(row.event).toEqual({ category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' });
   });
 
@@ -329,10 +329,10 @@ describe('settings sub-categories', () => {
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
 
-  it('keeps Panel Layout and Panel Opacity on Panels itself, and Enable Map under Map', () => {
+  it('keeps Panel Opacity on Panels itself, and Enable Map under Map', () => {
     const keys = (id: string) =>
       SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
-    expect(keys('panels')).toEqual(['panelLayout', 'panelOpacity']);
+    expect(keys('panels')).toEqual(['panelOpacity']);
     expect(keys('map')[0]).toBe('showMinimap');
   });
 

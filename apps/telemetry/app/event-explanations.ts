@@ -471,7 +471,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
   'Layer|Deleted|': 'A layer (and everything on it) was deleted.',
   'Layer|Moved|': 'A selection was moved onto another layer.',
-  'Layer|Opened|Panel': 'Someone expanded the Layers panel.',
+  'Layer|Opened|Panel': 'Someone opened the Layers panel.',
   'Layer|Removed|MergedDown': 'A layer was merged into the one below it.',
   'Layer|Removed|MergedUp': 'A layer was merged into the one above it.',
   'Layer|Renamed|Adopted': "A layer auto-named itself from an element's label (smart naming).",
@@ -811,13 +811,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|PanelLayout':
     "Someone changed the editor's panel layout, in Settings > Editor. An earlier version of this event, before it recorded which layout was chosen. No longer recorded.",
   'UI|Changed|PanelLayoutFloating':
-    "Someone switched the editor's panel layout to Floating, in Settings > Editor.",
+    "Someone switched the editor's panel layout to Floating, in Settings > Editor. No longer recorded: Toolbar became the only layout.",
   'UI|Changed|PanelLayoutMinimal':
     "Someone switched the editor's panel layout to Minimal, in Settings > Editor. No longer recorded: the Minimal layout was removed.",
   'UI|Changed|PanelLayoutToolbar':
-    "Someone switched the editor's panel layout to Toolbar, in Settings > Editor.",
+    "Someone switched the editor's panel layout to Toolbar, in Settings > Editor. No longer recorded: Toolbar became the only layout.",
   'UI|Changed|PanelOpacity':
-    'Someone adjusted how see-through the floating panels are, on the Panel Opacity slider in Settings > Editor.',
+    'Someone adjusted how see-through the panels are, on the Panel Opacity slider in Settings > Editor.',
   'UI|Changed|UiScale':
     'Someone made the panels, the toolbar and the bottom-right buttons bigger or smaller together, on the UI Scale slider in Settings > Appearance.',
   'UI|Changed|UiScalePanels':
@@ -886,7 +886,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|PlanTourSkipped':
     'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights.',
   'UI|Moved|PanelDock':
-    'Someone dragged a floating panel, such as the Palette or the Explorer, to a different corner of the screen, or let it go free.',
+    'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
   'UI|Moved|Slide':
     'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':

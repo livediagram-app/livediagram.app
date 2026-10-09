@@ -1,11 +1,12 @@
 // Editor-mode illustrations for the Canvas articles on Draw mode and Illustrate Mode
-// (docs/specs/018-help/help-app.md): the mode switch in the Palette panel's title row with its
-// menu open (chrome/editor-mode/ModeMenuChip.tsx), and Draw mode's dock across the top of the
-// canvas in the Toolbar layout (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout:
+// (docs/specs/018-help/help-app.md): the mode switch beside the menu button with its menu open
+// (chrome/editor-mode/ModeMenuChip.tsx), and Draw mode's dock across the top of the canvas
+// (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout:
 // the four modes, the ⇧D hint on the row the key leads to, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
-import { Scene, Label, Panel } from './primitives';
+import { Scene, Label } from './primitives';
+import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Mode glyphs -------------------------------------------------------------------------------
 
@@ -50,39 +51,17 @@ function ModeGlyph({ mode, tone = 'slate' }: { mode: string; tone?: 'slate' | 'b
 
 const MODES = ['Diagram', 'Draw', 'Illustrate', 'Plan'];
 
-/** The mode switch in the Palette panel's title row, its menu open: the four modes, the current
- *  one checked, and ⇧D on the row the key leads to. */
+/** The mode switch beside the menu button in the top-left card, its menu open: the four modes,
+ *  the current one checked, and ⇧D on the row the key leads to. */
 export function ModeSwitchScene() {
-  const mx = 232;
-  const my = 52;
+  const mx = 40;
+  const my = 64;
   const rowH = 26;
   return (
-    <Scene w={420} h={200}>
-      <Panel x={150} y={14} w={252} h={176} title="PALETTE" />
-      {/* The chip, labelled in the Floating layout */}
-      <rect
-        x={292}
-        y={17}
-        width={84}
-        height={17}
-        rx={5}
-        className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1}
-      />
-      <g transform="translate(302 25.5) scale(0.8)">
-        <ModeGlyph mode="Diagram" tone="brand" />
-      </g>
-      <Label x={312} y={26} size={10} weight={600} tone="accent">
-        Diagram
-      </Label>
-      <path
-        d="M362 24 l3 3 l3 -3"
-        fill="none"
-        className="stroke-brand-600"
-        strokeWidth={1.3}
-        strokeLinecap="round"
-      />
-      {/* The menu, hanging below the chip */}
+    <Scene w={420} h={190}>
+      <MenuCard x={12} y={14} />
+      <Strip x={82} y={14} />
+      {/* The menu, hanging below the switch */}
       <rect
         x={mx}
         y={my - 12}
@@ -150,17 +129,17 @@ export function ModeSwitchScene() {
       })}
       {/* The canvas beside it */}
       <rect
-        x={24}
-        y={70}
+        x={264}
+        y={80}
         width={70}
         height={40}
         rx={7}
         className="fill-white stroke-brand-300"
         strokeWidth={2}
       />
-      <path d="M94 90 h34" className="stroke-brand-400" strokeWidth={2.2} />
+      <path d="M334 100 h34" className="stroke-brand-400" strokeWidth={2.2} />
       <path
-        d="M30 150 c14 -20 26 12 40 -6 s20 -14 30 0"
+        d="M270 160 c14 -20 26 12 40 -6 s20 -14 30 0"
         fill="none"
         className="stroke-slate-600"
         strokeWidth={2.4}
@@ -231,7 +210,7 @@ function Marker({ cls }: { cls: string }) {
   );
 }
 
-/** Draw mode's dock in the Toolbar layout: the drawing tools, the pinned shapes and Shapes, and
+/** Draw mode's dock across the top of the canvas: the drawing tools, the pinned shapes and Shapes, and
  *  Settings, each with its key, over a board with a pen stroke on it. */
 export function DrawDockScene() {
   const y = 22;

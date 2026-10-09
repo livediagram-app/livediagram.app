@@ -8,15 +8,8 @@ import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } fr
 const CANVAS = '[data-canvas-a11y-root]';
 type El = Record<string, unknown> & { id: string; type: string; shape?: string };
 
-async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<void> {
+async function openBoard(page: Page): Promise<void> {
   await page.emulateMedia({ colorScheme: 'dark' });
-  if (layout) {
-    await page.addInitScript((panelLayout) => {
-      const key = 'livediagram:user-preferences:v1';
-      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
-      localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout }));
-    }, layout);
-  }
   await openStartBlank(page);
 }
 
@@ -67,8 +60,6 @@ const choose = (page: Page, row: string, option: string) =>
 
 const shapesOf = (els: El[], kind: string) => els.filter((e) => e.shape === kind);
 
-const PALETTE = '[data-tour-id="palette"][data-floating-panel]';
-
 test.describe('quick style panel', () => {
   test('one click on Flowing makes the selected arrow dashed and animated', async ({
     page,
@@ -92,30 +83,11 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Floating: on the left edge in the Palette’s dress, away from a right-hand Palette', async ({
+  test('narrow, nine 24 px swatch targets wide, a theme row eight (its seven and Ink)', async ({
     page,
     pageErrors,
   }) => {
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await openBoard(page, 'floating');
-    await drawShape(page, 'o', { x: 700, y: 300 });
-    await expect(panel(page)).toBeVisible();
-    await expect(panel(page).getByText('Quick style', { exact: true })).toBeVisible();
-    await expect(async () => {
-      const canvas = (await page.locator(CANVAS).boundingBox())!;
-      const p = (await page.locator(PALETTE).boundingBox())!;
-      const q = (await panel(page).boundingBox())!;
-      expect(q.x).toBeLessThan(canvas.x + canvas.width / 2);
-      expect(Math.abs(q.width - p.width)).toBeLessThan(1);
-    }).toPass();
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('Toolbar: narrow, nine 24 px swatch targets wide, a theme row eight (its seven and Ink)', async ({
-    page,
-    pageErrors,
-  }) => {
-    await openBoard(page, 'toolbar');
+    await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
     expect((await panel(page).boundingBox())!.width).toBeCloseTo(234, 0);
@@ -167,8 +139,8 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Toolbar: sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
-    await openBoard(page, 'toolbar');
+  test('sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
+    await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
     await expect(panel(page).getByText('Quick style', { exact: true })).toHaveCount(0);

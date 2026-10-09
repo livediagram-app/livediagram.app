@@ -235,7 +235,7 @@ containers, the ready-made page composites, the device frames a wireframe sits
 inside. Arranging a canvas comes before dressing it, which is the order the
 bands now read in — Common, Structure, Decorate, Dynamic.
 
-The category array must stay sorted by band: `PaletteTabBar` renders it
+The category array must stay sorted by band: the category picker renders it
 straight through and groups under the headings without sorting, so a
 misplaced entry appears under the wrong one.
 

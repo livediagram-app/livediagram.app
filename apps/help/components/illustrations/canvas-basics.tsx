@@ -1,7 +1,7 @@
-// Canvas basics illustrations (docs/specs/018-help/help-app.md): the palette and dock on the
+// Canvas basics illustrations (docs/specs/018-help/help-app.md): the palette strip and dock on the
 // canvas, the multi-selection toolbar, the New Document template step, the element menu's
 // Font tiles, and the three tabs of the Tab Look & Feel dialog plus the custom-theme builder.
-// Each draws the real surface with its real labels: CommandPalette.tsx, CanvasChrome.tsx,
+// Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,
 // MultiSelectionToolbar.tsx, TemplatePickerHeader.tsx / TemplatePickerBrowse.tsx,
 // TypographySections.tsx, CanvasThemeDialog.tsx, ThemeCategoryBrowser.tsx,
 // CanvasStyleControls.tsx and CustomThemeBuilder.tsx. Composed from the shared primitives so
@@ -16,11 +16,11 @@ import {
   Panel,
   Dialog,
   Tabs,
-  Tile,
   Label,
   Button,
   Menu,
 } from './primitives';
+import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Shared bits -------------------------------------------------------------------------------
 
@@ -184,65 +184,19 @@ function LookAndFeelShell({
 
 // --- The canvas and its palette ----------------------------------------------------------------
 
-/** The canvas with the floating Palette in its top-right home (title, mode switch, the
- *  canvas-tool and category dropdowns, a grid of tiles) and the bottom-right dock (the
- *  Theme & canvas paintbrush beside the zoom controls). */
+/** The canvas with the menu button and mode switch top-left, the palette strip across the top
+ *  (the canvas-tool and category dropdowns, the tiles, More and Search) and the bottom-right
+ *  dock (the Theme & canvas paintbrush beside the zoom controls). */
 export function CanvasPaletteOverview() {
-  const tiles = [0, 1, 2, 3, 4, 5, 6, 7];
   return (
     <Scene w={420} h={240}>
-      <Shape x={24} y={70} w={76} h={42} label="Start" />
-      <Shape x={140} y={64} w={60} h={54} kind="diamond" />
-      <Shape x={132} y={162} w={76} h={40} accent label="Done" />
-      <Arrow from={[100, 91]} to={[140, 91]} />
-      <Arrow from={[170, 118]} to={[170, 162]} />
-      <Panel x={246} y={14} w={160} h={150} title="Palette">
-        <rect
-          x={334}
-          y={17}
-          width={64}
-          height={16}
-          rx={5}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1}
-        />
-        <Label x={366} y={25.5} anchor="middle" size={10} weight={600} tone="accent">
-          Diagram
-        </Label>
-        <DropdownChip x={254} y={42} w={66} label="Select" />
-        <DropdownChip x={326} y={42} w={72} label="Popular" />
-        {tiles.map((i) => {
-          const col = i % 4;
-          const row = Math.floor(i / 4);
-          return (
-            <Tile key={i} x={258 + col * 36} y={76 + row * 38} size={28} active={i === 0}>
-              {i === 0 ? (
-                <rect
-                  x={-7}
-                  y={-6}
-                  width={14}
-                  height={12}
-                  rx={2}
-                  className="stroke-white"
-                  strokeWidth={2}
-                  fill="none"
-                />
-              ) : i % 3 === 1 ? (
-                <circle r={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
-              ) : i % 3 === 2 ? (
-                <path
-                  d="M0 -7 L7 0 L0 7 L-7 0 Z"
-                  className="stroke-brand-500"
-                  strokeWidth={2}
-                  fill="none"
-                />
-              ) : (
-                <path d="M-6 6 L6 -6" className="stroke-brand-500" strokeWidth={2} />
-              )}
-            </Tile>
-          );
-        })}
-      </Panel>
+      <MenuCard x={8} y={14} />
+      <Strip x={78} y={14} category="Popular" />
+      <Shape x={60} y={84} w={76} h={42} label="Start" />
+      <Shape x={176} y={78} w={60} h={54} kind="diamond" />
+      <Shape x={168} y={170} w={76} h={40} accent label="Done" />
+      <Arrow from={[136, 105]} to={[176, 105]} />
+      <Arrow from={[206, 132]} to={[206, 170]} />
       {/* Bottom-right dock: the paintbrush, then the zoom controls. */}
       <rect
         x={262}

@@ -14,7 +14,7 @@ import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
 import { isBoxed, supportsRotation } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {

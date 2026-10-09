@@ -9,12 +9,10 @@ const findTour = vi.hoisted(() => vi.fn((_id: string): HTMLElement | null => nul
 vi.mock('./tour-dom', () => ({
   clickTour,
   findTour,
-  expandPanelIfCollapsed: vi.fn(),
   waitForSelector: async () => null,
 }));
 
 const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
-  toolbar: false,
   placeBoard: vi.fn(async () => {}),
   addCards: vi.fn(async () => {}),
   moveCard: vi.fn(async () => {}),

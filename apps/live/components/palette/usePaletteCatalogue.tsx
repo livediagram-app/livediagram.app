@@ -10,7 +10,7 @@ import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
 import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
+import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
@@ -24,15 +24,14 @@ import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
 // three searchable catalogues' state, and the canvas-tool picker's options.
-// Lifted out of CommandPalette so the floating Palette and the Toolbar
-// layout's top strip (docs/specs/007-editor/toolbar-layout.md) are two renderings of one palette rather
-// than two palettes that drift.
+// The strip (docs/specs/007-editor/toolbar-layout.md), its More popover and its Search all read
+// from this one catalogue, so they never drift apart.
 //
 // `onTileUsed` is the host's hook into "a tile was used": the strip closes
 // its More popover. Every add-handler calls it, so a tile behaves the same
 // from any category and any surface.
 type Deps = Pick<
-  CommandPaletteProps,
+  PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
   | 'onExitAvatarMode'
@@ -219,7 +218,7 @@ export function usePaletteCatalogue({
   const techResults = searchTechIcons(techQuery, 'all');
 
   // Ordered by BAND (docs/specs/010-palette/palette-top-level-categories.md): Common, then Decorate, then Dynamic
-  // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
+  // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My

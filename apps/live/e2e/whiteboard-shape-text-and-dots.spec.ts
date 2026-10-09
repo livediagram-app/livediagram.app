@@ -9,12 +9,6 @@ import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 test.use({ colorScheme: 'dark' });
 
 async function openBoard(page: Page) {
-  await page.addInitScript(() =>
-    localStorage.setItem(
-      'livediagram:user-preferences:v1',
-      JSON.stringify({ panelLayout: 'toolbar' }),
-    ),
-  );
   await page.setViewportSize({ width: 1400, height: 900 });
   await page.goto('/new?template=whiteboard');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });

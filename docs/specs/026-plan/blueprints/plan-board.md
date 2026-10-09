@@ -210,7 +210,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   The layer is a portal into the slot's closest `[data-canvas-a11y-root]` (the canvas `main`, found by a hidden
   marker's ref, `useCanvasRoot`), `absolute` at `CANVAS_LAYER_Z` (`--z-panel` − 1), its `top/right/bottom/left` from
   `useCanvasLayerInsets(canvas)` (hooks/ui): `apps/live/lib/canvas-layer-insets.ts` reads `[data-toolbar-menu]` (top row),
-  `topStripInset` (the Toolbar strip), `[data-layout-chrome]` (MovablePanel `layoutChrome`: the Explorer and CommandPalette only, so a passing panel such as the Trash never moves the board; a side by its nearer edge, a sheet
+  `topStripInset` (the Toolbar strip), `[data-layout-chrome]` (MovablePanel `layoutChrome`: the Explorer only, so a passing panel such as the Trash never moves the board; a side by its nearer edge, a sheet
   wider than `WIDE_PANEL_SHARE` of the canvas as top or bottom by its middle); the bottom-right controls are not measured (they float over the board at their own z),
   capped at `MAX_INSET_SHARE` per axis. Measured in one `requestAnimationFrame` after mount and after a
   `ResizeObserver` change (the canvas and each piece of chrome), a chrome element's `style`/`class` change, a
@@ -223,7 +223,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   sorts each key by `coveredKeyRole` (run: undo/redo/search/zen/mode/Escape; swallow: Cmd+D/A/Shift+L, z-order, zoom,
   prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabBoardId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
 fillTabBoardId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardCovering()`, swaps its categories for
-  `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `PaletteTabBar` / `ToolbarPalette` show the first offered
+  `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `ToolbarPalette` shows the first offered
   category while the chosen one is not offered, keeping the choice) to `deriveCanvasSelection`, which then shows no popover, plus or multi-selection toolbar.
 - **Fill Tab** (`setup.fillTab: true`, normalised exactly-true by `normaliseBoardSetup`, carried by
   `planBoardPatch` as a set-up key): `fill-tab.ts` (pure) gives `fillTabBoardIdOf(elements)` (the first board, in
@@ -346,7 +346,7 @@ ColumnAdded | ColumnAddedExisting`.
 | Edge auto-scroll math and drag wiring            | `apps/live/hooks/plan/edge-auto-scroll.test.ts`                                                                                                         |
 | Map hidden while covered                         | `apps/live/components/canvas/view-readers.minimap.test.tsx`                                                                                             |
 | Cover store: re-renders only on a change         | `apps/live/hooks/plan/plan-cover-store.test.tsx`                                                                                                        |
-| Palette offers only Cards, then restores         | `apps/live/components/palette/palette-layouts.test.ts`, `apps/live/components/palette/PaletteTabBar.covered.test.tsx`                                   |
+| Palette offers only Cards, then restores         | `apps/live/components/palette/palette-layouts.test.ts`                                                                                                  |
 | No selection chrome over a covered canvas        | `apps/live/lib/canvas-selection.test.ts`, `apps/live/hooks/canvas/useCanvasSelectionView.covered.test.ts`                                               |
 | Nothing under a covered canvas moves             | `FilledTabLayer.test.tsx`, `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`, `apps/live/hooks/canvas/useCanvasSurfaceGestures.test.tsx` |
 | No Status swimlanes on a board (All Cards aside) | `board.test.ts`, `apps/live/components/palette/PlanBoardMenuSection.test.tsx`                                                                           |

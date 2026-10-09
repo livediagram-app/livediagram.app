@@ -173,8 +173,7 @@ The element starts with `aspectLocked: true`; the lock is a user-toggleable flag
 `PaletteMediaTab` renders the ungrouped Media tiles, then one `PaletteTileGroup` titled "Embed"
 holding the six `tileGroup: 'embed'` tiles. `usePaletteGroup(title)` reads the shared `openId`
 under a `PaletteGroupProvider` (one open at a time; the toggle closes an open group); without a
-provider it keeps local state. Closed by default (D75) [QC11]. `ToolbarPalette` and
-`CommandPalette` each mount a provider above their tabs, and the only other `PaletteTileGroup` is
+provider it keeps local state. Closed by default (D75) [QC11]. `ToolbarPalette` mounts a provider above its categories, and the only other `PaletteTileGroup` is
 the Components tab's "Web Elements", so opening one of the two closes the other; the Behaviour
 tab's groups are the drill-in `PaletteGroupBrowser`, which this state does not govern [QC11].
 

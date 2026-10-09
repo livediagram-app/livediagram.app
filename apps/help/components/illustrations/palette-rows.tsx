@@ -63,7 +63,7 @@ function paletteRowsHeight(category: PaletteCategory): number {
   return HEAD_H + CATEGORY_ROWS[category]!.length * ROW_H + 10;
 }
 
-/** The floating palette open on one row-style category: the category dropdown
+/** The palette body (as More opens it) on one row-style category: the category dropdown
  *  at the top, then its rows. `active` marks the row whose tool is armed. */
 export function PaletteCategoryPanel({
   x,

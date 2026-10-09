@@ -112,7 +112,7 @@ Plan must cost nothing to a document that does not use it:
 The Plan layout offers seven categories and opens on **Cards**. The card-backed five, **Cards**, **Boards**,
 **Widgets**, **Metrics** and **Visualisations**, sit under the **Plan** heading of the category picker, first; then
 **Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
-([Item types](item-types.md)); the Toolbar layout's strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
+([Item types](item-types.md)); the Toolbar strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
 drawing or decorating categories (Shapes, Icons, Stickers and the rest stay with the other modes); the few other
 elements a team plans beside its boards come in Content and Tools:
 

@@ -101,7 +101,7 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome.'),
+  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
   changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),

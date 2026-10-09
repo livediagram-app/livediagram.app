@@ -25,67 +25,9 @@ afterEach(() => {
 const PANELS = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
 
 function show(onChange = vi.fn(), category = PANELS) {
-  render(
-    <SettingsCategoryPane
-      category={category}
-      settings={{ panelLayout: 'floating' }}
-      onChange={onChange}
-    />,
-  );
+  render(<SettingsCategoryPane category={category} settings={{}} onChange={onChange} />);
   return onChange;
 }
-
-const layoutOption = (label: string) =>
-  screen
-    .getByRole('radiogroup', { name: 'Panel Layout' })
-    .querySelector(
-      `[role="radio"]:nth-child(${['Floating', 'Toolbar'].indexOf(label) + 1})`,
-    ) as HTMLButtonElement;
-
-// The Panel Layout drawing's states, in option order (Floating, Toolbar).
-const layoutDrawing = (index: number) =>
-  screen.getByRole('img', { name: /two panel layouts/ }).querySelectorAll(':scope > g')[
-    index
-  ] as SVGGElement;
-
-describe('SettingsCategoryPane on a phone', () => {
-  it('disables the desktop-only layout and says why', () => {
-    mobile.value = true;
-    const onChange = show();
-    expect(layoutOption('Floating').disabled).toBe(true);
-    expect(layoutOption('Toolbar').disabled).toBe(false);
-    expect(screen.getAllByRole('note').map((n) => n.textContent)).toContain(
-      'Floating is desktop only. On a phone it uses the Toolbar layout instead.',
-    );
-    fireEvent.click(layoutOption('Floating'));
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it("won't pick a disabled option from its drawing either", () => {
-    mobile.value = true;
-    const onChange = show();
-    fireEvent.click(layoutDrawing(0));
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('offers every layout on desktop, with no note', () => {
-    const onChange = show();
-    for (const label of ['Floating', 'Toolbar']) {
-      expect(layoutOption(label).disabled, label).toBe(false);
-    }
-    expect(screen.queryByRole('note')).toBeNull();
-    fireEvent.click(layoutOption('Toolbar'));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ panelLayout: 'toolbar' }));
-  });
-
-  it('picks an option by clicking its drawing, and ignores the one in force', () => {
-    const onChange = show();
-    fireEvent.click(layoutDrawing(0));
-    expect(onChange).not.toHaveBeenCalled();
-    fireEvent.click(layoutDrawing(1));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ panelLayout: 'toolbar' }));
-  });
-});
 
 // A whole desktop-only row (the minimap's, docs/specs/008-canvas/minimap.md):
 // a phone never draws the minimap, so its rows are greyed and inert there,
@@ -126,23 +68,17 @@ describe('SettingsCategoryPane desktop-only rows', () => {
 });
 
 describe('SettingsCategoryPane telemetry', () => {
-  it('tracks which layout was picked, not just that it changed', () => {
-    show();
-    fireEvent.click(layoutOption('Toolbar'));
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'PanelLayoutToolbar');
-  });
-
-  it('tracks a pick made from the drawing the same way', () => {
-    show();
-    fireEvent.click(layoutDrawing(1));
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'PanelLayoutToolbar');
-  });
-
-  it("doesn't track a pick that can't happen", () => {
-    mobile.value = true;
-    show();
-    fireEvent.click(layoutDrawing(0));
-    expect(track).not.toHaveBeenCalled();
+  // A choice row names the option picked (docs/specs/017-telemetry/telemetry.md).
+  it('tracks which option was picked, not just that it changed', () => {
+    const category = SETTINGS_CATEGORIES.find((c) =>
+      c.rows.some((r) => r.key === 'elementIndicatorStyle'),
+    )!;
+    show(vi.fn(), category);
+    const footer = screen
+      .getByRole('radiogroup', { name: 'Element Indicators' })
+      .querySelector('[role="radio"]:nth-child(2)') as HTMLButtonElement;
+    fireEvent.click(footer);
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ElementIndicatorsFooter');
   });
 });
 

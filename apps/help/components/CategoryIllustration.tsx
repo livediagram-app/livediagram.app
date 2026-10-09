@@ -1,6 +1,6 @@
 // On-brand banner illustrations, one per help category (docs/specs/018-help/help-app.md). Each is a
 // compact SVG scene evoking that area with motifs lifted from the real editor
-// (shapes + arrows on a canvas, the palette panel, tab pills, live cursors,
+// (shapes + arrows on a canvas, palette tiles, tab pills, live cursors,
 // theme swatches, ...) so the help centre reads as a window into the product.
 // Rendered atop CategoryCard. Brand-tinted via Tailwind fill-/stroke- utilities
 // so they track the theme; a soft brand gradient backs every scene.
@@ -583,7 +583,7 @@ const SCENES: Record<string, React.ReactNode> = {
     </>
   ),
 
-  // Palette: the floating tool palette with shape tiles.
+  // Palette: a panel of the palette's shape tiles.
   palette: (
     <>
       <rect

@@ -1,7 +1,7 @@
 'use client';
 
 // The palette's category tabs for one editor mode: each category of the mode's layout
-// (palette-layouts) with the body it swaps in. Lifted out of CommandPalette, which was 562 lines with this inline as
+// (palette-layouts) with the body it swaps in. Lifted out of the old CommandPalette, which was 562 lines with this inline as
 // its largest single expression.
 //
 // A function rather than a const because three of the fourteen are SEARCHABLE
@@ -10,7 +10,7 @@
 // tile actions, so those three arrive as their own small bundles instead of
 // nine loose parameters.
 //
-// Order IS layout: PaletteTabBar renders the dropdown straight from the layout's order,
+// Order IS layout: the category picker renders the dropdown straight from the layout's order,
 // grouping by `group` under the CATEGORY_BANDS headings.
 
 import dynamic from 'next/dynamic';

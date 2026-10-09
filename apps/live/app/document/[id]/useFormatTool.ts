@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 
 // The persistent Format painter tool's mode boundary (docs/specs/008-canvas/canvas-and-palette.md), lifted
 // out of useEditorState as one cohesive slice. Active while the

@@ -5,15 +5,12 @@
 // builds. `cleanup` undoes whatever prepare opened, and runs on every exit
 // path (Next, Back, Skip, finish) so the tour never strands an open menu.
 
-import { clickTour, expandPanelIfCollapsed, findTour, waitForSelector } from './tour-dom';
+import { clickTour, findTour, waitForSelector } from './tour-dom';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
 
 // What a step gets to work with. Built fresh by TourHost so editor-context
 // handlers are never stale.
 export type TourApi = {
-  // The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Explorer is a popover behind
-  // the top-left menu button rather than a corner panel.
-  toolbar: boolean;
   // Select an element for the context-menu step, adding a theme-coloured
   // square at the viewport centre when the tab is empty. Resolves once the
   // element's menu is open (or null if it couldn't be).
@@ -30,15 +27,11 @@ export type TourStep = TourStepOf<TourApi>;
 export function tourStepsFor({
   mobile,
   esBoard,
-  toolbar = false,
 }: {
   mobile: boolean;
   esBoard: boolean;
-  toolbar?: boolean;
 }): TourStep[] {
-  return TOUR_STEPS.filter(
-    (step) => !(step.mobileSkip && mobile) && !(step.boardSkip && esBoard),
-  ).map((step) => (toolbar && step.toolbar ? { ...step, ...step.toolbar } : step));
+  return TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile) && !(step.boardSkip && esBoard));
 }
 
 // Telemetry `type` token for a step-viewed event: 'selection-modes' → 'TourStepSelectionModes'.
@@ -46,11 +39,9 @@ export function tourStepTelemetryType(stepId: string): string {
   return stepTelemetryType('TourStep', stepId);
 }
 
-// Bring the palette on screen: expand the floating Palette if it is
-// collapsed (the Toolbar strip is always open). Waits for the node so
-// callers can chain.
+// Wait for the palette strip (docs/specs/007-editor/toolbar-layout.md), always open while the
+// chrome is up, so callers can chain.
 export async function ensurePaletteOpen() {
-  expandPanelIfCollapsed('palette', 'Palette');
   await waitForSelector('[data-tour-id="palette"]');
 }
 
@@ -100,9 +91,8 @@ export const TOUR_STEPS: TourStep[] = [
     cleanup: () => closeDropdown('palette-category-menu', 'palette-category'),
   },
   {
-    // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): in the
-    // Palette's title row, or beside the Toolbar layout's menu button. Opens its menu, switches
-    // nobody's mode.
+    // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"), beside the
+    // menu button. Opens its menu, switches nobody's mode.
     id: 'editor-mode',
     title: 'Diagram & Draw',
     body: 'Each tab works in one of four modes: Diagram for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand, Illustrate for pages and Plan for boards of items. Switch here, or press Shift+D.',
@@ -112,8 +102,7 @@ export const TOUR_STEPS: TourStep[] = [
     // switches there).
     boardSkip: true,
     mobileSkip: true,
-    prepare: async (api) => {
-      if (!api.toolbar) await ensurePaletteOpen();
+    prepare: async () => {
       closeDropdown('palette-category-menu', 'palette-category');
       await waitForSelector('[data-tour-id="editor-mode"]');
       if (!findTour('editor-mode-menu')) clickTour('editor-mode');
@@ -123,25 +112,17 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'explorer',
     title: 'The Explorer',
-    body: 'Find your documents and folders, without leaving the editor. Open, create, and organise from here.',
+    body: 'The menu button opens the Explorer: find your documents and folders without leaving the editor. Open, create, and organise from here.',
     target: 'explorer',
-    // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): no corner panel to point at, the Explorer
-    // opens as a popover under the top-left menu button, so the step opens it
-    // there and rings the button + popover as one region.
-    toolbar: {
-      body: 'The menu button opens the Explorer: find your documents and folders without leaving the editor. Open, create, and organise from here.',
-      alsoHighlight: 'dock-explorer',
-    },
-    prepare: async (api) => {
-      if (api.toolbar) {
-        if (!findTour('explorer')) clickTour('dock-explorer');
-      } else {
-        expandPanelIfCollapsed('explorer', 'Explorer');
-      }
+    // The Explorer is a popover under the top-left menu button (docs/specs/007-editor/toolbar-layout.md),
+    // so the step opens it there and rings the button + popover as one region.
+    alsoHighlight: 'dock-explorer',
+    prepare: async () => {
+      if (!findTour('explorer')) clickTour('dock-explorer');
       await waitForSelector('[data-tour-id="explorer"]');
     },
-    cleanup: (api) => {
-      if (api.toolbar && findTour('explorer')) clickTour('dock-explorer');
+    cleanup: () => {
+      if (findTour('explorer')) clickTour('dock-explorer');
     },
   },
   {

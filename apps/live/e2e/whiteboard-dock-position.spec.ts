@@ -6,7 +6,6 @@ import {
   seedTab,
   settledBox,
   test,
-  chooseToolbarLayout,
 } from './fixtures';
 
 // Where the whiteboard dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
@@ -17,8 +16,6 @@ import {
 const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 
 async function openWhiteboard(page: Page, viewport = { width: 1600, height: 900 }) {
-  // The dock is the Toolbar layout's (docs/specs/023-draw-mode/draw-mode.md).
-  await chooseToolbarLayout(page);
   await page.setViewportSize(viewport);
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/new?template=whiteboard');
@@ -130,12 +127,6 @@ test.describe('whiteboard dock position', () => {
     page,
     pageErrors,
   }) => {
-    await page.addInitScript(() =>
-      localStorage.setItem(
-        'livediagram:user-preferences:v1',
-        JSON.stringify({ panelLayout: 'toolbar' }),
-      ),
-    );
     await openWhiteboard(page, { width: 820, height: 1180 });
     const scroller = dock(page).locator('[data-dock-scroller]');
     const overflow = await scroller.evaluate((el) => el.scrollWidth - el.clientWidth);
