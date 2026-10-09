@@ -4,7 +4,7 @@
 // built for THIS page's size and orientation, drawn small as a wireframe, so the tile shows what
 // will land rather than a stock picture. Text is drawn as bars (a title thicker), images as a
 // shaded block, icons as dots, everything else as an outlined box.
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import {
   arcGeometry,
   hasWordmarkType,
@@ -14,6 +14,8 @@ import {
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { buildPageLayout } from '@/lib/page-layout-build';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { LogoLayoutThumb } from './logo-layout-thumb';
 
 // Wide enough to read a layout's parts: two tiles to a row in the panel and the in-page card.
 const THUMB_W = 120;
@@ -134,6 +136,26 @@ export function LayoutThumb({
   page: LaidOutPage;
   // The tile's width in px (a category card's fan draws them smaller).
   width?: number;
+}) {
+  // A logo page's tile is the layout itself, rendered (LogoLayoutThumb).
+  if (page.kind === 'logo') return <LogoOrWireframe layout={layout} page={page} width={width} />;
+  return <Wireframe layout={layout} page={page} width={width} />;
+}
+
+// Rendered with the editor's tab (its theme and font); a wireframe where there is none.
+function LogoOrWireframe(props: { layout: PageLayoutId; page: LaidOutPage; width: number }) {
+  const tab = useContext(EditorContext)?.activeTab;
+  return tab ? <LogoLayoutThumb {...props} tab={tab} /> : <Wireframe {...props} />;
+}
+
+function Wireframe({
+  layout,
+  page,
+  width,
+}: {
+  layout: PageLayoutId;
+  page: LaidOutPage;
+  width: number;
 }) {
   const { rect } = page;
   const els = useMemo(

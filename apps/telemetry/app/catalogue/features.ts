@@ -385,7 +385,7 @@ export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
   'UI',
   'Closed',
   'Empty Page Layouts Hidden',
-  'Someone hid the Start From a Layout card an empty page shows inside itself, or chose Blank Logo on it.',
+  'Someone hid the Start From a Layout card an empty page shows inside itself, or chose Start From Scratch on it.',
   { types: ['EmptyPageLayouts', 'EmptyPageLayoutsBlank'] },
 );
 

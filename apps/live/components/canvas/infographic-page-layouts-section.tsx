@@ -22,7 +22,12 @@ type LayoutBrowserProps = {
   onApply: (layout: PageLayoutId) => void;
   // Shows a layout on the page while its tile is hovered or focused; null takes it away.
   onPreview: (layout: PageLayoutId | null) => void;
+  // Four across (the wide in-page card, so a category's layouts need no scrolling), else two.
+  wide?: boolean;
 };
+
+// A layout tile's art width in the wide card's four columns.
+const WIDE_THUMB_W = 104;
 
 export function LayoutsSection(props: LayoutBrowserProps) {
   return (
@@ -34,7 +39,14 @@ export function LayoutsSection(props: LayoutBrowserProps) {
 
 /** The layouts by category, then one category's layouts: the panel's Layouts section, and the
  *  card an empty infographic page shows inside itself (EmptyPageLayouts). */
-export function LayoutBrowser({ page, contentCount, onApply, onPreview }: LayoutBrowserProps) {
+export function LayoutBrowser({
+  page,
+  contentCount,
+  onApply,
+  onPreview,
+  wide = false,
+}: LayoutBrowserProps) {
+  const cols = wide ? 'grid-cols-4' : 'grid-cols-2';
   const [pending, setPending] = useState<PageLayoutId | null>(null);
   // The category open, or null for the overview of categories.
   const [category, setCategory] = useState<string | null>(null);
@@ -102,7 +114,7 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
             {openCategory.label}
           </button>
           <div
-            className="grid grid-cols-2 gap-2"
+            className={`grid ${cols} gap-2`}
             onPointerLeave={() => onPreview(pending)}
             onBlur={() => onPreview(pending)}
           >
@@ -120,14 +132,18 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
                     pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
                   }`}
                 >
-                  <LayoutThumb layout={l.id} page={page} />
+                  <LayoutThumb
+                    layout={l.id}
+                    page={page}
+                    {...(wide ? { width: WIDE_THUMB_W } : {})}
+                  />
                   {l.label}
                 </button>
               ))}
           </div>
         </>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid ${cols} gap-2`}>
           {categories.map((c) => {
             const members = layouts.filter((l) => l.category === c.id);
             return (

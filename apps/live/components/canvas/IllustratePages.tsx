@@ -3,7 +3,11 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
-import { EMPTY_PAGE_LAYOUTS_WIDTH, EmptyPageLayouts } from './EmptyPageLayouts';
+import {
+  EMPTY_PAGE_LAYOUTS_WIDE_WIDTH,
+  EMPTY_PAGE_LAYOUTS_WIDTH,
+  EmptyPageLayouts,
+} from './EmptyPageLayouts';
 import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
@@ -399,6 +403,9 @@ export function IllustratePages({
                   track('UI', 'Closed', 'EmptyPageLayoutsBlank');
                   edit.startBlank(page.id);
                 }}
+                wide={
+                  page.rect.width * zoom >= EMPTY_PAGE_LAYOUTS_WIDE_WIDTH + LAYOUT_CARD_MARGIN * 2
+                }
               />
             </div>
           ))

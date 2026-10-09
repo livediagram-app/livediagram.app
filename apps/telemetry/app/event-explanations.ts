@@ -908,7 +908,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|EmptyPageLayouts':
     'Someone hid the Start From a Layout card on an empty infographic page.',
   'UI|Closed|EmptyPageLayoutsBlank':
-    'Someone chose Blank Logo on an empty logo page, so its Start From a Layout card stays away on that page.',
+    'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',

@@ -148,7 +148,7 @@ export type IllustratePage = {
   // Locked (docs/specs/007-editor/illustrate-pages.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
   locked?: true;
-  // Started blank (Blank Logo on its Start From a Layout card): the card is not offered on it
+  // Started blank (Start From Scratch on its Start From a Layout card): the card is not offered on it
   // again; its panel's Layouts still are. Absent while it may be offered.
   startedBlank?: true;
 };

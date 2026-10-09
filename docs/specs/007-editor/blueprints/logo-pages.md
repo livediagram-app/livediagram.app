@@ -181,8 +181,17 @@ Exclude), **Wordmark**, **Logo Kit**.
   dimmed while off. Mirror and Guides show their names beside the icon unless
   `useIsMobileViewport()`. `logoTitleBarRoom(true, !mobile)` (28 px for Tidy Up, 72 px each
   named or 28 px each icon-only) is reserved from the label.
-- Blank Logo: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/
-DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Blank Logo** on a logo page,
+- Layout tiles: `LayoutThumb` hands a logo page's tile to `LogoLayoutThumb`
+  (`components/canvas/logo-layout-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
+  wireframe): `logoLayoutSvg(tab, page, layout)` = `renderTabToSvg({ ...tab, elements:
+buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's rect and
+  background, the tab's theme and font, and `useIconCatalogs()`; set as the markup of a div of the
+  tile's width and the page's aspect. Measured 0.04 ms a layout.
+- The in-page card is `EMPTY_PAGE_LAYOUTS_WIDE_WIDTH` (560) with `LayoutBrowser wide` (four
+  columns, tiles `WIDE_THUMB_W` 104 px) when `page.rect.width * zoom` holds it and
+  `LAYOUT_CARD_MARGIN` either side, else `EMPTY_PAGE_LAYOUTS_WIDTH` (340, two columns).
+- Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/
+DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scratch** on a logo page,
   calling `onBlank`: `IllustratePages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls
   `edit.startBlank(pageId)`, which sets `IllustratePage.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.

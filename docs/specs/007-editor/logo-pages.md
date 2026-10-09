@@ -99,9 +99,11 @@ cog).
 
 - **Page**: the **Background** swatches. No Size, Orientation or Pattern sections.
 - **Layouts**: the **logo layouts** (below), in the same browser as the infographic layouts
-  (categories, then a category's layouts, the same Replace question, hover previews and wireframe
-  tiles). An empty logo page shows them inside itself (**Start From a Layout**) as an empty
-  infographic page does, with **Blank Logo** at the card's foot, in the look of Plan's **Add New
+  (categories, then a category's layouts, the same Replace question and hover previews). Each
+  tile is the layout exactly as it lands: built for this page and drawn by the export renderer in
+  the tab's theme and font, on the page's background, its words and icon included (a wireframe
+  outside an editor). An empty logo page shows them inside itself (**Start From a Layout**) as an empty
+  infographic page does, with **Start From Scratch** at the card's foot, in the look of Plan's **Add New
   Card Type** (a full-width dashed row with a plus, quiet until hovered): it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
 - The cog opens the panel on Page; the layout invite on Layouts.
 

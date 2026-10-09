@@ -323,7 +323,11 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
   the panel) takes it away. While Replace is being asked, that layout stays
   previewed.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
-  orientation, as a wireframe (text as bars, images shaded, icons as dots).
+  orientation, as a wireframe (text as bars, images shaded, icons as dots). A logo page's tiles
+  are the layout itself, rendered as it lands (see Logo pages).
+- **The in-page card's width**: four across (560 px) wherever the page on screen has room for it,
+  so a category's layouts show without scrolling; else two across (340 px). The panel's Layouts
+  tab is always two across.
 
 ## Slide layouts
 

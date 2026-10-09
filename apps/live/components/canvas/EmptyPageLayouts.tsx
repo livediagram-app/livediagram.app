@@ -13,6 +13,9 @@ import { LayoutBrowser } from './infographic-page-layouts-section';
 
 // The card's width in screen px; the host shows it only on a page with room for it.
 export const EMPTY_PAGE_LAYOUTS_WIDTH = 340;
+// The wide card, four layouts across, so a category opens without scrolling; shown where the page
+// on screen has room for it.
+export const EMPTY_PAGE_LAYOUTS_WIDE_WIDTH = 560;
 
 export function EmptyPageLayouts({
   page,
@@ -20,13 +23,16 @@ export function EmptyPageLayouts({
   onApply,
   onHide,
   onBlank,
+  wide = false,
 }: {
   page: LaidOutPage;
   zoom: number;
   onApply: (layout: PageLayoutId) => void;
   onHide: () => void;
-  // Blank Logo: the page starts from nothing, and the card is not offered on it again.
+  // Start From Scratch: the page starts from nothing, and the card is not offered on it again.
   onBlank: () => void;
+  // The wide card (EMPTY_PAGE_LAYOUTS_WIDE_WIDTH, four across).
+  wide?: boolean;
 }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center">
@@ -39,7 +45,7 @@ export function EmptyPageLayouts({
         onDoubleClick={(e) => e.stopPropagation()}
         className="pointer-events-auto animate-fade-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
         style={{
-          width: EMPTY_PAGE_LAYOUTS_WIDTH,
+          width: wide ? EMPTY_PAGE_LAYOUTS_WIDE_WIDTH : EMPTY_PAGE_LAYOUTS_WIDTH,
           transform: `scale(${1 / zoom})`,
           transformOrigin: 'center',
         }}
@@ -64,12 +70,18 @@ export function EmptyPageLayouts({
         </div>
         {/* A long category scrolls inside the card rather than running off the page. */}
         <div className="-mr-1 max-h-[380px] overflow-y-auto pr-1">
-          <LayoutBrowser page={page} contentCount={0} onApply={onApply} onPreview={() => {}} />
+          <LayoutBrowser
+            page={page}
+            contentCount={0}
+            onApply={onApply}
+            onPreview={() => {}}
+            wide={wide}
+          />
         </div>
         {/* A logo page can start from nothing: the card goes for good on that page, its layouts
             still in its panel (docs/specs/007-editor/logo-pages.md "Logo layouts"). */}
         {page.kind === 'logo' ? (
-          <DashedAddButton label="Blank Logo" className="mt-2" onClick={onBlank} />
+          <DashedAddButton label="Start From Scratch" className="mt-2" onClick={onBlank} />
         ) : null}
       </div>
     </div>
