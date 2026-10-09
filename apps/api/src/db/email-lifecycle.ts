@@ -3,7 +3,7 @@
 // (treated as sign-up); the daily cron drives the welcome / week-1 / week-2
 // stages off the *_sent_at stamps, which keep every send idempotent.
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export type LifecycleStage = 'welcome' | 'week1' | 'week2';
 
@@ -19,10 +19,13 @@ const STAGE_COLUMN: Record<LifecycleStage, string> = {
 // true only when a NEW row was created, which the caller treats as sign-up
 // (send the welcome immediately). One cheap write, only ever run when email is
 // enabled.
-export async function recordSighting(env: Env, ownerId: string, email: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'INSERT OR IGNORE INTO email_lifecycle (owner_id, email, created_at) VALUES (?, ?, ?)',
-  )
+export async function recordSighting(
+  env: Runtime,
+  ownerId: string,
+  email: string,
+): Promise<boolean> {
+  const res = await env.db
+    .prepare('INSERT OR IGNORE INTO email_lifecycle (owner_id, email, created_at) VALUES (?, ?, ?)')
     .bind(ownerId, email, Date.now())
     .run();
   return res.meta.changes === 1;
@@ -35,27 +38,29 @@ type LifecycleRow = { ownerId: string; email: string };
 // Backfilled suppression rows carry email '' (and all stamps set), so the
 // empty-email guard skips them defensively.
 export async function dueForStage(
-  env: Env,
+  env: Runtime,
   stage: LifecycleStage,
   cutoff: number,
   limit: number,
 ): Promise<LifecycleRow[]> {
   const col = STAGE_COLUMN[stage];
-  const { results } = await env.DB.prepare(
-    `SELECT owner_id, email FROM email_lifecycle WHERE ${col} IS NULL AND created_at <= ? AND email <> '' ORDER BY created_at ASC LIMIT ?`,
-  )
+  const { results } = await env.db
+    .prepare(
+      `SELECT owner_id, email FROM email_lifecycle WHERE ${col} IS NULL AND created_at <= ? AND email <> '' ORDER BY created_at ASC LIMIT ?`,
+    )
     .bind(cutoff, limit)
     .all<{ owner_id: string; email: string }>();
   return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
 }
 
 export async function markStageSent(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   stage: LifecycleStage,
 ): Promise<void> {
   const col = STAGE_COLUMN[stage];
-  await env.DB.prepare(`UPDATE email_lifecycle SET ${col} = ? WHERE owner_id = ?`)
+  await env.db
+    .prepare(`UPDATE email_lifecycle SET ${col} = ? WHERE owner_id = ?`)
     .bind(Date.now(), ownerId)
     .run();
 }
@@ -66,8 +71,9 @@ export async function markStageSent(
 // else's request). Returns null for a guest owner, an owner with no
 // lifecycle row (email off when they signed in), or a backfilled
 // suppression row carrying the empty-string sentinel.
-export async function getOwnerEmail(env: Env, ownerId: string): Promise<string | null> {
-  const row = await env.DB.prepare('SELECT email FROM email_lifecycle WHERE owner_id = ?')
+export async function getOwnerEmail(env: Runtime, ownerId: string): Promise<string | null> {
+  const row = await env.db
+    .prepare('SELECT email FROM email_lifecycle WHERE owner_id = ?')
     .bind(ownerId)
     .first<{ email: string }>();
   const email = row?.email?.trim();
@@ -79,24 +85,26 @@ export async function getOwnerEmail(env: Env, ownerId: string): Promise<string |
 // subquery is the "never drew anything" test (guest documents migrate in on
 // sign-up, so a real account that drew anything is excluded). Soonest-first.
 export async function dueForActivation(
-  env: Env,
+  env: Runtime,
   cutoff: number,
   limit: number,
 ): Promise<LifecycleRow[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT el.owner_id, el.email FROM email_lifecycle el
+  const { results } = await env.db
+    .prepare(
+      `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.created_at <= ? AND el.activation_sent_at IS NULL AND el.week1_sent_at IS NULL
        AND el.email <> ''
        AND NOT EXISTS (SELECT 1 FROM documents d WHERE d.owner_id = el.owner_id)
      ORDER BY el.created_at ASC LIMIT ?`,
-  )
+    )
     .bind(cutoff, limit)
     .all<{ owner_id: string; email: string }>();
   return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
 }
 
-export async function markActivationSent(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare('UPDATE email_lifecycle SET activation_sent_at = ? WHERE owner_id = ?')
+export async function markActivationSent(env: Runtime, ownerId: string): Promise<void> {
+  await env.db
+    .prepare('UPDATE email_lifecycle SET activation_sent_at = ? WHERE owner_id = ?')
     .bind(Date.now(), ownerId)
     .run();
 }
@@ -106,23 +114,25 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
 // for a zero-document owner and NULL <= ? is false, so they're excluded (the
 // activation nudge handles those). Quietest-longest first.
 export async function dueForWinback(
-  env: Env,
+  env: Runtime,
   cutoff: number,
   limit: number,
 ): Promise<LifecycleRow[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT el.owner_id, el.email FROM email_lifecycle el
+  const { results } = await env.db
+    .prepare(
+      `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.winback_sent_at IS NULL AND el.email <> ''
        AND (SELECT MAX(d.updated_at) FROM documents d WHERE d.owner_id = el.owner_id) <= ?
      ORDER BY el.created_at ASC LIMIT ?`,
-  )
+    )
     .bind(cutoff, limit)
     .all<{ owner_id: string; email: string }>();
   return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
 }
 
-export async function markWinbackSent(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare('UPDATE email_lifecycle SET winback_sent_at = ? WHERE owner_id = ?')
+export async function markWinbackSent(env: Runtime, ownerId: string): Promise<void> {
+  await env.db
+    .prepare('UPDATE email_lifecycle SET winback_sent_at = ? WHERE owner_id = ?')
     .bind(Date.now(), ownerId)
     .run();
 }
@@ -131,10 +141,11 @@ export async function markWinbackSent(env: Env, ownerId: string): Promise<void> 
 // The conditional UPDATE means only the first caller wins (changes === 1), so a
 // burst of saves at the milestone count can't double-send. False = already
 // claimed, or no row (a guest has none).
-export async function claimMilestone(env: Env, ownerId: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE email_lifecycle SET milestone_sent_at = ? WHERE owner_id = ? AND milestone_sent_at IS NULL',
-  )
+export async function claimMilestone(env: Runtime, ownerId: string): Promise<boolean> {
+  const res = await env.db
+    .prepare(
+      'UPDATE email_lifecycle SET milestone_sent_at = ? WHERE owner_id = ? AND milestone_sent_at IS NULL',
+    )
     .bind(Date.now(), ownerId)
     .run();
   return res.meta.changes === 1;
@@ -143,10 +154,11 @@ export async function claimMilestone(env: Env, ownerId: string): Promise<boolean
 // docs/specs/014-identity/transactional-email.md (#6): atomically claim the one-time "first shared link" milestone for
 // an owner. Conditional UPDATE → only the first share-create wins (changes === 1).
 // False = already claimed, or no row (a guest has none).
-export async function claimFirstShare(env: Env, ownerId: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE email_lifecycle SET first_share_sent_at = ? WHERE owner_id = ? AND first_share_sent_at IS NULL',
-  )
+export async function claimFirstShare(env: Runtime, ownerId: string): Promise<boolean> {
+  const res = await env.db
+    .prepare(
+      'UPDATE email_lifecycle SET first_share_sent_at = ? WHERE owner_id = ? AND first_share_sent_at IS NULL',
+    )
     .bind(Date.now(), ownerId)
     .run();
   return res.meta.changes === 1;

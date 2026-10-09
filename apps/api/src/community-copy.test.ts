@@ -38,7 +38,7 @@ describe('countCommunityCopy', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const broken = {
       ...db.env,
-      DB: {
+      db: {
         prepare: () => {
           throw new Error('d1 down');
         },

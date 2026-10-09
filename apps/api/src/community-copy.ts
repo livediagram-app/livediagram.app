@@ -1,11 +1,11 @@
 import { communityNetworkHash, getCommunityPostByShareCode, recordCommunityCopy } from './db';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // A copy taken through a Community post's link (docs/specs/025-community/community.md "Likes"): it counts toward the
 // post's copy count, once per person and at most five per network. Best effort and off the response path: a failure
 // is logged, never the copy's.
 export async function countCommunityCopy(
-  env: Env,
+  env: Runtime,
   shareCode: string,
   copierId: string,
   ip: string,

@@ -6,14 +6,18 @@
 // is a question every member has.
 
 import type { TimelineScopeRef } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { adminsForTeam, audienceForTeam, mergeScopes, userScope } from './audience';
 import { dedupeKeyOnce } from '../db/timeline';
 import { record } from './record';
 
 type TeamRef = { id: string; name: string };
 
-export async function recordTeamCreated(env: Env, team: TeamRef, actorId: string): Promise<void> {
+export async function recordTeamCreated(
+  env: Runtime,
+  team: TeamRef,
+  actorId: string,
+): Promise<void> {
   await record(
     env,
     {
@@ -37,7 +41,7 @@ export async function recordTeamCreated(env: Env, team: TeamRef, actorId: string
 // below adds the membership later, keeping the ORIGINAL sent-at date so
 // the invite appears on their Timeline dated when it was actually sent.
 export async function recordInviteReceived(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   member: { id: string; userId: string | null },
   invitedBy: string,
@@ -60,7 +64,7 @@ export async function recordInviteReceived(
 }
 
 export async function recordInviteAccepted(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   actorId: string,
   actorName: string | null,
@@ -86,7 +90,7 @@ export async function recordInviteAccepted(
 // Declining tells the admins, not the whole team — it's an outcome of
 // something an admin did, and the rest of the team never saw the invite.
 export async function recordInviteDeclined(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   declinedBy: string | null,
   declinedByName: string | null,
@@ -108,7 +112,7 @@ export async function recordInviteDeclined(
 }
 
 export async function recordMemberJoined(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   member: { userId: string; name: string | null },
 ): Promise<void> {
@@ -133,7 +137,7 @@ export async function recordMemberJoined(
 // Resolve the audience BEFORE the row is deleted, or the person
 // leaving never sees their own departure and the read misses them.
 export async function recordMemberLeft(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   member: { userId: string | null; name: string | null },
   audience: Awaited<ReturnType<typeof audienceForTeam>>,
@@ -155,7 +159,7 @@ export async function recordMemberLeft(
 }
 
 export async function recordMemberRemoved(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   member: { userId: string | null; name: string | null },
   actorId: string,
@@ -181,7 +185,7 @@ export async function recordMemberRemoved(
 }
 
 export async function recordRoleChanged(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   member: { userId: string | null; name: string | null },
   fromRole: string,
@@ -223,17 +227,18 @@ function titleCaseRole(role: string): string {
 // from the scope-less event rows to the freshly-claimed membership rows
 // is the whole query, and OR IGNORE makes running it on every list
 // request free after the first.
-export async function attachClaimedInviteEvents(env: Env, userId: string): Promise<void> {
+export async function attachClaimedInviteEvents(env: Runtime, userId: string): Promise<void> {
   try {
-    await env.DB.prepare(
-      `INSERT OR IGNORE INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
+    await env.db
+      .prepare(
+        `INSERT OR IGNORE INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
        SELECT e.id, 'user', ?1, ?2
          FROM timeline_events e
          JOIN team_members m ON m.id = e.source_id
         WHERE e.source_type = 'team'
           AND e.event_type = 'team_invite_received'
           AND m.user_id = ?1`,
-    )
+      )
       .bind(userId, Date.now())
       .run();
   } catch (err) {
@@ -242,7 +247,7 @@ export async function attachClaimedInviteEvents(env: Env, userId: string): Promi
 }
 
 export async function recordTeamRenamed(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   previousName: string,
   actorId: string,
@@ -266,7 +271,7 @@ export async function recordTeamRenamed(
 // The audience has to be resolved BEFORE the team goes: its member rows
 // are deleted with it, so afterwards there is nobody left to tell.
 export async function recordTeamDeleted(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   actorId: string,
   audience: TimelineScopeRef[],
@@ -292,7 +297,7 @@ export async function recordTeamDeleted(
 // live is an administrative fact, not team news, and telling every
 // member it exists is a nudge to go and find it.
 export async function recordInviteLinkToggled(
-  env: Env,
+  env: Runtime,
   team: TeamRef,
   enabled: boolean,
   actorId: string,

@@ -12,7 +12,7 @@ import { copyItemsStatements, listItems } from './items';
 import { copySheetsStatements } from './sheets';
 import { remapTabLinks, type Element } from '@livediagram/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
-import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
+import type { DocumentDTO, DocumentSummary, TabSummaryDTO, Runtime } from '../types';
 import { getParticipant } from './participants';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
@@ -53,23 +53,24 @@ type DocumentRow = {
 
 type SummaryRow = DocumentRow & { first_tab_count: number | null };
 
-async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
+async function listTabSummariesFor(env: Runtime, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
   // docs/specs/006-document/tab-document-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two documents that share a tab can order it independently.
-  const result = await env.DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
+  const result = await env.db
+    .prepare(
+      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?
       ORDER BY dt.order_index ASC`,
-  )
+    )
     .bind(documentId)
     .all<TabRow>();
   return (result.results ?? []).map(rowToTabSummary);
 }
 
-async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
+async function rowToDocument(env: Runtime, row: DocumentRow): Promise<DocumentDTO> {
   // Join owner participant info onto the response so visitors can
   // render "Owner: <name>" without waiting for the owner to come
   // online in the realtime room. Null when the owner has no
@@ -139,12 +140,13 @@ const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id
 // (docs/specs/013-workspace/trash.md, "fail closed"). A door that owes an
 // authorised caller the deleted state asks getTrashedDocumentMeta on a miss.
 export async function getDocumentMeta(
-  env: Env,
+  env: Runtime,
   id: string,
 ): Promise<{ id: string; ownerId: string; teamId: string | null; name: string } | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, team_id, name FROM documents WHERE id = ? AND trashed_at IS NULL',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT id, owner_id, team_id, name FROM documents WHERE id = ? AND trashed_at IS NULL',
+    )
     .bind(id)
     .first<{ id: string; owner_id: string; team_id: string | null; name: string }>();
   return row
@@ -167,12 +169,13 @@ export type DocumentThumbMeta = {
 };
 
 export async function getDocumentThumbMeta(
-  env: Env,
+  env: Runtime,
   id: string,
 ): Promise<DocumentThumbMeta | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, team_id, name, saved_at, thumb_rendered_at FROM documents WHERE id = ? AND trashed_at IS NULL',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT id, owner_id, team_id, name, saved_at, thumb_rendered_at FROM documents WHERE id = ? AND trashed_at IS NULL',
+    )
     .bind(id)
     .first<{
       id: string;
@@ -194,10 +197,9 @@ export async function getDocumentThumbMeta(
     : null;
 }
 
-export async function getDocument(env: Env, id: string): Promise<DocumentDTO | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${DOCUMENT_COLS} FROM documents WHERE id = ? AND trashed_at IS NULL`,
-  )
+export async function getDocument(env: Runtime, id: string): Promise<DocumentDTO | null> {
+  const row = await env.db
+    .prepare(`SELECT ${DOCUMENT_COLS} FROM documents WHERE id = ? AND trashed_at IS NULL`)
     .bind(id)
     .first<DocumentRow>();
   return row ? rowToDocument(env, row) : null;
@@ -224,20 +226,28 @@ function rowToSummary(row: SummaryRow): DocumentSummary {
 // Personal library only (docs/specs/013-workspace/team-shared-documents.md): a document moved into a team's
 // shared library leaves the owner's personal lists and renders on
 // the team page instead.
-export async function listDocumentsByOwner(env: Env, ownerId: string): Promise<DocumentSummary[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${DOCUMENT_SUMMARY_COLS} FROM documents WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NULL ORDER BY saved_at DESC`,
-  )
+export async function listDocumentsByOwner(
+  env: Runtime,
+  ownerId: string,
+): Promise<DocumentSummary[]> {
+  const result = await env.db
+    .prepare(
+      `SELECT ${DOCUMENT_SUMMARY_COLS} FROM documents WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NULL ORDER BY saved_at DESC`,
+    )
     .bind(ownerId)
     .all<SummaryRow>();
   return (result.results ?? []).map(rowToSummary);
 }
 
 // One team's shared library (docs/specs/013-workspace/team-shared-documents.md), any owner.
-export async function listDocumentsByTeam(env: Env, teamId: string): Promise<DocumentSummary[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${DOCUMENT_SUMMARY_COLS} FROM documents WHERE team_id = ? AND trashed_at IS NULL ORDER BY saved_at DESC`,
-  )
+export async function listDocumentsByTeam(
+  env: Runtime,
+  teamId: string,
+): Promise<DocumentSummary[]> {
+  const result = await env.db
+    .prepare(
+      `SELECT ${DOCUMENT_SUMMARY_COLS} FROM documents WHERE team_id = ? AND trashed_at IS NULL ORDER BY saved_at DESC`,
+    )
     .bind(teamId)
     .all<SummaryRow>();
   return (result.results ?? []).map(rowToSummary);
@@ -252,7 +262,7 @@ export async function listDocumentsByTeam(env: Env, teamId: string): Promise<Doc
 // are stored on the documents row directly — tabs live in their own
 // table, owner info comes via a participants join on read.
 export async function upsertDocumentMeta(
-  env: Env,
+  env: Runtime,
   // The recorded creation intent (docs/specs/013-workspace/default-folders.md "Recorded intent")
   // rides the same shape: written by the INSERT, never by the update.
   d: Omit<DocumentDTO, 'tabs' | 'ownerName' | 'ownerColor' | keyof RecordedIntent> &
@@ -274,14 +284,15 @@ export async function upsertDocumentMeta(
   // re-commit keeps its place, and moving is setDocumentFolder's job.
   // `opens_in`, `tab_kind` and `template_family` are the recorded creation intent, written here once
   // and never by the DO UPDATE, so nothing after the create re-derives or rewrites them.
-  await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
+  await env.db
+    .prepare(
+      `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
        saved_at = excluded.saved_at`,
-  )
+    )
     .bind(
       d.id,
       d.ownerId,
@@ -307,11 +318,12 @@ export async function upsertDocumentMeta(
 // rewritten by a caller that was not thinking about the deck. Passing null
 // clears it, which is what the client sends when the last slide is deleted.
 export async function setDocumentPresentation(
-  env: Env,
+  env: Runtime,
   id: string,
   presentation: string | null,
 ): Promise<void> {
-  await env.DB.prepare(`UPDATE documents SET presentation = ?, saved_at = ? WHERE id = ?`)
+  await env.db
+    .prepare(`UPDATE documents SET presentation = ?, saved_at = ? WHERE id = ?`)
     .bind(presentation, Date.now(), id)
     .run();
 }
@@ -320,11 +332,12 @@ export async function setDocumentPresentation(
 // the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
 // default types.
 export async function setDocumentItemTypes(
-  env: Env,
+  env: Runtime,
   id: string,
   itemTypes: ItemTypeCatalogue | null,
 ): Promise<void> {
-  await env.DB.prepare(`UPDATE documents SET item_types = ?, saved_at = ? WHERE id = ?`)
+  await env.db
+    .prepare(`UPDATE documents SET item_types = ?, saved_at = ? WHERE id = ?`)
     .bind(itemTypes ? JSON.stringify(itemTypes) : null, Date.now(), id)
     .run();
 }
@@ -336,21 +349,21 @@ export async function setDocumentItemTypes(
 // personal library becomes its owner (docs/specs/013-workspace/team-shared-documents.md), and folders are
 // owner-scoped so the row must follow them. Omit to keep the owner.
 export async function setDocumentFolder(
-  env: Env,
+  env: Runtime,
   id: string,
   folderId: string | null,
   teamId: string | null = null,
   newOwnerId?: string,
 ): Promise<void> {
   if (newOwnerId !== undefined) {
-    await env.DB.prepare(
-      'UPDATE documents SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?',
-    )
+    await env.db
+      .prepare('UPDATE documents SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?')
       .bind(folderId, teamId, newOwnerId, id)
       .run();
     return;
   }
-  await env.DB.prepare('UPDATE documents SET folder_id = ?, team_id = ? WHERE id = ?')
+  await env.db
+    .prepare('UPDATE documents SET folder_id = ?, team_id = ? WHERE id = ?')
     .bind(folderId, teamId, id)
     .run();
 }
@@ -359,8 +372,13 @@ export async function setDocumentFolder(
 // share_links (managed by createShareLink / deleteShareLink); this
 // helper only flips the boolean that gates the realtime room + the
 // share-code resolver.
-export async function setDocumentShare(env: Env, id: string, shareable: boolean): Promise<void> {
-  await env.DB.prepare('UPDATE documents SET shareable = ? WHERE id = ?')
+export async function setDocumentShare(
+  env: Runtime,
+  id: string,
+  shareable: boolean,
+): Promise<void> {
+  await env.db
+    .prepare('UPDATE documents SET shareable = ? WHERE id = ?')
     .bind(shareable ? 1 : 0, id)
     .run();
 }
@@ -371,8 +389,9 @@ export async function setDocumentShare(env: Env, id: string, shareable: boolean)
 // document has no password. Kept OUT of the document DTO columns
 // (DOCUMENT_COLS) and never returned by any route; only the share-access
 // check reads it.
-export async function getDocumentSharePassword(env: Env, id: string): Promise<string | null> {
-  const row = await env.DB.prepare('SELECT share_password FROM documents WHERE id = ?')
+export async function getDocumentSharePassword(env: Runtime, id: string): Promise<string | null> {
+  const row = await env.db
+    .prepare('SELECT share_password FROM documents WHERE id = ?')
     .bind(id)
     .first<{ share_password: string | null }>();
   const value = row?.share_password ?? null;
@@ -384,11 +403,12 @@ export async function getDocumentSharePassword(env: Env, id: string): Promise<st
 // `stored` is what the column should hold: a hash from hashSharePassword, or
 // null to clear. The route hashes; this layer never sees a plain password.
 export async function setDocumentSharePassword(
-  env: Env,
+  env: Runtime,
   id: string,
   stored: string | null,
 ): Promise<void> {
-  await env.DB.prepare('UPDATE documents SET share_password = ? WHERE id = ?')
+  await env.db
+    .prepare('UPDATE documents SET share_password = ? WHERE id = ?')
     .bind(stored, id)
     .run();
 }
@@ -396,14 +416,13 @@ export async function setDocumentSharePassword(
 // Rewrite a legacy plain-text value as its hash, only if the column still
 // holds that exact value: an owner who changed the password meanwhile wins.
 export async function upgradeDocumentSharePassword(
-  env: Env,
+  env: Runtime,
   id: string,
   from: string,
   to: string,
 ): Promise<void> {
-  await env.DB.prepare(
-    'UPDATE documents SET share_password = ? WHERE id = ? AND share_password = ?',
-  )
+  await env.db
+    .prepare('UPDATE documents SET share_password = ? WHERE id = ? AND share_password = ?')
     .bind(to, id, from)
     .run();
 }
@@ -412,13 +431,13 @@ export async function upgradeDocumentSharePassword(
 // every other delete moves the document to the Trash, and its purge runs
 // purgeDocuments (docs/specs/013-workspace/trash.md). A tab another document
 // still holds survives either.
-export async function deleteDocument(env: Env, id: string): Promise<void> {
-  await env.DB.batch(documentRemovalStatements(env, { column: 'id', value: id }));
+export async function deleteDocument(env: Runtime, id: string): Promise<void> {
+  await env.db.batch(documentRemovalStatements(env, { column: 'id', value: id }));
   // Drop the cached SVG snapshot (docs/specs/006-document/document-snapshots.md) alongside the row so a
   // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
   // failure here must never fail the delete itself.
-  if (env.IMAGES) await env.IMAGES.delete(snapshotKeys(id)).catch(() => {});
+  if (env.objects) await env.objects.delete(snapshotKeys(id)).catch(() => {});
 }
 
 // R2 object key for a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
@@ -442,8 +461,9 @@ export function snapshotKeys(documentId: string): string[] {
 // When the cached snapshot was last rendered (docs/specs/006-document/document-snapshots.md), or null when it
 // never has been. The render-on-read path compares this against the
 // document's saved_at to decide whether the R2 object is still fresh.
-export async function getThumbRenderedAt(env: Env, id: string): Promise<number | null> {
-  const row = await env.DB.prepare('SELECT thumb_rendered_at FROM documents WHERE id = ?')
+export async function getThumbRenderedAt(env: Runtime, id: string): Promise<number | null> {
+  const row = await env.db
+    .prepare('SELECT thumb_rendered_at FROM documents WHERE id = ?')
     .bind(id)
     .first<{ thumb_rendered_at: number | null }>();
   return row?.thumb_rendered_at ?? null;
@@ -452,8 +472,9 @@ export async function getThumbRenderedAt(env: Env, id: string): Promise<number |
 // Stamp the snapshot as freshly rendered (docs/specs/006-document/document-snapshots.md). Called after a
 // successful R2 write so the next read streams the cached bytes instead
 // of re-rendering.
-export async function markThumbRendered(env: Env, id: string, now: number): Promise<void> {
-  await env.DB.prepare('UPDATE documents SET thumb_rendered_at = ? WHERE id = ?')
+export async function markThumbRendered(env: Runtime, id: string, now: number): Promise<void> {
+  await env.db
+    .prepare('UPDATE documents SET thumb_rendered_at = ? WHERE id = ?')
     .bind(now, id)
     .run();
 }
@@ -470,7 +491,7 @@ export async function markThumbRendered(env: Env, id: string, now: number): Prom
 // handler checks ownership / share_code / shared_with). This helper
 // just performs the write.
 export async function copyDocument(
-  env: Env,
+  env: Runtime,
   sourceId: string,
   newId: string,
   newOwnerId: string,
@@ -489,10 +510,11 @@ export async function copyDocument(
   const now = Date.now();
   // The copy carries the source's recorded creation intent, read in the same statement, never
   // re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent").
-  await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, item_types, ${INTENT_COLS})
+  await env.db
+    .prepare(
+      `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, item_types, ${INTENT_COLS})
      SELECT ?, ?, ?, 0, NULL, ?, ?, item_types, ${INTENT_COLS} FROM documents WHERE id = ?`,
-  )
+    )
     .bind(newId, newOwnerId, newName, now, now, sourceId)
     .run();
   // Walk the source's tab rows via the link table and re-insert
@@ -502,13 +524,14 @@ export async function copyDocument(
   // share_links is by design — they don't survive
   // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-document/tab-document-many-to-many.md)
   // are deliberate: edits to the copy stay isolated from the source.
-  const tabRows = await env.DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, t.data, t.element_count
+  const tabRows = await env.db
+    .prepare(
+      `SELECT t.id, t.name, dt.order_index, t.data, t.element_count
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC`,
-  )
+    )
     .bind(...(onlyTabId === null ? [sourceId] : [sourceId, onlyTabId]))
     .all<{
       id: string;
@@ -539,13 +562,17 @@ export async function copyDocument(
         : remapped;
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
-      env.DB.prepare(
-        `INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, ?, 1)`,
-      ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
-      env.DB.prepare(
-        `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
+      env.db
+        .prepare(
+          `INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, ?, 1)`,
+        )
+        .bind(freshTabId, row.name, data, now, row.element_count ?? null),
+      env.db
+        .prepare(
+          `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,
-      ).bind(newId, freshTabId, row.order_index, now),
+        )
+        .bind(newId, freshTabId, row.order_index, now),
       // The copy carries the source's actions + threads inside its
       // data, so its index rows are copied the same way, without a
       // parse (docs/specs/013-workspace/activity-page.md §2.1).
@@ -572,13 +599,13 @@ export async function copyDocument(
   );
   // The sheets of the copied tabs, each under its tab's new id (docs/specs/029-sheets/sheet-store.md "Copies").
   const sheetCopies = copySheetsStatements(env, sourceId, newId, tabIdMap, now);
-  await env.DB.batch([...inserts, ...itemCopies, ...sheetCopies]);
+  await env.db.batch([...inserts, ...itemCopies, ...sheetCopies]);
   return await getDocument(env, newId);
 }
 
 // The items a copy takes: all of them, or for a tab-scoped copy the items its one tab shows.
 async function copiedItemIds(
-  env: Env,
+  env: Runtime,
   sourceId: string,
   rows: { data: string }[],
   onlyTabId: string | null,
@@ -611,8 +638,9 @@ export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): 
 
 // docs/specs/014-identity/transactional-email.md (#6): total documents owned by `ownerId`, for the milestone check on
 // create. Counts all of an owner's documents (a cheap indexed COUNT).
-export async function countDocumentsByOwner(env: Env, ownerId: string): Promise<number> {
-  const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM documents WHERE owner_id = ?')
+export async function countDocumentsByOwner(env: Runtime, ownerId: string): Promise<number> {
+  const row = await env.db
+    .prepare('SELECT COUNT(*) AS n FROM documents WHERE owner_id = ?')
     .bind(ownerId)
     .first<{ n: number }>();
   return row?.n ?? 0;
@@ -623,14 +651,15 @@ export async function countDocumentsByOwner(env: Env, ownerId: string): Promise<
 // of concurrent comment saves can't each fire an email. `cutoff` = now - window;
 // returns false when we already emailed within the window.
 export async function claimCommentNotify(
-  env: Env,
+  env: Runtime,
   documentId: string,
   now: number,
   cutoff: number,
 ): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE documents SET comment_notified_at = ? WHERE id = ? AND (comment_notified_at IS NULL OR comment_notified_at < ?)',
-  )
+  const res = await env.db
+    .prepare(
+      'UPDATE documents SET comment_notified_at = ? WHERE id = ? AND (comment_notified_at IS NULL OR comment_notified_at < ?)',
+    )
     .bind(now, documentId, cutoff)
     .run();
   return res.meta.changes === 1;

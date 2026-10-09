@@ -86,7 +86,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
 
   // Hand the write to the document's room, which runs board writes one at a
   // time and broadcasts each result in order (DocumentRoom.handleQaWrite).
-  const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
+  const stub = env.rooms.for(id);
   const res = await stub.fetch('https://room/qa', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -30,9 +30,8 @@ function setup(reply: () => Response = () => Response.json({ notes: [], rev: 1 }
   const sent: { url: string; body: QaWriteRequest; room: string }[] = [];
   let room = '';
   const env = {
-    DOCUMENT_ROOM: {
-      idFromName: (n: string) => n,
-      get: (id: string) => {
+    rooms: {
+      for: (id: string) => {
         room = id;
         return {
           fetch: vi.fn(async (url: string, init: { body: string }) => {

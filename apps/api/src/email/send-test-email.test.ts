@@ -18,7 +18,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { sendEmail } from './client';
 import {
   type RenderedEmail,
@@ -64,7 +64,7 @@ const env = {
   RESEND_API_KEY: KEY,
   RESEND_FROM: vars.RESEND_FROM ?? 'livediagram <onboarding@resend.dev>',
   APP_BASE_URL: vars.APP_BASE_URL ?? 'https://livediagram.app',
-} as unknown as Env;
+} as unknown as Runtime;
 
 describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
   const cases: Record<string, RenderedEmail> = {

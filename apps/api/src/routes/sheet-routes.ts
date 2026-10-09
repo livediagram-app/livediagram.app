@@ -126,7 +126,7 @@ async function makeSheet(
     if (!source || (caller.scopeTab && source.tabId !== caller.scopeTab)) return sheetNotFound();
     if (totals.cells + source.cellCount > DOCUMENT_CELLS_MAX)
       return sheetRejected('sheets_full', 413);
-    await ctx.env.DB.batch(
+    await ctx.env.db.batch(
       copySheetStatements(
         ctx.env,
         documentId,
@@ -157,7 +157,7 @@ async function makeSheet(
       return sheetRejected(check.error, check.error === 'sheet_full' ? 413 : 400, check.at);
     if (totals.cells + sheet.cells.length > DOCUMENT_CELLS_MAX)
       return sheetRejected('sheets_full', 413);
-    await ctx.env.DB.batch(insertSheetStatements(ctx.env, documentId, sheet, now));
+    await ctx.env.db.batch(insertSheetStatements(ctx.env, documentId, sheet, now));
   }
   const [stored] = await listSheets(ctx.env, documentId, { ids: [id] });
   relaySheet(ctx, documentId, {
@@ -198,7 +198,7 @@ async function keepRestored(
   if (!create.id || (caller.scopeTab && create.tabId !== caller.scopeTab)) return null;
   const head = await readSheetHead(ctx.env, caller.documentId, create.id);
   if (!head || head.tabId !== create.tabId) return null;
-  await ctx.env.DB.batch([sheetKeepStatement(ctx.env, caller.documentId, create.id)]);
+  await ctx.env.db.batch([sheetKeepStatement(ctx.env, caller.documentId, create.id)]);
   const [stored] = await listSheets(ctx.env, caller.documentId, { ids: [create.id] });
   console.info('[sheets] sheets.restored', { documentId: caller.documentId, kept: true });
   return stored ? { sheet: stored } : null;
@@ -212,7 +212,7 @@ async function remove(ctx: RouteContext, documentId: string, sheetId: string): P
   if (ctx.url.searchParams.get('whenUnreferenced') === 'true') {
     // Deleted with its element: now if nothing references it, else by the tab write that removes the last reference
     // (sheet-refs.ts), which needs no relay: nothing in the document shows it then.
-    const results = await ctx.env.DB.batch(
+    const results = await ctx.env.db.batch(
       sheetDeleteWhenUnreferencedStatements(ctx.env, documentId, sheetId),
     );
     const deleted = ((results[1] as { results?: unknown[] } | undefined)?.results?.length ?? 0) > 0;
@@ -221,7 +221,7 @@ async function remove(ctx: RouteContext, documentId: string, sheetId: string): P
       return noContent();
     }
   } else {
-    await ctx.env.DB.batch([deleteSheetStatement(ctx.env, documentId, sheetId)]);
+    await ctx.env.db.batch([deleteSheetStatement(ctx.env, documentId, sheetId)]);
   }
   relaySheet(ctx, documentId, {
     kind: 'sheets',

@@ -16,9 +16,8 @@ export async function handlePreferences(ctx: RouteContext): Promise<Response> {
   const ownerId = resolveOwner();
   if (!ownerId) return missingAuth();
   if (request.method === 'GET') {
-    const row = await env.DB.prepare(
-      'SELECT prefs FROM user_preferences WHERE owner_id = ?1 LIMIT 1',
-    )
+    const row = await env.db
+      .prepare('SELECT prefs FROM user_preferences WHERE owner_id = ?1 LIMIT 1')
       .bind(ownerId)
       .first<{ prefs: string }>();
     let prefs: Record<string, unknown> = {};
@@ -55,9 +54,10 @@ export async function handlePreferences(ctx: RouteContext): Promise<Response> {
     }
     const serialised = JSON.stringify(body.prefs);
     const now = Date.now();
-    await env.DB.prepare(
-      'INSERT INTO user_preferences (owner_id, prefs, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT (owner_id) DO UPDATE SET prefs = excluded.prefs, updated_at = excluded.updated_at',
-    )
+    await env.db
+      .prepare(
+        'INSERT INTO user_preferences (owner_id, prefs, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT (owner_id) DO UPDATE SET prefs = excluded.prefs, updated_at = excluded.updated_at',
+      )
       .bind(ownerId, serialised, now)
       .run();
     return noContent();

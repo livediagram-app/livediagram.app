@@ -1,6 +1,6 @@
 import { itemPersonId } from '@livediagram/items';
 import { describe, expect, it } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { cardsFromRows, readerPersonIds, type CardRow } from './plan-board-index';
 
 // The edges of the Activity page's card read (docs/specs/013-workspace/activity-page.md §2.4) that the
@@ -53,8 +53,8 @@ describe('cardsFromRows', () => {
 describe('readerPersonIds', () => {
   const env = (results: { alias_id: string }[] | undefined) =>
     ({
-      DB: { prepare: () => ({ bind: () => ({ all: async () => ({ results }) }) }) },
-    }) as unknown as Env;
+      db: { prepare: () => ({ bind: () => ({ all: async () => ({ results }) }) }) },
+    }) as unknown as Runtime;
 
   it('hashes the reader and every identity they used to be', async () => {
     expect(await readerPersonIds(env([{ alias_id: 'guest-1' }]), 'user-1')).toEqual([

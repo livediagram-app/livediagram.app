@@ -6,7 +6,7 @@ import { isLocalhostPair } from '../origin-check';
 import { noContent, notFound } from '../responses';
 import { clientRateKey } from '../client-ip';
 import { timingSafeEqual } from '../auth/timing-safe';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import type { RouteContext } from './context';
 
 // Anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md). Batched POST of
@@ -48,9 +48,10 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // traffic). Unset on either side = nobody is exempt, exactly as before,
   // so self-hosting needs no configuration.
   if (!(await isInternalCaller(request, env))) {
-    if (env.EVENTS_RATE_LIMITER) {
+    const limiter = env.limiters?.EVENTS_RATE_LIMITER;
+    if (limiter) {
       const ip = clientRateKey(request);
-      const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: ip });
+      const { success } = await limiter.limit({ key: ip });
       if (!success) return noop;
     }
   }
@@ -90,7 +91,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
 // Does this request carry the internal shared secret? Compared in constant
 // time like the share-password check: the endpoint always answers 204, but
 // the comparison shouldn't be the thing that leaks the key.
-async function isInternalCaller(request: Request, env: Env): Promise<boolean> {
+async function isInternalCaller(request: Request, env: Runtime): Promise<boolean> {
   const expected = env.INTERNAL_EVENTS_KEY;
   if (!expected) return false;
   const provided = request.headers.get('X-Internal-Events-Key');

@@ -9,7 +9,7 @@ import {
   type SharePurpose,
 } from '@livediagram/api-schema';
 import { rowToShareLink, type ShareLinkRow } from '../share-link-row';
-import type { Env, ShareLinkDTO, ShareRole } from '../types';
+import type { ShareLinkDTO, ShareRole, Runtime } from '../types';
 
 const SHARE_LINK_COLS = 'code, document_id, role, created_at, expiry, expires_at, tab_id, purpose';
 
@@ -42,10 +42,11 @@ export function generateShareCode(length = 8): string {
 // — the dialog splits them into Active / Inactive (docs/specs/013-workspace/share-link-expiry.md).
 // A Community post's own link is never listed (docs/specs/025-community/community.md): the Community section
 // manages it, so revoke-all and the dialog cannot take a post down by accident.
-export async function listShareLinks(env: Env, documentId: string): Promise<ShareLinkDTO[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE document_id = ? AND purpose = 'share' ORDER BY created_at ASC`,
-  )
+export async function listShareLinks(env: Runtime, documentId: string): Promise<ShareLinkDTO[]> {
+  const result = await env.db
+    .prepare(
+      `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE document_id = ? AND purpose = 'share' ORDER BY created_at ASC`,
+    )
     .bind(documentId)
     .all<ShareLinkRow>();
   return (result.results ?? []).map(rowToShareLink);
@@ -58,10 +59,11 @@ export async function listShareLinks(env: Env, documentId: string): Promise<Shar
 // GET /api/share/:code all come through here, so an expired link
 // stops resolving and authorising everywhere at once. Owner-side
 // paths that need expired rows use getShareLinkIncludingExpired.
-export async function getShareLink(env: Env, code: string): Promise<ShareLinkDTO | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE code = ? AND (expires_at IS NULL OR expires_at > ?) AND ${SCOPE_STILL_VALID}`,
-  )
+export async function getShareLink(env: Runtime, code: string): Promise<ShareLinkDTO | null> {
+  const row = await env.db
+    .prepare(
+      `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE code = ? AND (expires_at IS NULL OR expires_at > ?) AND ${SCOPE_STILL_VALID}`,
+    )
     .bind(code, Date.now())
     .first<ShareLinkRow>();
   return row ? rowToShareLink(row) : null;
@@ -70,17 +72,18 @@ export async function getShareLink(env: Env, code: string): Promise<ShareLinkDTO
 // Owner-side lookup for delete / extend, which must work on a link
 // precisely BECAUSE it has expired.
 export async function getShareLinkIncludingExpired(
-  env: Env,
+  env: Runtime,
   code: string,
 ): Promise<ShareLinkDTO | null> {
-  const row = await env.DB.prepare(`SELECT ${SHARE_LINK_COLS} FROM share_links WHERE code = ?`)
+  const row = await env.db
+    .prepare(`SELECT ${SHARE_LINK_COLS} FROM share_links WHERE code = ?`)
     .bind(code)
     .first<ShareLinkRow>();
   return row ? rowToShareLink(row) : null;
 }
 
 export async function createShareLink(
-  env: Env,
+  env: Runtime,
   documentId: string,
   code: string,
   role: ShareRole,
@@ -90,9 +93,10 @@ export async function createShareLink(
 ): Promise<ShareLinkDTO> {
   const createdAt = Date.now();
   const expiresAt = expiresAtFor(expiry, createdAt);
-  await env.DB.prepare(
-    'INSERT INTO share_links (code, document_id, role, created_at, expiry, expires_at, tab_id, purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-  )
+  await env.db
+    .prepare(
+      'INSERT INTO share_links (code, document_id, role, created_at, expiry, expires_at, tab_id, purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    )
     .bind(
       code,
       documentId,
@@ -109,7 +113,7 @@ export async function createShareLink(
   // derived from share_links on read, so no column to update. A community
   // link opens no room, so it leaves the flag as it is.
   if (purpose === 'share') {
-    await env.DB.prepare('UPDATE documents SET shareable = 1 WHERE id = ?').bind(documentId).run();
+    await env.db.prepare('UPDATE documents SET shareable = 1 WHERE id = ?').bind(documentId).run();
   }
   return { code, documentId, role, createdAt, expiry, expiresAt, tabId, purpose };
 }
@@ -118,11 +122,12 @@ export async function createShareLink(
 // duration, counted from now (docs/specs/013-workspace/share-link-expiry.md). Returns the updated link, or
 // null when the code doesn't exist or the link never expires (nothing
 // to extend — the route maps that to a 400).
-export async function extendShareLink(env: Env, code: string): Promise<ShareLinkDTO | null> {
+export async function extendShareLink(env: Runtime, code: string): Promise<ShareLinkDTO | null> {
   const existing = await getShareLinkIncludingExpired(env, code);
   if (!existing || existing.expiry === 'never') return null;
   const expiresAt = expiresAtFor(existing.expiry, Date.now());
-  await env.DB.prepare('UPDATE share_links SET expires_at = ? WHERE code = ?')
+  await env.db
+    .prepare('UPDATE share_links SET expires_at = ? WHERE code = ?')
     .bind(expiresAt, code)
     .run();
   return { ...existing, expiresAt };
@@ -132,54 +137,53 @@ export async function extendShareLink(env: Env, code: string): Promise<ShareLink
 // The route has already checked the tab belongs to the document. Null when the
 // code doesn't exist.
 export async function rescopeShareLink(
-  env: Env,
+  env: Runtime,
   code: string,
   tabId: string | null,
 ): Promise<ShareLinkDTO | null> {
   const existing = await getShareLinkIncludingExpired(env, code);
   if (!existing) return null;
-  await env.DB.prepare('UPDATE share_links SET tab_id = ? WHERE code = ?').bind(tabId, code).run();
+  await env.db.prepare('UPDATE share_links SET tab_id = ? WHERE code = ?').bind(tabId, code).run();
   return { ...existing, tabId };
 }
 
 // A deleted tab takes its scoped links with it (docs/specs/013-workspace/tab-scoped-share-links.md). Returns
 // the deleted codes so the caller can tell their holders (share-revoked).
 export async function deleteShareLinksForTab(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tabId: string,
 ): Promise<string[]> {
-  const res = await env.DB.prepare(
-    'SELECT code FROM share_links WHERE document_id = ? AND tab_id = ?',
-  )
+  const res = await env.db
+    .prepare('SELECT code FROM share_links WHERE document_id = ? AND tab_id = ?')
     .bind(documentId, tabId)
     .all<{ code: string }>();
   const codes = (res.results ?? []).map((r) => r.code);
   if (codes.length === 0) return codes;
-  await env.DB.prepare('DELETE FROM share_links WHERE document_id = ? AND tab_id = ?')
+  await env.db
+    .prepare('DELETE FROM share_links WHERE document_id = ? AND tab_id = ?')
     .bind(documentId, tabId)
     .run();
   await closeSharingIfNoLinksLeft(env, documentId);
   return codes;
 }
 
-export async function deleteShareLink(env: Env, code: string): Promise<void> {
+export async function deleteShareLink(env: Runtime, code: string): Promise<void> {
   const existing = await getShareLinkIncludingExpired(env, code);
   if (!existing) return;
-  await env.DB.prepare('DELETE FROM share_links WHERE code = ?').bind(code).run();
+  await env.db.prepare('DELETE FROM share_links WHERE code = ?').bind(code).run();
   await closeSharingIfNoLinksLeft(env, existing.documentId);
 }
 
 // If the last link for the document just went, flip shareable off so the live
 // app stops opening the realtime room. The primary code is derived on read;
 // no column to repoint.
-async function closeSharingIfNoLinksLeft(env: Env, documentId: string): Promise<void> {
-  const remaining = await env.DB.prepare(
-    "SELECT COUNT(*) AS n FROM share_links WHERE document_id = ? AND purpose = 'share'",
-  )
+async function closeSharingIfNoLinksLeft(env: Runtime, documentId: string): Promise<void> {
+  const remaining = await env.db
+    .prepare("SELECT COUNT(*) AS n FROM share_links WHERE document_id = ? AND purpose = 'share'")
     .bind(documentId)
     .first<{ n: number }>();
   if (!remaining || remaining.n === 0) {
-    await env.DB.prepare('UPDATE documents SET shareable = 0 WHERE id = ?').bind(documentId).run();
+    await env.db.prepare('UPDATE documents SET shareable = 0 WHERE id = ?').bind(documentId).run();
   }
 }

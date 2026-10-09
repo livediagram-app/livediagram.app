@@ -98,9 +98,9 @@ describe('deleteOldUnusedImages', () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'late');
-    const prepare = db.env.DB.prepare.bind(db.env.DB);
+    const prepare = db.env.db.prepare.bind(db.env.db);
     // Place the image in the instant between the page read and the delete.
-    vi.spyOn(db.env.DB, 'prepare').mockImplementation((query: string) => {
+    vi.spyOn(db.env.db, 'prepare').mockImplementation((query: string) => {
       if (query.startsWith('DELETE FROM images')) {
         db.sql.exec("INSERT INTO tabs (id, name, data, updated_at) VALUES ('t', 't', '{}', 0)");
         db.sql.exec("INSERT INTO image_refs (tab_id, image_id) VALUES ('t', 'late')");

@@ -18,7 +18,7 @@ import { lastChangesetRev, tabIdsHeldElsewhere } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
@@ -38,7 +38,7 @@ export const SUBMIT_ATTEMPTS = 2;
 const TAB_ID_MAX = 128;
 
 export type SubmitArgs = {
-  env: Env;
+  env: Runtime;
   document: DocumentDTO;
   tabId: string;
   request: ParsedChangeset;
@@ -192,7 +192,7 @@ export function writtenFooter(
 
 // The selections on the tab, the agent owner's own marked by their person tag.
 async function readSelections(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tabId: string,
   ownerId: string,

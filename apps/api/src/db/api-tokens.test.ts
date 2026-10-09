@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { fakeD1 } from '../test-d1';
 import {
   apiTokensExpiringSoon,
@@ -24,10 +24,10 @@ import {
 
 type Recorded = { sql: string; bindings: unknown[] };
 
-function envWithTokenCount(count: number): { env: Env; writes: Recorded[] } {
+function envWithTokenCount(count: number): { env: Runtime; writes: Recorded[] } {
   const writes: Recorded[] = [];
   const env = {
-    DB: {
+    db: {
       prepare: (sql: string) => ({
         bind: (...bindings: unknown[]) => ({
           first: async () => ({ n: count }),
@@ -37,7 +37,7 @@ function envWithTokenCount(count: number): { env: Env; writes: Recorded[] } {
         }),
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   return { env, writes };
 }
 

@@ -73,7 +73,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
 
   if (segments.length === 4 && segments[3] === 'ws') {
     const id = segments[2]!;
-    const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
+    const stub = env.rooms.for(id);
     // Browsers can't put custom headers on a WebSocket upgrade,
     // so the client passes a one-time ticket / share code / owner id
     // as query params (`?t=...&s=...&o=...`). We resolve role here and

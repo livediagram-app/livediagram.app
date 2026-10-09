@@ -49,9 +49,8 @@ const post = (text: string, who: { owner?: string; code?: string } = {}) =>
 beforeEach(async () => {
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { DOCUMENT_ROOM: unknown }).DOCUMENT_ROOM = {
-    idFromName: (n: string) => n,
-    get: () => ({
+  (sql.env as unknown as { rooms: unknown }).rooms = {
+    for: () => ({
       fetch: async (_url: string, init: RequestInit) => {
         relayed.push(JSON.parse(String(init.body)));
         return new Response(null, { status: 204 });

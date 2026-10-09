@@ -18,13 +18,13 @@ vi.mock('./backfill', () => ({ runImageRefsBackfill: backfill }));
 vi.mock('../db/image-retention', () => ({ deleteOldUnusedImages: sweep }));
 
 import { runImageRetention, UNUSED_IMAGE_RETENTION_MS } from './retention';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // The daily image job (docs/specs/009-elements/images.md, "Retention"): the
 // backfill runs first, so a run that completes it can sweep the same day, and
 // a failed backfill still lets the (self-gating) sweep report.
 
-const env = {} as Env;
+const env = {} as unknown as Runtime;
 
 afterEach(() => {
   order.length = 0;

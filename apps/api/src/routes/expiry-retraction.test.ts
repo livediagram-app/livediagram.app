@@ -12,7 +12,7 @@
 // warning. Every assertion below on the eventType argument is load-bearing for
 // that reason, not incidental.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
@@ -115,11 +115,10 @@ describe('share-link changes retract the document expiry warning', () => {
   // Durable Object room so hydrated visitors hard-redirect; that is UX, not the
   // subject here, so the binding is a no-op stub.
   const roomEnv = {
-    DOCUMENT_ROOM: {
-      idFromName: () => 'id',
-      get: () => ({ fetch: async () => new Response(null, { status: 204 }) }),
+    rooms: {
+      for: () => ({ fetch: async () => new Response(null, { status: 204 }) }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
 
   const shareCtx = (method: string, path: string) =>
     makeTestRouteContext(method, path, {

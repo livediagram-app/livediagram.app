@@ -20,7 +20,7 @@ import {
   RoomAgentPresence,
   type RosterSession,
 } from './room-agent-presence';
-import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
+import type { ClientMessage, ParticipantPresence, ServerMessage, Runtime } from './types';
 import { reportServerEvent } from './server-telemetry';
 import { multiplayerDecision } from './room-multiplayer';
 import {
@@ -52,6 +52,7 @@ import {
 } from './facilitator';
 
 import { writeQaAction, type QaWriteRequest } from './qa-board-write';
+import type { RoomSocket, RoomState } from './runtime/room-shell';
 
 // One Durable Object instance per document id. Holds the set of currently
 // connected WebSockets plus their participant identity, and broadcasts
@@ -201,7 +202,7 @@ const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
 const SHARE_LINK_CHANGED_CLOSE = 4003;
 
 export class DocumentRoom implements DurableObject {
-  state: DurableObjectState;
+  state: RoomState;
   // Per-session op-rate window (sliding 1s) so one connected peer can't
   // flood the room. Legit cursor / laser / edit ops are client-throttled
   // well under the cap; over-cap ops are silently dropped, not a
@@ -214,7 +215,7 @@ export class DocumentRoom implements DurableObject {
   // attachment write per frame for nothing. Entries are cleaned on
   // close / error / dead-send so the map can't leak across a long-lived
   // in-memory period.
-  opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
+  opRates: Map<RoomSocket, { count: number; windowStart: number }> = new Map();
 
   // Ordering state for reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
   //
@@ -257,7 +258,7 @@ export class DocumentRoom implements DurableObject {
   // The worker env, for the one server-side telemetry emit the room owns
   // (Document·Used·Multiplayer). Optional so unit tests can build a room
   // from a fake state alone; without it the emit is skipped.
-  env: Env | undefined;
+  env: Runtime | undefined;
 
   // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this document
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -268,7 +269,7 @@ export class DocumentRoom implements DurableObject {
   // hibernation wake has none.
   private qaQueue: Promise<unknown> = Promise.resolve();
 
-  constructor(state: DurableObjectState, env?: Env) {
+  constructor(state: RoomState, env?: Runtime) {
     this.state = state;
     this.env = env;
     this.ledger = new RoomLedgerStore(state.storage);
@@ -436,7 +437,7 @@ export class DocumentRoom implements DurableObject {
   // session state (attachment) and hand it to the runtime. Split out of
   // fetch so tests can drive sessions without constructing WebSocketPair.
   acceptSession(
-    ws: WebSocket,
+    ws: RoomSocket,
     verifiedRole?: 'edit' | 'view',
     isOwner = false,
     tabScope: string | null = null,
@@ -474,7 +475,7 @@ export class DocumentRoom implements DurableObject {
 
   // Read a socket's session attachment. Null means "not a session we
   // admitted" (or a corrupt attachment) — frames from it are dropped.
-  private readSession(ws: WebSocket): SessionAttachment | null {
+  private readSession(ws: RoomSocket): SessionAttachment | null {
     try {
       return (ws.deserializeAttachment() as SessionAttachment | null) ?? null;
     } catch {
@@ -496,7 +497,7 @@ export class DocumentRoom implements DurableObject {
   // Used by the addressed presence ops (the Avatar-mode shove, docs/specs/008-canvas/avatar-mode.md):
   // everyone else has no use for the packet, and fanning it out would leak who
   // is being pushed to the whole room.
-  sendToPresence(presenceId: string, payload: ServerMessage, except?: WebSocket): void {
+  sendToPresence(presenceId: string, payload: ServerMessage, except?: RoomSocket): void {
     const serialized = JSON.stringify(payload);
     for (const ws of this.state.getWebSockets()) {
       if (ws === except) continue;
@@ -513,7 +514,7 @@ export class DocumentRoom implements DurableObject {
     }
   }
 
-  broadcast(payload: ServerMessage, except?: WebSocket): void {
+  broadcast(payload: ServerMessage, except?: RoomSocket): void {
     const serialized = JSON.stringify(payload);
     for (const ws of this.state.getWebSockets()) {
       if (ws === except) continue;
@@ -530,7 +531,7 @@ export class DocumentRoom implements DurableObject {
   // The frame one socket should receive for `payload`: as serialised for an
   // unscoped session, redacted or withheld (null) for a tab-scoped one
   // (docs/specs/013-workspace/tab-scoped-share-links.md). Only op frames carry tab content.
-  private frameFor(ws: WebSocket, payload: ServerMessage, serialized: string): string | null {
+  private frameFor(ws: RoomSocket, payload: ServerMessage, serialized: string): string | null {
     if (payload.kind !== 'op') return serialized;
     const scope = this.scopeOf(ws);
     if (scope === null) return serialized;
@@ -541,7 +542,7 @@ export class DocumentRoom implements DurableObject {
 
   // A socket's tab scope. Read from the attachment, so it survives
   // hibernation; fixed for the life of the session.
-  private scopeOf(ws: WebSocket): string | null {
+  private scopeOf(ws: RoomSocket): string | null {
     return this.readSession(ws)?.tabScope ?? null;
   }
 
@@ -598,7 +599,7 @@ export class DocumentRoom implements DurableObject {
   // Put a mutation into the ordered stream: a seq, the catch-up log, every
   // socket but the sender's, and the ledger. One path for a peer's op and for
   // one the worker made (docs/specs/012-collaboration/collab-race-hardening.md), so the two can't drift. Returns the seq.
-  private sequenceMutation(from: string, op: unknown, except?: WebSocket): number {
+  private sequenceMutation(from: string, op: unknown, except?: RoomSocket): number {
     const seq = ++this.seq;
     this.persistOrder();
     this.opLog.push({ seq, from, op });
@@ -660,7 +661,7 @@ export class DocumentRoom implements DurableObject {
   // Hibernation event handler: one inbound frame from one socket. The DO
   // may have just been re-materialized from cold — everything this needs
   // beyond flood control comes from the socket's attachment.
-  webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
+  webSocketMessage(ws: RoomSocket, message: string | ArrayBuffer): void {
     // Drop an oversized frame before parsing / broadcasting it: ops are
     // re-broadcast opaquely to every peer, so without a cap one socket
     // could fan a multi-MB payload out to the whole room. Far above any
@@ -884,7 +885,7 @@ export class DocumentRoom implements DurableObject {
   //     already has from its D1 hydrate is harmless.
   //   - Any other epoch mismatch with prior progress → resync: the client
   //     saw a previous room instance and we can't map its seq onto ours.
-  private sendCatchup(ws: WebSocket, epoch: string | null, lastSeq: number): void {
+  private sendCatchup(ws: RoomSocket, epoch: string | null, lastSeq: number): void {
     const { ops, resync } = resolveCatchup(
       { epoch, lastSeq },
       { epoch: this.epoch, seq: this.seq, opLog: this.opLog },
@@ -924,7 +925,7 @@ export class DocumentRoom implements DurableObject {
   }
 
   /** Deliver one frame to one socket. */
-  private sendTo(ws: WebSocket, payload: ServerMessage): void {
+  private sendTo(ws: RoomSocket, payload: ServerMessage): void {
     try {
       ws.send(JSON.stringify(payload));
     } catch {
@@ -977,7 +978,7 @@ export class DocumentRoom implements DurableObject {
    */
   // One live poll answer (docs/specs/012-collaboration/vote-integrity.md). The poll decides the key from what the
   // room holds about this session, and the room relays only an accepted answer, as the poll rewrote it.
-  private async relayPollAnswer(ws: WebSocket, op: unknown): Promise<void> {
+  private async relayPollAnswer(ws: RoomSocket, op: unknown): Promise<void> {
     const session = this.readSession(ws);
     const sender = session?.presence;
     if (!session || !sender) return;
@@ -1075,7 +1076,7 @@ export class DocumentRoom implements DurableObject {
   }
 
   /** The one connected socket wearing this presence id. */
-  private socketByPresence(presenceId: string): WebSocket | null {
+  private socketByPresence(presenceId: string): RoomSocket | null {
     for (const ws of this.state.getWebSockets()) {
       if (this.readSession(ws)?.presence?.id === presenceId) return ws;
     }
@@ -1137,15 +1138,15 @@ export class DocumentRoom implements DurableObject {
   // Hibernation event handlers for a session ending. The runtime removes
   // the socket from getWebSockets() itself; our job is only to shed the
   // rate window (so the map can't leak) and re-announce the roster.
-  webSocketClose(ws: WebSocket): void {
+  webSocketClose(ws: RoomSocket): void {
     this.dropSession(ws);
   }
 
-  webSocketError(ws: WebSocket): void {
+  webSocketError(ws: RoomSocket): void {
     this.dropSession(ws);
   }
 
-  private dropSession(ws: WebSocket): void {
+  private dropSession(ws: RoomSocket): void {
     this.opRates.delete(ws);
     const presenceId = this.readSession(ws)?.presence?.id;
     if (presenceId) {
@@ -1196,12 +1197,13 @@ export class DocumentRoom implements DurableObject {
     const env = this.env;
     if (decision.report && env) {
       const write = reportServerEvent(env, 'Document', 'Used', 'Multiplayer');
-      // Keep the DO alive until the row lands; the write swallows its own error.
-      this.state.waitUntil(write);
+      // Keep the room alive until the row lands; the write swallows its own error.
+      // Optional on the seam: a runtime that owns the process does not need it.
+      this.state.waitUntil?.(write);
     }
   }
 
-  broadcastPresence(except?: WebSocket): void {
+  broadcastPresence(except?: RoomSocket): void {
     // Send each client the roster MINUS its own entry. The broadcast presence
     // id is a fresh server-random per session (docs/specs/015-api/public-api-and-tokens.md §6), so a client can't
     // recognise its own entry by id to filter it out — including it makes the
@@ -1214,7 +1216,7 @@ export class DocumentRoom implements DurableObject {
     // Profile pictures go only to account sessions (docs/specs/014-identity/profile-picture.md §5): an
     // anonymous share-link visitor gets the same roster with every picture removed, so the URL
     // never reaches them.
-    const entries: [WebSocket, ParticipantPresence | null, boolean, string | null][] = [];
+    const entries: [RoomSocket, ParticipantPresence | null, boolean, string | null][] = [];
     for (const ws of this.state.getWebSockets()) {
       if (ws === except) continue;
       const session = this.readSession(ws);

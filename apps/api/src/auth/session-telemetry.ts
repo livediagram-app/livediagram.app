@@ -20,7 +20,7 @@
 //     so it is recorded silently. The `fva` claim may be absent; then the
 //     session is taken as fresh.
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { recordAccountSighting, recordSessionSighting } from '../db/auth-sightings';
 import { reportServerEvent, telemetryEnabled } from '../server-telemetry';
 import type { ClerkIdentity } from './clerk';
@@ -31,7 +31,10 @@ export type AuthSighting = 'SignedUp' | 'SignedIn' | null;
 
 // Records the sighting and reports the event it amounts to. Returns what was
 // counted, for tests. Never throws.
-export async function reportAuthSighting(env: Env, identity: ClerkIdentity): Promise<AuthSighting> {
+export async function reportAuthSighting(
+  env: Runtime,
+  identity: ClerkIdentity,
+): Promise<AuthSighting> {
   if (!telemetryEnabled(env) || !identity.sessionId) return null;
   try {
     // Session first: only the request that creates the session row may count,
@@ -59,7 +62,7 @@ const ISOLATE_MEMO_CAP = 10_000;
 // Schedules the sighting off the response path; a no-op for guests, for
 // sessions this isolate already saw, and when telemetry is off.
 export function noteAuthSighting(
-  env: Env,
+  env: Runtime,
   identity: ClerkIdentity | null,
   waitUntil: ((p: Promise<unknown>) => void) | undefined,
 ): void {

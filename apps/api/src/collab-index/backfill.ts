@@ -1,3 +1,4 @@
+import type { DbStatement } from '@livediagram/runtime';
 // One-shot seed of the collaboration index for one owner (docs/specs/013-workspace/activity-page.md
 // §2.3). Tabs saved after the index shipped index themselves in the
 // save's own batch; this covers the dormant ones, so the Activity page
@@ -14,7 +15,7 @@ import {
   listCollabTabsToBackfill,
   markCollabIndexBackfilled,
 } from '../db/collab-index';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // A cap rather than the whole library because this runs in one
 // request's tail. Logged when hit: a reader with more should not be
@@ -26,13 +27,13 @@ export const COLLAB_BACKFILL_TAB_LIMIT = 300;
 // while still amortising the round trip.
 const TABS_PER_BATCH = 25;
 
-export async function backfillCollabIndex(env: Env, ownerId: string): Promise<void> {
+export async function backfillCollabIndex(env: Runtime, ownerId: string): Promise<void> {
   const tabs = await listCollabTabsToBackfill(env, ownerId, COLLAB_BACKFILL_TAB_LIMIT);
   if (tabs.length === COLLAB_BACKFILL_TAB_LIMIT) {
     console.info('collab index backfill capped', ownerId, COLLAB_BACKFILL_TAB_LIMIT);
   }
   for (let i = 0; i < tabs.length; i += TABS_PER_BATCH) {
-    const stmts: D1PreparedStatement[] = [];
+    const stmts: DbStatement[] = [];
     for (const tab of tabs.slice(i, i + TABS_PER_BATCH)) {
       let elements: Element[] = [];
       try {
@@ -45,7 +46,7 @@ export async function backfillCollabIndex(env: Env, ownerId: string): Promise<vo
       }
       stmts.push(...collabIndexStatements(env, tab.id, elements));
     }
-    if (stmts.length > 0) await env.DB.batch(stmts);
+    if (stmts.length > 0) await env.db.batch(stmts);
   }
   await markCollabIndexBackfilled(env, ownerId);
 }

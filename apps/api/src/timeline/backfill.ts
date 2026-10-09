@@ -11,7 +11,7 @@
 // an edit) leave the real row as it is.
 
 import { dedupeKeyForDay, markScopeBackfilled } from '../db/timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { userScope } from './audience';
 import { record } from './record';
 
@@ -33,15 +33,16 @@ type TeamSeedRow = {
   created_at: number;
 };
 
-export async function backfillUserScope(env: Env, ownerId: string): Promise<void> {
+export async function backfillUserScope(env: Runtime, ownerId: string): Promise<void> {
   const scope = [userScope(ownerId)];
 
-  const liveDocs = await env.DB.prepare(
-    `SELECT id, name, created_at, saved_at FROM documents
+  const liveDocs = await env.db
+    .prepare(
+      `SELECT id, name, created_at, saved_at FROM documents
       WHERE owner_id = ?1
       ORDER BY saved_at DESC
       LIMIT ?2`,
-  )
+    )
     .bind(ownerId, BACKFILL_DOCUMENT_LIMIT)
     .all<DocumentSeedRow>();
 
@@ -97,12 +98,13 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
     }
   }
 
-  const teams = await env.DB.prepare(
-    `SELECT m.team_id, t.name, m.created_at
+  const teams = await env.db
+    .prepare(
+      `SELECT m.team_id, t.name, m.created_at
        FROM team_members m
        JOIN teams t ON t.id = m.team_id
       WHERE m.user_id = ?1 AND m.status = 'joined'`,
-  )
+    )
     .bind(ownerId)
     .all<TeamSeedRow>();
 

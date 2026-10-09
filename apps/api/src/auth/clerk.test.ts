@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // jose does the cryptography; what needs covering here is what this worker
 // does with its verdict. Stubbed so the verified branch is reachable without
@@ -28,11 +28,11 @@ import { getClerkIdentity } from './clerk';
 // drifted away from the "Bearer " prefix), and the guest path is the
 // editor's promise to never require auth (docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md).
 
-function makeEnv(jwksUrl: string | undefined): Env {
+function makeEnv(jwksUrl: string | undefined): Runtime {
   // Cast through unknown so the test only fills the fields the helper
   // actually reads; binding shapes for D1 / R2 / Durable Objects are
   // immaterial to the auth path.
-  return { CLERK_JWKS_URL: jwksUrl } as unknown as Env;
+  return { CLERK_JWKS_URL: jwksUrl } as unknown as Runtime;
 }
 
 function makeRequest(authHeader: string | null): Request {
@@ -167,7 +167,7 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
       CLERK_JWKS_URL: JWKS_URL,
       CLERK_ISSUER: 'https://clerk.example',
       CLERK_AUDIENCE: 'livediagram',
-    } as unknown as Env;
+    } as unknown as Runtime;
     await getClerkIdentity(strict, verifiedWith({ sub: 'u' }));
     expect(jwtVerifyMock.mock.calls[1]?.[2]).toEqual({
       clockTolerance: 5,

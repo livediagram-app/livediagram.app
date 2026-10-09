@@ -9,7 +9,7 @@
 import { HOME_OPENED_EVENT_TYPE, TIMELINE_COMMENT_MAX } from '@livediagram/api-schema';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import { dedupeKeyForDay, dedupeKeyOnce } from '../db/timeline';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 import { audienceForDocument, mergeScopes, userScope } from './audience';
 import { record, truncate } from './record';
 
@@ -33,7 +33,7 @@ function makingSnapshot(making: Making): Record<string, unknown> {
 }
 
 export async function recordDocumentCreated(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   actorId: string,
   making: Making,
@@ -54,7 +54,7 @@ export async function recordDocumentCreated(
 }
 
 export async function recordDocumentDuplicated(
-  env: Env,
+  env: Runtime,
   copy: DocumentRef,
   sourceName: string,
   actorId: string,
@@ -80,7 +80,7 @@ export async function recordDocumentDuplicated(
 // place: from the Timeline's point of view it never existed.
 
 export async function recordDocumentMoved(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   destination: string,
   actorId: string,
@@ -105,7 +105,7 @@ export async function recordDocumentMoved(
 // recordTeamDocumentRemoved below — it needs a different title, a different
 // audience and an owner change, so it could not share this one.
 export async function recordTeamDocumentAdded(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   teamName: string,
   actorId: string,
@@ -137,7 +137,7 @@ export async function recordTeamDocumentAdded(
 // only its new owner. The caller resolves the OLD team's audience before the
 // move, exactly as the delete path does for the same reason.
 export async function recordTeamDocumentRemoved(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   teamName: string,
   actorId: string,
@@ -171,7 +171,7 @@ export async function recordTeamDocumentRemoved(
 // whose occurred_at walks forward — otherwise the highest-volume write
 // in the product would bury every other event kind, stacking or not.
 export async function recordDocumentEdited(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   actorId: string,
 ): Promise<void> {
@@ -197,7 +197,7 @@ export async function recordDocumentEdited(
 }
 
 export async function recordCommentAdded(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   // `reply`: not the first comment of its thread (Explorer Home says "replied").
   comment: { id: string; text: string; authorName: string; authorColor?: string; reply: boolean },
@@ -227,7 +227,7 @@ export async function recordCommentAdded(
 }
 
 export async function recordCommentResolved(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   threadKey: string,
   // The thread's opening comment, so the feed can say what was resolved.
@@ -255,7 +255,7 @@ export async function recordCommentResolved(
 // invited-but-not-joined member they have no owner id yet, so they get
 // the event once they join and the document audience covers them.
 export async function recordActionAssigned(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   action: { id: string; name: string; assigneeId: string | null; assigneeName: string | null },
   actorId: string,
@@ -285,7 +285,7 @@ export async function recordActionAssigned(
 }
 
 export async function recordActionCompleted(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   action: { id: string; name: string },
   actorId: string,
@@ -309,7 +309,7 @@ export async function recordActionCompleted(
 // owner's business, and a team member seeing "a link was created" adds
 // nothing they can act on.
 export async function recordShareLinkCreated(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   role: string,
   actorId: string,
@@ -334,7 +334,7 @@ export async function recordShareLinkCreated(
 // feed's forward band above Today (docs/specs/013-workspace/timeline.md §4.5). That band is the
 // only reason a user opens the Timeline BEFORE something breaks.
 export async function recordShareLinkExpiring(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   expiresAt: number,
 ): Promise<void> {
@@ -357,7 +357,7 @@ export async function recordShareLinkExpiring(
 // Offline Mode conversions (docs/specs/006-document/offline-mode.md). Owner-only: an offline document
 // exists in exactly one browser, so nobody else has a stake in it.
 export async function recordDocumentOffline(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   actorId: string,
 ): Promise<void> {
@@ -380,7 +380,7 @@ export async function recordDocumentOffline(
 }
 
 export async function recordDocumentSynced(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   actorId: string,
 ): Promise<void> {
@@ -406,7 +406,7 @@ export async function recordDocumentSynced(
 // actor. Called once per person per document per UTC day, by recordDocumentOpen, which owns the
 // dedupe; the day key makes a retry land on the same row.
 export async function recordDocumentOpened(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   personId: string,
   at: number,
@@ -435,7 +435,7 @@ export async function recordDocumentOpened(
 // with a link flood an owner's feed by refreshing. The dedupe key makes
 // a hundred opens one row.
 export async function recordVisitorOpened(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   visitorId: string,
   visitorName: string | null,
@@ -462,7 +462,7 @@ export async function recordVisitorOpened(
 }
 
 export async function recordVisitorCopied(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   visitorId: string,
   visitorName: string | null,

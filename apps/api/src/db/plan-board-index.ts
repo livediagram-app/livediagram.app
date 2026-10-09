@@ -1,3 +1,4 @@
+import type { DbStatement } from '@livediagram/runtime';
 // plan_board_statuses and the Activity page's Plan cards (docs/specs/013-workspace/activity-page.md §2.4).
 //
 // The table is a per-tab projection of each Plan board's column statuses, written by collabIndexStatements in
@@ -9,51 +10,56 @@ import type { Element } from '@livediagram/document';
 import type { ActivityCard } from '@livediagram/api-schema';
 import { itemPersonId } from '@livediagram/items';
 import { planBoardRowsFromElements } from '../collab-index/plan-board-rows';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // ---------- Writes ----------------------------------------------------
 
 // A full replace of the tab's board rows. A tab with no board costs one DELETE that touches nothing (a
 // primary-key prefix lookup).
 export function planBoardIndexStatements(
-  env: Env,
+  env: Runtime,
   tabId: string,
   elements: readonly Element[],
-): D1PreparedStatement[] {
-  const stmts: D1PreparedStatement[] = [
-    env.DB.prepare('DELETE FROM plan_board_statuses WHERE tab_id = ?').bind(tabId),
+): DbStatement[] {
+  const stmts: DbStatement[] = [
+    env.db.prepare('DELETE FROM plan_board_statuses WHERE tab_id = ?').bind(tabId),
   ];
   for (const r of planBoardRowsFromElements(elements)) {
     stmts.push(
-      env.DB.prepare(
-        `INSERT INTO plan_board_statuses
+      env.db
+        .prepare(
+          `INSERT INTO plan_board_statuses
            (tab_id, element_id, board_title, status, done, board_order, position)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(tabId, r.elementId, r.boardTitle, r.status, r.done ? 1 : 0, r.boardOrder, r.position),
+        )
+        .bind(tabId, r.elementId, r.boardTitle, r.status, r.done ? 1 : 0, r.boardOrder, r.position),
     );
   }
   return stmts;
 }
 
 export function planBoardIndexCopyStatement(
-  env: Env,
+  env: Runtime,
   fromTabId: string,
   toTabId: string,
-): D1PreparedStatement {
-  return env.DB.prepare(
-    `INSERT INTO plan_board_statuses
+): DbStatement {
+  return env.db
+    .prepare(
+      `INSERT INTO plan_board_statuses
        (tab_id, element_id, board_title, status, done, board_order, position)
      SELECT ?1, element_id, board_title, status, done, board_order, position
        FROM plan_board_statuses WHERE tab_id = ?2`,
-  ).bind(toTabId, fromTabId);
+    )
+    .bind(toTabId, fromTabId);
 }
 
 // ---------- Read ------------------------------------------------------
 
 // The hashed person ids of the reader and every identity they used to be (§2.2): what an item's assignee id
 // is (docs/specs/026-plan/blueprints/item-store.md "Security and trust").
-export async function readerPersonIds(env: Env, ownerId: string): Promise<string[]> {
-  const res = await env.DB.prepare('SELECT alias_id FROM owner_aliases WHERE owner_id = ?')
+export async function readerPersonIds(env: Runtime, ownerId: string): Promise<string[]> {
+  const res = await env.db
+    .prepare('SELECT alias_id FROM owner_aliases WHERE owner_id = ?')
     .bind(ownerId)
     .all<{ alias_id: string }>();
   const ids = [ownerId, ...(res.results ?? []).map((r) => r.alias_id)];

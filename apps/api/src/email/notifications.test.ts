@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 vi.mock('../db', () => ({
   getOwnerEmail: vi.fn(),
@@ -31,7 +31,7 @@ import {
   notifyNewComment,
 } from './notifications';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
+const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Runtime;
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = {
   notifyDocumentJoin: true,
@@ -65,7 +65,7 @@ describe('commentNotificationEmail', () => {
 
 describe('notifyNewComment', () => {
   it('does nothing when email is off', async () => {
-    await notifyNewComment({} as Env, liveDoc, 'Anna');
+    await notifyNewComment({} as unknown as Runtime, liveDoc, 'Anna');
     expect(getOwnerEmail).not.toHaveBeenCalled();
   });
 
@@ -139,7 +139,7 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
   };
 
   it('does nothing when email is off', async () => {
-    await notifyActionAssigned({} as Env, input);
+    await notifyActionAssigned({} as unknown as Runtime, input);
     expect(getOwnerEmail).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -189,7 +189,7 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
   };
 
   it('does nothing when email is off', async () => {
-    await notifyMentioned({} as Env, input);
+    await notifyMentioned({} as unknown as Runtime, input);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 

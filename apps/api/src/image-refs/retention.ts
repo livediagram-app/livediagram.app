@@ -4,14 +4,14 @@
 // gates itself on completion, so it runs even when the backfill fails.
 
 import { deleteOldUnusedImages } from '../db/image-retention';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { runImageRefsBackfill } from './backfill';
 
 // Only images older than this AND referenced by no document are reaped: the
 // floor keeps a fresh upload that isn't on the canvas yet out of reach.
 export const UNUSED_IMAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
-export async function runImageRetention(env: Env, now: number): Promise<void> {
+export async function runImageRetention(env: Runtime, now: number): Promise<void> {
   try {
     await runImageRefsBackfill(env, now);
   } catch (err) {

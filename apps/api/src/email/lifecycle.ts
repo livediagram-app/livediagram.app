@@ -13,7 +13,7 @@ import {
   recordSighting,
   type LifecycleStage,
 } from '../db/email-lifecycle';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import {
   activationEmail,
@@ -29,7 +29,7 @@ const ACTIVATION_DELAY_MS = 3 * 24 * 60 * 60 * 1000; // nudge zero-document sign
 const WINBACK_QUIET_MS = 4 * WEEK_MS; // re-engage after ~4 weeks of no activity
 const SWEEP_LIMIT = 100; // bounded per daily run, oldest-first
 
-const STAGE_BUILDER: Record<LifecycleStage, (env: Env) => RenderedEmail> = {
+const STAGE_BUILDER: Record<LifecycleStage, (env: Runtime) => RenderedEmail> = {
   welcome: welcomeEmail,
   week1: week1Email,
   week2: week2Email,
@@ -38,7 +38,11 @@ const STAGE_BUILDER: Record<LifecycleStage, (env: Env) => RenderedEmail> = {
 // First authenticated sighting → sign-up (docs/specs/014-identity/transactional-email.md §4). Best-effort: stamps
 // welcome_sent_at only on a successful send, so a failed inline send is left for
 // the next daily sweep to retry. Runs in ctx.waitUntil, so it never blocks the request.
-export async function welcomeOnSighting(env: Env, ownerId: string, email: string): Promise<void> {
+export async function welcomeOnSighting(
+  env: Runtime,
+  ownerId: string,
+  email: string,
+): Promise<void> {
   if (!emailEnabled(env)) return;
   const isNew = await recordSighting(env, ownerId, email);
   if (!isNew) return;
@@ -48,7 +52,7 @@ export async function welcomeOnSighting(env: Env, ownerId: string, email: string
 
 // Daily cron (docs/specs/014-identity/transactional-email.md §5). Welcome is swept too so inline-failed / email-was-off
 // rows get caught up; week 1 / 2 fire once their row is old enough.
-export async function runLifecycleSweep(env: Env): Promise<void> {
+export async function runLifecycleSweep(env: Runtime): Promise<void> {
   if (!emailEnabled(env)) return;
   const now = Date.now();
   // Welcome is the immediate first touch and isn't gated on a preference (the
@@ -66,7 +70,7 @@ export async function runLifecycleSweep(env: Env): Promise<void> {
 
 // Whether the owner has opted out of tips / check-ins (docs/specs/014-identity/transactional-email.md). Shared by the
 // later onboarding stages, the activation nudge, and win-back.
-async function tipsOptedOut(env: Env, ownerId: string): Promise<boolean> {
+async function tipsOptedOut(env: Runtime, ownerId: string): Promise<boolean> {
   const prefs = await getNotificationPrefs(env, ownerId);
   return !prefs.notifyTips;
 }
@@ -75,7 +79,7 @@ async function tipsOptedOut(env: Env, ownerId: string): Promise<boolean> {
 // Opt-out (notifyTips). Each quiet owner is considered exactly once: we stamp
 // winback_sent_at whether we send or they've opted out (only a failed send is
 // left to retry), so an opted-out owner isn't re-queried every day.
-async function sweepWinback(env: Env, cutoff: number): Promise<void> {
+async function sweepWinback(env: Runtime, cutoff: number): Promise<void> {
   const rows = await dueForWinback(env, cutoff, SWEEP_LIMIT);
   for (const row of rows) {
     if (await tipsOptedOut(env, row.ownerId)) {
@@ -88,7 +92,7 @@ async function sweepWinback(env: Env, cutoff: number): Promise<void> {
 }
 
 async function sweepStage(
-  env: Env,
+  env: Runtime,
   stage: LifecycleStage,
   cutoff: number,
   respectTips: boolean,
@@ -105,7 +109,7 @@ async function sweepStage(
   }
 }
 
-async function sweepActivation(env: Env, cutoff: number): Promise<void> {
+async function sweepActivation(env: Runtime, cutoff: number): Promise<void> {
   const rows = await dueForActivation(env, cutoff, SWEEP_LIMIT);
   for (const row of rows) {
     // The activation nudge is a tip too — respect the opt-out (stamp + skip).

@@ -16,7 +16,7 @@ import {
   telemetrySeriesStart,
 } from './telemetry';
 import type { RouteContext } from './context';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 const DAY = 24 * 60 * 60 * 1000;
 // 2026-09-25 15:30 UTC, mid-afternoon so a rolling window would differ.
@@ -132,11 +132,11 @@ describe('handleTelemetry', () => {
   afterEach(() => vi.useRealTimers());
 
   // localhost skips the edge cache, so the handler runs without `caches`.
-  const ctx = (env: Partial<Env>) => {
+  const ctx = (env: Partial<Runtime>) => {
     const url = new URL('http://localhost/api/telemetry/summary');
     return {
       request: new Request(url),
-      env: env as Env,
+      env: env as unknown as Runtime,
       url,
       segments: ['api', 'telemetry', 'summary'],
     } as unknown as RouteContext;

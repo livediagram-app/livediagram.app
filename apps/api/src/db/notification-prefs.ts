@@ -6,7 +6,7 @@
 // notification email (docs/specs/014-identity/transactional-email.md) on someone else's request.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Both flags default to true: a missing key / row / corrupt blob means
 // "notify" (the toggles are opt-OUT, mirroring docs/specs/007-editor/user-preferences.md's notificationsEnabled).
@@ -34,8 +34,12 @@ const DEFAULTS: NotificationPrefs = {
 // flag in the blob is ignored here. A guest owner has no profile UI to set
 // these, but the read is harmless (returns defaults) so callers don't have to
 // branch on owner kind.
-export async function getNotificationPrefs(env: Env, ownerId: string): Promise<NotificationPrefs> {
-  const row = await env.DB.prepare('SELECT prefs FROM user_preferences WHERE owner_id = ? LIMIT 1')
+export async function getNotificationPrefs(
+  env: Runtime,
+  ownerId: string,
+): Promise<NotificationPrefs> {
+  const row = await env.db
+    .prepare('SELECT prefs FROM user_preferences WHERE owner_id = ? LIMIT 1')
     .bind(ownerId)
     .first<{ prefs: string }>();
   if (!row?.prefs) return DEFAULTS;

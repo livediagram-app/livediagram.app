@@ -1,6 +1,6 @@
 import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Clerk JWT verifier — ports the MT pattern (apps/api/src/auth/clerk.ts
 // in /Users/thomasmcclean/Code/managers-toolkit-frontend) into
@@ -73,8 +73,16 @@ export type ClerkIdentity = {
 // Returning null instead of throwing keeps the hybrid model simple:
 // callers just `clerkUserId ?? ownerOf(request)` and never see a
 // special-case error path.
-export async function getClerkIdentity(env: Env, request: Request): Promise<ClerkIdentity | null> {
-  const jwksUrl = env.CLERK_JWKS_URL;
+export async function getClerkIdentity(
+  env: Runtime,
+  request: Request,
+): Promise<ClerkIdentity | null> {
+  // The seam's identity first, the historical Clerk var second: a self-hosted
+  // deployment fills `identity` from AUTH_JWKS_URL and never has CLERK_* set, while
+  // the hosted deployment's Cloudflare runtime builds it FROM CLERK_* — so both
+  // readings agree and nothing else has to change
+  // (docs/specs/016-platform/self-hosted-runtime.md, "Identity").
+  const jwksUrl = env.identity?.jwksUrl ?? env.CLERK_JWKS_URL;
   if (!jwksUrl) return null;
 
   const token = bearerTokenOf(request.headers.get('Authorization'));
@@ -95,8 +103,10 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
     const verifyOptions: { clockTolerance: number; issuer?: string; audience?: string } = {
       clockTolerance: CLERK_CLOCK_SKEW_SECONDS,
     };
-    if (env.CLERK_ISSUER) verifyOptions.issuer = env.CLERK_ISSUER;
-    if (env.CLERK_AUDIENCE) verifyOptions.audience = env.CLERK_AUDIENCE;
+    const issuer = env.identity?.issuer ?? env.CLERK_ISSUER;
+    const audience = env.identity?.audience ?? env.CLERK_AUDIENCE;
+    if (issuer) verifyOptions.issuer = issuer;
+    if (audience) verifyOptions.audience = audience;
     const { payload } = await jwtVerify(token, getJWKS(jwksUrl), verifyOptions);
     if (typeof payload.sub !== 'string') return null;
     const email =

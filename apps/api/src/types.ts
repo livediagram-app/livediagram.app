@@ -6,6 +6,8 @@
 // historical `*DTO` aliases the worker code already uses, and adds
 // the worker-only `Env` binding shape that has nowhere else to live.
 
+import type { Runtime as SeamRuntime } from '@livediagram/runtime';
+
 export type {
   LiveDoc as DocumentDTO,
   DocumentSummary,
@@ -219,3 +221,32 @@ export type Env = {
   // by a real deployment.
   GOOGLE_OAUTH_BASE_URL?: string;
 };
+
+// The runtime the application is handed (docs/specs/016-platform/self-hosted-runtime.md):
+// the platform seam plus everything in this file that is NOT a platform
+// binding — the vars and secrets the worker reads.
+//
+// Declaring it here rather than in `packages/runtime` keeps the seam free of
+// Cloudflare-shaped configuration while letting every existing config read
+// (`env.TELEMETRY_ENABLED`, `env.CLERK_ISSUER`, …) keep working verbatim.
+//
+// `DB`, `IMAGES`, `DOCUMENT_ROOM` and the ten rate limiters are omitted because
+// the seam replaces them: `runtime.db`, `runtime.objects`, `runtime.rooms`,
+// `runtime.limiters`.
+export type Runtime = SeamRuntime &
+  Omit<
+    Env,
+    | 'DB'
+    | 'IMAGES'
+    | 'DOCUMENT_ROOM'
+    | 'WRITE_RATE_LIMITER'
+    | 'EVENTS_RATE_LIMITER'
+    | 'AI_RATE_LIMITER'
+    | 'SHARE_RATE_LIMITER'
+    | 'UNFURL_RATE_LIMITER'
+    | 'API_TOKEN_READ_RATE_LIMITER'
+    | 'DRIVE_TOKEN_RATE_LIMITER'
+    | 'HOME_RATE_LIMITER'
+    | 'COMMUNITY_RATE_LIMITER'
+    | 'WORKBENCH_TICKET_RATE_LIMITER'
+  >;

@@ -1,8 +1,9 @@
+import type { DbStatement } from '@livediagram/runtime';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHANGESET_MERGE_WINDOW_MS } from '@livediagram/api-schema';
 import { elementFingerprint, type Element, type ElementOp } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import type { ChangesetRecord } from '../db/changesets';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
@@ -34,7 +35,7 @@ function call(
   );
 }
 
-async function documentWith(elements: Element[], env: Partial<Env> = {}): Promise<SqliteD1> {
+async function documentWith(elements: Element[], env: Partial<Runtime> = {}): Promise<SqliteD1> {
   const db = sqliteD1(env);
   const res = await call(db, 'POST', '/api/documents', {
     body: { id: 'D', name: 'Board', tabs: [{ id: 't1', name: 'Board', elements }] },
@@ -215,15 +216,15 @@ describe('the tab PUT', () => {
     const db = await documentWith([box('a')]);
     const seen = String(revOf(db));
     // A changeset lands between the save's read and its write, once.
-    const batch = db.env.DB.batch.bind(db.env.DB);
+    const batch = db.env.db.batch.bind(db.env.db);
     let interleave = 1;
-    db.env.DB.batch = (async (statements: D1PreparedStatement[]) => {
+    db.env.db.batch = (async (statements: DbStatement[]) => {
       if (interleave > 0) {
         interleave -= 1;
         recordAdd(db, box(`raced${interleave}`));
       }
       return batch(statements);
-    }) as typeof db.env.DB.batch;
+    }) as typeof db.env.db.batch;
     expect((await save(db, [box('a', 'mine')], { 'X-Changeset-Seen': seen })).status).toBe(200);
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'raced0']);
 

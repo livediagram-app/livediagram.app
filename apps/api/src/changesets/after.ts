@@ -4,7 +4,7 @@ import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
 import { recordTabSave } from '../timeline';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 import type { FrontDoor } from './front-door';
 import type { Author } from './write';
 
@@ -16,7 +16,7 @@ import type { Author } from './write';
 type AgentAction = 'Applied' | 'Conflicted' | 'Held' | 'Reverted';
 
 // One literal emit per action, so the telemetry dashboard's emitter scan can see each event.
-function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise<void> {
+function telemetry(env: Runtime, action: AgentAction, frontDoor: FrontDoor): Promise<void> {
   switch (action) {
     case 'Applied':
       return reportServerEvent(env, 'Agent', 'Applied', frontDoor);
@@ -30,7 +30,7 @@ function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise
 }
 
 async function run(
-  env: Env,
+  env: Runtime,
   w: {
     document: DocumentDTO;
     author: Author;

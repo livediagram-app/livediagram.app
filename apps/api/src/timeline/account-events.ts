@@ -7,12 +7,12 @@
 // after.
 
 import { dedupeKeyForDay } from '../db/timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { userScope } from './audience';
 import { record } from './record';
 
 export async function recordTokenCreated(
-  env: Env,
+  env: Runtime,
   token: { id: string; name: string },
   ownerId: string,
 ): Promise<void> {
@@ -35,7 +35,7 @@ export async function recordTokenCreated(
 // computes which tokens are inside the 7-day window (docs/specs/015-api/public-api-and-tokens.md), so this
 // costs one extra write on a pass that was happening anyway.
 export async function recordTokenExpiring(
-  env: Env,
+  env: Runtime,
   token: { id: string; name: string; expiresAt: number },
   ownerId: string,
 ): Promise<void> {
@@ -56,7 +56,7 @@ export async function recordTokenExpiring(
 }
 
 export async function recordThemeSaved(
-  env: Env,
+  env: Runtime,
   theme: { id: string; name: string },
   ownerId: string,
 ): Promise<void> {
@@ -82,14 +82,15 @@ export async function recordThemeSaved(
 // Coalesced per day like document editing: someone pasting a dozen
 // screenshots into a document is one moment, not twelve. The snapshot's
 // count is what the renderer reads to say "3 images uploaded".
-export async function recordImageUploaded(env: Env, ownerId: string): Promise<void> {
+export async function recordImageUploaded(env: Runtime, ownerId: string): Promise<void> {
   const now = Date.now();
   const dedupeKey = dedupeKeyForDay(ownerId, now);
-  const previous = await env.DB.prepare(
-    `SELECT snapshot FROM timeline_events
+  const previous = await env.db
+    .prepare(
+      `SELECT snapshot FROM timeline_events
       WHERE source_type = 'account' AND source_id = ?1
         AND event_type = 'image_uploaded' AND dedupe_key = ?2`,
-  )
+    )
     .bind(ownerId, dedupeKey)
     .first<{ snapshot: string }>();
   let count = 1;
@@ -120,7 +121,7 @@ export async function recordImageUploaded(env: Env, ownerId: string): Promise<vo
 }
 
 export async function recordTokenRevoked(
-  env: Env,
+  env: Runtime,
   token: { id: string; name: string },
   ownerId: string,
 ): Promise<void> {
@@ -140,7 +141,7 @@ export async function recordTokenRevoked(
 }
 
 export async function recordThemeDeleted(
-  env: Env,
+  env: Runtime,
   theme: { id: string; name: string },
   ownerId: string,
 ): Promise<void> {
@@ -160,7 +161,7 @@ export async function recordThemeDeleted(
 }
 
 export async function recordFolderCreated(
-  env: Env,
+  env: Runtime,
   folder: { id: string; name: string },
   ownerId: string,
 ): Promise<void> {
@@ -180,7 +181,7 @@ export async function recordFolderCreated(
 }
 
 export async function recordFolderDeleted(
-  env: Env,
+  env: Runtime,
   folder: { id: string; name: string },
   ownerId: string,
 ): Promise<void> {

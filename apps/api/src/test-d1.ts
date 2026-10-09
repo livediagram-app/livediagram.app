@@ -1,4 +1,4 @@
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // A recording D1 stub for the db/ modules and the routes that drive them.
 //
@@ -41,7 +41,7 @@ export type D1Response = {
 export type D1Responder = (call: Omit<D1Call, 'method'>) => D1Response | undefined;
 
 export type FakeD1 = {
-  env: Env;
+  env: Runtime;
   calls: D1Call[];
   // Every statement that reached a terminal, filtered by an SQL fragment.
   matching: (fragment: string) => D1Call[];
@@ -50,7 +50,10 @@ export type FakeD1 = {
   one: (fragment: string) => D1Call;
 };
 
-export function fakeD1(respond: D1Responder = () => undefined, base: Partial<Env> = {}): FakeD1 {
+export function fakeD1(
+  respond: D1Responder = () => undefined,
+  base: Partial<Runtime> = {},
+): FakeD1 {
   const calls: D1Call[] = [];
 
   function statement(sql: string, bindings: unknown[]) {
@@ -102,7 +105,7 @@ export function fakeD1(respond: D1Responder = () => undefined, base: Partial<Env
   const matching = (fragment: string) => calls.filter((c) => c.sql.includes(fragment));
 
   return {
-    env: { ...base, DB: db } as unknown as Env,
+    env: { ...base, db: db } as unknown as Runtime,
     calls,
     matching,
     one: (fragment: string) => {

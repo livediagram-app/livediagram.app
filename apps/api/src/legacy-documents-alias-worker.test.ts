@@ -10,13 +10,13 @@ vi.mock('./db', () => ({
   deleteOldEvents: async () => {},
 }));
 
-import worker from './index';
+import { fetchWithRuntime } from './index';
 import { signOwnerId } from './auth/owner-signature';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 const SECRET = 'test-hmac-secret';
 const env = () =>
-  ({ GUEST_ID_HMAC_SECRET: SECRET, GUEST_SIG_ENFORCE_AFTER: '1' }) as unknown as Env;
+  ({ GUEST_ID_HMAC_SECRET: SECRET, GUEST_SIG_ENFORCE_AFTER: '1' }) as unknown as Runtime;
 const get = (path: string, headers: Record<string, string> = {}) =>
   new Request(`https://api.test${path}`, { method: 'GET', headers });
 
@@ -26,8 +26,8 @@ describe('the deprecated /api/diagrams alias', () => {
   it('serves the documents route in the old shape, marked deprecated', async () => {
     const sig = (await signOwnerId(SECRET, 'guest-1'))!;
     const headers = { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': sig };
-    const current = await worker.fetch(get('/api/documents', headers), env());
-    const legacy = await worker.fetch(get('/api/diagrams', headers), env());
+    const current = await fetchWithRuntime(get('/api/documents', headers), env());
+    const legacy = await fetchWithRuntime(get('/api/diagrams', headers), env());
     expect(current.status).toBe(200);
     expect(legacy.status).toBe(200);
     expect(Object.keys((await current.json()) as object)).toContain('documents');
@@ -37,7 +37,7 @@ describe('the deprecated /api/diagrams alias', () => {
   });
 
   it('keeps the signature gate on the alias', async () => {
-    const res = await worker.fetch(get('/api/diagrams', { 'X-Owner-Id': 'guest-1' }), env());
+    const res = await fetchWithRuntime(get('/api/diagrams', { 'X-Owner-Id': 'guest-1' }), env());
     expect(res.status).toBe(401);
   });
 });

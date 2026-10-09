@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TeamMember } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
@@ -583,7 +583,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
   const QS = 'assigneeUserId=user-2&documentId=d1';
 
   const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
-    db.getMembership.mockImplementation(async (_env: Env, teamId: string, userId: string) => {
+    db.getMembership.mockImplementation(async (_env: Runtime, teamId: string, userId: string) => {
       const key = `${teamId}:${userId}`;
       if (key in overrides) return overrides[key];
       if (userId === 'user-1') return member();
@@ -608,7 +608,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
 
   it('true when the assignee has opened it through a share link', async () => {
     db.hasSharedAccess.mockImplementation(
-      async (_env: Env, ownerId: string) => ownerId === 'user-2',
+      async (_env: Runtime, ownerId: string) => ownerId === 'user-2',
     );
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
@@ -625,7 +625,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
   it('true when the assignee owns the document', async () => {
     db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-2', teamId: null, name: 'Q3' });
     db.hasSharedAccess.mockImplementation(
-      async (_env: Env, ownerId: string) => ownerId === 'user-1',
+      async (_env: Runtime, ownerId: string) => ownerId === 'user-1',
     );
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
@@ -652,7 +652,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
 
   // Caller (user-1) and assignee (user-2) both joined members by default.
   const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
-    db.getMembership.mockImplementation(async (_env: Env, _teamId: string, userId: string) => {
+    db.getMembership.mockImplementation(async (_env: Runtime, _teamId: string, userId: string) => {
       if (userId in overrides) return overrides[userId];
       if (userId === 'user-1') return member();
       if (userId === 'user-2') return member({ id: 'm2', userId: 'user-2', role: 'member' });
@@ -812,7 +812,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
 
   beforeEach(() => {
     db.getTeam.mockResolvedValue(team);
-    db.getMembership.mockImplementation(async (_env: Env, _t: string, userId: string) =>
+    db.getMembership.mockImplementation(async (_env: Runtime, _t: string, userId: string) =>
       userId === 'user-1' ? member() : null,
     );
     db.listTeamMembers.mockResolvedValue(members);

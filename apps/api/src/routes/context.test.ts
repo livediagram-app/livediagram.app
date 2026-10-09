@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Route-entry guards in routes/context.ts: identity resolution + the
 // owner/share authorisation ladder (400 no-owner, 404 missing,
@@ -32,7 +32,7 @@ function makeCtx(
   const request = new Request(url, { headers: opts.headers ?? {} });
   return {
     request,
-    env: {} as Env,
+    env: {} as unknown as Runtime,
     url,
     segments: url.pathname.replace(/^\//, '').split('/'),
     clerkUserId: null,

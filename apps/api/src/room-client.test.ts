@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
-import type { Env } from './types';
+import type { Runtime } from './types';
 import {
   broadcastShareOp,
   relayItems,
@@ -36,11 +36,10 @@ const ledger: TabLedger = {
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
   const stubFetch = vi.fn(fetch);
   const env = {
-    DOCUMENT_ROOM: {
-      idFromName: (name: string) => name,
-      get: () => ({ fetch: stubFetch }),
+    rooms: {
+      for: () => ({ fetch: stubFetch }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   return { env, stubFetch };
 }
 

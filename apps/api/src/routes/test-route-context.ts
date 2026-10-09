@@ -1,5 +1,5 @@
 import type { RouteContext, WorkbenchContext } from './context';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
 // files used to hand-roll the same URL → segments → JSON Request →
@@ -36,7 +36,7 @@ export function makeTestRouteContext(
     headers?: Record<string, string>;
     // Per-test bindings (e.g. the images tests' IMAGES stub); an empty
     // Env otherwise.
-    env?: Env;
+    env?: Runtime;
     // Provide to observe background dispatches; absent = the unit-test
     // default where `ctx.waitUntil?.(...)` skips its argument.
     waitUntil?: (promise: Promise<unknown>) => void;
@@ -53,7 +53,7 @@ export function makeTestRouteContext(
   const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;
   return {
     request,
-    env: opts.env ?? ({} as Env),
+    env: opts.env ?? ({} as unknown as Runtime),
     url,
     segments,
     clerkUserId,

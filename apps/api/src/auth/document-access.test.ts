@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ShareLink } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // `canEditDocument` and `canReadDocument` gate every request through
 // the api worker's document routes. A regression in either silently
@@ -13,26 +13,26 @@ import type { Env } from '../types';
 // vi.mock is hoisted by vitest so the factory runs before the
 // helpers' module evaluates its `import { getShareLink } from
 // '../db'`. The stub returns the spy we control per test case.
-const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | null>>();
+const getShareLinkMock = vi.fn<(env: Runtime, code: string) => Promise<ShareLink | null>>();
 // Share password (docs/specs/013-workspace/share-password.md). Defaults to "no password" so every legacy
 // case below is unaffected; the password-specific cases set it.
-const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
+const getSharePasswordMock = vi.fn<(env: Runtime, id: string) => Promise<string | null>>();
 // Team membership (docs/specs/013-workspace/team-shared-documents.md). Defaults to "not a member" so every
 // pre-team case is unaffected; the team cases set it.
 const getMembershipMock =
-  vi.fn<(env: Env, teamId: string, userId: string) => Promise<{ status: string } | null>>();
+  vi.fn<(env: Runtime, teamId: string, userId: string) => Promise<{ status: string } | null>>();
 vi.mock('../db', () => ({
-  getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
-  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getShareLink: (env: Runtime, code: string) => getShareLinkMock(env, code),
+  getDocumentSharePassword: (env: Runtime, id: string) => getSharePasswordMock(env, id),
   // A legacy plain-text password is rewritten as a hash on its first correct entry.
   upgradeDocumentSharePassword: async () => {},
-  getMembership: (env: Env, teamId: string, userId: string) =>
+  getMembership: (env: Runtime, teamId: string, userId: string) =>
     getMembershipMock(env, teamId, userId),
-  communityLinkAccess: (env: Env, code: string) => communityLinkAccessMock(env, code),
+  communityLinkAccess: (env: Runtime, code: string) => communityLinkAccessMock(env, code),
 }));
 // Whether a Community post's link is public, for the community-link cases (docs/specs/025-community/community.md).
 const communityLinkAccessMock = vi.fn<
-  (env: Env, code: string) => Promise<'public' | 'closed' | null>
+  (env: Runtime, code: string) => Promise<'public' | 'closed' | null>
 >(async () => 'public');
 
 // Import AFTER the mock declaration so the helpers pick up the
@@ -42,7 +42,7 @@ import { canEditDocument, canReadDocument, resolveDocumentGrant } from './docume
 
 // The password a request carries, with the caller network its check spends.
 const pw = (value: string) => ({ value, rateKey: 'net-1' });
-const FAKE_ENV = {} as Env;
+const FAKE_ENV = {} as unknown as Runtime;
 
 beforeEach(() => {
   getShareLinkMock.mockReset();

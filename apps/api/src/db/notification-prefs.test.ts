@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { getNotificationPrefs } from './notification-prefs';
 
 // Minimal D1 stub: getNotificationPrefs does a single prepare().bind().first(),
 // so we only need that chain to hand back the row we want to test parsing for.
-function envWithPrefsRow(prefs: string | null): Env {
+function envWithPrefsRow(prefs: string | null): Runtime {
   return {
-    DB: {
+    db: {
       prepare: () => ({
         bind: () => ({
           first: async () => (prefs === null ? null : { prefs }),
         }),
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
 }
 
 describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifications.md)', () => {

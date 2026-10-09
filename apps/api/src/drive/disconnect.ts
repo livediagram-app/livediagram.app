@@ -4,14 +4,17 @@
 // the user's. Shared by DELETE /api/drive/connection and account deletion.
 
 import { deleteDriveConnection, getSealedRefreshToken } from '../db/drive';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { importDriveKey, openRefreshToken } from './crypto';
 import { revokeToken } from './google-oauth';
 
 // Revoke is best effort: an unreachable Google, a key that no longer opens the
 // row, or a browser-only connection (no refresh token) still deletes the rows.
 // Returns whether a revoke was accepted, for the log line.
-export async function disconnectDrive(env: Env, ownerId: string): Promise<{ revoked: boolean }> {
+export async function disconnectDrive(
+  env: Runtime,
+  ownerId: string,
+): Promise<{ revoked: boolean }> {
   let revoked = false;
   const sealed = await getSealedRefreshToken(env, ownerId);
   if (sealed) {

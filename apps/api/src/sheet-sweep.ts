@@ -4,7 +4,7 @@
 // its cost follows what expired, never how many tabs or sheets there are. Deleting a sheet deletes its cells (the
 // cascade), so a run is bounded by cells: a batch holds at most SHEET_EXPIRY_BATCH_CELLS (always at least one
 // sheet), a run at most SHEET_EXPIRY_CELLS_MAX, and what is left waits a day.
-import type { Env } from './types';
+import type { Runtime } from './types';
 import { DAY_MS } from '@livediagram/items';
 
 export const SHEET_UNREFERENCED_DAYS = 30;
@@ -15,7 +15,7 @@ export const SHEET_EXPIRY_CELLS_MAX = 500_000;
 type Expired = { document_id: string; id: string; cell_count: number };
 
 export async function runSheetExpiry(
-  env: Env,
+  env: Runtime,
   now = Date.now(),
 ): Promise<{ sheets: number; cells: number; more: boolean }> {
   const cutoff = now - SHEET_UNREFERENCED_DAYS * DAY_MS;
@@ -28,7 +28,7 @@ export async function runSheetExpiry(
     }
     const rows =
       (
-        await env.DB.prepare(
+        await env.db.prepare(
           `SELECT document_id, id, cell_count FROM sheets
             WHERE unreferenced_since < ? ORDER BY unreferenced_since LIMIT ?`,
         )
@@ -43,9 +43,9 @@ export async function runSheetExpiry(
       batch.push(row);
       batchCells += row.cell_count;
     }
-    await env.DB.batch(
+    await env.db.batch(
       batch.map((s) =>
-        env.DB.prepare('DELETE FROM sheets WHERE document_id = ? AND id = ?').bind(
+        env.db.prepare('DELETE FROM sheets WHERE document_id = ? AND id = ?').bind(
           s.document_id,
           s.id,
         ),

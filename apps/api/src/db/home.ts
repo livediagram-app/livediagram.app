@@ -13,7 +13,7 @@ import {
   type WithinReach,
 } from '@livediagram/api-schema';
 import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-happened';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import { DAY_MS } from '@livediagram/items';
@@ -85,13 +85,14 @@ type JumpBackInRow = PlaceRow & { use_days: number; last_used_at: number };
  *  those and their last open. SQL narrows to the n most used and the 2n most recent (which by the merge
  *  property hold the whole set); `withinReach` then allocates exactly, over rows in id order. */
 export async function readJumpBackIn(
-  env: Env,
+  env: Runtime,
   personId: string,
   now: number,
   n: number = HOME_WITHIN_REACH_PER_ROW,
 ): Promise<WithinReach<HomeJumpBackInItem>> {
-  const res = await env.DB.prepare(
-    `WITH ${VISIBLE_DOCUMENTS_CTES},
+  const res = await env.db
+    .prepare(
+      `WITH ${VISIBLE_DOCUMENTS_CTES},
      used AS (
        SELECT e.source_id AS document_id,
               COUNT(DISTINCT e.occurred_at / ${DAY_MS}) AS use_days,
@@ -134,7 +135,7 @@ export async function readJumpBackIn(
        JOIN visible v ON v.id = p.document_id
        ${PLACE_JOINS}
       ORDER BY v.id ASC`,
-  )
+    )
     .bind(personId, now, windowStartOf(now), n, 2 * n)
     .all<JumpBackInRow>();
   const items = (res.results ?? []).map((r): HomeJumpBackInItem => ({
@@ -150,8 +151,9 @@ export async function readJumpBackIn(
 const WHAT_HAPPENED_TYPES_SQL = WHAT_HAPPENED_EVENT_TYPES.map((t) => `'${t}'`).join(', ');
 
 /** The person's id and every identity they used to be. */
-export async function readMe(env: Env, personId: string): Promise<Set<string>> {
-  const res = await env.DB.prepare('SELECT alias_id FROM owner_aliases WHERE owner_id = ?1')
+export async function readMe(env: Runtime, personId: string): Promise<Set<string>> {
+  const res = await env.db
+    .prepare('SELECT alias_id FROM owner_aliases WHERE owner_id = ?1')
     .bind(personId)
     .all<{ alias_id: string }>();
   return new Set([personId, ...(res.results ?? []).map((r) => r.alias_id)]);
@@ -160,13 +162,14 @@ export async function readMe(env: Env, personId: string): Promise<Set<string>> {
 /** Other people's actions on the documents the person can open, newest first, from `since`. A
  *  tab-scoped share is left out: its actions name things on tabs the link does not reach. */
 export async function readWhatHappenedRows(
-  env: Env,
+  env: Runtime,
   personId: string,
   now: number,
   opts: { since: number; limit: number },
 ): Promise<WhatHappenedRow[]> {
-  const res = await env.DB.prepare(
-    `WITH me(id) AS (
+  const res = await env.db
+    .prepare(
+      `WITH me(id) AS (
        SELECT ?1
        UNION
        SELECT alias_id FROM owner_aliases WHERE owner_id = ?1
@@ -187,7 +190,7 @@ export async function readWhatHappenedRows(
         AND e.actor_id NOT IN (SELECT id FROM me)
       ORDER BY e.occurred_at DESC, e.id DESC
       LIMIT ?4`,
-  )
+    )
     .bind(personId, now, opts.since, opts.limit)
     .all<
       PlaceRow & {

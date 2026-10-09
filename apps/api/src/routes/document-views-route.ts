@@ -40,7 +40,7 @@ import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
 import { json, textPlain } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import type { DocumentDTO, Env, TabDTO } from '../types';
+import type { DocumentDTO, TabDTO, Runtime } from '../types';
 import type { RouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
@@ -309,7 +309,7 @@ export async function answerTabView(
 }
 
 async function inScopeFacts(
-  env: Env,
+  env: Runtime,
   document: DocumentDTO,
   tabScope: string | null,
   community: boolean,

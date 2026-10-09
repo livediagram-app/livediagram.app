@@ -8,13 +8,13 @@
 
 import { getDocumentOpen, recordOpenDay, touchLastOpen } from '../db/document-opens';
 import { recordDocumentOpened } from '../timeline/document-events';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 import { utcDay } from '@livediagram/api-schema';
 
 type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 
 export async function recordDocumentOpen(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   personId: string,
   at: number,

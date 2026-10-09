@@ -16,7 +16,7 @@ import {
   getOwnerEmail,
   listTeamAdminUserIds,
 } from '../db';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { emailEnabled, sendEmail } from './client';
 
 // At most one "new comment" email per document per this window (docs/specs/014-identity/transactional-email.md #1), so a
@@ -39,7 +39,7 @@ import {
 // verified email_lifecycle row, falling back to the team_members invite
 // address (both trusted server state, never a client header).
 export async function notifyActionAssigned(
-  env: Env,
+  env: Runtime,
   input: {
     // Null for an invited member with no identified account yet — the
     // fallback (their membership invite address) is the destination
@@ -79,7 +79,7 @@ export async function notifyActionAssigned(
 // recipient's membership. Opt-out (notifyMentions); an invited member with no
 // account has no prefs and is written to at their invite address.
 export async function notifyMentioned(
-  env: Env,
+  env: Runtime,
   input: {
     recipientUserId: string | null;
     recipientFallbackEmail: string | null;
@@ -117,7 +117,7 @@ export async function notifyMentioned(
 // has a stored verified address (a Clerk owner — guests have none), and the
 // owner hasn't opted out.
 export async function notifyDocumentJoin(
-  env: Env,
+  env: Runtime,
   liveDoc: { ownerId: string; name: string },
   joinerName: string | null,
 ): Promise<void> {
@@ -133,7 +133,7 @@ export async function notifyDocumentJoin(
 // team (other than the responder themselves) who has a known address and
 // hasn't opted out. Sends run concurrently; each is independently best-effort.
 export async function notifyInviteResponse(
-  env: Env,
+  env: Runtime,
   team: { id: string; name: string },
   responderEmail: string,
   accepted: boolean,
@@ -162,7 +162,7 @@ export async function notifyInviteResponse(
 // (docs/specs/014-identity/transactional-email.md #1). Immediate, opt-out (notifyComments). Best-effort; never blocks
 // the comment write. The comment text is deliberately NOT included.
 export async function notifyNewComment(
-  env: Env,
+  env: Runtime,
   liveDoc: { id: string; ownerId: string; name: string },
   commenterName: string | null,
 ): Promise<void> {
@@ -188,7 +188,7 @@ const MILESTONE_DOCUMENT_COUNTS = [10];
 // Opt-out (notifyMilestones). The atomic claim means a burst of saves at the
 // milestone count sends exactly one email. Best-effort; never blocks the write.
 export async function notifyMilestone(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   documentCount: number,
 ): Promise<void> {
@@ -204,7 +204,7 @@ export async function notifyMilestone(
 
 // First-ever share link is a milestone (docs/specs/014-identity/transactional-email.md #6). Opt-out (notifyMilestones).
 // Same claim-then-send shape as notifyMilestone; the atomic claim fires it once.
-export async function notifyFirstShare(env: Env, ownerId: string): Promise<void> {
+export async function notifyFirstShare(env: Runtime, ownerId: string): Promise<void> {
   if (!emailEnabled(env)) return;
   const to = await getOwnerEmail(env, ownerId);
   if (!to) return;

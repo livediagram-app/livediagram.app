@@ -1,9 +1,10 @@
+import type { DbStatement } from '@livediagram/runtime';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { getDocument } from '../db';
 import { seedTabs } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { parseChangesetRequest } from './request';
 import { submitChangeset } from './submit';
 
@@ -15,8 +16,7 @@ const box = (id: string, label = id): Element =>
 
 function roomThat(relay: 'ok' | 'throws') {
   return {
-    idFromName: (name: string) => name,
-    get: () => ({
+    for: () => ({
       fetch: async (url: string) => {
         if (url.includes('/selections')) return Response.json({ selections: [] });
         if (relay === 'throws') throw new Error('room gone');
@@ -27,7 +27,7 @@ function roomThat(relay: 'ok' | 'throws') {
 }
 
 async function setUp(relay: 'ok' | 'throws' = 'ok'): Promise<SqliteD1> {
-  const db = sqliteD1({ DOCUMENT_ROOM: roomThat(relay) } as unknown as Partial<Env>);
+  const db = sqliteD1({ rooms: roomThat(relay) } as unknown as Partial<Runtime>);
   db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
   await seedTabs(db.env, 'D', [{ id: 't1', name: 'T', elements: [box('a'), box('b')] }]);
@@ -57,9 +57,9 @@ const labels = (db: SqliteD1) =>
 
 // Every batch the pipeline sends meets a person's save first, `times` times.
 function interleave(db: SqliteD1, times: number) {
-  const batch = db.env.DB.batch.bind(db.env.DB);
+  const batch = db.env.db.batch.bind(db.env.db);
   let left = times;
-  db.env.DB.batch = (async (statements: D1PreparedStatement[]) => {
+  db.env.db.batch = (async (statements: DbStatement[]) => {
     if (left > 0) {
       left -= 1;
       const row = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!;
@@ -70,7 +70,7 @@ function interleave(db: SqliteD1, times: number) {
         .run(JSON.stringify(data));
     }
     return batch(statements);
-  }) as typeof db.env.DB.batch;
+  }) as typeof db.env.db.batch;
 }
 
 afterEach(() => vi.restoreAllMocks());

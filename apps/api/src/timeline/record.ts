@@ -12,10 +12,10 @@
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import type { TimelineEventDraft } from '../db/timeline';
 import { emitTimelineEvent } from '../db/timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export async function record(
-  env: Env,
+  env: Runtime,
   draft: TimelineEventDraft,
   scopes: TimelineScopeRef[],
 ): Promise<void> {

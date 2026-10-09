@@ -1,3 +1,4 @@
+import type { DbStatement } from '@livediagram/runtime';
 // timeline — the Explorer's landing feed (migration 0042, docs/specs/013-workspace/timeline.md).
 //
 // Every event is written inline on the write path that caused it.
@@ -12,7 +13,7 @@
 
 import { HOME_OPENED_EVENT_TYPE } from '@livediagram/api-schema';
 import type { TimelineEvent, TimelineScopeRef } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export type TimelineEventDraft = {
   actorId: string | null;
@@ -66,7 +67,7 @@ export function dedupeKeyOnce(): string {
 // safe because nothing user-authored (a star, a dismissal) hangs off
 // these rows yet — see docs/specs/013-workspace/timeline.md §4.2.
 export async function emitTimelineEvent(
-  env: Env,
+  env: Runtime,
   draft: TimelineEventDraft,
   scopes: TimelineScopeRef[],
 ): Promise<void> {
@@ -77,8 +78,9 @@ export async function emitTimelineEvent(
   const snapshot = JSON.stringify(draft.snapshot ?? {});
   const id = crypto.randomUUID();
 
-  await env.DB.prepare(
-    `INSERT INTO timeline_events
+  await env.db
+    .prepare(
+      `INSERT INTO timeline_events
        (id, actor_id, source_type, source_id, event_type, dedupe_key,
         title, description, occurred_at, snapshot, created_at)
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
@@ -91,7 +93,7 @@ export async function emitTimelineEvent(
        snapshot = excluded.snapshot,
        occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`
      }`,
-  )
+    )
     .bind(
       id,
       draft.actorId,
@@ -109,10 +111,11 @@ export async function emitTimelineEvent(
 
   // Re-read rather than trusting `id`: on a conflict the row that
   // survived is the ORIGINAL one, whose id we never generated.
-  const row = await env.DB.prepare(
-    `SELECT id FROM timeline_events
+  const row = await env.db
+    .prepare(
+      `SELECT id FROM timeline_events
       WHERE source_type = ?1 AND source_id = ?2 AND event_type = ?3 AND dedupe_key = ?4`,
-  )
+    )
     .bind(draft.sourceType, draft.sourceId, draft.eventType, dedupeKey)
     .first<{ id: string }>();
   if (!row) return;
@@ -126,17 +129,17 @@ export async function emitTimelineEvent(
 // membership lands later, in the lazy email-claim step that fills in
 // the invitee's user_id (docs/specs/013-workspace/timeline.md §4.4).
 export async function attachEventToScopes(
-  env: Env,
+  env: Runtime,
   eventId: string,
   scopes: TimelineScopeRef[],
   at = Date.now(),
 ): Promise<void> {
   if (scopes.length === 0) return;
-  const stmt = env.DB.prepare(
+  const stmt = env.db.prepare(
     `INSERT OR IGNORE INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
      VALUES (?1, ?2, ?3, ?4)`,
   );
-  await env.DB.batch(scopes.map((s) => stmt.bind(eventId, s.scopeType, s.scopeId, at)));
+  await env.db.batch(scopes.map((s) => stmt.bind(eventId, s.scopeType, s.scopeId, at)));
 }
 
 type TimelineRow = {
@@ -225,7 +228,7 @@ const NOT_IN_TRASH = `NOT (e.source_type = 'document' AND EXISTS (
      AND td.trashed_at IS NOT NULL))`;
 
 export async function readTimeline(
-  env: Env,
+  env: Runtime,
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
@@ -259,8 +262,9 @@ export async function readTimeline(
   // Fetch one extra row to learn whether another page exists, rather
   // than running a second COUNT over the same predicate.
   binds.push(opts.limit + 1);
-  const res = await env.DB.prepare(
-    `SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
+  const res = await env.db
+    .prepare(
+      `SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
             e.title, e.description, e.occurred_at, e.snapshot,
             cd.name AS current_document_name
        FROM timeline_event_scopes s
@@ -271,7 +275,7 @@ export async function readTimeline(
       WHERE ${where}
       ORDER BY e.occurred_at DESC, e.id DESC
       LIMIT ?${binds.length}`,
-  )
+    )
     .bind(...binds)
     .all<TimelineRow>();
 
@@ -305,12 +309,13 @@ export type TimelineScopeState = {
 };
 
 export async function getScopeState(
-  env: Env,
+  env: Runtime,
   scope: TimelineScopeRef,
 ): Promise<TimelineScopeState | null> {
-  const row = await env.DB.prepare(
-    'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
+    )
     .bind(scope.scopeType, scope.scopeId)
     .first<{
       backfilled_at: number | null;
@@ -326,12 +331,13 @@ export async function getScopeState(
 // Move the unread watermark to now. Called AFTER the read has captured
 // the previous value, so the response can still tell the reader what
 // was new to them on this visit.
-export async function markScopeSeen(env: Env, scope: TimelineScopeRef): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, last_seen_at)
+export async function markScopeSeen(env: Runtime, scope: TimelineScopeRef): Promise<void> {
+  await env.db
+    .prepare(
+      `INSERT INTO timeline_scope_state (scope_type, scope_id, last_seen_at)
      VALUES (?1, ?2, ?3)
      ON CONFLICT (scope_type, scope_id) DO UPDATE SET last_seen_at = excluded.last_seen_at`,
-  )
+    )
     .bind(scope.scopeType, scope.scopeId, Date.now())
     .run();
 }
@@ -360,14 +366,15 @@ export async function markScopeSeen(env: Env, scope: TimelineScopeRef): Promise<
 // exactly that. So the rule is "things that have happened, since you last
 // looked", and an Upcoming warning starts counting on the day it comes due.
 export async function countUnseen(
-  env: Env,
+  env: Runtime,
   scope: TimelineScopeRef,
   since: number,
   cap = 99,
   now: number = Date.now(),
 ): Promise<number> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM (
+  const row = await env.db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM (
        SELECT e.id
          FROM timeline_event_scopes s
          JOIN timeline_events e ON e.id = s.event_id
@@ -379,18 +386,19 @@ export async function countUnseen(
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)
         LIMIT ?4
      )`,
-  )
+    )
     .bind(scope.scopeType, scope.scopeId, since, cap + 1, now)
     .first<{ n: number }>();
   return row?.n ?? 0;
 }
 
-export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at)
+export async function markScopeBackfilled(env: Runtime, scope: TimelineScopeRef): Promise<void> {
+  await env.db
+    .prepare(
+      `INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at)
      VALUES (?1, ?2, ?3)
      ON CONFLICT (scope_type, scope_id) DO UPDATE SET backfilled_at = excluded.backfilled_at`,
-  )
+    )
     .bind(scope.scopeType, scope.scopeId, Date.now())
     .run();
 }
@@ -441,29 +449,31 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 // two expiring links on a document — the warning is per document, not per link)
 // costs at most a day of silence and never leaves a false deadline standing.
 export async function retractTimelineWarning(
-  env: Env,
+  env: Runtime,
   sourceType: string,
   sourceId: string,
   eventType: string,
 ): Promise<void> {
-  await env.DB.prepare(
-    `DELETE FROM timeline_events
+  await env.db
+    .prepare(
+      `DELETE FROM timeline_events
       WHERE source_type = ?1 AND source_id = ?2 AND event_type = ?3`,
-  )
+    )
     .bind(sourceType, sourceId, eventType)
     .run();
 }
 
 export async function markTimelineEventsDeletedBySource(
-  env: Env,
+  env: Runtime,
   sourceType: string,
   sourceId: string,
 ): Promise<void> {
-  await env.DB.prepare(
-    `DELETE FROM timeline_events
+  await env.db
+    .prepare(
+      `DELETE FROM timeline_events
       WHERE source_type = ?1
         AND (source_id = ?2 OR json_extract(snapshot, '$.' || ?3) = ?2)`,
-  )
+    )
     .bind(sourceType, sourceId, `${sourceType}Id`)
     .run();
 }
@@ -471,13 +481,15 @@ export async function markTimelineEventsDeletedBySource(
 // markTimelineEventsDeletedBySource for a set of documents at once, as one
 // statement for the Trash purge's batch (docs/specs/013-workspace/trash.md):
 // the events of a purged document go with it, the way a hard delete sweeps them.
-export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
-  return env.DB.prepare(
-    `DELETE FROM timeline_events
+export function documentsTimelineSweepStatement(env: Runtime, ids: string[]): DbStatement {
+  return env.db
+    .prepare(
+      `DELETE FROM timeline_events
       WHERE source_type = 'document'
         AND (source_id IN (SELECT value FROM json_each(?1))
              OR json_extract(snapshot, '$.documentId') IN (SELECT value FROM json_each(?1)))`,
-  ).bind(JSON.stringify(ids));
+    )
+    .bind(JSON.stringify(ids));
 }
 
 // Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9): take one event off ONE scope's
@@ -493,22 +505,24 @@ export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1Prep
 // Dismissing twice is a no-op that still reports true: the second
 // click found the row, and the outcome the caller wanted holds.
 export async function dismissTimelineEventForScope(
-  env: Env,
+  env: Runtime,
   scope: TimelineScopeRef,
   eventId: string,
 ): Promise<boolean> {
-  const row = await env.DB.prepare(
-    `SELECT deleted_at FROM timeline_event_scopes
+  const row = await env.db
+    .prepare(
+      `SELECT deleted_at FROM timeline_event_scopes
       WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
-  )
+    )
     .bind(scope.scopeType, scope.scopeId, eventId)
     .first<{ deleted_at: number | null }>();
   if (!row) return false;
   if (row.deleted_at !== null) return true;
-  await env.DB.prepare(
-    `UPDATE timeline_event_scopes SET deleted_at = ?4
+  await env.db
+    .prepare(
+      `UPDATE timeline_event_scopes SET deleted_at = ?4
       WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
-  )
+    )
     .bind(scope.scopeType, scope.scopeId, eventId, Date.now())
     .run();
   return true;
@@ -522,18 +536,19 @@ export async function dismissTimelineEventForScope(
 export const DISMISS_BATCH_MAX = 200;
 
 export async function dismissTimelineEventsForScope(
-  env: Env,
+  env: Runtime,
   scope: TimelineScopeRef,
   eventIds: readonly string[],
 ): Promise<number> {
   const ids = eventIds.slice(0, DISMISS_BATCH_MAX);
   if (ids.length === 0) return 0;
   const placeholders = ids.map((_, i) => `?${i + 4}`).join(', ');
-  const res = await env.DB.prepare(
-    `UPDATE timeline_event_scopes SET deleted_at = ?3
+  const res = await env.db
+    .prepare(
+      `UPDATE timeline_event_scopes SET deleted_at = ?3
       WHERE scope_type = ?1 AND scope_id = ?2 AND deleted_at IS NULL
         AND event_id IN (${placeholders})`,
-  )
+    )
     .bind(scope.scopeType, scope.scopeId, Date.now(), ...ids)
     .run();
   return res.meta?.changes ?? 0;
@@ -541,16 +556,14 @@ export async function dismissTimelineEventsForScope(
 
 // Account deletion. The FK cascade makes the order safe regardless;
 // the statements are explicit so the intent reads from this file.
-export async function deleteTimelineForOwner(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare(
-    "DELETE FROM timeline_event_scopes WHERE scope_type = 'user' AND scope_id = ?1",
-  )
+export async function deleteTimelineForOwner(env: Runtime, ownerId: string): Promise<void> {
+  await env.db
+    .prepare("DELETE FROM timeline_event_scopes WHERE scope_type = 'user' AND scope_id = ?1")
     .bind(ownerId)
     .run();
-  await env.DB.prepare('DELETE FROM timeline_events WHERE actor_id = ?1').bind(ownerId).run();
-  await env.DB.prepare(
-    "DELETE FROM timeline_scope_state WHERE scope_type = 'user' AND scope_id = ?1",
-  )
+  await env.db.prepare('DELETE FROM timeline_events WHERE actor_id = ?1').bind(ownerId).run();
+  await env.db
+    .prepare("DELETE FROM timeline_scope_state WHERE scope_type = 'user' AND scope_id = ?1")
     .bind(ownerId)
     .run();
 }
@@ -560,7 +573,7 @@ export async function deleteTimelineForOwner(env: Env, ownerId: string): Promise
 // the backfill doesn't run a second time against the new id and
 // duplicate what just migrated.
 export async function migrateTimelineOwner(
-  env: Env,
+  env: Runtime,
   fromOwnerId: string,
   toOwnerId: string,
 ): Promise<void> {
@@ -568,29 +581,30 @@ export async function migrateTimelineOwner(
   // id (the user signed in on this browser before), and the composite
   // primary key would make a bare UPDATE fail outright. The survivor is
   // the authoritative account-side row; the guest leftover is dropped.
-  await env.DB.prepare(
-    `UPDATE OR IGNORE timeline_event_scopes SET scope_id = ?1
+  await env.db
+    .prepare(
+      `UPDATE OR IGNORE timeline_event_scopes SET scope_id = ?1
       WHERE scope_type = 'user' AND scope_id = ?2`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare(
-    "DELETE FROM timeline_event_scopes WHERE scope_type = 'user' AND scope_id = ?1",
-  )
+  await env.db
+    .prepare("DELETE FROM timeline_event_scopes WHERE scope_type = 'user' AND scope_id = ?1")
     .bind(fromOwnerId)
     .run();
-  await env.DB.prepare('UPDATE timeline_events SET actor_id = ?1 WHERE actor_id = ?2')
+  await env.db
+    .prepare('UPDATE timeline_events SET actor_id = ?1 WHERE actor_id = ?2')
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare(
-    `UPDATE OR IGNORE timeline_scope_state SET scope_id = ?1
+  await env.db
+    .prepare(
+      `UPDATE OR IGNORE timeline_scope_state SET scope_id = ?1
       WHERE scope_type = 'user' AND scope_id = ?2`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare(
-    "DELETE FROM timeline_scope_state WHERE scope_type = 'user' AND scope_id = ?1",
-  )
+  await env.db
+    .prepare("DELETE FROM timeline_scope_state WHERE scope_type = 'user' AND scope_id = ?1")
     .bind(fromOwnerId)
     .run();
 }
@@ -602,8 +616,9 @@ export async function migrateTimelineOwner(
 // Guards on `occurred_at`, so the forward-dated expiry warnings are
 // never swept early — they sit in the future, which is the furthest
 // thing from stale.
-export async function deleteOldTimelineEvents(env: Env, cutoff: number): Promise<number> {
-  const res = await env.DB.prepare('DELETE FROM timeline_events WHERE occurred_at < ?1')
+export async function deleteOldTimelineEvents(env: Runtime, cutoff: number): Promise<number> {
+  const res = await env.db
+    .prepare('DELETE FROM timeline_events WHERE occurred_at < ?1')
     .bind(cutoff)
     .run();
   return res.meta?.changes ?? 0;

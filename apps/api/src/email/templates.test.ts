@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import {
   accountDeletedEmail,
   documentJoinedEmail,
@@ -13,7 +13,7 @@ import {
   MENTION_QUOTE_CHARS,
 } from './templates';
 
-const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
+const env = { APP_BASE_URL: 'https://app.test' } as unknown as Runtime;
 
 describe('email templates', () => {
   it('welcome has a subject + links to /new', () => {

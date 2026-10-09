@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PEN_INK, penColourHex } from '@livediagram/document';
-import type { DocumentDTO, Env } from './types';
+import type { DocumentDTO, Runtime } from './types';
 
 // The render-cache reads/writes the snapshot freshness + first-tab body
 // through the db layer; mock it so the test pins the cache decision tree
@@ -72,7 +72,7 @@ beforeEach(() => {
 
 describe('getDocumentThumbnailSvg', () => {
   it('returns null without an R2 binding (self-host without storage)', async () => {
-    const out = await getDocumentThumbnailSvg({} as Env, liveDoc());
+    const out = await getDocumentThumbnailSvg({} as unknown as Runtime, liveDoc());
     expect(out).toBeNull();
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
   });
@@ -81,7 +81,7 @@ describe('getDocumentThumbnailSvg', () => {
     const images = r2();
     images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
     db.getThumbRenderedAt.mockResolvedValue(2000); // >= savedAt 1000 → fresh
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -96,7 +96,7 @@ describe('getDocumentThumbnailSvg', () => {
     images.get.mockResolvedValue(null);
     db.getThumbRenderedAt.mockResolvedValue(null); // never rendered → stale
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -109,7 +109,7 @@ describe('getDocumentThumbnailSvg', () => {
   it('trusts a freshness stamp the caller already read, saving the query', async () => {
     const images = r2();
     images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, { ...liveDoc(), thumbRenderedAt: 2000 });
 
@@ -122,7 +122,7 @@ describe('getDocumentThumbnailSvg', () => {
     let finishPut!: () => void;
     images.put.mockReturnValue(new Promise<void>((resolve) => (finishPut = resolve)));
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
     const deferred: Promise<unknown>[] = [];
 
     // Resolves while the put is still pending: the response is not held
@@ -146,7 +146,7 @@ describe('getDocumentThumbnailSvg', () => {
     images.get.mockResolvedValue(null); // evicted despite a fresh stamp
     db.getThumbRenderedAt.mockResolvedValue(5000);
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -158,7 +158,7 @@ describe('getDocumentThumbnailSvg', () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -170,7 +170,7 @@ describe('getDocumentThumbnailSvg', () => {
   // The lazy backfill (migration 0059): a tab stored before the count existed gets it from this parse,
   // so an old empty document is asked for at most once.
   it('records an unknown count from the body it parsed, empty or drawn', async () => {
-    const env = { IMAGES: r2() } as unknown as Env;
+    const env = { objects: r2() } as unknown as Runtime;
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), null));
     expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
@@ -181,7 +181,7 @@ describe('getDocumentThumbnailSvg', () => {
   });
 
   it('writes nothing for a count already known, or a body it cannot count', async () => {
-    const env = { IMAGES: r2() } as unknown as Env;
+    const env = { objects: r2() } as unknown as Runtime;
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
     await getDocumentThumbnailSvg(env, liveDoc());
@@ -192,7 +192,7 @@ describe('getDocumentThumbnailSvg', () => {
 
   it('hands the count stamp to `defer`, and a failed stamp never fails the read', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const env = { IMAGES: r2() } as unknown as Env;
+    const env = { objects: r2() } as unknown as Runtime;
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), null));
     db.stampTabElementCount.mockRejectedValue(new Error('d1 busy'));
@@ -212,7 +212,7 @@ describe('getDocumentThumbnailSvg', () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(null);
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
     expect(images.put).not.toHaveBeenCalled();
@@ -233,7 +233,7 @@ describe('getDocumentThumbnailSvg', () => {
           }
         : null,
     );
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -251,7 +251,7 @@ describe('getDocumentThumbnailSvg', () => {
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(tabData));
     images.get.mockResolvedValue(null); // image bytes absent
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -275,7 +275,7 @@ describe('getDocumentThumbnailSvg', () => {
       arrayBuffer: async () => new Uint8Array([1, 2, 3, 4]).buffer,
       httpMetadata: { contentType: 'image/png' },
     });
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -291,7 +291,7 @@ describe('getDocumentThumbnailSvg', () => {
     images.put.mockRejectedValue(new Error('r2 down'));
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
 
     const out = await getDocumentThumbnailSvg(env, liveDoc());
 
@@ -329,7 +329,7 @@ describe('a thumbnail of a Charcoal tab', () => {
         }),
       ),
     );
-    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
+    const out = await getDocumentThumbnailSvg({ objects: images } as unknown as Runtime, liveDoc());
     expect(out).not.toContain('#2c2c33');
     expect(out).toContain('#0d121a');
   });
@@ -354,7 +354,7 @@ describe('a thumbnail of named stock colours', () => {
         2,
       ),
     );
-    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
+    const out = await getDocumentThumbnailSvg({ objects: images } as unknown as Runtime, liveDoc());
     expect(out).toContain(penColourHex('blue', 'light'));
     expect(out).toContain(PEN_INK.light);
   });
@@ -402,13 +402,13 @@ describe('the Community snapshot', () => {
   it("draws without the conversation the owner's snapshot shows", async () => {
     db.getTabBody.mockResolvedValue(stored(COMMENTED, 2));
     db.getThumbRenderedAt.mockResolvedValue(null);
-    const owner = await getDocumentThumbnailSvg({ IMAGES: r2() } as unknown as Env, liveDoc());
+    const owner = await getDocumentThumbnailSvg({ objects: r2() } as unknown as Runtime, liveDoc());
     expect(owner).toContain('Secret launch plan');
 
     const images = r2();
     images.get.mockResolvedValue(null);
     const community = await getCommunityThumbnailSvg(
-      { IMAGES: images } as unknown as Env,
+      { objects: images } as unknown as Runtime,
       liveDoc(),
     );
     // The rest of the board still draws (labels wrap, so one word of it).
@@ -430,7 +430,7 @@ describe('the Community snapshot', () => {
       text: async () => '<svg>community cached</svg>',
       customMetadata: { renderedAt: '1500' },
     });
-    const env = { IMAGES: images } as unknown as Env;
+    const env = { objects: images } as unknown as Runtime;
     expect(await getCommunityThumbnailSvg(env, liveDoc({ savedAt: 1000 }))).toBe(
       '<svg>community cached</svg>',
     );
@@ -444,11 +444,11 @@ describe('the Community snapshot', () => {
 
   it('redacts a single tab the same way, and draws nothing without storage', async () => {
     db.getTabBody.mockResolvedValue(stored(COMMENTED, 2));
-    const env = { IMAGES: r2() } as unknown as Env;
+    const env = { objects: r2() } as unknown as Runtime;
     expect(await getDocumentTabImageSvg(env, liveDoc(), 't1', true)).not.toContain(
       'Secret launch plan',
     );
     expect(await getDocumentTabImageSvg(env, liveDoc(), 't1')).toContain('Secret launch plan');
-    expect(await getCommunityThumbnailSvg({} as Env, liveDoc())).toBeNull();
+    expect(await getCommunityThumbnailSvg({} as unknown as Runtime, liveDoc())).toBeNull();
   });
 });

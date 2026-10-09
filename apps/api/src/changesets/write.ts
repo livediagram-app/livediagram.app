@@ -23,7 +23,7 @@ import {
 } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayChangeset } from '../room-client';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { mintChangesetId } from './changeset-id';
 import { agentKeyFor, changesetRoomOp } from './room-op';
 import type { StoredTab } from './stored-tab';
@@ -61,7 +61,7 @@ export type WriteOutcome =
   | { kind: 'stale' }
   | { kind: 'too_large' };
 
-export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<WriteOutcome> {
+export async function writeChangeset(env: Runtime, w: ChangesetWrite): Promise<WriteOutcome> {
   const before = w.stored?.tab.elements ?? [];
   // What turns the stored elements into the next ones, so the record, the relay and the merge on
   // save all say exactly what landed (server rules included).
@@ -108,7 +108,7 @@ export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<Write
   // One re-mint inside the attempt on an id collision (CS7, E21).
   for (let mint = 0; mint < 2; mint += 1) {
     try {
-      const results = await env.DB.batch([
+      const results = await env.db.batch([
         ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
         insertChangesetStatement(env, record),
         insertChangesetPartStatement(env, record.id, 'ops', parts.ops),

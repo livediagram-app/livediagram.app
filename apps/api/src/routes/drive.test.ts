@@ -3,7 +3,7 @@ import { bytesToBase64, type DriveItem } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { getSealedRefreshToken } from '../db/drive';
 import { signDriveState } from '../drive/state';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDrive } from './drive';
 
@@ -11,13 +11,13 @@ import { handleDrive } from './drive';
 
 const KEY = bytesToBase64(new Uint8Array(32).map((_, i) => i));
 const URI = 'https://livediagram.app/drive/connected';
-const BROKER: Partial<Env> = {
+const BROKER: Partial<Runtime> = {
   GOOGLE_CLIENT_ID: 'cid',
   GOOGLE_CLIENT_SECRET: 'secret',
   DRIVE_TOKEN_KEY: KEY,
   GOOGLE_OAUTH_BASE_URL: 'https://oauth.test',
 };
-const BROWSER: Partial<Env> = { GOOGLE_CLIENT_ID: 'cid' };
+const BROWSER: Partial<Runtime> = { GOOGLE_CLIENT_ID: 'cid' };
 
 type GoogleReply = { status: number; body: unknown };
 let googleReplies: GoogleReply[] = [];
@@ -422,7 +422,7 @@ describe('POST /drive/token rate limit', () => {
 
   it('answers 429 drive_token_rate_limited, keyed by owner, without asking Google', async () => {
     const limiter = limited(false);
-    const db = sqliteD1({ ...BROKER, DRIVE_TOKEN_RATE_LIMITER: limiter.binding });
+    const db = sqliteD1({ ...BROKER, limiters: { DRIVE_TOKEN_RATE_LIMITER: limiter.binding } });
     await connect(db);
     const calls = googleCalls.length;
     const res = await call(db, 'POST', '/token');
@@ -434,7 +434,7 @@ describe('POST /drive/token rate limit', () => {
 
   it('mints as usual under the limit', async () => {
     const limiter = limited(true);
-    const db = sqliteD1({ ...BROKER, DRIVE_TOKEN_RATE_LIMITER: limiter.binding });
+    const db = sqliteD1({ ...BROKER, limiters: { DRIVE_TOKEN_RATE_LIMITER: limiter.binding } });
     await connect(db);
     googleReplies.push({ status: 200, body: { access_token: 'fresh', expires_in: 3600 } });
     expect((await call(db, 'POST', '/token')).status).toBe(200);
@@ -449,7 +449,7 @@ describe('POST /drive/token rate limit', () => {
 
   it('is only on the token route', async () => {
     const limiter = limited(false);
-    const db = sqliteD1({ ...BROKER, DRIVE_TOKEN_RATE_LIMITER: limiter.binding });
+    const db = sqliteD1({ ...BROKER, limiters: { DRIVE_TOKEN_RATE_LIMITER: limiter.binding } });
     expect((await call(db, 'GET', '/connection')).status).toBe(200);
     expect(limiter.keys).toEqual([]);
   });

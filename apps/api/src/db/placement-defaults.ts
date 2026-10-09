@@ -9,18 +9,17 @@ import {
   type PlacementDefault,
   type PlacementDefaultKey,
 } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 /** This owner's defaults for the keys in force, in key order. A row under a retired name reads as
  *  its key today (a row under today's name wins over it); a row whose key is no longer in force is
  *  left out. */
 export async function listPlacementDefaults(
-  env: Env,
+  env: Runtime,
   ownerId: string,
 ): Promise<PlacementDefault[]> {
-  const res = await env.DB.prepare(
-    'SELECT default_key, folder_id FROM placement_defaults WHERE owner_id = ?',
-  )
+  const res = await env.db
+    .prepare('SELECT default_key, folder_id FROM placement_defaults WHERE owner_id = ?')
     .bind(ownerId)
     .all<{ default_key: string; folder_id: string }>();
   const byKey = new Map<PlacementDefaultKey, string>();
@@ -37,29 +36,31 @@ export async function listPlacementDefaults(
 
 /** Set this owner's default for a key; a repeat replaces the folder. */
 export async function setPlacementDefault(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   key: PlacementDefaultKey,
   folderId: string,
 ): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
+  await env.db
+    .prepare(
+      `INSERT INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
      VALUES (?1, ?2, ?3, ?4)
      ON CONFLICT (owner_id, default_key)
        DO UPDATE SET folder_id = excluded.folder_id, updated_at = excluded.updated_at`,
-  )
+    )
     .bind(ownerId, key, folderId, Date.now())
     .run();
 }
 
 /** Clear this owner's default for a key, under its retired names too. Silent when there was none. */
 export async function clearPlacementDefault(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   key: PlacementDefaultKey,
 ): Promise<void> {
   for (const k of [key, ...legacyPlacementDefaultKeys(key)]) {
-    await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ? AND default_key = ?')
+    await env.db
+      .prepare('DELETE FROM placement_defaults WHERE owner_id = ? AND default_key = ?')
       .bind(ownerId, k)
       .run();
   }

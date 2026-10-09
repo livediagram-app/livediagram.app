@@ -5,7 +5,7 @@
 
 import { sessionPrefixOf } from './auth/workbench-session';
 import { closeWorkbenchSessions, TEAM_ROOM_CLOSE_CONCURRENCY } from './room-access-client';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 export type WorkbenchEndScope = { pairingId: string } | { tokenId: string };
 export type WorkbenchEndReason = 'unpaired' | 'revoked';
@@ -13,34 +13,34 @@ export type WorkbenchEndReason = 'unpaired' | 'revoked';
 type SessionRow = { id: string; pairing_id: string; token_id: string; document_id: string };
 
 export async function endWorkbenchAccess(
-  env: Env,
+  env: Runtime,
   scope: WorkbenchEndScope,
   reason: WorkbenchEndReason,
 ): Promise<void> {
   const byToken = 'tokenId' in scope;
   const key = byToken ? scope.tokenId : scope.pairingId;
-  const { results: pairings } = await env.DB.prepare(
-    `SELECT id, token_id FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`,
-  )
+  const { results: pairings } = await env.db
+    .prepare(`SELECT id, token_id FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`)
     .bind(key)
     .all<{ id: string; token_id: string }>();
-  const { results: sessions } = await env.DB.prepare(
-    `SELECT s.id, s.pairing_id, s.token_id, s.document_id FROM workbench_sessions s
+  const { results: sessions } = await env.db
+    .prepare(
+      `SELECT s.id, s.pairing_id, s.token_id, s.document_id FROM workbench_sessions s
       WHERE s.pairing_id IN (SELECT id FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?)`,
-  )
+    )
     .bind(key)
     .all<SessionRow>();
 
   const deletes = [
-    env.DB.prepare(`DELETE FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`).bind(
-      key,
-    ),
+    env.db
+      .prepare(`DELETE FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`)
+      .bind(key),
   ];
   if (byToken)
     deletes.push(
-      env.DB.prepare('DELETE FROM workbench_pairing_requests WHERE token_id = ?').bind(key),
+      env.db.prepare('DELETE FROM workbench_pairing_requests WHERE token_id = ?').bind(key),
     );
-  await env.DB.batch(deletes);
+  await env.db.batch(deletes);
 
   for (const session of sessions) {
     console.log('[workbench] session-ended', {

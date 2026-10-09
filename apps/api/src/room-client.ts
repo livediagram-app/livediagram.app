@@ -14,20 +14,21 @@ import {
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
 import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@livediagram/api-schema';
-import type { Env } from './types';
+import type { RoomHandle } from '@livediagram/runtime';
+import type { Runtime } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
 // collaboration ledger to merge a save, and handing it a change the api made.
 
 // Every server-stored document has a room (docs/specs/024-agents/agent-changesets.md "Rooms for
 // personal documents"): an agent is a second writer even on a document nobody else can open.
-function roomStubFor(env: Env, documentId: string): DurableObjectStub {
-  return env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(documentId));
+function roomStubFor(env: Runtime, documentId: string): RoomHandle {
+  return env.rooms.for(documentId);
 }
 
 // A room call that gives up after `ms`: the api never waits on a room longer than that.
 export async function roomFetch(
-  env: Env,
+  env: Runtime,
   documentId: string,
   path: string,
   init: RequestInit | undefined,
@@ -61,7 +62,7 @@ function mutationInit(op: unknown, ordered = false): RequestInit {
 // authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
 // not reach the room` rather than failing the request.
 async function broadcastOp(
-  env: Env,
+  env: Runtime,
   documentId: string,
   op: unknown,
   label: string,
@@ -100,7 +101,7 @@ export type RoomMerge = {
 };
 
 export async function mergeRoomLedger(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tab: Tab,
   cursorHeader: string | null,
@@ -147,7 +148,7 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // Best-effort, like the share-revoked broadcast: the D1 write is the record,
 // this is the live copy; a relay the room refused or never received is logged.
 export async function relayElementDelta(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tabId: string,
   elementId: string,
@@ -182,7 +183,7 @@ export async function relayElementDelta(
 // D1 already holds the changeset and the merge on save keeps it there, so a room that refuses or
 // cannot be reached within ROOM_RELAY_TIMEOUT_MS is logged and answers false.
 export async function relayChangeset(
-  env: Env,
+  env: Runtime,
   documentId: string,
   op: ChangesetRoomOp,
 ): Promise<boolean> {
@@ -207,7 +208,7 @@ export async function relayChangeset(
 // at once, and their next tab reorder carries it instead of writing the old one back. Best-effort and logged, like
 // the tab rename relay.
 export async function relayDocumentRename(
-  env: Env,
+  env: Runtime,
   documentId: string,
   name: string,
   tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
@@ -248,7 +249,7 @@ export async function relayDocumentRename(
 // document-meta keeps every open editor's names, so a stale tab list can never revert a rename.
 // Best-effort and logged, like the changeset relay.
 export async function relayTabRename(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tabId: string,
   name: string,
@@ -284,7 +285,7 @@ export type RoomSelection = { elementIds: string[]; name: string; color: string;
 // when the room cannot answer within ROOM_SELECTIONS_TIMEOUT_MS: then nothing counts as held, and
 // the warning, under the reader's own fingerprint, says so.
 export async function readRoomSelections(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tabId: string,
   personTag: string | null,
@@ -315,7 +316,7 @@ export async function readRoomSelections(
 // D1 write before it is the authoritative change, so a room that can't be
 // reached is logged rather than failing the request.
 export async function broadcastShareOp(
-  env: Env,
+  env: Runtime,
   documentId: string,
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
@@ -327,7 +328,7 @@ export async function broadcastShareOp(
 // state, and the room closes every socket. Best-effort like the share-op
 // broadcast: the D1 write is the change, and a session the room misses still
 // has every save refused with document_trashed.
-export async function broadcastDocumentTrashed(env: Env, documentId: string): Promise<void> {
+export async function broadcastDocumentTrashed(env: Runtime, documentId: string): Promise<void> {
   await broadcastOp(env, documentId, { kind: 'document-trashed' }, 'document-trashed');
 }
 
@@ -345,7 +346,7 @@ export class RoomUnavailableError extends Error {
 export type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
 
 export async function putAgentPresence(
-  env: Env,
+  env: Runtime,
   write: AgentPresenceRoomWrite,
 ): Promise<
   { ok: true; expiresAt: number; created: boolean } | { ok: false; error: 'agent_presence_full' }
@@ -370,7 +371,7 @@ export async function putAgentPresence(
 }
 
 export async function deleteAgentPresence(
-  env: Env,
+  env: Runtime,
   documentId: string,
   tokenId: string,
   tabId: string,
@@ -395,7 +396,7 @@ export async function deleteAgentPresence(
 // A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the
 // changeset stands (E7).
 export async function refreshAgentPresence(
-  env: Env,
+  env: Runtime,
   write: Omit<AgentPresenceRoomWrite, 'mode' | 'status' | 'focus' | 'ttlMs'>,
 ): Promise<void> {
   try {
@@ -424,7 +425,7 @@ export async function refreshAgentPresence(
 // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"): ordered like items,
 // to every session, a tab-scoped one too (a catalogue holds no content).
 export async function relayItemTypes(
-  env: Env,
+  env: Runtime,
   documentId: string,
   op: ItemTypesRoomOp,
 ): Promise<void> {
@@ -434,11 +435,11 @@ export async function relayItemTypes(
 // Tell a document's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an
 // ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
 // broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
-export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
+export async function relayItems(env: Runtime, documentId: string, op: ItemsRoomOp): Promise<void> {
   await broadcastOp(env, documentId, op, 'items', true);
 }
 
 // A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.
-export async function relaySheets(env: Env, documentId: string, op: SheetsRoomOp): Promise<void> {
+export async function relaySheets(env: Runtime, documentId: string, op: SheetsRoomOp): Promise<void> {
   await broadcastOp(env, documentId, op, 'sheets', true);
 }

@@ -1,4 +1,4 @@
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // WHOSE model is this, and where does it live (docs/specs/007-editor/ai-assistance.md)?
 //
@@ -58,7 +58,7 @@ export const GOOGLE_DEFAULT_VISION_MODEL = 'gemini-2.5-flash-lite';
 
 type Preset = {
   provider: AiProviderName;
-  keyVar: keyof Env;
+  keyVar: keyof Runtime;
   baseUrl?: string;
   defaultModel?: string;
   // What the crop READER uses when the operator has not named a model at all.
@@ -113,12 +113,12 @@ const PREFERENCE: Record<AiFeature, AiProviderName[]> = {
 
 const presetFor = (name: AiProviderName): Preset => PRESETS.find((p) => p.provider === name)!;
 
-function hasKey(env: Env, preset: Preset): boolean {
+function hasKey(env: Runtime, preset: Preset): boolean {
   const value = env[preset.keyVar];
   return typeof value === 'string' && value.length > 0;
 }
 
-function firstPresent(env: Env, feature: AiFeature): Preset | null {
+function firstPresent(env: Runtime, feature: AiFeature): Preset | null {
   for (const name of PREFERENCE[feature]) {
     const preset = presetFor(name);
     if (hasKey(env, preset)) return preset;
@@ -126,7 +126,7 @@ function firstPresent(env: Env, feature: AiFeature): Preset | null {
   return null;
 }
 
-export function resolveAiProvider(env: Env, feature: AiFeature): ResolvedAiProvider | null {
+export function resolveAiProvider(env: Runtime, feature: AiFeature): ResolvedAiProvider | null {
   const preset = firstPresent(env, feature);
   if (!preset) return null;
 
@@ -165,7 +165,7 @@ export function resolveAiProvider(env: Env, feature: AiFeature): ResolvedAiProvi
 // is a guaranteed failure. On one provider, an operator who NAMED a model means
 // it for everything, so the preset's reader default applies only when nothing
 // is named. `AI_VISION_MODEL` beats all of it, for the reader only.
-function modelFor(env: Env, feature: AiFeature, preset: Preset): string {
+function modelFor(env: Runtime, feature: AiFeature, preset: Preset): string {
   const fallback = preset.defaultModel ?? '';
   if (feature === 'assistant') return env.AI_MODEL ?? fallback;
   if (env.AI_VISION_MODEL) return env.AI_VISION_MODEL;
@@ -177,6 +177,6 @@ function modelFor(env: Env, feature: AiFeature, preset: Preset): string {
 // Is there any AI on this deployment? Both features resolve from the same keys
 // and fall back to each other's provider, so they are available together or
 // not at all; asking the assistant answers for both.
-export function aiConfigured(env: Env): boolean {
+export function aiConfigured(env: Runtime): boolean {
   return resolveAiProvider(env, 'assistant') !== null;
 }

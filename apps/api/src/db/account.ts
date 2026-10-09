@@ -11,7 +11,7 @@ import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
 import { disconnectDrive } from '../drive/disconnect';
 import { uniqueLibraryName } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
 // cap on document count, so chunk the snapshot-key deletes to stay under
@@ -37,7 +37,7 @@ const R2_DELETE_CHUNK = 1000;
 // caller's log line. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
-  env: Env,
+  env: Runtime,
   ownerId: string,
 ): Promise<{ documents: number; folders: number; images: number }> {
   // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library documents
@@ -53,14 +53,16 @@ export async function deleteAccount(
   // come out via the DELETE FROM images below regardless. R2's
   // batch delete takes up to 1000 keys per call which is well
   // above any realistic per-owner gallery cap.
-  const imageRows = await env.DB.prepare('SELECT id FROM images WHERE owner_id = ?')
+  const imageRows = await env.db
+    .prepare('SELECT id FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .all<{ id: string }>();
   const imageIds = (imageRows.results ?? []).map((r) => r.id);
-  if (env.IMAGES && imageIds.length > 0) {
-    await env.IMAGES.delete(imageIds);
+  if (env.objects && imageIds.length > 0) {
+    await env.objects.delete(imageIds);
   }
-  const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
+  const imagesRes = await env.db
+    .prepare('DELETE FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .run();
   // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
@@ -68,18 +70,19 @@ export async function deleteAccount(
   // the images above — the cascade can't reach them. Enumerate the
   // owner's document ids while the rows still exist, then bulk-delete
   // their snapshot objects before the documents DELETE drops the ids.
-  if (env.IMAGES) {
-    const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
+  if (env.objects) {
+    const documentRows = await env.db
+      .prepare('SELECT id FROM documents WHERE owner_id = ?')
       .bind(ownerId)
       .all<{ id: string }>();
     const thumbKeys = (documentRows.results ?? []).flatMap((r) => snapshotKeys(r.id));
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
-      await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
+      await env.objects.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
   }
   // Link-aware (docs/specs/006-document/tab-document-many-to-many.md): a tab
   // shared into a document someone else owns stays there.
-  const removal = await env.DB.batch(
+  const removal = await env.db.batch(
     documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
   const documentsRes = removal[removal.length - 1]!;
@@ -88,38 +91,37 @@ export async function deleteAccount(
   // sit in it: deleting it dropped them out of the team library behind a
   // dangling folder_id. That includes teams this user LEFT earlier, which
   // detachUserFromTeams no longer sees.
-  const foldersRes = await env.DB.prepare(
-    'DELETE FROM folders WHERE owner_id = ? AND team_id IS NULL',
-  )
+  const foldersRes = await env.db
+    .prepare('DELETE FROM folders WHERE owner_id = ? AND team_id IS NULL')
     .bind(ownerId)
     .run();
-  await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
   // user_preferences (docs/specs/007-editor/user-preferences.md) holds this owner's editor preference
   // flags (some surfaced in the Settings dialog, some attached to
   // per-tool surfaces like the pencil's recognise-shapes toggle).
   // Wipe along with everything else so a delete-account run leaves
   // no row carrying their flags.
-  await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): this owner's saved themes go too.
-  await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
   // shape_libraries (docs/specs/013-workspace/shape-libraries.md): this owner's libraries go too.
-  await env.DB.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
   // Workbench rows (docs/specs/013-workspace/workbench-embeds.md), before the tokens they were minted from.
-  await env.DB.batch(
+  await env.db.batch(
     [
       'workbench_sessions',
       'workbench_tickets',
       'workbench_pairings',
       'workbench_pairing_requests',
-    ].map((table) => env.DB.prepare(`DELETE FROM ${table} WHERE owner_id = ?`).bind(ownerId)),
+    ].map((table) => env.db.prepare(`DELETE FROM ${table} WHERE owner_id = ?`).bind(ownerId)),
   );
   // api_tokens (docs/specs/015-api/public-api-and-tokens.md): no API credential outlives the account.
-  await env.DB.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
   // email_lifecycle (docs/specs/014-identity/transactional-email.md): drop the onboarding-email row so the address
   // isn't retained and a re-signup starts the series fresh.
-  await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
-  await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
   // at Google and drop the connection and every mirror row. The Drive files are
   // the user's and stay.
@@ -128,36 +130,41 @@ export async function deleteAccount(
   // documents (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's documents are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
-  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the same split as
   // shared_with. Stars on this owner's documents cascade; the stars they put on
   // teammates' and other people's documents are theirs and go here.
-  await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
-  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
   // people's documents; those on their own went with the documents. Parts follow by cascade.
-  await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
   // community_copies (docs/specs/025-community/community.md): the copies this person took of other people's posts
   // name them; the rows go and those posts' copy counts are recounted. Posts on their own documents went with them.
   // The posts they copied, read first: their counts are recounted (capped per network) once the rows are gone.
-  const copied = await env.DB.prepare('SELECT post_id FROM community_copies WHERE copier_id = ?')
+  const copied = await env.db
+    .prepare('SELECT post_id FROM community_copies WHERE copier_id = ?')
     .bind(ownerId)
     .all<{ post_id: string }>();
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(ownerId),
-    env.DB.prepare(
-      `UPDATE community_posts SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
+  await env.db.batch([
+    env.db.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(ownerId),
+    env.db
+      .prepare(
+        `UPDATE community_posts SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
         WHERE id IN (SELECT value FROM json_each(?))`,
-    ).bind(JSON.stringify((copied.results ?? []).map((r) => r.post_id))),
+      )
+      .bind(JSON.stringify((copied.results ?? []).map((r) => r.post_id))),
     // Their own posts went with their documents; this catches one whose document outlives them (moved
     // to a team), so nothing stays published under a deleted account.
     // Deleted through its community link, so the link goes too and the post's tags, likes, copies and reports
     // follow by cascade.
-    env.DB.prepare(
-      `DELETE FROM share_links WHERE purpose = 'community'
+    env.db
+      .prepare(
+        `DELETE FROM share_links WHERE purpose = 'community'
          AND code IN (SELECT share_code FROM community_posts WHERE author_id = ?)`,
-    ).bind(ownerId),
+      )
+      .bind(ownerId),
   ]);
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
@@ -215,86 +222,93 @@ export async function deleteAccount(
 // re-running with the same `fromOwnerId` is a no-op once the rows
 // have moved.
 export async function migrateOwnerId(
-  env: Env,
+  env: Runtime,
   fromOwnerId: string,
   toOwnerId: string,
 ): Promise<{ documents: number; folders: number; shared: number; images: number }> {
-  const documentsRes = await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?')
+  const documentsRes = await env.db
+    .prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
-  const foldersRes = await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
+  const foldersRes = await env.db
+    .prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
-  const sharedInsertRes = await env.DB.prepare(
+  const sharedInsertRes = await env.db.prepare(
     // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
     // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
     `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id)
      SELECT ?, document_id, role, last_seen, tab_id
      FROM shared_with
      WHERE owner_id = ?`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
+  await env.db.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
   // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
   // shared_with so a Clerk userId who somehow already had a row (an
   // earlier sign-in on a different device) keeps that authoritative
   // copy and the guest row gets dropped. Guest-only is the common
   // path; the existing-row case just stops the migration clobbering
   // intentional preferences with stale ones.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO user_preferences (owner_id, prefs, updated_at)
+  await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO user_preferences (owner_id, prefs, updated_at)
      SELECT ?, prefs, updated_at
      FROM user_preferences
      WHERE owner_id = ?`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
+  await env.db.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the primary key is
   // (owner_id, document_id), and both identities may have starred the same
   // document, so INSERT OR IGNORE then DELETE like shared_with. A collision
   // keeps the account's star and its original created_at.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
+  await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
      SELECT ?, document_id, created_at
      FROM favourites
      WHERE owner_id = ?`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(fromOwnerId).run();
+  await env.db.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(fromOwnerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
   // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
   // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
+  await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
      SELECT ?, default_key, folder_id, updated_at
      FROM placement_defaults
      WHERE owner_id = ?`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(fromOwnerId).run();
+  await env.db.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(fromOwnerId).run();
   // community_copies (docs/specs/025-community/community.md "Likes"): a post counts each copier
   // once, so the guest's copies become the account's. The primary key is (post_id, copier_id), so
   // INSERT OR IGNORE then DELETE: where both identities copied one post it is one copier, and those
   // posts' counts are recounted to match. (Likes are keyed by the browser's community key, never an
   // owner id, and a post's author is always signed in, so neither needs moving.)
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash)
+  await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash)
      SELECT post_id, ?, created_at, network_hash
      FROM community_copies
      WHERE copier_id = ?`,
-  )
+    )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  await env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(fromOwnerId).run();
-  await env.DB.prepare(
-    `UPDATE community_posts
+  await env.db.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(fromOwnerId).run();
+  await env.db
+    .prepare(
+      `UPDATE community_posts
      SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
      WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)`,
-  )
+    )
     .bind(toOwnerId)
     .run();
   // participants: the guest's name and colour. The id IS the owner id, so an
@@ -304,15 +318,16 @@ export async function migrateOwnerId(
   // (auth/guest-rest.ts isLegacyGuestEra), and the new id is a signed one, so
   // carrying the old date over would let anyone holding the new id move its data
   // without the signature. The guest row goes, since nothing reads a retired guest id.
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO participants (id, name, color, created_at)
+  await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO participants (id, name, color, created_at)
      SELECT ?, name, color, ?
      FROM participants
      WHERE id = ?`,
-  )
+    )
     .bind(toOwnerId, Date.now(), fromOwnerId)
     .run();
-  await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(fromOwnerId).run();
+  await env.db.prepare('DELETE FROM participants WHERE id = ?').bind(fromOwnerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
   // worth keeping, so the feed, the authored events, and the
   // scope-state row all follow the user to their new account. The
@@ -333,22 +348,23 @@ export async function migrateOwnerId(
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays
   // resolvable by every formerly-guest document that references it.
-  const imagesRes = await env.DB.prepare(
-    'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
-  )
+  const imagesRes = await env.db
+    .prepare('UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
   // authed identity so the documents that reference them keep their look
   // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
   // constraint to collide on), so no OR IGNORE needed.
-  await env.DB.prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')
+  await env.db
+    .prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   await migrateShapeLibraries(env, fromOwnerId, toOwnerId);
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
   // as a guest stays theirs.
-  await env.DB.prepare('UPDATE agent_changesets SET author_id = ? WHERE author_id = ?')
+  await env.db
+    .prepare('UPDATE agent_changesets SET author_id = ? WHERE author_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   return {
@@ -362,12 +378,11 @@ export async function migrateOwnerId(
 // shape_libraries (docs/specs/013-workspace/shape-libraries.md): the guest's libraries move onto the
 // account; one whose name the account already uses takes the next free " (n)" first, so the account
 // never holds two libraries of one name. The cap applies to creates, never to this move.
-async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: string) {
+async function migrateShapeLibraries(env: Runtime, fromOwnerId: string, toOwnerId: string) {
   const names = async (owner: string) =>
     (
-      await env.DB.prepare(
-        'SELECT id, name FROM shape_libraries WHERE owner_id = ? ORDER BY created_at',
-      )
+      await env.db
+        .prepare('SELECT id, name FROM shape_libraries WHERE owner_id = ? ORDER BY created_at')
         .bind(owner)
         .all<{ id: string; name: string }>()
     ).results ?? [];
@@ -380,11 +395,13 @@ async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: s
     taken.push(name);
     if (name === row.name) continue;
     renamed++;
-    await env.DB.prepare('UPDATE shape_libraries SET name = ? WHERE id = ?')
+    await env.db
+      .prepare('UPDATE shape_libraries SET name = ? WHERE id = ?')
       .bind(name, row.id)
       .run();
   }
-  await env.DB.prepare('UPDATE shape_libraries SET owner_id = ? WHERE owner_id = ?')
+  await env.db
+    .prepare('UPDATE shape_libraries SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
   console.info('[shape-libraries] migrated', { moved: guest.length, renamed });

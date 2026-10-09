@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "dev": "wrangler dev --var AI_ALLOWED_ORIGINS: --var GUEST_SIG_ENFORCE_AFTER:",
     "build": "wrangler deploy --dry-run --outdir dist",
@@ -25,6 +30,7 @@
     "@livediagram/edit-operations": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
+    "@livediagram/runtime": "workspace:*",
     "@livediagram/sheets": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "jose": "^6.2.12"

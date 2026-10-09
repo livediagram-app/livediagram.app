@@ -6,7 +6,7 @@
 // member. Declining is a plain row delete.
 
 import type { Team, TeamListItem, TeamMember, TeamRole } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { getParticipant } from './participants';
 
 // TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam are shared with the
@@ -70,15 +70,16 @@ function rowToMember(row: MemberRow): TeamMember {
 // Teams the user has JOINED — pending invites live in
 // listInvitesByUser instead, so an un-accepted invite never shows up
 // as a membership (docs/specs/013-workspace/teams.md accept/decline).
-export async function listTeamsByUser(env: Env, userId: string): Promise<TeamListItem[]> {
-  const result = await env.DB.prepare(
-    `SELECT t.id, t.name, t.organisation, t.created_at, t.updated_at,
+export async function listTeamsByUser(env: Runtime, userId: string): Promise<TeamListItem[]> {
+  const result = await env.db
+    .prepare(
+      `SELECT t.id, t.name, t.organisation, t.created_at, t.updated_at,
             m.role AS my_role,
             ${JOINED_COUNT} AS member_count
      FROM teams t
      JOIN team_members m ON m.team_id = t.id AND m.user_id = ? AND m.status = 'joined'
      ORDER BY t.name ASC`,
-  )
+    )
     .bind(userId)
     .all<TeamRow & { my_role: string; member_count: number }>();
   return (result.results ?? []).map((row) => ({
@@ -88,20 +89,22 @@ export async function listTeamsByUser(env: Env, userId: string): Promise<TeamLis
   }));
 }
 
-export async function getTeam(env: Env, id: string): Promise<Team | null> {
-  const row = await env.DB.prepare(`SELECT ${TEAM_COLS} FROM teams WHERE id = ?`)
+export async function getTeam(env: Runtime, id: string): Promise<Team | null> {
+  const row = await env.db
+    .prepare(`SELECT ${TEAM_COLS} FROM teams WHERE id = ?`)
     .bind(id)
     .first<TeamRow>();
   return row ? rowToTeam(row) : null;
 }
 
-export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMember[]> {
+export async function listTeamMembers(env: Runtime, teamId: string): Promise<TeamMember[]> {
   // Admins first, then alphabetical by address, so the list reads
   // "who runs this" before "who's in it".
-  const result = await env.DB.prepare(
-    `SELECT ${MEMBER_COLS} FROM team_members WHERE team_id = ?
+  const result = await env.db
+    .prepare(
+      `SELECT ${MEMBER_COLS} FROM team_members WHERE team_id = ?
      ORDER BY CASE role WHEN 'admin' THEN 0 ELSE 1 END, email ASC`,
-  )
+    )
     .bind(teamId)
     .all<MemberRow>();
   const members = (result.results ?? []).map(rowToMember);
@@ -127,20 +130,20 @@ export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMem
 // The caller's own membership row in a team — the permission check
 // every team route starts from. Null = not a member.
 export async function getMembership(
-  env: Env,
+  env: Runtime,
   teamId: string,
   userId: string,
 ): Promise<TeamMember | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${MEMBER_COLS} FROM team_members WHERE team_id = ? AND user_id = ?`,
-  )
+  const row = await env.db
+    .prepare(`SELECT ${MEMBER_COLS} FROM team_members WHERE team_id = ? AND user_id = ?`)
     .bind(teamId, userId)
     .first<MemberRow>();
   return row ? rowToMember(row) : null;
 }
 
-export async function getTeamMember(env: Env, memberId: string): Promise<TeamMember | null> {
-  const row = await env.DB.prepare(`SELECT ${MEMBER_COLS} FROM team_members WHERE id = ?`)
+export async function getTeamMember(env: Runtime, memberId: string): Promise<TeamMember | null> {
+  const row = await env.db
+    .prepare(`SELECT ${MEMBER_COLS} FROM team_members WHERE id = ?`)
     .bind(memberId)
     .first<MemberRow>();
   return row ? rowToMember(row) : null;
@@ -149,25 +152,29 @@ export async function getTeamMember(env: Env, memberId: string): Promise<TeamMem
 // Create the team plus the creator's Admin member row in one batch so
 // a half-created team (no admin) can't exist.
 export async function createTeam(
-  env: Env,
+  env: Runtime,
   t: { id: string; name: string; organisation: string | null },
   creator: { userId: string; email: string | null },
 ): Promise<Team> {
   const now = Date.now();
-  await env.DB.batch([
-    env.DB.prepare(
-      `INSERT INTO teams (id, name, organisation, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-    ).bind(t.id, t.name, t.organisation, now, now),
-    env.DB.prepare(
-      `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
+  await env.db.batch([
+    env.db
+      .prepare(
+        `INSERT INTO teams (id, name, organisation, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
+      )
+      .bind(t.id, t.name, t.organisation, now, now),
+    env.db
+      .prepare(
+        `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
        VALUES (?, ?, ?, ?, 'admin', 'joined', ?, ?)`,
-    ).bind(crypto.randomUUID(), t.id, creator.userId, creator.email, now, now),
+      )
+      .bind(crypto.randomUUID(), t.id, creator.userId, creator.email, now, now),
   ]);
   return { id: t.id, name: t.name, organisation: t.organisation, createdAt: now, updatedAt: now };
 }
 
 export async function updateTeam(
-  env: Env,
+  env: Runtime,
   id: string,
   patch: { name?: string; organisation?: string | null },
 ): Promise<void> {
@@ -175,18 +182,20 @@ export async function updateTeam(
   // Partial UPDATE, same semantics as updateFolder: undefined = leave
   // the column alone (organisation may be set to null explicitly).
   if (patch.name !== undefined) {
-    await env.DB.prepare('UPDATE teams SET name = ?, updated_at = ? WHERE id = ?')
+    await env.db
+      .prepare('UPDATE teams SET name = ?, updated_at = ? WHERE id = ?')
       .bind(patch.name, now, id)
       .run();
   }
   if (patch.organisation !== undefined) {
-    await env.DB.prepare('UPDATE teams SET organisation = ?, updated_at = ? WHERE id = ?')
+    await env.db
+      .prepare('UPDATE teams SET organisation = ?, updated_at = ? WHERE id = ?')
       .bind(patch.organisation, now, id)
       .run();
   }
 }
 
-export async function deleteTeam(env: Env, id: string): Promise<void> {
+export async function deleteTeam(env: Runtime, id: string): Promise<void> {
   // Re-home the team's documents to the root of their owners' My documents FIRST
   // (docs/specs/013-workspace/team-shared-documents.md): deleting a team must never destroy members' work. Each
   // team document already carries an owner_id (its creator, or whoever a
@@ -195,26 +204,28 @@ export async function deleteTeam(env: Env, id: string): Promise<void> {
   // (a team's folder tree doesn't map onto a personal one). Explicit
   // deletes (not FK CASCADE — SQLite enforcement is opt-in via PRAGMA),
   // mirroring deleteFolder's re-home-then-delete rationale.
-  await env.DB.prepare('UPDATE documents SET team_id = NULL, folder_id = NULL WHERE team_id = ?')
+  await env.db
+    .prepare('UPDATE documents SET team_id = NULL, folder_id = NULL WHERE team_id = ?')
     .bind(id)
     .run();
-  await env.DB.prepare('DELETE FROM folders WHERE team_id = ?').bind(id).run();
-  await env.DB.prepare('DELETE FROM team_members WHERE team_id = ?').bind(id).run();
-  await env.DB.prepare('DELETE FROM teams WHERE id = ?').bind(id).run();
+  await env.db.prepare('DELETE FROM folders WHERE team_id = ?').bind(id).run();
+  await env.db.prepare('DELETE FROM team_members WHERE team_id = ?').bind(id).run();
+  await env.db.prepare('DELETE FROM teams WHERE id = ?').bind(id).run();
 }
 
 export async function updateTeamMemberRole(
-  env: Env,
+  env: Runtime,
   memberId: string,
   role: TeamRole,
 ): Promise<void> {
-  await env.DB.prepare('UPDATE team_members SET role = ?, updated_at = ? WHERE id = ?')
+  await env.db
+    .prepare('UPDATE team_members SET role = ?, updated_at = ? WHERE id = ?')
     .bind(role, Date.now(), memberId)
     .run();
 }
 
-export async function removeTeamMember(env: Env, memberId: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(memberId).run();
+export async function removeTeamMember(env: Runtime, memberId: string): Promise<void> {
+  await env.db.prepare('DELETE FROM team_members WHERE id = ?').bind(memberId).run();
 }
 
 // The last-admin guard inside the write itself (docs/specs/013-workspace/teams.md): a row that is a joined admin
@@ -227,12 +238,12 @@ const KEEPS_AN_ADMIN = `(role != 'admin' OR status != 'joined' OR EXISTS (
 
 /** The member's role set, unless that would leave the team no joined admin; whether it changed. */
 export async function updateTeamMemberRoleKeepingAdmin(
-  env: Env,
+  env: Runtime,
   memberId: string,
   role: TeamRole,
 ): Promise<boolean> {
   const guard = role === 'admin' ? '1' : KEEPS_AN_ADMIN;
-  const res = await env.DB.prepare(
+  const res = await env.db.prepare(
     `UPDATE team_members SET role = ?, updated_at = ? WHERE id = ? AND ${guard}`,
   )
     .bind(role, Date.now(), memberId)
@@ -241,8 +252,8 @@ export async function updateTeamMemberRoleKeepingAdmin(
 }
 
 /** The member removed, unless that would leave the team no joined admin; whether it went. */
-export async function removeTeamMemberKeepingAdmin(env: Env, memberId: string): Promise<boolean> {
-  const res = await env.DB.prepare(`DELETE FROM team_members WHERE id = ? AND ${KEEPS_AN_ADMIN}`)
+export async function removeTeamMemberKeepingAdmin(env: Runtime, memberId: string): Promise<boolean> {
+  const res = await env.db.prepare(`DELETE FROM team_members WHERE id = ? AND ${KEEPS_AN_ADMIN}`)
     .bind(memberId)
     .run();
   return (res.meta?.changes ?? 0) > 0;
@@ -252,10 +263,11 @@ export async function removeTeamMemberKeepingAdmin(env: Env, memberId: string): 
 // the team has. Status-filtered on purpose — a pending invite that
 // was promoted to admin hasn't accepted responsibility for the team,
 // so it must not satisfy the "someone can still manage this" check.
-export async function countTeamAdmins(env: Env, teamId: string): Promise<number> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND role = 'admin' AND status = 'joined'`,
-  )
+export async function countTeamAdmins(env: Runtime, teamId: string): Promise<number> {
+  const row = await env.db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND role = 'admin' AND status = 'joined'`,
+    )
     .bind(teamId)
     .first<{ n: number }>();
   return row?.n ?? 0;
@@ -266,11 +278,12 @@ export async function countTeamAdmins(env: Env, teamId: string): Promise<number>
 // user_id qualify — a pending-admin invite has no identity to email yet,
 // and a member isn't an admin. The notification layer resolves each id to a
 // verified address via email_lifecycle.
-export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<string[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT user_id FROM team_members
+export async function listTeamAdminUserIds(env: Runtime, teamId: string): Promise<string[]> {
+  const { results } = await env.db
+    .prepare(
+      `SELECT user_id FROM team_members
       WHERE team_id = ? AND role = 'admin' AND status = 'joined' AND user_id IS NOT NULL`,
-  )
+    )
     .bind(teamId)
     .all<{ user_id: string }>();
   return (results ?? []).map((r) => r.user_id);
@@ -298,11 +311,13 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 // share links and passwords among them, check nothing else), so work left
 // owned by somebody who has gone stays open to them. The folders go too, so
 // no team row is left owned by a departed (or deleted) account.
-async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
-  await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+async function moveTeamWork(env: Runtime, teamId: string, fromUserId: string, toUserId: string) {
+  await env.db
+    .prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();
-  await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+  await env.db
+    .prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();
 }
@@ -311,30 +326,35 @@ async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUser
 // in the team to the remaining joined member detachUserFromTeams would pick,
 // the earliest admin, else the earliest member. Call BEFORE the membership
 // row goes. A no-op when nobody else has joined.
-export async function handTeamWorkToHeir(env: Env, teamId: string, userId: string): Promise<void> {
-  const heir = await env.DB.prepare(
-    `SELECT user_id FROM team_members
+export async function handTeamWorkToHeir(
+  env: Runtime,
+  teamId: string,
+  userId: string,
+): Promise<void> {
+  const heir = await env.db
+    .prepare(
+      `SELECT user_id FROM team_members
       WHERE team_id = ? AND user_id != ? AND status = 'joined' AND user_id IS NOT NULL
       ORDER BY (role = 'admin') DESC, created_at ASC, id ASC
       LIMIT 1`,
-  )
+    )
     .bind(teamId, userId)
     .first<{ user_id: string }>();
   if (heir) await moveTeamWork(env, teamId, userId, heir.user_id);
 }
 
-export async function detachUserFromTeams(env: Env, userId: string): Promise<void> {
-  const memberships = await env.DB.prepare(
-    'SELECT id, team_id, status FROM team_members WHERE user_id = ?',
-  )
+export async function detachUserFromTeams(env: Runtime, userId: string): Promise<void> {
+  const memberships = await env.db
+    .prepare('SELECT id, team_id, status FROM team_members WHERE user_id = ?')
     .bind(userId)
     .all<{ id: string; team_id: string; status: string }>();
   for (const m of memberships.results ?? []) {
-    const others = await env.DB.prepare(
-      `SELECT id, user_id, role FROM team_members
+    const others = await env.db
+      .prepare(
+        `SELECT id, user_id, role FROM team_members
         WHERE team_id = ? AND user_id != ? AND status = 'joined' AND user_id IS NOT NULL
         ORDER BY created_at ASC, id ASC`,
-    )
+      )
       .bind(m.team_id, userId)
       .all<{ id: string; user_id: string; role: string }>();
     const remaining = others.results ?? [];
@@ -344,9 +364,10 @@ export async function detachUserFromTeams(env: Env, userId: string): Promise<voi
     }
     const heir = remaining.find((r) => r.role === 'admin') ?? remaining[0];
     if (heir) await moveTeamWork(env, m.team_id, userId, heir.user_id);
-    await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(m.id).run();
+    await env.db.prepare('DELETE FROM team_members WHERE id = ?').bind(m.id).run();
     if (heir && !remaining.some((r) => r.role === 'admin')) {
-      await env.DB.prepare(`UPDATE team_members SET role = 'admin' WHERE id = ?`)
+      await env.db
+        .prepare(`UPDATE team_members SET role = 'admin' WHERE id = ?`)
         .bind(heir.id)
         .run();
     }
@@ -355,10 +376,9 @@ export async function detachUserFromTeams(env: Env, userId: string): Promise<voi
 
 // Joined-member count for a team (the public "N members" number the
 // invite-link landing shows). Excludes pending invites.
-export async function countJoinedMembers(env: Env, teamId: string): Promise<number> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND status = 'joined'`,
-  )
+export async function countJoinedMembers(env: Runtime, teamId: string): Promise<number> {
+  const row = await env.db
+    .prepare(`SELECT COUNT(*) AS n FROM team_members WHERE team_id = ? AND status = 'joined'`)
     .bind(teamId)
     .first<{ n: number }>();
   return row?.n ?? 0;

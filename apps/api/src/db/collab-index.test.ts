@@ -1,6 +1,7 @@
+import type { DbStatement } from '@livediagram/runtime';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import {
   collabIndexCopyStatements,
   collabIndexStatements,
@@ -21,11 +22,11 @@ function fakeEnv(results: unknown[][] = []) {
   const batches: Bound[][] = [];
   let call = 0;
   const env = {
-    DB: {
+    db: {
       prepare: (sql: string) => ({
         // `all` answers the cards read's alias lookup (no aliases), the one read outside the batch.
         bind: (...args: unknown[]) =>
-          ({ sql, args, all: async () => ({ results: [] }) }) as unknown as D1PreparedStatement,
+          ({ sql, args, all: async () => ({ results: [] }) }) as unknown as DbStatement,
       }),
       batch: vi.fn(async (stmts: Bound[]) => {
         batches.push(stmts);
@@ -33,7 +34,7 @@ function fakeEnv(results: unknown[][] = []) {
         return out;
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   return { env, batches };
 }
 

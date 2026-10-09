@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { sqliteD1 } from './test-sqlite-d1';
 import { liveDoc } from './db/test-trash-fixtures';
 import { makeTestRouteContext } from './routes/test-route-context';
-import type { Env } from './types';
+import type { Runtime } from './types';
 import {
   GUEST_VOTERS_PER_NETWORK,
   admitGuestVoter,
@@ -70,7 +70,7 @@ describe('refuseGuestVoteOverCap', () => {
   it('lets a verified account vote without touching the ledger', async () => {
     const batch = vi.fn();
     const ctx = makeTestRouteContext('POST', '/api/documents/d1/items/i1/vote', {
-      env: { DB: { batch } } as unknown as Env,
+      env: { db: { batch } } as unknown as Runtime,
     });
     ctx.verifiedUserId = 'user_1';
     expect(await refuseGuestVoteOverCap(ctx, 'd1', 'user_1')).toBeNull();

@@ -3,7 +3,7 @@ import { OVERVIEW_TAB_BATCH } from '@livediagram/document-views';
 import type { Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { getDocument } from '../db/documents';
 import { answerOverview, parseViewQuery, type ParsedView } from './document-views-route';
 import { handleDocuments } from './documents';
@@ -80,8 +80,8 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown, who: W
 async function setUp(extraTabs = 0, room?: unknown) {
   const db = sqliteD1({
     TELEMETRY_ENABLED: 'true',
-    ...(room ? { DOCUMENT_ROOM: room } : {}),
-  } as unknown as Partial<Env>);
+    ...(room ? { rooms: room } : {}),
+  } as unknown as Partial<Runtime>);
   const tabs = [
     { id: 't1', name: 'Architecture', elements: ELEMENTS },
     ...Array.from({ length: extraTabs + 1 }, (_, i) => ({
@@ -196,8 +196,7 @@ type Selection = { elementIds: string[]; name: string; color: string; mine: bool
 function room(selections: Selection[] | 'down') {
   const asked: string[] = [];
   const binding = {
-    idFromName: (name: string) => name,
-    get: () => ({
+    for: () => ({
       fetch: async (input: string) => {
         asked.push(input);
         if (selections === 'down') return new Response('no', { status: 500 });

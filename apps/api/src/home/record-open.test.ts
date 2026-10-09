@@ -110,7 +110,7 @@ describe('recordDocumentOpen', () => {
   it('logs and swallows a failure', async () => {
     const broken = {
       ...db.env,
-      DB: {
+      db: {
         prepare: () => {
           throw new Error('d1 down');
         },

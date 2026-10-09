@@ -2,18 +2,18 @@
 // the three-field vocabulary + a server-stamped timestamp. No owner /
 // IP column.
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export async function insertTelemetryEvents(
-  env: Env,
+  env: Runtime,
   events: { category: string; action: string; type: string | null }[],
   ts: number,
 ): Promise<void> {
   if (events.length === 0) return;
-  const stmt = env.DB.prepare(
+  const stmt = env.db.prepare(
     'INSERT INTO events (category, action, type, ts) VALUES (?, ?, ?, ?)',
   );
-  await env.DB.batch(events.map((e) => stmt.bind(e.category, e.action, e.type, ts)));
+  await env.db.batch(events.map((e) => stmt.bind(e.category, e.action, e.type, ts)));
 }
 
 // Retention sweep: drop rows older than `cutoffMs`. Wired to the
@@ -22,8 +22,8 @@ export async function insertTelemetryEvents(
 // "Retention"). The events_ts_idx supports the range scan. Returns
 // the row count deleted so the handler can log it for observability,
 // mirroring the other retention sweeps.
-export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<number> {
-  const result = await env.DB.prepare('DELETE FROM events WHERE ts < ?').bind(cutoffMs).run();
+export async function deleteOldEvents(env: Runtime, cutoffMs: number): Promise<number> {
+  const result = await env.db.prepare('DELETE FROM events WHERE ts < ?').bind(cutoffMs).run();
   return result.meta.changes ?? 0;
 }
 
@@ -40,18 +40,19 @@ export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<numbe
 // zero rather than being dropped. The events_ts_idx covers the range
 // filter.
 export async function telemetryDailyCountsSince(
-  env: Env,
+  env: Runtime,
   since: number,
 ): Promise<
   { day: string; category: string; action: string; type: string | null; count: number }[]
 > {
-  const result = await env.DB.prepare(
-    `SELECT date(ts / 1000, 'unixepoch') AS day, category, action, type, COUNT(*) AS count
+  const result = await env.db
+    .prepare(
+      `SELECT date(ts / 1000, 'unixepoch') AS day, category, action, type, COUNT(*) AS count
        FROM events
       WHERE ts >= ?
       GROUP BY day, category, action, type
       ORDER BY day ASC`,
-  )
+    )
     .bind(since)
     .all<{ day: string; category: string; action: string; type: string | null; count: number }>();
   return result.results ?? [];

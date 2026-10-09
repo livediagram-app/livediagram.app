@@ -5,6 +5,7 @@
 // SSRF before any fetch and the read is bounded. Always returns 200 with at
 // least the resolved url (the card falls back to the bare URL on a miss).
 
+import type { HtmlTransformerFactory } from '@livediagram/runtime';
 import type { UnfurlResult } from '@livediagram/api-schema';
 import { badRequest, json, notFound, rateLimited } from '../responses';
 import { clientRateKey } from '../client-ip';
@@ -113,10 +114,14 @@ export function buildUnfurlResult(collected: CollectedMeta, finalUrl: string): U
 
 // --- Handler --------------------------------------------------------------
 
-async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMeta> {
+async function collectMeta(
+  res: Response,
+  maxBytes: number,
+  html: HtmlTransformerFactory,
+): Promise<CollectedMeta> {
   const collected: CollectedMeta = {};
   let titleBuf = '';
-  const rewriter = new HTMLRewriter()
+  const rewriter = html()
     .on('title', {
       text(t) {
         titleBuf += t.text;
@@ -163,9 +168,10 @@ export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
   if (segments.length !== 2 || request.method !== 'GET') return notFound();
 
   // Per-IP throttle: it's an unauthenticated outbound fetch, so bound abuse.
-  if (env.UNFURL_RATE_LIMITER) {
+  if (env.limiters?.UNFURL_RATE_LIMITER) {
     const ip = clientRateKey(request);
-    if (!(await env.UNFURL_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
+    if (!(await env.limiters?.UNFURL_RATE_LIMITER?.limit({ key: ip }))?.success)
+      return rateLimited();
   }
 
   const target = url.searchParams.get('url');
@@ -201,6 +207,6 @@ export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
     // Not an HTML page (PDF, image, …): no metadata, but still offer a favicon.
     return json(buildUnfurlResult({}, finalUrl));
   }
-  const collected = await collectMeta(res, MAX_HTML_BYTES);
+  const collected = await collectMeta(res, MAX_HTML_BYTES, env.html);
   return json(buildUnfurlResult(collected, finalUrl));
 }

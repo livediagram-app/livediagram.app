@@ -5,7 +5,7 @@
 // member CRUD stays in teams.ts.
 
 import type { Team, TeamInvite, TeamMember } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from './teams';
 
 // The lazy invite claim (docs/specs/013-workspace/teams.md): connect every pending row for this
@@ -14,28 +14,30 @@ import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from 
 // visit whether they signed up before or after the invite. Idempotent
 // and cheap when there's nothing pending (indexed on email).
 export async function connectInvitesByEmail(
-  env: Env,
+  env: Runtime,
   userId: string,
   email: string,
 ): Promise<void> {
-  await env.DB.prepare(
-    'UPDATE team_members SET user_id = ?, updated_at = ? WHERE email = ? AND user_id IS NULL',
-  )
+  await env.db
+    .prepare(
+      'UPDATE team_members SET user_id = ?, updated_at = ? WHERE email = ? AND user_id IS NULL',
+    )
     .bind(userId, Date.now(), email)
     .run();
 }
 
 // The caller's pending invites, oldest first: their own 'invited'
 // rows joined with enough of the team to decide on (docs/specs/013-workspace/teams.md).
-export async function listInvitesByUser(env: Env, userId: string): Promise<TeamInvite[]> {
-  const result = await env.DB.prepare(
-    `SELECT t.id, t.name, t.organisation, t.created_at, t.updated_at,
+export async function listInvitesByUser(env: Runtime, userId: string): Promise<TeamInvite[]> {
+  const result = await env.db
+    .prepare(
+      `SELECT t.id, t.name, t.organisation, t.created_at, t.updated_at,
             m.id AS member_id, m.created_at AS invited_at,
             ${JOINED_COUNT} AS member_count
      FROM teams t
      JOIN team_members m ON m.team_id = t.id AND m.user_id = ? AND m.status = 'invited'
      ORDER BY m.created_at ASC`,
-  )
+    )
     .bind(userId)
     .all<TeamRow & { member_id: string; invited_at: number; member_count: number }>();
   return (result.results ?? []).map((row) => ({
@@ -49,8 +51,9 @@ export async function listInvitesByUser(env: Env, userId: string): Promise<TeamI
 // The explicit yes (docs/specs/013-workspace/teams.md): flips the caller's own invite row to
 // 'joined'. Row-level authorisation (own row, currently invited)
 // happens in the route; this is the plain write.
-export async function acceptTeamMember(env: Env, memberId: string): Promise<void> {
-  await env.DB.prepare(`UPDATE team_members SET status = 'joined', updated_at = ? WHERE id = ?`)
+export async function acceptTeamMember(env: Runtime, memberId: string): Promise<void> {
+  await env.db
+    .prepare(`UPDATE team_members SET status = 'joined', updated_at = ? WHERE id = ?`)
     .bind(Date.now(), memberId)
     .run();
 }
@@ -63,14 +66,15 @@ export const TEAM_INVITE_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 // Turn the link on (token + expiry) or off (both null). Regenerating
 // while it's on rotates the token and resets the week.
 export async function setTeamInviteLink(
-  env: Env,
+  env: Runtime,
   teamId: string,
   token: string | null,
   expiresAt: number | null,
 ): Promise<void> {
-  await env.DB.prepare(
-    'UPDATE teams SET invite_link_token = ?, invite_link_expires_at = ?, updated_at = ? WHERE id = ?',
-  )
+  await env.db
+    .prepare(
+      'UPDATE teams SET invite_link_token = ?, invite_link_expires_at = ?, updated_at = ? WHERE id = ?',
+    )
     .bind(token, expiresAt, Date.now(), teamId)
     .run();
 }
@@ -78,12 +82,11 @@ export async function setTeamInviteLink(
 // The team's current link (admin view). Null when off OR expired — an
 // expired link reads as off so the admin sees they need to turn it on.
 export async function getTeamInviteLink(
-  env: Env,
+  env: Runtime,
   teamId: string,
 ): Promise<{ token: string; expiresAt: number } | null> {
-  const row = await env.DB.prepare(
-    'SELECT invite_link_token, invite_link_expires_at FROM teams WHERE id = ?',
-  )
+  const row = await env.db
+    .prepare('SELECT invite_link_token, invite_link_expires_at FROM teams WHERE id = ?')
     .bind(teamId)
     .first<{ invite_link_token: string | null; invite_link_expires_at: number | null }>();
   if (!row?.invite_link_token || !row.invite_link_expires_at) return null;
@@ -93,11 +96,12 @@ export async function getTeamInviteLink(
 
 // Resolve a join token to its team, ONLY when the link is on and
 // unexpired. Null = unknown / turned-off / expired token.
-export async function getTeamByInviteToken(env: Env, token: string): Promise<Team | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${TEAM_COLS} FROM teams
+export async function getTeamByInviteToken(env: Runtime, token: string): Promise<Team | null> {
+  const row = await env.db
+    .prepare(
+      `SELECT ${TEAM_COLS} FROM teams
      WHERE invite_link_token = ? AND invite_link_expires_at > ?`,
-  )
+    )
     .bind(token, Date.now())
     .first<TeamRow>();
   return row ? rowToTeam(row) : null;
@@ -108,7 +112,7 @@ export async function getTeamByInviteToken(env: Env, token: string): Promise<Tea
 // invite for the caller is accepted in place rather than duplicated.
 // Returns null when the token is invalid / expired.
 export async function joinTeamByInviteToken(
-  env: Env,
+  env: Runtime,
   token: string,
   userId: string,
   callerEmail: string | null,
@@ -137,10 +141,11 @@ export async function joinTeamByInviteToken(
   const emailForRow =
     callerEmail && !(await teamHasEmail(env, team.id, callerEmail)) ? callerEmail : null;
   const now = Date.now();
-  await env.DB.prepare(
-    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
+  await env.db
+    .prepare(
+      `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
      VALUES (?, ?, ?, ?, 'member', 'joined', ?, ?)`,
-  )
+    )
     .bind(crypto.randomUUID(), team.id, userId, emailForRow, now, now)
     .run();
   return { teamId: team.id, alreadyMember: false };
@@ -148,25 +153,25 @@ export async function joinTeamByInviteToken(
 
 // True when the address already has a row (pending or connected) on
 // this team — the duplicate-invite gate.
-export async function teamHasEmail(env: Env, teamId: string, email: string): Promise<boolean> {
-  const row = await env.DB.prepare(
-    'SELECT 1 AS x FROM team_members WHERE team_id = ? AND email = ?',
-  )
+export async function teamHasEmail(env: Runtime, teamId: string, email: string): Promise<boolean> {
+  const row = await env.db
+    .prepare('SELECT 1 AS x FROM team_members WHERE team_id = ? AND email = ?')
     .bind(teamId, email)
     .first<{ x: number }>();
   return row !== null;
 }
 
 export async function addTeamMember(
-  env: Env,
+  env: Runtime,
   m: { teamId: string; email: string },
 ): Promise<TeamMember> {
   const now = Date.now();
   const id = crypto.randomUUID();
-  await env.DB.prepare(
-    `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
+  await env.db
+    .prepare(
+      `INSERT INTO team_members (id, team_id, user_id, email, role, status, created_at, updated_at)
      VALUES (?, ?, NULL, ?, 'member', 'invited', ?, ?)`,
-  )
+    )
     .bind(id, m.teamId, m.email, now, now)
     .run();
   return {

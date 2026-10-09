@@ -5,14 +5,14 @@
 // important. Best-effort; a no-key deployment or a missing address is a no-op.
 
 import { apiTokensExpiringSoon, getOwnerEmail, markApiTokenExpiryWarned } from '../db';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import { tokenExpiringEmail } from './templates';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const SWEEP_LIMIT = 100; // bounded per daily run, soonest-expiring first
 
-export async function runTokenExpirySweep(env: Env): Promise<void> {
+export async function runTokenExpirySweep(env: Runtime): Promise<void> {
   if (!emailEnabled(env)) return;
   const now = Date.now();
   const tokens = await apiTokensExpiringSoon(env, now, WEEK_MS, SWEEP_LIMIT);

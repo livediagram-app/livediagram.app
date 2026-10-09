@@ -45,7 +45,7 @@ describe('copyItemsStatements', () => {
 
   it('drops the assignee, votes and comments and neutralises the authors on a Community copy', async () => {
     const db = seeded();
-    await db.env.DB.batch(copyItemsStatements(db.env, 'src', 'dst', null, true));
+    await db.env.db.batch(copyItemsStatements(db.env, 'src', 'dst', null, true));
     const row = copied(db);
     expect(JSON.parse(row.fields)).toEqual({ title: 'Ship', status: 'todo' });
     expect(row.created_by).not.toContain('Ali');
@@ -54,7 +54,7 @@ describe('copyItemsStatements', () => {
 
   it('copies everything as is for an ordinary copy', async () => {
     const db = seeded();
-    await db.env.DB.batch(copyItemsStatements(db.env, 'src', 'dst', ['i1']));
+    await db.env.db.batch(copyItemsStatements(db.env, 'src', 'dst', ['i1']));
     const row = copied(db);
     expect(JSON.parse(row.fields).assignee.name).toBe('Ali');
     expect(JSON.parse(row.fields).comments.comments).toHaveLength(1);

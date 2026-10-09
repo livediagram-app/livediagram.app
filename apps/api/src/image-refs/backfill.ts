@@ -17,7 +17,7 @@ import {
   readImageRefsBackfill,
   restartImageRefsBackfill,
 } from '../db/image-refs';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { imageRefIdsFromText } from './extract';
 
 // Tabs per page. A page parses at most this many bodies inside D1, each at
@@ -34,7 +34,7 @@ export const IMAGE_REFS_BACKFILL_BUDGET_MS = 60 * 1000;
 export type ImageRefsBackfillResult = { state: 'settling' | 'running' | 'complete' };
 
 export async function runImageRefsBackfill(
-  env: Env,
+  env: Runtime,
   now: number,
   clock: () => number = Date.now,
 ): Promise<ImageRefsBackfillResult> {
@@ -64,7 +64,7 @@ export async function runImageRefsBackfill(
     const to = Math.min(cursor + IMAGE_REFS_BACKFILL_PAGE_ROWS, max);
     await indexCorruptTabs(env, cursor, to);
     // The page and its cursor land together, so a failed run redoes the page.
-    await env.DB.batch([
+    await env.db.batch([
       imageRefIndexPageStatement(env, cursor, to),
       imageRefsBackfillAdvanceStatement(env, to),
     ]);
@@ -76,14 +76,14 @@ export async function runImageRefsBackfill(
 
 // A body that isn't valid JSON gets nothing from the SQL extractor, so its
 // text is scanned instead: every id after an "imageId" key counts.
-async function indexCorruptTabs(env: Env, fromRowId: number, toRowId: number): Promise<void> {
+async function indexCorruptTabs(env: Runtime, fromRowId: number, toRowId: number): Promise<void> {
   let after = fromRowId;
   for (;;) {
     const bad = await nextCorruptTabMentioningImages(env, after, toRowId);
     if (!bad) return;
     const ids = imageRefIdsFromText(bad.data);
     const stmts = imageRefAddStatements(env, bad.id, ids);
-    if (stmts.length > 0) await env.DB.batch(stmts);
+    if (stmts.length > 0) await env.db.batch(stmts);
     console.warn(`image-refs backfill: corrupt tab ${bad.id} scanned as text (${ids.length} ids)`);
     after = bad.rid;
   }

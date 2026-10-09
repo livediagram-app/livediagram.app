@@ -27,7 +27,7 @@
 //   regardless of role).
 
 import { communityLinkAccess, getMembership } from '../db';
-import type { Env, ShareRole } from '../types';
+import type { ShareRole, Runtime } from '../types';
 import {
   isPersonalOwner,
   shareLinkForDocument,
@@ -42,7 +42,7 @@ import {
 // anyone who learned a member's id) forge access. Guests (callerId null)
 // can never be members.
 async function isJoinedTeamMember(
-  env: Env,
+  env: Runtime,
   teamId: string | null,
   caller: string | null,
 ): Promise<boolean> {
@@ -76,7 +76,7 @@ export type DocumentGrant = {
 // fetch, copy, thumbnails, images, the room) ask for the
 // grant itself and apply its scope.
 export async function resolveDocumentGrant(
-  env: Env,
+  env: Runtime,
   documentId: string,
   owner: string | null,
   shareCode: string | null,
@@ -124,7 +124,7 @@ const FULL_EDIT: DocumentGrant = {
 // refuses a scoped visitor rather than handing them the whole document.
 async function canAccessDocument(
   needsEdit: boolean,
-  env: Env,
+  env: Runtime,
   documentId: string,
   owner: string | null,
   shareCode: string | null,
@@ -154,7 +154,7 @@ async function canAccessDocument(
 }
 
 export async function canEditDocument(
-  env: Env,
+  env: Runtime,
   documentId: string,
   owner: string | null,
   shareCode: string | null,
@@ -179,7 +179,7 @@ export async function canEditDocument(
 }
 
 export async function canReadDocument(
-  env: Env,
+  env: Runtime,
   documentId: string,
   owner: string | null,
   shareCode: string | null,

@@ -4,7 +4,7 @@
 
 import { apiTokenExpiry, generateApiToken, hashApiToken } from '../auth/api-token';
 import { rowToApiToken, type ApiTokenRow } from '../api-token-row';
-import type { ApiTokenDTO, Env } from '../types';
+import type { ApiTokenDTO, Runtime } from '../types';
 
 const COLS =
   'id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only';
@@ -13,27 +13,29 @@ const COLS =
 // integration set, low enough to keep the list + table tidy.
 export const MAX_API_TOKENS_PER_OWNER = 10;
 
-export async function listApiTokensByOwner(env: Env, ownerId: string): Promise<ApiTokenDTO[]> {
-  const result = await env.DB.prepare(
-    `SELECT ${COLS} FROM api_tokens WHERE owner_id = ? AND revoked = 0 ORDER BY created_at DESC`,
-  )
+export async function listApiTokensByOwner(env: Runtime, ownerId: string): Promise<ApiTokenDTO[]> {
+  const result = await env.db
+    .prepare(
+      `SELECT ${COLS} FROM api_tokens WHERE owner_id = ? AND revoked = 0 ORDER BY created_at DESC`,
+    )
     .bind(ownerId)
     .all<ApiTokenRow>();
   return (result.results ?? []).map(rowToApiToken);
 }
 
 // Live = not revoked and not expired. Drives the per-owner creation cap.
-export async function countLiveApiTokens(env: Env, ownerId: string): Promise<number> {
-  const row = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = ? AND revoked = 0 AND expires_at > ?',
-  )
+export async function countLiveApiTokens(env: Runtime, ownerId: string): Promise<number> {
+  const row = await env.db
+    .prepare(
+      'SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = ? AND revoked = 0 AND expires_at > ?',
+    )
     .bind(ownerId, Date.now())
     .first<{ n: number }>();
   return row?.n ?? 0;
 }
 
 export async function createApiToken(
-  env: Env,
+  env: Runtime,
   t: {
     id: string;
     ownerId: string;
@@ -46,10 +48,11 @@ export async function createApiToken(
     readOnly?: boolean;
   },
 ): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
+  await env.db
+    .prepare(
+      `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
      VALUES (?, ?, ?, ?, ?, NULL, ?, 0, ?)`,
-  )
+    )
     .bind(t.id, t.ownerId, t.tokenHash, t.name, t.createdAt, t.expiresAt, t.readOnly ? 1 : 0)
     .run();
 }
@@ -70,7 +73,7 @@ export async function createApiToken(
  * is never retrievable again.
  */
 export async function mintApiToken(
-  env: Env,
+  env: Runtime,
   t: { ownerId: string; name: string | null; readOnly?: boolean },
 ): Promise<{ secret: string; id: string; expiresAt: number } | null> {
   if ((await countLiveApiTokens(env, t.ownerId)) >= MAX_API_TOKENS_PER_OWNER) return null;
@@ -98,18 +101,20 @@ export async function mintApiToken(
 // rather than the owner, so one runaway integration can't burn the owner's
 // interactive-app budget.
 export async function resolveApiToken(
-  env: Env,
+  env: Runtime,
   token: string,
 ): Promise<{ ownerId: string; tokenId: string; readOnly: boolean } | null> {
   const hash = await hashApiToken(token);
   const now = Date.now();
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, read_only FROM api_tokens WHERE token_hash = ? AND revoked = 0 AND expires_at > ?',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT id, owner_id, read_only FROM api_tokens WHERE token_hash = ? AND revoked = 0 AND expires_at > ?',
+    )
     .bind(hash, now)
     .first<{ id: string; owner_id: string; read_only: number }>();
   if (!row) return null;
-  await env.DB.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?')
+  await env.db
+    .prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?')
     .bind(now, row.id)
     .run();
   return { ownerId: row.owner_id, tokenId: row.id, readOnly: row.read_only === 1 };
@@ -117,10 +122,9 @@ export async function resolveApiToken(
 
 // Revoke one of the owner's own tokens. Scoped by owner_id so a caller can
 // only revoke their own. Returns whether a live row was actually flipped.
-export async function revokeApiToken(env: Env, ownerId: string, id: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE api_tokens SET revoked = 1 WHERE id = ? AND owner_id = ? AND revoked = 0',
-  )
+export async function revokeApiToken(env: Runtime, ownerId: string, id: string): Promise<boolean> {
+  const res = await env.db
+    .prepare('UPDATE api_tokens SET revoked = 1 WHERE id = ? AND owner_id = ? AND revoked = 0')
     .bind(id, ownerId)
     .run();
   return (res.meta?.changes ?? 0) > 0;
@@ -132,17 +136,18 @@ export async function revokeApiToken(env: Env, ownerId: string, id: string): Pro
 // soonest-first.
 type ExpiringToken = { id: string; ownerId: string; name: string | null; expiresAt: number };
 export async function apiTokensExpiringSoon(
-  env: Env,
+  env: Runtime,
   now: number,
   windowMs: number,
   limit: number,
 ): Promise<ExpiringToken[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT id, owner_id, name, expires_at FROM api_tokens
+  const { results } = await env.db
+    .prepare(
+      `SELECT id, owner_id, name, expires_at FROM api_tokens
      WHERE revoked = 0 AND expiry_warned_at IS NULL
        AND expires_at > ? AND expires_at <= ?
      ORDER BY expires_at ASC LIMIT ?`,
-  )
+    )
     .bind(now, now + windowMs, limit)
     .all<{ id: string; owner_id: string; name: string | null; expires_at: number }>();
   return (results ?? []).map((r) => ({
@@ -153,8 +158,9 @@ export async function apiTokensExpiringSoon(
   }));
 }
 
-export async function markApiTokenExpiryWarned(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('UPDATE api_tokens SET expiry_warned_at = ? WHERE id = ?')
+export async function markApiTokenExpiryWarned(env: Runtime, id: string): Promise<void> {
+  await env.db
+    .prepare('UPDATE api_tokens SET expiry_warned_at = ? WHERE id = ?')
     .bind(Date.now(), id)
     .run();
 }

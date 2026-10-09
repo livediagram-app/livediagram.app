@@ -240,9 +240,9 @@ describe('pairing requests', () => {
 
 // Another answer lands between the read and the flip: the env runs `sql` right after the request is read.
 function raceAfterRead(db: SqliteD1, sql: string): SqliteD1 {
-  const prepare = db.env.DB.prepare.bind(db.env.DB);
+  const prepare = db.env.db.prepare.bind(db.env.db);
   const DB = {
-    ...db.env.DB,
+    ...db.env.db,
     prepare: (query: string) => {
       const statement = prepare(query);
       if (!query.includes('JOIN api_tokens t ON t.id = r.token_id')) return statement;
@@ -262,7 +262,7 @@ function raceAfterRead(db: SqliteD1, sql: string): SqliteD1 {
       };
     },
   };
-  return { ...db, env: { ...db.env, DB } as SqliteD1['env'] };
+  return { ...db, env: { ...db.env, db: DB } as SqliteD1['env'] };
 }
 
 describe('racing answers', () => {
@@ -300,11 +300,11 @@ describe('racing answers', () => {
   it('refuses to report a pairing nobody can find after approval', async () => {
     const db = arrange();
     await pending(db);
-    const batch = db.env.DB.batch.bind(db.env.DB);
+    const batch = db.env.db.batch.bind(db.env.db);
     const env = {
       ...db.env,
-      DB: {
-        ...db.env.DB,
+      db: {
+        ...db.env.db,
         batch: async (statements: Parameters<typeof batch>[0]) => {
           const results = await batch(statements);
           db.sql.exec('DELETE FROM workbench_pairings');

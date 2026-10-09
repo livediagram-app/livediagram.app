@@ -5,7 +5,7 @@
 // network failure can't fail or delay the request that triggered it (callers
 // run sends inside ctx.waitUntil or the daily cron).
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
@@ -13,13 +13,13 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 const DEFAULT_FROM = 'livediagram <hello@livediagram.app>';
 const DEFAULT_BASE_URL = 'https://livediagram.app';
 
-export function emailEnabled(env: Env): boolean {
+export function emailEnabled(env: Runtime): boolean {
   return typeof env.RESEND_API_KEY === 'string' && env.RESEND_API_KEY.length > 0;
 }
 
 // Public origin for links in emails. Trailing slashes stripped so callers can
 // always template `${appBaseUrl(env)}/path`.
-export function appBaseUrl(env: Env): string {
+export function appBaseUrl(env: Runtime): string {
   const base = env.APP_BASE_URL ?? DEFAULT_BASE_URL;
   // A reverse scan rather than /\/+$/. That pattern is unanchored, so on a
   // value that does not end in a slash the engine retries from every offset,
@@ -46,7 +46,7 @@ type EmailMessage = {
   unsubscribeUrl?: string;
 };
 
-export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: boolean }> {
+export async function sendEmail(env: Runtime, msg: EmailMessage): Promise<{ sent: boolean }> {
   if (!emailEnabled(env)) return { sent: false };
   try {
     const headers: Record<string, string> = msg.unsubscribeUrl

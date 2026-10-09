@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -11,8 +11,7 @@ import { handleDocuments } from './documents';
 function roomRecorder(status = 204) {
   const bodies: unknown[] = [];
   const binding = {
-    idFromName: (name: string) => name,
-    get: () => ({
+    for: () => ({
       fetch: async (_url: string, init?: RequestInit) => {
         bodies.push(init?.body ? JSON.parse(String(init.body)) : null);
         if (status === 0) throw new Error('room down');
@@ -42,7 +41,7 @@ function call(db: SqliteD1, method: string, path: string, body: unknown, token: 
 async function setUp(status?: number) {
   pending = [];
   const room = roomRecorder(status);
-  const db = sqliteD1({ DOCUMENT_ROOM: room.binding } as unknown as Partial<Env>);
+  const db = sqliteD1({ rooms: room.binding } as unknown as Partial<Runtime>);
   await call(
     db,
     'POST',

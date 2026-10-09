@@ -58,7 +58,7 @@ const ops: ElementOp[] = [
 ];
 
 async function store(db: SqliteD1, r: ChangesetRecord): Promise<void> {
-  await db.env.DB.batch([
+  await db.env.db.batch([
     insertChangesetStatement(db.env, r),
     insertChangesetPartStatement(db.env, r.id, 'ops', JSON.stringify(ops)),
     insertChangesetPartStatement(db.env, r.id, 'inverse', '[]'),
@@ -84,7 +84,7 @@ describe('changeset records', () => {
   it('never lands without its tab write: a stale tab write aborts the record with it', async () => {
     const db = await documentWithTab();
     await expect(
-      db.env.DB.batch([
+      db.env.db.batch([
         ...tabWriteStatements(db.env, 'D', tab, 0, { expected: 0 }),
         insertChangesetStatement(db.env, record()),
       ]),

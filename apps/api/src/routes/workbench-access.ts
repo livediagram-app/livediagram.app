@@ -7,12 +7,12 @@ import type { WorkbenchRole } from '@livediagram/api-schema';
 import { resolveDocumentGrant } from '../auth/document-access';
 import { getDocumentMeta, getTrashedDocumentMeta } from '../db';
 import { documentTrashed, notFound } from '../responses';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export type OwnerDocumentAccess = { documentId: string; role: WorkbenchRole };
 
 export async function ownerDocumentAccess(
-  env: Env,
+  env: Runtime,
   documentId: string,
   ownerId: string,
 ): Promise<OwnerDocumentAccess | Response> {

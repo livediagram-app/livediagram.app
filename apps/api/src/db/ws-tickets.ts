@@ -8,7 +8,7 @@
 // possession of a ticket proves exactly one thing: this browser passed
 // the REST access gates for this document moments ago.
 
-import type { Env, ShareRole } from '../types';
+import type { ShareRole, Runtime } from '../types';
 
 // Long enough to cover a slow page load between mint and upgrade; short
 // enough that a leaked ticket is useless almost immediately.
@@ -35,18 +35,19 @@ export type WsAdmission = {
 };
 
 export async function createWsTicket(
-  env: Env,
+  env: Runtime,
   documentId: string,
   admission: WsAdmission,
   now = Date.now(),
 ): Promise<string> {
   // Opportunistic sweep so the table never accumulates: every mint
   // clears anything already expired (volume is one row per room join).
-  await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
+  await env.db.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
-  await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-  )
+  await env.db
+    .prepare(
+      'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    )
     .bind(
       ticket,
       documentId,
@@ -67,14 +68,15 @@ export async function createWsTicket(
 // Document-scoped so a ticket minted for one document can't open another
 // document's room.
 export async function consumeWsTicket(
-  env: Env,
+  env: Runtime,
   ticket: string,
   documentId: string,
   now = Date.now(),
 ): Promise<WsAdmission | null> {
-  const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing',
-  )
+  const row = await env.db
+    .prepare(
+      'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing',
+    )
     .bind(ticket, documentId, now)
     .first<{
       role: string;

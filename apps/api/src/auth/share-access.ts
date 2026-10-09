@@ -8,7 +8,7 @@
 
 import { sha256Hex, type ShareLink } from '@livediagram/api-schema';
 import { getDocumentSharePassword, getShareLink, upgradeDocumentSharePassword } from '../db';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { hashSharePassword, verifySharePassword } from './share-password-hash';
 
 // The personal-document owner rule. The hybrid `owner` id (Clerk sub OR the
@@ -29,7 +29,7 @@ export function isPersonalOwner(
 // access through. Null for a missing code, an unknown / revoked one, or a
 // mismatch.
 export async function shareLinkForDocument(
-  env: Env,
+  env: Runtime,
   shareCode: string | null,
   documentId: string,
 ): Promise<ShareLink | null> {
@@ -83,7 +83,7 @@ export function clearVerifiedSharePasswords(): void {
 export type SharePasswordStatus = 'ok' | 'missing' | 'invalid';
 
 export async function sharePasswordStatus(
-  env: Env,
+  env: Runtime,
   documentId: string,
   attempt: SharePasswordAttempt | null,
 ): Promise<SharePasswordStatus> {
@@ -95,8 +95,11 @@ export async function sharePasswordStatus(
   if (isVerified(key, now)) return 'ok';
   // Every derivation spends one unit of the network's budget, so guessing is
   // bounded on every share-code door, and so is the CPU each guess costs.
-  if (env.SHARE_RATE_LIMITER) {
-    const { success } = await env.SHARE_RATE_LIMITER.limit({ key: `share-pw:${attempt.rateKey}` });
+  const limiter = env.limiters?.SHARE_RATE_LIMITER;
+  if (limiter) {
+    const { success } = await limiter.limit({
+      key: `share-pw:${attempt.rateKey}`,
+    });
     if (!success) {
       console.warn('[share-password] guess budget spent', { documentId });
       return 'invalid';
@@ -124,7 +127,7 @@ export async function sharePasswordStatus(
 }
 
 export async function sharePasswordOk(
-  env: Env,
+  env: Runtime,
   documentId: string,
   attempt: SharePasswordAttempt | null,
 ): Promise<boolean> {

@@ -31,7 +31,7 @@ export const pairingUrlOf = (ctx: RouteContext, code: string) =>
 
 // The mint and the pairing request share one bucket per token (WB42).
 export async function workbenchRateLimited(ctx: RouteContext, tokenId: string): Promise<boolean> {
-  const limiter = ctx.env.WORKBENCH_TICKET_RATE_LIMITER;
+  const limiter = ctx.env.limiters?.WORKBENCH_TICKET_RATE_LIMITER;
   if (!limiter) return false;
   return !(await limiter.limit({ key: `workbench-ticket:${tokenId}` })).success;
 }

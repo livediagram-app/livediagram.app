@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deleteAccount } from './account';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // deleteAccount wipes an owner's D1 rows AND the R2 objects the cascade
 // can't reach: image bytes (keyed by image id) and document SVG snapshots
@@ -13,7 +13,7 @@ function fakeEnv(opts: {
   imageIds?: string[];
   images?: { delete: (keys: string[]) => Promise<void> };
   sqlLog?: string[];
-}): Env {
+}): Runtime {
   const prepare = (sql: string) => {
     opts.sqlLog?.push(sql);
     return {
@@ -34,7 +34,7 @@ function fakeEnv(opts: {
   };
   const batch = (stmts: { run: () => Promise<unknown> }[]) =>
     Promise.all(stmts.map((s) => s.run()));
-  return { DB: { prepare, batch }, IMAGES: opts.images } as unknown as Env;
+  return { db: { prepare, batch }, objects: opts.images } as unknown as Runtime;
 }
 
 describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {

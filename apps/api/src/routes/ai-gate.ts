@@ -56,9 +56,11 @@ export async function aiGate(ctx: RouteContext, feature: AiFeature): Promise<Res
 
   if (request.method !== 'POST') return methodNotAllowed();
 
-  if (env.AI_RATE_LIMITER) {
+  const limiter = env.limiters?.AI_RATE_LIMITER;
+
+  if (limiter) {
     const ip = clientRateKey(request, 'unknown');
-    const { success } = await env.AI_RATE_LIMITER.limit({ key: ip });
+    const { success } = await limiter.limit({ key: ip });
     if (!success) return rateLimited();
   }
 

@@ -8,7 +8,7 @@ import {
   aiConfigured,
   resolveAiProvider,
 } from './ai-provider';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // Whose model serves which feature (docs/specs/007-editor/ai-assistance.md, "Each
 // feature has its own provider")? The keys answer it. What is pinned here is
@@ -16,7 +16,7 @@ import type { Env } from './types';
 // its OWN preference order, that a half-configured generic is not a
 // configuration, and that AI_MODEL never crosses from one provider to another.
 
-const env = (over: Partial<Env>) => over as Env;
+const env = (over: Partial<Runtime>) => over as unknown as Runtime;
 const BOTH = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' };
 
 afterEach(() => vi.restoreAllMocks());

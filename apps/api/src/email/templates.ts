@@ -5,7 +5,7 @@
 // plus a team name the inviter already chose.
 
 import { xmlEscape } from '@livediagram/icons';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { appBaseUrl } from './client';
 
 const BRAND = '#0ea5e9';
@@ -20,7 +20,7 @@ const ACCOUNT_FOOTER =
 
 // docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
 // the settings where the recipient can turn the category off in one click.
-function manageNotificationsFooter(env: Env, reason: string): string {
+function manageNotificationsFooter(env: Runtime, reason: string): string {
   const href = profilePath(env);
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
@@ -61,7 +61,7 @@ export type RenderedEmail = {
 //
 // The old `/explorer/profile` URL still redirects here, which matters because
 // every email already sent carries it and an unsubscribe link cannot rot.
-function profilePath(env: Env): string {
+function profilePath(env: Runtime): string {
   return `${appBaseUrl(env)}/explorer?settings=notifications`;
 }
 
@@ -122,7 +122,7 @@ function shell(section: Section): string {
 </body></html>`;
 }
 
-export function welcomeEmail(env: Env): RenderedEmail {
+export function welcomeEmail(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Welcome',
@@ -143,7 +143,7 @@ export function welcomeEmail(env: Env): RenderedEmail {
   };
 }
 
-export function week1Email(env: Env): RenderedEmail {
+export function week1Email(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Week1',
@@ -162,7 +162,7 @@ export function week1Email(env: Env): RenderedEmail {
   };
 }
 
-export function week2Email(env: Env): RenderedEmail {
+export function week2Email(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Week2',
@@ -183,7 +183,7 @@ export function week2Email(env: Env): RenderedEmail {
   };
 }
 
-export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmail {
+export function teamInviteEmail(env: Runtime, teamName: string | null): RenderedEmail {
   const base = appBaseUrl(env);
   const named = !!(teamName && teamName.trim());
   const name = named ? escapeHtml(teamName!.trim()) : 'a team';
@@ -203,7 +203,7 @@ export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmai
   };
 }
 
-export function accountDeletedEmail(env: Env): RenderedEmail {
+export function accountDeletedEmail(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'AccountDeleted',
@@ -228,7 +228,7 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
 // visitor's display name when known (already visible to the owner in live
 // presence / the Shared list); null falls back to "Someone".
 export function documentJoinedEmail(
-  env: Env,
+  env: Runtime,
   documentName: string,
   joinerName: string | null,
 ): RenderedEmail {
@@ -261,7 +261,7 @@ export function documentJoinedEmail(
 // inviting admin (they typed the address, they named the team), so this stays
 // within docs/specs/014-identity/transactional-email.md §7.
 export function inviteResponseEmail(
-  env: Env,
+  env: Runtime,
   teamName: string | null,
   responderEmail: string,
   accepted: boolean,
@@ -299,7 +299,7 @@ export function inviteResponseEmail(
 const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
 
 export function actionAssignedEmail(
-  env: Env,
+  env: Runtime,
   assignerName: string | null,
   documentName: string,
   documentId: string,
@@ -352,7 +352,7 @@ export function mentionQuote(text: string): string {
 }
 
 export function mentionedEmail(
-  env: Env,
+  env: Runtime,
   authorName: string | null,
   documentName: string,
   documentId: string,
@@ -413,7 +413,7 @@ const EXPIRY_MONTHS = [
   'December',
 ];
 export function tokenExpiringEmail(
-  env: Env,
+  env: Runtime,
   tokenName: string | null,
   expiresAt: number,
 ): RenderedEmail {
@@ -443,7 +443,7 @@ export function tokenExpiringEmail(
 
 // docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
 // document yet (fires once, ~3 days in). Onboarding, not opt-out.
-export function activationEmail(env: Env): RenderedEmail {
+export function activationEmail(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Activation',
@@ -468,7 +468,7 @@ export function activationEmail(env: Env): RenderedEmail {
 // recipient owns. Opt-out (notifyComments). Never includes the comment text
 // (privacy): just who, which document, and a link to open it.
 export function commentNotificationEmail(
-  env: Env,
+  env: Runtime,
   documentName: string,
   documentId: string,
   commenterName: string | null,
@@ -500,7 +500,7 @@ export function commentNotificationEmail(
 
 // docs/specs/014-identity/transactional-email.md (#5): a friendly re-engagement nudge for someone who's been away for
 // a few weeks. Opt-out (notifyTips).
-export function winBackEmail(env: Env): RenderedEmail {
+export function winBackEmail(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'WinBack',
@@ -528,7 +528,7 @@ export function winBackEmail(env: Env): RenderedEmail {
 
 // docs/specs/014-identity/transactional-email.md (#6): a small celebration when an owner reaches a document-count
 // milestone. Opt-out (notifyMilestones).
-export function milestoneEmail(env: Env, count: number): RenderedEmail {
+export function milestoneEmail(env: Runtime, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Milestone',
@@ -550,7 +550,7 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
 
 // docs/specs/014-identity/transactional-email.md (#6): the first time an owner creates a share link. Opt-out
 // (notifyMilestones), same category as the document-count milestone.
-export function firstShareEmail(env: Env): RenderedEmail {
+export function firstShareEmail(env: Runtime): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'FirstShare',

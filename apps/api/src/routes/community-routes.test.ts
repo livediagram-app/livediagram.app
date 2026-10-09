@@ -4,7 +4,7 @@
 // password route and the copy route.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 const { thumbnail } = vi.hoisted(() => ({
   thumbnail: { svg: '<svg/>' as string | null },
@@ -30,7 +30,7 @@ const KEY2 = '4a2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
 const AUTHOR = 'user_author';
 
 let db: SqliteD1;
-let env: Env;
+let env: Runtime;
 
 const body = {
   title: 'Payments platform',

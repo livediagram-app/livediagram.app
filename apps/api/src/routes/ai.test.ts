@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAi } from './ai';
 import type { RouteContext } from './context';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // These tests pin the two spend-DoS gates on POST /api/ai (docs/specs/007-editor/ai-assistance.md):
 //
@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 function makeCtx(opts: {
-  env: Partial<Env>;
+  env: Partial<Runtime>;
   origin?: string | null;
   clerkUserId?: string | null;
   body?: string;
@@ -54,7 +54,7 @@ function makeCtx(opts: {
   });
   return {
     request,
-    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as Env,
+    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as unknown as Runtime,
     url: new URL(request.url),
     segments: ['api', 'ai'],
     clerkUserId: opts.clerkUserId ?? null,

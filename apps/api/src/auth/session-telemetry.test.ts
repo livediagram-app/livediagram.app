@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fakeD1, type D1Response } from '../test-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import type { ClerkIdentity } from './clerk';
 import { FRESH_SIGN_IN_MINUTES, noteAuthSighting, reportAuthSighting } from './session-telemetry';
 
@@ -10,7 +10,7 @@ import { FRESH_SIGN_IN_MINUTES, noteAuthSighting, reportAuthSighting } from './s
 // session id is one event; a new account makes it SignedUp and never also
 // SignedIn; a seen session, a stale one, or telemetry off counts nothing.
 
-const ON = { TELEMETRY_ENABLED: 'true' } as Partial<Env>;
+const ON = { TELEMETRY_ENABLED: 'true' } as Partial<Runtime>;
 
 function identity(over: Partial<ClerkIdentity> = {}): ClerkIdentity {
   return {
@@ -23,7 +23,7 @@ function identity(over: Partial<ClerkIdentity> = {}): ClerkIdentity {
 }
 
 // A D1 where the session / account inserts report whether they created a row.
-function db(opts: { newSession: boolean; newAccount: boolean }, env: Partial<Env> = ON) {
+function db(opts: { newSession: boolean; newAccount: boolean }, env: Partial<Runtime> = ON) {
   return fakeD1(({ sql }): D1Response | undefined => {
     if (sql.includes('INTO auth_sessions')) return { changes: opts.newSession ? 1 : 0 };
     if (sql.includes('INTO auth_accounts')) return { changes: opts.newAccount ? 1 : 0 };
@@ -87,12 +87,12 @@ describe('reportAuthSighting (docs/specs/017-telemetry/telemetry.md sign-up / si
   it('never throws when D1 does', async () => {
     const env = {
       ...ON,
-      DB: {
+      db: {
         prepare: () => {
           throw new Error('D1 down');
         },
       },
-    } as unknown as Env;
+    } as unknown as Runtime;
     expect(await reportAuthSighting(env, identity())).toBeNull();
   });
 });

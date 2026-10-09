@@ -5,7 +5,7 @@ import {
   dismissTimelineEventsForScope,
   readTimeline,
 } from './timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9).
 //
@@ -20,7 +20,7 @@ function fakeDb(first: unknown = null) {
   const firstFn = vi.fn().mockResolvedValue(first);
   const bind = vi.fn().mockReturnValue({ run, all, first: firstFn });
   const prepare = vi.fn().mockReturnValue({ bind });
-  return { env: { DB: { prepare } } as unknown as Env, prepare, bind, run };
+  return { env: { db: { prepare } } as unknown as Runtime, prepare, bind, run };
 }
 
 const SCOPE = { scopeType: 'user' as const, scopeId: 'u-1' };
@@ -52,7 +52,7 @@ describe('dismissTimelineEventForScope', () => {
 describe('dismissTimelineEventsForScope', () => {
   it('marks every listed membership in one statement and reports the count', async () => {
     const { env, prepare, bind } = fakeDb();
-    (env.DB.prepare as ReturnType<typeof vi.fn>).mockReturnValue({
+    (env.db.prepare as ReturnType<typeof vi.fn>).mockReturnValue({
       bind: bind.mockReturnValue({ run: vi.fn().mockResolvedValue({ meta: { changes: 2 } }) }),
     });
     expect(await dismissTimelineEventsForScope(env, SCOPE, ['ev-1', 'ev-2', 'gone'])).toBe(2);

@@ -8,7 +8,7 @@
 // (expiry-retraction.test.ts); this one covers the routes' own behaviour.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { verifySharePassword } from '../auth/share-password-hash';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
@@ -50,23 +50,22 @@ import { MAX_PASSWORD_LEN } from '../limits';
 function roomEnv() {
   const broadcasts: unknown[] = [];
   const env = {
-    DOCUMENT_ROOM: {
-      idFromName: (name: string) => `id:${name}`,
-      get: () => ({
+    rooms: {
+      for: () => ({
         fetch: async (_url: string, init: { body: string }) => {
           broadcasts.push(JSON.parse(init.body));
           return new Response(null, { status: 204 });
         },
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   return { env, broadcasts };
 }
 
 function ctxFor(
   method: string,
   path: string,
-  opts: { body?: unknown; owner?: string | null; env?: Env; waitUntil?: boolean } = {},
+  opts: { body?: unknown; owner?: string | null; env?: Runtime; waitUntil?: boolean } = {},
 ) {
   const dispatched: Promise<unknown>[] = [];
   const ctx = makeTestRouteContext(method, path, {
@@ -91,7 +90,7 @@ beforeEach(() => {
   db.getDocumentSharePassword.mockResolvedValue(null);
   db.generateShareCode.mockReturnValue('CODE1234');
   db.createShareLink.mockImplementation(
-    async (_env: Env, documentId: string, code: string, role: string) => ({
+    async (_env: Runtime, documentId: string, code: string, role: string) => ({
       code,
       documentId,
       role,
@@ -379,11 +378,10 @@ describe('DELETE /api/documents/:id/share/:code — revoking one link', () => {
 
   it('still revokes when the room broadcast fails — persistence is the truth', async () => {
     const env = {
-      DOCUMENT_ROOM: {
-        idFromName: () => 'id',
-        get: () => ({ fetch: async () => Promise.reject(new Error('room down')) }),
+      rooms: {
+        for: () => ({ fetch: async () => Promise.reject(new Error('room down')) }),
       },
-    } as unknown as Env;
+    } as unknown as Runtime;
     const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share/c1', { env });
     expect((await handleDocumentShareRoutes(ctx))!.status).toBe(204);
     expect(db.deleteShareLink).toHaveBeenCalled();

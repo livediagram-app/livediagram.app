@@ -34,7 +34,10 @@ export async function handleHome(ctx: RouteContext): Promise<Response> {
   if (!personId) return missingAuth();
   if (request.method !== 'GET' || segments.length !== 2) return notFound();
 
-  if (env.HOME_RATE_LIMITER && !(await env.HOME_RATE_LIMITER.limit({ key: personId })).success) {
+  if (
+    env.limiters?.HOME_RATE_LIMITER &&
+    !(await env.limiters?.HOME_RATE_LIMITER?.limit({ key: personId }))?.success
+  ) {
     console.warn('home: rate-limited');
     return rateLimited();
   }

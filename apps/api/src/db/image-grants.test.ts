@@ -176,7 +176,7 @@ describe('removal', () => {
     liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
     image(db.sql, 'bob-img', 'user_bob');
     await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
-    await db.env.DB.batch(documentRemovalStatements(db.env, { column: 'id', value: 'D' }));
+    await db.env.db.batch(documentRemovalStatements(db.env, { column: 'id', value: 'D' }));
     expect(grants(db.sql)).toEqual([]);
   });
 });

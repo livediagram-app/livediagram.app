@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // A REAL D1 for tests: an in-memory SQLite database with every migration in
 // apps/api/migrations applied, behind the D1 prepare/bind/first/all/run/batch
@@ -17,7 +17,7 @@ import type { Env } from './types';
 const MIGRATIONS_DIR = fileURLToPath(new URL('../migrations/', import.meta.url).href);
 
 export type SqliteD1 = {
-  env: Env;
+  env: Runtime;
   // The raw handle, for arranging rows and asserting on them directly.
   sql: DatabaseSync;
 };
@@ -53,7 +53,7 @@ export function migrateFrom(sql: DatabaseSync, prefix: string): void {
 
 // `before` stops short of that migration (e.g. '0049'), leaving it for the
 // test to apply with applyMigration.
-export function sqliteD1(base: Partial<Env> = {}, opts: { before?: string } = {}): SqliteD1 {
+export function sqliteD1(base: Partial<Runtime> = {}, opts: { before?: string } = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   for (const file of migrationFiles()) {
@@ -120,5 +120,5 @@ export function sqliteD1(base: Partial<Env> = {}, opts: { before?: string } = {}
     },
   };
 
-  return { env: { ...base, DB: db } as unknown as Env, sql };
+  return { env: { ...base, db: db } as unknown as Runtime, sql };
 }

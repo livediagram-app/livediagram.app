@@ -27,8 +27,8 @@
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import worker from '../index';
-import type { Env } from '../types';
+import { fetchWithRuntime } from '../index';
+import type { Runtime } from '../types';
 
 export const PROBE_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 export type ProbeMethod = (typeof PROBE_METHODS)[number];
@@ -173,8 +173,8 @@ export async function probeDispatch(
   // Feature gates open, so a handler reaches its own routing instead of
   // answering "not configured" for every path: telemetry on, a model key set.
   const env = {
-    DB: trap('DB'),
-    IMAGES: trap('IMAGES'),
+    db: trap('DB'),
+    objects: trap('IMAGES'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',
@@ -182,7 +182,7 @@ export async function probeDispatch(
     GOOGLE_CLIENT_ID: 'probe-client',
     GOOGLE_CLIENT_SECRET: 'probe-secret',
     DRIVE_TOKEN_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-  } as unknown as Env;
+  } as unknown as Runtime;
   const pending: Promise<unknown>[] = [];
   const executionCtx = {
     waitUntil: (p: Promise<unknown>) => pending.push(p.catch(() => undefined)),
@@ -200,7 +200,7 @@ export async function probeDispatch(
     for (const path of candidates) {
       for (const method of methods) {
         state.touched = false;
-        const res = await worker.fetch(
+        const res = await fetchWithRuntime(
           new Request(`https://probe.test/api/${path.join('/')}`, {
             method,
             headers: { 'X-Owner-Id': 'probe-owner', 'Content-Type': 'application/json' },

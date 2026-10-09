@@ -6,7 +6,7 @@
 // concerns, so a later mirror (Drive's bin) can drive them directly.
 
 import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { documentRemovalStatements } from './document-removal';
 import { snapshotKeys } from './documents';
 import { documentsTimelineSweepStatement } from './timeline';
@@ -29,10 +29,9 @@ export type TrashedDocumentMeta = {
 
 // Move a live document to the Trash. False when there is no live document with
 // this id (missing, or already trashed: the first deletion time stands).
-export async function trashDocument(env: Env, id: string, now: number): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE documents SET trashed_at = ? WHERE id = ? AND trashed_at IS NULL',
-  )
+export async function trashDocument(env: Runtime, id: string, now: number): Promise<boolean> {
+  const res = await env.db
+    .prepare('UPDATE documents SET trashed_at = ? WHERE id = ? AND trashed_at IS NULL')
     .bind(now, id)
     .run();
   return res.meta.changes === 1;
@@ -46,9 +45,10 @@ export async function trashDocument(env: Env, id: string, now: number): Promise<
 // days start again and the next sweep does not move it straight back
 // (docs/specs/013-workspace/empty-document-cleanup.md). One a person deleted
 // keeps its last-saved time.
-export async function restoreDocument(env: Env, id: string, now: number): Promise<boolean> {
-  const res = await env.DB.prepare(
-    `UPDATE documents
+export async function restoreDocument(env: Runtime, id: string, now: number): Promise<boolean> {
+  const res = await env.db
+    .prepare(
+      `UPDATE documents
         SET trashed_at = NULL,
             trash_reason = NULL,
             saved_at = CASE WHEN trash_reason = 'empty' THEN ?2 ELSE saved_at END,
@@ -60,7 +60,7 @@ export async function restoreDocument(env: Env, id: string, now: number): Promis
                                    OR f.team_id = documents.team_id))
               THEN folder_id ELSE NULL END
       WHERE id = ?1 AND trashed_at IS NOT NULL`,
-  )
+    )
     .bind(id, now)
     .run();
   return res.meta.changes === 1;
@@ -70,13 +70,14 @@ export async function restoreDocument(env: Env, id: string, now: number): Promis
 // authorised caller the deleted state rather than a not-found. Null for a
 // live or missing id.
 export async function getTrashedDocumentMeta(
-  env: Env,
+  env: Runtime,
   id: string,
 ): Promise<TrashedDocumentMeta | null> {
-  const row = await env.DB.prepare(
-    `SELECT id, owner_id, team_id, name, trashed_at FROM documents
+  const row = await env.db
+    .prepare(
+      `SELECT id, owner_id, team_id, name, trashed_at FROM documents
       WHERE id = ? AND trashed_at IS NOT NULL`,
-  )
+    )
     .bind(id)
     .first<{
       id: string;
@@ -97,12 +98,13 @@ export async function getTrashedDocumentMeta(
 }
 
 // Which of `ids` are in the Trash.
-export async function trashedIdsIn(env: Env, ids: string[]): Promise<Set<string>> {
+export async function trashedIdsIn(env: Runtime, ids: string[]): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
-  const res = await env.DB.prepare(
-    `SELECT id FROM documents
+  const res = await env.db
+    .prepare(
+      `SELECT id FROM documents
       WHERE id IN (SELECT value FROM json_each(?)) AND trashed_at IS NOT NULL`,
-  )
+    )
     .bind(JSON.stringify(ids))
     .all<{ id: string }>();
   return new Set((res.results ?? []).map((r) => r.id));
@@ -113,11 +115,12 @@ export async function trashedIdsIn(env: Env, ids: string[]): Promise<Set<string>
 // read against the server-verified account id only, never the guest header
 // (docs/specs/013-workspace/team-shared-documents.md trust boundary). Newest first.
 export async function listTrash(
-  env: Env,
+  env: Runtime,
   caller: { owner: string; verifiedUserId: string | null },
 ): Promise<TrashedDocument[]> {
-  const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.team_id, t.name AS team_name, d.trashed_at, d.trash_reason
+  const res = await env.db
+    .prepare(
+      `SELECT d.id, d.name, d.team_id, t.name AS team_name, d.trashed_at, d.trash_reason
        FROM documents d
        LEFT JOIN teams t ON t.id = d.team_id
       WHERE d.trashed_at IS NOT NULL
@@ -125,7 +128,7 @@ export async function listTrash(
              OR (?2 IS NOT NULL AND d.team_id IN
                   (SELECT team_id FROM team_members WHERE user_id = ?2 AND status = 'joined')))
       ORDER BY d.trashed_at DESC, d.id ASC`,
-  )
+    )
     .bind(caller.owner, caller.verifiedUserId)
     .all<{
       id: string;
@@ -148,17 +151,19 @@ export async function listTrash(
 
 // The ids in one Trash: the caller's personal one, or one team's.
 export async function trashIdsFor(
-  env: Env,
+  env: Runtime,
   scope: { owner: string } | { teamId: string },
 ): Promise<string[]> {
   const stmt =
     'teamId' in scope
-      ? env.DB.prepare(
-          'SELECT id FROM documents WHERE team_id = ? AND trashed_at IS NOT NULL',
-        ).bind(scope.teamId)
-      : env.DB.prepare(
-          'SELECT id FROM documents WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NOT NULL',
-        ).bind(scope.owner);
+      ? env.db
+          .prepare('SELECT id FROM documents WHERE team_id = ? AND trashed_at IS NOT NULL')
+          .bind(scope.teamId)
+      : env.db
+          .prepare(
+            'SELECT id FROM documents WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NOT NULL',
+          )
+          .bind(scope.owner);
   const res = await stmt.all<{ id: string }>();
   return (res.results ?? []).map((r) => r.id);
 }
@@ -167,20 +172,20 @@ export async function trashIdsFor(
 // document holds (documentRemovalStatements), their Timeline events and their
 // cached snapshots. Only ever trashed ids: a live id in `ids` is skipped, so
 // no caller can purge past the Trash. Returns how many were purged.
-export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
+export async function purgeDocuments(env: Runtime, ids: string[]): Promise<number> {
   let purged = 0;
   for (let i = 0; i < ids.length; i += TRASH_PURGE_BATCH) {
     const doomed = [...(await trashedIdsIn(env, ids.slice(i, i + TRASH_PURGE_BATCH)))];
     if (doomed.length === 0) continue;
-    const results = await env.DB.batch([
+    const results = await env.db.batch([
       documentsTimelineSweepStatement(env, doomed),
       ...documentRemovalStatements(env, { ids: doomed }),
     ]);
     purged += results[results.length - 1]?.meta.changes ?? 0;
     // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
-    if (env.IMAGES) {
-      await env.IMAGES.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
+    if (env.objects) {
+      await env.objects.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
         console.warn('[trash] snapshot delete failed', doomed.length, err);
       });
     }
@@ -191,7 +196,7 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
 // The cron's sweep: purge every document trashed at least TRASH_RETENTION_MS
 // ago, oldest first, at most maxBatches x batch per run.
 export async function purgeExpiredTrash(
-  env: Env,
+  env: Runtime,
   now: number,
   opts: { batch?: number; maxBatches?: number } = {},
 ): Promise<number> {
@@ -200,11 +205,12 @@ export async function purgeExpiredTrash(
   const cutoff = now - TRASH_RETENTION_MS;
   let purged = 0;
   for (let round = 0; round < maxBatches; round++) {
-    const res = await env.DB.prepare(
-      `SELECT id FROM documents
+    const res = await env.db
+      .prepare(
+        `SELECT id FROM documents
         WHERE trashed_at IS NOT NULL AND trashed_at <= ?
         ORDER BY trashed_at ASC, id ASC LIMIT ?`,
-    )
+      )
       .bind(cutoff, batch)
       .all<{ id: string }>();
     const ids = (res.results ?? []).map((r) => r.id);

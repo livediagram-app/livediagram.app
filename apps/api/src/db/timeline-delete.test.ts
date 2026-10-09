@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { markTimelineEventsDeletedBySource } from './timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // The source cascade (docs/specs/013-workspace/timeline.md §3.5).
 //
@@ -14,7 +14,7 @@ function fakeDb() {
   const run = vi.fn().mockResolvedValue({});
   const bind = vi.fn().mockReturnValue({ run });
   const prepare = vi.fn().mockReturnValue({ bind });
-  return { env: { DB: { prepare } } as unknown as Env, prepare, bind };
+  return { env: { db: { prepare } } as unknown as Runtime, prepare, bind };
 }
 
 describe('markTimelineEventsDeletedBySource', () => {

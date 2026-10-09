@@ -18,7 +18,7 @@ import {
 } from '@livediagram/document';
 import { getTabData, swapTabData } from './db';
 import { TabTooLargeError } from './limits';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // Only an autosave or a linked tab's room can beat us to the row now, so a
 // handful of re-reads is plenty.
@@ -36,7 +36,7 @@ export type QaWriteRequest = {
   actor: QaActor;
 };
 
-export async function writeQaAction(env: Env, req: QaWriteRequest): Promise<QaWriteResult> {
+export async function writeQaAction(env: Runtime, req: QaWriteRequest): Promise<QaWriteResult> {
   const { documentId, tabId, elementId, action, actor } = req;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const raw = await getTabData(env, documentId, tabId);

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 vi.mock('../db', () => ({
   apiTokensExpiringSoon: vi.fn(),
@@ -16,7 +16,7 @@ import { sendEmail } from './client';
 import { tokenExpiringEmail } from './templates';
 import { runTokenExpirySweep } from './token-expiry';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
+const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Runtime;
 afterEach(() => vi.clearAllMocks());
 
 describe('tokenExpiringEmail', () => {
@@ -34,7 +34,7 @@ describe('tokenExpiringEmail', () => {
 
 describe('runTokenExpirySweep', () => {
   it('does nothing when email is off', async () => {
-    await runTokenExpirySweep({} as Env);
+    await runTokenExpirySweep({} as unknown as Runtime);
     expect(apiTokensExpiringSoon).not.toHaveBeenCalled();
   });
 

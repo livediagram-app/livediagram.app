@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { bytesToBase64 } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { driveMode, googleOAuthBase } from './config';
 
 const KEY = bytesToBase64(new Uint8Array(32).fill(9));
-const env = (vars: Partial<Env>) => vars as Env;
+const env = (vars: Partial<Runtime>) => vars as unknown as Runtime;
 
 describe('driveMode', () => {
   it('is off without a client id, whatever else is set', () => {

@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { bytesToBase64 } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { handleCapabilities } from './capabilities';
 import { makeTestRouteContext } from './test-route-context';
 
 // GET /api/capabilities reports the optional features the deployment has
 // configured, so the app can hide the rest.
 
-async function capabilities(env: Partial<Env>) {
+async function capabilities(env: Partial<Runtime>) {
   const res = handleCapabilities(
-    makeTestRouteContext('GET', '/api/capabilities', { env: env as Env }),
+    makeTestRouteContext('GET', '/api/capabilities', { env: env as unknown as Runtime }),
   );
   return (await res.json()) as Record<string, unknown>;
 }
@@ -48,14 +48,14 @@ describe('aiEnabled (docs/specs/007-editor/ai-assistance.md)', () => {
 describe('the route', () => {
   it('is only GET', () => {
     const res = handleCapabilities(
-      makeTestRouteContext('POST', '/api/capabilities', { env: {} as Env }),
+      makeTestRouteContext('POST', '/api/capabilities', { env: {} as unknown as Runtime }),
     );
     expect(res.status).toBe(405);
   });
 
   it('has nothing beneath it', () => {
     const res = handleCapabilities(
-      makeTestRouteContext('GET', '/api/capabilities/extra', { env: {} as Env }),
+      makeTestRouteContext('GET', '/api/capabilities/extra', { env: {} as unknown as Runtime }),
     );
     expect(res.status).toBe(404);
   });

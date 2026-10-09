@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 vi.mock('../db/email-lifecycle', () => ({
   recordSighting: vi.fn(),
@@ -30,13 +30,13 @@ import {
 import { sendEmail } from './client';
 import { runLifecycleSweep, welcomeOnSighting } from './lifecycle';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
+const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Runtime;
 
 afterEach(() => vi.clearAllMocks());
 
 describe('welcomeOnSighting', () => {
   it('does nothing when email is off', async () => {
-    await welcomeOnSighting({} as Env, 'u', 'a@b.com');
+    await welcomeOnSighting({} as unknown as Runtime, 'u', 'a@b.com');
     expect(recordSighting).not.toHaveBeenCalled();
   });
 
@@ -64,7 +64,7 @@ describe('welcomeOnSighting', () => {
 
 describe('runLifecycleSweep', () => {
   it('does nothing when email is off', async () => {
-    await runLifecycleSweep({} as Env);
+    await runLifecycleSweep({} as unknown as Runtime);
     expect(dueForStage).not.toHaveBeenCalled();
   });
 

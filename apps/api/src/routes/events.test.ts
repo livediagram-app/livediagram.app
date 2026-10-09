@@ -14,16 +14,16 @@ import { makeTestRouteContext } from './test-route-context';
 const { db } = vi.hoisted(() => ({ db: { insertTelemetryEvents: vi.fn() } }));
 vi.mock('../db', () => db);
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { handleEvents } from './events';
 
 const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDocument' };
 
-const makeCtx = (opts: { env?: Partial<Env>; headers?: Record<string, string> } = {}) =>
+const makeCtx = (opts: { env?: Partial<Runtime>; headers?: Record<string, string> } = {}) =>
   makeTestRouteContext('POST', '/api/events', {
     body: { events: [EVENT] },
     headers: opts.headers,
-    env: { TELEMETRY_ENABLED: 'true', ...opts.env } as Env,
+    env: { TELEMETRY_ENABLED: 'true', ...opts.env } as unknown as Runtime,
   });
 
 const limiter = (success: boolean) => {
@@ -36,7 +36,9 @@ beforeEach(() => db.insertTelemetryEvents.mockReset());
 describe('handleEvents rate limiting', () => {
   it('drops a batch when the per-IP limiter refuses', async () => {
     const { binding, limit } = limiter(false);
-    const res = await handleEvents(makeCtx({ env: { EVENTS_RATE_LIMITER: binding } }));
+    const res = await handleEvents(
+      makeCtx({ env: { limiters: { EVENTS_RATE_LIMITER: binding } } }),
+    );
     expect(res.status).toBe(204);
     expect(limit).toHaveBeenCalledTimes(1);
     expect(db.insertTelemetryEvents).not.toHaveBeenCalled();
@@ -46,7 +48,7 @@ describe('handleEvents rate limiting', () => {
     const { binding, limit } = limiter(false);
     const res = await handleEvents(
       makeCtx({
-        env: { EVENTS_RATE_LIMITER: binding, INTERNAL_EVENTS_KEY: 'shhh' },
+        env: { limiters: { EVENTS_RATE_LIMITER: binding }, INTERNAL_EVENTS_KEY: 'shhh' },
         headers: { 'X-Internal-Events-Key': 'shhh' },
       }),
     );
@@ -60,7 +62,7 @@ describe('handleEvents rate limiting', () => {
     const { binding, limit } = limiter(false);
     await handleEvents(
       makeCtx({
-        env: { EVENTS_RATE_LIMITER: binding, INTERNAL_EVENTS_KEY: 'shhh' },
+        env: { limiters: { EVENTS_RATE_LIMITER: binding }, INTERNAL_EVENTS_KEY: 'shhh' },
         headers: { 'X-Internal-Events-Key': 'guess' },
       }),
     );
@@ -74,7 +76,7 @@ describe('handleEvents rate limiting', () => {
     const { binding, limit } = limiter(false);
     await handleEvents(
       makeCtx({
-        env: { EVENTS_RATE_LIMITER: binding },
+        env: { limiters: { EVENTS_RATE_LIMITER: binding } },
         headers: { 'X-Internal-Events-Key': 'shhh' },
       }),
     );
@@ -84,7 +86,7 @@ describe('handleEvents rate limiting', () => {
 
   it('still ingests normally when the limiter allows', async () => {
     const { binding, limit } = limiter(true);
-    await handleEvents(makeCtx({ env: { EVENTS_RATE_LIMITER: binding } }));
+    await handleEvents(makeCtx({ env: { limiters: { EVENTS_RATE_LIMITER: binding } } }));
     expect(limit).toHaveBeenCalledTimes(1);
     expect(db.insertTelemetryEvents).toHaveBeenCalledTimes(1);
   });
@@ -110,7 +112,7 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
           { category: 'Page', action: 'View', type: 'help' },
         ],
       },
-      env: { TELEMETRY_ENABLED: 'true' } as Env,
+      env: { TELEMETRY_ENABLED: 'true' } as unknown as Runtime,
     });
     await handleEvents(ctx);
     expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
@@ -138,7 +140,7 @@ describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', 
           { category: 'Timing', action: 'Used', type: 'Save.Under100ms' },
         ],
       },
-      env: { TELEMETRY_ENABLED: 'true' } as Env,
+      env: { TELEMETRY_ENABLED: 'true' } as unknown as Runtime,
     });
     await handleEvents(ctx);
     expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
@@ -166,7 +168,7 @@ describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.
           { category: 'Session', action: 'SignedOut' },
         ],
       },
-      env: { TELEMETRY_ENABLED: 'true' } as Env,
+      env: { TELEMETRY_ENABLED: 'true' } as unknown as Runtime,
     });
     await handleEvents(ctx);
     expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
@@ -182,7 +184,7 @@ describe('handleEvents with an odd body', () => {
   it('answers 204 to a JSON null body', async () => {
     const ctx = makeTestRouteContext('POST', '/api/events', {
       body: null,
-      env: { TELEMETRY_ENABLED: 'true' } as Env,
+      env: { TELEMETRY_ENABLED: 'true' } as unknown as Runtime,
     });
     expect((await handleEvents(ctx)).status).toBe(204);
     expect(db.insertTelemetryEvents).not.toHaveBeenCalled();

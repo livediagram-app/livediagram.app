@@ -1,3 +1,4 @@
+import type { DbStatement } from '@livediagram/runtime';
 // Google Drive mirror rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data";
 // blueprint "Data and persistence"). Every statement is scoped to one owner,
 // the verified Clerk user id the route resolved.
@@ -10,7 +11,7 @@ import {
   type DriveItemKind,
   type DriveLease,
 } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 type ConnectionRow = {
   owner_id: string;
@@ -76,14 +77,15 @@ function toItem(row: ItemRow): DriveItem {
   };
 }
 
-async function connectionRow(env: Env, ownerId: string): Promise<ConnectionRow | null> {
-  return env.DB.prepare('SELECT * FROM drive_connections WHERE owner_id = ?')
+async function connectionRow(env: Runtime, ownerId: string): Promise<ConnectionRow | null> {
+  return env.db
+    .prepare('SELECT * FROM drive_connections WHERE owner_id = ?')
     .bind(ownerId)
     .first<ConnectionRow>();
 }
 
 export async function getDriveConnection(
-  env: Env,
+  env: Runtime,
   ownerId: string,
 ): Promise<DriveConnection | null> {
   const row = await connectionRow(env, ownerId);
@@ -91,7 +93,7 @@ export async function getDriveConnection(
 }
 
 // The sealed refresh token, for the broker only. Never part of a response.
-export async function getSealedRefreshToken(env: Env, ownerId: string): Promise<string | null> {
+export async function getSealedRefreshToken(env: Runtime, ownerId: string): Promise<string | null> {
   return (await connectionRow(env, ownerId))?.refresh_token_enc ?? null;
 }
 
@@ -99,36 +101,38 @@ export async function getSealedRefreshToken(env: Env, ownerId: string): Promise<
 // connected. A reconnect keeps the root folder and page token, which are
 // still valid for the same Google account's files.
 export async function upsertBrokerConnection(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   sealedRefreshToken: string,
   now: number,
 ): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO drive_connections (owner_id, refresh_token_enc, status, connected_at)
+  await env.db
+    .prepare(
+      `INSERT INTO drive_connections (owner_id, refresh_token_enc, status, connected_at)
      VALUES (?, ?, 'connected', ?)
      ON CONFLICT (owner_id) DO UPDATE
        SET refresh_token_enc = excluded.refresh_token_enc, status = 'connected'`,
-  )
+    )
     .bind(ownerId, sealedRefreshToken, now)
     .run();
 }
 
 // Browser-only mode: the connection exists without a refresh token.
 export async function createBrowserConnection(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   now: number,
 ): Promise<void> {
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO drive_connections (owner_id, status, connected_at) VALUES (?, 'connected', ?)`,
-  )
+  await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO drive_connections (owner_id, status, connected_at) VALUES (?, 'connected', ?)`,
+    )
     .bind(ownerId, now)
     .run();
 }
 
 export async function updateDriveConnectionState(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   patch: { rootFolderId?: string | null; pageToken?: string },
   now: number,
@@ -144,48 +148,54 @@ export async function updateDriveConnectionState(
     binds.push(patch.pageToken, now);
   }
   if (sets.length === 0) return;
-  await env.DB.prepare(`UPDATE drive_connections SET ${sets.join(', ')} WHERE owner_id = ?`)
+  await env.db
+    .prepare(`UPDATE drive_connections SET ${sets.join(', ')} WHERE owner_id = ?`)
     .bind(...binds, ownerId)
     .run();
 }
 
 export async function setDriveConnectionStatus(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   status: DriveConnectionStatus,
 ): Promise<void> {
-  await env.DB.prepare('UPDATE drive_connections SET status = ? WHERE owner_id = ?')
+  await env.db
+    .prepare('UPDATE drive_connections SET status = ? WHERE owner_id = ?')
     .bind(status, ownerId)
     .run();
 }
 
 // The connection and every mirrored item of the owner, in one batch. The
 // Drive files themselves stay (docs/specs/022-drive-mirror/drive-mirror.md).
-export function driveOwnerRemovalStatements(env: Env, ownerId: string): D1PreparedStatement[] {
+export function driveOwnerRemovalStatements(env: Runtime, ownerId: string): DbStatement[] {
   return [
-    env.DB.prepare('DELETE FROM drive_items WHERE owner_id = ?').bind(ownerId),
-    env.DB.prepare('DELETE FROM drive_connections WHERE owner_id = ?').bind(ownerId),
+    env.db.prepare('DELETE FROM drive_items WHERE owner_id = ?').bind(ownerId),
+    env.db.prepare('DELETE FROM drive_connections WHERE owner_id = ?').bind(ownerId),
   ];
 }
 
-export async function deleteDriveConnection(env: Env, ownerId: string): Promise<void> {
-  await env.DB.batch(driveOwnerRemovalStatements(env, ownerId));
+export async function deleteDriveConnection(env: Runtime, ownerId: string): Promise<void> {
+  await env.db.batch(driveOwnerRemovalStatements(env, ownerId));
 }
 
-export async function listDriveItems(env: Env, ownerId: string): Promise<DriveItem[]> {
-  const res = await env.DB.prepare(
-    'SELECT * FROM drive_items WHERE owner_id = ? ORDER BY item_kind, ld_id',
-  )
+export async function listDriveItems(env: Runtime, ownerId: string): Promise<DriveItem[]> {
+  const res = await env.db
+    .prepare('SELECT * FROM drive_items WHERE owner_id = ? ORDER BY item_kind, ld_id')
     .bind(ownerId)
     .all<ItemRow>();
   return (res.results ?? []).map(toItem);
 }
 
 // Upsert on (owner, kind, ld id), all rows in one batch.
-export async function putDriveItems(env: Env, ownerId: string, items: DriveItem[]): Promise<void> {
+export async function putDriveItems(
+  env: Runtime,
+  ownerId: string,
+  items: DriveItem[],
+): Promise<void> {
   const statements = items.map((i) =>
-    env.DB.prepare(
-      `INSERT INTO drive_items (owner_id, item_kind, ld_id, drive_file_id, name, ld_name, parent_id,
+    env.db
+      .prepare(
+        `INSERT INTO drive_items (owner_id, item_kind, ld_id, drive_file_id, name, ld_name, parent_id,
                                 trashed, md5, head_revision_id, mirrored_saved_at, notice, notice_parent_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (owner_id, item_kind, ld_id) DO UPDATE SET
@@ -193,24 +203,25 @@ export async function putDriveItems(env: Env, ownerId: string, items: DriveItem[
          parent_id = excluded.parent_id, trashed = excluded.trashed, md5 = excluded.md5,
          head_revision_id = excluded.head_revision_id, mirrored_saved_at = excluded.mirrored_saved_at,
          notice = excluded.notice, notice_parent_id = excluded.notice_parent_id`,
-    ).bind(
-      ownerId,
-      i.kind,
-      i.ldId,
-      i.driveFileId,
-      i.name,
-      i.ldName,
-      i.parentId,
-      i.trashed ? 1 : 0,
-      i.md5,
-      i.headRevisionId,
-      i.mirroredSavedAt,
-      i.notice,
-      i.noticeParentId,
-    ),
+      )
+      .bind(
+        ownerId,
+        i.kind,
+        i.ldId,
+        i.driveFileId,
+        i.name,
+        i.ldName,
+        i.parentId,
+        i.trashed ? 1 : 0,
+        i.md5,
+        i.headRevisionId,
+        i.mirroredSavedAt,
+        i.notice,
+        i.noticeParentId,
+      ),
   );
   try {
-    await env.DB.batch(statements);
+    await env.db.batch(statements);
   } catch (err) {
     if (
       err instanceof Error &&
@@ -225,12 +236,13 @@ export async function putDriveItems(env: Env, ownerId: string, items: DriveItem[
 }
 
 export async function deleteDriveItem(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   kind: DriveItemKind,
   ldId: string,
 ): Promise<void> {
-  await env.DB.prepare('DELETE FROM drive_items WHERE owner_id = ? AND item_kind = ? AND ld_id = ?')
+  await env.db
+    .prepare('DELETE FROM drive_items WHERE owner_id = ? AND item_kind = ? AND ld_id = ?')
     .bind(ownerId, kind, ldId)
     .run();
 }
@@ -238,17 +250,18 @@ export async function deleteDriveItem(
 // Take or renew the cross-device lease: granted when it is free, already this
 // holder's, or expired. Null when the owner has no connection.
 export async function acquireDriveLease(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   holder: string,
   now: number,
 ): Promise<DriveLease | null> {
   const expiresAt = now + DRIVE_LEASE_MS;
-  const res = await env.DB.prepare(
-    `UPDATE drive_connections SET lease_holder = ?, lease_expires_at = ?
+  const res = await env.db
+    .prepare(
+      `UPDATE drive_connections SET lease_holder = ?, lease_expires_at = ?
       WHERE owner_id = ?
         AND (lease_holder IS NULL OR lease_holder = ? OR lease_expires_at IS NULL OR lease_expires_at <= ?)`,
-  )
+    )
     .bind(holder, expiresAt, ownerId, holder, now)
     .run();
   if (res.meta.changes === 1) return { acquired: true, holder, expiresAt };
@@ -257,11 +270,16 @@ export async function acquireDriveLease(
   return { acquired: false, holder: row.lease_holder, expiresAt: row.lease_expires_at };
 }
 
-export async function releaseDriveLease(env: Env, ownerId: string, holder: string): Promise<void> {
-  await env.DB.prepare(
-    `UPDATE drive_connections SET lease_holder = NULL, lease_expires_at = NULL
+export async function releaseDriveLease(
+  env: Runtime,
+  ownerId: string,
+  holder: string,
+): Promise<void> {
+  await env.db
+    .prepare(
+      `UPDATE drive_connections SET lease_holder = NULL, lease_expires_at = NULL
       WHERE owner_id = ? AND lease_holder = ?`,
-  )
+    )
     .bind(ownerId, holder)
     .run();
 }

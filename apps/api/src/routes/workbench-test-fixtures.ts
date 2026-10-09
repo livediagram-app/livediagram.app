@@ -4,12 +4,12 @@
 
 import { upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export const NOW = 1_800_000_000_000;
 export const ORIGIN = 'https://127.0.0.1:5175';
 
-export async function workbenchDb(base: Partial<Env> = {}): Promise<SqliteD1> {
+export async function workbenchDb(base: Partial<Runtime> = {}): Promise<SqliteD1> {
   const db = sqliteD1({ APP_BASE_URL: 'https://app.test', ...base });
   db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1),

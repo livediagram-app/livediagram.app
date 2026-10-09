@@ -50,9 +50,8 @@ beforeEach(() => {
   sql = sqliteD1();
   relayed = [];
   // The room stub records each broadcast body.
-  (sql.env as unknown as { DOCUMENT_ROOM: unknown }).DOCUMENT_ROOM = {
-    idFromName: (n: string) => n,
-    get: () => ({
+  (sql.env as unknown as { rooms: unknown }).rooms = {
+    for: () => ({
       fetch: async (_url: string, init: RequestInit) => {
         relayed.push(JSON.parse(String(init.body)));
         return new Response(null, { status: 204 });

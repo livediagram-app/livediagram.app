@@ -12,7 +12,7 @@ import {
 } from '@livediagram/api-schema';
 import { readWorkbenchSession } from '../db/workbench';
 import type { WorkbenchContext } from '../routes/context';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export const generateWorkbenchTicket = () => randomBase64Url(WORKBENCH_TICKET_BYTES);
 export const generatePairingCode = () => randomBase64Url(WORKBENCH_PAIRING_CODE_BYTES);
@@ -31,7 +31,7 @@ export type WorkbenchSessionRefusal = 'unknown' | 'revoked' | 'expired';
 // One indexed read. The token's own state decides `revoked`; the session's expiry `expired`. A read-only
 // token lowers the level to view whatever the session row says.
 export async function resolveWorkbenchSession(
-  env: Env,
+  env: Runtime,
   secret: string,
   now: number,
 ): Promise<

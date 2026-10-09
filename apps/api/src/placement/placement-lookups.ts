@@ -3,10 +3,10 @@
 // judgements stay pure.
 
 import { getFolder, getMembership, listPlacementDefaults } from '../db';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import type { PlacementLookups } from './placement-types';
 
-export function placementLookups(env: Env): PlacementLookups {
+export function placementLookups(env: Runtime): PlacementLookups {
   return {
     async isJoinedMember(teamId, userId) {
       return (await getMembership(env, teamId, userId))?.status === 'joined';

@@ -8,7 +8,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { insertDocumentRow } from './legacy-test-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 export const DAY = 86_400_000;
 export const NOW = 1_800_000_000_000;
@@ -21,7 +21,7 @@ export type Bucket = { delete: ReturnType<typeof vi.fn> };
 export function setup(opts: { before0050?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
   const bucket: Bucket = { delete: vi.fn(async () => {}) };
   const db = sqliteD1(
-    { IMAGES: bucket } as unknown as Partial<Env>,
+    { objects: bucket } as unknown as Partial<Runtime>,
     opts.before0050 ? { before: '0050' } : {},
   );
   return { ...db, bucket };

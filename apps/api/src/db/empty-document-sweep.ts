@@ -4,7 +4,7 @@
 // Trash's purge still gives it the full 30 days there.
 
 import { EMPTY_DOCUMENT_STALE_MS } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Documents per statement: one bounded UPDATE over a scan measured at ~10 ms on
 // production (docs/specs/013-workspace/blueprints/empty-document-cleanup.md).
@@ -35,7 +35,7 @@ const MOVE_EMPTY_STALE = `
 // Move what is empty and stale at `now` to the Trash, at most
 // maxBatches x batch per run. Returns how many moved.
 export async function trashEmptyDocuments(
-  env: Env,
+  env: Runtime,
   now: number,
   opts: { batch?: number; maxBatches?: number } = {},
 ): Promise<number> {
@@ -44,7 +44,7 @@ export async function trashEmptyDocuments(
   const cutoff = now - EMPTY_DOCUMENT_STALE_MS;
   let moved = 0;
   for (let round = 0; round < maxBatches; round++) {
-    const res = await env.DB.prepare(MOVE_EMPTY_STALE).bind(now, cutoff, batch).run();
+    const res = await env.db.prepare(MOVE_EMPTY_STALE).bind(now, cutoff, batch).run();
     const changes = res.meta.changes ?? 0;
     moved += changes;
     if (changes < batch) break;

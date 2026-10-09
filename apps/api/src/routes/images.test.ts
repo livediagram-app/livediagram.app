@@ -1,6 +1,6 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Characterisation tests for handleImages' authorisation surface
 // (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (self-host), the
@@ -49,7 +49,9 @@ const makeCtx = (
 ): RouteContext =>
   makeTestRouteContext(method, path, {
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
-    env: { IMAGES: opts.images === undefined ? imagesBinding() : opts.images } as unknown as Env,
+    env: {
+      objects: opts.images === undefined ? imagesBinding() : opts.images,
+    } as unknown as Runtime,
   });
 
 beforeEach(() => {
@@ -116,7 +118,7 @@ describe('handleImages', () => {
   it('byte-read 200 for the image owner', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
     const ctx = makeCtx('GET', '/api/images/i1');
-    (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
+    (ctx.env.objects as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
       body: 'bytes',
       httpMetadata: { contentType: 'image/png' },
     });
@@ -136,7 +138,7 @@ describe('handleImages', () => {
     canReadDocument.mockResolvedValue(true);
     db.documentServesImage.mockResolvedValue(true);
     const ctx = makeCtx('GET', '/api/images/i1?d=d1');
-    (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
+    (ctx.env.objects as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
       body: 'bytes',
       httpMetadata: { contentType: 'image/png' },
     });
@@ -156,7 +158,7 @@ describe('handleImages', () => {
     const res = await handleImages(ctx);
     expect(res.status).toBe(404);
     expect(
-      (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get,
+      (ctx.env.objects as unknown as ReturnType<typeof imagesBinding>).get,
     ).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[images] not servable by document', {
       documentId: 'd1',
@@ -182,7 +184,7 @@ describe('handleImages', () => {
     const session = (path: string) =>
       makeTestRouteContext('GET', path, {
         owner: 'owner-1',
-        env: { IMAGES: imagesBinding() } as unknown as Env,
+        env: { objects: imagesBinding() } as unknown as Runtime,
         workbench: { documentId: 'd1', ownerId: 'owner-1' } as never,
       });
 
@@ -205,7 +207,7 @@ describe('handleImages', () => {
       canReadDocument.mockResolvedValue(true);
       db.documentServesImage.mockResolvedValue(true);
       const ctx = session('/api/images/i1?d=d1');
-      (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
+      (ctx.env.objects as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
         body: 'bytes',
         httpMetadata: { contentType: 'image/png' },
       });
@@ -225,7 +227,7 @@ describe('POST /api/images under a per-owner cap', () => {
   function upload(images: ReturnType<typeof imagesBinding>, vars: Record<string, string>) {
     const ctx = makeTestRouteContext('POST', '/api/images', {
       owner: 'owner-1',
-      env: { IMAGES: images, ...vars } as unknown as Env,
+      env: { objects: images, ...vars } as unknown as Runtime,
     });
     const request = new Request('https://api.test/api/images', {
       method: 'POST',

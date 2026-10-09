@@ -1,7 +1,7 @@
 // shared_with — "shared with you" tracking (migration 0010).
 
 import type { SharedWithItem } from '@livediagram/api-schema';
-import type { Env, ShareRole } from '../types';
+import type { ShareRole, Runtime } from '../types';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 
 // Record a visitor's access to a shared document. Idempotent on
@@ -18,7 +18,7 @@ import { firstTabCountSql, isEmptyCount } from './tabs';
 // count, so two concurrent first opens can't both read as first; a repeat
 // visit then refreshes role + last_seen.
 export async function recordSharedAccess(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   documentId: string,
   role: ShareRole,
@@ -27,15 +27,17 @@ export async function recordSharedAccess(
   tabId: string | null,
 ): Promise<boolean> {
   const now = Date.now();
-  const inserted = await env.DB.prepare(
-    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
-  )
+  const inserted = await env.db
+    .prepare(
+      'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
+    )
     .bind(ownerId, documentId, role, now, tabId)
     .run();
   if (inserted.meta.changes === 1) return true;
-  await env.DB.prepare(
-    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND document_id = ?',
-  )
+  await env.db
+    .prepare(
+      'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND document_id = ?',
+    )
     .bind(role, tabId, now, ownerId, documentId)
     .run();
   return false;
@@ -45,13 +47,12 @@ export async function recordSharedAccess(
 // (a shared_with row exists). Used by the notify-action route (docs/specs/012-collaboration/assigned-actions.md)
 // as the "shared-with" leg of its caller-can-access-the-document check.
 export async function hasSharedAccess(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   documentId: string,
 ): Promise<boolean> {
-  const row = await env.DB.prepare(
-    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND document_id = ? LIMIT 1',
-  )
+  const row = await env.db
+    .prepare('SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND document_id = ? LIMIT 1')
     .bind(ownerId, documentId)
     .first<{ one: number }>();
   return row !== null;
@@ -78,9 +79,10 @@ export async function hasSharedAccess(
 // The code also matches the visitor's recorded tab scope
 // (docs/specs/013-workspace/tab-scoped-share-links.md), so a visitor shown one tab is never handed an
 // All-tabs code, and vice versa.
-export async function listSharedWith(env: Env, ownerId: string): Promise<SharedWithItem[]> {
-  const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
+export async function listSharedWith(env: Runtime, ownerId: string): Promise<SharedWithItem[]> {
+  const res = await env.db
+    .prepare(
+      `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
             (SELECT code
                FROM share_links
               WHERE share_links.document_id = d.id
@@ -100,7 +102,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
         AND d.shareable = 1
         AND d.trashed_at IS NULL
       ORDER BY s.last_seen DESC`,
-  )
+    )
     .bind(Date.now(), ownerId)
     .all<{
       id: string;
@@ -134,11 +136,12 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
 // the visitor's own files (#9) so the shared reference is no longer
 // useful.
 export async function dropSharedAccess(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   documentId: string,
 ): Promise<void> {
-  await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ? AND document_id = ?')
+  await env.db
+    .prepare('DELETE FROM shared_with WHERE owner_id = ? AND document_id = ?')
     .bind(ownerId, documentId)
     .run();
 }

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -20,8 +20,7 @@ function box(id: string, x = 0, label = id): Element {
 function roomRecorder() {
   const calls: { url: string; body: unknown }[] = [];
   const binding = {
-    idFromName: (name: string) => name,
-    get: () => ({
+    for: () => ({
       fetch: async (input: string | Request, init?: RequestInit) => {
         const url = typeof input === 'string' ? input : input.url;
         const body = init?.body ? JSON.parse(String(init.body)) : null;
@@ -61,7 +60,7 @@ function storedIds(db: SqliteD1, tabId: string): string[] {
 }
 
 async function personalDocument(room: ReturnType<typeof roomRecorder>) {
-  const db = sqliteD1({ DOCUMENT_ROOM: room.binding } as unknown as Partial<Env>);
+  const db = sqliteD1({ rooms: room.binding } as unknown as Partial<Runtime>);
   const created = await call(db, 'person', 'POST', '/api/documents', {
     id: 'D',
     name: 'Board',

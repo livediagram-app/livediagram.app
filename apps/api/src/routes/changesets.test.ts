@@ -3,7 +3,7 @@ import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
 import { elementFingerprint, type Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -19,8 +19,7 @@ type Selection = { elementIds: string[]; name: string; color: string; mine: bool
 function room(selections: Selection[] | 'down' = []) {
   const calls: { url: string; body: unknown }[] = [];
   const binding = {
-    idFromName: (name: string) => name,
-    get: () => ({
+    for: () => ({
       fetch: async (input: string, init?: RequestInit) => {
         calls.push({ url: input, body: init?.body ? JSON.parse(String(init.body)) : null });
         if (input.includes('/selections')) {
@@ -63,9 +62,9 @@ async function setUp(
 ) {
   const r = room(selections);
   const db = sqliteD1({
-    DOCUMENT_ROOM: r.binding,
+    rooms: r.binding,
     TELEMETRY_ENABLED: 'true',
-  } as unknown as Partial<Env>);
+  } as unknown as Partial<Runtime>);
   db.sql.exec(
     `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
   );

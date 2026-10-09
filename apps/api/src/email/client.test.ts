@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { appBaseUrl, emailEnabled, sendEmail } from './client';
 
-const withKey = { RESEND_API_KEY: 're_test' } as unknown as Env;
-const noKey = {} as Env;
+const withKey = { RESEND_API_KEY: 're_test' } as unknown as Runtime;
+const noKey = {} as unknown as Runtime;
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -11,14 +11,14 @@ describe('emailEnabled', () => {
   it('is false without a key', () => expect(emailEnabled(noKey)).toBe(false));
   it('is true with a key', () => expect(emailEnabled(withKey)).toBe(true));
   it('is false for an empty key', () =>
-    expect(emailEnabled({ RESEND_API_KEY: '' } as unknown as Env)).toBe(false));
+    expect(emailEnabled({ RESEND_API_KEY: '' } as unknown as Runtime)).toBe(false));
 });
 
 describe('appBaseUrl', () => {
   it('defaults to livediagram.app', () =>
     expect(appBaseUrl(noKey)).toBe('https://livediagram.app'));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
-    expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Env)).toBe(
+    expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Runtime)).toBe(
       'https://example.com',
     ));
 });
@@ -63,7 +63,7 @@ describe('sendEmail', () => {
   it('honours a RESEND_FROM override', async () => {
     const f = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', f);
-    await sendEmail({ RESEND_API_KEY: 're', RESEND_FROM: 'X <x@y.com>' } as unknown as Env, {
+    await sendEmail({ RESEND_API_KEY: 're', RESEND_FROM: 'X <x@y.com>' } as unknown as Runtime, {
       kind: 'Welcome',
       to: 'a@b.com',
       subject: 's',

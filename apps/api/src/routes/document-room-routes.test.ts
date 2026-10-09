@@ -10,7 +10,7 @@
 // to stamp is the header an attacker supplies. These tests read the headers the
 // stub actually received rather than trusting the route's intent.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
@@ -45,16 +45,15 @@ const REACHED_ROOM = 204;
 function roomEnv() {
   const seen: Request[] = [];
   const env = {
-    DOCUMENT_ROOM: {
-      idFromName: (name: string) => `id:${name}`,
-      get: () => ({
+    rooms: {
+      for: () => ({
         fetch: async (req: Request) => {
           seen.push(req);
           return new Response(null, { status: REACHED_ROOM });
         },
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   return { env, seen };
 }
 
@@ -113,7 +112,7 @@ describe('WebSocket upgrade — trust headers', () => {
   // Once the guest signature gate is armed, `o` is the same bearer value as
   // REST's X-Owner-Id and needs the same proof, on `os`.
   describe('with the guest signature gate armed', () => {
-    const armed = (env: Env) =>
+    const armed = (env: Runtime) =>
       Object.assign(env, { GUEST_ID_HMAC_SECRET: 'sek', GUEST_SIG_ENFORCE_AFTER: '0' });
 
     it('refuses an unsigned owner id', async () => {
@@ -159,7 +158,7 @@ describe('WebSocket upgrade — trust headers', () => {
       makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234&p=guess', {
         owner: null,
         headers: { Upgrade: 'websocket', 'CF-Connecting-IP': '203.0.113.9' },
-        env: Object.assign(env, { SHARE_RATE_LIMITER: { limit } }),
+        env: Object.assign(env, { limiters: { SHARE_RATE_LIMITER: { limit } } }),
       }),
     );
     expect(res?.status).toBe(403);

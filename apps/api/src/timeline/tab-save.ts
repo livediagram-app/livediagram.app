@@ -8,7 +8,7 @@
 // save down with it.
 
 import type { Element } from '@livediagram/document';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 import {
   recordActionAssigned,
   recordActionCompleted,
@@ -21,7 +21,7 @@ import { completedActions, newActions, newComments, newlyResolvedThreads } from 
 type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 
 export async function recordTabSave(
-  env: Env,
+  env: Runtime,
   liveDoc: DocumentRef,
   actorId: string,
   next: Element[],

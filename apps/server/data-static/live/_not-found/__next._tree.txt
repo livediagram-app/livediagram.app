@@ -1,0 +1,3 @@
+:HL["/live/_next/static/chunks/0oz1bexpsyddb.css","style"]
+:HL["https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@400;500;700&family=Nunito:wght@400;500;700&family=Oswald:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&family=Lora:wght@400;500;700&family=Abril+Fatface&family=Roboto+Slab:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&family=Caveat:wght@400;500;700&family=Permanent+Marker&display=swap","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"8JHdxfbNLWe_hj1aPLr_j"}

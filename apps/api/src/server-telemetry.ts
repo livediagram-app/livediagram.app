@@ -11,14 +11,14 @@
 
 import type { TelemetryAction, TelemetryCategory } from '@livediagram/api-schema';
 import { insertTelemetryEvents } from './db/telemetry';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
-export function telemetryEnabled(env: Env): boolean {
+export function telemetryEnabled(env: Runtime): boolean {
   return env.TELEMETRY_ENABLED === 'true';
 }
 
 export async function reportServerEvent(
-  env: Env,
+  env: Runtime,
   category: TelemetryCategory,
   action: TelemetryAction,
   type: string | null = null,

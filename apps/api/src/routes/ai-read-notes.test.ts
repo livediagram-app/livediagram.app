@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@livediagram/api-schema';
 import { handleAiReadNotes } from './ai-read-notes';
 import type { RouteContext } from './context';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // Reading sticky crops (docs/specs/021-event-storming/event-storming.md Phase 8). Three things are pinned: the shared
 // gate still guards this route (it is the operator's model budget either way),
@@ -33,7 +33,7 @@ afterEach(() => {
 
 function makeCtx(
   opts: {
-    env?: Partial<Env>;
+    env?: Partial<Runtime>;
     origin?: string | null;
     clerkUserId?: string | null;
     owner?: string | null;
@@ -56,7 +56,7 @@ function makeCtx(
   });
   return {
     request,
-    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as Env,
+    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as unknown as Runtime,
     url: new URL(request.url),
     segments: ['api', 'ai', 'read-notes'],
     clerkUserId: opts.clerkUserId ?? null,
@@ -101,7 +101,9 @@ describe('the shared gate still guards this route', () => {
   it('429 when the caller is over the rate limit', async () => {
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } } as Partial<Env>,
+        env: {
+          limiters: { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } },
+        } as Partial<Runtime>,
       }),
     );
     expect(res.status).toBe(429);
@@ -111,7 +113,9 @@ describe('the shared gate still guards this route', () => {
     globalThis.fetch = providerSays({ texts: [] });
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } } as Partial<Env>,
+        env: {
+          limiters: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } },
+        } as Partial<Runtime>,
       }),
     );
     expect(res.status).toBe(200);
@@ -273,7 +277,7 @@ describe('when the provider answers', () => {
 });
 
 describe('the answer shape the provider is held to', () => {
-  const sentBody = async (env: Partial<Env>) => {
+  const sentBody = async (env: Partial<Runtime>) => {
     globalThis.fetch = providerSays({ texts: [{ id: 1, text: 'Order placed', legible: true }] });
     await handleAiReadNotes(makeCtx({ env }));
     return JSON.parse(
@@ -287,7 +291,7 @@ describe('the answer shape the provider is held to', () => {
     ['google', { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'k' }],
     ['openai', {}],
   ])('asks %s for a strict schema of the answer', async (_name, env) => {
-    const sent = await sentBody(env as Partial<Env>);
+    const sent = await sentBody(env as Partial<Runtime>);
     expect(sent.response_format.type).toBe('json_schema');
     expect(sent.response_format.json_schema?.strict).toBe(true);
     expect(JSON.stringify(sent.response_format.json_schema?.schema)).toContain('legible');

@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { upsertTab } from '../db/tabs';
 import { trashDocument } from '../db/trash';
 import { makeTestRouteContext } from './test-route-context';
@@ -31,9 +31,8 @@ type Room = { broadcasts: unknown[] };
 function world(): SqliteD1 & Room {
   const room: Room = { broadcasts: [] };
   const db = sqliteD1({
-    DOCUMENT_ROOM: {
-      idFromName: (name: string) => `id:${name}`,
-      get: () => ({
+    rooms: {
+      for: () => ({
         fetch: async (url: string, init?: RequestInit) => {
           if (String(url).endsWith('/broadcast')) {
             room.broadcasts.push(JSON.parse(String(init?.body)));
@@ -42,7 +41,7 @@ function world(): SqliteD1 & Room {
         },
       }),
     },
-  } as unknown as Partial<Env>);
+  } as unknown as Partial<Runtime>);
   insert(db.sql, 'documents', {
     id: 'A',
     owner_id: 'owner',

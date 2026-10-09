@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKBENCH_PAIRING_TTL_MS, WORKBENCH_TICKET_TTL_MS } from '@livediagram/api-schema';
 import type { SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import type { WorkbenchContext } from './context';
 import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
@@ -13,7 +13,7 @@ type Opts = {
   body?: unknown;
   rawBody?: string;
   workbench?: WorkbenchContext | null;
-  env?: Env;
+  env?: Runtime;
   headers?: Record<string, string>;
 };
 
@@ -226,7 +226,9 @@ describe('POST /api/workbench/tickets', () => {
     pairToken(db);
     const limit = vi.fn(async () => ({ success: false }));
 
-    const res = await mint(db, { env: { ...db.env, WORKBENCH_TICKET_RATE_LIMITER: { limit } } });
+    const res = await mint(db, {
+      env: { ...db.env, limiters: { WORKBENCH_TICKET_RATE_LIMITER: { limit } } },
+    });
 
     expect(res.status).toBe(429);
     expect(limit).toHaveBeenCalledWith({ key: 'workbench-ticket:tok1' });

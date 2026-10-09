@@ -74,7 +74,8 @@ import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
-import type { Env } from './types';
+import type { Env, Runtime } from './types';
+import { cloudflareRuntime } from './runtime/cloudflare';
 import { runSheetExpiry } from './sheet-sweep';
 
 export { DocumentRoom };
@@ -84,9 +85,9 @@ export { DocumentRoom };
 // WRITE_RATE_LIMITER binding) so the endpoint can short-circuit
 // with a 429. Falls through to "allowed" when the binding is
 // absent so self-host deployments without the feature still serve.
-async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
-  if (!env.WRITE_RATE_LIMITER) return false;
-  const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
+async function isWriteRateLimited(env: Runtime, ownerId: string): Promise<boolean> {
+  if (!env.limiters?.WRITE_RATE_LIMITER) return false;
+  const result = await env.limiters?.WRITE_RATE_LIMITER?.limit({ key: ownerId });
   return !result.success;
 }
 
@@ -97,7 +98,7 @@ const sightedThisIsolate = new Set<string>();
 // Every request the worker answers; `fetch` below stamps the document format number on it.
 async function routeApiRequest(
   request: Request,
-  env: Env,
+  env: Runtime,
   executionCtx?: ExecutionContext,
 ): Promise<Response> {
   if (request.method === 'OPTIONS') {
@@ -108,7 +109,7 @@ async function routeApiRequest(
     console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
     const current = await fromLegacyRequest(request, MAX_BODY_BYTES);
     if (!current) return payloadTooLarge();
-    return toLegacyResponse(await worker.fetch(current, env, executionCtx));
+    return toLegacyResponse(await fetchWithRuntime(current, env, executionCtx));
   }
 
   const url = new URL(request.url);
@@ -320,16 +321,16 @@ async function routeApiRequest(
   // ...but not unthrottled: each mint is a D1 write. Its own bucket per
   // caller network (the owner id is caller-chosen for a guest), so a flood is
   // bounded without touching anyone's autosave budget.
-  if (isRoomTicketMint && isWrite && env.WRITE_RATE_LIMITER) {
+  if (isRoomTicketMint && isWrite && env.limiters?.WRITE_RATE_LIMITER) {
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
   // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
   // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
   const isCommunityWrite = isWrite && segments[1] === 'community';
-  if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
+  if (isCommunityWrite && env.limiters?.COMMUNITY_RATE_LIMITER) {
     // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
-    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
+    const ok = await env.limiters?.COMMUNITY_RATE_LIMITER?.limit({
       key: `community:${communityNetwork(clientIp(request))}`,
     });
     if (!ok.success) return rateLimited();
@@ -351,8 +352,10 @@ async function routeApiRequest(
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
   // the write limiter, so an external integration's reads get their own
   // per-token throttle. Optional binding → allow when absent (self-host).
-  if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
-    const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
+  if (tokenAuth && request.method === 'GET' && env.limiters?.API_TOKEN_READ_RATE_LIMITER) {
+    const ok = await env.limiters?.API_TOKEN_READ_RATE_LIMITER?.limit({
+      key: `token:${tokenAuth.tokenId}`,
+    });
     if (!ok.success) return rateLimited();
   }
 
@@ -360,9 +363,10 @@ async function routeApiRequest(
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow (self-host).
-  if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
+  if (request.method === 'GET' && segments[1] === 'share' && env.limiters?.SHARE_RATE_LIMITER) {
     const ip = clientRateKey(request);
-    if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
+    if (!(await env.limiters?.SHARE_RATE_LIMITER?.limit({ key: ip }))?.success)
+      return rateLimited();
   }
 
   // Dispatch on the resource segment to its route module. Each
@@ -482,10 +486,120 @@ async function routeApiRequest(
   return notFound();
 }
 
+/**
+ * The handler with the runtime already resolved. The `fetch` entry above is the
+ * only place bindings exist; everything below it — including tests — speaks
+ * `Runtime` (docs/specs/016-platform/self-hosted-runtime.md).
+ */
+export async function fetchWithRuntime(
+  request: Request,
+  runtime: Runtime,
+  executionCtx?: ExecutionContext,
+): Promise<Response> {
+  return withServerRelease(await routeApiRequest(request, runtime, executionCtx), runtime.BUILD_ID);
+}
+
+/**
+ * The retention sweeps with the runtime already resolved — the same split as
+ * `fetchWithRuntime`. Cloudflare names the schedule in wrangler.toml
+ * (`triggers.crons`); the Node runtime registers the same expression against its
+ * own timer.
+ */
+export async function scheduledWithRuntime(
+  event: ScheduledController,
+  runtime: Runtime,
+  ctx: ExecutionContext,
+): Promise<void> {
+  if (event.cron === '0 3 * * *') {
+    const now = Date.now();
+    scheduleSweep(ctx, runtime, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
+    // docs/specs/017-telemetry/telemetry.md: session ids seen for the sign-in count (auth/session-telemetry.ts).
+    scheduleSweep(
+      ctx,
+      runtime,
+      'auth_sessions',
+      'rows',
+      now - AUTH_SESSION_RETENTION_MS,
+      deleteOldSessionSightings,
+    );
+    // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
+    scheduleSweep(
+      ctx,
+      runtime,
+      'timeline',
+      'events',
+      now - TIMELINE_RETENTION_MS,
+      deleteOldTimelineEvents,
+    );
+    // docs/specs/013-workspace/explorer-home.md "Opens": an open older than the Timeline's year
+    // is forgotten, the same retention as the events it sits beside.
+    scheduleSweep(
+      ctx,
+      runtime,
+      'home_opens',
+      'rows',
+      now - TIMELINE_RETENTION_MS,
+      deleteOldDocumentOpens,
+    );
+    // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
+    // record exists, as long as the Trash keeps a document (CS28).
+    scheduleSweep(
+      ctx,
+      runtime,
+      'changesets',
+      'rows',
+      now - CHANGESET_RETENTION_MS,
+      deleteOldChangesets,
+    );
+    // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
+    // No-op when RESEND_API_KEY is unset.
+    ctx.waitUntil(runLifecycleSweep(runtime));
+    // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
+    ctx.waitUntil(runTokenExpirySweep(runtime));
+    // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
+    // the email sweep above because that one no-ops without a Resend
+    // key, and a self-host with no email provider still needs to know
+    // its integration is about to break.
+    ctx.waitUntil(
+      runTimelineExpirySweep(runtime)
+        .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
+        .catch((err) => console.error('timeline expiry sweep failed', err)),
+    );
+    // docs/specs/013-workspace/trash.md: purge what has been in the Trash for
+    // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
+    ctx.waitUntil(
+      purgeExpiredTrash(runtime, now)
+        .then((count) => console.log(`trash sweep: purged ${count} documents`))
+        .catch((err) => console.error('trash sweep failed', err)),
+    );
+    // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
+    // unsaved for 30 days to the Trash, stamped `now`, so the purge above
+    // never takes one this run: it waits its full 30 days there.
+    ctx.waitUntil(
+      trashEmptyDocuments(runtime, now)
+        .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
+        .catch((err) => console.error('empty sweep failed', err)),
+    );
+    // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
+    // then reap unused images. runImageRetention logs its own outcome.
+    ctx.waitUntil(runImageRetention(runtime, now));
+    // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
+    // sessions past their grace, pairings of tokens no longer live.
+    ctx.waitUntil(
+      sweepWorkbench(runtime, now)
+        .then((count) => console.log(`workbench sweep: deleted ${count} rows`))
+        .catch((err) => console.error('workbench sweep failed', err)),
+    );
+    // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
+    ctx.waitUntil(
+      runSheetExpiry(runtime).catch((err) => console.error('[sheets] sheets.expired failed', err)),
+    );
+  }
+}
+
 const worker = {
-  // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
-    return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
+    return fetchWithRuntime(request, cloudflareRuntime(env, executionCtx), executionCtx);
   },
 
   // Scheduled handler. Wired to the cron schedule in wrangler.toml.
@@ -502,95 +616,19 @@ const worker = {
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    if (event.cron === '0 3 * * *') {
-      const now = Date.now();
-      scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
-      // docs/specs/017-telemetry/telemetry.md: session ids seen for the sign-in count (auth/session-telemetry.ts).
-      scheduleSweep(
-        ctx,
-        env,
-        'auth_sessions',
-        'rows',
-        now - AUTH_SESSION_RETENTION_MS,
-        deleteOldSessionSightings,
-      );
-      // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
-      scheduleSweep(
-        ctx,
-        env,
-        'timeline',
-        'events',
-        now - TIMELINE_RETENTION_MS,
-        deleteOldTimelineEvents,
-      );
-      // docs/specs/013-workspace/explorer-home.md "Opens": an open older than the Timeline's year
-      // is forgotten, the same retention as the events it sits beside.
-      scheduleSweep(
-        ctx,
-        env,
-        'home_opens',
-        'rows',
-        now - TIMELINE_RETENTION_MS,
-        deleteOldDocumentOpens,
-      );
-      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
-      // record exists, as long as the Trash keeps a document (CS28).
-      scheduleSweep(
-        ctx,
-        env,
-        'changesets',
-        'rows',
-        now - CHANGESET_RETENTION_MS,
-        deleteOldChangesets,
-      );
-      // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
-      ctx.waitUntil(
-        runSheetExpiry(env).catch((err) => console.error('[sheets] sheets.expired failed', err)),
-      );
-      // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
-      // No-op when RESEND_API_KEY is unset.
-      ctx.waitUntil(runLifecycleSweep(env));
-      // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
-      ctx.waitUntil(runTokenExpirySweep(env));
-      // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
-      // the email sweep above because that one no-ops without a Resend
-      // key, and a self-host with no email provider still needs to know
-      // its integration is about to break.
-      ctx.waitUntil(
-        runTimelineExpirySweep(env)
-          .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
-          .catch((err) => console.error('timeline expiry sweep failed', err)),
-      );
-      // docs/specs/013-workspace/trash.md: purge what has been in the Trash for
-      // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
-      ctx.waitUntil(
-        purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} documents`))
-          .catch((err) => console.error('trash sweep failed', err)),
-      );
-      // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
-      // unsaved for 30 days to the Trash, stamped `now`, so the purge above
-      // never takes one this run: it waits its full 30 days there.
-      ctx.waitUntil(
-        trashEmptyDocuments(env, now)
-          .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
-          .catch((err) => console.error('empty sweep failed', err)),
-      );
-      // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
-      // then reap unused images. runImageRetention logs its own outcome.
-      ctx.waitUntil(runImageRetention(env, now));
-      // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
-      // sessions past their grace, pairings of tokens no longer live.
-      ctx.waitUntil(
-        sweepWorkbench(env, now)
-          .then((count) => console.log(`workbench sweep: deleted ${count} rows`))
-          .catch((err) => console.error('workbench sweep failed', err)),
-      );
-    }
+    return scheduledWithRuntime(event, cloudflareRuntime(env, ctx), ctx);
   },
 } satisfies ExportedHandler<Env>;
 
 export default worker;
+
+// The surface the self-hosted app process mounts
+// (docs/specs/016-platform/self-hosted-runtime.md): the handler with a runtime
+// already resolved, plus the types and the configuration reader that runtime
+// needs. Nothing else in this worker is public.
+export type { Env, Runtime } from './types';
+export type { RoomSocket, RoomState, RoomStorage } from './runtime/room-shell';
+export { RUNTIME_CONFIG_KEYS, runtimeConfigFrom, type RuntimeConfig } from './runtime/config';
 
 // Run one daily retention sweep in the background: delete rows older than
 // `cutoff`, then log the count (or the failure) to `wrangler tail`. The
@@ -599,11 +637,11 @@ export default worker;
 // zero is the normal case most days — observability without a metrics pipeline.
 function scheduleSweep(
   ctx: ExecutionContext,
-  env: Env,
+  env: Runtime,
   label: string,
   unit: string,
   cutoff: number,
-  deleteOlderThan: (env: Env, cutoff: number) => Promise<number>,
+  deleteOlderThan: (env: Runtime, cutoff: number) => Promise<number>,
 ): void {
   ctx.waitUntil(
     deleteOlderThan(env, cutoff)

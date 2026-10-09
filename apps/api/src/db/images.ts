@@ -4,36 +4,39 @@
 
 import { imageRefIndexOwnerStatement, isImageRefIndexComplete } from './image-refs';
 import { imageRowToSummary, type ImageRow } from '../image-row';
-import type { Env, ImageSummary } from '../types';
+import type { ImageSummary, Runtime } from '../types';
 
-export async function listImagesByOwner(env: Env, ownerId: string): Promise<ImageSummary[]> {
-  const rows = await env.DB.prepare(
-    'SELECT id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at FROM images WHERE owner_id = ? ORDER BY created_at DESC',
-  )
+export async function listImagesByOwner(env: Runtime, ownerId: string): Promise<ImageSummary[]> {
+  const rows = await env.db
+    .prepare(
+      'SELECT id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at FROM images WHERE owner_id = ? ORDER BY created_at DESC',
+    )
     .bind(ownerId)
     .all<ImageRow>();
   return (rows.results ?? []).map(imageRowToSummary);
 }
 
 export async function findImageBySha(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   sha256: string,
 ): Promise<ImageSummary | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at FROM images WHERE owner_id = ? AND sha256 = ?',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at FROM images WHERE owner_id = ? AND sha256 = ?',
+    )
     .bind(ownerId, sha256)
     .first<ImageRow>();
   return row ? imageRowToSummary(row) : null;
 }
 
-export async function getImage(env: Env, id: string): Promise<{ ownerId: string } | null> {
+export async function getImage(env: Runtime, id: string): Promise<{ ownerId: string } | null> {
   // The byte-read endpoint resolves auth from owner_id alone, so the
   // narrow projection is intentional. The byte-payload itself comes
   // from R2; D1 is only consulted for "does this image exist + who
   // owns it".
-  const row = await env.DB.prepare('SELECT owner_id FROM images WHERE id = ?')
+  const row = await env.db
+    .prepare('SELECT owner_id FROM images WHERE id = ?')
     .bind(id)
     .first<{ owner_id: string }>();
   return row ? { ownerId: row.owner_id } : null;
@@ -47,7 +50,7 @@ export type ImageCaps = { maxImages: number | null; maxBytes: number | null };
 // an earlier totals query cannot all land (the import pipeline uploads three
 // at once). Returns null when the caps refused it.
 export async function insertImage(
-  env: Env,
+  env: Runtime,
   row: {
     id: string;
     ownerId: string;
@@ -61,12 +64,13 @@ export async function insertImage(
   caps: ImageCaps = { maxImages: null, maxBytes: null },
 ): Promise<ImageSummary | null> {
   const createdAt = Date.now();
-  const result = await env.DB.prepare(
-    `INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at)
+  const result = await env.db
+    .prepare(
+      `INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at)
      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
      WHERE (?10 IS NULL OR (SELECT COUNT(*) FROM images WHERE owner_id = ?2) < ?10)
        AND (?11 IS NULL OR (SELECT COALESCE(SUM(byte_size), 0) FROM images WHERE owner_id = ?2) + ?4 <= ?11)`,
-  )
+    )
     .bind(
       row.id,
       row.ownerId,
@@ -93,8 +97,8 @@ export async function insertImage(
   };
 }
 
-export async function deleteImage(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM images WHERE id = ?').bind(id).run();
+export async function deleteImage(env: Runtime, id: string): Promise<void> {
+  await env.db.prepare('DELETE FROM images WHERE id = ?').bind(id).run();
 }
 
 // Total image count + summed byte_size for one owner. Drives the
@@ -102,12 +106,13 @@ export async function deleteImage(env: Env, id: string): Promise<void> {
 // bar surfaced in the picker. Single grouped query so the worker
 // doesn't pay two D1 round-trips per upload attempt.
 export async function imageTotalsByOwner(
-  env: Env,
+  env: Runtime,
   ownerId: string,
 ): Promise<{ count: number; bytes: number }> {
-  const row = await env.DB.prepare(
-    'SELECT COUNT(*) AS count, COALESCE(SUM(byte_size), 0) AS bytes FROM images WHERE owner_id = ?',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT COUNT(*) AS count, COALESCE(SUM(byte_size), 0) AS bytes FROM images WHERE owner_id = ?',
+    )
     .bind(ownerId)
     .first<{ count: number; bytes: number }>();
   return {
@@ -125,20 +130,21 @@ export async function imageTotalsByOwner(
 // While the index backfill is incomplete the owner's tabs are indexed first,
 // so an older image never reads as unused (and gets deleted by hand).
 export async function imageUsageByOwner(
-  env: Env,
+  env: Runtime,
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>> {
   if (!(await isImageRefIndexComplete(env))) {
     await imageRefIndexOwnerStatement(env, ownerId).run();
   }
-  const rows = await env.DB.prepare(
-    `SELECT DISTINCT r.image_id, d.id AS document_id, d.name AS document_name
+  const rows = await env.db
+    .prepare(
+      `SELECT DISTINCT r.image_id, d.id AS document_id, d.name AS document_name
        FROM documents d
        JOIN document_tabs dt ON dt.document_id = d.id
        JOIN image_refs r ON r.tab_id = dt.tab_id
       WHERE d.owner_id = ?
       ORDER BY d.name, d.id`,
-  )
+    )
     .bind(ownerId)
     .all<{ image_id: string; document_id: string; document_name: string }>();
   const usage: Record<string, { id: string; name: string }[]> = {};

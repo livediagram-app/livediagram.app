@@ -4,7 +4,7 @@ import type { Tab } from '@livediagram/document';
 import { TRASH_RETENTION_MS } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { DAY, T0, liveDoc, insert, team } from './test-trash-fixtures';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { deleteAccount } from './account';
 import {
   getDocument,
@@ -54,7 +54,7 @@ function count(sql: DatabaseSync, table: string, where: string, ...args: string[
 
 function withImages() {
   const del = vi.fn(async () => {});
-  const db = sqliteD1({ IMAGES: { delete: del } as unknown as Env['IMAGES'] });
+  const db = sqliteD1({ objects: { delete: del } as unknown as Runtime['objects'] });
   return { db, del };
 }
 
@@ -373,7 +373,7 @@ describe('purgeDocuments', () => {
     const del = vi.fn(async () => {
       throw new Error('r2 down');
     });
-    const db = sqliteD1({ IMAGES: { delete: del } as unknown as Env['IMAGES'] });
+    const db = sqliteD1({ objects: { delete: del } as unknown as Runtime['objects'] });
     liveDoc(db.sql, 'A');
     await trashDocument(db.env, 'A', T0);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});

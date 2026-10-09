@@ -4,7 +4,7 @@ import { formatResultLines } from '@livediagram/edit-operations';
 import { getChangesetPart, lastChangesetRev, type ChangesetRecord } from '../db';
 import { readRoomSelections } from '../room-client';
 import { personTagFor } from '../person-tag';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 import { afterChangeset } from './after';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
@@ -20,7 +20,7 @@ import { writeChangeset, type Author } from './write';
 // Anyone with edit access to the tab may revert; a person's revert is never held, a token's is.
 
 export type RevertArgs = {
-  env: Env;
+  env: Runtime;
   document: DocumentDTO;
   record: ChangesetRecord;
   author: Author;

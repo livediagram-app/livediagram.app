@@ -10,7 +10,7 @@ import {
   TEAM_ROOM_CLOSE_CONCURRENCY,
   TEAM_ROOM_CLOSE_MAX_DOCUMENTS,
 } from './room-access-client';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // One fake room per document id, recording what each was asked and how many were in flight at once.
 function roomsEnv(
@@ -21,9 +21,8 @@ function roomsEnv(
   let inFlight = 0;
   let maxInFlight = 0;
   const env = {
-    DOCUMENT_ROOM: {
-      idFromName: (name: string) => name,
-      get: (documentId: string) => ({
+    rooms: {
+      for: (documentId: string) => ({
         fetch: async (url: string, init: RequestInit) => {
           inFlight++;
           maxInFlight = Math.max(maxInFlight, inFlight);
@@ -38,7 +37,7 @@ function roomsEnv(
         },
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   return { env, calls, maxInFlight: () => maxInFlight };
 }
 

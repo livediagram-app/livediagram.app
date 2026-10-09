@@ -1,9 +1,10 @@
+import type { DbResult, DbStatement } from '@livediagram/runtime';
 // items (migration 0068): a document's item store (docs/specs/026-plan/items.md, blueprint item-store.md
 // "Data and persistence"). Every write raises the document's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 
 import type { Item, ItemPerson } from '@livediagram/items';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 type ItemRow = {
   id: string;
@@ -60,97 +61,111 @@ export function itemFromRow(row: ItemRow): Item {
 
 export type ItemStoreHead = { rev: number; nextKey: number; count: number };
 
-export async function getItemStoreHead(env: Env, documentId: string): Promise<ItemStoreHead> {
-  const row = await env.DB.prepare(
-    `SELECT d.items_rev AS rev, d.items_next_key AS next_key,
+export async function getItemStoreHead(env: Runtime, documentId: string): Promise<ItemStoreHead> {
+  const row = await env.db
+    .prepare(
+      `SELECT d.items_rev AS rev, d.items_next_key AS next_key,
             (SELECT COUNT(*) FROM items i WHERE i.document_id = d.id) AS count
        FROM documents d WHERE d.id = ?`,
-  )
+    )
     .bind(documentId)
     .first<{ rev: number; next_key: number; count: number }>();
   return { rev: row?.rev ?? 0, nextKey: row?.next_key ?? 1, count: row?.count ?? 0 };
 }
 
 // The store's revision alone: what a read needs, without the head's count.
-export async function getItemsRev(env: Env, documentId: string): Promise<number> {
-  const row = await env.DB.prepare(`SELECT items_rev AS rev FROM documents WHERE id = ?`)
+export async function getItemsRev(env: Runtime, documentId: string): Promise<number> {
+  const row = await env.db
+    .prepare(`SELECT items_rev AS rev FROM documents WHERE id = ?`)
     .bind(documentId)
     .first<{ rev: number }>();
   return row?.rev ?? 0;
 }
 
-export async function listItems(env: Env, documentId: string): Promise<Item[]> {
-  const res = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ?`)
+export async function listItems(env: Runtime, documentId: string): Promise<Item[]> {
+  const res = await env.db
+    .prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ?`)
     .bind(documentId)
     .all<ItemRow>();
   return (res.results ?? []).map(itemFromRow);
 }
 
-export async function readItem(env: Env, documentId: string, id: string): Promise<Item | null> {
-  const row = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id = ?`)
+export async function readItem(env: Runtime, documentId: string, id: string): Promise<Item | null> {
+  const row = await env.db
+    .prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id = ?`)
     .bind(documentId, id)
     .first<ItemRow>();
   return row ? itemFromRow(row) : null;
 }
 
 // The items of `ids` that exist, in no set order: one query however many (the ids as one JSON parameter).
-export async function readItems(env: Env, documentId: string, ids: string[]): Promise<Item[]> {
-  const res = await env.DB.prepare(
-    `SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id IN (SELECT value FROM json_each(?))`,
-  )
+export async function readItems(env: Runtime, documentId: string, ids: string[]): Promise<Item[]> {
+  const res = await env.db
+    .prepare(
+      `SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id IN (SELECT value FROM json_each(?))`,
+    )
     .bind(documentId, JSON.stringify(ids))
     .all<ItemRow>();
   return (res.results ?? []).map(itemFromRow);
 }
 
-export async function itemKeyTaken(env: Env, documentId: string, key: number): Promise<boolean> {
-  const row = await env.DB.prepare(
-    'SELECT 1 AS x FROM items WHERE document_id = ? AND item_key = ?',
-  )
+export async function itemKeyTaken(
+  env: Runtime,
+  documentId: string,
+  key: number,
+): Promise<boolean> {
+  const row = await env.db
+    .prepare('SELECT 1 AS x FROM items WHERE document_id = ? AND item_key = ?')
     .bind(documentId, key)
     .first<{ x: number }>();
   return row !== null;
 }
 
-function bumpRev(env: Env, documentId: string, nextKey?: number): D1PreparedStatement {
+function bumpRev(env: Runtime, documentId: string, nextKey?: number): DbStatement {
   return nextKey === undefined
-    ? env.DB.prepare(
-        'UPDATE documents SET items_rev = items_rev + 1 WHERE id = ? RETURNING items_rev',
-      ).bind(documentId)
-    : env.DB.prepare(
-        `UPDATE documents SET items_rev = items_rev + 1, items_next_key = MAX(items_next_key, ?)
+    ? env.db
+        .prepare('UPDATE documents SET items_rev = items_rev + 1 WHERE id = ? RETURNING items_rev')
+        .bind(documentId)
+    : env.db
+        .prepare(
+          `UPDATE documents SET items_rev = items_rev + 1, items_next_key = MAX(items_next_key, ?)
           WHERE id = ? RETURNING items_rev`,
-      ).bind(nextKey, documentId);
+        )
+        .bind(nextKey, documentId);
 }
 
-function insertStatement(env: Env, documentId: string, item: Item): D1PreparedStatement {
-  return env.DB.prepare(
-    `INSERT INTO items (document_id, ${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).bind(
-    documentId,
-    item.id,
-    item.type,
-    item.key,
-    item.rank,
-    JSON.stringify(item.fields),
-    item.rev,
-    item.createdAt,
-    item.updatedAt,
-    JSON.stringify(item.createdBy),
-    JSON.stringify(item.updatedBy),
-  );
+function insertStatement(env: Runtime, documentId: string, item: Item): DbStatement {
+  return env.db
+    .prepare(`INSERT INTO items (document_id, ${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(
+      documentId,
+      item.id,
+      item.type,
+      item.key,
+      item.rank,
+      JSON.stringify(item.fields),
+      item.rev,
+      item.createdAt,
+      item.updatedAt,
+      JSON.stringify(item.createdBy),
+      JSON.stringify(item.updatedBy),
+    );
 }
 
-function revOf(result: D1Result | undefined): number {
+function revOf(result: DbResult | undefined): number {
   const row = (result?.results as { items_rev?: number }[] | undefined)?.[0];
   return row?.items_rev ?? 0;
 }
 
 // Inserts new items (their keys already chosen) and returns the store's new rev. Throws on a
 // primary-key or key collision; the caller maps it to 409.
-export async function insertItems(env: Env, documentId: string, items: Item[]): Promise<number> {
+export async function insertItems(
+  env: Runtime,
+  documentId: string,
+  items: Item[],
+): Promise<number> {
   const maxKey = Math.max(...items.map((i) => i.key));
-  const results = await env.DB.batch([
+  const results = await env.db.batch([
     bumpRev(env, documentId, maxKey + 1),
     ...items.map((i) => insertStatement(env, documentId, i)),
   ]);
@@ -160,18 +175,20 @@ export async function insertItems(env: Env, documentId: string, items: Item[]): 
 // Writes `next` over the row stored at `expectedRev`. Returns the store's new rev, or null when
 // the row moved on (or went) since it was read.
 export async function updateItemAtRev(
-  env: Env,
+  env: Runtime,
   documentId: string,
   next: Item,
   expectedRev: number,
 ): Promise<number | null> {
-  const results = await env.DB.batch([
+  const results = await env.db.batch([
     updateAtRevStatement(env, documentId, next, expectedRev),
     // Raises the store rev only when the guarded update landed.
-    env.DB.prepare(
-      `UPDATE documents SET items_rev = items_rev + 1
+    env.db
+      .prepare(
+        `UPDATE documents SET items_rev = items_rev + 1
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
-    ).bind(documentId),
+      )
+      .bind(documentId),
   ]);
   if ((results[0]?.meta?.changes ?? 0) === 0) return null;
   return revOf(results[1]);
@@ -181,11 +198,11 @@ export async function updateItemAtRev(
 // new rev and the ids that landed; an id missing from `landed` moved on (or went) since it was read. The rev is
 // raised even when none landed: the caller then retries, and a collaborator who saw the gap refetches.
 export async function updateItemsAtRev(
-  env: Env,
+  env: Runtime,
   documentId: string,
   writes: { next: Item; expectedRev: number }[],
 ): Promise<{ rev: number; landed: Set<string> }> {
-  const results = await env.DB.batch([
+  const results = await env.db.batch([
     ...writes.map((w) => updateAtRevStatement(env, documentId, w.next, w.expectedRev)),
     bumpRev(env, documentId),
   ]);
@@ -196,39 +213,43 @@ export async function updateItemsAtRev(
 }
 
 function updateAtRevStatement(
-  env: Env,
+  env: Runtime,
   documentId: string,
   next: Item,
   expectedRev: number,
-): D1PreparedStatement {
-  return env.DB.prepare(
-    `UPDATE items SET type = ?, rank = ?, fields = ?, rev = ?, updated_at = ?, updated_by = ?
+): DbStatement {
+  return env.db
+    .prepare(
+      `UPDATE items SET type = ?, rank = ?, fields = ?, rev = ?, updated_at = ?, updated_by = ?
       WHERE document_id = ? AND id = ? AND rev = ?`,
-  ).bind(
-    next.type,
-    next.rank,
-    JSON.stringify(next.fields),
-    next.rev,
-    next.updatedAt,
-    JSON.stringify(next.updatedBy),
-    documentId,
-    next.id,
-    expectedRev,
-  );
+    )
+    .bind(
+      next.type,
+      next.rank,
+      JSON.stringify(next.fields),
+      next.rev,
+      next.updatedAt,
+      JSON.stringify(next.updatedBy),
+      documentId,
+      next.id,
+      expectedRev,
+    );
 }
 
 // Returns the store's new rev, or null when there was no such item.
 export async function deleteItemRow(
-  env: Env,
+  env: Runtime,
   documentId: string,
   id: string,
 ): Promise<number | null> {
-  const results = await env.DB.batch([
-    env.DB.prepare('DELETE FROM items WHERE document_id = ? AND id = ?').bind(documentId, id),
-    env.DB.prepare(
-      `UPDATE documents SET items_rev = items_rev + 1
+  const results = await env.db.batch([
+    env.db.prepare('DELETE FROM items WHERE document_id = ? AND id = ?').bind(documentId, id),
+    env.db
+      .prepare(
+        `UPDATE documents SET items_rev = items_rev + 1
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
-    ).bind(documentId),
+      )
+      .bind(documentId),
   ]);
   if ((results[0]?.meta?.changes ?? 0) === 0) return null;
   return revOf(results[1]);
@@ -243,12 +264,12 @@ export async function deleteItemRow(
 // author becomes the neutral "Someone". It leaves every card's comment thread out too, as it leaves
 // the canvas's comment threads out (docs/specs/026-plan/items.md "Copies and exports").
 export function copyItemsStatements(
-  env: Env,
+  env: Runtime,
   sourceId: string,
   targetId: string,
   onlyIds: readonly string[] | null,
   redactPeople = false,
-): D1PreparedStatement[] {
+): DbStatement[] {
   const filter = onlyIds === null ? '' : ` AND id IN (SELECT value FROM json_each(?))`;
   const someone = JSON.stringify(UNKNOWN_PERSON);
   const selected = redactPeople
@@ -262,15 +283,19 @@ export function copyItemsStatements(
     ...(onlyIds === null ? [] : [JSON.stringify(onlyIds)]),
   ];
   return [
-    env.DB.prepare(
-      `INSERT INTO items (document_id, ${COLUMNS})
+    env.db
+      .prepare(
+        `INSERT INTO items (document_id, ${COLUMNS})
        SELECT ?, ${selected} FROM items WHERE document_id = ?${filter}`,
-    ).bind(...binds),
-    env.DB.prepare(
-      `UPDATE documents SET
+      )
+      .bind(...binds),
+    env.db
+      .prepare(
+        `UPDATE documents SET
          items_rev = (SELECT items_rev FROM documents WHERE id = ?2),
          items_next_key = (SELECT items_next_key FROM documents WHERE id = ?2)
        WHERE id = ?1`,
-    ).bind(targetId, sourceId),
+      )
+      .bind(targetId, sourceId),
   ];
 }

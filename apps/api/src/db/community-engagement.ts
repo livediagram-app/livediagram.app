@@ -9,7 +9,7 @@ import {
   sha256Hex,
 } from '@livediagram/api-schema';
 import { communityNetwork } from '../community-network';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // A post's like or copy count (blueprint §7): every row counts, but no network adds more than
 // COMMUNITY_COUNTED_PER_NETWORK. A row from before networks were recorded (migration 0070) is its own network.
@@ -34,14 +34,15 @@ const RECOUNT_COPIES = `UPDATE community_posts SET copy_count = ${COPY_COUNT_SQL
 
 // Which of `postIds` this community key likes. One query for a whole page of cards.
 export async function likedPostIds(
-  env: Env,
+  env: Runtime,
   likerKey: string | null,
   postIds: string[],
 ): Promise<Set<string>> {
   if (!likerKey || postIds.length === 0) return new Set();
-  const result = await env.DB.prepare(
-    'SELECT post_id FROM community_likes WHERE liker_key = ? AND post_id IN (SELECT value FROM json_each(?))',
-  )
+  const result = await env.db
+    .prepare(
+      'SELECT post_id FROM community_likes WHERE liker_key = ? AND post_id IN (SELECT value FROM json_each(?))',
+    )
     .bind(likerKey, JSON.stringify(postIds))
     .all<{ post_id: string }>();
   return new Set((result.results ?? []).map((r) => r.post_id));
@@ -50,7 +51,7 @@ export async function likedPostIds(
 // Like or unlike, idempotently, from the network `networkHash` names (communityNetworkHash). Returns the post's
 // like count after the change.
 export async function setCommunityLike(
-  env: Env,
+  env: Runtime,
   postId: string,
   likerKey: string,
   liked: boolean,
@@ -58,15 +59,17 @@ export async function setCommunityLike(
   now: number = Date.now(),
 ): Promise<number> {
   const change = liked
-    ? env.DB.prepare(
-        'INSERT OR IGNORE INTO community_likes (post_id, liker_key, created_at, network_hash) VALUES (?, ?, ?, ?)',
-      ).bind(postId, likerKey, now, networkHash)
-    : env.DB.prepare('DELETE FROM community_likes WHERE post_id = ? AND liker_key = ?').bind(
-        postId,
-        likerKey,
-      );
-  await env.DB.batch([change, env.DB.prepare(RECOUNT_LIKES).bind(postId)]);
-  const row = await env.DB.prepare('SELECT like_count FROM community_posts WHERE id = ?')
+    ? env.db
+        .prepare(
+          'INSERT OR IGNORE INTO community_likes (post_id, liker_key, created_at, network_hash) VALUES (?, ?, ?, ?)',
+        )
+        .bind(postId, likerKey, now, networkHash)
+    : env.db
+        .prepare('DELETE FROM community_likes WHERE post_id = ? AND liker_key = ?')
+        .bind(postId, likerKey);
+  await env.db.batch([change, env.db.prepare(RECOUNT_LIKES).bind(postId)]);
+  const row = await env.db
+    .prepare('SELECT like_count FROM community_posts WHERE id = ?')
     .bind(postId)
     .first<{ like_count: number }>();
   return row?.like_count ?? 0;
@@ -75,24 +78,26 @@ export async function setCommunityLike(
 // A copy taken through a community link, from the network `networkHash` names. Each person counts once however
 // often they copy, and one network adds at most COMMUNITY_COUNTED_PER_NETWORK.
 export async function recordCommunityCopy(
-  env: Env,
+  env: Runtime,
   postId: string,
   copierId: string,
   networkHash: string | null,
   now: number = Date.now(),
 ): Promise<void> {
-  await env.DB.batch([
-    env.DB.prepare(
-      'INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash) VALUES (?, ?, ?, ?)',
-    ).bind(postId, copierId, now, networkHash),
-    env.DB.prepare(RECOUNT_COPIES).bind(postId),
+  await env.db.batch([
+    env.db
+      .prepare(
+        'INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash) VALUES (?, ?, ?, ?)',
+      )
+      .bind(postId, copierId, now, networkHash),
+    env.db.prepare(RECOUNT_COPIES).bind(postId),
   ]);
 }
 
 // A report, once per community key per post. Hides the post automatically once reports come from
 // COMMUNITY_AUTO_HIDE_REPORTERS distinct keys on as many distinct networks. Returns whether this report hid it.
 export async function recordCommunityReport(
-  env: Env,
+  env: Runtime,
   postId: string,
   reporterKey: string,
   networkHash: string,
@@ -100,19 +105,21 @@ export async function recordCommunityReport(
   note: string | null,
   now: number = Date.now(),
 ): Promise<boolean> {
-  const inserted = await env.DB.prepare(
-    `INSERT OR IGNORE INTO community_reports (post_id, reporter_key, network_hash, reason, note, created_at)
+  const inserted = await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO community_reports (post_id, reporter_key, network_hash, reason, note, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
-  )
+    )
     .bind(postId, reporterKey, networkHash, reason, note, now)
     .run();
   if (!inserted.meta?.changes) return false;
-  const hidden = await env.DB.prepare(
-    `UPDATE community_posts SET state = 'hidden', hidden_by = 'reports'
+  const hidden = await env.db
+    .prepare(
+      `UPDATE community_posts SET state = 'hidden', hidden_by = 'reports'
       WHERE id = ?1 AND state = 'listed'
         AND (SELECT COUNT(DISTINCT reporter_key) FROM community_reports WHERE post_id = ?1) >= ?2
         AND (SELECT COUNT(DISTINCT network_hash) FROM community_reports WHERE post_id = ?1) >= ?2`,
-  )
+    )
     .bind(postId, COMMUNITY_AUTO_HIDE_REPORTERS)
     .run();
   return (hidden.meta?.changes ?? 0) > 0;

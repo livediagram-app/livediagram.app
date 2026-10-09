@@ -21,11 +21,11 @@ vi.mock('./audience', () => ({
   userScope: (id: string) => ({ scopeType: 'user', scopeId: id }),
 }));
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { recordTeamRenamed } from './team-events';
 import { recordThemeSaved } from './account-events';
 
-const env = {} as Env;
+const env = {} as unknown as Runtime;
 
 function keys(): string[] {
   return emit.emitTimelineEvent.mock.calls.map(

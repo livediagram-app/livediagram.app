@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { countUnseen } from './timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // The unread badge (docs/specs/013-workspace/timeline.md §2.5).
 //
@@ -15,7 +15,7 @@ function fakeDb(count = 0) {
   const first = vi.fn().mockResolvedValue({ n: count });
   const bind = vi.fn().mockReturnValue({ first });
   const prepare = vi.fn().mockReturnValue({ bind });
-  return { env: { DB: { prepare } } as unknown as Env, prepare, bind };
+  return { env: { db: { prepare } } as unknown as Runtime, prepare, bind };
 }
 
 const SCOPE = { scopeType: 'user' as const, scopeId: 'u-1' };
@@ -58,7 +58,7 @@ describe('countUnseen', () => {
   it('returns 0 rather than NaN when the row is missing', async () => {
     const first = vi.fn().mockResolvedValue(null);
     const bind = vi.fn().mockReturnValue({ first });
-    const env = { DB: { prepare: vi.fn().mockReturnValue({ bind }) } } as unknown as Env;
+    const env = { db: { prepare: vi.fn().mockReturnValue({ bind }) } } as unknown as Runtime;
     expect(await countUnseen(env, SCOPE, 0, 99, NOW)).toBe(0);
   });
 });

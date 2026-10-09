@@ -17,7 +17,7 @@ import type { SharePasswordAttempt } from '../auth/share-access';
 import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
 import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_").
 export type WorkbenchContext = {
@@ -34,7 +34,7 @@ export type WorkbenchContext = {
 
 export type RouteContext = {
   request: Request;
-  env: Env;
+  env: Runtime;
   url: URL;
   // Path split on '/', leading slash stripped: `['api', '<resource>', ...]`.
   segments: string[];

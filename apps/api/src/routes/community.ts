@@ -27,7 +27,7 @@ import {
   setCommunityLike,
 } from '../db';
 import { json, noContent, notFound } from '../responses';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import type { RouteContext } from './context';
 
 function communityKeyOf(request: Request): string | null {
@@ -36,7 +36,7 @@ function communityKeyOf(request: Request): string | null {
 }
 
 async function withLikes(
-  env: Env,
+  env: Runtime,
   key: string | null,
   rows: CommunityPostRow[],
 ): Promise<CommunityPost[]> {

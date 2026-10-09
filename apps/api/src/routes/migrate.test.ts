@@ -12,7 +12,7 @@ const { migrateOwnerId, getParticipant } = vi.hoisted(() => ({
 vi.mock('../db', () => ({ migrateOwnerId, getParticipant }));
 
 import { signOwnerId } from '../auth/owner-signature';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { handleMigrate } from './migrate';
 import { makeTestRouteContext } from './test-route-context';
 
@@ -22,13 +22,13 @@ const TARGET = '7d2c1b8e-3f4a-4c5d-9e6f-0a1b2c3d4e5f';
 
 async function flow2(
   from: string,
-  env: Partial<Env>,
+  env: Partial<Runtime>,
   headers: Record<string, string> = {},
 ): Promise<Response> {
   return handleMigrate(
     makeTestRouteContext('POST', '/api/migrate', {
       owner: from,
-      env: { GUEST_ID_HMAC_SECRET: SECRET, ...env } as Env,
+      env: { GUEST_ID_HMAC_SECRET: SECRET, ...env } as unknown as Runtime,
       headers,
       body: { toOwnerId: TARGET, toSignature: await signOwnerId(SECRET, TARGET) },
     }),
@@ -113,7 +113,7 @@ describe('POST /api/migrate flow 1 (sign-up claim)', () => {
   // signed-in user and another account's workspace.
   it('refuses an account id as the guest source even with no secret configured', async () => {
     const ctx = makeTestRouteContext('POST', '/api/migrate', {
-      env: {} as Env,
+      env: {} as unknown as Runtime,
       body: { guestOwnerId: 'user_victim' },
     });
     ctx.clerkUserId = 'user_attacker';
@@ -124,7 +124,7 @@ describe('POST /api/migrate flow 1 (sign-up claim)', () => {
 
   it('still claims a guest UUID with no secret configured', async () => {
     const ctx = makeTestRouteContext('POST', '/api/migrate', {
-      env: {} as Env,
+      env: {} as unknown as Runtime,
       body: { guestOwnerId: LEGACY },
     });
     ctx.clerkUserId = 'user_me';

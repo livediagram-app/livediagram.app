@@ -3,7 +3,7 @@
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Tokens"). Server-to-server,
 // form-encoded, with the client secret that never leaves this worker.
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { googleOAuthBase } from './config';
 
 export type GoogleOAuthErrorKind = 'invalid_grant' | 'failed';
@@ -38,7 +38,7 @@ async function postForm(url: string, form: Record<string, string>): Promise<Resp
 }
 
 async function tokenCall(
-  env: Env,
+  env: Runtime,
   form: Record<string, string>,
 ): Promise<Required<Pick<TokenResponse, 'access_token' | 'expires_in'>> & TokenResponse> {
   const res = await postForm(`${googleOAuthBase(env)}/token`, {
@@ -59,7 +59,7 @@ async function tokenCall(
 }
 
 export async function exchangeCode(
-  env: Env,
+  env: Runtime,
   code: string,
   redirectUri: string,
   now: number,
@@ -77,7 +77,7 @@ export async function exchangeCode(
 }
 
 export async function refreshAccessToken(
-  env: Env,
+  env: Runtime,
   refreshToken: string,
   now: number,
 ): Promise<{ accessToken: string; expiresAt: number }> {
@@ -88,7 +88,7 @@ export async function refreshAccessToken(
 // Best effort: a failed revoke is logged and reported, never thrown, because
 // the caller (disconnect, account deletion) must finish deleting the rows
 // whatever Google says.
-export async function revokeToken(env: Env, token: string): Promise<boolean> {
+export async function revokeToken(env: Runtime, token: string): Promise<boolean> {
   try {
     const res = await postForm(`${googleOAuthBase(env)}/revoke`, { token });
     if (!res.ok) console.warn('drive: revoke_failed', res.status);

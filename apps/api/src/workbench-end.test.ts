@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from './test-sqlite-d1';
-import type { Env } from './types';
+import type { Runtime } from './types';
 import { endWorkbenchAccess } from './workbench-end';
 
 const NOW = 1_800_000_000_000;
@@ -10,23 +10,22 @@ const P2 = '00000000-0000-4000-8000-000000000002';
 // Two pairings of tok1 (sessions on doc1 and doc2), one of tok2 (a session on doc1), and pending requests.
 function arrange(roomOk = true): {
   db: SqliteD1;
-  env: Env;
+  env: Runtime;
   closes: { doc: string; body: unknown }[];
 } {
   const closes: { doc: string; body: unknown }[] = [];
   const db = sqliteD1();
   const env = {
     ...db.env,
-    DOCUMENT_ROOM: {
-      idFromName: (name: string) => name,
-      get: (doc: string) => ({
+    rooms: {
+      for: (doc: string) => ({
         fetch: async (_url: string, init: RequestInit) => {
           closes.push({ doc, body: JSON.parse(String(init.body)) });
           return new Response(null, { status: roomOk ? 204 : 500 });
         },
       }),
     },
-  } as unknown as Env;
+  } as unknown as Runtime;
   db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'u1', 'A', 0, 1, 1), ('doc2', 'u1', 'B', 0, 1, 1)`);
   db.sql

@@ -7,7 +7,7 @@ import { listDocumentsByTeam } from './db';
 import { personTagFor } from './person-tag';
 import type { AccessCloseMatch } from './room-access';
 import { roomFetch } from './room-client';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // The api never waits on one room longer than this.
 export const ROOM_ACCESS_CLOSE_TIMEOUT_MS = 3_000;
@@ -19,7 +19,7 @@ export const TEAM_ROOM_CLOSE_CONCURRENCY = 10;
 export const TEAM_ROOM_CLOSE_MAX_DOCUMENTS = 500;
 
 export async function closeRoomSessions(
-  env: Env,
+  env: Runtime,
   documentId: string,
   close: AccessCloseMatch,
 ): Promise<boolean> {
@@ -48,14 +48,14 @@ export async function closeRoomSessions(
 }
 
 // A share password was set: every session a share code admitted meets the gate again.
-export function closeShareCodeSessions(env: Env, documentId: string): Promise<boolean> {
+export function closeShareCodeSessions(env: Runtime, documentId: string): Promise<boolean> {
   return closeRoomSessions(env, documentId, { match: 'share-code' });
 }
 
 // A workbench pairing ended (unpaired, or its token revoked): close the sockets it opened on one document
 // (docs/specs/013-workspace/workbench-embeds.md), with WORKBENCH_ENDED_CLOSE.
 export function closeWorkbenchSessions(
-  env: Env,
+  env: Runtime,
   documentId: string,
   pairingId: string,
 ): Promise<boolean> {
@@ -65,7 +65,7 @@ export function closeWorkbenchSessions(
 // A member left or was removed from a team: end their sessions on each of the team's documents.
 // Matched by the per-document person tag their tickets carried, so no account id reaches a room.
 export async function closeMemberTeamSessions(
-  env: Env,
+  env: Runtime,
   teamId: string,
   userId: string,
 ): Promise<{ rooms: number; unreached: number; truncated: boolean }> {

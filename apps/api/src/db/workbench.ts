@@ -10,7 +10,7 @@ import {
   type WorkbenchPairing,
   type WorkbenchRole,
 } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // ---------------------------------------------------------------------
 // Pairing requests
@@ -38,14 +38,15 @@ type RequestRow = {
 };
 
 async function livePairingRequest(
-  env: Env,
+  env: Runtime,
   tokenId: string,
   origin: string,
 ): Promise<RequestRow | null> {
-  return env.DB.prepare(
-    `SELECT code, owner_id, token_id, origin, name, status, expires_at FROM workbench_pairing_requests
+  return env.db
+    .prepare(
+      `SELECT code, owner_id, token_id, origin, name, status, expires_at FROM workbench_pairing_requests
       WHERE token_id = ? AND origin = ? AND status = 'pending'`,
-  )
+    )
     .bind(tokenId, origin)
     .first<RequestRow>();
 }
@@ -53,29 +54,32 @@ async function livePairingRequest(
 // The one live request for a token and origin: reused while it lives (taking a given name), replaced once
 // it has expired. The partial unique index keeps a race to one row; the loser reads the winner's.
 export async function openPairingRequest(
-  env: Env,
+  env: Runtime,
   input: OpenPairingRequestInput,
 ): Promise<{ code: string; expiresAt: number; reused: boolean }> {
   const { ownerId, tokenId, origin, name, code, now } = input;
-  await env.DB.prepare(
-    `DELETE FROM workbench_pairing_requests
+  await env.db
+    .prepare(
+      `DELETE FROM workbench_pairing_requests
       WHERE token_id = ? AND origin = ? AND status = 'pending' AND expires_at <= ?`,
-  )
+    )
     .bind(tokenId, origin, now)
     .run();
   const expiresAt = now + WORKBENCH_PAIRING_TTL_MS;
-  const inserted = await env.DB.prepare(
-    `INSERT OR IGNORE INTO workbench_pairing_requests
+  const inserted = await env.db
+    .prepare(
+      `INSERT OR IGNORE INTO workbench_pairing_requests
        (id, code, owner_id, token_id, origin, name, status, created_at, expires_at)
      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
-  )
+    )
     .bind(crypto.randomUUID(), code, ownerId, tokenId, origin, name, now, expiresAt)
     .run();
   if (inserted.meta.changes > 0) return { code, expiresAt, reused: false };
   const live = await livePairingRequest(env, tokenId, origin);
   if (!live) throw new Error('workbench: no live pairing request after a refused insert');
   if (name !== null && name !== live.name) {
-    await env.DB.prepare('UPDATE workbench_pairing_requests SET name = ? WHERE code = ?')
+    await env.db
+      .prepare('UPDATE workbench_pairing_requests SET name = ? WHERE code = ?')
       .bind(name, live.code)
       .run();
   }
@@ -99,15 +103,16 @@ export type PairingRequestRead = {
 };
 
 export async function readPairingRequest(
-  env: Env,
+  env: Runtime,
   code: string,
   now: number,
 ): Promise<PairingRequestRead | null> {
-  const row = await env.DB.prepare(
-    `SELECT r.owner_id, r.token_id, r.origin, r.name, r.status, r.expires_at, t.name AS token_name
+  const row = await env.db
+    .prepare(
+      `SELECT r.owner_id, r.token_id, r.origin, r.name, r.status, r.expires_at, t.name AS token_name
        FROM workbench_pairing_requests r JOIN api_tokens t ON t.id = r.token_id
       WHERE r.code = ?`,
-  )
+    )
     .bind(code)
     .first<RequestRow & { token_name: string | null }>();
   if (!row) return null;
@@ -132,7 +137,7 @@ export type PairingAnswer =
 // Answered once by the token's owner. Approval flips the request and records the pairing in one batch; the
 // insert reads the request it just flipped (by its answer time), so a lost race records nothing.
 export async function answerPairingRequest(
-  env: Env,
+  env: Runtime,
   input: {
     code: string;
     ownerId: string;
@@ -146,22 +151,26 @@ export async function answerPairingRequest(
   if (!request || request.ownerId !== ownerId) return { outcome: 'missing' };
   if (request.status === 'expired') return { outcome: 'expired' };
   if (request.status !== 'pending') return { outcome: 'answered' };
-  const flip = env.DB.prepare(
-    `UPDATE workbench_pairing_requests SET status = ?, answered_at = ?
+  const flip = env.db
+    .prepare(
+      `UPDATE workbench_pairing_requests SET status = ?, answered_at = ?
       WHERE code = ? AND status = 'pending' AND expires_at > ?`,
-  ).bind(answer === 'approve' ? 'approved' : 'declined', now, code, now);
+    )
+    .bind(answer === 'approve' ? 'approved' : 'declined', now, code, now);
   if (answer === 'decline') {
     const res = await flip.run();
     return res.meta.changes > 0
       ? { outcome: 'declined', tokenId: request.tokenId }
       : { outcome: 'answered' };
   }
-  const record = env.DB.prepare(
-    `INSERT OR IGNORE INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
+  const record = env.db
+    .prepare(
+      `INSERT OR IGNORE INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
      SELECT ?, owner_id, token_id, origin, name, ? FROM workbench_pairing_requests
       WHERE code = ? AND status = 'approved' AND answered_at = ?`,
-  ).bind(pairingId, now, code, now);
-  const results = await env.DB.batch([flip, record]);
+    )
+    .bind(pairingId, now, code, now);
+  const results = await env.db.batch([flip, record]);
   if (results[0]!.meta.changes === 0) return { outcome: 'answered' };
   const pairing = await findWorkbenchPairing(env, request.tokenId, request.origin);
   if (!pairing) throw new Error('workbench: approved request recorded no pairing');
@@ -170,14 +179,15 @@ export async function answerPairingRequest(
 
 // The waiting CLI's poll: only the token that asked may read its request.
 export async function pairingRequestStatus(
-  env: Env,
+  env: Runtime,
   code: string,
   tokenId: string,
   now: number,
 ): Promise<{ status: PairingRequestStatus; expiresAt: number } | null> {
-  const row = await env.DB.prepare(
-    'SELECT status, expires_at FROM workbench_pairing_requests WHERE code = ? AND token_id = ?',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT status, expires_at FROM workbench_pairing_requests WHERE code = ? AND token_id = ?',
+    )
     .bind(code, tokenId)
     .first<{ status: RequestRow['status']; expires_at: number }>();
   return row ? { status: effectiveStatus(row, now), expiresAt: row.expires_at } : null;
@@ -204,13 +214,14 @@ const toPairing = (row: PairingRow): WorkbenchPairing => ({
 });
 
 export async function findWorkbenchPairing(
-  env: Env,
+  env: Runtime,
   tokenId: string,
   origin: string,
 ): Promise<WorkbenchPairing | null> {
-  const row = await env.DB.prepare(
-    'SELECT id, token_id, origin, name, created_at FROM workbench_pairings WHERE token_id = ? AND origin = ?',
-  )
+  const row = await env.db
+    .prepare(
+      'SELECT id, token_id, origin, name, created_at FROM workbench_pairings WHERE token_id = ? AND origin = ?',
+    )
     .bind(tokenId, origin)
     .first<PairingRow>();
   return row ? toPairing(row) : null;
@@ -218,16 +229,17 @@ export async function findWorkbenchPairing(
 
 // The owner's pairings of tokens still live, newest first (Settings > API tokens).
 export async function listWorkbenchPairings(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   now: number,
 ): Promise<WorkbenchPairing[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT p.id, p.token_id, p.origin, p.name, p.created_at
+  const { results } = await env.db
+    .prepare(
+      `SELECT p.id, p.token_id, p.origin, p.name, p.created_at
        FROM workbench_pairings p JOIN api_tokens t ON t.id = p.token_id
       WHERE p.owner_id = ? AND t.revoked = 0 AND t.expires_at > ?
       ORDER BY p.created_at DESC, p.id`,
-  )
+    )
     .bind(ownerId, now)
     .all<PairingRow>();
   return results.map(toPairing);
@@ -250,12 +262,13 @@ export type WorkbenchTicketRow = {
   expiresAt: number;
 };
 
-export async function insertWorkbenchTicket(env: Env, row: WorkbenchTicketRow): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO workbench_tickets
+export async function insertWorkbenchTicket(env: Runtime, row: WorkbenchTicketRow): Promise<void> {
+  await env.db
+    .prepare(
+      `INSERT INTO workbench_tickets
        (ticket_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
+    )
     .bind(
       row.ticketHash,
       row.ownerId,
@@ -286,15 +299,16 @@ export type ConsumedTicket = {
 // Single use in one statement (the `used_at IS NULL` guard). A ticket whose token is no longer live reads
 // as unknown: its pairing cascades away with the token's revocation, and the answer leaks nothing more.
 export async function consumeWorkbenchTicket(
-  env: Env,
+  env: Runtime,
   ticketHash: string,
   now: number,
 ): Promise<{ ok: true; ticket: ConsumedTicket } | { ok: false; reason: InvalidTicketReason }> {
-  const row = await env.DB.prepare(
-    `UPDATE workbench_tickets SET used_at = ?
+  const row = await env.db
+    .prepare(
+      `UPDATE workbench_tickets SET used_at = ?
       WHERE ticket_hash = ? AND used_at IS NULL AND expires_at > ?
       RETURNING owner_id, token_id, pairing_id, document_id, tab_id, origin, role`,
-  )
+    )
     .bind(now, ticketHash, now)
     .first<{
       owner_id: string;
@@ -306,17 +320,17 @@ export async function consumeWorkbenchTicket(
       role: WorkbenchRole;
     }>();
   if (!row) {
-    const seen = await env.DB.prepare(
-      'SELECT used_at, expires_at FROM workbench_tickets WHERE ticket_hash = ?',
-    )
+    const seen = await env.db
+      .prepare('SELECT used_at, expires_at FROM workbench_tickets WHERE ticket_hash = ?')
       .bind(ticketHash)
       .first<{ used_at: number | null; expires_at: number }>();
     if (!seen) return { ok: false, reason: 'unknown' };
     return { ok: false, reason: seen.used_at !== null ? 'used' : 'expired' };
   }
-  const token = await env.DB.prepare(
-    'SELECT expires_at, read_only FROM api_tokens WHERE id = ? AND revoked = 0 AND expires_at > ?',
-  )
+  const token = await env.db
+    .prepare(
+      'SELECT expires_at, read_only FROM api_tokens WHERE id = ? AND revoked = 0 AND expires_at > ?',
+    )
     .bind(row.token_id, now)
     .first<{ expires_at: number; read_only: number }>();
   if (!token) return { ok: false, reason: 'unknown' };
@@ -354,12 +368,16 @@ export type WorkbenchSessionRow = {
   expiresAt: number;
 };
 
-export async function insertWorkbenchSession(env: Env, row: WorkbenchSessionRow): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO workbench_sessions
+export async function insertWorkbenchSession(
+  env: Runtime,
+  row: WorkbenchSessionRow,
+): Promise<void> {
+  await env.db
+    .prepare(
+      `INSERT INTO workbench_sessions
        (id, secret_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
+    )
     .bind(
       row.id,
       row.secretHash,
@@ -384,16 +402,17 @@ export type WorkbenchSessionRead = WorkbenchSessionRow & {
 
 // One indexed read per `lvw_` request, with the token's state so the caller can classify a refusal.
 export async function readWorkbenchSession(
-  env: Env,
+  env: Runtime,
   secretHash: string,
 ): Promise<WorkbenchSessionRead | null> {
-  const row = await env.DB.prepare(
-    `SELECT s.id, s.secret_hash, s.owner_id, s.token_id, s.pairing_id, s.document_id, s.tab_id, s.origin,
+  const row = await env.db
+    .prepare(
+      `SELECT s.id, s.secret_hash, s.owner_id, s.token_id, s.pairing_id, s.document_id, s.tab_id, s.origin,
             s.role, s.created_at, s.expires_at,
             t.revoked AS token_revoked, t.read_only AS token_read_only, t.expires_at AS token_expires_at
        FROM workbench_sessions s JOIN api_tokens t ON t.id = s.token_id
       WHERE s.secret_hash = ?`,
-  )
+    )
     .bind(secretHash)
     .first<{
       id: string;
@@ -430,8 +449,8 @@ export async function readWorkbenchSession(
   };
 }
 
-export async function deleteWorkbenchSession(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM workbench_sessions WHERE id = ?').bind(id).run();
+export async function deleteWorkbenchSession(env: Runtime, id: string): Promise<void> {
+  await env.db.prepare('DELETE FROM workbench_sessions WHERE id = ?').bind(id).run();
 }
 
 // ---------------------------------------------------------------------
@@ -439,24 +458,27 @@ export async function deleteWorkbenchSession(env: Env, id: string): Promise<void
 // ---------------------------------------------------------------------
 
 // Tickets and requests past expiry, sessions past their grace, pairings of tokens no longer live.
-export async function sweepWorkbench(env: Env, now: number): Promise<number> {
-  const results = await env.DB.batch([
-    env.DB.prepare('DELETE FROM workbench_tickets WHERE expires_at <= ?').bind(now),
-    env.DB.prepare('DELETE FROM workbench_pairing_requests WHERE expires_at <= ?').bind(now),
-    env.DB.prepare('DELETE FROM workbench_sessions WHERE expires_at <= ?').bind(
-      now - WORKBENCH_SESSION_GRACE_MS,
-    ),
-    env.DB.prepare(
-      `DELETE FROM workbench_pairings WHERE token_id IN
+export async function sweepWorkbench(env: Runtime, now: number): Promise<number> {
+  const results = await env.db.batch([
+    env.db.prepare('DELETE FROM workbench_tickets WHERE expires_at <= ?').bind(now),
+    env.db.prepare('DELETE FROM workbench_pairing_requests WHERE expires_at <= ?').bind(now),
+    env.db
+      .prepare('DELETE FROM workbench_sessions WHERE expires_at <= ?')
+      .bind(now - WORKBENCH_SESSION_GRACE_MS),
+    env.db
+      .prepare(
+        `DELETE FROM workbench_pairings WHERE token_id IN
          (SELECT id FROM api_tokens WHERE revoked = 1 OR expires_at <= ?)`,
-    ).bind(now),
+      )
+      .bind(now),
   ]);
   return results.reduce((sum, r) => sum + r.meta.changes, 0);
 }
 
 // The owner of a pairing, for Unpair: only they may remove it.
-export async function workbenchPairingOwner(env: Env, id: string): Promise<string | null> {
-  const row = await env.DB.prepare('SELECT owner_id FROM workbench_pairings WHERE id = ?')
+export async function workbenchPairingOwner(env: Runtime, id: string): Promise<string | null> {
+  const row = await env.db
+    .prepare('SELECT owner_id FROM workbench_pairings WHERE id = ?')
     .bind(id)
     .first<{ owner_id: string }>();
   return row?.owner_id ?? null;

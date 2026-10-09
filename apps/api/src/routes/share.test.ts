@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // `passwordGate` is the route-side helper that translates a
 // password-protected document + visitor-supplied password into one of
@@ -17,7 +17,7 @@ import type { Env } from '../types';
 // for, so the mock factory below stubs it and the test drives the
 // three branches by setting the stubbed return value per case.
 
-const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
+const getSharePasswordMock = vi.fn<(env: Runtime, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   // Real exports under '../db' that share.ts imports. Only
   // getDocumentSharePassword is consulted by passwordGate; the rest
@@ -26,7 +26,7 @@ vi.mock('../db', () => ({
   getDocument: vi.fn(),
   // Trashed documents answer 410 (docs/specs/013-workspace/trash.md); none here.
   getTrashedDocumentMeta: vi.fn(async () => null),
-  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getDocumentSharePassword: (env: Runtime, id: string) => getSharePasswordMock(env, id),
   // The first correct entry of a legacy plain-text password stores its hash.
   upgradeDocumentSharePassword: vi.fn(async () => {}),
   getShareLink: vi.fn(),
@@ -72,7 +72,7 @@ import { reportServerEvent } from '../server-telemetry';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import type { RouteContext } from './context';
 
-const FAKE_ENV = {} as Env;
+const FAKE_ENV = {} as unknown as Runtime;
 
 const getDocumentMock = vi.mocked(getDocument);
 const getShareLinkMock = vi.mocked(getShareLink);

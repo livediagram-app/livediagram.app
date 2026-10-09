@@ -17,7 +17,7 @@
 // seven days a credential sits in the window updates one row rather
 // than writing seven.
 
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { recordTokenExpiring } from './account-events';
 import { recordShareLinkExpiring } from './document-events';
 
@@ -28,14 +28,15 @@ const WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 // remainder anyway.
 const SWEEP_LIMIT = 200;
 
-export async function runTimelineExpirySweep(env: Env, now = Date.now()): Promise<number> {
+export async function runTimelineExpirySweep(env: Runtime, now = Date.now()): Promise<number> {
   let emitted = 0;
 
-  const tokens = await env.DB.prepare(
-    `SELECT id, owner_id, name, expires_at FROM api_tokens
+  const tokens = await env.db
+    .prepare(
+      `SELECT id, owner_id, name, expires_at FROM api_tokens
       WHERE revoked = 0 AND expires_at > ?1 AND expires_at <= ?2
       ORDER BY expires_at ASC LIMIT ?3`,
-  )
+    )
     .bind(now, now + WINDOW_MS, SWEEP_LIMIT)
     .all<{ id: string; owner_id: string; name: string | null; expires_at: number }>();
 
@@ -52,14 +53,15 @@ export async function runTimelineExpirySweep(env: Env, now = Date.now()): Promis
   // join is what turns "this code lapses Friday" into "your Payments
   // document stops being shareable Friday" — which is the sentence the
   // owner can actually act on.
-  const links = await env.DB.prepare(
-    `SELECT d.id, d.name, d.owner_id, d.team_id, s.expires_at
+  const links = await env.db
+    .prepare(
+      `SELECT d.id, d.name, d.owner_id, d.team_id, s.expires_at
        FROM share_links s
        JOIN documents d ON d.id = s.document_id
       WHERE s.expires_at IS NOT NULL AND s.expires_at > ?1 AND s.expires_at <= ?2
         AND d.trashed_at IS NULL
       ORDER BY s.expires_at ASC LIMIT ?3`,
-  )
+    )
     .bind(now, now + WINDOW_MS, SWEEP_LIMIT)
     .all<{
       id: string;

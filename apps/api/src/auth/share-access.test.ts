@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ShareLink } from '@livediagram/api-schema';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // The share-side rules the REST gates, the share-code resolve, and the room
 // upgrade all compose. `../db` is stubbed so each case drives the link and
 // password state directly.
-const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | null>>();
-const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
-const upgradeMock = vi.fn<(env: Env, id: string, from: string, to: string) => Promise<void>>();
+const getShareLinkMock = vi.fn<(env: Runtime, code: string) => Promise<ShareLink | null>>();
+const getSharePasswordMock = vi.fn<(env: Runtime, id: string) => Promise<string | null>>();
+const upgradeMock = vi.fn<(env: Runtime, id: string, from: string, to: string) => Promise<void>>();
 vi.mock('../db', () => ({
-  getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
-  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
-  upgradeDocumentSharePassword: (env: Env, id: string, from: string, to: string) =>
+  getShareLink: (env: Runtime, code: string) => getShareLinkMock(env, code),
+  getDocumentSharePassword: (env: Runtime, id: string) => getSharePasswordMock(env, id),
+  upgradeDocumentSharePassword: (env: Runtime, id: string, from: string, to: string) =>
     upgradeMock(env, id, from, to),
 }));
 
@@ -31,7 +31,7 @@ import { hashSharePassword, verifySharePassword } from './share-password-hash';
 const FAST = 1_000;
 const attempt = (value: string, rateKey = 'net-1') => ({ value, rateKey });
 
-const ENV = {} as Env;
+const ENV = {} as unknown as Runtime;
 const link = (documentId: string, role: 'edit' | 'view') => ({ documentId, role }) as ShareLink;
 
 beforeEach(() => {
@@ -117,7 +117,7 @@ describe('sharePasswordStatus', () => {
 describe('the verified cache', () => {
   const limiter = (success = true) => {
     const limit = vi.fn(async () => ({ success }));
-    return { env: { SHARE_RATE_LIMITER: { limit } } as unknown as Env, limit };
+    return { env: { limiters: { SHARE_RATE_LIMITER: { limit } } } as unknown as Runtime, limit };
   };
 
   it('answers a repeat correct password without another derivation or budget', async () => {
@@ -175,7 +175,7 @@ describe('the guess budget', () => {
   it('spends one unit per check under the caller network', async () => {
     getSharePasswordMock.mockResolvedValue(await hashSharePassword('hunter2', FAST));
     const limit = vi.fn(async () => ({ success: true }));
-    const env = { SHARE_RATE_LIMITER: { limit } } as unknown as Env;
+    const env = { limiters: { SHARE_RATE_LIMITER: { limit } } } as unknown as Runtime;
     await sharePasswordStatus(env, 'd1', attempt('wrong', '2001:0db8:0000:0001::/64'));
     expect(limit).toHaveBeenCalledWith({ key: 'share-pw:2001:0db8:0000:0001::/64' });
   });
@@ -185,15 +185,15 @@ describe('the guess budget', () => {
   it('answers invalid without checking once the budget is spent, even for the right password', async () => {
     getSharePasswordMock.mockResolvedValue(await hashSharePassword('hunter2', FAST));
     const env = {
-      SHARE_RATE_LIMITER: { limit: vi.fn(async () => ({ success: false })) },
-    } as unknown as Env;
+      limiters: { SHARE_RATE_LIMITER: { limit: vi.fn(async () => ({ success: false })) } },
+    } as unknown as Runtime;
     expect(await sharePasswordStatus(env, 'd1', attempt('hunter2'))).toBe('invalid');
     expect(await sharePasswordStatus(env, 'd1', attempt('wrong'))).toBe('invalid');
   });
 
   it('does not spend budget on a document with no password, or a missing one', async () => {
     const limit = vi.fn(async () => ({ success: true }));
-    const env = { SHARE_RATE_LIMITER: { limit } } as unknown as Env;
+    const env = { limiters: { SHARE_RATE_LIMITER: { limit } } } as unknown as Runtime;
     await sharePasswordStatus(env, 'd1', attempt('anything'));
     getSharePasswordMock.mockResolvedValue(await hashSharePassword('hunter2', FAST));
     await sharePasswordStatus(env, 'd1', null);

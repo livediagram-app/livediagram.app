@@ -67,7 +67,7 @@ function galleryFull(
 export async function handleImages(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;
   if (segments[1] !== 'images') return notFound();
-  if (!env.IMAGES) return imagesUnavailable();
+  if (!env.objects) return imagesUnavailable();
 
   // GET /api/images: gallery list. Owner only.
   if (segments.length === 2 && request.method === 'GET') {
@@ -191,7 +191,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       }
     }
     const id = crypto.randomUUID();
-    await env.IMAGES.put(id, storedBytes, {
+    await env.objects.put(id, storedBytes, {
       httpMetadata: { contentType: sniffed },
       customMetadata: {
         ownerId: owner,
@@ -215,7 +215,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (!image) {
       // A concurrent upload filled the gallery after the check above; the
       // insert refused atomically, so the bytes just written are an orphan.
-      await env.IMAGES.delete(id);
+      await env.objects.delete(id);
       console.info('[images] cap refused a racing upload', { owner });
       const totals = await imageTotalsByOwner(env, owner);
       // Room again already (an image was deleted meanwhile): let the client retry.
@@ -291,7 +291,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       }
     }
     if (!allowed) return notFound();
-    const object = await env.IMAGES.get(imageId);
+    const object = await env.objects.get(imageId);
     if (!object) return notFound();
     const headers = new Headers(CORS_HEADERS);
     headers.set('Content-Type', object.httpMetadata?.contentType ?? 'application/octet-stream');
@@ -316,7 +316,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const meta = await getImage(env, imageId);
     if (!meta) return json({ ok: true });
     if (meta.ownerId !== owner) return forbidden();
-    await env.IMAGES.delete(imageId);
+    await env.objects.delete(imageId);
     await deleteImage(env, imageId);
     return json({ ok: true });
   }

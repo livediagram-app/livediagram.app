@@ -11,7 +11,7 @@ import {
   recordTeamDocumentAdded,
   backfillUserScope,
 } from '../timeline';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleHome } from './home';
 
@@ -104,7 +104,7 @@ function at(time: number) {
   vi.setSystemTime(time);
 }
 
-async function get(path: string, opts: { owner?: string; env?: Env } = {}) {
+async function get(path: string, opts: { owner?: string; env?: Runtime } = {}) {
   const res = await handleHome(
     makeTestRouteContext('GET', path, {
       env: opts.env ?? db.env,
@@ -443,7 +443,9 @@ describe('the read', () => {
 
   it('is rate limited per owner', async () => {
     const limit = vi.fn(async () => ({ success: false }));
-    const res = await get('/api/home', { env: { ...db.env, HOME_RATE_LIMITER: { limit } } });
+    const res = await get('/api/home', {
+      env: { ...db.env, limiters: { HOME_RATE_LIMITER: { limit } } },
+    });
     expect(res.status).toBe(429);
     expect(limit).toHaveBeenCalledWith({ key: ME });
     expect(logs).toContain('home: rate-limited');

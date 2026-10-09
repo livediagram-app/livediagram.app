@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { exchangeCode, GoogleOAuthError, refreshAccessToken, revokeToken } from './google-oauth';
 
 // The three calls the broker makes to Google's OAuth endpoint
@@ -9,7 +9,7 @@ const env = {
   GOOGLE_CLIENT_ID: 'client-1',
   GOOGLE_CLIENT_SECRET: 'secret-1',
   GOOGLE_OAUTH_BASE_URL: 'https://oauth.test',
-} as Env;
+} as unknown as Runtime;
 
 function stubFetch(status: number, body: unknown) {
   const calls: { url: string; form: URLSearchParams }[] = [];

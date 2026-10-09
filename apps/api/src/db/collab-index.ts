@@ -1,3 +1,4 @@
+import type { DbStatement } from '@livediagram/runtime';
 // collab_actions + collab_threads — the collaboration index (docs/specs/013-workspace/activity-page.md
 // §2): a SQL-filterable projection of the actions and comment threads
 // that live inside element JSON on `tabs`. Plus `owner_aliases` (the
@@ -28,7 +29,7 @@ import {
   cardThreadsFromRows,
   type CardThreadRow,
 } from './plan-card-threads';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 
 // ---------- Writes ----------------------------------------------------
 
@@ -37,65 +38,69 @@ import type { Env } from '../types';
 // to index that is three DELETEs touching nothing, which is cheap enough
 // to run on every ~600ms autosave.
 export function collabIndexStatements(
-  env: Env,
+  env: Runtime,
   tabId: string,
   elements: Element[],
-): D1PreparedStatement[] {
+): DbStatement[] {
   const rows = collabIndexRowsFromElements(elements);
-  const stmts: D1PreparedStatement[] = [
-    env.DB.prepare('DELETE FROM collab_actions WHERE tab_id = ?').bind(tabId),
-    env.DB.prepare('DELETE FROM collab_threads WHERE tab_id = ?').bind(tabId),
+  const stmts: DbStatement[] = [
+    env.db.prepare('DELETE FROM collab_actions WHERE tab_id = ?').bind(tabId),
+    env.db.prepare('DELETE FROM collab_threads WHERE tab_id = ?').bind(tabId),
     ...planBoardIndexStatements(env, tabId, elements),
   ];
   for (const a of rows.actions) {
     stmts.push(
-      env.DB.prepare(
-        `INSERT INTO collab_actions
+      env.db
+        .prepare(
+          `INSERT INTO collab_actions
            (tab_id, element_id, action_id, element_label, name, description, status,
             assignee_user_id, assignee_member_id, assignee_name, assigner_id, assigner_name,
             team_id, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(
-        tabId,
-        a.elementId,
-        a.actionId,
-        a.elementLabel,
-        a.name,
-        a.description,
-        a.status,
-        a.assigneeUserId,
-        a.assigneeMemberId,
-        a.assigneeName,
-        a.assignerId,
-        a.assignerName,
-        a.teamId,
-        a.createdAt,
-        a.updatedAt,
-      ),
+        )
+        .bind(
+          tabId,
+          a.elementId,
+          a.actionId,
+          a.elementLabel,
+          a.name,
+          a.description,
+          a.status,
+          a.assigneeUserId,
+          a.assigneeMemberId,
+          a.assigneeName,
+          a.assignerId,
+          a.assignerName,
+          a.teamId,
+          a.createdAt,
+          a.updatedAt,
+        ),
     );
   }
   for (const t of rows.threads) {
     stmts.push(
-      env.DB.prepare(
-        `INSERT INTO collab_threads
+      env.db
+        .prepare(
+          `INSERT INTO collab_threads
            (tab_id, element_id, element_label, resolved, comment_count, participant_ids,
             mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
             latest_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(
-        tabId,
-        t.elementId,
-        t.elementLabel,
-        t.resolved ? 1 : 0,
-        t.commentCount,
-        JSON.stringify(t.participantIds),
-        JSON.stringify(t.mentionedIds),
-        t.latestText,
-        t.latestAuthorName,
-        t.latestAuthorColor,
-        t.firstAt,
-        t.latestAt,
-      ),
+        )
+        .bind(
+          tabId,
+          t.elementId,
+          t.elementLabel,
+          t.resolved ? 1 : 0,
+          t.commentCount,
+          JSON.stringify(t.participantIds),
+          JSON.stringify(t.mentionedIds),
+          t.latestText,
+          t.latestAuthorName,
+          t.latestAuthorColor,
+          t.firstAt,
+          t.latestAt,
+        ),
     );
   }
   return stmts;
@@ -105,13 +110,14 @@ export function collabIndexStatements(
 // (copyDocument), so the index rows are copied the same way, under the
 // fresh tab id.
 export function collabIndexCopyStatements(
-  env: Env,
+  env: Runtime,
   fromTabId: string,
   toTabId: string,
-): D1PreparedStatement[] {
+): DbStatement[] {
   return [
-    env.DB.prepare(
-      `INSERT INTO collab_actions
+    env.db
+      .prepare(
+        `INSERT INTO collab_actions
          (tab_id, element_id, action_id, element_label, name, description, status,
           assignee_user_id, assignee_member_id, assignee_name, assigner_id, assigner_name,
           team_id, created_at, updated_at)
@@ -119,9 +125,11 @@ export function collabIndexCopyStatements(
               assignee_user_id, assignee_member_id, assignee_name, assigner_id, assigner_name,
               team_id, created_at, updated_at
          FROM collab_actions WHERE tab_id = ?2`,
-    ).bind(toTabId, fromTabId),
-    env.DB.prepare(
-      `INSERT INTO collab_threads
+      )
+      .bind(toTabId, fromTabId),
+    env.db
+      .prepare(
+        `INSERT INTO collab_threads
          (tab_id, element_id, element_label, resolved, comment_count, participant_ids,
           mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
           latest_at)
@@ -129,7 +137,8 @@ export function collabIndexCopyStatements(
               mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
               latest_at
          FROM collab_threads WHERE tab_id = ?2`,
-    ).bind(toTabId, fromTabId),
+      )
+      .bind(toTabId, fromTabId),
     planBoardIndexCopyStatement(env, fromTabId, toTabId),
   ];
 }
@@ -285,18 +294,18 @@ function placeOf(row: PlaceRow) {
 }
 
 export async function readActivity(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   opts: { limit: number },
 ): Promise<ActivityReadResult> {
   const now = Date.now();
   // Cards are matched on hashed ids (§2.4), which SQL cannot compute: the reader's aliases are read first.
   const personIds = await readerPersonIds(env, ownerId);
-  const [actionsRes, threadsRes, cardsRes, cardThreadsRes] = await env.DB.batch([
-    env.DB.prepare(ACTIONS_SQL).bind(ownerId, now, opts.limit),
-    env.DB.prepare(THREADS_SQL).bind(ownerId, now, opts.limit),
-    env.DB.prepare(CARDS_SQL).bind(ownerId, now, opts.limit, JSON.stringify(personIds)),
-    env.DB.prepare(CARD_THREADS_SQL).bind(ownerId, now, opts.limit),
+  const [actionsRes, threadsRes, cardsRes, cardThreadsRes] = await env.db.batch([
+    env.db.prepare(ACTIONS_SQL).bind(ownerId, now, opts.limit),
+    env.db.prepare(THREADS_SQL).bind(ownerId, now, opts.limit),
+    env.db.prepare(CARDS_SQL).bind(ownerId, now, opts.limit, JSON.stringify(personIds)),
+    env.db.prepare(CARD_THREADS_SQL).bind(ownerId, now, opts.limit),
   ]);
   const actions: ActivityAction[] = dedupePlaces((actionsRes?.results ?? []) as ActionRow[]).map(
     (r) => ({
@@ -336,22 +345,22 @@ export async function readActivity(
 // ---------- Backfill state + aliases ----------------------------------
 
 export async function getCollabIndexState(
-  env: Env,
+  env: Runtime,
   ownerId: string,
 ): Promise<{ backfilledAt: number } | null> {
-  const row = await env.DB.prepare(
-    'SELECT backfilled_at FROM collab_index_state WHERE owner_id = ?',
-  )
+  const row = await env.db
+    .prepare('SELECT backfilled_at FROM collab_index_state WHERE owner_id = ?')
     .bind(ownerId)
     .first<{ backfilled_at: number }>();
   return row ? { backfilledAt: row.backfilled_at } : null;
 }
 
-export async function markCollabIndexBackfilled(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO collab_index_state (owner_id, backfilled_at) VALUES (?, ?)
+export async function markCollabIndexBackfilled(env: Runtime, ownerId: string): Promise<void> {
+  await env.db
+    .prepare(
+      `INSERT INTO collab_index_state (owner_id, backfilled_at) VALUES (?, ?)
      ON CONFLICT (owner_id) DO UPDATE SET backfilled_at = excluded.backfilled_at`,
-  )
+    )
     .bind(ownerId, Date.now())
     .run();
 }
@@ -361,12 +370,13 @@ export async function markCollabIndexBackfilled(env: Env, ownerId: string): Prom
 // LIKE pre-filter runs in SQLite so the (usually large) majority of tabs
 // with neither never leave the database. Newest first, capped.
 export async function listCollabTabsToBackfill(
-  env: Env,
+  env: Runtime,
   ownerId: string,
   limit: number,
 ): Promise<{ id: string; data: string }[]> {
-  const res = await env.DB.prepare(
-    `SELECT DISTINCT t.id, t.data, t.updated_at
+  const res = await env.db
+    .prepare(
+      `SELECT DISTINCT t.id, t.data, t.updated_at
        FROM tabs t
        JOIN document_tabs dt ON dt.tab_id = t.id
        JOIN documents d ON d.id = dt.document_id
@@ -378,7 +388,7 @@ export async function listCollabTabsToBackfill(
              OR t.data LIKE '%"planBoard":%')
       ORDER BY t.updated_at DESC
       LIMIT ?2`,
-  )
+    )
     .bind(ownerId, limit)
     .all<{ id: string; data: string }>();
   return (res.results ?? []).map((r) => ({ id: r.id, data: r.data }));
@@ -387,36 +397,47 @@ export async function listCollabTabsToBackfill(
 // Record that `ownerId` used to be `aliasId`, carrying over anything
 // `aliasId` had itself been so a chain of migrations collapses onto the
 // final identity. Idempotent.
-export async function recordOwnerAlias(env: Env, ownerId: string, aliasId: string): Promise<void> {
+export async function recordOwnerAlias(
+  env: Runtime,
+  ownerId: string,
+  aliasId: string,
+): Promise<void> {
   const now = Date.now();
-  await env.DB.batch([
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO owner_aliases (owner_id, alias_id, created_at)
+  await env.db.batch([
+    env.db
+      .prepare(
+        `INSERT OR IGNORE INTO owner_aliases (owner_id, alias_id, created_at)
        SELECT ?1, alias_id, created_at FROM owner_aliases WHERE owner_id = ?2`,
-    ).bind(ownerId, aliasId),
-    env.DB.prepare('DELETE FROM owner_aliases WHERE owner_id = ?').bind(aliasId),
-    env.DB.prepare(
-      'INSERT OR IGNORE INTO owner_aliases (owner_id, alias_id, created_at) VALUES (?, ?, ?)',
-    ).bind(ownerId, aliasId, now),
+      )
+      .bind(ownerId, aliasId),
+    env.db.prepare('DELETE FROM owner_aliases WHERE owner_id = ?').bind(aliasId),
+    env.db
+      .prepare(
+        'INSERT OR IGNORE INTO owner_aliases (owner_id, alias_id, created_at) VALUES (?, ?, ?)',
+      )
+      .bind(ownerId, aliasId, now),
     // The backfill stamp follows the owner too, so the seed does not run
     // a second time against the new id (INSERT OR IGNORE keeps an
     // existing stamp on the target, then the source row goes).
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO collab_index_state (owner_id, backfilled_at)
+    env.db
+      .prepare(
+        `INSERT OR IGNORE INTO collab_index_state (owner_id, backfilled_at)
        SELECT ?1, backfilled_at FROM collab_index_state WHERE owner_id = ?2`,
-    ).bind(ownerId, aliasId),
-    env.DB.prepare('DELETE FROM collab_index_state WHERE owner_id = ?').bind(aliasId),
+      )
+      .bind(ownerId, aliasId),
+    env.db.prepare('DELETE FROM collab_index_state WHERE owner_id = ?').bind(aliasId),
   ]);
 }
 
 // Account deletion: no identity row outlives the account. The index rows
 // themselves cascade with the documents' tabs.
-export async function deleteCollabIndexForOwner(env: Env, ownerId: string): Promise<void> {
+export async function deleteCollabIndexForOwner(env: Runtime, ownerId: string): Promise<void> {
   // Sequential like the rest of deleteAccount's sweep (each statement
   // is independently idempotent, so there is nothing a batch would
   // protect).
-  await env.DB.prepare('DELETE FROM owner_aliases WHERE owner_id = ? OR alias_id = ?')
+  await env.db
+    .prepare('DELETE FROM owner_aliases WHERE owner_id = ? OR alias_id = ?')
     .bind(ownerId, ownerId)
     .run();
-  await env.DB.prepare('DELETE FROM collab_index_state WHERE owner_id = ?').bind(ownerId).run();
+  await env.db.prepare('DELETE FROM collab_index_state WHERE owner_id = ?').bind(ownerId).run();
 }

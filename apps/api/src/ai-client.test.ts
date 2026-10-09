@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { chatCompletions, chatCompletionsUrl, providerOf } from './ai-client';
 import { GOOGLE_BASE_URL } from './ai-provider';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md). Whose model that is
 // comes from ai-provider.ts; what is pinned here is the joining, the header,
@@ -53,10 +53,10 @@ describe('chatCompletions', () => {
 
 describe('providerOf', () => {
   it('is the resolver, for a route that has an Env and a feature', () => {
-    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' } as Env;
+    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' } as unknown as Runtime;
     expect(providerOf(both, 'assistant')?.provider).toBe('openai');
     expect(providerOf(both, 'reader')?.provider).toBe('google');
-    expect(providerOf({} as Env, 'reader')).toBeNull();
+    expect(providerOf({} as unknown as Runtime, 'reader')).toBeNull();
   });
 });
 

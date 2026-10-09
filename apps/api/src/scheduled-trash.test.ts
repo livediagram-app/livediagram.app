@@ -5,7 +5,8 @@ import {
   TRASH_RETENTION_MS,
 } from '@livediagram/api-schema';
 import { sqliteD1 } from './test-sqlite-d1';
-import worker from './index';
+import type { Runtime } from './types';
+import { scheduledWithRuntime } from './index';
 
 // The daily cron purges the Trash (docs/specs/013-workspace/trash.md, "The
 // purge"): what has waited 30 days goes, and the run says how many. It also
@@ -14,10 +15,10 @@ import worker from './index';
 // own 30 days.
 
 // The handler reads the wall clock, so the run's `now` is set as the system time.
-async function runCron(env: Parameters<typeof worker.scheduled>[1], now: number) {
+async function runCron(env: Runtime, now: number) {
   vi.useFakeTimers({ toFake: ['Date'], now });
   const pending: Promise<unknown>[] = [];
-  await worker.scheduled(
+  await scheduledWithRuntime(
     { cron: '0 3 * * *', scheduledTime: now, noRetry() {} } as ScheduledController,
     env,
     { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,
@@ -114,7 +115,7 @@ describe('the 03:00 cron and agent changesets', () => {
     }
     const pending: Promise<unknown>[] = [];
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-    await worker.scheduled(
+    await scheduledWithRuntime(
       { cron: '0 3 * * *', scheduledTime: now, noRetry() {} } as ScheduledController,
       env,
       { waitUntil: (p: Promise<unknown>) => pending.push(p) } as unknown as ExecutionContext,

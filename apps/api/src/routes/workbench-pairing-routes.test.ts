@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEVICE_POLL_INTERVAL_S, WORKBENCH_PAIRING_TTL_MS } from '@livediagram/api-schema';
 import type { SqliteD1 } from '../test-sqlite-d1';
-import type { Env } from '../types';
+import type { Runtime } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleWorkbench } from './workbench';
 import { NOW, ORIGIN, pairToken, rows, workbenchDb } from './workbench-test-fixtures';
@@ -17,7 +17,7 @@ function call(
   path: string,
   caller: Caller,
   body?: unknown,
-  env?: Env,
+  env?: Runtime,
 ) {
   const identity =
     caller.kind === 'token'
@@ -123,7 +123,7 @@ describe('workbench pairing routes', () => {
         { origin: ORIGIN },
         {
           ...db.env,
-          WORKBENCH_TICKET_RATE_LIMITER: { limit },
+          limiters: { WORKBENCH_TICKET_RATE_LIMITER: { limit } },
         },
       );
 

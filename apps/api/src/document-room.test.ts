@@ -9,7 +9,7 @@ import {
   SYSTEM_OP_KINDS,
 } from '@livediagram/api-schema';
 import { DocumentRoom } from './document-room';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
 // membership reads through this rather than `.has`.
@@ -373,7 +373,7 @@ describe('DocumentRoom hello frame role forcing', () => {
     // docs/specs/016-platform/stale-builds.md "Knowing which build is live".
     const room = new DocumentRoom(
       makeState() as unknown as DurableObjectState,
-      { BUILD_ID: 'abc123' } as unknown as Env,
+      { BUILD_ID: 'abc123' } as unknown as Runtime,
     );
     const ws = makeSocket();
     room.acceptSession(asWs(ws), 'edit');
@@ -1513,7 +1513,7 @@ describe('DocumentRoom facilitator', () => {
 
 describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   // A fake D1 that records every telemetry row the room writes.
-  function envWithRows(): { env: Env; rows: unknown[][] } {
+  function envWithRows(): { env: Runtime; rows: unknown[][] } {
     const rows: unknown[][] = [];
     const DB = {
       prepare: () => ({ bind: (...args: unknown[]) => args }),
@@ -1522,7 +1522,7 @@ describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry
         return Promise.resolve([]);
       },
     };
-    return { env: { TELEMETRY_ENABLED: 'true', DB } as unknown as Env, rows };
+    return { env: { TELEMETRY_ENABLED: 'true', db: DB } as unknown as Runtime, rows };
   }
 
   function join(room: DocumentRoom, name: string): FakeSocket {

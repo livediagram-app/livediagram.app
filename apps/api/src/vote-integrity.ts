@@ -3,7 +3,7 @@ import { clientRateKey } from './client-ip';
 import { personTagFor } from './person-tag';
 import { json } from './responses';
 import type { RouteContext } from './routes/context';
-import type { Env } from './types';
+import type { Runtime } from './types';
 
 // Who one voter is (docs/specs/012-collaboration/vote-integrity.md). A verified account is one voter. A guest id costs
 // nothing to make, so guests are counted against their network: at most this many distinct guest voters per network
@@ -24,22 +24,26 @@ export async function networkTagFor(scope: string, networkKey: string): Promise<
 // has room for another. One batch: a conditional insert, then a read of the caller's row, so two guests racing for
 // the last place cannot both take it.
 export async function admitGuestVoter(
-  env: Env,
+  env: Runtime,
   documentId: string,
   networkTag: string,
   personTag: string,
   now = Date.now(),
 ): Promise<boolean> {
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO guest_voters (document_id, network_tag, person_tag, created_at)
+  const results = await env.db.batch([
+    env.db
+      .prepare(
+        `INSERT OR IGNORE INTO guest_voters (document_id, network_tag, person_tag, created_at)
        SELECT ?1, ?2, ?3, ?4
         WHERE (SELECT COUNT(*) FROM guest_voters WHERE document_id = ?1 AND network_tag = ?2) < ?5`,
-    ).bind(documentId, networkTag, personTag, now, GUEST_VOTERS_PER_NETWORK),
-    env.DB.prepare(
-      `SELECT 1 AS admitted FROM guest_voters
+      )
+      .bind(documentId, networkTag, personTag, now, GUEST_VOTERS_PER_NETWORK),
+    env.db
+      .prepare(
+        `SELECT 1 AS admitted FROM guest_voters
         WHERE document_id = ? AND network_tag = ? AND person_tag = ?`,
-    ).bind(documentId, networkTag, personTag),
+      )
+      .bind(documentId, networkTag, personTag),
   ]);
   return (results[1]?.results?.length ?? 0) > 0;
 }

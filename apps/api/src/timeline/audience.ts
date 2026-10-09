@@ -10,7 +10,7 @@
 // into the storage layer.
 
 import type { TimelineScopeRef } from '@livediagram/api-schema';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Runtime } from '../types';
 
 export function userScope(ownerId: string): TimelineScopeRef {
   return { scopeType: 'user', scopeId: ownerId };
@@ -35,7 +35,7 @@ export function documentScope(documentId: string): TimelineScopeRef {
 // actorId against the viewer, which is what lets one row serve the
 // whole audience.
 export async function audienceForDocument(
-  env: Env,
+  env: Runtime,
   liveDoc: Pick<DocumentDTO, 'id' | 'ownerId' | 'teamId'>,
 ): Promise<TimelineScopeRef[]> {
   // The owner is added before the team lookup, so a failed lookup
@@ -57,7 +57,7 @@ export async function audienceForDocument(
 
 // Everyone in a team, for team-level events (a member joined, a role
 // changed). Same joined-only rule, plus the team's own scope.
-export async function audienceForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
+export async function audienceForTeam(env: Runtime, teamId: string): Promise<TimelineScopeRef[]> {
   const members = (await joinedMemberIds(env, teamId)).map(userScope);
   return [...members, teamScope(teamId)];
 }
@@ -71,12 +71,13 @@ export async function audienceForTeam(env: Env, teamId: string): Promise<Timelin
 // here would take down a legitimate member removal or document delete,
 // which is exactly the trade the timeline is not allowed to make. An
 // empty list costs one missing bubble.
-async function joinedMemberIds(env: Env, teamId: string): Promise<string[]> {
+async function joinedMemberIds(env: Runtime, teamId: string): Promise<string[]> {
   try {
-    const res = await env.DB.prepare(
-      `SELECT user_id FROM team_members
+    const res = await env.db
+      .prepare(
+        `SELECT user_id FROM team_members
         WHERE team_id = ?1 AND status = 'joined' AND user_id IS NOT NULL`,
-    )
+      )
       .bind(teamId)
       .all<{ user_id: string }>();
     return (res.results ?? []).map((r) => r.user_id);
@@ -91,12 +92,13 @@ async function joinedMemberIds(env: Env, teamId: string): Promise<string[]> {
 // go out, so telling everyone would be noise about a stranger.
 //
 // Never throws, for the same reason as joinedMemberIds.
-export async function adminsForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
+export async function adminsForTeam(env: Runtime, teamId: string): Promise<TimelineScopeRef[]> {
   try {
-    const res = await env.DB.prepare(
-      `SELECT user_id FROM team_members
+    const res = await env.db
+      .prepare(
+        `SELECT user_id FROM team_members
         WHERE team_id = ?1 AND status = 'joined' AND role = 'admin' AND user_id IS NOT NULL`,
-    )
+      )
       .bind(teamId)
       .all<{ user_id: string }>();
     return (res.results ?? []).map((r) => userScope(r.user_id));
