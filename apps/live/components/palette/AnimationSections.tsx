@@ -185,6 +185,7 @@ function CategoryBody({
     <AnimationSetTiles
       set={set}
       current={state.value}
+      legacy={state.legacy}
       speed={state.speed ?? DEFAULT_ANIMATION_SPEED}
       repeat={state.repeat}
       onSet={(v) => h.onSetSetAnimation(set, v)}

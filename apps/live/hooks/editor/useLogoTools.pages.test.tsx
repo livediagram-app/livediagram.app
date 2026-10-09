@@ -38,7 +38,7 @@ describe('useLogoTools per page', () => {
     act(() => hook.result.current.setGuides('a', false));
     expect(hook.result.current.guidesOn('a')).toBe(false);
     expect(hook.result.current.guidesOn('b')).toBe(true);
-    expect(readLogoPageGuides()).toEqual({ a: false });
+    expect(readLogoPageGuides()).toEqual({ 't:a': false });
     // The setting off: a page with no choice of its own follows it.
     const off = setup({ logoGuides: false });
     expect(off.hook.result.current.guidesOn('b')).toBe(false);
@@ -82,5 +82,50 @@ describe('useLogoTools per page', () => {
     const { hook, mirrorRef } = setup({}, true);
     act(() => hook.result.current.setMirror('a', true));
     expect(mirrorRef.current.size).toBe(0);
+  });
+});
+
+const tab = (id: string) => ({ id, name: id, elements: [] }) as unknown as Tab;
+
+function render(activeTab: Tab) {
+  const mirrorRef = { current: new Map<string, MirrorSettings>() };
+  return renderHook(
+    ({ activeTab }: { activeTab: Tab }) =>
+      useLogoTools({
+        mirrorRef,
+        prefs: {},
+        applyPrefs: vi.fn(),
+        activeTab,
+        pages: null,
+        currentSelectionIds: () => new Set(),
+        commit: () => {},
+        setSelectedId: () => {},
+        setMultiSelectedIds: () => {},
+        readOnly: false,
+      }),
+    { initialProps: { activeTab } },
+  );
+}
+
+// docs/specs/007-editor/logo-pages.md: page ids repeat across tabs ('page-1'), so a page's
+// Show Guides and Mirror stay with the tab they were chosen on.
+describe('useLogoTools across tabs', () => {
+  it("keeps a page's Show Guides to its own tab", () => {
+    const { result, rerender } = render(tab('a'));
+    act(() => result.current.setGuides('page-1', false));
+    expect(result.current.guidesOn('page-1')).toBe(false);
+    rerender({ activeTab: tab('b') });
+    expect(result.current.guidesOn('page-1')).toBe(true);
+    rerender({ activeTab: tab('a') });
+    expect(result.current.guidesOn('page-1')).toBe(false);
+  });
+
+  it('lets go of Mirror when another tab opens', () => {
+    const { result, rerender } = render(tab('a'));
+    act(() => result.current.setMirror('page-1', true));
+    expect(result.current.mirrorOn('page-1')).toBe(true);
+    rerender({ activeTab: tab('b') });
+    expect(result.current.mirrorOn('page-1')).toBe(false);
+    expect(result.current.mirrorPages.size).toBe(0);
   });
 });

@@ -215,6 +215,13 @@ export function TableView({
   // Table and Text animations (docs/specs/028-animation/element-animations.md); the words stand
   // still while a cell is being edited.
   const tableAnim = useTableAnimation(element, textColor, editing !== null);
+  // The grid is keyed by the Table animation, so switching cascades restarts it (they share a
+  // keyframe name). The key holds while a cell is being edited: a remount would drop the cell
+  // editor's draft (it commits on blur, which an unmount never fires), say when a collaborator or
+  // an undo changes the animation mid-edit. The restart waits for the edit to end.
+  const liveGridKey = tableAnim.gridClass ?? 'still';
+  const [gridKey, setGridKey] = useState(liveGridKey);
+  if (editing === null && gridKey !== liveGridKey) setGridKey(liveGridKey);
   // Grid line width + pattern from the Border accordion (default thin
   // solid). 'none' (0px) hides the grid lines entirely.
   const borderW = BORDER_STROKE_PX[element.strokeWidth ?? 'thin'];
@@ -364,8 +371,7 @@ export function TableView({
         aria-label={`Table, ${rows} rows by ${cols} columns`}
         aria-rowcount={rows}
         aria-colcount={cols}
-        // Keyed by the Table animation, so switching cascades restarts it (they share a keyframe name).
-        key={tableAnim.gridClass ?? 'still'}
+        key={gridKey}
         className={`absolute inset-0 grid overflow-hidden ${tableAnim.gridClass ?? ''}`}
         style={{
           ...tableAnim.gridStyle,

@@ -280,6 +280,12 @@ export function fitPaintToTarget(
     delete out.textAnimation;
     delete out.textAnimationSpeed;
     delete out.textAnimationRepeat;
+  } else if (target.type === 'text' && out.textAnimation !== undefined) {
+    // A Text animation painted onto a text element replaces its legacy body one, as a Text pick
+    // does: a text element never carries both.
+    out.animation = undefined;
+    out.animationSpeed = undefined;
+    out.animationRepeat = undefined;
   }
   return out as Partial<BoxedElement>;
 }

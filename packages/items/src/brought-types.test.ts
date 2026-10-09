@@ -7,6 +7,7 @@ import {
   boardTypesToAdd,
   broughtTypesToAdd,
   catalogueWithBoardTypes,
+  hasBlankBoard,
   defaultTypesToAdd,
 } from './brought-types';
 import { typeCardDisplay } from './card-display';
@@ -118,6 +119,19 @@ describe('what boards bring', () => {
     expect(ids(defaultTypesToAdd(some))).toEqual(['project', 'note']);
     expect(defaultTypesToAdd(ITEM_TYPES)).toEqual([]);
   });
+
+  it('leaves out a type whose name the document already has, and adds no more than fit', () => {
+    const renamed = [{ ...ITEM_TYPES[0]!, id: 'chore', label: 'task' }];
+    expect(ids(defaultTypesToAdd(renamed))).toEqual(['project', 'note', 'idea', 'action']);
+    const story = { ...ITEM_TYPES[1]!, id: 'defect', label: 'Bug' };
+    expect(boardTypesToAdd([preset('bug-triage')], [story])).toEqual([]);
+    const many = Array.from({ length: ITEM_TYPES_MAX - 2 }, (_, i) => ({
+      ...ITEM_TYPES[0]!,
+      id: `t${i}`,
+      label: `T${i}`,
+    }));
+    expect(ids(defaultTypesToAdd(many))).toEqual(['project', 'task']);
+  });
 });
 
 describe('the catalogue boards leave', () => {
@@ -135,6 +149,16 @@ describe('the catalogue boards leave', () => {
     expect(catalogueWithBoardTypes(null, [board()])).toBeNull();
     expect(catalogueWithBoardTypes(null, [preset('archive')])).toBeNull();
     expect(catalogueWithBoardTypes(null, [])).toBeNull();
+  });
+
+  it('treats a Blank board already there as the first board: a later one adds what is missing', () => {
+    expect(hasBlankBoard([board()])).toBe(true);
+    expect(hasBlankBoard([board(['bug']), preset('archive')])).toBe(false);
+    expect(ids(catalogueWithBoardTypes(null, [preset('bug-triage')], false, true)?.types)).toEqual([
+      ...DEFAULT_IDS,
+      'bug',
+    ]);
+    expect(catalogueWithBoardTypes(null, [preset('kanban')], false, true)).toBeNull();
   });
 
   it('adds what is missing to a document with cards, after the default types', () => {

@@ -788,6 +788,9 @@ function CanvasView(props: CanvasProps) {
         {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
         {props.illustratePages ? (
           <IllustratePages
+            // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
+            // tab's own: page ids repeat across tabs.
+            key={props.activeTabId}
             view={props.illustratePages}
             zoom={viewportZoom}
             // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,

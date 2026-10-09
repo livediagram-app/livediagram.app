@@ -12,7 +12,7 @@
 // made earlier (a Plan template picked outside Plan mode) waits for them.
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
 import type { Tab } from '@livediagram/document';
-import { catalogueWithBoardTypes, type ItemTypeCatalogue } from '@livediagram/items';
+import { catalogueWithBoardTypes, hasBlankBoard, type ItemTypeCatalogue } from '@livediagram/items';
 import { debugLog } from '@/lib/debug-log';
 import { useLatest } from '@/hooks/ui/useLatest';
 
@@ -22,9 +22,17 @@ function boardsOf(tab: Tab | undefined): Elements {
   return (tab?.elements ?? []).filter((el) => el.type === 'shape' && el.shape === 'plan-board');
 }
 
+// Whether a Blank board other than `boards` is already in the document's tabs: made first, it chose the default
+// types (storing nothing), so `boards` only add what is missing.
+function hadBlank(tabs: readonly Tab[], boards: Elements): boolean {
+  const fresh = new Set(boards.map((b) => b.id));
+  return tabs.some((t) => hasBlankBoard(boardsOf(t).filter((b) => !fresh.has(b.id))));
+}
+
 // Saves the catalogue `boards` leave, when it changes; `via` names the path in the log.
 function applyBoards(
   latest: RefObject<{
+    tabs: readonly Tab[];
     catalogue: ItemTypeCatalogue | null;
     hasCards: boolean;
     saveCatalogue: (next: ItemTypeCatalogue) => void;
@@ -33,11 +41,12 @@ function applyBoards(
   via: string,
 ): void {
   const now = latest.current;
-  const next = catalogueWithBoardTypes(now.catalogue, boards, now.hasCards);
+  const had = hadBlank(now.tabs, boards);
+  const next = catalogueWithBoardTypes(now.catalogue, boards, now.hasCards, had);
   if (!next) return;
   debugLog('[item-types] brought', {
     via,
-    chosen: now.catalogue === null && !now.hasCards,
+    chosen: now.catalogue === null && !now.hasCards && !had,
     types: next.types.map((t) => t.id),
   });
   now.saveCatalogue(next);
@@ -66,7 +75,7 @@ export function usePresetCardTypes({
   catalogue: ItemTypeCatalogue | null;
   saveCatalogue: (next: ItemTypeCatalogue) => void;
 }): { bring: (elements: Elements) => void } {
-  const latest = useLatest({ catalogue, hasCards, saveCatalogue });
+  const latest = useLatest({ tabs, catalogue, hasCards, saveCatalogue });
   const apply = useCallback(
     (boards: Elements, via: string) => applyBoards(latest, boards, via),
     [latest],
