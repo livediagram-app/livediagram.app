@@ -136,7 +136,9 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   **today**. A bar or diamond outside the window is cut off at its edge.
 - **Scrolling the timeline**: **‹** and **›** in the header step the window a third of its length earlier or
   later; a sideways scroll (a trackpad swipe, or Shift with the wheel) over the timeline moves it day by day;
-  and dragging the axis (the dates strip) pans it. **Today** brings today back into view, a quarter of the way
+  and dragging the timeline pans it, from the axis (the dates strip) or anywhere below it but a bar's handles,
+  a bar's body and a row that draws dates (to someone who may edit; to anyone else, from anywhere). A press that
+  moves no more than 3 px still opens the card under it; a pan's release opens nothing. **Today** brings today back into view, a quarter of the way
   in, at the current scale. Changing the scale keeps the window's middle where it was.
 - The scale and the window are the viewer's own, like the Due Calendar's month: never saved, never sent to
   others, and back to the opening fit when the chart is next drawn fresh. They answer only while the chart takes
