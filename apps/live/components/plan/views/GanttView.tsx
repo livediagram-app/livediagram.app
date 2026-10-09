@@ -108,13 +108,11 @@ export function GanttView({
   // Every tick keeps its gridline; labels thin out so each has room (about TICK_LABEL_PX).
   const axisPx = Math.max(1, width - namesPx);
   const trackRef = useRef<HTMLDivElement>(null);
-  const axisRef = useRef<HTMLDivElement>(null);
   const editable = !!plan?.canEdit && !!plan?.planInput;
   // The viewer's own scale and window over the timeline (useGanttWindow).
   const timeline = useGanttWindow({
     model,
     trackRef,
-    axisRef,
     interactive: !!plan?.planInput,
     ready: viewState(plan, n > 0) === 'ready',
   });
@@ -223,7 +221,7 @@ export function GanttView({
         <div
           ref={trackRef}
           data-own-wheel-x={plan?.planInput ? '' : undefined}
-          className="relative min-w-0 overflow-hidden"
+          className={`relative min-w-0 overflow-hidden ${plan?.planInput ? 'touch-none' : ''}`}
         >
           {/* The axis: a label and a gridline per tick. */}
           {view.ticks.map((t, i) => {
@@ -246,9 +244,8 @@ export function GanttView({
               </div>
             );
           })}
-          {/* The axis strip: dragged, it pans the timeline. */}
+          {/* The axis strip: shows the timeline pans (a drag anywhere on it does, useGanttWindow). */}
           <div
-            ref={axisRef}
             className={`absolute inset-x-0 border-b ${plan?.planInput ? 'cursor-grab active:cursor-grabbing' : ''}`}
             style={{ top: 0, height: AXIS_H, borderColor: palette.border }}
           />

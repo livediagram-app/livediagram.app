@@ -84,7 +84,7 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
   picks the opening scale, `ganttWindow(scale, from)` the window and its ticks, `ganttTodayFrom`,
   `ganttRescaleFrom` (keeps the middle) and `ganttStepDays` (a third) the header's moves. `useGanttWindow` holds the
   viewer's scale and start in component state (null until touched, so it follows the cards), scrolls on a
-  non-passive sideways or Shift wheel over the timeline and on a drag of the axis strip, and attaches only while the
+  non-passive sideways or Shift wheel over the timeline and on a drag of the timeline, and attaches only while the
   chart takes input and is drawn. The timeline carries `data-own-wheel-x` while it takes input, so the canvas
   wheel (useCanvasPinchZoom) leaves it a sideways or Shift wheel. `GanttScaleControls` sits in the frame's aside:
   Today, Earlier, Later, and the scale as pressed `ViewStepButton`s (shared with the Due Calendar's steps);
@@ -110,7 +110,10 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
   through `swallowNextClick()` (a one-shot capture-phase window `click` listener, given up after
   `SWALLOW_CLICK_MS`, 400 ms); a draw across days swallows it the same way. A drag or draw beginning calls
   `useGanttWindow`'s `pin()` (`onBegin`), which sets the window's start and scale to what is shown, so a commit that
-  moves `model.from` or the fitted scale never moves the timeline. The axis pan keeps its window listeners' remover
+  moves `model.from` or the fitted scale never moves the timeline. The pan is one native `pointerdown` on the
+  timeline (`trackRef`), skipping targets inside `[data-gantt-handle]` or `[data-gantt-draw]`; it stops the press
+  from the canvas, pans only past `PAN_SLOP_PX` (3 px, so a plain press still clicks the row and opens the card),
+  and after a pan calls `swallowNextClick()`. The timeline is `touch-none` while it takes input. The pan keeps its window listeners' remover
   in a ref, called on unmount. Handles (`GanttHandle`) are 12 px hit areas with an `ew-resize`
   cursor and a grip shown on row hover; `GanttBarGrab` covers the bar's body with a grab cursor; all rendered only
   when `canEdit && planInput`.
@@ -177,7 +180,7 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 | Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts               |
 | Element seed, validation, export box           | packages/document/src/plan-shapes.test.ts                 |
 | Rendering, empty and loading, opening, metrics | apps/live/components/plan/views/PlanViewView.test.tsx     |
-| Gantt window pin, pan cleanup                  | apps/live/components/plan/views/useGanttWindow.test.ts    |
+| Gantt window pin, pan, slop, cleanup           | apps/live/components/plan/views/useGanttWindow.test.ts    |
 | Gantt View flyout (card types, swimlanes)      | apps/live/components/palette/PlanViewMenuSection.test.tsx |
 | Gantt row order (apply, reorder, validation)   | packages/items/src/gantt-row-order.test.ts                |
 | Gantt row drag, keyboard move, lanes           | apps/live/components/plan/views/GanttRowOrder.test.tsx    |

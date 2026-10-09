@@ -2,8 +2,8 @@
 
 // The Gantt chart's window (docs/specs/026-plan/plan-views.md "Scale", "Scrolling the timeline"): the viewer's
 // own scale and start day, never saved or sent. Until the viewer touches it, it follows the cards (the
-// smallest scale that fits, from the model's start). A sideways wheel over the timeline and a drag of the axis
-// scroll it; the header steps, rescales and goes back to today.
+// smallest scale that fits, from the model's start). A sideways wheel over the timeline and a drag anywhere on
+// it (but a bar's handles or a row that draws dates) scroll it; the header steps, rescales and goes back to today.
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   ganttDayShift,
@@ -15,18 +15,22 @@ import {
   type GanttModel,
   type GanttScale,
 } from '@livediagram/items';
+import { swallowNextClick } from './gantt-drag';
+
+// How far a press on the timeline travels before it pans (below it, the press still opens the card).
+const PAN_SLOP_PX = 3;
+// What a press pans from: anywhere on the timeline but what drags dates itself.
+const OWN_PRESS = '[data-gantt-handle], [data-gantt-draw]';
 
 export function useGanttWindow({
   model,
   trackRef,
-  axisRef,
   interactive,
   ready,
 }: {
   model: Pick<GanttModel, 'from' | 'to' | 'today'>;
-  // The timeline, whose width turns pixels into days, and the axis strip that pans it.
+  // The timeline, whose width turns pixels into days, and which a drag pans.
   trackRef: RefObject<HTMLElement | null>;
-  axisRef: RefObject<HTMLElement | null>;
   // Only a chart that takes input scrolls; elsewhere the canvas keeps the wheel. `ready` is whether the
   // timeline is drawn (not loading or empty), so its listeners attach once it is.
   interactive: boolean;
@@ -71,23 +75,32 @@ export function useGanttWindow({
   useEffect(() => () => endPan.current?.(), []);
 
   useEffect(() => {
-    const axis = axisRef.current;
-    if (!axis || !interactive) return;
+    const track = trackRef.current;
+    if (!track || !interactive) return;
     const onDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
+      if ((e.target as Element | null)?.closest?.(OWN_PRESS)) return;
+      // The canvas never sees it (no marquee, no element drag); a press that stays put still clicks.
       e.stopPropagation();
       e.preventDefault();
       const startX = e.clientX;
       const { scale: s, from: f } = live.current;
       const w = ganttWindow(s, f);
-      const width = trackRef.current?.getBoundingClientRect().width ?? 0;
-      const onMove = (ev: PointerEvent) =>
-        setStart(f - ganttDayShift(w, ev.clientX - startX, width));
+      const width = track.getBoundingClientRect().width;
+      let panning = false;
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - startX;
+        if (!panning && Math.abs(dx) <= PAN_SLOP_PX) return;
+        panning = true;
+        setStart(f - ganttDayShift(w, dx, width));
+      };
       const onUp = () => {
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
         window.removeEventListener('pointercancel', onUp);
         endPan.current = null;
+        // A pan's release is no click on the row under it.
+        if (panning) swallowNextClick();
       };
       endPan.current?.();
       window.addEventListener('pointermove', onMove);
@@ -95,9 +108,9 @@ export function useGanttWindow({
       window.addEventListener('pointercancel', onUp);
       endPan.current = onUp;
     };
-    axis.addEventListener('pointerdown', onDown);
-    return () => axis.removeEventListener('pointerdown', onDown);
-  }, [axisRef, trackRef, interactive, ready]);
+    track.addEventListener('pointerdown', onDown);
+    return () => track.removeEventListener('pointerdown', onDown);
+  }, [trackRef, interactive, ready]);
 
   return {
     scale,
