@@ -100,13 +100,3 @@ function paperIn(piece: Box, box: Box, mask?: PaperMask): number {
       if (mask.classes[y * mask.width + x] === box.classId) count += 1;
   return count;
 }
-
-export const NARROW_CALIBRATION = {
-  SEAM_SEARCH_FROM,
-  SEAM_SEARCH_TO,
-  NARROW_SHORT_RATIO,
-  NARROW_LONG_RATIO,
-  NARROW_MIN_SEAM,
-  NARROW_RUN_ASPECT,
-  NARROW_RUN_MAX,
-} as const;

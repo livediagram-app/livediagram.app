@@ -54,10 +54,3 @@ export function noteSizeField(samples: readonly Sample[], wallSize: number): Not
     },
   };
 }
-
-export const SIZE_FIELD_CALIBRATION = {
-  SIZE_FIELD_SPREAD,
-  SIZE_FIELD_MIN_WEIGHT,
-  SIZE_FIELD_MIN_RATIO,
-  SIZE_FIELD_MAX_RATIO,
-} as const;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deltaE, labImageOf, rgbToLab } from './lab';
+import { labImageOf, rgbToLab } from './lab';
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // CIELAB (D65, sRGB), the space where "how different is this paper from the
@@ -31,17 +31,6 @@ describe('rgbToLab', () => {
       expect(Math.abs(a)).toBeLessThan(0.01);
       expect(Math.abs(b)).toBeLessThan(0.01);
     }
-  });
-});
-
-describe('deltaE', () => {
-  it('is zero for one colour and grows with the difference', () => {
-    const wall = rgbToLab(240, 240, 240);
-    expect(deltaE(wall, wall)).toBe(0);
-    const pale = rgbToLab(0xfe, 0xf9, 0xc3);
-    const yellow = rgbToLab(0xfd, 0xe0, 0x47);
-    expect(deltaE(wall, pale)).toBeGreaterThan(15);
-    expect(deltaE(wall, yellow)).toBeGreaterThan(deltaE(wall, pale));
   });
 });
 

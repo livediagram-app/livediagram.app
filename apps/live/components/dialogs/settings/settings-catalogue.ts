@@ -1204,17 +1204,6 @@ export function settingsCategoryPath(category: SettingsCategorySpec): string {
   return parent ? `${parent.label} › ${category.label}` : category.label;
 }
 
-// A choice row by key, for a surface outside Settings that offers the same
-// choice (the welcome tour's layout picker, docs/specs/007-editor/editor-tour.md) and must read, write
-// and report it exactly as the row does.
-export function choiceRow(key: string): SettingsChoiceRowSpec {
-  for (const c of SETTINGS_CATEGORIES) {
-    const row = c.rows.find((r) => r.key === key);
-    if (row?.kind === 'choice') return row;
-  }
-  throw new Error(`No settings choice row "${key}"`);
-}
-
 // A choice row's telemetry type carries the option picked, as a toggle's
 // carries its new state (docs/specs/017-telemetry/telemetry.md): 'ElementIndicators' + 'top' →
 // 'ElementIndicatorsTop', so the dashboard shows which way people moved, not

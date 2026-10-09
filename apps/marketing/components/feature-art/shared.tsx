@@ -11,8 +11,6 @@ import type { ReactNode } from 'react';
 // utility: fill-(--art-ink-fill), stroke-(--art-ink-stroke), fill-(--art-ink-text),
 // stroke-(--art-arrow) and so on, the Default scheme's light or dark half with the
 // appearance. These restate the light half for the SVG attributes underneath.
-export const INK_STROKE = '#0ea5e9';
-export const INK_TEXT = '#075985';
 export const PINK = '#ec4899';
 export const SKY = '#0ea5e9';
 

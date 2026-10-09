@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { PLAN_COLUMNS_MAX, presetSetup } from '@livediagram/items';
 import {
   addColumnAfter,
-  addFirstColumn,
   moveColumn,
   newColumnStatus,
   recolourColumn,
@@ -99,17 +98,6 @@ describe('setColumnWidth', () => {
   });
 });
 
-describe('addFirstColumn', () => {
-  it('names a board’s first column as typed, and refuses a blank name', () => {
-    const empty = { ...threeColumns(), columns: [] };
-    const s = addFirstColumn(empty, '  Ideas ')!;
-    expect(s.columns).toHaveLength(1);
-    expect(s.columns[0]!.name).toBe('Ideas');
-    expect(s.columns[0]!.status).toMatch(/^ideas~[a-z0-9]{4}$/);
-    expect(addFirstColumn(empty, '   ')).toBeNull();
-  });
-});
-
 describe('renaming a column', () => {
   it('keeps its status, so its cards stay in it', async () => {
     const { renameColumn } = await import('./board-setup-edits');
@@ -121,14 +109,13 @@ describe('renaming a column', () => {
 
 // docs/specs/026-plan/plan-board.md "Column names": a typed name is saved in Title Case.
 describe('typed column names', () => {
-  it('saves a rename, a new column and a first column in Title Case, keeping acronyms', () => {
+  it('saves a rename and a new column in Title Case, keeping acronyms', () => {
     expect(renameColumn(threeColumns(), 'doing', '  ready for QA ').columns[1]!.name).toBe(
       'Ready for QA',
     );
     expect(addColumnAfter(threeColumns(), 'todo', 'in review', () => 0)?.column.name).toBe(
       'In Review',
     );
-    expect(addFirstColumn(presetSetup('blank'), 'to do')?.columns[0]!.name).toBe('To Do');
     // A rename to nothing changes nothing.
     expect(renameColumn(threeColumns(), 'doing', '   ').columns[1]!.name).toBe('In progress');
   });

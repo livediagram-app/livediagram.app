@@ -252,11 +252,6 @@ export type UserPreferences = {
 // hide by hand and leaves plenty of room for the other flags.
 export const RECENT_EXCLUDED_LIMIT = 60;
 
-// Is this document hidden from Recent?
-export function isRecentExcluded(prefs: UserPreferences, documentId: string): boolean {
-  return prefs.recentExcludedIds?.includes(documentId) === true;
-}
-
 // Flip a document's Recent exclusion, returning the NEXT id list. Newest
 // exclusions are kept at the front so the cap drops the oldest choice
 // rather than the one just made.

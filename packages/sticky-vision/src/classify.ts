@@ -1,7 +1,7 @@
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/document';
 import { hexToRgb, hueDistance, rgbToHsv, type Hsv } from './colour';
 import { rgbToLabInto, type Lab } from './lab';
-import { DEFAULT_FLOORS, FLOOR_CALIBRATION, VALUE_FLOOR, type PaperFloors } from './floors';
+import { DEFAULT_FLOORS, VALUE_FLOOR, type PaperFloors } from './floors';
 
 // Which note kind a pixel's colour belongs to (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
@@ -232,19 +232,3 @@ export function isPaleShade(r: number, g: number, b: number, kind: PixelClass): 
 }
 
 export { PALE_SHADE_KINDS };
-
-export const CALIBRATION = {
-  DIM_HUE_MAX_VALUE,
-  PALE_SHADE_MAX_SATURATION,
-  PALE_SHADE_MIN_VALUE,
-  HUE_BANDS,
-  OFF_HUE_MIN_SATURATION,
-  WALL_HUE_NEIGHBOURHOOD_DEG,
-  WALL_HUE_MIN_LAB_DISTANCE,
-  PALE_PAPER_MIN_LAB_DISTANCE,
-  PALE_PAPER_MIN_BRIGHTNESS,
-  PALE_YELLOW_MAX_SATURATION,
-  // How the floors themselves are measured lives in `floors.ts`, next to the
-  // code that uses each number; the whole calibrated table is here.
-  ...FLOOR_CALIBRATION,
-} as const;

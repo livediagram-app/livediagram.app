@@ -141,12 +141,6 @@ export function removeComment(elements: Element[], commentId: string): Element[]
   });
 }
 
-// Find a comment by id across all elements and return it (with its
-// author id), or null. Used to authorise delete-own before mutating.
-export function findComment(elements: Element[], commentId: string): Comment | null {
-  return findCommentHost(elements, commentId)?.comment ?? null;
-}
-
 // The comment and the element whose thread holds it.
 export function findCommentHost(
   elements: Element[],

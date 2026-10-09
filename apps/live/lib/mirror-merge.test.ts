@@ -10,7 +10,7 @@ import {
   type PathElement,
 } from '@livediagram/document';
 import { combineElements } from './combine/combine';
-import { mergeWithTwin } from './mirror-merge';
+import { mergeWithTwins } from './mirror-merge';
 import { isTidyable } from './stroke-tidy';
 import { withTwinsAdded } from './mirror-commit';
 
@@ -27,7 +27,7 @@ const pages = layOutIllustratePages([newLogoPage('l')]).map((p) => ({
   mirror: DEFAULT_MIRROR,
 }));
 
-describe('mergeWithTwin', () => {
+describe('mergeWithTwins', () => {
   it('unites a shape with its twin into one path that keeps the drawing id', () => {
     const shape = {
       id: 'drawn',
@@ -87,7 +87,7 @@ describe('mergeWithTwin', () => {
       ]),
     };
     const twin = { ...stroke, id: 't', x: 200 };
-    const merged = mergeWithTwin(stroke, twin) as PathElement;
+    const merged = mergeWithTwins(stroke, [twin]) as PathElement;
     expect(merged).toMatchObject({ id: 'pencil', type: 'path', closed: false });
     // The straight stroke simplifies to its two ends.
     expect(merged.nodes).toHaveLength(2);
@@ -95,7 +95,7 @@ describe('mergeWithTwin', () => {
 
   it('keeps the pair for what cannot merge', () => {
     const text = { id: 't', type: 'text', x: 0, y: 0, width: 10, height: 10 } as BoxedElement;
-    expect(mergeWithTwin(text, { ...text, id: 'u' })).toBeNull();
+    expect(mergeWithTwins(text, [{ ...text, id: 'u' }])).toBeNull();
   });
 
   it('joins a marker stroke and its twin as one tidyable line, in its colour (Ink when none)', () => {

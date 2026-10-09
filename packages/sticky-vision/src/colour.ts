@@ -134,11 +134,6 @@ export function greyWorldBalance(image: ImageBuffer): ImageBuffer {
   return { width, height, data: out };
 }
 
-export function pixelAt(image: ImageBuffer, x: number, y: number): Rgb {
-  const i = (y * image.width + x) * 4;
-  return { r: image.data[i]!, g: image.data[i + 1]!, b: image.data[i + 2]! };
-}
-
 // A catalogue fill to channels, through the document package's one hex parser.
 // Every caller passes a `#rrggbb` it owns, so one that doesn't parse is a bug
 // and throws, where the old slice-and-parseInt copy handed back NaN channels.
@@ -147,9 +142,3 @@ export function hexToRgb(hex: string): Rgb {
   if (!rgb) throw new Error(`Not a #rrggbb colour: ${hex}`);
   return rgb;
 }
-
-export const COLOUR_CALIBRATION = {
-  NEUTRAL_PERCENTILE,
-  NEUTRAL_MAX_SATURATION,
-  NEUTRAL_MIN_SATURATION,
-} as const;

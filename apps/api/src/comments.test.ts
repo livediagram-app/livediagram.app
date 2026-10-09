@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Comment, Element, ShapeElement } from '@livediagram/document';
 import {
-  findComment,
+  findCommentHost,
   hasNewComments,
   redactCommentAuthorIds,
   redactTabDataAuthors,
@@ -144,14 +144,14 @@ describe('rewriteCommentAuthors', () => {
   });
 });
 
-describe('findComment', () => {
+describe('findCommentHost', () => {
   it('finds a comment by id across elements', () => {
     const els = [mkShape('a', [mkComment('c1', 'A', '#fff')]), mkShape('b', [])];
-    expect(findComment(els, 'c1')?.id).toBe('c1');
+    expect(findCommentHost(els, 'c1')).toMatchObject({ comment: { id: 'c1' }, elementId: 'a' });
   });
 
   it('returns null when the id is absent', () => {
-    expect(findComment([mkShape('a', [mkComment('c1', 'A', '#fff')])], 'missing')).toBeNull();
+    expect(findCommentHost([mkShape('a', [mkComment('c1', 'A', '#fff')])], 'missing')).toBeNull();
   });
 });
 

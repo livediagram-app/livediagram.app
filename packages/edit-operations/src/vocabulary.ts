@@ -55,7 +55,6 @@ export const SELECTOR_KEYS = [
   'downstream',
   'upstream',
 ] as const;
-export type SelectorKey = (typeof SELECTOR_KEYS)[number];
 
 // The line form's flag words and the JSON members they set.
 export const FLAG_MEMBERS = {

@@ -4,13 +4,7 @@
 // Candidates. Making a board chooses or adds the document's card types (catalogueWithBoardTypes); a document that
 // already has a type (by id) keeps its own. Pure data, one catalogue the board presets and the Plan templates share.
 import type { CardField } from './board';
-import {
-  ITEM_TYPES,
-  PARENT_FIELD,
-  type CustomFieldDef,
-  type ItemTypeDef,
-  type ItemTypeId,
-} from './item-types';
+import { ITEM_TYPES, PARENT_FIELD, type CustomFieldDef, type ItemTypeDef } from './item-types';
 import {
   ITEM_TYPES_MAX,
   typesOf,
@@ -259,8 +253,6 @@ const MORE_CARD_TYPES: readonly ItemTypeDef[] = BROUGHT.map((t) => ({
 // Every card type a board can bring (docs/specs/026-plan/plan-templates.md "Ready-made card types"): the five default
 // types, then the ten the templates and presets add. None is set apart from a type a person makes.
 export const READY_MADE_CARD_TYPES: readonly ItemTypeDef[] = [...ITEM_TYPES, ...MORE_CARD_TYPES];
-
-export type ReadyMadeCardTypeId = ItemTypeId | (typeof BROUGHT)[number]['id'];
 
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);
 

@@ -64,9 +64,6 @@ import { FocusElementButton } from './FocusElementButton';
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
 
-// Each column is at least this wide (blueprint DEFAULTS D7); a narrower board scrolls sideways.
-export { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
-
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 // The board body keeps its presses (cards, cells, buttons) from the canvas, except a finger on empty board,

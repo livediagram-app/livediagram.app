@@ -291,40 +291,6 @@ export function LinkCard() {
   );
 }
 
-/** An annotation marker with its hover note. */
-export function Annotation() {
-  return (
-    <Scene w={420} h={190}>
-      <Shape x={70} y={80} w={96} h={52} kind="rect" label="Server" />
-      <g transform="translate(158 72)">
-        <circle r={11} className="fill-amber-400 stroke-white" strokeWidth={2.5} />
-        <Label
-          x={0}
-          y={1}
-          anchor="middle"
-          size={13}
-          weight={700}
-          className="fill-white dark:fill-slate-950"
-        >
-          i
-        </Label>
-      </g>
-      <g transform="translate(196 50)">
-        <rect
-          width={168}
-          height={56}
-          rx={9}
-          className="fill-white stroke-amber-300"
-          strokeWidth={2}
-        />
-        <path d="M-8 18 l10 -6 l0 12 Z" className="fill-white stroke-amber-300" strokeWidth={2} />
-        <TextBar x={14} y={18} w={132} />
-        <TextBar x={14} y={32} w={104} tone="faint" />
-      </g>
-    </Scene>
-  );
-}
-
 /** Dragging an element snaps it into line with a neighbour; the dashed guide
  * shows the matched edge. Holding Cmd / Ctrl skips snapping for a free drop. */
 export function SnappingGuides() {

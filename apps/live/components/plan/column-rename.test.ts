@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { PlanBoardSetup } from '@livediagram/items';
-import { addFirstColumn } from './board-setup-edits';
 import { columnRename, pickableStatuses } from './column-status-picks';
 
 // docs/specs/026-plan/plan-board.md "The board set-up": one name, one status, when a column is named.
@@ -38,17 +37,6 @@ describe('renaming a column', () => {
       kind: 'clash',
       name: 'Doing',
     });
-  });
-});
-
-describe('a board’s first column', () => {
-  it('takes the status a name already belongs to', () => {
-    const empty = { columns: [] } as unknown as PlanBoardSetup;
-    expect(addFirstColumn(empty, 'to do', names)!.columns[0]).toMatchObject({
-      status: 'todo',
-      name: 'To Do',
-    });
-    expect(addFirstColumn(empty, 'Fresh', names)!.columns[0]!.status).toMatch(/^fresh~/);
   });
 });
 

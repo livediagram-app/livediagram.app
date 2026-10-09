@@ -172,13 +172,6 @@ export function SearchGlyph() {
     </Glyph>
   );
 }
-export function ListGlyph() {
-  return (
-    <Glyph size={14} units={14}>
-      <path d="M2 4 L12 4 M2 7 L12 7 M2 10 L12 10" />
-    </Glyph>
-  );
-}
 export function LinkGlyph() {
   return (
     <Glyph size={14} units={14}>

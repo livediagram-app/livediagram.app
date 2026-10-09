@@ -3,7 +3,6 @@
 // step, 20px, on the 24-unit grid, so the dock reads as part of the same editor.
 import { Glyph, Prims } from '@livediagram/ui';
 import {
-  lucideEllipsis,
   lucideSettings,
   lucideShapes,
   lucideStickyNote,
@@ -65,14 +64,6 @@ export function OffGlyph() {
   return (
     <Glyph size={DOCK_ICON_PX} units={24}>
       <path d="M5 15 C5 8 13 5 15.5 10.5 S10 20 6 16.5" />
-    </Glyph>
-  );
-}
-
-export function MoreGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <Prims prims={lucideEllipsis} />
     </Glyph>
   );
 }

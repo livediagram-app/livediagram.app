@@ -98,7 +98,6 @@ export const LENS_TELEMETRY_TYPES = {
   people: 'People',
   space: 'Space',
 } as const satisfies Record<LensFacet, string>;
-export type LensTelemetryType = (typeof LENS_TELEMETRY_TYPES)[LensFacet];
 
 /** The longest lens string read; the rest is cut and reported (`too_long`). */
 export const LENS_MAX_INPUT_LENGTH = 512;

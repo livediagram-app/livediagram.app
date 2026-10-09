@@ -151,10 +151,3 @@ export function dropSurfaces<T extends Box>(
     kept = next;
   }
 }
-
-export const SPILL_CALIBRATION = {
-  SPILL_DELTA_E,
-  SPILL_REACH,
-  MAX_SPILL,
-  PAPER_INSET,
-} as const;

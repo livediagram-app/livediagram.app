@@ -2,7 +2,7 @@ import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/d
 import { classifyRgb, isPaleShade, PALE_SHADE_KINDS } from './classify';
 import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
-import { notStandingOut, STANDOUT_CALIBRATION } from './standout';
+import { notStandingOut } from './standout';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
 import {
   boxOf,
@@ -14,7 +14,6 @@ import {
   type Box,
   type DropReason,
   noiseFloorFor,
-  NOISE_FLOOR_FRACTION,
 } from './boxes';
 import { clusterRows } from './rows';
 import { luminanceOf } from './seam';
@@ -95,13 +94,6 @@ export function closeRadiusFor(noteSize: number, imageSize: number): number {
   if (noteSize <= 0) return cap;
   return Math.max(1, Math.min(cap, Math.round(noteSize * CLOSE_NOTE_FRACTION)));
 }
-
-export const DETECT_CALIBRATION = {
-  ...STANDOUT_CALIBRATION,
-  NOISE_FLOOR_FRACTION,
-  CLOSE_NOTE_FRACTION,
-  CLOSE_MAX_IMAGE_FRACTION,
-} as const;
 
 const CLASS_IDS = new Map<EventStormingNoteKind, number>(
   EVENT_STORMING_NOTES.map((n, i) => [n.kind, i + 1]),

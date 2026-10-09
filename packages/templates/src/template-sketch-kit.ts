@@ -31,7 +31,6 @@ export type Pt = { x: number; y: number };
 // The marker widths (the dock's Medium and Bold, WHITEBOARD_PEN_WIDTHS) and a Fine detail line.
 export const FINE = 1.5;
 export const BOLD = 2.5;
-export const HEAVY = 3.5;
 // The whiteboard pen's streamline for a stylus (PEN_STREAMLINE.pen): light smoothing, so corners
 // stay corners.
 const STREAMLINE = 0.2;

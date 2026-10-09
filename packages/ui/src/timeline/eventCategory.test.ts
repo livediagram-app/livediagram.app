@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { TIMELINE_EVENT_TYPES } from '@livediagram/api-schema';
 import {
   CATEGORY_LABELS,
-  categoryToken,
   eventCategory,
   sortCategories,
   type TimelineCategory,
@@ -92,13 +91,12 @@ describe('sortCategories', () => {
   });
 });
 
-describe('categoryToken', () => {
-  it('sends the id rather than the label, so telemetry survives a rewording', () => {
-    expect(categoryToken('new')).toBe('new');
-    expect(categoryToken('new')).not.toBe(CATEGORY_LABELS.new);
+describe('category ids', () => {
+  it('are short safe tokens, distinct from their labels', () => {
+    expect(CATEGORY_LABELS.new).not.toBe('new');
     // docs/specs/017-telemetry/telemetry.md bounds the telemetry `type` slot to a short safe token.
     for (const category of Object.keys(CATEGORY_LABELS) as TimelineCategory[]) {
-      expect(categoryToken(category)).toMatch(/^[a-z]{1,40}$/);
+      expect(category).toMatch(/^[a-z]{1,40}$/);
     }
   });
 });

@@ -49,7 +49,6 @@ export {
   RatingAnimTiles,
   RatingMenuGlyph,
   RatingPickerRow,
-  type AnimTilesProps,
 } from './context-menu-data-rows';
 export { ColourRow, IconPositionGrid, MenuToggleRow };
 export function BorderGrid({

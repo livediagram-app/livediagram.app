@@ -60,6 +60,3 @@ export function mergeWithTwins(
   }
   return null;
 }
-
-/** The drawing and one twin as one element, or null to keep both. */
-export const mergeWithTwin = (el: BoxedElement, twin: BoxedElement) => mergeWithTwins(el, [twin]);

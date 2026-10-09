@@ -12,7 +12,6 @@ const CONTENT_STYLESHEETS = [
   'app/promises.css',
   'app/feature-art-animations.css',
   'app/page-motion.css',
-  'components/ShowcaseStagger.module.css',
 ];
 
 describe('marketing motion budget', () => {
