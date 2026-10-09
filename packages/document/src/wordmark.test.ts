@@ -46,6 +46,28 @@ describe('wordmark type', () => {
 
   it('reads line breaks as spaces on an arc', () => {
     expect(arcText('Brand\nCo')).toBe('Brand Co');
+    expect(arcText('Brand \n \n\r\n Co')).toBe('Brand Co');
+    expect(arcText('\nCo\n')).toBe(' Co ');
+  });
+
+  it('joins lines as the white-space regex did, over random text', () => {
+    const chars = ['a', ' ', '\n', '\t', '\r', 'b'];
+    let seed = 7;
+    const next = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (let k = 0; k < 2000; k++) {
+      const s = Array.from(
+        { length: Math.floor(next() * 12) },
+        () => chars[Math.floor(next() * chars.length)],
+      ).join('');
+      expect(arcText(s)).toBe(s.replace(/\s*\n\s*/g, ' '));
+    }
+  });
+
+  it('stays linear on a long run of spaces (CodeQL js/polynomial-redos)', () => {
+    const text = 'a' + ' '.repeat(100_000) + 'b\n' + ' '.repeat(100_000);
+    const t = performance.now();
+    expect(arcText(text)).toBe('a' + ' '.repeat(100_000) + 'b ');
+    expect(performance.now() - t).toBeLessThan(200);
   });
 
   it('validates the fields', () => {

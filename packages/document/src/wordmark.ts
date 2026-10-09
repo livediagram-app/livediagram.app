@@ -67,9 +67,19 @@ export function clampTextArc(v: number): number | undefined {
   return c === 0 ? undefined : c;
 }
 
-/** Arched text is one line: line breaks read as spaces. */
+/** Arched text is one line: each line break, with the white space round it, reads as one space.
+ *  Split rather than a regex, so a long run of spaces stays linear (CodeQL js/polynomial-redos). */
 export function arcText(text: string): string {
-  return text.replace(/\s*\n\s*/g, ' ');
+  const lines = text.split('\n');
+  if (lines.length === 1) return text;
+  const last = lines.length - 1;
+  const parts: string[] = [];
+  lines.forEach((line, i) => {
+    const piece = i === 0 ? line.trimEnd() : i === last ? line.trimStart() : line.trim();
+    // A blank line between two breaks joins them into the one space.
+    if (piece !== '' || i === 0 || i === last) parts.push(piece);
+  });
+  return parts.join(' ');
 }
 
 const n = (v: number) => Math.round(v * 100) / 100;
