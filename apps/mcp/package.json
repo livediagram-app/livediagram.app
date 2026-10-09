@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "wrangler dev --inspector-port 9230",
     "build": "wrangler deploy --dry-run --outdir dist",
+    "build:node": "node scripts/build-node.mjs",
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",
     "lint": "eslint .",
@@ -15,6 +16,7 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.5",
     "@livediagram/agent-verbs": "workspace:*",
     "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
@@ -34,8 +36,10 @@
     "@cloudflare/workers-types": "^5.20261001.1",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
+    "@types/node": "^26.6.3",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",
+    "esbuild": "^0.28.2",
     "eslint": "^10.11.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.3",

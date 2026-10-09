@@ -1,8 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types"],
-    // Workers runtime, not a browser — see the note in `apps/api/tsconfig.json`.
+    // \`@cloudflare/workers-types\` because the Worker is what this package mostly
+    // is; \`node\` because the self-hosted MCP process (src/node/) is a Node program
+    // running the same application (docs/specs/016-platform/self-hosted-runtime.md).
+    // apps/server/tsconfig.json carries both for the same reason.
+    "types": ["@cloudflare/workers-types", "node"],
+    // Workers runtime, not a browser — see the note in \`apps/api/tsconfig.json\`.
     "lib": ["ES2024"],
     "target": "ES2024",
     "noEmit": true
