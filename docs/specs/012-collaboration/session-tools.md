@@ -274,7 +274,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 ## The Vote panel
 
 A **`VotePanel`** on the shared `MovablePanel` (like Poll / Collaborate /
-Layers), homed **top-right under the Palette**. Present only while a vote is
+Layers), homed **top-right**. Present only while a vote is
 on the tab, so it joins and leaves its corner stack rather than sitting in
 it. Two phases, one panel:
 

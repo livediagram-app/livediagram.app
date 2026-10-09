@@ -189,7 +189,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 25,
+    articleCount: 24,
     kind: 'feature',
   },
   {
@@ -248,8 +248,9 @@ export const articles: Article[] = [
   {
     slug: 'panel-layout',
     title: 'Panel Layout',
-    description: 'The floating panels that frame the canvas, and how they are arranged.',
-    keywords: 'ui window dock arrange workspace interface layout move panels chrome',
+    description: 'Where the toolbar and panels sit around the canvas, and how to rearrange them.',
+    keywords:
+      'ui window dock arrange workspace interface layout move panels chrome corner snap reset position menu button',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -311,7 +312,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel layout floating toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -378,8 +379,7 @@ export const articles: Article[] = [
     slug: 'welcome-tour',
     title: 'The Welcome Tour',
     description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
-    keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar floating',
+    keywords: 'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -447,9 +447,9 @@ export const articles: Article[] = [
     slug: 'command-palette',
     title: 'The Palette',
     description:
-      'Pick a selection mode and add shapes, text, icons and more from the floating palette.',
+      'Pick a selection mode and add shapes, text, icons and more from the palette strip.',
     keywords:
-      'quick add search elements floating toolbar launcher categories dropdown popular selection mode tiles bands',
+      'quick add search elements toolbar strip launcher categories dropdown popular selection mode tiles bands',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -1205,7 +1205,7 @@ export const articles: Article[] = [
   {
     slug: 'panel-opacity',
     title: 'Panel Opacity',
-    description: 'Make the floating panels translucent so the canvas shows through.',
+    description: 'Make the panels translucent so the canvas shows through.',
     keywords: 'transparency transparent translucent see through fade panels alpha',
     category: 'Palette',
     categorySlug: 'palette',
@@ -1223,18 +1223,9 @@ export const articles: Article[] = [
   {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
-    description: 'The palette as one strip across the top of the canvas.',
+    description: 'The palette strip across the top of the canvas, its More and its Search.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating compact menu button explorer more tiles recent recently used order reorder search find element other modes',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Palette Settings',
-  },
-  {
-    slug: 'reset-palette-position',
-    title: 'Reset Palette Position',
-    description: 'Snap the palette back to its default corner.',
-    keywords: 'move back default corner stuck lost off screen restore',
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element other modes',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1586,7 +1577,7 @@ export const articles: Article[] = [
     description:
       'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor open more menu new share export github',
+      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

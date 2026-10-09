@@ -13,13 +13,20 @@ const HOVER_CARD = '[role="tooltip"][data-hint="hover-card"]';
 // Well under the 1 s delay, and well over a frame: "instant" means this.
 const INSTANT_MS = 300;
 
-const squareTile = (page: Page) => page.getByRole('button', { name: 'Add square', exact: true });
+// The captioned Square tile in the Shapes category's More popover: the strip's own tiles are
+// icon-only and name themselves in a hover card, so the tooltip lives on the popover's tiles.
+const squareTile = (page: Page) =>
+  page.locator('[data-toolbar-more]').getByRole('button', { name: 'Add square', exact: true });
 
-// A blank document with the quick tour out of the way: its dialog would cover
-// the palette mid-hover.
+// A blank document with the quick tour out of the way (its dialog would cover
+// the palette mid-hover), and the Palette on Shapes with its More popover open.
 async function openEditor(page: Page) {
   await startBlankDocument(page);
   await dismissQuickTour(page);
+  await page.getByRole('button', { name: 'Palette category' }).click();
+  await page.locator('[data-option-id="shapes"]').click();
+  await page.getByRole('button', { name: /^More/ }).click();
+  await expect(squareTile(page)).toBeVisible();
 }
 
 // Park the pointer on empty canvas, away from every trigger.
@@ -62,7 +69,8 @@ test.describe('Tooltip on a palette tile', () => {
 
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);
-    await expect(tile).toBeFocused();
+    // The press is not consumed: the More popover the tile sits in closes on it too.
+    await expect(page.locator('[data-toolbar-more]')).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 

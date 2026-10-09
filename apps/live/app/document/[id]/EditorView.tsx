@@ -73,7 +73,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
-import { panelEnabled, resolvePanelLayout } from '@/lib/user-preferences';
+import { panelEnabled } from '@/lib/user-preferences';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -607,8 +607,6 @@ export function EditorView() {
                               !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
                               (contextMenu !== null && contextMenu.mode !== 'canvas')
                             }
-                            // Phones never show it, so the desktop layout is the one that counts.
-                            layout={resolvePanelLayout(userPreferences)}
                             powerUser={isPowerUserMode(userPreferences)}
                           />
                         </AreaErrorBoundary>

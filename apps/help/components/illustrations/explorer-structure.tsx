@@ -1,5 +1,5 @@
 // Explorer structure illustrations (docs/specs/018-help/help-app.md): the full-page Explorer's
-// sidebar groups and pane header, the editor's floating Explorer panel, the filter lens on Search
+// sidebar groups and pane header, the editor's Explorer popover, the filter lens on Search
 // results, the card view with a folder's preview mosaic, the Change Folder dialog and the folder
 // menu's Use as default for. Every label is the real one from apps/live (sidebar-structure.ts,
 // PaneHeader.tsx, ViewToggle.tsx, ExplorerHeaderMenu.tsx, MoveToFolderDialog.tsx,
@@ -10,6 +10,7 @@
 
 import { Fragment } from 'react';
 import { Scene, Label, Button } from './primitives';
+import { MenuCard } from './toolbar-layout';
 
 // --- Local parts -------------------------------------------------------------
 
@@ -579,102 +580,106 @@ export function ExplorerPageLayout() {
   );
 }
 
-/** The editor's floating Explorer panel: the Current Document card, then Overview, Spaces and More,
- *  with My documents opened in place to a folder and a document. */
+/** The editor's Explorer, open under the menu button in the top-left card: the Current Document
+ *  card, then Overview, Spaces and More, with My documents opened in place to a folder and a
+ *  document. */
 export function ExplorerPanelTree() {
   const px = 24;
   const pw = 200;
   return (
-    <Scene w={420} h={310}>
-      {/* The canvas behind the panel */}
-      <rect
-        x={262}
-        y={50}
-        width={76}
-        height={38}
-        rx={6}
-        className="fill-white stroke-brand-200"
-        strokeWidth={2}
-      />
-      <rect
-        x={300}
-        y={150}
-        width={76}
-        height={38}
-        rx={6}
-        className="fill-white stroke-brand-200"
-        strokeWidth={2}
-      />
-      <path d="M300 88 L330 150" className="stroke-brand-200" strokeWidth={2} fill="none" />
+    <Scene w={420} h={350}>
+      <MenuCard x={px} y={8} />
+      <g transform="translate(0 40)">
+        {/* The canvas behind the panel */}
+        <rect
+          x={262}
+          y={50}
+          width={76}
+          height={38}
+          rx={6}
+          className="fill-white stroke-brand-200"
+          strokeWidth={2}
+        />
+        <rect
+          x={300}
+          y={150}
+          width={76}
+          height={38}
+          rx={6}
+          className="fill-white stroke-brand-200"
+          strokeWidth={2}
+        />
+        <path d="M300 88 L330 150" className="stroke-brand-200" strokeWidth={2} fill="none" />
 
-      <rect
-        x={px}
-        y={14}
-        width={pw}
-        height={284}
-        rx={10}
-        className="fill-white stroke-slate-300"
-        strokeWidth={2}
-      />
-      <Label x={px + 14} y={32} size={11} weight={700} tone="strong">
-        Explorer
-      </Label>
-      {/* Help and the ⋯ menu */}
-      <circle
-        cx={px + pw - 38}
-        cy={31}
-        r={7}
-        className="fill-none stroke-slate-300"
-        strokeWidth={1.3}
-      />
-      <Label x={px + pw - 38} y={32} anchor="middle" size={10} weight={700} tone="muted">
-        ?
-      </Label>
-      <g className="fill-slate-400">
-        <circle cx={px + pw - 20} cy={31} r={1.5} />
-        <circle cx={px + pw - 15} cy={31} r={1.5} />
-        <circle cx={px + pw - 10} cy={31} r={1.5} />
+        <rect
+          x={px}
+          y={14}
+          width={pw}
+          height={284}
+          rx={10}
+          className="fill-white stroke-slate-300"
+          strokeWidth={2}
+        />
+        <Label x={px + 14} y={32} size={11} weight={700} tone="strong">
+          Explorer
+        </Label>
+        {/* Help and the ⋯ menu */}
+        <circle
+          cx={px + pw - 38}
+          cy={31}
+          r={7}
+          className="fill-none stroke-slate-300"
+          strokeWidth={1.3}
+        />
+        <Label x={px + pw - 38} y={32} anchor="middle" size={10} weight={700} tone="muted">
+          ?
+        </Label>
+        <g className="fill-slate-400">
+          <circle cx={px + pw - 20} cy={31} r={1.5} />
+          <circle cx={px + pw - 15} cy={31} r={1.5} />
+          <circle cx={px + pw - 10} cy={31} r={1.5} />
+        </g>
+        <line x1={px} y1={46} x2={px + pw} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
+
+        {/* Current Document */}
+        <rect x={px + 8} y={52} width={pw - 16} height={46} rx={8} className="fill-slate-50" />
+        <GroupTitle x={px + 16} y={64}>
+          CURRENT DOCUMENT
+        </GroupTitle>
+        <TreeRow x={px + 8} y={74} w={pw - 16} label="Roadmap" glyph="doc" active />
+
+        <GroupTitle x={px + 14} y={112}>
+          OVERVIEW
+        </GroupTitle>
+        <TreeRow x={px + 4} y={120} w={pw - 8} label="Home" glyph="home" />
+        <TreeRow x={px + 4} y={138} w={pw - 8} label="Activity" glyph="activity" />
+        <TreeRow
+          x={px + 4}
+          y={156}
+          w={pw - 8}
+          label="Shared with me"
+          glyph="shared"
+          chevron="closed"
+        />
+        <GroupTitle x={px + 14} y={186}>
+          SPACES
+        </GroupTitle>
+        <TreeRow x={px + 4} y={194} w={pw - 8} label="My documents" glyph="folder" chevron="open" />
+        <TreeRow
+          x={px + 4}
+          y={212}
+          w={pw - 8}
+          label="Projects"
+          glyph="folder"
+          level={1}
+          chevron="closed"
+        />
+        <TreeRow x={px + 4} y={230} w={pw - 8} label="Quick sketch" glyph="doc" level={1} />
+        <GroupTitle x={px + 14} y={262}>
+          MORE
+        </GroupTitle>
+        <TreeRow x={px + 4} y={270} w={pw - 8} label="Library" glyph="library" chevron="closed" />
       </g>
-      <line x1={px} y1={46} x2={px + pw} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
-
-      {/* Current Document */}
-      <rect x={px + 8} y={52} width={pw - 16} height={46} rx={8} className="fill-slate-50" />
-      <GroupTitle x={px + 16} y={64}>
-        CURRENT DOCUMENT
-      </GroupTitle>
-      <TreeRow x={px + 8} y={74} w={pw - 16} label="Roadmap" glyph="doc" active />
-
-      <GroupTitle x={px + 14} y={112}>
-        OVERVIEW
-      </GroupTitle>
-      <TreeRow x={px + 4} y={120} w={pw - 8} label="Home" glyph="home" />
-      <TreeRow x={px + 4} y={138} w={pw - 8} label="Activity" glyph="activity" />
-      <TreeRow
-        x={px + 4}
-        y={156}
-        w={pw - 8}
-        label="Shared with me"
-        glyph="shared"
-        chevron="closed"
-      />
-      <GroupTitle x={px + 14} y={186}>
-        SPACES
-      </GroupTitle>
-      <TreeRow x={px + 4} y={194} w={pw - 8} label="My documents" glyph="folder" chevron="open" />
-      <TreeRow
-        x={px + 4}
-        y={212}
-        w={pw - 8}
-        label="Projects"
-        glyph="folder"
-        level={1}
-        chevron="closed"
-      />
-      <TreeRow x={px + 4} y={230} w={pw - 8} label="Quick sketch" glyph="doc" level={1} />
-      <GroupTitle x={px + 14} y={262}>
-        MORE
-      </GroupTitle>
-      <TreeRow x={px + 4} y={270} w={pw - 8} label="Library" glyph="library" chevron="closed" />
     </Scene>
   );
 }

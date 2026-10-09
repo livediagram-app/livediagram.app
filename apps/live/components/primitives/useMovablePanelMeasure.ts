@@ -3,32 +3,27 @@
 import { useEffect, useState, type RefObject } from 'react';
 import type { MovablePanelProps } from './MovablePanel.types';
 
-// The floating panel's geometry measurement, lifted out of MovablePanel:
-// the body max-height cap (so the scrollable body never runs under the
-// tab bar / zoom controls) and the onSize publish the Palette uses so
-// stacked panels can align below it. Returns the computed cap.
+// The panel's geometry measurement, lifted out of MovablePanel: the body
+// max-height cap, so the scrollable body never runs under the tab bar /
+// zoom controls. Returns the computed cap.
 export function useMovablePanelMeasure({
   ref,
   headerRef,
   position,
-  stackBelowY,
   defaultCorner,
   docked,
   dockedCorner,
-  onSize,
 }: {
   ref: RefObject<HTMLDivElement | null>;
   headerRef: RefObject<HTMLDivElement | null>;
   position: MovablePanelProps['position'];
-  stackBelowY: MovablePanelProps['stackBelowY'];
   defaultCorner: MovablePanelProps['defaultCorner'];
   docked: boolean;
   dockedCorner: MovablePanelProps['dockedCorner'];
-  onSize: MovablePanelProps['onSize'];
 }): number | null {
   // Max height for the panel body so it never extends below the viewport.
   // Recomputed on mount, on resize, and whenever the panel's position
-  // changes (drag end updates `position`; stackBelowY changes move it too).
+  // changes (drag end updates `position`).
   const [bodyMaxH, setBodyMaxH] = useState<number | null>(null);
 
   // Constrain panel body to the remaining viewport space below its header.
@@ -92,38 +87,9 @@ export function useMovablePanelMeasure({
       window.removeEventListener('resize', compute);
       ro?.disconnect();
     };
-    // Re-measure after drag (position changes) or dynamic stacking
-    // (stackBelowY changes). The two refs are stable; listed to satisfy
-    // exhaustive-deps now they're props of this hook.
-  }, [position, stackBelowY, defaultCorner, docked, dockedCorner, ref, headerRef]);
-
-  // Publish the panel's bounding box upward whenever it changes
-  // (the Palette uses this so the Comments / AI panels can stack below).
-  // Cheap when no caller subscribes: the observer just never fires
-  // a callback if `onSize` is undefined.
-  useEffect(() => {
-    if (!onSize) return;
-    const node = ref.current;
-    if (!node) return;
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      const rect = entry.contentRect;
-      // offsetTop + offsetHeight gives the bottom edge in the
-      // offsetParent's coordinate space. Both the Palette and the
-      // stacked Editor share the same offsetParent (Canvas's main
-      // element), so handing this value back as `stackBelowY` lets
-      // the lower panel align below regardless of the upper panel's
-      // own top-utility class.
-      onSize({
-        width: rect.width,
-        height: rect.height,
-        bottomY: node.offsetTop + node.offsetHeight,
-      });
-    });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [onSize, ref]);
+    // Re-measure after drag (position changes). The two refs are stable;
+    // listed to satisfy exhaustive-deps now they're props of this hook.
+  }, [position, defaultCorner, docked, dockedCorner, ref, headerRef]);
 
   return bodyMaxH;
 }

@@ -2,14 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { PLAN_TOUR_RELAUNCH_EVENT } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { hasTourPending } from '@/lib/tour-pending';
-import { resolvePanelLayout } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { PLAN_TOUR_STEPS, planTourStepTelemetryType, type PlanTourApi } from './plan-tour-steps';
 import { PlanTourArt } from './PlanTourArt';
@@ -32,12 +30,9 @@ const PLAN_TOUR_COPY = {
 // shared stage; the tour content they show is made and taken away by usePlanTourContent.
 export function PlanTourHost() {
   const ctx = useEditorContext();
-  const isMobile = useIsMobileViewport();
-  const toolbar = resolvePanelLayout(ctx.userPreferences ?? {}, { mobile: isMobile }) === 'toolbar';
   const content = ctx.planTour;
 
   const apiRef = useLatest<PlanTourApi>({
-    toolbar,
     placeBoard: async () => {
       const id = content.ensureBoard(ctx.getViewportCenter());
       if (id) await waitForSelector(`[data-element-id="${id}"]`, 2000);

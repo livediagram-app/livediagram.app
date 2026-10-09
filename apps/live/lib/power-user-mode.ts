@@ -5,7 +5,6 @@ import { debugLog } from '@/lib/debug-log';
 // written once when the mode switches on. Switching off puts back the values
 // the preset replaced, for every setting still holding what the preset wrote.
 export const POWER_USER_PRESET = {
-  panelLayout: { panelLayout: 'toolbar' },
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },

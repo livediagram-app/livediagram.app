@@ -5,7 +5,7 @@ import {
   isPowerUserMode,
   setPowerUserMode,
 } from './power-user-mode';
-import { withPanelLayout, type UserPreferences } from './user-preferences';
+import type { UserPreferences } from './user-preferences';
 
 // Power user mode (docs/specs/007-editor/power-user-mode.md): a preset applied once on
 // switch-on, and a switch-off that restores only the settings left untouched.
@@ -15,10 +15,9 @@ const off = (prefs: UserPreferences) => setPowerUserMode(prefs, false);
 
 describe('setPowerUserMode on', () => {
   it('writes every recommended value and marks the mode on', () => {
-    const next = on({ panelLayout: 'floating', aiSuggestedPrompts: true, panelOpacity: 0.6 });
+    const next = on({ aiSuggestedPrompts: true, panelOpacity: 0.6 });
     expect(next).toMatchObject({
       powerUserMode: true,
-      panelLayout: 'toolbar',
       alignmentGuides: true,
       autoRebindArrows: true,
       tourSeen: true,
@@ -35,11 +34,7 @@ describe('setPowerUserMode on', () => {
   });
 
   it('records the values before and after, per preset setting', () => {
-    const next = on({ panelLayout: 'floating', alignmentGuides: false });
-    expect(next.powerUserBaseline?.panelLayout).toEqual({
-      before: { panelLayout: 'floating' },
-      applied: { panelLayout: 'toolbar' },
-    });
+    const next = on({ alignmentGuides: false });
     expect(next.powerUserBaseline?.alignmentGuides).toEqual({
       before: { alignmentGuides: false },
       applied: { alignmentGuides: true },
@@ -61,7 +56,6 @@ describe('setPowerUserMode on', () => {
 describe('setPowerUserMode off', () => {
   it('restores every setting the user did not touch', () => {
     const before: UserPreferences = {
-      panelLayout: 'floating',
       alignmentGuides: false,
       aiSuggestedPrompts: true,
       tourSeen: false,
@@ -90,13 +84,6 @@ describe('setPowerUserMode off', () => {
     expect(restored).toContain('alignmentGuides');
   });
 
-  it('keeps a layout the user picked while the mode was on', () => {
-    const floating = withPanelLayout(on({ panelLayout: 'floating' }), 'floating');
-    const { prefs, kept } = off(floating);
-    expect(kept).toContain('panelLayout');
-    expect(prefs.panelLayout).toBe('floating');
-  });
-
   it('treats a setting changed and changed back as untouched', () => {
     const roundTrip = { ...on({ alignmentGuides: false }), alignmentGuides: false };
     const back = { ...roundTrip, alignmentGuides: true };
@@ -111,8 +98,8 @@ describe('setPowerUserMode off', () => {
   });
 
   it('only clears the flag when there is no baseline', () => {
-    const { prefs, restored, kept } = off({ powerUserMode: true, panelLayout: 'toolbar' });
-    expect(prefs).toEqual({ panelLayout: 'toolbar' });
+    const { prefs, restored, kept } = off({ powerUserMode: true, alignmentGuides: true });
+    expect(prefs).toEqual({ alignmentGuides: true });
     expect(restored).toEqual([]);
     expect(kept).toEqual([]);
   });
@@ -123,7 +110,7 @@ describe('setPowerUserMode off', () => {
   });
 
   it('survives the JSON round trip the preferences blob takes', () => {
-    const before: UserPreferences = { panelLayout: 'floating', aiSuggestedPrompts: true };
+    const before: UserPreferences = { alignmentGuides: false, aiSuggestedPrompts: true };
     const stored = JSON.parse(JSON.stringify(on(before))) as UserPreferences;
     expect(off(stored).prefs).toEqual(before);
   });

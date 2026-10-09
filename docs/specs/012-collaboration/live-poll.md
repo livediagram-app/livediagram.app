@@ -171,11 +171,11 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
    Collaborate / Layers: draggable, resettable, and dockable
-   into a corner stack, homed **top-right directly under the Palette**
+   into a corner stack, homed **top-right**
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the
    only panel that isn't always present — it joins and leaves its corner
-   stack with the poll, in both panel layouts and on a phone. The Vote
+   stack with the poll, on a desktop and a phone alike. The Vote
    panel follows the same rule. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports

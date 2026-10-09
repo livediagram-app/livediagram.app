@@ -40,23 +40,18 @@ where it is and changes only how the next mark is made.
 ## The mode switch
 
 - **Placement:**
-  - **Toolbar layout:** directly beside the menu (hamburger) button, in its
-    card at the top left ([Toolbar layout](toolbar-layout.md)).
+  - Directly beside the menu (hamburger) button, in its card at the top left
+    ([Toolbar layout](toolbar-layout.md)), icon-only.
   - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
     button alone. A phone switches mode from the tab menu's **Opens in** (below), which switches
     the chooser too; Shift+D needs a keyboard. The tour's Diagram & Draw step is skipped there.
-  - **Floating layout:** in the **Palette** panel's title row, beside its help
-    and minimise buttons, **labelled** (the mode's name beside its icon,
-    the header has the room). The Palette stays in Draw mode, showing Draw's
-    tools ([Draw mode](../023-draw-mode/draw-mode.md#what-a-whiteboard-shows)).
-  - Both stay up in Draw mode, so the switch never moves when the mode
+  - It stays up in Draw mode, so the switch never moves when the mode
     changes.
   - Not in the tab bar or the Explorer.
 - **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
-  current mode's icon and a chevron, with its name in the Floating layout, on the faint tint the
+  current mode's icon and a chevron, on the faint tint the
   editor's menu-like controls use. A press opens a menu **below** it, hanging
-  from the edge with room (left beside the menu button, right in the
-  Palette header), with one compact row per mode at the palette dropdowns' size: its
+  from its left edge, beside the menu button, with one compact row per mode at the palette dropdowns' size: its
   icon and name, a check on the current mode and **Shift+D** on the row the
   key leads to. Choosing a row switches and closes the menu; Escape or a
   press outside closes it.
@@ -238,8 +233,7 @@ holds.
   Behaviours group browser, Media's and Components' collapsed groups); it
   renders whatever tiles the layout hands it. A category with no body of its
   own, such as Popular, is a tile grid.
-- **Every surface reads the layout:** the floating Palette, the Toolbar
-  layout's strip (the Toolbar layout's).
+- **Every surface reads the layout:** the Toolbar strip and its More popover.
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
@@ -339,7 +333,7 @@ actions, snapping, export, laying content out into pages, page slides) is
 - **Centred in the viewport:** entering Illustrate mode or opening a tab in it
   fits a square of the long side around the first page
   (`illustratePageFitBox(page)`), so either orientation fits at the same zoom and
-  turning it never moves the view. Where the Toolbar layout's strip lies over
+  turning it never moves the view. Where the Toolbar strip lies over
   the canvas's top edge, the page centres in the band below it
   (`computeFitBelow`).
 - **Only the pages are drawn on.** A draw, tap-to-place or double-click-to-add
@@ -366,7 +360,7 @@ something on it asks first:
 - **A tab with articles** asks Turn Articles Into Pages? (Convert, Keep as Articles, Cancel;
   [Article pages](article-pages.md#leaving-illustrate)).
 - **A tab with content but no articles** asks a lighter question: a small card hanging from the
-  mode switch that asked (the Palette header's chip or the Toolbar layout's), pointing at it, below
+  mode switch that asked, beside the menu button, pointing at it, below
   it or above when there is no room below. A warning glyph in an amber disc, the title "Switch to
   <Mode>?" and one sentence: "<Mode> mode doesn't show pages. Changes you make there may not fit
   back onto your pages when you return to Illustrate." Its buttons are **Cancel** and **Switch** (the

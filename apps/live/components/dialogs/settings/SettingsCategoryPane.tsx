@@ -153,35 +153,19 @@ export function SettingsCategoryPane({
             }}
           />
         );
-      case 'choice': {
-        // Desktop-only options stay visible on a phone (so the choice reads
-        // the same everywhere) but can't be picked, and a note says why.
-        const desktopOnly = row.options.filter((o) => o.desktopOnly);
-        const limited = isMobile && desktopOnly.length > 0;
+      case 'choice':
         return (
           <SettingsChoiceRow
             row={row}
-            options={row.options.map((o) => ({
-              ...o,
-              disabled: inert || (isMobile && o.desktopOnly),
-            }))}
-            notice={
-              inert
-                ? row.desktopOnly
-                : limited
-                  ? `${joinLabels(desktopOnly.map((o) => o.label))} ${
-                      desktopOnly.length === 1 ? 'is' : 'are'
-                    } desktop only. On a phone it uses the Toolbar layout instead.`
-                  : undefined
-            }
-            value={row.read(settings, { mobile: isMobile })}
+            options={row.options.map((o) => ({ ...o, disabled: inert }))}
+            notice={inert ? row.desktopOnly : undefined}
+            value={row.read(settings)}
             onChange={(next) => {
               track(row.event.category, 'Changed', choiceTelemetryType(row.event.changed, next));
               onChange(row.write(settings, next));
             }}
           />
         );
-      }
       case 'slider':
         return (
           <SettingsSliderRow
@@ -316,10 +300,4 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
       onChange={(next) => set(next as AppearanceSetting)}
     />
   );
-}
-
-// "Floating", "Floating and Toolbar", "A, B and C".
-function joinLabels(labels: string[]): string {
-  if (labels.length < 2) return labels[0] ?? '';
-  return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
 }

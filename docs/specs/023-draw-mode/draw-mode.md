@@ -53,51 +53,20 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
-- **Any tab:** the mode switch (the Palette's title row, or beside the Toolbar layout's menu button) turns any general
+- **Any tab:** the mode switch (beside the menu button) turns any general
   tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
-A whiteboard trades the palette for Draw's own tools, in the place the
-palette holds in the layout in force:
+A whiteboard trades the palette for Draw's own tools: one **floating dock**, centred across the
+**top** of the canvas by default (see [Where the dock sits](#where-the-dock-sits)), like Microsoft
+Whiteboard's. It is the strip's twin: the **same height** as the Diagram strip (its buttons the
+strip's tile size) and drawn at the **toolbar UI scale** ([UI scale](../007-editor/ui-scale.md)), so
+switching modes never changes the size of the bar at the top. Its flyouts are not scaled: they open
+at their design size, like every menu opened from a scaled surface. Every flyout has a **tip**
+pointing at the button that opened it, on the edge facing the dock, over its button.
 
-- **Floating layout: the Palette panel.** The same floating **Palette**
-  panel stays, where it was, with its title row (the editor mode switch,
-  help, minimise) and its drag, docking and collapse. Its body swaps the
-  palette's pickers and catalogue for Draw's groups, **in the palette's own
-  look**, so the panel reads the same in both modes:
-  - **Drawing tools** and **Shapes** are sections with the palette's small
-    capitals headings, each a **three-column grid of tiles**: the glyph over
-    a short caption (Select; Marker 1, 2, 3; Text; Path; Eraser; each shape
-    by name), the tool in hand
-    tinted as the palette tints its chosen tile. No separators; keys show in
-    the tooltips, not on the tiles.
-  - **Settings** is the panel's **footer**: one full-width row, the cog and
-    "Settings", set off by a rule, as the palette's Reorder / Edit row is.
-  - **No Shapes menu:** the Shapes section shows the pinned shapes followed
-    by the items the dock's Shapes menu holds (its Recent and Most used
-    shapes), each a tile that arms its shape. Pinning stays the dock's (a
-    pinned tile's menu still offers Unpin).
-  - A flyout (a pen's settings, the eraser, a shape slot's menu, Settings)
-    opens **beside the panel**, on the side with room, level with its tile,
-    so the panel never moves. The dock position setting does not apply.
-- **Toolbar layout: the dock.** One **floating dock**, centred across the
-  **top** of the canvas by default (see
-  [Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
-  It is the strip's twin: the **same height** as the Diagram strip (its
-  buttons the strip's tile size) and drawn at the **toolbar UI scale**
-  ([UI scale](../007-editor/ui-scale.md)), so switching modes never changes
-  the size of the bar at the top. Its flyouts are not scaled: they open at
-  their design size, like every menu opened from a scaled surface.
-
-The groups, their buttons, flyouts, keys and behaviour below are the same
-in both; "the dock" below means either form unless it says otherwise. Every flyout has a
-**tip** pointing at the button that opened it: on the dock, on the edge facing
-the dock, over its button; beside the panel, on the edge facing the panel,
-level with its tile.
-
-- **Hidden in Draw mode:** the palette's catalogue (the floating
-  Palette shows Draw's groups instead) and the Toolbar layout's strip, the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
+- **Hidden in Draw mode:** the Toolbar strip (the dock replaces it), the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
@@ -211,11 +180,8 @@ level with its tile.
 
 ## Where the dock sits
 
-The Toolbar layout's dock only; the Floating layout's Draw tools live in
-the Palette panel, wherever the user put it.
-
 - **Top by default**, centred across the top of the canvas, where the
-  Toolbar layout's strip sits in Diagram mode
+  Toolbar strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
 - **Bottom by choice**: Settings, **Editor › Draw** (the sub-category for
@@ -236,9 +202,9 @@ the Palette panel, wherever the user put it.
     the same clearance on both sides;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit
-    **beneath** it, as they sit beneath the Toolbar layout's strip;
+    **beneath** it, as they sit beneath the Toolbar strip;
   - panels docked in a top corner move **below** it when it would reach
-    into them, as they do for the Toolbar layout's strip.
+    into them, as they do for the Toolbar strip.
 - **At the bottom:** its flyouts and hint open **above** it, and it is lifted
   above the bottom-right controls (history, layers, zoom) until the window is
   wide enough for both on one line.
@@ -843,7 +809,7 @@ box selected, typing a character still edits it rather than switching tool;
 any other selection (a shape just drawn, a line, a stroke) leaves the key to
 the dock, so R then O draws a rectangle and then an ellipse.
 View-role visitors get V and Escape only. Each dock button and Shapes option
-with a key shows it small in its bottom-right corner, as the Toolbar layout's strip does (a tool bar is
+with a key shows it small in its bottom-right corner, as the Toolbar strip does (a tool bar is
 where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 ## Accessibility

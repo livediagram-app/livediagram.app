@@ -184,20 +184,10 @@ describe('EditorModeSwitch chip', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
-  it('opens downward, from the left edge unless asked for the right', () => {
+  it('opens downward, from the left edge', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    expect(screen.getByRole('menu').className).toMatch(/top-full .*left-0/);
-    cleanup();
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <EditorModeSwitch align="right" />
-      </EditorModeProvider>,
-    );
-    fireEvent.click(chip());
-    expect(screen.getByRole('menu').className).toMatch(/top-full .*right-0/);
+    expect(screen.getByRole('menu').className).toMatch(/left-0 top-full/);
   });
 });
 
@@ -209,24 +199,6 @@ describe('EditorModeSwitch slot', () => {
       cleanup();
     }
     expect(widths.size).toBe(1);
-  });
-
-  // The Floating layout's Palette header: the mode's name beside its icon, one width for both.
-  it('names the mode when labelled, at one fixed width', () => {
-    const labelled = (mode: EditorMode) =>
-      render(
-        <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
-          <EditorModeSwitch labelled />
-        </EditorModeProvider>,
-      );
-    const diagram = labelled('diagram');
-    expect(chip().textContent).toBe('Diagram');
-    const width = slot(diagram.container)!.className;
-    cleanup();
-    const draw = labelled('draw');
-    expect(chip().textContent).toBe('Draw');
-    expect(slot(draw.container)!.className).toBe(width);
-    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
   });
 
   it('renders nothing outside an editor', () => {

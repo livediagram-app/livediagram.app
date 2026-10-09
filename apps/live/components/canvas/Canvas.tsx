@@ -179,14 +179,6 @@ function CanvasView(props: CanvasProps) {
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
-  // Palette's bottom-Y (offsetTop + offsetHeight in offsetParent
-  // coords). The Comments + AI panels use this to stack below the
-  // Palette as it changes height; MovablePanel publishes it via onSize.
-  // The bottom-Y (vs height alone) makes the alignment robust to the
-  // Palette's own top-utility class, so the stacked panel lands at
-  // paletteBottomY + 16 regardless of whether the palette pins to
-  // top-2 (mobile) or top-4 (desktop).
-  const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
   // Which quick-connect ring (if any) is open. Self-contained state + reset /
   // outside-close effects live in useQuickRing.
   // The selection lives in the store (docs/specs/008-canvas/blueprints/selection-store.md): the canvas
@@ -1036,8 +1028,6 @@ function CanvasView(props: CanvasProps) {
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         wrapperRef={wrapperRef}
-        paletteBottomY={paletteBottomY}
-        setPaletteBottomY={setPaletteBottomY}
         activeDockPanel={activeDockPanel}
         setActiveDockPanel={setActiveDockPanel}
         activeDockAnchor={activeDockAnchor}

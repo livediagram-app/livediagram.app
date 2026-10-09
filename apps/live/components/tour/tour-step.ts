@@ -33,10 +33,6 @@ export type TourStepOf<Api> = {
   // Runs on entering the step, anchored or not (an anchorless outro can tidy up here).
   prepare?: (api: Api) => void | Promise<void>;
   cleanup?: (api: Api) => void;
-  // Overrides for the Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md), merged in by
-  // the tour's step filter: a step whose chrome moves there (the Explorer behind its
-  // menu button) retells its copy and widens its highlight to match.
-  toolbar?: Partial<Pick<TourStepOf<Api>, 'body' | 'alsoHighlight'>>;
 };
 
 // Whether a step points at something (otherwise it is a centred card).

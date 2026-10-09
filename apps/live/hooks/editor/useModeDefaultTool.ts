@@ -7,7 +7,7 @@
 // (docs/specs/026-plan/plan-mode.md): either falls back to Hand if it is ever the tool there.
 import { useEffect, useRef } from 'react';
 import type { EditorMode } from '@livediagram/document';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@/lib/responsive';
 
 export const PLAN_LEFT_OUT_TOOLS: ReadonlySet<string> = new Set(['eraser', 'format']);

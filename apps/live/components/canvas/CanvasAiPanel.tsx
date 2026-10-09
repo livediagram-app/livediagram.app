@@ -13,13 +13,11 @@ import type { CanvasProps } from './Canvas.types';
 export function CanvasAiPanel({
   aiPanel,
   wiring,
-  stackBelowY,
   tabName,
   settings,
 }: {
   aiPanel: NonNullable<CanvasProps['aiPanel']>;
   wiring: ReturnType<ReturnType<typeof useCornerDocking>['panelWiringFor']>;
-  stackBelowY: number | undefined;
   tabName: string;
   settings: UserPreferences;
 }) {
@@ -28,7 +26,6 @@ export function CanvasAiPanel({
       title="AI Assistant"
       position={wiring.position}
       defaultCorner="top-right-stacked"
-      stackBelowY={stackBelowY}
       width="w-auto sm:w-64"
       collapsible
       onMoveTo={aiPanel.onMove}

@@ -162,7 +162,7 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   keeps it); else on the article page
   under the pointer (a moment's grace after the pointer leaves, so it can cross to the card). A
   control used while hovering acts on the article's own selection and puts the caret back in it.
-- **Look**: the Toolbar layout's card exactly (`toolbar-surface.ts`): the same surface, 36 px
+- **Look**: the Toolbar strip's card exactly (`toolbar-surface.ts`): the same surface, 36 px
   controls, hairline dividers, and the Style menu's trigger in the brand tint of the palette's
   pickers, so it reads as the same product as the panels around it.
 - **Controls**, left to right, each with a tooltip naming it and its shortcut, pressed state shown

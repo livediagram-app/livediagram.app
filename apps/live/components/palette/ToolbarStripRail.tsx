@@ -65,7 +65,7 @@ export function ToolbarStripRail({
   const railRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number | null>(null);
   // Off for the first measured frame, so the strip doesn't animate itself
-  // open on page load (the same gate PaletteTabBar uses for its height).
+  // open on page load (the same gate the category picker uses).
   const [animate, setAnimate] = useState(false);
   // Tiles pop in only once the category has CHANGED: the first set is just
   // there, like the rest of the chrome. Derived during render (React's

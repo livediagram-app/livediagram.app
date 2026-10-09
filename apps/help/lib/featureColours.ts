@@ -195,7 +195,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'auto-attach-arrows': '#10b981',
   'alignment-guides': '#22c55e',
   'toolbar-layout': '#0ea5e9',
-  'reset-palette-position': '#475569',
   // Explorer section guides
   'list-and-card-views': '#0ea5e9',
   timeline: '#8b5cf6',

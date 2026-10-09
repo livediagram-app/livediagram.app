@@ -1,5 +1,6 @@
 // Scenes for the Toolbar Layout article (docs/specs/007-editor/toolbar-layout.md): the strip across the top
-// of the canvas, and More opening a category's full palette under itself.
+// of the canvas, and More opening a category's full palette under itself. `Strip` and `MenuCard`
+// are exported so other scenes draw the editor's top row the same way.
 // Composed only from the shared primitives, like every other help scene.
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene, Tile } from './primitives';
@@ -71,8 +72,18 @@ function Ellipsis({ x, y }: { x: number; y: number }) {
   );
 }
 
-// The strip itself, top-left corner at (x, y). Shared by both scenes.
-function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?: boolean }) {
+/** The palette strip, top-left corner at (x, y), 304 wide and 32 tall. */
+export function Strip({
+  x,
+  y,
+  moreActive = false,
+  category = 'Shapes',
+}: {
+  x: number;
+  y: number;
+  moreActive?: boolean;
+  category?: string;
+}) {
   const tiles = ['square', 'circle', 'diamond', 'text', 'arrow'] as const;
   return (
     <g>
@@ -93,7 +104,7 @@ function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?
       <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       <Pill x={x + 47} y={y + 4} w={72}>
         <Label x={x + 55} y={y + 17} size={10} weight={600} className="fill-brand-700">
-          Shapes
+          {category}
         </Label>
       </Pill>
       <path d={`M${x + 124} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
@@ -125,31 +136,48 @@ function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?
   );
 }
 
-/** The whole layout: the menu button and the editor mode switch top-left, the
- *  strip across the top (ending in Search), and the Floating layout's bottom
- *  row kept as it was. */
-export function ToolbarLayoutOverview() {
+/** The top-left card, its top-left corner at (x, y): the menu button (☰) and, unless `menuOnly`
+ *  (a phone), the editor mode switch beside it. 62 wide (34 menu-only) and 32 tall. */
+export function MenuCard({ x, y, menuOnly = false }: { x: number; y: number; menuOnly?: boolean }) {
   return (
-    <Scene w={420} h={200}>
-      {/* The top-left card: the menu button and the editor mode switch. */}
+    <g>
       <rect
-        x={8}
-        y={16}
-        width={62}
+        x={x}
+        y={y}
+        width={menuOnly ? 34 : 62}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       <path
-        d="M16 26h14M16 32h14M16 38h14"
+        d={`M${x + 8} ${y + 10}h14M${x + 8} ${y + 16}h14M${x + 8} ${y + 22}h14`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"
       />
-      <Pill x={36} y={20} w={30}>
-        <rect x={41} y={27} width={10} height={10} rx={2} className="fill-none stroke-brand-600" />
-      </Pill>
+      {!menuOnly && (
+        <Pill x={x + 28} y={y + 4} w={30}>
+          <rect
+            x={x + 33}
+            y={y + 11}
+            width={10}
+            height={10}
+            rx={2}
+            className="fill-none stroke-brand-600"
+          />
+        </Pill>
+      )}
+    </g>
+  );
+}
+
+/** The editor's top row and bottom row: the menu button and the editor mode switch top-left,
+ *  the strip across the top (ending in Search), and Layers beside the zoom bottom-right. */
+export function ToolbarLayoutOverview() {
+  return (
+    <Scene w={420} h={200}>
+      <MenuCard x={8} y={16} />
       <Strip x={78} y={16} />
       <Label x={39} y={62} size={10} anchor="middle" tone="muted">
         Explorer, mode
@@ -170,7 +198,7 @@ export function ToolbarLayoutOverview() {
       <Label x={366} y={78} size={10} anchor="middle" tone="muted">
         Search
       </Label>
-      {/* The bottom row, unchanged from Floating: Layers, then zoom. */}
+      {/* The bottom row: Layers, then zoom. */}
       <Tile x={290} y={158} size={26}>
         <path
           d="M-6 -1 L0 -4 L6 -1 L0 2 Z M-6 3 L0 6 L6 3"

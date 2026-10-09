@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="AI Assistance" description="An optional assistant that answers questions about and tidies the diagram on the active tab." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("ai")}>
 
-AI Assistance is an optional floating panel that works alongside you on the canvas. It can answer questions about what is on the tab and tidy up an existing diagram, through two modes in one panel: **Ask** and **Clean**.
+AI Assistance is an optional panel that works alongside you on the canvas. It can answer questions about what is on the tab and tidy up an existing diagram, through two modes in one panel: **Ask** and **Clean**.
 
 <Figure caption="The AI Assistant panel: Ask and Clean across the top, what the request is about, and one prompt box.">
   <AiPanel />
@@ -27,11 +27,11 @@ AI Assistance is off by default and only exists when the people running livediag
 <Step n={1}>Open **Settings** from the tab bar and choose the **AI Tools** category.</Step>
 
 <Step n={2}>
-  Switch on **AI Assistant**. The panel appears straight away, floating at the top right of the
+  Switch on **AI Assistant**. The panel appears straight away, docked at the top right of the
   canvas.
 </Step>
 
-The panel is an ordinary floating panel: drag its header to move it, or collapse it to its title bar when you want the space back. To remove it, switch **AI Assistant** off again. The same category has a **Suggested Prompts** switch, which shows a row of one-click starter prompts under the mode buttons (on by default).
+The panel is an ordinary corner panel: drag its header to move it, or collapse it to its title bar when you want the space back. To remove it, switch **AI Assistant** off again. The same category has a **Suggested Prompts** switch, which shows a row of one-click starter prompts under the mode buttons (on by default).
 
 The panel is not shown in view-only sessions, or while [zen mode](/help/tools/zen-mode/) hides the chrome.
 

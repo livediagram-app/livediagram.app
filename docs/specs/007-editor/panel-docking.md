@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's floating panels (Palette, Explorer, Comments, AI, Minimap) each
+The editor's corner panels (AI, Minimap, Poll, Vote and the tool panels) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -8,21 +8,20 @@ that layout **persist in the browser** so a reload restores their arrangement.
 
 ## Why
 
-Corners are fixed today: the Palette is always top-right, the Explorer always top-left.
-A left-handed user, or one whose content lives on the right, can drag a panel away but it
+Without docking, corners are fixed: the AI panel is always top-right, the Minimap always
+bottom-left. A left-handed user, or one whose content lives on the right, can drag a panel away but it
 snaps back on reload and there is no guidance toward a tidy resting spot. Letting people
 park each panel where it suits them — and remembering it — makes the chrome feel like
 theirs without adding a settings screen.
 
 ## Scope
 
-- **Both panel layouts.** The corner stacks apply in Floating and in Toolbar
-  ([Toolbar layout](toolbar-layout.md)), and so on a phone, which always uses Toolbar. In Toolbar the
-  Palette is the strip and the Explorer, Layers and Collaborate are popovers over
-  their buttons, so they take no corner. **Zen mode** ([Zen mode](zen-mode.md)) still hides
+- **Every device.** The corner stacks apply on a desktop and a phone alike
+  ([Toolbar layout](toolbar-layout.md)). The Palette is the strip and the Explorer, Layers and
+  Collaborate are popovers over their buttons, so they take no corner. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** Palette, Explorer, Comments, AI, Minimap — every
-  panel built on the shared `MovablePanel`.
+- **Participating panels:** AI, Minimap, Poll, Vote, and the tool panels (Avatar, Laser,
+  Spotlight, Eraser, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
@@ -47,14 +46,14 @@ When the user has never arranged panels, the corners match today's defaults:
 
 | Corner         | Panels (top → bottom)        |
 | -------------- | ---------------------------- |
-| `top-left`     | Explorer                     |
-| `top-right`    | Palette, Comments, AI        |
+| `top-left`     | _(empty; the menu button)_   |
+| `top-right`    | Vote, Poll, AI, tool panels  |
 | `bottom-left`  | Minimap                      |
 | `bottom-right` | _(empty; zoom controls pin)_ |
 
-This preserves the existing arrangement, including Comments / AI stacking beneath the
-Palette — that bespoke `stackBelowY` stacking ([Canvas and palette](../008-canvas/canvas-and-palette.md)) is now just the general top-right
-stack with three members.
+The Palette, the Explorer and Layers were corner panels in the retired Floating layout
+([Toolbar layout](toolbar-layout.md#one-layout)). A stored layout that still names them is read
+like any unknown id: ignored.
 
 ## Dragging, snapping, and free placement
 
@@ -89,6 +88,14 @@ rather than a circle and let a diagonal slip of (4, 4) — 5.66px of real travel
 count as a click. The shared thing is the **predicate**, not just the number, since
 publishing only the constant would have left that split in place.
 
+## Collapse to banner
+
+A collapsible corner panel (the Map, the AI panel, the tool panels) has a **collapse button** in its
+header. It hides the body and leaves the title row in place as a banner, so the way back is always
+in view. Its glyph flips between a dash (collapse) and a plus (expand). A panel starts expanded on
+a desktop and collapsed on a phone, and stays as set until pressed again. A panel that is not
+collapsible has no such button.
+
 ## Persistence — device-local
 
 The layout is stored in **`localStorage` only**, under `livediagram:panel-layout:v1`, on
@@ -101,8 +108,8 @@ Shape:
 
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-// 'collaborate' is the merged Comments + Actions panel; 'layers' is
-// docs/specs/006-document/layers.md. Seven panels are NOT always available — they exist only while
+// 'collaborate' is the merged Comments + Actions panel, a popover over its
+// cluster button that takes no corner. Seven panels are NOT always available — they exist only while
 // their session tool / mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'poll' (docs/specs/012-collaboration/live-poll.md), 'vote'
 // (docs/specs/012-collaboration/session-tools.md), 'avatar' (docs/specs/008-canvas/avatar-mode.md, the Avatar-mode character sheet),
@@ -110,19 +117,17 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // (docs/specs/008-canvas/spotlight-panel.md, the light's look), 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush),
 // and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
 type PanelId =
-  | 'palette'
-  | 'explorer'
   | 'collaborate'
   | 'ai'
   | 'minimap'
-  | 'layers'
   | 'poll'
   | 'vote'
   | 'avatar'
   | 'laser'
   | 'spotlight'
   | 'eraser'
-  | 'format';
+  | 'format'
+  | 'slide-deck';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /
@@ -168,8 +173,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   and make the panel jump. Its siblings reflow into the gap. Optional drag-lifecycle
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
-  decision. The popover, `collapsible`, and `stackBelowY` paths are
-  untouched. The persisted corner/free placement only changes on pointer-up.
+  decision. The popover and `collapsible` paths are untouched. The persisted corner/free placement only changes on pointer-up.
 - **`apps/live/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
@@ -190,10 +194,8 @@ pair fits. Layout reads / reflows are silent.
 
 ## Relationship to other specs
 
-- [Canvas and palette](../008-canvas/canvas-and-palette.md) — the Palette / Explorer "Movable" behaviour: corner
-  is now user-choosable and the position **persists across reloads** (was "survives until
-  the page reloads"). Comments / AI stacking under the Palette is the general top-right
-  stack.
+- [Toolbar layout](toolbar-layout.md) — the Palette strip, the menu-button Explorer and the
+  cluster popovers, none of which take a corner.
 - [User preferences](user-preferences.md) — panel layout is intentionally a **separate,
   device-local** store, not part of the synced preferences blob.
 - [Minimap](../008-canvas/minimap.md) — the Minimap's default corner (bottom-left) and its position

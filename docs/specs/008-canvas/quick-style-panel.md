@@ -41,28 +41,22 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-The panel sits **on the left edge of the canvas, vertically centred**, in every layout: one gap
-(12 px) in from the canvas's left. The left is out of the way of the Palette, which lives on the
-right.
+The panel sits **on the left edge of the canvas, vertically centred**: one gap
+(12 px) in from the canvas's left, out of the way of the strip across the top.
 
-Each layout keeps its dress. In the Floating layout the panel wears the Palette's panel dress: the
-same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
-header with its title ("Quick style") and a help link. It is not draggable and has no collapse
-button of its own; it leaves when the selection does. In the Toolbar layout it is
-**compact** (no header, 234 px wide): the colour swatches draw a little smaller (20 px) but each
+It is **compact** (no header, 234 px wide), not draggable and with no collapse button of its own;
+it leaves when the selection does. The colour swatches draw a little smaller (20 px) but each
 still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), nine to a row with the
 targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
 rows change, nor when the editor mode changes: every colour row lays out on the same nine columns
 (the theme's seven and Ink in the first eight in Diagram mode, Ink and the eight hued stock colours
 in Draw mode, a Background row's seven in the first seven), a row of swatches never wraps and is never clipped (the
-width counts the swatches, their gaps, the padding and the border exactly). In the Floating layout
-with no Palette on screen it is 270 px, room for nine swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
-Floating, and a 1 px border a side.) The panel-opacity preference
-([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
+width counts the targets, their gaps, 8 px of padding a side and a 1 px border a side, exactly). The panel-opacity preference
+([User preferences](../007-editor/user-preferences.md)) fades it.
 
 ### Collisions
 
-Never over the Palette or the other floating chrome (panels, popovers, the Toolbar strip and
+Never over the other chrome (panels, popovers, the Toolbar strip and
 its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
 takes the first that overlaps none of them:
 
@@ -326,7 +320,7 @@ element of the same kind you draw.
   silently restyle content the user did not draw.
 - **Per document, on this device.** Memory is kept in the browser (`localStorage`), keyed by document. It
   is not synced, not in the document, and not part of [User preferences](../007-editor/user-preferences.md):
-  it is a working habit for one document's notation, like the panel layout is a habit for one screen.
+  it is a working habit for one document's notation, like the panel placements are a habit for one screen.
 
 ## Clear styles
 

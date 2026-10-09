@@ -77,8 +77,8 @@ one or two short sentences per step; the exact strings live in `apps/live/compon
 - Back from a step goes to the step before and shows it again as it was (the example cards stay; the moved
   card stays moved). Leaving a step closes what it opened (the item panel, the category picker).
 - A step whose target never appears is skipped, as in the welcome tour; a step list filtered up front keeps the
-  count honest. The steps are the same in both panel layouts and on a phone (the palette step uses the
-  Toolbar strip's picker there).
+  count honest. The steps are the same on a desktop and a phone (the palette step uses the Toolbar strip's
+  picker).
 - If the tour can no longer run where it started (the person's edit rights go, they leave Plan, or they open
   another tab) it ends as skipped and takes its content away.
 

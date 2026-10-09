@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
 | `apps/live/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
 | `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
-| `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: docked (Palette dress) or compact by layout                                                           |
+| `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | `apps/live/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/live/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, prune, caps), parse                                     |
 | `apps/live/lib/swatch-override-prefs.ts`                                    | Prunes a deleted custom theme's overrides from the preferences blob                                              |
@@ -35,20 +35,19 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term             | Identifier                                                                                  | Meaning                                                                                       |
-| ---------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Quick swatch     | `QuickSwatch = { slot, color, name }`                                                       | One colour option                                                                             |
-| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill' \| 'text'`                                            | Which row (Stroke / Background / Text colour) it belongs to                                   |
-| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                                               | The stable id of a colour across themes                                                       |
-| Swatch binding   | `strokeSwatch`, `fillSwatch`, `textSwatch` on the element                                   | The slot a colour was picked from; absent = unbound                                           |
-| Section          | `QuickSectionId`                                                                            | `stroke`, `background`, `textColour`, `width`, `style`, `textAlign`, `iconAlign`              |
-| Style target     | `isQuickStyleTarget(el)`                                                                    | An unlocked `shape`, `arrow` or `text`                                                        |
-| Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                           | `shape:<ShapeKind>` for shapes, `arrow` for arrows, `text` for text elements (D53)            |
-| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                              | Per kind, the last value chosen for each memorable field                                      |
-| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                                | The fields memory records and applies (below)                                                 |
-| Placement        | `placeQuickStylePanel(input) => { left, top }`                                              | Where the panel sits, in viewport px                                                          |
-| Swatch override  | `SwatchOverrides = { stroke?, fill?, text? }`, each `Partial<Record<QuickSwatchSlot, Hex>>` | A custom colour replacing a slot's theme colour in the row                                    |
-| Row density      | `density: 'compact' \| 'roomy'`                                                             | Compact (Toolbar): 20 px swatches in 24 px targets, touching; roomy (Floating): 24 px, spread |
+| Term             | Identifier                                                                                  | Meaning                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Quick swatch     | `QuickSwatch = { slot, color, name }`                                                       | One colour option                                                                  |
+| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill' \| 'text'`                                            | Which row (Stroke / Background / Text colour) it belongs to                        |
+| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                                               | The stable id of a colour across themes                                            |
+| Swatch binding   | `strokeSwatch`, `fillSwatch`, `textSwatch` on the element                                   | The slot a colour was picked from; absent = unbound                                |
+| Section          | `QuickSectionId`                                                                            | `stroke`, `background`, `textColour`, `width`, `style`, `textAlign`, `iconAlign`   |
+| Style target     | `isQuickStyleTarget(el)`                                                                    | An unlocked `shape`, `arrow` or `text`                                             |
+| Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                           | `shape:<ShapeKind>` for shapes, `arrow` for arrows, `text` for text elements (D53) |
+| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                              | Per kind, the last value chosen for each memorable field                           |
+| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                                | The fields memory records and applies (below)                                      |
+| Placement        | `placeQuickStylePanel(input) => { left, top }`                                              | Where the panel sits, in viewport px                                               |
+| Swatch override  | `SwatchOverrides = { stroke?, fill?, text? }`, each `Partial<Record<QuickSwatchSlot, Hex>>` | A custom colour replacing a slot's theme colour in the row                         |
 
 Banned synonyms: "format panel" (that is the painter's panel), "editor panel" (the removed one),
 "preset" for a swatch, "default style" for memory.
@@ -317,20 +316,18 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 4. A candidate is valid when it lies inside `inner` and intersects no obstacle inflated by `gap`.
    The first valid wins; none → (a) with `fallback: true` (logged).
 
-`useQuickStylePlacement(panelRef, active, layout) => { left, top, width } | null`
-measures `main[data-canvas-a11y-root]` (area), the panel, the Palette
-`[data-tour-id="palette"][data-floating-panel]` (Floating only, for its width) and obstacles
+`useQuickStylePlacement(panelRef, active) => { left, top } | null`
+measures `main[data-canvas-a11y-root]` (area), the panel and obstacles
 `[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel], [data-zoom-cluster]` with a
 non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
-obstacles, so a collapsing Palette is followed), a `MutationObserver` on the anchor's
-`style` / `class` (so a dragged Palette is followed live), `resize`, `pointerup` / `keyup`
+obstacles, so a resizing panel is followed), `resize`, `pointerup` / `keyup`
 (capture), `transitionend` on the panel or an obstacle (one elsewhere on the canvas is ignored), and
 `livediagram:panel-layout-changed`; coalesced to one run per
 animation frame. Each run observes only the elements it has not seen before and unobserves the ones
 that left (`observe()` always delivers an initial notification, so re-observing every run would
-re-run it every frame); the `MutationObserver` re-attaches only when the anchor changes. Still
-chrome means no runs. The panel's height is its natural height (`[data-quick-style-body]` scroll
-height). Until the first measure the panel
+re-run it every frame). Still
+chrome means no runs. The panel never scrolls, so its measured box is its size, and the spot is
+rounded to whole pixels so its glyphs stay sharp. Until the first measure the panel
 renders `visibility: hidden` so it never paints in the wrong spot.
 
 ## Behaviour and state
@@ -344,33 +341,22 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 
 ## Presentation and UX
 
-- Floating: the Palette's dress: `rounded-lg border bg-white shadow-lg`
-  (`dark:border-slate-800 dark:bg-slate-900`), `data-panel-translucent`, a header copied from
-  `MovablePanelHeader` (title "Quick style" + `HelpArticleLink article="quickStylePanel"`, no drag or
-  collapse), and a body `[data-quick-style-body]` with `p-2.5`; width from the Palette when one is
-  on screen.
-- Under Minimal chrome (`useMinimalChrome()`): the docked header is not rendered (its title and help
-  link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
-- Toolbar (compact): the same surface with no header; rows at `density="compact"`.
-- The width never follows the content, and a swatch row never wraps or clips: `panelFrame(docked,
-paletteWidth)` derives it in px from the named measures in `quick-style-metrics.ts`
-  (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8,
-  `QUICK_FLOATING_PADDING_PX` 10, `QUICK_FLOATING_GAP_PX` 4, `QUICK_ROW_TARGETS` 9: the widest of a
-  theme row's 8 and the stock colours, `1 + PEN_COLOUR_NAMES.length`): compact is
-  `targets · 24 + 2 · 8 + 2 · 1` (234 px) with the padding set from the same constant; Floating
-  with no Palette on screen is `targets · 24 + (targets − 1) · 4 + 2 · 10 + 2 · 1` (270 px), its
-  body padded by `QUICK_FLOATING_PADDING_PX`; Floating with a Palette takes the Palette's width
-  (256 px, room for nine targets spread `space-between`).
-- Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
+- The surface: `rounded-lg border bg-white shadow-lg` (`dark:border-slate-800 dark:bg-slate-900`),
+  `data-panel-translucent`, no header; the body `[data-quick-style-body]`.
+- The width never follows the content, and a swatch row never wraps or clips: `panelFrame()`
+  derives it in px from the named measures in `quick-style-metrics.ts`
+  (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8, `QUICK_ROW_TARGETS` 9:
+  the widest of a theme row's 8 and the stock colours, `1 + PEN_COLOUR_NAMES.length`):
+  `targets · 24 + 2 · 8 + 2 · 1` (234 px) with the padding set from the same constant.
+- `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon
   alignment, then Actions.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
 dark:text-slate-400` (always shown, Minimal chrome included; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
   a divider above Actions.
-- Colour row: seven 24 × 24 px target buttons, each drawing an inner colour chip: compact 20 px chips
-  in touching targets (the row is exactly 168 px), roomy 24 px chips spread across the row
-  (`justify-between`); the swatch paints its colour, a selected
+- Colour row: seven 24 × 24 px target buttons, each drawing an inner colour chip: 20 px chips
+  in touching targets (the row is exactly 168 px); the swatch paints its colour, a selected
   swatch shows a 2 px ring in `brand-500`.
 - Three-option rows: three equal buttons, 28 px tall, glyph-only (line weights, dash patterns, align
   glyphs, icon-before / above / after glyphs); selected = `bg-brand-50 text-brand-700 ring-brand-300`,
@@ -474,7 +460,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Placement order and fallback                                                      | `quick-style-placement.test.ts`                                                    |
 | Placement re-runs on chrome change only, never while still                        | `useQuickStylePlacement.test.tsx`                                                  |
 | Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts`                   |
-| Toolbar and Floating sit on the left edge                                         | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts`                   |
+| The panel sits on the left edge                                                   | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts`                   |
 | One click on Flowing sets dashed + flow                                           | `e2e/quick-style-panel.spec.ts`                                                    |
 | Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`, `swatch-override-prefs.test.ts`                        |
 | Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                                                      |

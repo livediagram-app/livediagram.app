@@ -5,7 +5,7 @@
 // from ./index, so the public `@livediagram/document` surface is unchanged.
 
 // Border styling presets. Keep these as small unions so the
-// CommandPalette can render them as 3-to-4-button icon rows that
+// the palette can render them as 3-to-4-button icon rows that
 // match the Pointer accordion's pattern (Line thickness /
 // Arrowhead size / etc).
 export type BorderStroke = 'none' | 'thin' | 'medium' | 'thick' | 'extra-thick';

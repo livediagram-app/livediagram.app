@@ -19,7 +19,6 @@ import { VoteBanner } from '@/components/chrome/VoteBanner';
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  | 'toolbarLayout'
   | 'selfParticipant'
   | 'readOnly'
   | 'pendingDraw'
@@ -51,7 +50,6 @@ type TopCenterChromeProps = Pick<
 };
 
 export function TopCenterChrome({
-  toolbarLayout,
   selfParticipant,
   readOnly,
   pendingDraw,
@@ -74,23 +72,15 @@ export function TopCenterChrome({
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
-  // The Toolbar layout's strip, when it is on screen: the mode banners hang from it as its tray
+  // The palette strip, when it is on screen: the mode banners hang from it as its tray
   // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
   const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
-  const tray = toolbarLayout === true && !readOnly && !dockOnTop ? strip : null;
+  const tray = !readOnly && !dockOnTop ? strip : null;
   return (
     <TopCenterStack
-      below={
-        dockOnTop
-          ? 'dock'
-          : toolbarLayout === true && !readOnly
-            ? tray && modeBanner
-              ? 'tray'
-              : 'toolbar'
-            : undefined
-      }
+      below={dockOnTop ? 'dock' : !readOnly ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}
     >
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}

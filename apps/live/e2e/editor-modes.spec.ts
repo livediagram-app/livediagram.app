@@ -1,15 +1,8 @@
 import type { Page } from '@playwright/test';
-import {
-  chooseToolbarLayout,
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  pageOwnerHeaders,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, pageOwnerHeaders } from './fixtures';
 
-// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip in the
-// Palette header switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
+// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside the
+// menu button switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
 // Diagram, Shift+D toggles, the choice survives a reload, a new tab opens in Diagram,
 // a Plan board survives every switch, and Opens in changes the tab's opening mode, switching only
 // the chooser. Synthesised content only.
@@ -73,7 +66,7 @@ async function drawWave(page: Page, from: { x: number; y: number }) {
 }
 
 test.describe('editor modes', () => {
-  test('a general tab opens in Diagram, with the chip in the Palette header', async ({
+  test('a general tab opens in Diagram, with the chip beside the menu button', async ({
     page,
     pageErrors,
   }) => {
@@ -190,26 +183,20 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // A Draw tool in hand never takes the press meant for the switch, in either layout.
-  for (const layout of ['floating', 'toolbar'] as const) {
-    test(`switches back to Diagram with a marker in hand (${layout} layout)`, async ({
-      page,
-      pageErrors,
-    }) => {
-      if (layout === 'toolbar') await chooseToolbarLayout(page);
-      await openBlank(page);
-      await chooseMode(page, 'Draw');
-      await dock(page)
-        .getByRole('button', { name: /^Marker 2/ })
-        .click();
-      await expect(dock(page).getByRole('button', { name: /^Marker 2/ })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-      );
-      await chooseMode(page, 'Diagram');
-      await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
-      await expect(sketches(page)).toHaveCount(0);
-      expectNoPageErrors(pageErrors);
-    });
-  }
+  // A Draw tool in hand never takes the press meant for the switch.
+  test('switches back to Diagram with a marker in hand', async ({ page, pageErrors }) => {
+    await openBlank(page);
+    await chooseMode(page, 'Draw');
+    await dock(page)
+      .getByRole('button', { name: /^Marker 2/ })
+      .click();
+    await expect(dock(page).getByRole('button', { name: /^Marker 2/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await chooseMode(page, 'Diagram');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+    await expect(sketches(page)).toHaveCount(0);
+    expectNoPageErrors(pageErrors);
+  });
 });

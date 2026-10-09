@@ -56,7 +56,7 @@ export type ExplorerProps = {
   favouriteIds: Set<string>;
   onToggleFavourite: (documentId: string) => void;
   onMoveTo: (x: number, y: number) => void;
-  onReset: () => void;
+  onReset?: () => void;
   onOpenDocument: (id: string, shareCode?: string) => void;
   // Optional so consumers that have nowhere to mint a new document
   // (e.g. the welcome route, which IS the new-document flow) can hide

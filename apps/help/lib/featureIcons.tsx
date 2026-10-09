@@ -19,7 +19,6 @@ import {
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucidePencilLine,
-  lucideRotateCcw,
   lucideRoute,
   lucideScanEye,
   lucideSearch,
@@ -1323,17 +1322,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // The strip across the top of a window, with the menu button's three bars
-  // in the corner: the two things the layout adds.
+  // in the corner: what the editor's top row is made of.
   'toolbar-layout': (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <rect x="9" y="7" width="9" height="3" rx="1" />
       <path d="M5.5 7.5h1.5M5.5 9.5h1.5" />
-    </Glyph>
-  ),
-  'reset-palette-position': (
-    <Glyph>
-      <Prims prims={lucideRotateCcw} />
     </Glyph>
   ),
   // Canvas guides. The four layer entries are deliberately NOT four variations

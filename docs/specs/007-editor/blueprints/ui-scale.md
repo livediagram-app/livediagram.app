@@ -97,8 +97,6 @@ its flyouts at design size).
     `toSurfacePx(16)` (the `sm:` desktop insets; a phone is never scaled).
     A panel at rest in a docked corner stack is `relative` with no insets and
     needs nothing.
-  - `stackBelowY` is the Palette's `offsetTop + offsetHeight`, surface px of
-    the same scale as the panel that consumes it as `top`, so it is used as-is.
 - **`QuickStylePanel`**: `spot.left` / `spot.top` / `spot.width` (screen px)
   → `toSurfacePx`.
 - **`ToolbarPalette`**: zoom on the root, which is `inset-x-0` and still spans

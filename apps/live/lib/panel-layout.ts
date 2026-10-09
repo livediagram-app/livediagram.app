@@ -1,4 +1,4 @@
-// Device-local layout for the editor's floating panels (docs/specs/007-editor/panel-docking.md).
+// Device-local layout for the editor's corner panels (docs/specs/007-editor/panel-docking.md).
 //
 // Which corner each panel docks into — or where it floats free — is a
 // per-device ergonomic choice (screen size, handedness, external
@@ -14,16 +14,16 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 
 export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-// The floating panels that participate in docking. Every one is built
-// on the shared MovablePanel. The fixed zoom controls are deliberately
-// absent — they are not a MovablePanel and stay pinned bottom-right.
+// The corner panels that participate in docking. Every one is built on the
+// shared MovablePanel. The fixed zoom controls are deliberately absent — they
+// are not a MovablePanel and stay pinned bottom-right. The Palette, the
+// Explorer and Layers are not corner panels (the strip, and popovers off
+// their buttons, docs/specs/007-editor/toolbar-layout.md): a stored layout naming them
+// is read like any unknown id.
 export type PanelId =
-  | 'palette'
-  | 'explorer'
   | 'collaborate'
   | 'ai'
   | 'minimap'
-  | 'layers'
   | 'poll'
   | 'vote'
   | 'avatar'
@@ -47,12 +47,9 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
 ];
 
 export const PANEL_IDS: readonly PanelId[] = [
-  'palette',
-  'explorer',
   'collaborate',
   'ai',
   'minimap',
-  'layers',
   'poll',
   'vote',
   'avatar',
@@ -77,21 +74,15 @@ export type PanelLayout = {
   free: Partial<Record<PanelId, FreePosition>>;
 };
 
-// Each panel's home corner — matches the historical fixed layout from
-// docs/specs/008-canvas/canvas-and-palette.md so a user who never rearranges anything sees no change,
-// including Comments / AI stacking beneath the Palette (top-right).
+// Each panel's home corner (docs/specs/007-editor/panel-docking.md "Default layout"), so a user who
+// never rearranges anything sees the same chrome every time.
 export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
-  explorer: 'top-left',
-  palette: 'top-right',
-  // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): with Layers, above the cluster button
-  // it minimises into.
+  // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): a popover over its cluster
+  // button, so its corner is only where a stored layout falls back to.
   collaborate: 'bottom-right',
   ai: 'top-right',
   minimap: 'bottom-left',
-  // Layers (docs/specs/006-document/layers.md): the one panel homed bottom-right, above the fixed
-  // zoom cluster (that corner's inset already clears it).
-  layers: 'bottom-right',
-  // Live poll (docs/specs/012-collaboration/live-poll.md): top-right under the Palette, where the panels
+  // Live poll (docs/specs/012-collaboration/live-poll.md): top-right, where the panels
   // you act on live. Unlike every other panel it only EXISTS while a poll
   // is running, so it joins and leaves its corner stack rather than
   // sitting there.
@@ -99,8 +90,8 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // Live vote (docs/specs/012-collaboration/session-tools.md): beside the poll panel, and like it only present
   // while a vote is running.
   vote: 'top-right',
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): under the Palette, where the mode picker that
-  // opened it lives. Like poll / vote it exists only while its mode does.
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): top-right, with the other tool panels.
+  // Like poll / vote it exists only while its mode does.
   avatar: 'top-right',
   laser: 'top-right',
   spotlight: 'top-right',
@@ -122,10 +113,9 @@ export function defaultPanelLayout(): PanelLayout {
   const corners = emptyCorners();
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
-  corners['top-left'] = ['explorer'];
-  corners['top-right'] = ['palette', 'vote', 'poll', 'ai'];
+  corners['top-right'] = ['vote', 'poll', 'ai'];
   corners['bottom-left'] = ['minimap'];
-  corners['bottom-right'] = ['layers', 'collaborate'];
+  corners['bottom-right'] = ['collaborate'];
   return { corners, free: {} };
 }
 

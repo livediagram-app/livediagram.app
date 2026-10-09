@@ -66,33 +66,35 @@ function Footer({
   );
 }
 
-/** A floating panel of the editor's chrome (a palette, the Explorer), drawn as a titled card. */
-function ChromePanel({
-  x,
-  y,
-  w,
-  h,
-  title,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  title: string;
-}) {
+/** The editor's top row in a pane, from (x, y) to `right`: the menu button card, then the palette
+ *  strip with a run of tiles. */
+function ChromeTopRow({ x, y, right }: { x: number; y: number; right: number }) {
+  const sx = x + 22;
+  const tiles = Math.floor((right - sx - 12) / 14);
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={5} className="fill-white stroke-slate-300" />
-      <Label x={x + 6} y={y + 10} size={6.5} weight={600} tone="muted">
-        {title}
-      </Label>
-      {[0, 1, 2].map((i) => (
+      <rect x={x} y={y} width={18} height={18} rx={4} className="fill-white stroke-slate-300" />
+      <path
+        d={`M${x + 5} ${y + 5.5}h8M${x + 5} ${y + 9}h8M${x + 5} ${y + 12.5}h8`}
+        className="stroke-slate-400"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      <rect
+        x={sx}
+        y={y}
+        width={right - sx}
+        height={18}
+        rx={5}
+        className="fill-white stroke-slate-300"
+      />
+      {Array.from({ length: tiles }, (_, i) => (
         <rect
           key={i}
-          x={x + 6 + i * ((w - 12) / 3)}
-          y={y + 16}
-          width={(w - 12) / 3 - 4}
-          height={h - 22}
+          x={sx + 6 + i * 14}
+          y={y + 5}
+          width={8}
+          height={8}
           rx={2}
           className="fill-slate-100"
         />
@@ -171,8 +173,7 @@ export function SideBySideOpen() {
   return (
     <Scene w={W} h={H}>
       {/* Left pane: the editor, with its panels. */}
-      <ChromePanel x={8} y={top + 8} w={56} h={44} title="EXPLORER" />
-      <ChromePanel x={seam - 70} y={top + 8} w={62} h={34} title="PALETTE" />
+      <ChromeTopRow x={8} y={top + 8} right={seam - 8} />
       <Shape x={80} y={top + 70} w={64} h={30} label="Goals" />
       <Shape x={120} y={top + 120} w={64} h={30} label="Risks" accent labelTone="onAccent" />
       {/* Right pane: the other tab, live, with its name chip. */}

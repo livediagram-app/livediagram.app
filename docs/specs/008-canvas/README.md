@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./canvas-and-palette.md - when working on Canvas and palette: The canvas and its floating palette: canvas tools, every element kind, drawing, rich-text labels
+- ./canvas-and-palette.md - when working on Canvas and palette: The canvas and its palette strip: canvas tools, every element kind, drawing, rich-text labels
 - ./arrow-anchors.md - when working on Arrow anchors and auto-rebind: The sixteen anchor ids, the anchors each shape offers and where they sit, outline projection, the creation anchor, the converging fan, and the auto-rebind that moves an end to the facing side (same position class) only when its drawn path runs through a shape, plus same-side crossing swaps
 - ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors, labels, bending, quick style panel)
 - ./isometric-view.md - when working on Isometric view: Navigation tool that tilts the tab into an isometric, extruded-depth view; pans like Hand, read-only

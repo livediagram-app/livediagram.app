@@ -12,7 +12,7 @@ When zen mode is on, the editor hides:
 - the tab bar,
 - the palette (tools + add-element), the context / inspector
   panel, the Explorer, the Collaborate panel, the AI
-  panel, the Toolbar layout's strip and menu button, and the owner / role status badge,
+  panel, the Toolbar strip and menu button, and the owner / role status badge,
 - the empty-canvas prompt and the undo/redo history dock.
 
 What stays:
@@ -30,7 +30,7 @@ view-only visitors (focusing is read-only).
 
 ## How it's toggled
 
-- **Enter — the canvas-tool dropdown** in the Palette header, as a "Zen"
+- **Enter — the canvas-tool dropdown** on the Toolbar strip, as a "Zen"
   entry under Isometric. It's an action, not a persistent tool: picking
   it hides the chrome and leaves the current tool selected. (Entering
   originally lived as an always-visible button on the zoom controls;

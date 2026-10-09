@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import { WHITEBOARD_BACKGROUNDS, type PenColour, type Tab } from '@livediagram/document';
-import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { isWhiteboardOnlyIntent, type PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// Pick-one settings draw one picture per option (docs/specs/007-editor/toolbar-layout.md): Panel Layout and
-// Theme. A drawing missing an option would leave that option with nothing to
+// Pick-one settings draw one picture per option (docs/specs/007-editor/user-preferences.md): the
+// Theme row. A drawing missing an option would leave that option with nothing to
 // ring, and one drawn for an option that no longer exists would show a choice
 // you can't make.
 import { cleanup, render } from '@testing-library/react';
@@ -18,7 +18,6 @@ describe('choice illustrations', () => {
     const illustrated = ROWS.filter(
       (r) => r.kind === 'choice' && r.illustration && r.illustration in CHOICE_ILLUSTRATIONS,
     );
-    expect(illustrated.map((r) => r.key)).toContain('panelLayout');
     for (const row of illustrated) {
       if (row.kind !== 'choice' || !row.illustration) continue;
       const drawn = CHOICE_ILLUSTRATIONS[row.illustration as keyof typeof CHOICE_ILLUSTRATIONS];
@@ -44,11 +43,11 @@ describe('choice illustrations', () => {
   });
 
   it('rings the option in force, and only that one', () => {
-    const { container } = render(<SettingsIllustration id="panelLayout" value="toolbar" />);
+    const { container } = render(<SettingsIllustration id="appearance" value="dark" />);
     const captions = [...container.querySelectorAll('text')];
-    expect(captions.map((t) => t.textContent)).toEqual(['Floating', 'Toolbar']);
+    expect(captions.map((t) => t.textContent)).toEqual(['Light', 'Dark', 'System']);
     const current = captions.filter((t) => t.getAttribute('class')?.includes('font-semibold'));
-    expect(current.map((t) => t.textContent)).toEqual(['Toolbar']);
+    expect(current.map((t) => t.textContent)).toEqual(['Dark']);
   });
 
   it('describes the drawing for assistive tech', () => {

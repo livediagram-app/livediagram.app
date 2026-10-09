@@ -4,7 +4,7 @@
 // the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Dialog, Button, Tile, Label, Avatar } from './primitives';
+import { Scene, Shape, Arrow, Dialog, Button, Tile, Label, Avatar } from './primitives';
 
 /** A template card in the New Document wizard: a thumbnail over its title. */
 function TemplateCard({
@@ -154,8 +154,8 @@ function DropdownChip({ x, y, w, label }: { x: number; y: number; w: number; lab
   );
 }
 
-/** The Palette panel: the selection-mode dropdown and the category dropdown
- *  in its header band, over Popular's twelve tiles. */
+/** The palette strip across the top of the canvas: the selection-mode and category dropdowns,
+ *  Popular's twelve tiles, then More (⋯) and Search. */
 export function ShapePalette() {
   const stroke = { className: 'stroke-brand-500', strokeWidth: 2, fill: 'none' } as const;
   const glyphs: ReactNode[] = [
@@ -183,16 +183,34 @@ export function ShapePalette() {
     <path key="en" d="M-8 -7 h16 v14 h-16 Z M-8 -2 h16" {...stroke} strokeWidth={1.5} />,
   ];
   return (
-    <Scene w={420} h={200}>
-      <Panel x={96} y={16} w={228} h={168} title="PALETTE">
-        <DropdownChip x={108} y={48} w={76} label="Select" />
-        <DropdownChip x={232} y={48} w={80} label="Popular" />
-        {glyphs.map((g, i) => (
-          <Tile key={i} x={110 + (i % 6) * 34} y={86 + Math.floor(i / 6) * 40} active={i === 0}>
-            {g}
-          </Tile>
-        ))}
-      </Panel>
+    <Scene w={600} h={96}>
+      <rect
+        x={10}
+        y={24}
+        width={580}
+        height={46}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <DropdownChip x={20} y={37} w={70} label="Select" />
+      <path d="M98 33v28" className="stroke-slate-200" strokeWidth={1} />
+      <DropdownChip x={106} y={37} w={80} label="Popular" />
+      <path d="M194 33v28" className="stroke-slate-200" strokeWidth={1} />
+      {glyphs.map((g, i) => (
+        <Tile key={i} x={202 + i * 28} y={34} active={i === 0}>
+          {g}
+        </Tile>
+      ))}
+      <path d="M544 33v28" className="stroke-slate-200" strokeWidth={1} />
+      {/* More (⋯), then Search. */}
+      <g className="fill-slate-400">
+        <circle cx={551} cy={47} r={1.6} />
+        <circle cx={556} cy={47} r={1.6} />
+        <circle cx={561} cy={47} r={1.6} />
+      </g>
+      <circle cx={576} cy={46} r={5} className="fill-none stroke-slate-500" strokeWidth={1.6} />
+      <path d="M580 50 l4 4" className="stroke-slate-500" strokeWidth={1.6} strokeLinecap="round" />
     </Scene>
   );
 }
@@ -444,84 +462,15 @@ export function KeyboardEssentials() {
   );
 }
 
-/** A mini layout drawing on the welcome card: Floating panels in two
- *  corners, or the Toolbar strip across the top. */
-function LayoutThumb({
-  x,
-  y,
-  kind,
-  picked,
-}: {
-  x: number;
-  y: number;
-  kind: 'floating' | 'toolbar';
-  picked: boolean;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={96}
-        height={58}
-        rx={7}
-        className={picked ? 'fill-slate-50 stroke-brand-500' : 'fill-slate-50 stroke-slate-200'}
-        strokeWidth={picked ? 2.5 : 1.5}
-      />
-      {kind === 'floating' ? (
-        <>
-          <rect
-            x={x + 8}
-            y={y + 8}
-            width={22}
-            height={30}
-            rx={3}
-            className="fill-white stroke-slate-300"
-          />
-          <rect
-            x={x + 66}
-            y={y + 8}
-            width={22}
-            height={26}
-            rx={3}
-            className="fill-white stroke-slate-300"
-          />
-        </>
-      ) : (
-        <rect
-          x={x + 18}
-          y={y + 8}
-          width={60}
-          height={10}
-          rx={3}
-          className="fill-white stroke-slate-300"
-        />
-      )}
-      <rect x={x + 8} y={y + 46} width={80} height={5} rx={2.5} className="fill-slate-200" />
-      <Label
-        x={x + 48}
-        y={y + 72}
-        anchor="middle"
-        size={10}
-        weight={picked ? 700 : 500}
-        tone={picked ? 'accent' : 'body'}
-      >
-        {kind === 'floating' ? 'Floating' : 'Toolbar'}
-      </Label>
-    </g>
-  );
-}
-
-/** The welcome tour's offer card: the Floating / Toolbar layout choice, then
- *  No thanks or Show me around. */
+/** The welcome tour's offer card: a short welcome, then No thanks or Show me around. */
 export function WelcomeTourCard() {
   return (
-    <Scene w={420} h={240} bg="plain">
+    <Scene w={420} h={170} bg="plain">
       <rect
         x={70}
         y={12}
         width={280}
-        height={216}
+        height={146}
         rx={14}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
@@ -533,10 +482,9 @@ export function WelcomeTourCard() {
         Welcome to livediagram
       </Label>
       <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
-      <LayoutThumb x={106} y={86} kind="floating" picked />
-      <LayoutThumb x={218} y={86} kind="toolbar" picked={false} />
-      <Button x={110} y={186} w={92} h={26} label="No thanks" />
-      <Button x={210} y={186} w={104} h={26} label="Show me around" variant="primary" />
+      <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />
+      <Button x={110} y={116} w={92} h={26} label="No thanks" />
+      <Button x={210} y={116} w={104} h={26} label="Show me around" variant="primary" />
     </Scene>
   );
 }

@@ -35,7 +35,6 @@ export const HELP_ARTICLES = {
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
-  quickStylePanel: 'canvas/quick-style-panel',
   quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'selection-modes/isometric-mode',
   // One key per tool panel, so every mode's panel can point at the article
@@ -97,7 +96,6 @@ export const HELP_ARTICLES = {
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings
-  toolbarLayout: 'palette/toolbar-layout',
   powerUserMode: 'user-interface/power-user-mode',
   welcomeTour: 'getting-started/welcome-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
@@ -167,11 +165,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   panelOpacity: {
     title: 'Learn about panel opacity',
-    description: 'Make the floating panels translucent so the canvas shows through.',
-  },
-  quickStylePanel: {
-    title: 'Learn about the quick style panel',
-    description: 'One-click colours and lines, and how the next shape remembers them.',
+    description: 'Make the panels translucent so the canvas shows through.',
   },
   quickAddOnHover: {
     title: 'Learn about quick-add on hover',
@@ -349,10 +343,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  toolbarLayout: {
-    title: 'Learn about the toolbar layout',
-    description: 'The palette as one strip across the top of the canvas.',
   },
   powerUserMode: {
     title: 'Learn about power user mode',

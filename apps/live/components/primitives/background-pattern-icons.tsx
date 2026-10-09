@@ -1,6 +1,6 @@
 // 28x20 SVG previews used in the Current Tab → Canvas accordion's
-// pattern picker (CommandPalette / TabSection). Each icon depicts
-// the pattern at a glance. Pulled out of CommandPalette.tsx to keep
+// pattern picker (TabSection). Each icon depicts
+// the pattern at a glance. Pulled out of the old CommandPalette.tsx to keep
 // that file focused on the picker UI rather than the SVG vocabulary.
 //
 // Visual contract: 28px x 20px, viewBox="0 0 28 20", a rounded

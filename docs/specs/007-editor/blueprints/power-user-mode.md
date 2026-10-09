@@ -84,7 +84,6 @@ Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for t
 
 ```ts
 const POWER_USER_PRESET = {
-  panelLayout: { panelLayout: 'toolbar' },
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
@@ -316,11 +315,10 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 - Panel headers: the button cluster carries `ml-auto`, so it stays at the right when the title is hidden.
 - Palette tiles under the flag: `h-9 w-full`, so the icon stays centred in the cell the captioned tile filled; the
   Toolbar strip's fixed tiles and its always-visible shortcut letters are unchanged.
-- Offer copy: message "Power user mode: fewer labels, the toolbar layout and a few faster defaults.", actions "Try power
+- Offer copy: message "Power user mode: fewer labels and a few faster defaults.", actions "Try power
   user mode" (primary) and "No thanks".
 - Settings copy:
-  - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: the Toolbar
-    layout, alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off.
+  - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off.
     Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change."
   - **Minimal Chrome**: "Hides labels and hints you no longer need: palette captions, panel titles, the selection
     caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it."

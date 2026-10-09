@@ -97,7 +97,7 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
 
   // The notation palette is the board presenting itself: on any other tab
   // these tiles are behind a category dropdown.
-  const notation = page.getByRole('option', { name: /domain event/i });
+  const notation = page.getByRole('button', { name: /domain event/i });
   await expect(notation.first()).toBeVisible();
   // The seeded timeline of orange events (docs/specs/021-event-storming/event-storming.md).
   const canvas = page.locator('[data-canvas-a11y-root]');
@@ -158,7 +158,7 @@ test('a note dropped between two notes stays between them', async ({ page, pageE
   // drag once the pointer actually travels.
   const gapX = (first.x + first.width + second.x) / 2;
   const gapY = first.y + first.height / 2;
-  const tile = page.getByRole('option', { name: /domain event/i }).first();
+  const tile = page.getByRole('button', { name: /domain event/i }).first();
   const tileBox = (await tile.boundingBox())!;
   await page.mouse.move(tileBox.x + tileBox.width / 2, tileBox.y + tileBox.height / 2);
   await page.mouse.down();

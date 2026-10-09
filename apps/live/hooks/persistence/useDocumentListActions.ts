@@ -1,5 +1,5 @@
 // List-level document + folder operations shared by every surface that
-// renders a document library: the floating Explorer panel (composed
+// renders a document library: the editor's Explorer (composed
 // into the editor via useDocumentActions), the /explorer page, and
 // /new. Each surface owns its own list STATE (the editor refreshes it
 // after autosave, the pages fetch on mount); this hook owns the

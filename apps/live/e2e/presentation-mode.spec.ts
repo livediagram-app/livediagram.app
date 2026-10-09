@@ -59,10 +59,6 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
       localStorage.setItem('livediagram:v2:self-id', o);
       if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      localStorage.setItem(
-        'livediagram:user-preferences:v1',
-        JSON.stringify({ panelLayout: 'toolbar' }),
-      );
     },
     { o: owner, sig: guestSigFor(owner) },
   );

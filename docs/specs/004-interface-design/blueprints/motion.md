@@ -148,7 +148,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 - **`apps/live`**
   - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
-  - `short`: `PaletteTabBar`, `ToolbarStripRail`, `AccordionSection`,
+  - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
     `template-picker-wizard` progress bar, the `PollPanel` and `VotePanel` bars, and `NoteBox`.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.

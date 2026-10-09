@@ -20,11 +20,11 @@ export const metadata = helpMetadata({
 
 ## Switching Modes
 
-- **The switch** shows the current mode: press it and choose **Diagram**, **Draw**, **Illustrate** or **Plan**. It sits in the **Palette** panel's title row, or, with the Toolbar layout, as an icon beside the menu button at the top left; either way it stays put in every mode. On a phone there is no switch: use **Opens in** on the tab menu (below). Switching is instant, keeps your selection and leaves the view where it is.
+- **The switch** shows the current mode: press it and choose **Diagram**, **Draw**, **Illustrate** or **Plan**. It sits as an icon beside the menu button at the top left, and stays put in every mode. On a phone there is no switch: use **Opens in** on the tab menu (below). Switching is instant, keeps your selection and leaves the view where it is.
 - **Shift+D** moves to the next mode, from anywhere on the canvas, and screen readers announce the mode you are now in. The switch's menu shows **⇧D** on the mode it leads to. It follows the character-key shortcuts setting.
 - **Your mode is yours.** It is remembered for you, for each tab, in this browser. Someone else on the same tab can work in a different mode at the same time; your switch changes nothing for them.
 
-<Figure caption="The mode switch in the Palette panel's title row, open on the four modes: the current one checked, ⇧D on the next.">
+<Figure caption="The mode switch beside the menu button, open on the four modes: the current one checked, ⇧D on the next.">
   <ModeSwitchScene />
 </Figure>
 
@@ -42,9 +42,9 @@ Already drew it in Excalidraw? Copy it there and paste it onto a tab in Draw mod
 
 ## The Dock
 
-Draw mode swaps the palette's shapes for its own tools, in three groups: the **drawing tools**, the **shapes** and **Settings**. With floating panels they fill the **Palette** panel in the palette's own look: the drawing tools and the shapes are sections of named tiles, and **Settings** sits at the foot of the panel. A tool's options open beside the panel, pointing at its tile. With the Toolbar layout they form a dock across the top of the canvas, the same height as the toolbar, and a tool's options open just below it, pointing at its button. Undo and Redo are in the bottom-right corner, as in Diagram mode. Prefer the dock at the bottom, closer to hand when drawing on a tablet? Open **Settings**, choose **Editor**, then **Draw**, and set **Dock Position** to **Bottom**. The choice follows your account to every tab you draw on.
+Draw mode swaps the palette strip for its own tools, in three groups: the **drawing tools**, the **shapes** and **Settings**. They form a dock across the top of the canvas, the same height as the strip, and a tool's options open just below it, pointing at its button. Undo and Redo are in the bottom-right corner, as in Diagram mode. Prefer the dock at the bottom, closer to hand when drawing on a tablet? Open **Settings**, choose **Editor**, then **Draw**, and set **Dock Position** to **Bottom**. The choice follows your account to every tab you draw on.
 
-<Figure caption="Draw mode's dock in the Toolbar layout: the drawing tools, your pinned shapes and Shapes, then Settings, each with its key.">
+<Figure caption="Draw mode's dock: the drawing tools, your pinned shapes and Shapes, then Settings, each with its key.">
   <DrawDockScene />
 </Figure>
 
@@ -61,13 +61,11 @@ The shapes:
 1. **Your pinned shapes**: at first an arrow and a rectangle (see [Your shapes](#your-shapes)), then a line. A pinned shape with a key (**A**, **R**, **O**, **D**, **C**, **L**, **N**) shows it on its button.
 2. **Shapes** (key **S**), in the dock: point at it, press it or press **S**. A search box at the top is ready for typing at once, above six shapes in two rows: on top the three you picked most recently, below the three you pick most. Point at a shape to see its name. Type to find any shape the palette has, by name or by what it is for (database, decision, phone), and the six best matches take their place. Move through them with the arrow keys and press **Enter**, or click one; **Escape** closes it. Once you type, it stays open until you pick, press Escape or click elsewhere.
 
-The **Palette** panel has no Shapes button: after your pinned shapes it shows the six shapes the Shapes button would offer, your most recent and most used, as tiles you press to pick. To search for a shape, or to pin one, use the Toolbar layout's dock.
-
 The **sticky note** is one of the shapes: search for it in Shapes ("sticky", "note" or "post-it"), pin it like any shape, or press **N** from anywhere to place one.
 
 Shapes, lines, arrows and paths are drawn in Ink with no fill, whichever pen you last used, and stay that way when you switch to Diagram mode: the pens colour only their own strokes. To change a shape's colour or width, select it and use the style panel on the left; a selected marker stroke gets its **Marker colour** and **Marker width** there as well: the same nine colours as the markers, and, when custom colours are used on this tab, a second row with them, the most recently drawn first.
 
-Last comes the **Settings** cog (press it to open it; in the **Palette** panel, the **Settings** row at its foot): your **Background**, the pen's **Cursor** (Crosshair + nib, the default, or Dot) and **Drawing** (Basic or Shape recognition), then **Colours** while the tab has custom colours (see [Snap colours](#snap-colours)).
+Last comes the **Settings** cog (press it to open it): your **Background**, the pen's **Cursor** (Crosshair + nib, the default, or Dot) and **Drawing** (Basic or Shape recognition), then **Colours** while the tab has custom colours (see [Snap colours](#snap-colours)).
 
 Pick a shape, line, arrow or text tool and the style panel shows what it will draw next ("Next rectangle"): choose a colour or width there and every rectangle after it follows. Draw mode remembers its own styles, apart from Diagram mode.
 
@@ -75,11 +73,11 @@ To select a pen stroke, click its line; clicking elsewhere in its box selects wh
 
 What you draw shows in the pen's colour and width as you draw it, smoothed as it goes, and nothing animates in: a mark lands exactly as you drew it. With a pen (stylus) the line follows your pressure: press lightly for a finer line, harder for a bolder one, with the chosen width in between. With a mouse or a finger it keeps the chosen width all along. A pen stays in your hand after each stroke, so you can keep writing. Press **Select** or **Escape** to put it down. Switching an empty tab to Draw mode puts your last pen in your hand straight away; a tab that already has something on it opens on **Select**, so you can look around first. Switching back to Diagram mode puts the pen down.
 
-The dock works from the keyboard too. Every tool has a key (shown on its button in the dock, and in its tooltip in the **Palette** panel) that picks it from anywhere on the board, and **Escape** puts the tool down again (unless you are typing into a note or text box); the other single-letter shortcuts of Diagram mode do nothing here. To reach the dock itself, Tab to it, move along it with the **arrow keys** (up and down too, between rows of tiles in the **Palette** panel), and press **Enter** or **Space**. In the colour picker the arrow keys move along a row of colours, and **Enter** picks one. Escape closes a marker's colour and width options and takes you back to the dock. Each group is one Tab stop, so Tab moves from one group to the next.
+The dock works from the keyboard too. Every tool has a key (shown on its button in the dock) that picks it from anywhere on the board, and **Escape** puts the tool down again (unless you are typing into a note or text box); the other single-letter shortcuts of Diagram mode do nothing here. To reach the dock itself, Tab to it, move along it with the **arrow keys**, and press **Enter** or **Space**. In the colour picker the arrow keys move along a row of colours, and **Enter** picks one. Escape closes a marker's colour and width options and takes you back to the dock. Each group is one Tab stop, so Tab moves from one group to the next.
 
 ## Your Shapes
 
-The left of the shapes bar holds your **pinned** shapes: at first an arrow and a rectangle. The Shapes button opens the rest: on top the three shapes you picked most recently, below the three you pick most, leaving out what is pinned (a shape that is both shows only below, so it stays put). Picks count from the slots, the search, your pinned shapes and the shape keys. The slots settle between picks, never while Shapes is open. Pinning and reordering happen in the Toolbar layout's dock; in the **Palette** panel you can still unpin a shape from its menu.
+The left of the shapes bar holds your **pinned** shapes: at first an arrow and a rectangle. The Shapes button opens the rest: on top the three shapes you picked most recently, below the three you pick most, leaving out what is pinned (a shape that is both shows only below, so it stays put). Picks count from the slots, the search, your pinned shapes and the shape keys. The slots settle between picks, never while Shapes is open.
 
 - **Pin a shape** by dragging it from the Shapes flyout (a slot or a search result) onto the left of the shapes bar, where you drop it; a marker shows where it will land. Up to seven can be pinned. With seven, dropping one onto a pinned shape swaps them; dropping it anywhere else says "Seven shapes are pinned. Drag one out to swap."
 - **Reorder** your pinned shapes by dragging them along the bar.

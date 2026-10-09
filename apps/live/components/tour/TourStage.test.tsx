@@ -40,9 +40,8 @@ describe('TourStage', () => {
 
   it("wears the welcome tour's words by default", () => {
     const e = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: 'Hi' });
-    render(<TourStage engine={e} layoutPicker={<p>picker</p>} />);
+    render(<TourStage engine={e} />);
     expect(screen.getByText('Quick tour')).toBeTruthy();
-    expect(screen.getByText('picker')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show me around' }));
     expect(e.next).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'No thanks' }));

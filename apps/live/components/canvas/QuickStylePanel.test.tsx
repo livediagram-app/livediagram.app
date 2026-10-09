@@ -87,7 +87,7 @@ describe('QuickRadioRow', () => {
   });
 });
 
-describe('QuickRadioRow: custom swatches and density', () => {
+describe('QuickRadioRow: custom swatches', () => {
   const swatches = [
     { value: 0, name: 'Theme default', content: null, swatch: '#dcfce7' },
     {
@@ -98,7 +98,7 @@ describe('QuickRadioRow: custom swatches and density', () => {
       overridden: true,
     },
   ];
-  const renderSwatches = (density: 'compact' | 'roomy' = 'compact') => {
+  const renderSwatches = () => {
     const onOptionContext = vi.fn();
     render(
       <QuickRadioRow
@@ -108,7 +108,6 @@ describe('QuickRadioRow: custom swatches and density', () => {
         value={null}
         onChoose={vi.fn()}
         onOptionContext={onOptionContext}
-        density={density}
         testId="row"
       />,
     );
@@ -134,8 +133,8 @@ describe('QuickRadioRow: custom swatches and density', () => {
     ).toBeNull();
   });
 
-  it('keeps every swatch a 24 px target, drawing a smaller chip when compact', () => {
-    renderSwatches('compact');
+  it('keeps every swatch a 24 px target, drawing a smaller chip inside it', () => {
+    renderSwatches();
     const button = screen.getByRole('radio', { name: 'Theme default' });
     expect(button.className).toContain('h-6 w-6');
     expect(button.firstElementChild!.className).toContain('h-5 w-5');
@@ -228,7 +227,7 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
   const renderPanel = (minimal: boolean) =>
     render(
       <MinimalChromeProvider value={minimal}>
-        <QuickStylePanel quickStyle={quickStyle} hidden={false} layout="floating" />
+        <QuickStylePanel quickStyle={quickStyle} hidden={false} />
       </MinimalChromeProvider>,
     );
 
@@ -239,15 +238,10 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     expect(screen.getByText('Actions')).toBeTruthy();
   });
 
-  it('drops the docked header, which would be empty, and keeps its name', () => {
-    renderPanel(true);
+  it('has no header, and keeps its name', () => {
+    renderPanel(false);
     expect(screen.queryByLabelText('Learn about the quick style panel')).toBeNull();
     expect(screen.getByLabelText('Quick style')).toBeTruthy();
-  });
-
-  it('shows the header with its help link otherwise', () => {
-    renderPanel(false);
-    expect(screen.getByLabelText('Learn about the quick style panel')).toBeTruthy();
   });
 });
 
@@ -278,7 +272,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
 
   it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
     const quickStyle = api(second);
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     expect(screen.getByText('Marker 2')).toBeTruthy();
     const colour = screen.getByRole('radiogroup', { name: 'Marker colour' });
     expect(within(colour).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
@@ -307,7 +301,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
         sections: { boardStroke: board, boardText: { ...board, value: null } },
       },
     };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     const stroke = screen.getByRole('radiogroup', { name: 'Stroke' });
     expect(within(stroke).getAllByRole('radio')).toHaveLength(9);
     expect(within(stroke).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
@@ -327,7 +321,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       ...api(undefined, ['q1']),
       view: { targetIds: ['q1'], sections: { corners: { value: 'md' as const } } },
     };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     const row = screen.getByRole('radiogroup', { name: 'Corners' });
     expect(
       within(row)
@@ -342,16 +336,14 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('drops the pen name in power user mode', () => {
-    render(<QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" powerUser />);
+    render(<QuickStylePanel quickStyle={api(second)} hidden={false} powerUser />);
     expect(screen.queryByText('Marker 2')).toBeNull();
     expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
   });
 
   it('offers the nine stock colours, and Custom colours only when the tab uses some', () => {
     // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only.
-    const { unmount } = render(
-      <QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" />,
-    );
+    const { unmount } = render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
     const colour = screen.getByRole('radiogroup', { name: 'Marker colour' });
     expect(
       within(colour)
@@ -366,7 +358,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       custom: ['#ff6b00', '#00a39b'],
     });
     const quickStyle = api(withCustom);
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     const custom = screen.getByRole('radiogroup', { name: 'Custom colours' });
     expect(
       within(custom)
@@ -382,7 +374,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       <QuickStylePanel
         quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[0]!, PALETTE))}
         hidden={false}
-        layout="toolbar"
       />,
     );
     expect(
@@ -396,7 +387,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
         <QuickStylePanel
           quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
           hidden={false}
-          layout="toolbar"
         />,
       );
       const width = screen.getByTestId('quick-style-panel').style.width;
@@ -413,7 +403,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
         <QuickStylePanel
           quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
           hidden={false}
-          layout="toolbar"
         />,
       );
       const width = container.querySelector('[data-testid="quick-style-marker-width"]')!;
@@ -429,21 +418,16 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
 // docs/specs/008-canvas/quick-style-panel.md "Where it sits": a swatch row never wraps and is never
 // clipped, so the width counts the targets, their gaps, the padding and the border exactly.
 describe('panelFrame', () => {
-  it('is one width in every mode: nine targets, compact or Floating, or the Palette’s', () => {
+  it('is one width in every mode: nine touching targets', () => {
     // Nine touching 24 px targets (the stock colours, Ink and eight, the widest row; the theme's
     // seven and Ink leave the last empty), 8 px padding and a 1 px border each side, so switching
     // mode never resizes the panel.
     expect(QUICK_ROW_TARGETS).toBe(9);
-    expect(panelFrame(false, false).width).toBe(9 * 24 + 2 * 8 + 2 * 1);
-    // Floating spreads nine with 4 px gaps inside 10 px padding.
-    expect(panelFrame(true, false).width).toBe(9 * 24 + 8 * 4 + 2 * 10 + 2 * 1);
-    // With a Palette on screen the Palette's width is the panel's.
-    expect(panelFrame(true, true).width).toBeUndefined();
+    expect(panelFrame().width).toBe(9 * 24 + 2 * 8 + 2 * 1);
   });
 
   it('pads the compact panel by the padding the width counts', () => {
-    expect(panelFrame(false, false).padding).toBe(8);
-    expect(panelFrame(true, false).padding).toBeUndefined();
+    expect(panelFrame().padding).toBe(8);
   });
 });
 
@@ -484,7 +468,7 @@ describe('QuickStylePanel: the Ink swatch', () => {
   });
 
   it('ends the Stroke and Text colour rows with Ink, never Background', () => {
-    render(<QuickStylePanel quickStyle={api()} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={api()} hidden={false} />);
     const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
     expect(stroke).toHaveLength(8);
     expect(stroke[7]!.getAttribute('aria-label')).toBe('Ink');
@@ -501,7 +485,7 @@ describe('QuickStylePanel: the Ink swatch', () => {
 
   it('chooses Ink by name', () => {
     const quickStyle = api();
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     const text = within(screen.getByRole('radiogroup', { name: 'Text colour' })).getAllByRole(
       'radio',
     );
@@ -510,7 +494,7 @@ describe('QuickStylePanel: the Ink swatch', () => {
   });
 
   it('opens no custom-colour popover on Ink', () => {
-    render(<QuickStylePanel quickStyle={api()} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={api()} hidden={false} />);
     const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
     fireEvent.contextMenu(stroke[7]!);
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -542,7 +526,7 @@ describe('QuickStylePanel: the Highlighter rows', () => {
 
   it('sets the armed Highlighter\u2019s next stroke, captioned with its name', () => {
     const quickStyle = api(toolHighlighterStyle('#fde047', 14));
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     expect(screen.getByText('Highlighter')).toBeTruthy();
     const colour = screen.getByRole('radiogroup', { name: 'Highlighter colour' });
     expect(within(colour).getByRole('radio', { name: 'Yellow' }).getAttribute('aria-checked')).toBe(

@@ -20,7 +20,7 @@ import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown
 // tool: picking it fires the toggle and leaves the current tool selected (the
 // picker's onChange special-cases the id); `includeZen` is set only when the
 // host wired a toggle. Built off the gating flags so the palette wiring stays
-// declarative. Split out of CommandPalette.
+// declarative.
 export function buildCanvasToolOptions({
   canvasEmpty,
   isMobile,

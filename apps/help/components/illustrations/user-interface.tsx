@@ -8,6 +8,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, SelectionBox, Panel, Label } from './primitives';
+import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Glyphs ------------------------------------------------------------------
 
@@ -219,41 +220,30 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The whole frame at a glance: Explorer top-left, Palette top-right, the Map
- *  bottom-left, the corner cluster bottom-right, and the bottom bar. */
+/** The whole frame at a glance: the menu button card top-left, the palette strip across the
+ *  top, a Vote panel docked top-right under it, the Map bottom-left, the corner cluster
+ *  bottom-right, and the bottom bar. */
 export function PanelLayout() {
   return (
     <Scene w={420} h={250}>
-      <Panel x={12} y={12} w={98} h={92} title="EXPLORER">
-        {[0, 1, 2, 3].map((i) => (
+      <MenuCard x={12} y={12} />
+      <Strip x={82} y={12} />
+      <Panel x={318} y={56} w={90} h={66} title="VOTE">
+        {[0, 1].map((i) => (
           <rect
             key={i}
-            x={22}
-            y={44 + i * 14}
-            width={i === 1 ? 58 : 72}
+            x={328}
+            y={88 + i * 14}
+            width={i === 0 ? 62 : 44}
             height={6}
             rx={3}
             className={i === 0 ? 'fill-brand-200' : 'fill-slate-200'}
           />
         ))}
       </Panel>
-      <Panel x={304} y={12} w={104} h={100} title="PALETTE">
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <rect
-            key={i}
-            x={316 + (i % 3) * 28}
-            y={44 + Math.floor(i / 3) * 22}
-            width={20}
-            height={16}
-            rx={4}
-            className="fill-slate-50 stroke-slate-200"
-            strokeWidth={1.2}
-          />
-        ))}
-      </Panel>
-      <Shape x={146} y={58} w={74} h={38} label="Start" />
-      <Shape x={146} y={128} w={74} h={38} accent label="Ship" />
-      <Arrow from={[183, 96]} to={[183, 128]} />
+      <Shape x={146} y={68} w={74} h={38} label="Start" />
+      <Shape x={146} y={134} w={74} h={38} accent label="Ship" />
+      <Arrow from={[183, 106]} to={[183, 134]} />
       <Panel x={12} y={150} w={92} h={58} title="MAP">
         <rect x={36} y={182} width={14} height={8} rx={2} className="fill-slate-300" />
         <rect x={36} y={194} width={14} height={8} rx={2} className="fill-slate-300" />

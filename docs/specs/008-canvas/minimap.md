@@ -5,8 +5,8 @@ lets you jump the viewport anywhere with a tap or drag.
 
 ## Behaviour
 
-- **A movable panel.** The Map is a first-class floating panel (`MovablePanel`,
-  like the Palette), labelled **"Map"**: drag its header to move it and collapse
+- **A movable panel.** The Map is a first-class corner panel (`MovablePanel`,
+  like AI and the tool panels), labelled **"Map"**: drag its header to move it and collapse
   it to a banner. It **docks into the four canvas corners** like the other panels
   ([Panel corner docking](../007-editor/panel-docking.md)) — snap-to-corner on drag, free-drop, and a
   device-local persisted position; its default corner is **bottom-left**.

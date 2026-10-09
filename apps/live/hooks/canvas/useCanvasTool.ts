@@ -6,7 +6,7 @@
 // status bar later) can read it without prop-drilling through Canvas.
 
 import { useRef, useState } from 'react';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { track } from '@/lib/telemetry';
 

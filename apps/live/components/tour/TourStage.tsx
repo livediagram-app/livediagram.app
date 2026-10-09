@@ -13,7 +13,6 @@ export function TourStage<Api>({
   ariaPrefix,
   copy,
   welcomeArt,
-  layoutPicker,
   layer = 'overlay',
   pad = 6,
 }: {
@@ -22,8 +21,6 @@ export function TourStage<Api>({
   ariaPrefix?: string;
   copy?: Partial<TourCardCopy>;
   welcomeArt?: ReactNode;
-  // Shown on the welcome card under its copy (the welcome tour's panel layout choice).
-  layoutPicker?: ReactNode;
   // 'modal' draws the ring over a dialog, for a tour of one (the card type editor's Show Me): just above the
   // dialog, just below the menus its controls open (AnchoredPopover), which stay lit.
   layer?: 'overlay' | 'modal';
@@ -79,7 +76,6 @@ export function TourStage<Api>({
         {...(ariaPrefix ? { ariaPrefix } : {})}
         {...(copy ? { copy } : {})}
         {...(welcomeArt ? { welcomeArt } : {})}
-        layoutPicker={step.card === 'welcome' ? layoutPicker : undefined}
         onBack={stepIndex > (engine.hasWelcome ? 1 : 0) && !step.card ? engine.back : undefined}
         onNext={engine.next}
         onSkip={engine.skip}

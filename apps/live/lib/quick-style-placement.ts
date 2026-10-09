@@ -1,9 +1,8 @@
 // Where the quick style panel sits (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): on
-// the left edge of the canvas, vertically centred, in every layout. It keeps clear of the chrome
+// the left edge of the canvas, vertically centred. It keeps clear of the chrome
 // by trying fixed candidates in order, so the same chrome always gives the same spot.
 
 export type Rect = { left: number; top: number; width: number; height: number };
-export type QuickStyleLayout = 'floating' | 'toolbar';
 export type QuickStyleCandidate = 'centre' | 'below' | 'above' | 'beside' | 'right-edge';
 export type QuickStylePlacement = {
   left: number;

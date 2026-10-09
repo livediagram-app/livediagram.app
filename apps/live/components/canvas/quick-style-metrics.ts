@@ -5,8 +5,6 @@ import { PEN_COLOUR_NAMES } from '@livediagram/document';
 export const QUICK_TARGET_PX = 24;
 export const QUICK_BORDER_PX = 1;
 export const QUICK_COMPACT_PADDING_PX = 8;
-export const QUICK_FLOATING_PADDING_PX = 10;
-export const QUICK_FLOATING_GAP_PX = 4;
 // A theme's colour row in Diagram mode: its seven swatches and Ink.
 const THEME_ROW_TARGETS = 8;
 // Targets in every colour row: the widest of a theme's row and the stock colours (Ink and the hued

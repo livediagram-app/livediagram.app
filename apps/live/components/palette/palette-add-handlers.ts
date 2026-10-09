@@ -1,10 +1,9 @@
-import type { CommandPaletteProps } from './CommandPalette.types';
+import type { PaletteProps } from './palette.types';
 
 // The editor add-handlers a palette surface is wired to: one per kind of
-// thing a tile can place or arm. Named once here because two surfaces take
-// the same set (the floating Palette and the Toolbar layout's strip,
-// docs/specs/007-editor/toolbar-layout.md), and a handler added to one list but not the other would leave a
-// tile that silently does nothing in one layout.
+// thing a tile can place or arm. Named once here so the strip
+// (docs/specs/007-editor/toolbar-layout.md), its More popover and its Search all take the same set, and
+// a handler missing from the list cannot leave a tile that silently does nothing.
 export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddShape',
   'onAddIcon',
@@ -31,12 +30,9 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onBeginMarker',
   'onBeginShapePen',
   'onBeginPolygon',
-] as const satisfies readonly (keyof CommandPaletteProps)[];
+] as const satisfies readonly (keyof PaletteProps)[];
 
-export type PaletteAddHandlers = Pick<
-  CommandPaletteProps,
-  (typeof PALETTE_ADD_HANDLER_KEYS)[number]
->;
+export type PaletteAddHandlers = Pick<PaletteProps, (typeof PALETTE_ADD_HANDLER_KEYS)[number]>;
 
 // Just the add-handlers out of a wider props bag (the canvas chrome's), so a
 // surface can be handed them in one spread.

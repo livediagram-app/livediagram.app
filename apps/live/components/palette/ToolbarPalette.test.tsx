@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// The Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): what it shows, and that its controls
-// reach the same handlers the floating Palette's do.
+// The palette strip (docs/specs/007-editor/toolbar-layout.md): what it shows, and that its controls
+// reach the editor's add-handlers.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
@@ -14,6 +14,12 @@ import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
+}));
+// A Plan board covering the canvas (docs/specs/026-plan/plan-board.md "Maximised board").
+const covering = vi.hoisted(() => ({ value: false }));
+vi.mock('@/hooks/plan/plan-cover-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/plan/plan-cover-store')>()),
+  useBoardCovering: () => covering.value,
 }));
 
 beforeAll(() => {
@@ -30,6 +36,7 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
   mobile.value = false;
+  covering.value = false;
 });
 
 function handlers(): PaletteAddHandlers {
@@ -99,6 +106,43 @@ describe('ToolbarPalette', () => {
     const { h } = show();
     fireEvent.click(within(strip()).getByRole('button', { name: 'Add square' }));
     expect(h.onAddShape).toHaveBeenCalledWith('square', expect.anything());
+  });
+
+  // docs/specs/026-plan/plan-board.md "Maximised board": only Cards while a board covers the canvas, and the
+  // category chosen before comes back when it is restored.
+  it('offers only Cards while a board covers the canvas, then restores the choice', () => {
+    const picked = () => screen.getByRole('button', { name: 'Palette category' }).textContent;
+    const view = show({ mode: 'plan' });
+    pickCategory('plan-boards');
+    expect(picked()).toContain('Boards');
+    covering.value = true;
+    view.rerender(
+      inMode(
+        'plan',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          {...view.h}
+        />,
+      ),
+    );
+    expect(picked()).toContain('Cards');
+    covering.value = false;
+    view.rerender(
+      inMode(
+        'plan',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          {...view.h}
+        />,
+      ),
+    );
+    expect(picked()).toContain('Boards');
   });
 
   it('swaps the tiles when the category changes', () => {
@@ -201,7 +245,7 @@ describe('ToolbarPalette', () => {
   });
 
   // docs/specs/021-event-storming/event-storming.md: the floating palette's board row, in the strip.
-  it('offers Add from photo on an event-storming board, as the floating palette does', () => {
+  it('offers Add from photo on an event-storming board, as its category does', () => {
     const onImportPhoto = vi.fn();
     show({ esBoard: true, esBoardControls: { onImportPhoto } });
     fireEvent.click(within(strip()).getByRole('button', { name: 'Add from photo' }));

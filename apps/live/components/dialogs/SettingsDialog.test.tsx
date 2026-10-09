@@ -50,10 +50,10 @@ describe('SettingsDialog', () => {
     setViewport(false);
     Element.prototype.scrollIntoView = vi.fn();
     renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Panels' }));
-    // Panels is open, with the Panel Layout row ringed.
-    expect(screen.getByRole('radiogroup', { name: 'Panel Layout' })).toBeTruthy();
-    const ringed = document.querySelector('[data-settings-row="panelLayout"]');
+    fireEvent.click(screen.getByRole('button', { name: 'Change Alignment Guides in Editor' }));
+    // Editor is open, with the Alignment Guides row ringed.
+    expect(screen.getByRole('switch', { name: /Alignment Guides/ })).toBeTruthy();
+    const ringed = document.querySelector('[data-settings-row="alignmentGuides"]');
     expect(ringed?.className).toContain('ring-2');
   });
 
@@ -64,7 +64,7 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
     const next = onChange.mock.calls[0]![0] as UserPreferences;
     expect(next.powerUserMode).toBe(true);
-    expect(next.panelLayout).toBe('toolbar');
+    expect(next.alignmentGuides).toBe(true);
     cleanup();
     renderDialog(next);
     expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();

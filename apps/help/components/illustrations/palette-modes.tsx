@@ -1,18 +1,10 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
 // Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
-// settings popover (Auto-Attach Arrows, Alignment Guides, Panel Opacity, Reset
-// Palette Position). Composed only from the shared primitives so the house style
+// settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label } from './primitives';
-import {
-  EraserGlyph,
-  HandGlyph,
-  IsoCard,
-  LaserGlyph,
-  SelectGlyph,
-  iso,
-} from './palette-modes-parts';
+import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
+import { IsoCard, iso } from './palette-modes-parts';
 import { PickerTrigger, PixelCharacter } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
@@ -218,13 +210,7 @@ export function IsometricMode() {
   );
 }
 
-// --- Palette settings popover -----------------------------------------------
-
-/** The palette gear (settings) popover: a small menu of toggle rows and the
- *  reset action. `highlight` brand-tints one row so an article can point at its
- *  own setting. Reused across the settings articles. */
-
-/** Panel opacity: a floating panel rendered translucent so the canvas content
+/** Panel opacity: a corner panel rendered translucent so the canvas content
  *  behind it stays visible. Pairs with the settings popover illustration to
  *  show what the slider does. */
 export function PanelOpacity() {
@@ -234,10 +220,10 @@ export function PanelOpacity() {
       <Shape x={54} y={104} w={86} h={52} accent label="A" />
       <Shape x={150} y={158} w={86} h={52} kind="circle" label="B" />
       <Shape x={252} y={150} w={92} h={52} label="C" />
-      {/* The floating panel at ~60% opacity: the shapes behind it stay
+      {/* The panel at ~60% opacity: the shapes behind it stay
           visible through it. */}
       <g opacity={0.6}>
-        <Panel x={196} y={42} w={156} h={150} title="PALETTE">
+        <Panel x={196} y={42} w={156} h={150} title="AI ASSISTANT">
           <rect x={210} y={78} width={128} height={10} rx={5} className="fill-slate-200" />
           <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
           <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
@@ -272,48 +258,6 @@ export function AutoAttachArrows() {
         strokeDasharray="5 5"
         strokeLinecap="round"
       />
-    </Scene>
-  );
-}
-
-/** Reset palette position: the palette snapping back from a drifted spot to its
- *  default top-right corner. */
-export function ResetPalettePosition() {
-  return (
-    <Scene w={420} h={230}>
-      {/* Drifted ghost of the palette */}
-      <g opacity={0.5}>
-        <rect
-          x={120}
-          y={132}
-          width={70}
-          height={84}
-          rx={10}
-          className="fill-white stroke-slate-300"
-          strokeWidth={2}
-          strokeDasharray="5 4"
-        />
-      </g>
-      {/* Snap-back trail */}
-      <Arrow from={[190, 150]} to={[316, 44]} kind="curved" tone="accent" dashed />
-      {/* Palette back in its default top-right corner */}
-      <Panel x={318} y={20} w={84} h={104} title="PALETTE">
-        <Tile x={328} y={48} active>
-          <SelectGlyph on />
-        </Tile>
-        <Tile x={362} y={48}>
-          <HandGlyph />
-        </Tile>
-        <Tile x={328} y={84}>
-          <EraserGlyph />
-        </Tile>
-        <Tile x={362} y={84}>
-          <LaserGlyph />
-        </Tile>
-      </Panel>
-      <Label x={252} y={92} size={10} weight={700} tone="accent" anchor="middle">
-        Snap back
-      </Label>
     </Scene>
   );
 }

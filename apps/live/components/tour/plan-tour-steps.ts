@@ -8,8 +8,6 @@ import { clickTour, findTour } from './tour-dom';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
 
 export type PlanTourApi = {
-  // The Toolbar panel layout, for parity with the welcome tour's api (the steps are the same in both).
-  toolbar: boolean;
   // Places the example board in the middle of the view (once) and waits for it to draw.
   placeBoard: () => Promise<void>;
   addCards: () => Promise<void>;

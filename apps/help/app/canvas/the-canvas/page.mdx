@@ -7,31 +7,29 @@ import { CanvasPaletteOverview } from '@/components/illustrations/canvas-basics'
 export const metadata = helpMetadata({
   title: 'The Canvas',
   description:
-    'The infinite canvas where you build diagrams, with a floating palette for adding shapes and tools.',
+    'The infinite canvas where you build diagrams, with the palette strip across the top for adding shapes and tools.',
   path: '/help/canvas/the-canvas/',
 });
 
 <ArticleLayout
   title="The Canvas"
-  description="The infinite canvas where every diagram comes together, with a floating palette always within reach."
+  description="The infinite canvas where every diagram comes together, with the palette always within reach."
   categoryTitle="Canvas"
   categorySlug="canvas"
   subArticles={getSubArticles("the-canvas")}
 >
 
-The canvas is where you actually build diagrams in livediagram. It is an open, scrollable surface you can pan and zoom freely, with a floating palette sitting on top of it for adding elements and switching tools. Everything works straight away, no sign-in required, so you can [open a fresh canvas](/new) and start placing shapes in seconds.
+The canvas is where you actually build diagrams in livediagram. It is an open, scrollable surface you can pan and zoom freely, with the palette pinned across the top of it for adding elements and switching tools. Everything works straight away, no sign-in required, so you can [open a fresh canvas](/new) and start placing shapes in seconds.
 
-<Figure caption="The canvas with the Palette in its top-right home, and the paintbrush and zoom controls in the bottom-right corner.">
+<Figure caption="The canvas with the menu button top-left, the Palette strip across the top, and the paintbrush and zoom controls in the bottom-right corner.">
   <CanvasPaletteOverview />
 </Figure>
 
 ## The Palette
 
-A floating panel titled **Palette** sits over the canvas, holding everything you add to it. On desktop it starts in the top-right corner, but its header doubles as a drag handle: press it and drag to move the whole panel. Drop it near any corner to dock it there, or anywhere else to leave it floating. Your arrangement is remembered in this browser, even after a reload, and a reset button appears in the header once the panel has left its home corner. A collapse button in the header folds the panel down to its title bar, giving you back canvas space while keeping it one click away. The header also carries the mode switch (**Diagram**, **Draw**, **Illustrate** and **Plan**).
+The **Palette** is a strip pinned to the top centre of the canvas, holding everything you add to it. It starts with two dropdowns: the canvas tool (**Select**, **Hand**, **Laser** and the other [selection modes](/help/selection-modes/)) and the palette category. Then come the category's first tiles, **More** (⋯) for the rest of the category, and **Search** for finding any element by name. The palette opens on **Popular**, the tiles most reached for in the current mode. See [Toolbar Layout](/help/palette/toolbar-layout/) for the details.
 
-Under the header sit two dropdowns: the canvas tool on the left (**Select**, **Hand**, **Laser** and the other [selection modes](/help/selection-modes/)) and the palette category on the right. The palette opens on **Popular**, the tiles most reached for in the current mode.
-
-If you prefer a single strip along the top of the canvas, the [Toolbar layout](/help/palette/toolbar-layout/) in Settings swaps the floating panel for one. A phone always uses the Toolbar layout.
+In the top-left corner, beside the strip, the **menu button** opens the [Explorer](/help/explorer/explorer-panel/), and on a computer the mode switch (**Diagram**, **Draw**, **Illustrate** and **Plan**) sits beside it.
 
 ## Adding Elements
 
@@ -46,10 +44,5 @@ Most elements are added straight from the palette, which is organised into categ
 The canvas is effectively infinite, so you are never boxed in. Use the Hand tool, a middle-click drag, two fingers on a trackpad, or hold Space and drag to pan, and `Cmd` / `Ctrl` + scroll, a pinch, or the zoom controls in the bottom-right corner to scale the view. The [Panning and Zooming](/help/canvas/the-canvas/pan-and-zoom/) article covers every way to navigate.
 
 Each tab has its own backdrop and theme. The paintbrush button beside the zoom controls opens the **Tab Look & Feel** dialog, where you can [change the canvas background](/help/canvas/the-canvas/changing-the-background/) or [pick a theme](/help/canvas/themes/).
-
-<Tip>
-  Lost the palette somewhere awkward? The reset button in its header sends it back to the top-right
-  corner. See [Reset Palette Position](/help/palette/reset-palette-position/).
-</Tip>
 
 </ArticleLayout>

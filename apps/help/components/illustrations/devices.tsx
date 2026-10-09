@@ -1,11 +1,11 @@
 // Supported-devices illustrations (docs/specs/018-help/help-app.md): the editor framed inside a desktop
 // monitor, a tablet, and a phone, each with the chrome that screen size brings
-// (full floating palette on desktop, the Toolbar strip on mobile). Composed only
+// (the full strip and corner controls on desktop, the swiping strip on mobile). Composed only
 // from the shared primitives so the house style holds.
 
 import { type ReactNode } from 'react';
 
-import { Scene, Shape, Arrow, Panel, Tile, Label } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label } from './primitives';
 
 // A tiny stand-in flow drawn at any origin / scale, so the same diagram can sit
 // inside a roomy monitor or a cramped phone without redrawing it per frame.
@@ -95,50 +95,69 @@ function MiniCornerCluster({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** A mini floating palette: its title, the two dropdown chips, and a few tiles. */
-function MiniPalette({ x, y }: { x: number; y: number }) {
+/** The editor's top row in miniature, `w` wide from (x, y): the menu button card, then the
+ *  palette strip (its two dropdowns, a run of tiles, More and Search). */
+function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
+  const sx = x + 26;
+  const sw = w - 26;
+  const tiles = Math.max(0, Math.floor((sw - 84) / 14));
   return (
-    <Panel x={x} y={y} w={84} h={96} title="PALETTE">
-      <rect x={x + 6} y={y + 28} width={34} height={11} rx={3} className="fill-slate-100" />
-      <rect x={x + 44} y={y + 28} width={34} height={11} rx={3} className="fill-slate-100" />
-      <Tile x={x + 10} y={y + 46} size={22} active>
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={20}
+        height={18}
+        rx={4}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.2}
+      />
+      <path
+        d={`M${x + 6} ${y + 5.5}h8M${x + 6} ${y + 9}h8M${x + 6} ${y + 12.5}h8`}
+        className="stroke-slate-500"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      <rect
+        x={sx}
+        y={y}
+        width={sw}
+        height={18}
+        rx={5}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.2}
+      />
+      <rect x={sx + 4} y={y + 4} width={14} height={10} rx={2.5} className="fill-brand-100" />
+      <rect x={sx + 22} y={y + 4} width={26} height={10} rx={2.5} className="fill-brand-100" />
+      {Array.from({ length: tiles }, (_, i) => (
         <rect
-          x={-6}
-          y={-6}
-          width={12}
-          height={12}
-          rx={2}
-          className="stroke-white"
-          strokeWidth={2}
-          fill="none"
+          key={i}
+          x={sx + 56 + i * 14}
+          y={y + 5}
+          width={8}
+          height={8}
+          rx={1.5}
+          className={i === 0 ? 'fill-brand-500' : 'fill-none stroke-slate-400'}
+          strokeWidth={1}
         />
-      </Tile>
-      <Tile x={x + 36} y={y + 46} size={22}>
-        <circle r={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 10} y={y + 70} size={22}>
-        <path
-          d="M0 -7 L7 0 L0 7 L-7 0 Z"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-      <Tile x={x + 36} y={y + 70} size={22}>
-        <path
-          d="M-6 0 h12 M6 -3 l3 3 -3 3"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-    </Panel>
+      ))}
+      {[0, 1, 2].map((i) => (
+        <circle key={i} cx={sx + sw - 24 + i * 3} cy={y + 9} r={0.9} className="fill-brand-500" />
+      ))}
+      <circle
+        cx={sx + sw - 9}
+        cy={y + 8.5}
+        r={3}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.1}
+      />
+    </g>
   );
 }
 
 // --- Desktop -----------------------------------------------------------------
 
-/** A monitor showing the full editor: the floating palette, the diagram, the
+/** A monitor showing the full editor: the menu button and palette strip, the diagram, the
  *  bottom-right cluster with the zoom, and the bottom bar with the tabs. */
 export function DesktopEditor() {
   return (
@@ -158,8 +177,8 @@ export function DesktopEditor() {
       <g transform="translate(48 50) scale(0.92)">
         <MiniFlow x={0} y={0} />
       </g>
-      {/* Floating palette, top-right */}
-      <MiniPalette x={298} y={34} />
+      {/* The menu button and the palette strip across the top */}
+      <MiniTopRow x={40} y={32} w={300} />
       {/* Corner cluster bottom-right, above the bottom bar with the tabs */}
       <MiniCornerCluster x={284} y={158} />
       <MiniBottomBar x={30} y={178} w={360} />
@@ -213,8 +232,8 @@ export function DesktopShortcuts() {
 
 // --- Tablet ------------------------------------------------------------------
 
-/** A tablet held in landscape: the roomy screen gets the full layout with the
- *  floating palette, the same as a computer. */
+/** A tablet held in landscape: the roomy screen gets the full layout, the same as a
+ *  computer. */
 export function TabletLandscape() {
   return (
     <Scene w={420} h={220} bg="plain">
@@ -234,8 +253,8 @@ export function TabletLandscape() {
       <g transform="translate(70 56) scale(0.92)">
         <MiniFlow x={0} y={0} />
       </g>
-      {/* Floating palette, like desktop */}
-      <MiniPalette x={290} y={42} />
+      {/* The menu button and the palette strip, like desktop */}
+      <MiniTopRow x={60} y={42} w={280} />
       <MiniCornerCluster x={276} y={150} />
       <MiniBottomBar x={52} y={168} w={330} />
       <Label x={210} y={210} anchor="middle" size={10} weight={600} tone="muted">
@@ -247,8 +266,8 @@ export function TabletLandscape() {
 
 // --- Mobile ------------------------------------------------------------------
 
-/** A phone running the touch editor: the menu card and the Toolbar strip
- *  across the top (a phone's only layout), the diagram opened zoomed out, the
+/** A phone running the touch editor: the menu card and the palette strip
+ *  across the top, the diagram opened zoomed out, the
  *  Fit button and the bottom bar, and a finger interacting with the canvas. */
 export function MobileEditor() {
   return (
@@ -265,8 +284,8 @@ export function MobileEditor() {
       />
       <rect x={188} y={22} width={44} height={5} rx={2.5} className="fill-slate-200" />
       <rect x={158} y={34} width={104} height={172} rx={6} className="fill-slate-50" />
-      {/* The menu button (Explorer) and the mode switch in their own card, then
-          the Toolbar strip (docs/specs/007-editor/toolbar-layout.md): selection
+      {/* The menu button (Explorer) in its own card, then the palette strip
+          (docs/specs/007-editor/toolbar-layout.md): selection
           mode, category, a couple of tiles, More, and Search at the end. */}
       <rect
         x={162}

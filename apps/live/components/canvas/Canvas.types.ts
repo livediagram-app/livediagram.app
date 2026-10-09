@@ -35,7 +35,7 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
@@ -301,8 +301,6 @@ export type CanvasProps = {
   // seeded first character isn't replaced by the next keystroke.
   editCursorAtEnd?: boolean;
   formatSourceId: string | null;
-  palettePosition: { x: number; y: number } | null;
-  explorerPosition: { x: number; y: number } | null;
   canUndo: boolean;
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
@@ -427,21 +425,11 @@ export type CanvasProps = {
     endX: number,
     endY: number,
   ) => import('@livediagram/document').ArrowElement;
-  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Palette as a top strip and a menu button
-  // in place of the Explorer. Always on below `sm`, where Floating is not offered.
-  toolbarLayout?: boolean;
-  // Lifted user preferences + a write-through setter, forwarded to the
-  // Palette settings popover (docs/specs/007-editor/user-preferences.md). Holds the canvas-behaviour
-  // toggles (auto-attach arrows, alignment guides) that the popover edits.
+  // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
-  onChangeSettings: (next: UserPreferences) => void;
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
-  onMovePalette: (x: number, y: number) => void;
-  onResetPalette: () => void;
-  onMoveExplorer: (x: number, y: number) => void;
-  onResetExplorer: () => void;
   documentList: DocumentListItem[];
   // Lightweight id + name of this document's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
@@ -461,7 +449,7 @@ export type CanvasProps = {
   sharedDocuments?: SharedWithItem[];
   onDismissShared?: (documentId: string) => void;
   // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the floating Explorer panel for its Teams
+  // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the Explorer popover for its Teams
   // accordion, team rows in Recent, and the current team document.
   // Empty by default so guest / legacy callers can omit them.
   teams?: { id: string; name: string }[];
@@ -474,19 +462,13 @@ export type CanvasProps = {
   onResetMap: () => void;
   // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
-  // field for the render-order helpers. Minimised by default into a
-  // bottom-right dock button.
+  // field for the render-order helpers. A popover over its bottom-right
+  // cluster button.
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
-  layersPanelPosition: { x: number; y: number } | null;
-  layersMinimized: boolean;
-  onMoveLayersPanel: (x: number, y: number) => void;
-  onResetLayersPanel: () => void;
-  onToggleLayersMinimized: () => void;
   // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running,
-  // so `poll` null means it isn't rendered at all — there is no minimised
-  // state to keep, unlike Layers.
+  // so `poll` null means it isn't rendered at all.
   pollPanel: {
     poll: import('@livediagram/api-schema').LivePoll;
     answers: Map<string, string | null>;
@@ -754,7 +736,7 @@ export type CanvasProps = {
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
   // "Auto align" cleanup pass on the current tab's elements. See
-  // CommandPalette's Cleanup accordion + lib/auto-align.ts.
+  // the palette's Cleanup accordion + lib/auto-align.ts.
   // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off

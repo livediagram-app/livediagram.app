@@ -1,6 +1,6 @@
 # Canvas + Theme dialog
 
-A focused modal for changing the active tab's **canvas style** and **theme**, reached from the paintbrush dock button. The same controls still live in the floating palette's Current Tab accordions ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a second, larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
+A focused modal for changing the active tab's **canvas style** and **theme**, reached from the paintbrush dock button. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
 
 ## Why
 

@@ -1,8 +1,8 @@
 // Where a maximised or tab-filling Plan element sits in the canvas area (docs/specs/026-plan/plan-board.md "Maximised
 // board", "Fill Tab"): clear of the editor's chrome laid over the canvas, measured from that chrome as it is now. The
-// Toolbar layout's top row (its strip, topStripInset's, and the menu button with the mode menu) pushes the top down;
-// a layout panel (the Explorer, the Palette as panels; never a passing one like the Trash) pushes its side
-// in; a sheet across the canvas pushes the top or bottom. The bottom-right controls are not measured: they float
+// top row (the palette strip, topStripInset's, and the menu button with the mode menu) pushes the top down; a layout
+// panel (a MovablePanel marked `layoutChrome`; never a passing one like the Trash) pushes its side in; a sheet across
+// the canvas pushes the top or bottom. The bottom-right controls are not measured: they float
 // over the element, which runs down to the canvas's foot. Pure but for `measureCanvasChrome`, which reads the DOM.
 import { topStripInset } from './top-strip-inset';
 
@@ -14,8 +14,10 @@ export type ChromeBox = { kind: 'top' | 'panel' | 'bottom'; box: Box };
 
 // The top row's menu button and mode menu (ToolbarExplorerButton); the strip itself is read by topStripInset.
 export const TOP_ROW_SELECTOR = '[data-toolbar-menu]';
-// The panels that are part of the layout (MovablePanel `layoutChrome`): the Explorer and the Palette as panels. A panel opened for a moment (the Trash, the item panel, a card search) is not one: it floats over the board,
-// which never moves for it.
+// The panels that are part of the layout (MovablePanel `layoutChrome`). The editor has none since the Palette and the
+// Explorer became the strip and a popover (docs/specs/007-editor/toolbar-layout.md); the rule stays for a panel that
+// joins the layout. A panel opened for a moment (the Trash, the item panel, a card search) is not one: it floats
+// over the board, which never moves for it.
 export const PANEL_SELECTOR = '[data-layout-chrome]';
 // The bottom-right controls (undo, the dock, zoom) are not measured: they float over the element, which runs down
 // to the canvas's foot.

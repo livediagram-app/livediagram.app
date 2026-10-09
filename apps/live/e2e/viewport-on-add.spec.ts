@@ -1,4 +1,3 @@
-import type { Page } from '@playwright/test';
 import { expect, test, expectNoPageErrors, openStartBlank, pageOwnerHeaders } from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
@@ -6,16 +5,6 @@ import { expect, test, expectNoPageErrors, openStartBlank, pageOwnerHeaders } fr
 // included, never moves the view.
 
 const CANVAS = '[data-canvas-a11y-root]';
-
-// The Toolbar layout keeps the canvas clear of floating panels, which refuse a drop.
-async function startBlank(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const key = 'livediagram:user-preferences:v1';
-    const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
-    localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
-  });
-  await openStartBlank(page);
-}
 
 const centre = (b: { x: number; y: number; width: number; height: number }) => ({
   x: b.x + b.width / 2,
@@ -27,7 +16,7 @@ test.describe('Viewport on add', () => {
     page,
     pageErrors,
   }) => {
-    await startBlank(page);
+    await openStartBlank(page);
     const canvas = page.locator(CANVAS);
     const box = (await canvas.boundingBox())!;
     const drop = { x: 200, y: 260 };
@@ -46,7 +35,7 @@ test.describe('Viewport on add', () => {
   });
 
   test('a reloaded tab is framed on its content', async ({ page, pageErrors }) => {
-    await startBlank(page);
+    await openStartBlank(page);
     const canvas = page.locator(CANVAS);
     // Dropped at the far corner, so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;

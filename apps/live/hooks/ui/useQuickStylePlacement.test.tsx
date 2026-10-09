@@ -112,14 +112,22 @@ const mountPanel = () => {
 describe('useQuickStylePlacement', () => {
   it('places the panel clear of the chrome', () => {
     const panelRef = mountPanel();
-    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
     expect(result.current).not.toBeNull();
     expect(result.current!.top).toBeGreaterThanOrEqual(360);
   });
 
+  it('places on whole pixels, so its glyphs stay sharp', () => {
+    box(palette, { left: 0, top: 60.5, width: 240, height: 300 });
+    const panelRef = mountPanel();
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
+    expect(Number.isInteger(result.current!.left)).toBe(true);
+    expect(Number.isInteger(result.current!.top)).toBe(true);
+  });
+
   it('settles: still chrome causes no further placement passes', () => {
     const panelRef = mountPanel();
-    renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));
+    renderHook(() => useQuickStylePlacement(panelRef, true));
     for (let i = 0; i < 5; i++) act(runFrame);
     const settledMeasures = measures;
     const settledObserves = FakeResizeObserver.observeCalls;
@@ -132,7 +140,7 @@ describe('useQuickStylePlacement', () => {
 
   it('re-places once when a piece of chrome resizes', () => {
     const panelRef = mountPanel();
-    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
     for (let i = 0; i < 5; i++) act(runFrame);
     const before = measures;
 
@@ -146,7 +154,7 @@ describe('useQuickStylePlacement', () => {
 
   it('re-places for a transition on the chrome it watches, not one on the canvas', () => {
     const panelRef = mountPanel();
-    renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));
+    renderHook(() => useQuickStylePlacement(panelRef, true));
     for (let i = 0; i < 5; i++) act(runFrame);
     const settled = measures;
 
@@ -168,7 +176,7 @@ describe('useQuickStylePlacement', () => {
 
   it('watches chrome that mounts after the panel', () => {
     const panelRef = mountPanel();
-    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
     for (let i = 0; i < 5; i++) act(runFrame);
 
     const cluster = document.createElement('div');

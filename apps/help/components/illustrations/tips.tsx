@@ -1,9 +1,10 @@
 // Tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts and their toggle,
-// the floating palette as a quick-add launchpad, and the presenting surfaces
+// the palette strip as a quick-add launchpad, and the presenting surfaces
 // (Zen mode and the laser pointer). Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.
 
-import { Scene, Shape, Arrow, Panel, Tile, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Panel, Label, TextBar } from './primitives';
+import { MenuCard, Strip } from './toolbar-layout';
 
 /** A single key cap, sized to its glyph, drawn like a physical keyboard key. */
 function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; label: string }) {
@@ -82,65 +83,16 @@ export function ShortcutsToggle() {
   );
 }
 
-/** A dropdown chip in the palette's header band: a label and a caret. */
-function PaletteChip({ x, y, w, label }: { x: number; y: number; w: number; label: string }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={20}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={x + 9} y={y + 11} size={10} weight={600} tone="strong">
-        {label}
-      </Label>
-      <path
-        d={`M${x + w - 14} ${y + 8} l4 4 l4 -4`}
-        className="stroke-slate-400"
-        strokeWidth={1.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-/** The floating palette: the Diagram mode chip in its title row, the
- *  selection-mode and category dropdowns, and Popular's first tiles. */
+/** The palette strip across the top of the canvas, open on Popular, with the menu button and
+ *  the Diagram mode switch in their card to its left. */
 export function CommandPalette() {
-  const stroke = { className: 'stroke-brand-500', strokeWidth: 2, fill: 'none' } as const;
-  const glyphs = [
-    <rect key="sq" x={-8} y={-8} width={16} height={16} rx={2} {...stroke} />,
-    <circle key="ci" r={8} {...stroke} />,
-    <path key="di" d="M0 -9 L9 0 L0 9 L-9 0 Z" {...stroke} />,
-    <path key="tx" d="M-6 -7 h12 M0 -7 v14" {...stroke} strokeLinecap="round" />,
-    <path key="ar" d="M-7 6 L6 -6 M1 -6 h5 v5" {...stroke} strokeLinecap="round" />,
-    <rect key="fr" x={-9} y={-8} width={18} height={16} rx={2} {...stroke} strokeDasharray="3 2" />,
-    <rect key="st" x={-8} y={-8} width={16} height={16} rx={1.5} className="fill-amber-400" />,
-    <path key="im" d="M-9 7 L-3 -1 L1 3 L4 0 L9 7 Z" className="fill-brand-300" />,
-  ];
   return (
-    <Scene w={420} h={224}>
-      <Shape x={28} y={146} w={72} h={42} kind="rect" label="Start" />
-      <Arrow from={[100, 167]} to={[150, 146]} kind="curved" tone="muted" dashed />
-      <Panel x={222} y={16} w={178} h={190} title="PALETTE">
-        {/* The editor mode chip in the title row. */}
-        <rect x={334} y={20} width={58} height={15} rx={7.5} className="fill-brand-50" />
-        <Label x={363} y={28} anchor="middle" size={10} weight={600} tone="accent">
-          Diagram
-        </Label>
-        <PaletteChip x={232} y={48} w={72} label="Select" />
-        <PaletteChip x={312} y={48} w={78} label="Popular" />
-        {glyphs.map((g, i) => (
-          <Tile key={i} x={236 + (i % 4) * 40} y={84 + Math.floor(i / 4) * 44} size={30}>
-            {g}
-          </Tile>
-        ))}
-      </Panel>
+    <Scene w={420} h={190}>
+      <MenuCard x={8} y={16} />
+      <Strip x={78} y={16} category="Popular" />
+      <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
+      <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
+      <Arrow from={[144, 127]} to={[268, 127]} />
     </Scene>
   );
 }

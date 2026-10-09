@@ -12,7 +12,7 @@ None of that is worth a settings dialog, and none of it should be a permanent pr
 
 ## Where it lives
 
-A normal floating panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, **the same width as the Palette**, homed **top-right under the Palette** where the tool picker that opened it lives. Like the Poll / Vote / Avatar panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner in both panel layouts, on a phone too. View-role visitors get it — the laser is theirs too.
+A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, the standard panel width, homed **top-right**. Like the Poll / Vote / Avatar panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner on a desktop and a phone alike. View-role visitors get it — the laser is theirs too.
 
 ## The settings
 
@@ -31,7 +31,7 @@ It rides the existing op rather than a second one: the alternative (a separate l
 
 ## Persistence
 
-Device-local, in `localStorage` (`livediagram:v2:laser-config`), like the avatar costume and the panel layout: which pen suits you depends on your screen and the room you present in, not on the document. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`livediagram:v2:laser-config`), like the avatar costume and the panel placements: which pen suits you depends on your screen and the room you present in, not on the document. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 ## Telemetry
 

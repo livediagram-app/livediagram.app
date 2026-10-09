@@ -48,7 +48,6 @@ export function VotePanel({
   onMoveTo,
   onReset,
   dock,
-  stackBelowY,
   readOnly,
 }: {
   vote: TabVote;
@@ -70,7 +69,6 @@ export function VotePanel({
   // Only the participant who STARTED this vote drives it (docs/specs/012-collaboration/session-tools.md): end,
   // reveal, clear, and moving the results focus. Everyone else follows.
   isHost: boolean;
-  stackBelowY?: number;
   // View-role visitors watch the vote but never drive it (docs/specs/012-collaboration/session-tools.md).
   readOnly: boolean;
 } & MovablePanelPlacementProps) {
@@ -83,7 +81,6 @@ export function VotePanel({
       position={position}
       defaultCorner="top-right-stacked"
       width="w-auto sm:w-64"
-      stackBelowY={stackBelowY}
       onMoveTo={onMoveTo}
       onReset={onReset}
       {...dock}

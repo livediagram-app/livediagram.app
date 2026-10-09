@@ -50,7 +50,7 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 | Legacy default-folder key  | `'mode:infographic'` → `'mode:illustrate'` | `LEGACY_PLACEMENT_DEFAULT_KEYS`; spec            |
 | `DEFAULT_EDITOR_MODE`      | `'diagram'`                                | Spec: `opensIn` absent = Diagram                 |
 | Mode store key             | `livediagram:v2:editor-mode:<tabId>`       | `editorModeKey`; one key per tab, device-local   |
-| Switch slot width          | 48 px (`w-12`); labelled 104 px            | `EditorModeSwitch` `SLOT_WIDTH`; zero shift      |
+| Switch slot width          | 48 px (`w-12`)                             | `EditorModeSwitch` `SLOT_WIDTH`; zero shift      |
 | `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark            | `pen-colours.ts`; spec "Ink is one colour"       |
 | `WHITEBOARD_UNSET_PATTERN` | `'blank'`                                  | Written on a migrated board with no pattern      |
 | `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond          | The shapes a migrated board inks                 |
@@ -213,18 +213,14 @@ export function editorModeShortcut(
 ```
 
 - `EditorModeTab = Pick<Tab, 'id' | 'kind' | 'opensIn' | 'layers'>`.
-- `EditorModeSwitch({ className?, align?: 'left' | 'right', labelled? })` (defaults `left`,
-  `false`): reads `useEditorModeState()` and renders nothing outside a provider, when `!canEdit`
-  or when `!canSwitch`; else a fixed slot (`data-editor-mode-switch`, `w-12`, or `w-[6.5rem]`
-  when `labelled`) around `ModeMenuChip({ mode, onChange, align, labelled })`.
+- `EditorModeSwitch({ className?, align?: 'left' | 'right' })` (default `left`): reads
+  `useEditorModeState()` and renders nothing outside a provider, when `!canEdit` or when
+  `!canSwitch`; else a fixed slot (`data-editor-mode-switch`, `w-12`) around
+  `ModeMenuChip({ mode, onChange, align })`.
 - Placement: inside `ToolbarExplorerButton`, after the menu button, in its corner card or inline
   in the phone strip (icon-only, `align` left). That card carries `data-floating-panel`, so the
   canvas's capture-phase pen gesture (`useCanvasSurfaceGestures`) skips a press there: with a Draw
-  tool in hand, a press on the chip or its menu switches rather than starting a stroke. In the
-  Floating layout, `CommandPalette` passes
-  `<EditorModeSwitch labelled align="right" />` as its `MovablePanel` `headerActions`, so it
-  sits in the Palette panel's title row beside help and minimise, in Diagram and in Draw (the
-  panel stays up in Draw mode, showing Draw's tools). Not in `TabBar` (which no longer takes the
+  tool in hand, a press on the chip or its menu switches rather than starting a stroke. Not in `TabBar` (which no longer takes the
   mode) nor the `Explorer`.
 - `TabModeIcon({ tab, style? })`: the effective mode's `EDITOR_MODE_ICON`, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
@@ -302,10 +298,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 ## Presentation and UX
 
 - The chip (`ModeMenuChip`): the mode's icon and a chevron on `TOOLBAR_TRIGGER_TONE`, filling
-  its fixed slot. Icon-only (the Toolbar layout): `h-9`, the 36 px menu button's height, centred,
-  in the `w-12` slot.
-  `labelled` (the Floating layout's Palette header): `h-6`, left-aligned, the mode's label
-  (`text-xs font-medium`) between the icon and the chevron, in the `w-[6.5rem]` slot. No hover
+  its fixed slot, icon-only: `h-9`, the 36 px menu button's height, centred, in the `w-12` slot. No hover
   card (it would cover the menu). The menu opens downward (`absolute top-full mt-1.5`, `left-0`, or `right-0` for
   `align="right"`), `min-w-36`, one compact row per catalogue entry: the 16 px icon, the name
   (`text-xs`), a check on the current row and the `⇧D` hint (`ModeKeyHint`) on the row
@@ -338,8 +331,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Web Experience
 
-- CLS: the switch's slot has one fixed width per form (`w-12`, or `w-[6.5rem]` labelled, wide
-  enough for the longest label, "Illustrate"), so nothing beside it moves on a switch.
+- CLS: the switch's slot has one fixed width (`w-12`), so nothing beside it moves on a switch.
   On a tab without a switch (an event-storming board) it renders nothing, so the menu card
   narrows on that tab change; a mode switch never moves anything.
 - INP: a switch is a `localStorage` write and one store notification; no fetch, no document
@@ -371,9 +363,8 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | One `canEdit`; preview hides the switch        | `useViewPreview.test.tsx`, `components/chrome/editor-mode/EditorModeSwitch.test.tsx`                                                         |
 | The switch: icon only, menu below, rows, keys  | `EditorModeSwitch.test.tsx` "EditorModeSwitch chip"                                                                                          |
 | A pressed row lands; Tab away closes           | `EditorModeSwitch.test.tsx` "keeps the menu open through a blur to nowhere…", "closes when focus moves outside (Tab away)"                   |
-| Labelled in the Palette header                 | `EditorModeSwitch.test.tsx` "names the mode when labelled…", e2e "a general tab opens in Diagram, with the chip in the Palette header"       |
 | The switch beside the menu button              | `components/chrome/ToolbarExplorerButton.test.tsx`, `apps/live/e2e/editor-modes.spec.ts`                                                     |
-| A Draw tool in hand never takes the press      | `ToolbarExplorerButton.test.tsx` "marks its card as floating chrome…", e2e "switches back to Diagram with a marker in hand" (both layouts)   |
+| A Draw tool in hand never takes the press      | `ToolbarExplorerButton.test.tsx` "marks its card as floating chrome…", e2e "switches back to Diagram with a marker in hand"                  |
 | The tab pill shows your mode on it             | `components/chrome/TabPill.test.tsx`                                                                                                         |
 | A template decides the tab's mode              | `app/document/[id]/useTemplateFlow.test.ts`                                                                                                  |
 | Opens in                                       | `hooks/editor/useTabOpensIn.test.tsx`, `components/chrome/OpensInMenuSection.test.tsx`                                                       |

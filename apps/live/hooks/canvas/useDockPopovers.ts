@@ -39,13 +39,9 @@ export type DockPanel =
 
 export type { DockAnchor };
 
-// The panel-open counts (docs/specs/017-telemetry/telemetry.md) for panels that ALSO open on desktop by
-// un-minimising a floating card (EditorCanvasHost's toggles emit there). As
-// a popover the same panel opens here instead, and a click takes one path or
-// the other (the cluster button calls either its popover toggle or its
-// expand, never both), so each surface counts its own opens and none counts
-// twice. Only on the open transition: re-opening the panel already showing
-// is not a new open.
+// The panel-open counts (docs/specs/017-telemetry/telemetry.md) for panels that open as a popover over
+// their cluster button. Only on the open transition: re-opening the panel already showing is not a
+// new open.
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');

@@ -40,7 +40,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
     heading: 'Tools',
     rows: [
       { keys: ['V'], label: 'Select tool  (or 1)' },
-      { keys: ['S'], label: 'Search elements  (Toolbar layout; else Select)' },
+      { keys: ['S'], label: 'Search elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand tool' },
       { keys: ['K'], label: 'Laser pointer' },
       { keys: ['E'], label: 'Eraser (click / drag to delete)' },

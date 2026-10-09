@@ -5,10 +5,7 @@ import {
   autoRebindArrowsEnabled,
   showProfilePictureEnabled,
   panelEnabled,
-  resolvePanelLayout,
-  withPanelLayout,
   type MapSize,
-  type PanelLayout,
   type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
@@ -142,13 +139,8 @@ export type SettingsToggleRowSpec = RowBase & {
 
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
-  // `desktopOnly` options are shown but can't be picked on a phone-sized
-  // viewport, with a note saying so (the panel layouts: a phone is always
-  // docked, docs/specs/007-editor/toolbar-layout.md).
-  options: { id: string; label: string; desktopOnly?: boolean }[];
-  // `mobile` asks for the value a phone shows, which can differ when the
-  // stored one is desktop only (Floating shows as Toolbar there).
-  read: (prefs: UserPreferences, view?: { mobile?: boolean }) => string;
+  options: { id: string; label: string }[];
+  read: (prefs: UserPreferences) => string;
   write: (prefs: UserPreferences, next: string) => UserPreferences;
   // Choices fire one 'Changed' event naming the setting, not the value ,
   // matching what the Map popover already emits.
@@ -414,7 +406,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -466,7 +458,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
         label: 'Dock Position',
         description:
-          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
+          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the palette strip sits; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
         helpArticle: 'drawMode',
         options: [
           { id: 'top', label: 'Top' },
@@ -511,13 +503,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       uiScalePartRow('panels', {
         label: 'Panel Scale',
         keywords: 'panels explorer palette layers popover size bigger smaller zoom',
-        description: 'Every panel, floating or opened from a button, and the Quick Style panel.',
+        description: 'Every panel, docked or opened from a button, and the Quick Style panel.',
         changed: 'UiScalePanels',
       }),
       uiScalePartRow('toolbar', {
         label: 'Toolbar Scale',
         keywords: 'toolbar strip top bar menu button size bigger smaller zoom',
-        description: 'The Toolbar layout’s strip and its menu button.',
+        description: 'The toolbar strip and its menu button.',
         changed: 'UiScaleToolbar',
       }),
       uiScalePartRow('cornerButtons', {
@@ -560,30 +552,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Panels',
     rows: [
       {
-        // Two layouts, one choice (docs/specs/007-editor/toolbar-layout.md).
-        kind: 'choice',
-        key: 'panelLayout',
-        keywords: 'compact hide panels layout tidy toolbar strip top bar excalidraw floating',
-        label: 'Panel Layout',
-        description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
-        helpArticle: 'toolbarLayout',
-        illustration: 'panelLayout',
-        options: [
-          { id: 'floating', label: 'Floating', desktopOnly: true },
-          { id: 'toolbar', label: 'Toolbar' },
-        ],
-        read: (p, view) => resolvePanelLayout(p, view),
-        write: (p, v) => withPanelLayout(p, v as PanelLayout),
-        event: { category: 'UI', changed: 'PanelLayout' },
-      },
-      {
         kind: 'slider',
         key: 'panelOpacity',
         keywords: 'transparency translucent fade see through alpha',
         label: 'Panel Opacity',
         description:
-          'Fades every panel, in every layout, so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
+          'Fades every panel and the toolbar so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
         helpArticle: 'panelOpacity',
         min: 0.3,
         max: 1,
@@ -1150,8 +1124,8 @@ export function choiceRow(key: string): SettingsChoiceRowSpec {
 }
 
 // A choice row's telemetry type carries the option picked, as a toggle's
-// carries its new state (docs/specs/017-telemetry/telemetry.md): 'PanelLayout' + 'toolbar' →
-// 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
+// carries its new state (docs/specs/017-telemetry/telemetry.md): 'ElementIndicators' + 'top' →
+// 'ElementIndicatorsTop', so the dashboard shows which way people moved, not
 // just that they touched the setting. Option ids are catalogue constants,
 // never user content.
 export function choiceTelemetryType(changed: string, optionId: string): string {

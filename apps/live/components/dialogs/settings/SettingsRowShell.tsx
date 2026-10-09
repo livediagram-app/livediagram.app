@@ -29,8 +29,7 @@ export function SettingsRowShell({
   onIllustrationChoose,
   illustrationDisabled,
   // A short info line between the card and the footnote, for a row whose
-  // options are limited right now (the desktop-only panel layouts on a
-  // phone). Not part of the description, which says what the setting IS.
+  // options are limited right now (a desktop-only row on a phone). Not part of the description, which says what the setting IS.
   notice,
   // A control that is its own interactive element (a slider, a segmented
   // choice) sits BESIDE the label; a whole-row switch wraps the lot, and
