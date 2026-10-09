@@ -40,7 +40,7 @@ export function PlanSetupBoard({
 }: {
   palette: PlanPalette;
   canEdit: boolean;
-  // The document's card types, offered in step 1 (every one picked to start).
+  // The document's card types, offered in step 1 (none picked to start, unless run again on a set-up board).
   types: readonly ItemTypeDef[];
   // The document's statuses, offered as existing states in step 2 (pickableStatuses).
   statusNames: ReadonlyMap<string, string>;
@@ -58,9 +58,7 @@ export function PlanSetupBoard({
   onCancel?: (() => void) | undefined;
 }) {
   const [step, setStep] = useState<Step>('types');
-  const [typeIds, setTypeIds] = useState<string[]>(
-    () => initial?.typeIds ?? types.map((t) => t.id),
-  );
+  const [typeIds, setTypeIds] = useState<string[]>(() => initial?.typeIds ?? []);
   const [columns, setColumns] = useState<SetupColumn[]>(() => initial?.columns ?? []);
   const [layout, setLayout] = useState<SetupLayout>(startLayout);
   const tabElements = useTabElementCount();

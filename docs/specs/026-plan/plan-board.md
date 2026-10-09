@@ -124,7 +124,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   colour, and a done step is a button back to it (pointer, focus ring); a step ahead is muted and not a button. It
   fits a phone's width without cutting a name.
   1. **Card Types**: an [option list](#option-lists), a row per card type of the document (its glyph on a tint of its colour, its name, a tick when
-     on), every one on to start; **Select All** and **Clear**; under the list **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
+     on), none on to start (run again on a set-up board, the types it shows); **Select All** and **Clear**; under the list **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
      **Next: Columns** needs at least one. A hairline sits under the step tiles.
   2. **Columns**: the columns chosen so far, top to bottom as the board will show them left to right, each a row
      with a grip, its name, "Existing state" or "New", and a remove cross; "No columns yet. Add one below." while

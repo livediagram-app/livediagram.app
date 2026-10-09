@@ -28,17 +28,22 @@ const draw = (canEdit = true) => {
   return onSetUp;
 };
 
+// Step 1 starts with no card type on: pick them all, then go on to the columns.
+const toColumns = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+};
+
 describe('Setup Board', () => {
-  it('asks for card types first, every one on, and needs one to go on', () => {
+  it('asks for card types first, none on, and needs one to go on', () => {
     draw();
     expect(screen.getByRole('heading', { name: 'Setup Board' })).toBeTruthy();
-    const tiles = screen.getAllByRole('checkbox', { checked: true });
-    expect(tiles).toHaveLength(ITEM_TYPES.length);
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(screen.queryAllByRole('checkbox', { checked: true })).toHaveLength(0);
     expect(screen.getByText('Pick at least one card type.')).toBeTruthy();
-    expect(
-      (screen.getByRole('button', { name: 'Next: Columns' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    const next = screen.getByRole('button', { name: 'Next: Columns' }) as HTMLButtonElement;
+    expect(next.disabled).toBe(true);
+    fireEvent.click(screen.getByRole('checkbox', { name: /Task/ }));
+    expect(next.disabled).toBe(false);
   });
 
   it('then takes existing and new columns, in order, and creates the board with both', () => {
@@ -77,7 +82,7 @@ describe('Setup Board', () => {
   // "Setup Board": an existing state reads as the column picker shows it (missingBoardStatuses).
   it('lists existing states as the column picker does', () => {
     draw();
-    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    toColumns();
     const todo = screen.getByRole('button', { name: 'Add To Do' });
     expect(todo.textContent).toContain('Not on any board');
     expect(todo.textContent).toContain('No cards');
@@ -85,7 +90,7 @@ describe('Setup Board', () => {
 
   it('goes back to the card types with nothing lost', () => {
     draw();
-    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    toColumns();
     fireEvent.click(screen.getByRole('button', { name: 'Add All' }));
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
@@ -182,7 +187,7 @@ describe('Setup Board', () => {
     };
     const { rerender } = render(<PlanSetupBoard {...props} otherElements={0} />);
     expect(screen.getByText('Step 1 of 3')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    toColumns();
     const next = screen.getByRole('button', { name: 'Next: Layout' }) as HTMLButtonElement;
     expect(next.disabled).toBe(true);
     // Create Board is the Layout step's alone.
@@ -220,7 +225,7 @@ describe('Setup Board', () => {
 
   it('creates the board with the layout as it was when pressed straight through', () => {
     const onSetUp = draw();
-    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    toColumns();
     fireEvent.click(screen.getByRole('button', { name: 'Add To Do' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Layout' }));
     fireEvent.click(screen.getByRole('button', { name: 'Create Board' }));
@@ -232,7 +237,7 @@ describe('Setup Board', () => {
     const steps = screen.getByRole('list', { name: 'Steps' });
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Card Types');
     expect(screen.queryByText('Which cards go on it')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
+    toColumns();
     expect(steps.querySelector('[aria-current="step"]')?.textContent).toContain('Columns');
     // Layout is ahead: not a button yet. Card Types is done: a button back.
     expect(screen.queryByRole('button', { name: /Layout, done/ })).toBeNull();
