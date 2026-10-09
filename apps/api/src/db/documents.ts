@@ -17,6 +17,7 @@ import { getParticipant } from './participants';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
 import { redactTabDataForCommunity } from '../community-redact';
+import { redactTabDataAuthors } from '../comments';
 import { imageGrantCopyStatements } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
 import { sheetRefCopyStatement } from './sheet-refs';
@@ -479,6 +480,9 @@ export async function copyDocument(
   // A copy through a Community post's link (docs/specs/025-community/community.md) carries the document
   // without its comments or the people on its actions, and so none of their index rows.
   redactForCommunity = false,
+  // A copy by anyone but the source's owner: its comments keep only the copier's own author ids, as
+  // the tab read serves them (redactCommentAuthorIds). An author id is a guest's credential.
+  redactAuthorsFor: string | null = null,
 ): Promise<DocumentDTO | null> {
   const source = await getDocument(env, sourceId);
   if (!source) return null;
@@ -528,7 +532,11 @@ export async function copyDocument(
     // A Community copy is redacted, and its index rebuilt from the redacted elements (the source's rows
     // would name the people redaction removed).
     const redacted = redactForCommunity ? redactTabDataForCommunity(remapped) : null;
-    const data = redacted ? redacted.data : remapped;
+    const data = redacted
+      ? redacted.data
+      : redactAuthorsFor !== null
+        ? redactTabDataAuthors(remapped, redactAuthorsFor)
+        : remapped;
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(

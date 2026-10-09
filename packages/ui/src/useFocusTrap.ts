@@ -52,9 +52,11 @@ export function useFocusTrap(
 
     // Visible, focusable descendants in DOM order. `offsetParent === null`
     // filters elements hidden via display:none (e.g. a collapsed accordion).
+    // `tabIndex >= 0` drops a control taken out of the Tab order (`tabindex="-1"` on a button or a
+    // link, which the selectors above still match): it is never an end of the loop.
     const focusables = () =>
       Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null,
+        (el) => el.offsetParent !== null && el.tabIndex >= 0,
       );
 
     // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.

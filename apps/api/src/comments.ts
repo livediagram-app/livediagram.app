@@ -179,6 +179,23 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
   });
 }
 
+// A stored tab's data (JSON) with its comments' author ids redacted for `viewerId`, as
+// redactCommentAuthorIds: a copy made by someone other than the owner carries no one else's ids.
+// Data with no author id at all is returned as it is, without a parse.
+export function redactTabDataAuthors(data: string, viewerId: string): string {
+  if (!data.includes('"authorId"') && !data.includes('"tokenId"')) return data;
+  try {
+    const parsed = JSON.parse(data) as { elements?: unknown };
+    if (!Array.isArray(parsed.elements)) return data;
+    return JSON.stringify({
+      ...parsed,
+      elements: redactCommentAuthorIds(parsed.elements as Element[], viewerId),
+    });
+  } catch {
+    return data;
+  }
+}
+
 // docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
 // `prevElements`. Used by the tab-autosave handler to fire the "someone
 // commented on your document" notification only when a genuinely new comment

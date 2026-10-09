@@ -385,6 +385,22 @@ describe('a covered canvas', () => {
     expect(spies.copySelection).not.toHaveBeenCalled();
   });
 
+  it('leaves Cmd+C to the browser while text on the page is highlighted', () => {
+    const copySelection = vi.fn();
+    const { bag } = deps({ canvasCovered: () => false, copySelection });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    const p = document.createElement('p');
+    p.textContent = 'https://livediagram.app/s/abc';
+    document.body.appendChild(p);
+    window.getSelection()!.selectAllChildren(p);
+    expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);
+    expect(copySelection).not.toHaveBeenCalled();
+    window.getSelection()!.removeAllRanges();
+    expect(press('c', { metaKey: true }).defaultPrevented).toBe(true);
+    expect(copySelection).toHaveBeenCalledOnce();
+    p.remove();
+  });
+
   it('acts again once nothing covers it', () => {
     const onNudgeSelection = vi.fn();
     const { bag } = deps({ canvasCovered: () => false, onNudgeSelection });

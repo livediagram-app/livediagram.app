@@ -31,7 +31,7 @@ import {
   notFound,
   payloadTooLarge,
 } from '../responses';
-import { requireOwner, type RouteContext } from './context';
+import { requireOwner, type RouteContext, readBody } from './context';
 
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -64,7 +64,9 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
       return json({ libraries: await listShapeLibrariesByOwner(env, owner) });
     }
     if (request.method === 'POST') {
-      const body = (await request.json()) as Record<string, unknown>;
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as Record<string, unknown>;
       const id = typeof body.id === 'string' ? body.id : '';
       if (!ID.test(id)) return rejected('invalid-id', badRequest('missing or invalid id'));
       const name = normaliseLibraryName(body.name);
@@ -104,7 +106,9 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
     if (!existing) return notFound();
     if (existing.ownerId !== owner) return forbidden();
     if (request.method === 'PUT') {
-      const body = (await request.json()) as Record<string, unknown>;
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as Record<string, unknown>;
       const patch: { name?: string; items?: ShapeLibraryItem[] } = {};
       if (body.name !== undefined) {
         const name = normaliseLibraryName(body.name);

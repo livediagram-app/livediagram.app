@@ -28,7 +28,7 @@ import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { mergeRoomLedger } from '../room-client';
 import { recordTabSave } from '../timeline';
 import type { DocumentDTO } from '../types';
-import type { RouteContext } from './context';
+import { readBody, type RouteContext } from './context';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
 // (CS32).
@@ -62,7 +62,9 @@ export async function handleTabPut(
   const id = existing.id;
   // A former stored shape (freehand points before docs/specs/006-document/stroke-points.md,
   // from a browser loaded before a deploy) is migrated, not refused.
-  const received = migrateIncomingTab(await request.json()) as Tab;
+  const read = await readBody(ctx);
+  if (read instanceof Response) return read;
+  const received = migrateIncomingTab(read) as Tab;
   // Structural schema gate (shared with the app, @livediagram/document): discriminant, required
   // fields, endpoints, array bounds + unique ids.
   if (!isValidTab(received)) return badRequest('invalid tab');

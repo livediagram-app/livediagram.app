@@ -341,9 +341,9 @@ export async function apiCreateRoomTicket(
   shareCode: string | null = null,
 ): Promise<string | null> {
   // Retried with a short backoff: a team member whose mint fails has NO
-  // fallback (the legacy query params are personal/share-code only and
-  // the connector has no reconnect loop), so one transient blip would
-  // otherwise cost the whole page session its realtime.
+  // fallback (the legacy query params are personal/share-code only), and the
+  // connector mints a fresh one for every reconnect, so one transient blip
+  // would otherwise cost the session its realtime.
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {

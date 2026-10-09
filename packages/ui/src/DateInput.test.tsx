@@ -110,6 +110,21 @@ describe('DateInput', () => {
     expect(onKeyDown).toHaveBeenCalledOnce();
   });
 
+  it('keeps the Escape that undoes typing from a listener on the node React listens on', () => {
+    // Under Next, React's root is `document`, where a Dialog listens for Escape too.
+    const { container } = render(
+      <DateInput aria-label="Due" value="2026-10-30" onCommit={vi.fn()} />,
+    );
+    const dialogEscape = vi.fn();
+    container.addEventListener('keydown', dialogEscape);
+    const el = field();
+    el.focus();
+    partial(el, true);
+    fireEvent.keyDown(el, { key: 'Escape' });
+    expect(dialogEscape).not.toHaveBeenCalled();
+    container.removeEventListener('keydown', dialogEscape);
+  });
+
   it('lets an Escape with nothing typed through to whatever holds the field', () => {
     const outer = vi.fn();
     render(

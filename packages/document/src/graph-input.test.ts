@@ -19,6 +19,14 @@ describe('label cap', () => {
     expect(capLabel('Checkout service')).toEqual({ label: 'Checkout service', cut: false });
   });
 
+  it('counts an emoji as one character and never cuts one in half', () => {
+    const rockets = '🚀'.repeat(25);
+    expect(capLabel(rockets)).toEqual({ label: rockets, cut: false });
+    const { label } = capLabel('🚀'.repeat(60));
+    expect(label).toBe(`${'🚀'.repeat(39)}…`);
+    expect(label).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/);
+  });
+
   it('keeps the noun phrase before a clause as the heading', () => {
     expect(capLabel('Orders service which creates and tracks customer orders').label).toBe(
       'Orders service',

@@ -43,6 +43,32 @@ describe('values and recalculation', () => {
     b.set('B1', '5');
     expect(b.v('A1')).toBe(5);
   });
+  it('shows #REF! for a loop longer than the stack holds, and recovers once it is broken', () => {
+    const cells: Record<string, string> = { A1: '=A300' };
+    for (let i = 2; i <= 300; i++) cells[`A${i}`] = `=A${i - 1}+1`;
+    const b = book(cells, { rows: 300 });
+    expect(b.v('A300')).toMatchObject({ e: '#REF!' });
+    expect(b.v('A1')).toMatchObject({ e: '#REF!' });
+    expect((b.v('A150') as { e?: string }).e).toBe('#REF!');
+    b.set('A1', '1');
+    expect(b.v('A300')).toBe(300);
+  });
+  // Over five million reads by design (past RECALC_READS_MAX): seconds under a loaded runner.
+  it(
+    'works a cell out afresh after a read that ran past the recalculation budget',
+    { timeout: 30_000 },
+    () => {
+      const cells: Record<string, string> = { C1: '=SUM(B1:B6000)' };
+      for (let i = 1; i <= 1000; i++) cells[`A${i}`] = '1';
+      for (let i = 1; i <= 6000; i++) cells[`B${i}`] = '=SUM($A$1:$A$1000)';
+      const b = book(cells, { rows: 6000, cols: 3 });
+      expect(b.v('C1')).toMatchObject({ e: '#NUM!' });
+      // Read on its own, a cell the budget cut short has its own value.
+      expect(b.v('B6000')).toBe(1000);
+      b.set('A1', '2');
+      expect(b.v('B5999')).toBe(1001);
+    },
+  );
   it('works out a chain thousands long without overflowing', () => {
     const cells: Record<string, string> = { A1: '1' };
     for (let i = 2; i <= 3000; i++) cells[`A${i}`] = `=A${i - 1}+1`;

@@ -452,6 +452,17 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     ]);
   });
 
+  it('keeps a tab-scoped visit scoped to its tab (docs/specs/013-workspace/tab-scoped-share-links.md)', async () => {
+    const { env, sql } = arrange();
+    sql.prepare("UPDATE shared_with SET tab_id = 't-2' WHERE owner_id = ?").run(GUEST);
+
+    await migrateOwnerId(env, GUEST, ACCOUNT);
+
+    const rows = sql.prepare('SELECT tab_id FROM shared_with WHERE owner_id = ?').all(ACCOUNT);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) expect(r.tab_id).toBe('t-2');
+  });
+
   it("keeps the account's participant row over the guest's", async () => {
     const { env, sql } = arrange();
     insert(sql, 'participants', { id: ACCOUNT, name: 'Ada', color: '#123456', created_at: T0 });

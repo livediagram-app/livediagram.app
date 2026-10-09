@@ -398,6 +398,20 @@ article**, **Move article left / right**, **Delete article**.
   before the deleted one (its last page, for an article), or to the next when the first page went,
   as it glides to a new page (instant under reduced motion).
 
+## Arrows stay on one page
+
+In Illustrate mode an arrow never joins two pages. An element (or arrow) is on the page its centre
+lies on; one between pages is on none.
+
+- **Drawing or moving an arrow's end**: the end pins to an element, or connects onto another
+  arrow, only when that element or arrow is on the same page as the arrow's other end, or either
+  is on no page. Elements on another page show no connection points and are passed over, so the
+  end stays free where it is dropped.
+- **Connect** (an arrow from a selected element to the next one clicked): clicking an element on
+  another page draws no arrow and ends the connect.
+- An arrow already joining two pages (made before this rule, in Diagram or Draw mode, or by an AI
+  tool or a collaborator) stays as it is. Diagram and Draw mode draw arrows as ever.
+
 ## Locking a page
 
 Any page, of every kind (infographic, article, slide, logo), can be **locked**, so it stays as it

@@ -6,7 +6,7 @@ import {
   resolveTab,
   type AddressFailure,
 } from './addressing';
-import { DOC_A, DOC_B, fakeApi, library } from './testing/fake-api';
+import { DOC_A, DOC_B, DOC_C, fakeApi, library } from './testing/fake-api';
 
 const HOST = 'https://livediagram.app';
 
@@ -59,6 +59,18 @@ describe('resolveDocument', () => {
     const api = fakeApi(library);
     expect(await resolveDocument(api, 'auth FLOW', HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
     expect(await resolveDocument(api, 'aaaa2', HOST)).toEqual({ id: DOC_B, name: 'Auth flow v2' });
+  });
+
+  it('finds a 36-character name by name, never reading it as an id', async () => {
+    const name = 'Quarterly platform migration plan v2';
+    expect(name).toHaveLength(36);
+    const api = fakeApi({
+      ...library,
+      '/documents': {
+        documents: [{ id: DOC_C, name, savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' }],
+      },
+    });
+    expect(await resolveDocument(api, name, HOST)).toEqual({ id: DOC_C, name });
   });
 
   it('reads a full id and a document link directly, without the list', async () => {

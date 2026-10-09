@@ -55,13 +55,17 @@ export function withMirrorTwins(
     // Only the pages Mirror While Drawing is on for make twins (it is per page).
     const ps = pages.current ? withMirrorSettings(pages.current, mirrored.current) : [];
     if (ps.length === 0) return commit(map);
-    let twinned = false;
+    // Tracked from the updater, which React may run later (at render) or more than once (a strict
+    // re-run, a rebase): the flag counts the edit once whenever it runs.
+    let tracked = false;
     commit((els) => {
       const next = map(els);
       const out = withTwinsAdded(els, next, ps);
-      twinned = out !== next;
+      if (out !== next && !tracked) {
+        tracked = true;
+        track('Element', 'Created', 'MirrorTwin');
+      }
       return out;
     });
-    if (twinned) track('Element', 'Created', 'MirrorTwin');
   };
 }

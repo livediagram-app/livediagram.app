@@ -178,7 +178,7 @@ Trash):
 | A path ending in `.livediagram.json` that exists | That pull file, read-only: `document view`, `tab ls` and `tab view` render with `renderView` locally; any other verb exits 2 (CLI70) |
 | A URL whose path is `/document/<id>`             | That id, after `parseDocumentUrl`; another origin than the host exits 2 (CLI21)                                                      |
 | A URL whose path is `/document/shared?s=<code>`  | The document of `GET /api/share/<code>`; every request of the command carries `X-Share-Code: <code>`                                 |
-| A full id (36 characters)                        | `GET /api/documents/<id>` directly, no list                                                                                          |
+| A full id (a 36-character UUID)                  | `GET /api/documents/<id>` directly, no list                                                                                          |
 | Anything else                                    | The swept list: ids starting with it (at least 4 characters) and names equal to it ignoring case (CLI20)                             |
 
 The swept list is `listAllDocuments(api)`: `GET /api/documents`, `GET /api/teams`, `GET /api/teams/:id/library`

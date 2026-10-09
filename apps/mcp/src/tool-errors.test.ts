@@ -54,7 +54,10 @@ describe('deleteRefusal', () => {
     expect(deleteRefusal(403, true)).toContain('view this document but not change it');
     expect(deleteRefusal(404, true)).toContain('read_document lists its tabs');
     expect(deleteRefusal(404, false)).toContain('find_documents');
-    expect(deleteRefusal(400, true)).toContain('last one');
+    expect(deleteRefusal(409, true)).toContain('last one');
+    // Any other status is named, never blamed on the last tab.
+    expect(deleteRefusal(401, true)).not.toContain('last one');
+    expect(deleteRefusal(503, true)).toContain('503');
     expect(deleteRefusal(400, false)).toContain('Check the document id');
   });
 });

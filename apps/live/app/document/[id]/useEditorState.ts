@@ -1165,6 +1165,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
+    loadedTabIdsRef,
+    markTabLoaded,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
@@ -2769,6 +2771,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
+    pages: illustratePages?.pages ?? null,
   });
   useAssignRef(placeIntentAtRef, placeIntentAt);
 
@@ -3292,6 +3295,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     alignmentGuidesRef,
     // Every page's edges and margin, and a logo page's keylines (useLogoEditor).
     pageSnapBoxes: logo.snapBoxes,
+    illustratePages: illustratePages?.pages ?? null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry

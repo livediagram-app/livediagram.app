@@ -353,6 +353,8 @@ from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cance
 
 - Number formats are drawn in the viewer's locale (separators, date order), so two people may see `1,234.50` and
   `1.234,50` for the same value.
+- A number too large or too small to be a date (a phone number in a Date column) is drawn as Automatic would draw
+  it under Date, Time and Date Time.
 - **Merge Cells** joins a range into one cell, keeping the top-left input (others are cleared, after asking if
   they hold anything). A merged cell is selected, typed into and formatted as one. **Merge Across** merges each row
   of the range on its own.

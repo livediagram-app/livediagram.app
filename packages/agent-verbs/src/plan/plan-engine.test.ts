@@ -193,6 +193,28 @@ describe('planListing', () => {
 });
 
 describe('applyItemChanges', () => {
+  it('says what landed when the api fails part way, so a retry does not make it twice', async () => {
+    const { api: a } = api({
+      [`/documents/${D}/items/aaa111`]: () => Response.json({ error: 'boom' }, { status: 503 }),
+    });
+    const state = await readPlanState(a, D);
+    const result = await applyItemChanges(
+      a,
+      D,
+      [
+        { op: 'add', title: 'New', type: 'Bug', status: 'to do' },
+        { op: 'set', item: '#1', fields: { Priority: 'High' } },
+      ],
+      state,
+    );
+    expect(result.applied).toHaveLength(1);
+    expect(result.refusal?.code).toBe('api_error');
+    // Before anything landed, the failure is thrown as ever.
+    await expect(
+      applyItemChanges(a, D, [{ op: 'set', item: '#1', fields: { Priority: 'High' } }], state),
+    ).rejects.toThrow();
+  });
+
   it('writes ids for the names it is given', async () => {
     const { api: a, seen } = api();
     const result = await applyItemChanges(

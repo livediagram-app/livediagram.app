@@ -1,9 +1,12 @@
 // The engine's cost grows with the tab and the changeset, not faster
 // (docs/specs/024-agents/blueprints/edit-operations.md "Performance and limits"). Timed as growth, not as
 // a ceiling: an absolute time depends on the machine and on coverage instrumentation, a ratio does not.
+// Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
+// counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 // Four times the elements, or four times the operations, should cost about four times as much; a
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Element, Tab } from '@livediagram/document';
 import { applyEditOperations } from './apply';
 import { parseEditOperations } from './parse';
@@ -75,9 +78,11 @@ function changesetOf(rounds: number): EditOperation[] {
 function fastestApply(tab: Tab, operations: readonly EditOperation[]): number {
   let fastest = Infinity;
   for (let run = 0; run < RUNS; run++) {
-    const start = performance.now();
-    const outcome = applyEditOperations(tab, operations);
-    fastest = Math.min(fastest, performance.now() - start);
+    let outcome: ReturnType<typeof applyEditOperations> | undefined;
+    fastest = Math.min(
+      fastest,
+      cpuMsOf(() => (outcome = applyEditOperations(tab, operations))),
+    );
     expect(outcome).not.toHaveProperty('errors');
   }
   return fastest;

@@ -26,6 +26,13 @@ describe('number formats', () => {
     expect(formatNumber(1.5, undefined, 'de-DE')).toBe('1,5');
     expect(formatNumber(1.5, { nf: 'scientific' }, 'de-DE')).toBe('1,50E+00');
   });
+  it('draws a number no date can hold as Automatic under a date format, never throwing', () => {
+    for (const nf of ['date', 'time', 'datetime'] as const) {
+      expect(gb(1_000_000_000, { nf })).toBe('1000000000');
+      expect(gb(-1e9, { nf })).toBe('-1000000000');
+    }
+    expect(formatNumber(1e12, { nf: 'date' }, 'de-DE')).toBe('1000000000000');
+  });
   it('displays values by kind', () => {
     expect(displayValue(null, undefined, 'en')).toMatchObject({ text: '', kind: 'empty' });
     expect(displayValue(true, undefined, 'en')).toMatchObject({ text: 'TRUE', align: 'c' });

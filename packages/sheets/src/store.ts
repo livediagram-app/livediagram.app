@@ -143,7 +143,8 @@ export function applySheetWrite(sheet: Sheet, write: SheetWrite, ctx: ApplyConte
     layout = applyLayoutChange(layout, ch);
     if ((ch.k === 'deleteRows' || ch.k === 'deleteCols') && layout !== before) {
       const rows = ch.k === 'deleteRows';
-      const gone = new Set(ch.ids.filter((id) => (rows ? before.rows : before.cols).includes(id)));
+      const had = new Set(rows ? before.rows : before.cols);
+      const gone = new Set(ch.ids.filter((id) => had.has(id)));
       const none = new Set<string>();
       // Rewrite surviving formulas first, against the layout they were written for.
       const rewrites = shrinkFormulas(cells, before, rows ? gone : none, rows ? none : gone);
@@ -215,24 +216,31 @@ function runsOf(
   return runs;
 }
 
+// The ids not in `list`, in one pass over each (a Set, never a scan per id: a sheet has 10k rows).
+function without(ids: readonly string[], list: readonly string[]): string[] {
+  const has = new Set(list);
+  return ids.filter((id) => !has.has(id));
+}
+
 function inverseLayout(before: SheetLayout, ch: LayoutChange): LayoutChange[] {
   switch (ch.k) {
     // Deleting a frozen row unfreezes it, so the undo of an insert also puts the freeze back.
     case 'insertRows':
       return [
-        { k: 'deleteRows', ids: ch.ids.filter((id) => !before.rows.includes(id)) },
+        { k: 'deleteRows', ids: without(ch.ids, before.rows) },
         { k: 'freeze', rows: before.frozenRows ?? 0 },
       ];
     case 'insertCols':
       return [
-        { k: 'deleteCols', ids: ch.ids.filter((id) => !before.cols.includes(id)) },
+        { k: 'deleteCols', ids: without(ch.ids, before.cols) },
         { k: 'freeze', cols: before.frozenCols ?? 0 },
       ];
     case 'deleteRows':
     case 'deleteCols': {
       const rows = ch.k === 'deleteRows';
       const list = rows ? before.rows : before.cols;
-      const gone = new Set(ch.ids.filter((id) => list.includes(id)));
+      const has = new Set(list);
+      const gone = new Set(ch.ids.filter((id) => has.has(id)));
       const axis = rows ? 'r' : 'c';
       const out: LayoutChange[] = runsOf(list, gone).map((run) => ({
         k: rows ? 'insertRows' : 'insertCols',

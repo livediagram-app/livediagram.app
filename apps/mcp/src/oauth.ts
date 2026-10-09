@@ -4,6 +4,7 @@
 // apps/live) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
+import { appBase } from './tool-helpers';
 import { bytesToBase64Url, DEVICE_CODE_GRANT, isLoopbackHostname } from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
@@ -196,7 +197,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     await c.env.OAUTH_KV.put(`session:${session}`, JSON.stringify(record), {
       expirationTtl: SESSION_TTL,
     });
-    const consentBase = c.env.CONSENT_BASE_URL ?? 'https://livediagram.app';
+    const consentBase = appBase(c.env);
     // client name is display-only; the binding is the session + PKCE.
     // Pass the (validated, registered) redirect host so the consent screen can
     // show WHERE access will go — anti-phishing for a misleadingly-named client.

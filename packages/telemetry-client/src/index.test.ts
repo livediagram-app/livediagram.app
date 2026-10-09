@@ -243,6 +243,19 @@ describe('createTelemetryEmitter', () => {
     ]);
   });
 
+  it('falls through to keepalive fetch when the beacon throws', () => {
+    sendBeacon.mockImplementation(() => {
+      throw new TypeError('not a CORS-safelisted type');
+    });
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    windowTarget.fire('pagehide');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([
+      { category: 'UI', action: 'Opened', type: null },
+    ]);
+  });
+
   it('caps the retry buffer so a dead network cannot grow it', async () => {
     const reject = vi.fn(() => Promise.reject(new Error('offline')));
     vi.stubGlobal('fetch', reject);

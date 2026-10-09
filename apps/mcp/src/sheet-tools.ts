@@ -28,7 +28,7 @@ export function registerSheetTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListSheets, async (args, extra) => {
     const api = clientFor(env, requireToken(extra as Extra));
     const { sheets } = await listSheets(api, args.documentId, args.tabId);
-    return textResult({ sheets, url: deepLink(args.documentId) });
+    return textResult({ sheets, url: deepLink(env, args.documentId) });
   });
 
   registerTool(server, env, mcpReadSheet, async (args, extra) => {
@@ -39,7 +39,7 @@ export function registerSheetTools(server: McpServer, env: Env): void {
     });
     if (!read.ok) return errorResult(read.message);
     const { ok: _ok, ...result } = read;
-    return textResult({ ...result, url: deepLink(args.documentId) });
+    return textResult({ ...result, url: deepLink(env, args.documentId) });
   });
 
   registerTool(server, env, mcpChangeSheet, async (args, extra) => {
@@ -56,7 +56,7 @@ export function registerSheetTools(server: McpServer, env: Env): void {
       title: result.title,
       applied: result.applied,
       rev: result.rev,
-      url: deepLink(args.documentId),
+      url: deepLink(env, args.documentId),
     });
   });
 
@@ -68,6 +68,6 @@ export function registerSheetTools(server: McpServer, env: Env): void {
     const result = await addSheet(api, documentId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...sheet } = result;
-    return textResult({ ...sheet, url: deepLink(documentId) });
+    return textResult({ ...sheet, url: deepLink(env, documentId) });
   });
 }

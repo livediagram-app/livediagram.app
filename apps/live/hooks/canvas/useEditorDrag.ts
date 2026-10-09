@@ -511,6 +511,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         shiftHeld: e.shiftKey,
         elements: activeTab.elements,
         guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+        pages: depsRef.current.illustratePages,
         tick,
         scheduleGuides,
         scheduleSnapTargets,

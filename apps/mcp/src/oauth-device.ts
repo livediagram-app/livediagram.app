@@ -3,6 +3,7 @@
 // approves; the CLI, polling /oauth/token, receives the token the page minted. Built-in clients only. State lives in
 // OAUTH_KV for DEVICE_CODE_TTL_S: `device:<device code>` and `usercode:<user code>`.
 
+import { appBase } from './tool-helpers';
 import {
   bytesToBase64Url,
   DEVICE_CODE_TTL_S,
@@ -108,7 +109,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
       expirationTtl: DEVICE_CODE_TTL_S,
     });
     log('started', { clientId });
-    const page = `${c.env.CONSENT_BASE_URL ?? 'https://livediagram.app'}/oauth/device`;
+    const page = `${appBase(c.env)}/oauth/device`;
     return c.json({
       device_code: deviceCode,
       user_code: formatUserCode(userCode),
@@ -130,6 +131,9 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
 
   // The signed-in device page posts the token it minted for this code.
   app.post('/oauth/device/complete', async (c) => {
+    // A user code is guessable only slowly: the same budget as a lookup, shared with it and with Deny.
+    if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
+      return c.json({ error: 'rate_limited' }, 429);
     const body = (await c.req.json().catch(() => ({}))) as {
       userCode?: unknown;
       token?: unknown;
@@ -151,6 +155,8 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
   });
 
   app.post('/oauth/device/deny', async (c) => {
+    if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
+      return c.json({ error: 'rate_limited' }, 429);
     const body = (await c.req.json().catch(() => ({}))) as { userCode?: unknown };
     const found = await pendingByUserCode(c.env, body.userCode);
     if (!found) return c.json({ error: 'invalid_code' }, 400);

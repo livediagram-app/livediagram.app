@@ -44,7 +44,8 @@ function sameRange(a: IdRange, b: IdRange): boolean {
 // inserted while a sort was in flight keeps its place).
 export function reorderSlots(list: readonly string[], order: readonly string[]): string[] {
   const named = new Set(order);
-  const present = order.filter((id) => list.includes(id));
+  const has = new Set(list);
+  const present = order.filter((id) => has.has(id));
   const out = [...list];
   let k = 0;
   for (let i = 0; i < out.length; i++) if (named.has(out[i]!)) out[i] = present[k++]!;
@@ -117,7 +118,8 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
     case 'deleteCols': {
       const rows = ch.k === 'deleteRows';
       const list = rows ? layout.rows : layout.cols;
-      const gone = new Set(ch.ids.filter((id) => list.includes(id)));
+      const has = new Set(list);
+      const gone = new Set(ch.ids.filter((id) => has.has(id)));
       if (gone.size === 0) return layout;
       const none = new Set<string>();
       const goneRows = rows ? gone : none;

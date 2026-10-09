@@ -177,8 +177,17 @@ export async function applyItemChanges(
   } catch (err) {
     const refusal =
       err instanceof Stop ? { code: err.code, message: err.message } : apiRefusalOf(err);
-    if (!refusal) throw err;
-    return { applied, touched: [...touched.values()], refusal };
+    // An api failure after some changes landed still says which: a retry of the whole batch would
+    // otherwise make them twice. Before any landed, it is thrown as ever.
+    if (!refusal && applied.length === 0) throw err;
+    return {
+      applied,
+      touched: [...touched.values()],
+      refusal: refusal ?? {
+        code: 'api_error',
+        message: 'The api failed part way; the changes after these were not made.',
+      },
+    };
   }
   return { applied, touched: [...touched.values()] };
 }

@@ -27,6 +27,14 @@ describe('validateWrite', () => {
     );
     expect(v({ kind: 'layout', changes: [{ k: 'filter', filter: null }] })).toEqual({ ok: true });
     expect(v({ kind: 'layout', changes: [{ k: 'merges', merges: [] }] })).toEqual({ ok: true });
+    expect(
+      v({
+        kind: 'layout',
+        changes: [
+          { k: 'filterCond', col: C(0), cond: { values: ['a'], op: 'between', a: '1', b: '2' } },
+        ],
+      }),
+    ).toEqual({ ok: true });
   });
   it.each([
     [{ kind: 'nope' }, 'write_invalid'],
@@ -118,6 +126,34 @@ describe('validateWrite', () => {
     [{ kind: 'layout', changes: [{ k: 'merges', merges: 'x' }] }, 'merge_invalid'],
     [{ kind: 'layout', changes: [{ k: 'filter', filter: { r1: R(0) } }] }, 'filter_invalid'],
     [{ kind: 'layout', changes: [{ k: 'filterCond', col: 'BAD', cond: null }] }, 'filter_invalid'],
+    [
+      { kind: 'layout', changes: [{ k: 'filterCond', col: C(0), cond: { values: 5 } }] },
+      'filter_invalid',
+    ],
+    [
+      { kind: 'layout', changes: [{ k: 'filterCond', col: C(0), cond: { op: 'contains', a: 5 } }] },
+      'filter_invalid',
+    ],
+    [
+      { kind: 'layout', changes: [{ k: 'filterCond', col: C(0), cond: { op: 'nope' } }] },
+      'filter_invalid',
+    ],
+    [
+      {
+        kind: 'layout',
+        changes: [
+          {
+            k: 'filter',
+            filter: { r1: R(0), c1: C(0), r2: R(4), c2: C(2), conds: { [C(0)]: { x: 1 } } },
+          },
+        ],
+      },
+      'filter_invalid',
+    ],
+    [
+      { kind: 'layout', changes: [{ k: 'deleteRows', ids: [0, 1, 2, 3, 4].map(R) }] },
+      'write_invalid',
+    ],
     [{ kind: 'layout', changes: [{ k: 'what' }] }, 'write_invalid'],
     [
       { kind: 'layout', changes: Array.from({ length: 101 }, () => ({ k: 'freeze', rows: 0 })) },

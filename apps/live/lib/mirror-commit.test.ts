@@ -56,6 +56,19 @@ describe('mirror while drawing', () => {
     expect(els).toHaveLength(5);
   });
 
+  it('counts a twin once, when React runs the updater later or twice', async () => {
+    const { track } = await import('@/lib/telemetry');
+    vi.mocked(track).mockClear();
+    const queued: ((e: Element[]) => Element[])[] = [];
+    const later = (map: (e: Element[]) => Element[]) => void queued.push(map);
+    const on = { current: new Map([[pages[0]!.id, DEFAULT_MIRROR]]) };
+    withMirrorTwins(later, on, { current: pages })((e) => [...e, shape('d', -300)]);
+    expect(track).not.toHaveBeenCalled();
+    queued[0]!([]);
+    queued[0]!([]);
+    expect(vi.mocked(track).mock.calls.filter((c) => c[2] === 'MirrorTwin')).toHaveLength(1);
+  });
+
   it('adds three twins for Both, and five for six-way radial, apart with Merge off', () => {
     const both = pages.map((p) => ({ ...p, mirror: { ...DEFAULT_MIRROR, axis: 'both' as const } }));
     const drawn = { ...shape('n', -400), y: -400 } as Element;

@@ -19,6 +19,7 @@ import {
   createText,
   type BoxedElement,
   type Element,
+  type LaidOutPage,
   defaultSessionConfig,
   REACTION_PAD_LABEL,
   type EstimateScale,
@@ -97,6 +98,9 @@ export function useElementCreation(opts: {
   // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
   // into the board column at the point, or nowhere.
   onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
+  // Illustrate mode's laid-out pages: a click-to-connect arrow never joins two pages
+  // (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"). Null outside it.
+  pages?: readonly LaidOutPage[] | null;
 }) {
   const {
     editsBlocked,
@@ -112,6 +116,7 @@ export function useElementCreation(opts: {
     beginDraw,
     styleNewElement,
     onPlanCardPlace,
+    pages,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
@@ -316,6 +321,7 @@ export function useElementCreation(opts: {
     beginDraw,
     commitTabs,
     styleNewElement,
+    pages,
   });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the

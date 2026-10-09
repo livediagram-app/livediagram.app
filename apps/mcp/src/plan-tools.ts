@@ -30,7 +30,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListItems, async (args, extra) => {
     const api = clientFor(env, requireToken(extra as Extra));
     const state = await readPlanState(api, args.documentId);
-    return textResult({ ...planListing(state, args), url: deepLink(args.documentId) });
+    return textResult({ ...planListing(state, args), url: deepLink(env, args.documentId) });
   });
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {
@@ -38,7 +38,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
     const state = await readPlanState(api, args.documentId);
     const result = await applyItemChanges(api, args.documentId, args.changes, state);
     if (result.refusal) return stopped(result.refusal.message, result.applied);
-    return textResult({ applied: result.applied, url: deepLink(args.documentId) });
+    return textResult({ applied: result.applied, url: deepLink(env, args.documentId) });
   });
 
   registerTool(server, env, mcpAddBoard, async (args, extra) => {
@@ -47,7 +47,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
     const result = await addBoard(api, documentId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...board } = result;
-    return textResult({ ...board, url: deepLink(documentId) });
+    return textResult({ ...board, url: deepLink(env, documentId) });
   });
 
   registerTool(server, env, mcpChangeBoard, async (args, extra) => {
@@ -56,7 +56,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
     const result = await changeBoard(api, documentId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...board } = result;
-    return textResult({ ...board, url: deepLink(documentId) });
+    return textResult({ ...board, url: deepLink(env, documentId) });
   });
 
   registerTool(server, env, mcpChangeCardTypes, async (args, extra) => {
@@ -67,7 +67,7 @@ export function registerPlanTools(server: McpServer, env: Env): void {
       applied: result.applied,
       trashed: result.trashed,
       types: result.types,
-      url: deepLink(args.documentId),
+      url: deepLink(env, args.documentId),
     });
   });
 }
