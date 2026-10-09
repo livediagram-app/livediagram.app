@@ -119,7 +119,7 @@ class NoResize {
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', NoResize);
   // jsdom lays nothing out: scrolling the active cell into view is a no-op.
-  Element.prototype.scrollTo = () => {};
+  window.Element.prototype.scrollTo = () => {};
   vi.clearAllMocks();
   forgetSheetStores();
   fetchSheets.mockResolvedValue([]);
