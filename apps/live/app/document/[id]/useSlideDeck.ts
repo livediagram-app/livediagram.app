@@ -70,11 +70,6 @@ export function pageSlideLabels(deck: Deck, tabs: readonly Tab[]): Map<string, s
   return out;
 }
 
-// The telemetry type a slide is added as (the Slides Added chart's types).
-function slideAddedType(slide: Slide): 'Slide' | 'PageSlide' | 'ItemSlide' {
-  return slide.pageId ? 'PageSlide' : slide.itemId ? 'ItemSlide' : 'Slide';
-}
-
 export function useSlideDeck({
   tabs,
   activeTabId,
@@ -375,7 +370,10 @@ export function useSlideDeck({
         slides.splice(at + 1, 0, copy);
         return { slides };
       });
-      if (original) track('UI', 'Added', slideAddedType(original));
+      // Literal types, so the telemetry dashboard's emitter scan reads each one.
+      if (original?.pageId) track('UI', 'Added', 'PageSlide');
+      else if (original?.itemId) track('UI', 'Added', 'ItemSlide');
+      else if (original) track('UI', 'Added', 'Slide');
     },
     [commitDeck, deckRef, isReadOnly],
   );
