@@ -1,26 +1,27 @@
 'use client';
 
-// The toolbar's Text Colour (docs/specs/029-sheets/sheet.md "Toolbar"): the theme's first five colours as swatches,
-// the cell's own ringed, and a + that opens the full colour picker (your colours, a custom colour).
-import { useContext } from 'react';
-import { Tooltip, lucideGlyph } from '@livediagram/ui';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
-import { getTheme, themePresetColors } from '@/lib/themes';
+// The toolbar's Text Colour and Fill Colour (docs/specs/029-sheets/sheet.md "Toolbar"): a quick row of the one colour
+// picker (docs/specs/004-interface-design/colour-picker.md "Quick Style", "The rule for new work"): the Theme
+// Palette's first five colours drawn with the one swatch, the cell's own picked, and a + that opens the full picker.
+// One Tab stop, the arrows move through the row (the picker's keyboard).
 import { lucidePlus } from '@livediagram/icons/lucide';
+import { Tooltip, lucideGlyph } from '@livediagram/ui';
+import { ColourSwatch } from '@/components/colour/ColourSwatch';
+import { optionMatches, themeOptions } from '@/components/colour/colour-options';
+import { onColourKeys } from '@/components/colour/useColourKeys';
+import { useThemeColours } from '@/components/colour/useThemeColours';
+import { getTheme, themePresetColors } from '@/lib/themes';
 
 const PlusGlyph = lucideGlyph(lucidePlus, 14);
 
 export const TOOLBAR_SWATCHES = 5;
-// Five 22 px swatches, the +, and the gaps between.
-export const SWATCHES_PX = TOOLBAR_SWATCHES * 24 + 28;
+// Five 24 px swatches, the +, and the 2 px gaps between.
+export const SWATCHES_PX = (TOOLBAR_SWATCHES + 1) * 24 + TOOLBAR_SWATCHES * 2;
+
+// Outside an editor (a test, a read-only render) the default theme's colours.
+const DEFAULT_THEME = themeOptions(themePresetColors(getTheme(undefined)));
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
-
-// The open tab's theme colours, or the default theme's outside an editor (a test, a read-only render).
-function useThemeSwatches(): readonly string[] {
-  const editor = useContext(EditorContext);
-  return themePresetColors(getTheme(editor?.activeTab?.theme));
-}
 
 export function SheetColourSwatches({
   name,
@@ -28,44 +29,43 @@ export function SheetColourSwatches({
   onPick,
   onMore,
 }: {
-  // What they colour ("Text Colour"): the group's and its buttons' accessible names, and their tooltips.
+  // What they colour ("Text Colour"): the group's accessible name, and the + button's.
   name: string;
-  // The cell's own colour, ringed when it is one of them.
+  // The cell's own colour, picked when it is one of them.
   value: string | undefined;
   onPick: (colour: string) => void;
   onMore: (anchor: HTMLElement) => void;
 }) {
-  const colours = useThemeSwatches();
+  const theme = useThemeColours();
+  const options = (theme.length > 0 ? theme : DEFAULT_THEME).slice(0, TOOLBAR_SWATCHES);
+  const pickedAt = options.findIndex((o) => optionMatches(o, value));
+  const tabStop = pickedAt >= 0 ? pickedAt : 0;
   return (
-    <span role="group" aria-label={name} className="flex items-center gap-0.5" onPointerDown={stop}>
-      {colours.slice(0, TOOLBAR_SWATCHES).map((colour) => {
-        const on = !!value && value.toLowerCase() === colour.toLowerCase();
-        return (
-          <Tooltip key={colour} label={`${name} ${colour.toUpperCase()}`}>
-            <button
-              type="button"
-              aria-label={`${name} ${colour.toUpperCase()}`}
-              aria-pressed={on}
-              className={`flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-full transition hover:scale-110 motion-reduce:transition-none ${
-                on ? 'ring-2 ring-brand-500 ring-offset-1 ring-offset-transparent' : ''
-              }`}
-              onClick={() => onPick(colour)}
-            >
-              <span
-                aria-hidden
-                className="h-4 w-4 rounded-full border border-black/15 dark:border-white/20"
-                style={{ backgroundColor: colour }}
-              />
-            </button>
-          </Tooltip>
-        );
-      })}
+    <span
+      role="group"
+      aria-label={name}
+      className="flex items-center gap-0.5"
+      onPointerDown={stop}
+      onKeyDown={onColourKeys}
+    >
+      {options.map((option, i) => (
+        <ColourSwatch
+          key={option.id}
+          label={option.label}
+          colour={option.colour}
+          picked={i === pickedAt}
+          tabIndex={i === tabStop ? 0 : -1}
+          onClick={() => onPick(option.colour)}
+        />
+      ))}
       <Tooltip label={`More ${name}s`}>
         <button
           type="button"
           aria-label={`More ${name}s`}
           aria-haspopup="menu"
-          className="flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-full border border-dashed border-slate-400 text-slate-500 transition hover:border-slate-600 hover:text-slate-800 dark:border-slate-500 dark:text-slate-400 dark:hover:text-slate-100"
+          data-colour-key=""
+          tabIndex={-1}
+          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-400 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-500 dark:text-slate-300 dark:hover:bg-slate-800"
           onClick={(e) => onMore(e.currentTarget)}
         >
           <PlusGlyph />

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { penColourHex } from '@livediagram/document';
 import {
   DEFAULT_LASER_CONFIG,
   laserColour,
+  laserColourLabel,
   laserLifetimeMs,
   laserStrokeWidth,
-  LASER_COLOURS,
   LASER_EFFECTS,
   LASER_TRAILS,
   LASER_WIDTHS,
@@ -30,9 +31,18 @@ describe('laserColour', () => {
     expect(laserColour({ ...DEFAULT_LASER_CONFIG, colour: 'presence' }, '#123456')).toBe('#123456');
   });
 
-  it('uses the swatch when one is picked', () => {
-    const red = LASER_COLOURS.find((c) => c.id === 'red')!.hex;
-    expect(laserColour({ ...DEFAULT_LASER_CONFIG, colour: 'red' }, '#123456')).toBe(red);
+  it('draws a standard colour in its version for the canvas, and a custom one as it is', () => {
+    // docs/specs/004-interface-design/colour-picker.md "The colours".
+    const red = { ...DEFAULT_LASER_CONFIG, colour: 'red' };
+    expect(laserColour(red, '#123456')).toBe(penColourHex('red', 'light'));
+    expect(laserColour(red, '#123456', 'dark')).toBe(penColourHex('red', 'dark'));
+    expect(laserColour({ ...DEFAULT_LASER_CONFIG, colour: '#AA00FF' }, '#123456')).toBe('#aa00ff');
+  });
+
+  it('names the colour for the collapsed row', () => {
+    expect(laserColourLabel('presence')).toBe('Your colour');
+    expect(laserColourLabel('teal')).toBe('Teal');
+    expect(laserColourLabel('#AA00FF')).toBe('#aa00ff');
   });
 
   it('falls back to the participant colour for an unknown swatch', () => {
@@ -90,6 +100,17 @@ describe('parseLaserConfig', () => {
     expect(
       parseLaserConfig({ width: 'enormous', colour: 'red', trail: 'long', effect: 'beam' }),
     ).toEqual({ width: 'medium', colour: 'red', trail: 'long', effect: 'beam' });
+  });
+
+  it('reads the colours from before the colour picker as their nearest standard colour', () => {
+    expect(parseLaserConfig({ ...DEFAULT_LASER_CONFIG, colour: 'cyan' }).colour).toBe('teal');
+    expect(parseLaserConfig({ ...DEFAULT_LASER_CONFIG, colour: 'white' }).colour).toBe('ink');
+    expect(parseLaserConfig({ ...DEFAULT_LASER_CONFIG, colour: 'grey' }).colour).toBe('grey');
+    expect(parseLaserConfig({ ...DEFAULT_LASER_CONFIG, colour: '#A1B2C3' }).colour).toBe('#a1b2c3');
+    expect(parseLaserConfig({ ...DEFAULT_LASER_CONFIG, colour: 'chartreuse' }).colour).toBe(
+      'presence',
+    );
+    expect(parseLaserConfig({ ...DEFAULT_LASER_CONFIG, colour: 7 }).colour).toBe('presence');
   });
 
   it('falls back completely for junk', () => {

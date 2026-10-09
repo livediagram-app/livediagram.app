@@ -7,10 +7,11 @@ import { item } from './test-items';
 
 // docs/specs/026-plan/items.md "Colour".
 describe('an item colour', () => {
-  it('keeps one of the twelve swatches, as the palette spells it', () => {
+  it('keeps any #rrggbb, lower-cased (docs/specs/004-interface-design/colour-picker.md)', () => {
     for (const c of PLAN_TYPE_COLOURS) expect(itemColourValue(c)).toBe(c);
     expect(itemColourValue('#2563EB')).toBe('#2563eb');
-    expect(itemColourValue('#123456')).toBeUndefined();
+    expect(itemColourValue(' #123456 ')).toBe('#123456');
+    expect(itemColourValue('#123')).toBeUndefined();
     expect(itemColourValue('blue')).toBeUndefined();
     expect(itemColourValue(3)).toBeUndefined();
   });
@@ -20,12 +21,12 @@ describe('an item colour', () => {
       ok: true,
       fields: { color: '#16a34a' },
     });
-    // Making an item from older data drops a colour that is not a swatch instead of refusing the item.
+    // Making an item from older data drops a value that is not a colour instead of refusing the item.
     expect(validateFields({ title: 'Old', color: 'teal' }, 'create')).toEqual({
       ok: true,
       fields: { title: 'Old' },
     });
-    expect(validateFields({ color: '#000001' }, 'patch')).toMatchObject({
+    expect(validateFields({ color: '#00000' }, 'patch')).toMatchObject({
       ok: false,
       error: 'field_value_invalid',
       field: 'color',

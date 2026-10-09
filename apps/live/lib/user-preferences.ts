@@ -202,12 +202,9 @@ export type UserPreferences = {
   // Ids only, so the list stays small; the whole preferences blob has a
   // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
   // Missing / undefined === nothing excluded.
-  // Colours you have used that were not already on the theme's palette
-  // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it
-  // here, so the next element can be given the SAME colour with one click
-  // instead of being matched by eye. Right-clicking one removes it again.
-  // Newest first, capped, and synced like every other preference so a
-  // palette you have built follows you between devices.
+  // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
+  // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any
+  // more; it stays in the type because it is already stored for existing users.
   customSwatches?: string[];
   // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
   // swatches"): per theme, which of a row's six slots you replaced with a
@@ -233,9 +230,8 @@ export type UserPreferences = {
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
   whiteboardShapePicks?: ShapePicks;
-  // The markers' Your colours (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): up to
-  // eight custom #rrggbb, newest first. Read and written through lib/pen-colour-memory, which parses
-  // them. Missing === none yet.
+  // DEAD as of docs/specs/004-interface-design/colour-picker.md, like `customSwatches`: the markers'
+  // Custom colours are the document's. Kept in the type because it is already stored.
   whiteboardYourColours?: string[];
   // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
   // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.

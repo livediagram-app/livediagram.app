@@ -18,7 +18,7 @@ import {
 } from '@livediagram/items';
 import { ChevronDownIcon, ChevronRightIcon, Tooltip, useEscape } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
-import { COLOUR_NAMES } from './ColourSwatches';
+import { planColourName } from './ColourSwatches';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // More candidates than this and the list opens with a filter.
@@ -154,9 +154,7 @@ export function LinkedCardField({
               <span
                 className={`shrink-0 ${ACCENT_TEXT}`}
                 style={accentVars(own ?? type.color)}
-                {...(own
-                  ? { role: 'img', 'aria-label': `${COLOUR_NAMES[own] ?? own} colour` }
-                  : {})}
+                {...(own ? { role: 'img', 'aria-label': `${planColourName(own)} colour` } : {})}
               >
                 <PlanTypeGlyph glyph={type.glyph} size={14} />
               </span>

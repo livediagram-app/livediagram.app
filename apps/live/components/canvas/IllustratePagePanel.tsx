@@ -115,8 +115,21 @@ export function IllustratePagePanel({
     panel.current?.focus({ preventScroll: true });
   }, []);
 
-  useClickOutside(panel, () => onClose(false), true, '[data-page-panel-trigger]');
-  useEscape(() => onClose(true), { capture: true, stopPropagation: true });
+  // A press in a colour popover (portalled out of the panel) is the panel's own.
+  useClickOutside(
+    panel,
+    () => onClose(false),
+    true,
+    '[data-page-panel-trigger], [data-anchored-popover]',
+  );
+  // Escape inside a colour popover closes the popover only.
+  useEscape(
+    () => {
+      if (document.activeElement?.closest('[data-anchored-popover]')) return;
+      onClose(true);
+    },
+    { capture: true, stopPropagation: true },
+  );
   // A wheel over the canvas pans or zooms it away from the cog: the panel goes with the gesture.
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {

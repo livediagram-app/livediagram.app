@@ -2,10 +2,12 @@
 
 // The page panel's Background section (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), for
 // every page kind: a category control (Theme while the tab's theme offers backgrounds, Solid,
-// Gradient) over that category's swatches, Solid and Gradient each ending in a custom choice; the
-// custom gradient's editor (From, To, Angle, Swap) while the page's fill is one; then the Pattern
-// (not on a logo page). Each hover previews on the page itself (`onPreview`), and a press commits;
-// leaving the section drops the preview.
+// Gradient) over that category's choices: Solid is the one colour picker
+// (docs/specs/004-interface-design/colour-picker.md), Paper first, then the soft and the strong
+// standard colours and Custom colours with +; Gradient is the gradient presets ending in a custom one,
+// whose editor (From, To, Angle, Swap) shows while the page's fill is one; then the Pattern (not on
+// a logo page). Each hover previews on the page itself (`onPreview`), and a press commits; leaving
+// the section drops the preview.
 import { useState, type ReactNode } from 'react';
 import {
   PAGE_PATTERNS,
@@ -26,18 +28,21 @@ import {
   isCustomGradient,
   PAGE_GRADIENT_PRESETS,
   PAGE_PATTERN_LABEL,
-  PAGE_SOLID_PRESETS,
   pageSheetStyle,
   sameFill,
   type BackgroundCategory,
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
 import { PanelSection, tileClass } from './illustrate-page-panel-sections';
-import {
-  ColourWellButton,
-  CustomGradientEditor,
-  InlineColourPicker,
-} from './page-background-custom';
+import { CustomGradientEditor, PAGE_COLOUR_GROUPS } from './page-background-custom';
+import { ColourPicker } from '@/components/colour/ColourPicker';
+import { noColour } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+
+// Paper, the page's own default: no fill stored.
+const PAPER = 'paper';
+const solidOf = (id: string): PageFill | undefined =>
+  id === PAPER ? undefined : { kind: 'solid', color: id };
 
 // The custom choices' swatch until one is the page's fill.
 const RAINBOW = 'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)';
@@ -159,16 +164,10 @@ export function BackgroundSection({
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill, themePresets);
   const category = chosen && categories.includes(chosen) ? chosen : opened;
-  const solidPicked = PAGE_SOLID_PRESETS.some((s) =>
-    sameFill(fill, s.color ? { kind: 'solid', color: s.color } : undefined),
-  );
-  const themePicked = themePresets.some((t) => sameFill(fill, t.fill));
-  const custom = fill?.kind === 'solid' && !solidPicked && !themePicked ? fill.color : null;
+  const yours = useDocumentColours();
   // The custom gradient's editor shows for a gradient no preset names, or once Custom gradient is
   // pressed on a preset one (its colours are where the custom one starts; editing makes it custom).
   const [customOpen, setCustomOpen] = useState(false);
-  // The custom solid colour's picker, open under the swatches.
-  const [pickingSolid, setPickingSolid] = useState(false);
   const customGradient =
     fill?.kind === 'gradient' && (customOpen || isCustomGradient(fill, themePresets)) ? fill : null;
   const pick = (f: PageFill | undefined) => onBackground({ fill: f });
@@ -213,58 +212,16 @@ export function BackgroundSection({
             })}
           </div>
         ) : category === 'solid' ? (
-          <>
-            <div
-              role="radiogroup"
-              aria-label="Background colour"
-              className="grid grid-cols-7 gap-1.5"
-            >
-              {PAGE_SOLID_PRESETS.map((s) => {
-                const presetFill: PageFill | undefined = s.color
-                  ? { kind: 'solid', color: s.color }
-                  : undefined;
-                const on = sameFill(fill, presetFill);
-                return (
-                  <Swatch
-                    key={s.id}
-                    label={s.label}
-                    background={s.color}
-                    active={on}
-                    onPick={() => pick(presetFill)}
-                    onPreview={() => preview(presetFill)}
-                  >
-                    {on ? <SwatchCheck fill={presetFill} /> : null}
-                  </Swatch>
-                );
-              })}
-              <Tooltip label={custom ? `Custom ${custom}` : 'Custom colour'}>
-                <ColourWellButton
-                  label="Custom background colour"
-                  colour={custom ?? RAINBOW}
-                  open={pickingSolid || !!custom}
-                  className="h-7 w-7"
-                  onToggle={() => {
-                    if (pickingSolid) onPreview(null);
-                    setPickingSolid((v) => !v);
-                  }}
-                />
-              </Tooltip>
-            </div>
-            {pickingSolid ? (
-              <InlineColourPicker
-                start={custom ?? (fill?.kind === 'solid' ? fill.color : '#ffffff')}
-                onPreview={(color) => preview({ kind: 'solid', color })}
-                onUse={(color) => {
-                  pick({ kind: 'solid', color });
-                  setPickingSolid(false);
-                }}
-                onCancel={() => {
-                  onPreview(null);
-                  setPickingSolid(false);
-                }}
-              />
-            ) : null}
-          </>
+          <ColourPicker
+            label="Background colour"
+            value={fill === undefined ? PAPER : fill.kind === 'solid' ? fill.color : null}
+            leading={[noColour(PAPER, 'Paper')]}
+            standard={PAGE_COLOUR_GROUPS}
+            yours={yours}
+            onPick={(id) => pick(solidOf(id))}
+            onPreview={(id) => preview(solidOf(id))}
+            onPreviewEnd={() => onPreview(null)}
+          />
         ) : (
           <>
             <div

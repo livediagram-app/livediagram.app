@@ -1,12 +1,15 @@
 'use client';
 
-// The quick style panel's rows (docs/specs/008-canvas/quick-style-panel.md "Accessibility"): each one a
-// radio group with its own accessible name, the options radios with their own
-// names repeated by a Tooltip. Arrow keys move and choose, one tab stop a row.
+// The quick style panel's rows (docs/specs/008-canvas/quick-style-panel.md "Accessibility"), each
+// with its own accessible name and one Tab stop. A row of glyph buttons is a radio group whose
+// arrows move and choose. A colour row is the colour picker's (docs/specs/004-interface-design/
+// colour-picker.md): the one swatch, toggle buttons, arrows that move focus without picking, Enter
+// or Space to pick, and More colours at its end.
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip, Glyph } from '@livediagram/ui';
-import { isLightColor } from '@livediagram/document';
+import { SwatchChip } from '@/components/colour/ColourSwatch';
+import { colourKeyTarget } from '@/components/colour/useColourKeys';
 import { QUICK_TARGET_PX } from './quick-style-metrics';
 
 export type QuickOption<V> = {
@@ -31,6 +34,7 @@ export function QuickRadioRow<V extends string | number>({
   onOptionContext,
   testId,
   columns,
+  more,
 }: {
   title: string;
   showTitle: boolean;
@@ -44,10 +48,14 @@ export function QuickRadioRow<V extends string | number>({
   // full one. Unset: a flex row. On a row of
   // buttons, how many share the row (unset: three).
   columns?: number;
+  // A colour row's last target: More colours, the full picker.
+  more?: ReactNode;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const rowRef = useRef<HTMLDivElement>(null);
   const checkedIndex = options.findIndex((o) => o.value === value);
   const tabStop = checkedIndex >= 0 ? checkedIndex : 0;
+  const isSwatchRow = options.some((o) => o.swatch !== undefined);
 
   const moveTo = (index: number) => {
     const next = (index + options.length) % options.length;
@@ -58,6 +66,16 @@ export function QuickRadioRow<V extends string | number>({
     const button = refs.current[index];
     if (button && onOptionContext) onOptionContext(options[index]!.value, button);
   };
+  // A colour row moves focus only, More colours included, as the colour picker does.
+  const moveFocus = (e: KeyboardEvent<HTMLElement>) => {
+    const keys = Array.from(
+      rowRef.current?.querySelectorAll<HTMLElement>('[data-colour-key]') ?? [],
+    );
+    const next = colourKeyTarget(e.key, keys.indexOf(e.target as HTMLElement), keys.length);
+    if (next < 0) return false;
+    keys[next]?.focus();
+    return true;
+  };
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if ((e.key === 'F10' && e.shiftKey) || e.key === 'ContextMenu') {
       e.preventDefault();
@@ -65,21 +83,24 @@ export function QuickRadioRow<V extends string | number>({
       openContext(index);
       return;
     }
-    const step =
-      e.key === 'ArrowRight' || e.key === 'ArrowDown'
-        ? 1
-        : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-          ? -1
-          : 0;
-    if (step !== 0) moveTo(index + step);
-    else if (e.key === 'Home') moveTo(0);
-    else if (e.key === 'End') moveTo(options.length - 1);
-    else return;
+    if (isSwatchRow) {
+      if (!moveFocus(e)) return;
+    } else {
+      const step =
+        e.key === 'ArrowRight' || e.key === 'ArrowDown'
+          ? 1
+          : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+            ? -1
+            : 0;
+      if (step !== 0) moveTo(index + step);
+      else if (e.key === 'Home') moveTo(0);
+      else if (e.key === 'End') moveTo(options.length - 1);
+      else return;
+    }
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const isSwatchRow = options.some((o) => o.swatch !== undefined);
   return (
     <div className="flex flex-col gap-1">
       {showTitle ? (
@@ -91,9 +112,22 @@ export function QuickRadioRow<V extends string | number>({
         </span>
       ) : null}
       <div
-        role="radiogroup"
+        ref={rowRef}
+        role={isSwatchRow ? 'group' : 'radiogroup'}
         aria-label={title}
         data-testid={testId}
+        onKeyDown={
+          isSwatchRow
+            ? (e) => {
+                // More colours' own keys land here; the swatches handle theirs.
+                if ((e.target as HTMLElement).dataset.quickMore === undefined) return;
+                if (moveFocus(e)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }
+            : undefined
+        }
         className={
           isSwatchRow && columns
             ? 'grid'
@@ -116,6 +150,7 @@ export function QuickRadioRow<V extends string | number>({
       >
         {options.map((o, i) => {
           const checked = i === checkedIndex;
+          const swatch = o.swatch !== undefined;
           return (
             <Tooltip key={String(o.value)} label={o.name}>
               <button
@@ -123,10 +158,12 @@ export function QuickRadioRow<V extends string | number>({
                   refs.current[i] = node;
                 }}
                 type="button"
-                role="radio"
-                aria-checked={checked}
+                role={swatch ? undefined : 'radio'}
+                aria-checked={swatch ? undefined : checked}
+                aria-pressed={swatch ? checked : undefined}
                 aria-label={o.name}
                 tabIndex={i === tabStop ? 0 : -1}
+                data-colour-key={swatch ? '' : undefined}
                 data-overridden={o.overridden ? '' : undefined}
                 onClick={() => onChoose(o.value)}
                 onKeyDown={(e) => onKeyDown(e, i)}
@@ -136,8 +173,8 @@ export function QuickRadioRow<V extends string | number>({
                   openContext(i);
                 }}
                 className={
-                  o.swatch !== undefined
-                    ? 'group relative flex h-6 w-6 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
+                  swatch
+                    ? 'group relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
                     : `flex h-7 w-full items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                         checked
                           ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/40'
@@ -145,12 +182,8 @@ export function QuickRadioRow<V extends string | number>({
                       }`
                 }
               >
-                {o.swatch !== undefined ? (
-                  <SwatchChip
-                    colour={o.swatch}
-                    checked={checked}
-                    overridden={o.overridden === true}
-                  />
+                {swatch ? (
+                  <SwatchChip colour={o.swatch!} picked={checked} marked={o.overridden === true} />
                 ) : (
                   o.content
                 )}
@@ -158,41 +191,9 @@ export function QuickRadioRow<V extends string | number>({
             </Tooltip>
           );
         })}
+        {isSwatchRow ? more : null}
       </div>
     </div>
-  );
-}
-
-// The colour itself, inside its 24 px target.
-function SwatchChip({
-  colour,
-  checked,
-  overridden,
-}: {
-  colour: string;
-  checked: boolean;
-  overridden: boolean;
-}) {
-  return (
-    <span
-      aria-hidden
-      style={{ backgroundColor: colour }}
-      className={`relative block rounded-[5px] border border-black/15 transition dark:border-white/20 h-5 w-5 ${
-        checked
-          ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-brand-300 dark:ring-offset-slate-900'
-          : 'group-hover:scale-110'
-      }`}
-    >
-      {overridden ? (
-        // The corner marker: the name says "Custom", this shows it.
-        <span
-          data-swatch-marker=""
-          className={`absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full ring-1 ${
-            isLightColor(colour) ? 'bg-slate-900 ring-white' : 'bg-white ring-slate-900'
-          }`}
-        />
-      ) : null}
-    </span>
   );
 }
 

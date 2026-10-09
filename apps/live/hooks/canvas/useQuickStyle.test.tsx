@@ -42,7 +42,6 @@ function setup(
     elements = map(elements);
   });
   const update = vi.fn();
-  const colours = { remember: vi.fn() };
   const { result } = renderHook(() =>
     useQuickStyle({
       activeTab: tab,
@@ -54,11 +53,11 @@ function setup(
       commit,
       memory: memory as never,
       swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
-      pen: { held, update, colours },
+      pen: { held, update },
       toolIntent,
     }),
   );
-  return { result, commit, update, memory, colours, elements: () => elements };
+  return { result, commit, update, memory, elements: () => elements };
 }
 
 describe('useQuickStyle pen rows', () => {
@@ -74,18 +73,14 @@ describe('useQuickStyle pen rows', () => {
     expect(elements()[0]).toMatchObject({ penWidth: 2.5 });
   });
 
-  it('offers the tab\u2019s custom colours, and remembers a custom restyle in Your colours', () => {
+  it('offers the tab\u2019s custom colours, and restyles with stock and custom colours', () => {
     // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the second section.
-    const { result, elements, colours } = setup(['s1']);
+    const { result, elements } = setup(['s1']);
     expect(result.current.view?.pen?.colour.custom).toEqual([]);
     act(() => result.current.setPenColour('teal'));
     expect(elements()[0]).toMatchObject({ penColour: 'teal' });
-    expect(colours.remember).toHaveBeenCalledWith('teal');
     act(() => result.current.setPenColour('#ff6b00'));
     expect(elements()[0]).toMatchObject({ strokeColor: '#ff6b00' });
-    expect(colours.remember).toHaveBeenLastCalledWith('#ff6b00');
-    act(() => result.current.setPenColour('ink'));
-    expect(colours.remember).toHaveBeenLastCalledWith(null);
   });
 
   it('sets the pen in hand when nothing is selected, in px and with ink as null', () => {
@@ -132,14 +127,23 @@ describe('useQuickStyle on a mixed whiteboard selection', () => {
     expect((q as { penColour?: string }).penColour).toBe('ink');
   });
 
-  it('stores a stock colour by name and moves a custom one to the front of Your colours', () => {
-    const { result, elements, colours } = setup(['q1'], null, null, memory, [square]);
+  it('stores a stock colour by name and a custom one by hex', () => {
+    const { result, elements } = setup(['q1'], null, null, memory, [square]);
     act(() => result.current.setBoardStroke('teal'));
     expect(elements()[0]).toMatchObject({ penColour: 'teal' });
-    expect(colours.remember).not.toHaveBeenCalled();
     act(() => result.current.setBoardStroke('#ff6b00'));
     expect(elements()[0]).toMatchObject({ strokeColor: '#ff6b00' });
-    expect(colours.remember).toHaveBeenCalledWith('#ff6b00');
+  });
+
+  // docs/specs/004-interface-design/colour-picker.md "Skins": a row's More colours.
+  it('sets any colour from More colours: a stock name on a line or text, a hex on a fill', () => {
+    const { result, elements } = setup(['q1'], null, null, memory, [square]);
+    act(() => result.current.setColour('stroke', 'grey'));
+    expect(elements()[0]).toMatchObject({ penColour: 'grey', strokeColor: undefined });
+    act(() => result.current.setColour('text', '#123456'));
+    expect(elements()[0]).toMatchObject({ textColor: '#123456', penTextColour: undefined });
+    act(() => result.current.setColour('fill', '#abcdef'));
+    expect(elements()[0]).toMatchObject({ fillColor: '#abcdef' });
   });
 });
 
@@ -206,13 +210,13 @@ describe('useQuickStyle swatches on a themed canvas', () => {
         commit: vi.fn(),
         memory: { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el },
         swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
-        pen: { held: null, update: vi.fn(), colours: { remember: vi.fn() } },
+        pen: { held: null, update: vi.fn() },
         toolIntent: null,
       } as never),
     );
     const options = result.current.view!.sections.boardStroke!.options;
     expect(options[0]!.swatch).toBe(PEN_INK.dark);
-    expect(options[1]!.swatch).toBe(penColourHex('blue', 'dark'));
+    expect(options[6]!.swatch).toBe(penColourHex('blue', 'dark'));
   });
 });
 

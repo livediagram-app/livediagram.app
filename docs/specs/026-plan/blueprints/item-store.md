@@ -167,9 +167,9 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   stored swatch or `undefined`, so a value written before validation (or by hand) never draws.
 - Built-in Project fields: `title, description, status, assignee, priority, color, start, due, labels` (+
   comments). `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
-- Editor: `ColourSwatches` (apps/live/components/plan/ColourSwatches.tsx) is the shared radio group of the twelve
-  swatches, used by the type editor's Colour and, with `allowNone`, by the panel's Colour field
-  (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).
+- Editor: `apps/live/components/plan/ColourSwatches.tsx` puts Plan on the one colour picker: `TypeColourButton` (a
+  swatch at the end of the type editor's Name field, opening the picker in a popover) and `ColourSelect` (the panel's
+  Colour field, None first) (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).
   `ColourDot` draws an item's colour (8 px, ringed) beside a Parent chip and a Project swimlane header; the
   Gantt draws a project's bar and diamond in `itemColourOf(project)` else the Project type colour (overdue red
   still edges it) and a dot in the row's name.

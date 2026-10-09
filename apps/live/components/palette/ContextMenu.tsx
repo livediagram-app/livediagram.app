@@ -122,7 +122,7 @@ export function ContextMenu({
       if (
         e.target instanceof Element &&
         e.target.closest(
-          '[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session],[data-tour-popover]',
+          '[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session],[data-tour-popover],[data-anchored-popover]',
         )
       )
         return;

@@ -29,7 +29,7 @@ the other two tabs.
 The canvas-style controls, identical to the palette's **Canvas** accordion (and sharing the exact component, `CanvasStyleControls`, so the two can never drift):
 
 - **Pattern** — the pattern grid. The dialog has room to show **all** patterns at once (a 7-wide grid, no "Show more" toggle); the narrow palette accordion keeps the 4-wide grid with the toggle. ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
-- **Colours** — Canvas colour + Pattern colour swatches.
+- **Colours** — Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
 - **Opacity** — the pattern-opacity slider with its percentage readout.
 - **Size** — the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
 - **Speed** — a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.

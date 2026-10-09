@@ -96,7 +96,7 @@ livediagram file that holds tabs ([Document](../006-document/document.md)). The 
 
 Bold, italic, underline, strikethrough, inline code, superscript, subscript, a **link** (an
 http, https or mailto address), a **text colour** and a **highlight** (each a hex colour from the
-article's swatches), and a line break inside a block (Shift+Enter). Code blocks keep plain text.
+[colour picker](../004-interface-design/colour-picker.md)), and a line break inside a block (Shift+Enter). Code blocks keep plain text.
 
 ## Writing
 
@@ -172,10 +172,10 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
     Bullets, Numbers, To-do for a list) and is only as wide as the name shown, the menu keeping
     the full names;
   - **Bold**, **Italic**, **Underline**;
-  - **Colour** (a menu: **Text** then **Highlight**, each led by its clearing choice, **Default
-    colour** / **No highlight**; text offers the article's **Accent** and nine fixed colours chosen
-    to read on paper (Gray, Red, Orange, Amber, Green, Teal, Blue, Purple, Pink); highlight nine
-    pale tints (Yellow, Orange, Red, Green, Teal, Blue, Purple, Pink, Gray));
+  - **Colour** (a menu holding two colour pickers,
+    [Colour picker](../004-interface-design/colour-picker.md): **Text**, led by **Default colour**
+    and the article's **Accent**, then the strong standard colours for paper; **Highlight**, led by
+    **No highlight**, then the soft standard colours; each with Custom colours and **+**);
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
@@ -331,7 +331,8 @@ a choice is hovered.
 - **Fonts**: **Headings** and **Body**, each a font from the font catalogue
   ([Fonts](../004-interface-design/fonts.md)).
 - **Accent**: the colour of headings (when accented), links, quote bars, bullets, rules and to-do
-  boxes: **Theme** (the tab theme's accent, the default) or one of eight presets.
+  boxes: **Theme** (the tab theme's accent, the default) or any colour from the colour picker (the strong
+  standard colours, Custom colours, **+**), previewed on hover or focus.
 - **Headings in accent**: on or off (off: headings in ink).
 - **Text size**: Small (14 px), Normal (16 px, default), Large (18 px); headings scale with it.
 - **Line spacing**: Single (1.3), 1.5 (default 1.5), Double (2.0).

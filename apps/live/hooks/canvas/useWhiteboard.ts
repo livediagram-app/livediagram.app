@@ -33,7 +33,6 @@ import {
 } from '@/lib/whiteboard-shape-catalogue';
 import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
 import { DRAW_PATTERNS } from '@/lib/whiteboard-dock-prefs';
-import { usePenColourMemory } from './usePenColourMemory';
 import type { SnapColoursApi } from './useSnapColours';
 
 type Deps = {
@@ -83,8 +82,6 @@ export function useWhiteboard(deps: Deps) {
   } = deps;
   // The synced dock preferences: pinned shapes and pick counts ("Shape slots").
   const dockPrefs = useWhiteboardDockPrefs(deps);
-  // Your colours ("The colour picker"), synced too.
-  const colourMemory = usePenColourMemory(deps);
   // S (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): each press raises this, and
   // the dock, which owns its flyouts, opens the Shapes flyout in answer.
   const [shapesRequest, setShapesRequest] = useState(0);
@@ -161,10 +158,7 @@ export function useWhiteboard(deps: Deps) {
     };
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
-    if (patch.colour !== undefined) {
-      track('Draw', 'Changed', 'PenColour');
-      colourMemory.remember(patch.colour);
-    }
+    if (patch.colour !== undefined) track('Draw', 'Changed', 'PenColour');
     if (patch.width !== undefined) track('Draw', 'Changed', 'PenWidth');
   };
 
@@ -255,7 +249,6 @@ export function useWhiteboard(deps: Deps) {
     pickPen,
     updatePen,
     resetPen,
-    colourMemory,
     pickEraser,
     setEraserMode,
     // The sticky note is a shape (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): N counts

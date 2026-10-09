@@ -125,7 +125,7 @@ case-insensitively, else `null`.
 - Store: `UserPreferences.quickSwatchOverrides: SwatchOverrideStore`, an array of
   `{ t: themeId, s?: SwatchOverrideRow, f?: SwatchOverrideRow, x?: SwatchOverrideRow }`,
   newest-edited first, one entry per theme (`s` = Stroke, `f` = Background, `x` = Text colour, D51). Synced through `writeUserPreferences(prefs, ownerId)`
-  exactly as `customSwatches` is; the api stores the blob opaquely (4 KB cap, no per-field
+  exactly as every synced preference is; the api stores the blob opaquely (4 KB cap, no per-field
   validation), so there is no api-schema change and all validation is client-side on read.
 - `overridesForTheme(store, themeId)` → `SwatchOverrides` for the active tab's theme
   (`activeTab.theme ?? DEFAULT_SCHEME_ID`).
@@ -146,13 +146,14 @@ case-insensitively, else `null`.
 ownerId })` → `{ overrides, setOverride(role, slot, hex), clearOverride(role, slot) }`. Writes
   read the freshest cached preferences (`readUserPreferences`), change only this key (removed when
   the store is empty), then `setUserPreferences` + `writeUserPreferences`.
-- Popover (`SwatchOverridePopover`): `role="dialog"`, `aria-label` "Custom colour for <theme
-  name>, <Stroke | Background | Text colour>". Contents: a native `<input type="color">` (label "Colour"), a hex
-  text field (label "Hex", commits on Enter or blur when valid, shows "Enter a colour like #1a2b3c"
-  when not), **Clear override** (disabled while the slot is not overridden) and **Done**. The colour
-  input commits on `change` (the picker's close), never per `input` tick. Portalled to `body`,
+- Popover (`SwatchOverridePopover`, `w-64`): `role="dialog"`, `aria-label` "Custom colour for <theme
+  name>, <Stroke | Background | Text colour>". Contents: the heading "Custom colour", the
+  `CustomColourEditor` (`components/colour/`, no board warning) started on the swatch's colour, then
+  **Clear override** while the slot is overridden, else the theme note. **Use** (or Enter in the
+  editor's hex field with a valid colour) calls `onSave(hex)` lower-cased and closes; an invalid hex
+  does nothing. Portalled to `body`,
   `fixed`, `z-[var(--z-toolbar)]`; placed right of the panel (8 px from it), else left of it when the viewport has no room there, top at the
-  swatch's top, clamped into the viewport. Opens with focus on the colour input; Escape, Done or a
+  swatch's top, clamped into the viewport. Opens with focus on the editor's square; Escape, Use or a
   pointer-down outside closes it and returns focus to the swatch.
 - Opening: `contextmenu` on a slot 1-6 swatch (mouse, the context-menu key and Shift+F10 all
   dispatch it), plus an explicit `keydown` for Shift+F10 / `ContextMenu`, which prevents the
@@ -242,7 +243,7 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
   shape's `colorPreset`) and write the choice: nothing for `ink`, `penColour` / `penTextColour` for a
   stock name, `strokeColor` / `textColor` for a hex. `useQuickStyle` exposes `setBoardStroke` /
   `setBoardTextColour` (tokens `QuickStroke` / `QuickTextColour`; a custom hex goes to the front of
-  Your colours). The panel draws them with `BoardColourRows` (`QuickPenRows.tsx`): the row and, when
+  Custom colours). The panel draws them with `BoardColourRows` (`QuickPenRows.tsx`): the row and, when
   the tab has custom colours, "Custom stroke colours" / "Custom text colours"; the frame takes the
   eight-target width. Style memory records `penColour` (shapes, arrows, paths) and `penTextColour`
   (text), parsed only as stock names.
@@ -345,9 +346,10 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   `data-panel-translucent`, no header; the body `[data-quick-style-body]`.
 - The width never follows the content, and a swatch row never wraps or clips: `panelFrame()`
   derives it in px from the named measures in `quick-style-metrics.ts`
-  (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8, `QUICK_ROW_TARGETS` 9:
-  the widest of a theme row's 8 and the stock colours, `1 + PEN_COLOUR_NAMES.length`):
-  `targets · 24 + 2 · 8 + 2 · 1` (234 px) with the padding set from the same constant.
+  (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8, `QUICK_ROW_TARGETS` 10:
+  the widest of a theme row's 9 (seven, Ink, More colours) and the stock colours,
+  `1 + PEN_COLOUR_NAMES.length + 1`): `targets · 24 + 2 · 8 + 2 · 1` (258 px) with the padding set from
+  the same constant.
 - `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon
@@ -355,9 +357,13 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
 dark:text-slate-400` (always shown, Minimal chrome included; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
   a divider above Actions.
-- Colour row: seven 24 × 24 px target buttons, each drawing an inner colour chip: 20 px chips
-  in touching targets (the row is exactly 168 px); the swatch paints its colour, a selected
-  swatch shows a 2 px ring in `brand-500`.
+- Colour row: 24 × 24 px target buttons, each drawing the colour picker's `SwatchChip` (20 px, a
+  selected swatch a 2 px ring in `brand-500`, an overridden one its `marked` corner dot), touching,
+  then `QuickMoreColours`: a `ColourSwatchButton` named "More colours, <row title>" drawing four
+  standard dots, opening the full picker (row's colours as Theme, `standardGroup` strong by name on
+  Stroke and Text colour, soft hex on Background, soft light hex on Highlighter colour,
+  `useDocumentColours`). Its pick calls `setColour(role, id)` (Diagram rows), `setPenColour`,
+  `setBoardStroke` / `setBoardTextColour` or `setHighlighterColour`. Marker 1's ink-only row has none.
 - Three-option rows: three equal buttons, 28 px tall, glyph-only (line weights, dash patterns, align
   glyphs, icon-before / above / after glyphs); selected = `bg-brand-50 text-brand-700 ring-brand-300`,
   dark `bg-brand-500/15 text-brand-200`.
@@ -372,10 +378,14 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 ## Accessibility
 
 - Container `role="region"` `aria-label="Quick style"`.
-- Row `role="radiogroup"` with `aria-label` = its title (independent of the visible title).
-- Option `role="radio"`, `aria-checked`, `aria-label` = its name, wrapped in `Tooltip` with the same
-  name. Roving `tabIndex`: the checked option, else the first, is `0`; the rest `-1`.
-- Keys: ArrowRight / ArrowDown next, ArrowLeft / ArrowUp previous (wrapping), Home / End first /
+- A glyph row `role="radiogroup"` with `aria-label` = its title (independent of the visible title);
+  a colour row `role="group"` with the same label.
+- Glyph option `role="radio"`, `aria-checked`; swatch a button with `aria-pressed` and
+  `data-colour-key`; each `aria-label` = its name, wrapped in `Tooltip` with the same name. Roving
+  `tabIndex`: the checked option, else the first, is `0`; the rest (More colours included) `-1`.
+- Colour row keys: `colourKeyTarget` over the row's `[data-colour-key]` targets (More colours
+  included): the arrows move focus, wrapping, Home / End jump; nothing is chosen until Enter / Space.
+- Glyph row keys: ArrowRight / ArrowDown next, ArrowLeft / ArrowUp previous (wrapping), Home / End first /
 - Shift+F10 / the context-menu key on a slot 1-6 swatch opens its override popover (a labelled
   dialog); Escape returns focus to the swatch.
 - An overridden swatch's name and tooltip say "Custom <hue>, in place of <theme colour>"; the corner

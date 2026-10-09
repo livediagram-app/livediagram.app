@@ -1,5 +1,5 @@
 import { lucideClipboardPaste } from '@livediagram/icons/lucide';
-import { hexish } from '@/components/palette/palette-controls';
+import { useColourWell } from '@/components/palette/palette-controls';
 import { ChevronDownIcon, CopyIcon, Glyph, Prims } from '@livediagram/ui';
 
 export type Painter = {
@@ -29,8 +29,9 @@ export function FieldLabel({
 }
 
 // A base-colour tile: a large colour block (the whole point) with a
-// label beneath, the native colour input layered invisibly on top, plus
-// the format-painter copy button / paste overlay.
+// label beneath. Pressing the block opens the one colour picker
+// (useColourWell); the format-painter copy button sits on it, and while a
+// colour is copied a paste overlay covers it instead.
 export function ColorTile({
   label,
   value,
@@ -43,39 +44,38 @@ export function ColorTile({
   painter: Painter;
 }) {
   const pasting = painter.copied !== null;
+  const { open, toggle, setTrigger, popover } = useColourWell({ label, value, onChange });
   return (
-    <label className="flex cursor-pointer flex-col gap-1 rounded-lg border border-slate-200 bg-white p-1 transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60">
+    <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-white p-1 transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60">
       <span
         className="relative block h-7 w-full overflow-hidden rounded border border-black/5 dark:border-white/10"
         style={{ backgroundColor: value }}
       >
-        <input
-          type="color"
-          value={hexish(value)}
-          onChange={(e) => onChange(e.target.value)}
+        <button
+          ref={setTrigger}
+          type="button"
           aria-label={label}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={toggle}
+          className="absolute inset-0 h-full w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
         />
-        {/* Copy this colour (format painter). Sits above the input. */}
+        {/* Copy this colour (format painter). Sits above the well. */}
         {!pasting ? (
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              painter.copy(value);
-            }}
+            onClick={() => painter.copy(value)}
             aria-label={`Copy ${label} colour`}
             className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-600 dark:bg-slate-900/80 dark:text-slate-200"
           >
             <CopyIcon size={9} />
           </button>
         ) : (
-          // Paste overlay: covers the input so a click applies the copied
-          // colour instead of opening the native picker.
+          // Paste overlay: covers the well so a click applies the copied
+          // colour instead of opening the picker.
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
+            onClick={() => {
               onChange(painter.copied!);
               painter.clear();
             }}
@@ -89,13 +89,14 @@ export function ColorTile({
       <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">
         {label}
       </span>
-    </label>
+      {popover}
+    </div>
   );
 }
 
-// A compact per-shape colour input: a small colour square with the
-// native picker layered on top, and the same paste-target behaviour as
-// the tiles when a colour is on the painter clipboard.
+// A compact per-shape colour: a small colour square that opens the one
+// colour picker, and the same paste-target behaviour as the tiles when a
+// colour is on the painter clipboard.
 export function ColorDot({
   label,
   value,
@@ -108,23 +109,25 @@ export function ColorDot({
   painter: Painter;
 }) {
   const pasting = painter.copied !== null;
+  const { open, toggle, setTrigger, popover } = useColourWell({ label, value, onChange });
   return (
     <span
       className="relative h-6 w-6 shrink-0 overflow-hidden rounded border border-slate-300 dark:border-slate-600"
       style={{ backgroundColor: value }}
     >
-      <input
-        type="color"
+      <button
+        ref={setTrigger}
+        type="button"
         aria-label={label}
-        value={hexish(value)}
-        onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={toggle}
+        className="absolute inset-0 h-full w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
       />
       {pasting ? (
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
+          onClick={() => {
             onChange(painter.copied!);
             painter.clear();
           }}
@@ -132,6 +135,7 @@ export function ColorDot({
           className="absolute inset-0 bg-brand-500/15 ring-1 ring-inset ring-brand-400/70"
         />
       ) : null}
+      {popover}
     </span>
   );
 }

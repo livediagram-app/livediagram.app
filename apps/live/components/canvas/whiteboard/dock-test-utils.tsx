@@ -21,7 +21,6 @@ export function dockModel(
     pickPen: vi.fn(),
     updatePen: vi.fn(),
     resetPen: vi.fn(),
-    colourMemory: { yours: [], remember: vi.fn(), forget: vi.fn() },
     pickEraser: vi.fn(),
     setEraserMode: vi.fn(),
     pickSticky: vi.fn(),

@@ -1,75 +1,66 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { PLAN_TYPE_COLOURS } from '@livediagram/items';
-import { ColourDot, ColourSwatches, swatchFocusTarget } from './ColourSwatches';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { penColourHex, standardColours } from '@livediagram/document';
+import { ColourDot, TypeColourButton, planColourName } from './ColourSwatches';
 
 afterEach(cleanup);
 
-// docs/specs/026-plan/items.md "Colour".
-describe('ColourSwatches', () => {
-  it('offers the twelve swatches by name, the picked one checked', () => {
+// docs/specs/026-plan/items.md "Colour", on the one colour picker (docs/specs/004-interface-design/colour-picker.md).
+describe('a card type colour', () => {
+  it('is a swatch of the colour, opening the picker in a popover that a pick closes', () => {
     const onChange = vi.fn();
-    render(<ColourSwatches value="#16a34a" onChange={onChange} />);
-    expect(screen.getAllByRole('radio')).toHaveLength(PLAN_TYPE_COLOURS.length);
-    expect(screen.getByRole('radio', { name: 'Green' }).getAttribute('aria-checked')).toBe('true');
-    expect(screen.queryByRole('radio', { name: 'None' })).toBeNull();
-    fireEvent.click(screen.getByRole('radio', { name: 'Pink' }));
-    expect(onChange).toHaveBeenCalledWith('#db2777');
+    render(<TypeColourButton value={penColourHex('green', 'light')} onChange={onChange} />);
+    const trigger = screen.getByRole('button', { name: 'Colour' });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Pink' }));
+    expect(onChange).toHaveBeenCalledWith(penColourHex('pink', 'light'));
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('offers None first when it may be cleared, checked when there is no colour', () => {
+  it('offers the strong standard colours for light paper, picked by hex, and no None', () => {
     const onChange = vi.fn();
-    render(<ColourSwatches value={undefined} onChange={onChange} allowNone label="Colour" />);
-    const none = screen.getByRole('radio', { name: 'None' });
-    expect(screen.getAllByRole('radio')[0]).toBe(none);
-    expect(none.getAttribute('aria-checked')).toBe('true');
-    fireEvent.click(screen.getByRole('radio', { name: 'Blue' }));
-    fireEvent.click(none);
-    expect(onChange.mock.calls).toEqual([['#2563eb'], [undefined]]);
+    render(<TypeColourButton value={penColourHex('green', 'light')} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Colour' }));
+    const colours = within(screen.getByRole('group', { name: 'Standard Colours' })).getAllByRole(
+      'button',
+    );
+    expect(colours.map((b) => b.getAttribute('aria-label'))).toEqual(
+      standardColours('strong', 'light').map((c) => c.label),
+    );
+    expect(screen.getByRole('button', { name: 'Green' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByRole('button', { name: 'None' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Pink' }));
+    expect(onChange).toHaveBeenCalledWith(penColourHex('pink', 'light'));
   });
 
-  it('changes nothing for someone who may not edit', () => {
+  it('keeps an earlier Plan colour as the colour in force, and + picks a custom one lower-cased', () => {
     const onChange = vi.fn();
-    render(<ColourSwatches value="#2563eb" onChange={onChange} allowNone disabled />);
-    fireEvent.click(screen.getByRole('radio', { name: 'Red' }));
-    expect(onChange).not.toHaveBeenCalled();
+    render(<TypeColourButton value="#16A34A" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Colour' }));
+    const yours = within(screen.getByRole('group', { name: 'Custom Colours' })).getAllByRole(
+      'button',
+    );
+    expect(yours[0]!.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Add a custom colour' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Hex' }), {
+      target: { value: '#ABCDEF' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    expect(onChange).toHaveBeenCalledWith('#abcdef');
+  });
+});
+
+describe('Plan colour names', () => {
+  it('name a standard colour, an earlier Plan swatch, or a custom colour', () => {
+    expect(planColourName(penColourHex('teal', 'light'))).toBe('Teal');
+    expect(planColourName('#0D9488')).toBe('Teal');
+    expect(planColourName('#123456')).toBe('#123456');
   });
 
-  it('is one Tab stop, the picked swatch, and the arrows move focus along it (the type editor too)', () => {
-    const onChange = vi.fn();
-    render(<ColourSwatches value="#2563eb" onChange={onChange} />);
-    const radios = screen.getAllByRole('radio');
-    const blue = screen.getByRole('radio', { name: 'Blue' });
-    expect(radios.filter((r) => r.tabIndex === 0)).toEqual([blue]);
-    blue.focus();
-    fireEvent.keyDown(blue, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'Yellow' }));
-    fireEvent.keyDown(document.activeElement!, { key: 'End' });
-    expect(document.activeElement).toBe(radios[radios.length - 1]);
-    // Moving focus picks nothing.
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('makes the first swatch the Tab stop when none is picked', () => {
-    render(<ColourSwatches value={undefined} onChange={vi.fn()} />);
-    expect(screen.getAllByRole('radio').filter((r) => r.tabIndex === 0)).toEqual([
-      screen.getByRole('radio', { name: 'Black' }),
-    ]);
-  });
-
-  it('steps focus by arrow (wrapping), Home and End, and ignores any other key', () => {
-    expect(swatchFocusTarget('ArrowRight', 12, 13)).toBe(0);
-    expect(swatchFocusTarget('ArrowLeft', 0, 13)).toBe(12);
-    expect(swatchFocusTarget('ArrowUp', 5, 13)).toBe(4);
-    expect(swatchFocusTarget('Home', 5, 13)).toBe(0);
-    expect(swatchFocusTarget('End', 5, 13)).toBe(12);
-    expect(swatchFocusTarget('a', 5, 13)).toBe(-1);
-    expect(swatchFocusTarget('ArrowRight', -1, 13)).toBe(-1);
-    expect(swatchFocusTarget('ArrowRight', 0, 0)).toBe(-1);
-  });
-
-  it('names a colour dot by its swatch', () => {
+  it('name a colour dot', () => {
     render(<ColourDot colour="#0d9488" />);
     expect(screen.getByRole('img', { name: 'Teal colour' })).toBeTruthy();
   });

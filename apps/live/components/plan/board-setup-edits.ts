@@ -13,17 +13,6 @@ import {
   type SwimlaneBy,
 } from '@livediagram/items';
 
-export const COLUMN_COLOURS = [
-  '#2563eb',
-  '#16a34a',
-  '#d97706',
-  '#dc2626',
-  '#7c3aed',
-  '#0d9488',
-  '#db2777',
-  '#64748b',
-] as const;
-
 export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   none: 'None',
   assignee: 'Assignee',

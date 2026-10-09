@@ -303,6 +303,10 @@ export type Tab = {
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
   esLanesSettled?: boolean;
+  // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
+  // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
+  // `customColoursOf`; every picker in the document offers them as Custom Colours.
+  customColours?: string[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -543,6 +547,8 @@ export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';
 export * from './pen-colours';
+export * from './standard-colours';
+export * from './custom-colours';
 export * from './stock-colours';
 export * from './snap-colours';
 export * from './path-geometry';

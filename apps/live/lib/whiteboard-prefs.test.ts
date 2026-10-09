@@ -41,7 +41,7 @@ describe('whiteboard pens', () => {
   it('names a colour: the ink, a stock colour by name, a custom one by its hex', () => {
     expect(colourLabel(null)).toBe('Ink');
     expect(colourLabel('blue')).toBe('Blue');
-    expect(colourLabel('#ff6b00')).toBe('Custom #ff6b00');
+    expect(colourLabel('#ff6b00')).toBe('#ff6b00');
   });
 
   it('names a pen by colour and width for assistive tech', () => {
@@ -50,7 +50,7 @@ describe('whiteboard pens', () => {
     expect(penLabel({ ...first!, width: 2.5 })).toBe('Marker 2, blue, bold');
     expect(penLabel({ ...first!, colour: 'violet' })).toBe('Marker 2, violet, medium');
     expect(penLabel({ ...first!, colour: null })).toBe('Marker 2, ink, medium');
-    expect(penLabel({ ...first!, colour: '#ff6b00' })).toBe('Marker 2, custom #ff6b00, medium');
+    expect(penLabel({ ...first!, colour: '#ff6b00' })).toBe('Marker 2, #ff6b00, medium');
   });
 
   it('reports a pen by its place, never its colour', () => {

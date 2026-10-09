@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { penColourHex } from '@livediagram/document';
 import { ITEM_TYPES, type Item } from '@livediagram/items';
 import { ItemFieldEditor, type ItemFieldContext } from './ItemFieldEditor';
 
@@ -38,106 +39,80 @@ function ctx(item: Item, over: Partial<ItemFieldContext> = {}): ItemFieldContext
   };
 }
 
-// docs/specs/026-plan/items.md "Colour".
+// docs/specs/026-plan/items.md "Colour", on the one colour picker's field skin
+// (docs/specs/004-interface-design/colour-picker.md "Skins").
+const nextFrame = () => act(() => new Promise((r) => requestAnimationFrame(() => r(null))));
+const VIOLET = penColourHex('violet', 'light');
+
 describe('the item panel Colour field', () => {
-  it('is one dropdown naming the colour, opening the swatches; a pick sets it, None clears it', () => {
-    const c = ctx(make({ title: 'P', color: '#2563eb' }));
+  it('is one field naming the colour, opening the picker; a pick sets it, None clears it', () => {
+    const c = ctx(make({ title: 'P', color: VIOLET }));
     render(<ItemFieldEditor f="color" ctx={c} />);
-    const trigger = screen.getByRole('button', { name: 'Colour: Blue' });
+    const trigger = screen.getByRole('button', { name: 'Colour: Violet' });
     // Closed, the swatches take no room.
-    expect(screen.queryByRole('radio')).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.click(trigger);
-    expect(screen.getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe('true');
-    fireEvent.click(screen.getByRole('radio', { name: 'Violet' }));
-    // A pick closes it.
-    expect(screen.queryByRole('radio')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Violet' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Blue' }));
+    // A pick closes it, focus back on the field.
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
     fireEvent.click(trigger);
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(screen.queryByRole('radio')).toBeNull();
-    fireEvent.click(trigger);
-    fireEvent.click(screen.getByRole('radio', { name: 'None' }));
+    fireEvent.click(screen.getByRole('button', { name: 'None' }));
     expect(vi.mocked(c.onSave).mock.calls).toEqual([
-      ['color', '#7c3aed'],
+      ['color', penColourHex('blue', 'light')],
       ['color', undefined],
     ]);
   });
 
-  it('draws the swatches inside the field, so the card panel dialog (and its focus trap) holds them', () => {
-    const c = ctx(make({ title: 'P', color: '#2563eb' }));
-    render(
-      <div role="dialog" aria-modal="true">
-        <ItemFieldEditor f="color" ctx={c} />
-      </div>,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Colour: Blue' }));
-    const panel = screen.getByRole('dialog', { name: '' });
-    const pop = screen.getByRole('dialog', { name: 'Colour' });
-    expect(panel.contains(pop)).toBe(true);
-    expect(panel.contains(screen.getByRole('radio', { name: 'Blue' }))).toBe(true);
+  it('names an earlier Plan colour by its word', () => {
+    render(<ItemFieldEditor f="color" ctx={ctx(make({ title: 'P', color: '#2563eb' }))} />);
+    expect(screen.getByRole('button', { name: 'Colour: Blue' })).toBeTruthy();
   });
 
-  it('takes the keyboard: focus on the picked swatch, the arrows move, a press picks, Escape returns to the trigger', () => {
-    const c = ctx(make({ title: 'P', color: '#2563eb' }));
+  it('opens with an arrow on the picked swatch; Escape closes it only and returns to the field', async () => {
+    const c = ctx(make({ title: 'P', color: VIOLET }));
     // The card panel's own Escape, on the document: it must not hear the popover's Escape.
     const panelEscape = vi.fn((e: KeyboardEvent) => e.key === 'Escape');
     const panelEscapes = () => panelEscape.mock.results.filter((r) => r.value).length;
     document.addEventListener('keydown', panelEscape);
     render(<ItemFieldEditor f="color" ctx={c} />);
-    const trigger = screen.getByRole('button', { name: 'Colour: Blue' });
+    const trigger = screen.getByRole('button', { name: 'Colour: Violet' });
     trigger.focus();
-    // ArrowDown on the trigger opens it, focus on the picked swatch, the group's one Tab stop.
     fireEvent.keyDown(trigger, { key: 'ArrowDown' });
-    const blue = screen.getByRole('radio', { name: 'Blue' });
-    expect(document.activeElement).toBe(blue);
-    expect(screen.getAllByRole('radio').filter((r) => r.tabIndex === 0)).toEqual([blue]);
-    fireEvent.keyDown(blue, { key: 'ArrowRight' });
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'Yellow' }));
+    await nextFrame();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Violet' }));
     fireEvent.keyDown(document.activeElement!, { key: 'Home' });
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'None' }));
-    // Wrapping back from None to the last swatch.
-    fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'Cyan' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'None' }));
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
-    expect(screen.queryByRole('radio')).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(trigger);
     expect(panelEscapes()).toBe(0);
-    // Enter or Space on a swatch is the button's own click: it picks, closes, and focus returns to the trigger.
-    fireEvent.click(trigger);
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'Blue' }));
-    fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
-    fireEvent.click(document.activeElement!);
-    expect(c.onSave).toHaveBeenCalledWith('color', '#eab308');
-    expect(screen.queryByRole('radio')).toBeNull();
-    expect(document.activeElement).toBe(trigger);
     document.removeEventListener('keydown', panelEscape);
   });
 
-  it('opens on None when there is no colour', () => {
+  it('opens on None when there is no colour', async () => {
     render(<ItemFieldEditor f="color" ctx={ctx(make({ title: 'P' }))} />);
     fireEvent.click(screen.getByRole('button', { name: 'Colour: None' }));
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'None' }));
+    await nextFrame();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'None' }));
   });
 
-  it('closes on a press outside, or when focus leaves it', () => {
-    const c = ctx(make({ title: 'P', color: '#2563eb' }));
+  it('closes on a press outside, saving nothing', () => {
+    const c = ctx(make({ title: 'P', color: VIOLET }));
     render(
       <>
         <ItemFieldEditor f="color" ctx={c} />
         <button type="button">Elsewhere</button>
       </>,
     );
-    const trigger = screen.getByRole('button', { name: 'Colour: Blue' });
-    fireEvent.click(trigger);
-    // A press inside the popover keeps it.
+    fireEvent.click(screen.getByRole('button', { name: 'Colour: Violet' }));
     fireEvent.pointerDown(screen.getByRole('dialog', { name: 'Colour' }));
-    expect(screen.queryAllByRole('radio')).not.toHaveLength(0);
+    expect(screen.getByRole('dialog', { name: 'Colour' })).toBeTruthy();
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Elsewhere' }));
-    expect(screen.queryByRole('radio')).toBeNull();
-    fireEvent.click(trigger);
-    fireEvent.blur(screen.getByRole('radio', { name: 'Blue' }), {
-      relatedTarget: screen.getByRole('button', { name: 'Elsewhere' }),
-    });
-    expect(screen.queryByRole('radio')).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(c.onSave).not.toHaveBeenCalled();
   });
 });

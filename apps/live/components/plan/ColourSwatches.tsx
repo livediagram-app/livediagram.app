@@ -1,17 +1,20 @@
 'use client';
 
-// The twelve Plan swatches as one radio group (docs/specs/026-plan/items.md "Colour"): a card type's Colour in the
-// type editor, which adds + for a custom colour, and an item's own Colour in the item panel, which adds None. ColourDot draws an item's colour
-// beside its type colour (a Parent chip, a Project swimlane header, a Gantt row).
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { PLAN_TYPE_COLOURS } from '@livediagram/items';
-import { ChevronDownIcon, PlusIcon, Tooltip, useClickOutside, useEscape } from '@livediagram/ui';
-import { CustomColourEditor } from '@/components/canvas/whiteboard/CustomColourEditor';
+// Plan's colours on the one colour picker (docs/specs/004-interface-design/colour-picker.md; docs/specs/026-plan/items.md
+// "Colour"): a card type's Colour in the type editor, a swatch at the end of its Name field opening the picker in a
+// popover, and an item's own Colour in the item panel, a field that opens the picker with None first. Both offer the strong standard colours for light paper, Custom colours
+// and +, and store the hex. ColourDot draws an item's colour beside its type colour (a Parent chip, a Project swimlane
+// header, a Gantt row).
+import { ColourField } from '@/components/colour/ColourField';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { colourName, noColour, standardGroup } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
-// The swatches' names, for their buttons.
-export const COLOUR_NAMES: Record<string, string> = {
+// Colours Plan offered before the standard colours, so a card still holding one is named by its word.
+const EARLIER_PLAN_COLOURS: Readonly<Record<string, string>> = {
   '#18181b': 'Black',
-  '#71717a': 'Gray',
+  '#71717a': 'Grey',
+  '#64748b': 'Slate',
   '#2563eb': 'Blue',
   '#eab308': 'Yellow',
   '#dc2626': 'Red',
@@ -24,160 +27,47 @@ export const COLOUR_NAMES: Record<string, string> = {
   '#0891b2': 'Cyan',
 };
 
-// The arrows that move focus along the swatches (a radio group's roving focus): back or forward, wrapping.
-const SWATCH_STEP: Record<string, -1 | 1> = {
-  ArrowLeft: -1,
-  ArrowUp: -1,
-  ArrowRight: 1,
-  ArrowDown: 1,
-};
-
-// Where a key moves focus among `count` swatches from `at`: an arrow steps (wrapping), Home and End jump to the
-// ends; any other key, nowhere (-1).
-export function swatchFocusTarget(key: string, at: number, count: number): number {
-  if (count <= 0 || at < 0) return -1;
-  if (key === 'Home') return 0;
-  if (key === 'End') return count - 1;
-  const step = SWATCH_STEP[key];
-  return step ? (at + step + count) % count : -1;
+/** A Plan colour's word: a standard colour's, an earlier Plan swatch's, else "#rrggbb". */
+export function planColourName(hex: string): string {
+  return EARLIER_PLAN_COLOURS[hex.toLowerCase()] ?? colourName(hex);
 }
 
-export function ColourSwatches({
+// The id the picker hands back for None.
+const NONE = 'none';
+const STANDARD = [standardGroup('strong', 'light', 'hex')];
+const NONE_OPTION = [noColour(NONE, 'None')];
+
+/**
+ * A card type's Colour: a swatch of it at the end of the type editor's Name field, opening the picker in a popover.
+ * Always a colour, never None. Escape closes the popover only, so the type editor stays open.
+ */
+export function TypeColourButton({
   value,
   onChange,
   label = 'Colour',
-  allowNone = false,
-  allowCustom = false,
-  disabled = false,
-  size = 'md',
-  id,
 }: {
-  // The picked swatch, or undefined for none.
-  value: string | undefined;
-  onChange: (next: string | undefined) => void;
+  value: string;
+  onChange: (next: string) => void;
   label?: string;
-  // Offers None first, which clears the colour.
-  allowNone?: boolean;
-  // Ends with + for a colour of one's own (the type editor; an item's own Colour stays a swatch): it opens the
-  // custom picker in place, and a custom colour in force shows as a picked swatch just before it.
-  allowCustom?: boolean;
-  disabled?: boolean;
-  // md for the type editor, sm for the item panel's narrower column.
-  size?: 'sm' | 'md';
-  id?: string;
 }) {
-  const dim = size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';
-  const ring = (on: boolean) =>
-    `${dim} shrink-0 rounded-full ring-offset-2 transition motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:ring-offset-slate-900 ${
-      on ? 'ring-2 ring-brand-500' : disabled ? '' : 'hover:scale-110'
-    } disabled:cursor-not-allowed disabled:opacity-60`;
-  // The swatches in order (None first when offered). The picked one is the group's one Tab stop (the first when
-  // none listed is picked); the arrows move focus along them, and Enter or Space (a button's own keys) picks.
-  const stock: (string | undefined)[] = allowNone
-    ? [undefined, ...PLAN_TYPE_COLOURS]
-    : [...PLAN_TYPE_COLOURS];
-  const customValue = allowCustom && value && !stock.includes(value) ? value : undefined;
-  const options = customValue ? [...stock, customValue] : stock;
-  const [customOpen, setCustomOpen] = useState(false);
-  const picked = options.indexOf(value);
-  const tabStop = picked < 0 ? 0 : picked;
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const radios = Array.from(
-      e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]'),
-    );
-    const next = swatchFocusTarget(
-      e.key,
-      radios.indexOf(e.target as HTMLButtonElement),
-      radios.length,
-    );
-    if (next < 0) return;
-    e.preventDefault();
-    radios[next]?.focus();
-  };
-  const group = (
-    <div
-      id={id}
-      role="radiogroup"
-      aria-label={label}
-      className="flex flex-wrap gap-1.5"
-      onKeyDown={onKeyDown}
-    >
-      {options.map((c, i) =>
-        c === undefined ? (
-          <button
-            key="none"
-            type="button"
-            role="radio"
-            aria-checked={value === undefined}
-            aria-label="None"
-            tabIndex={i === tabStop ? 0 : -1}
-            disabled={disabled}
-            className={`${ring(value === undefined)} relative flex items-center justify-center border border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900`}
-            onClick={() => onChange(undefined)}
-          >
-            {/* A slash: no colour. */}
-            <span aria-hidden className="h-px w-3/4 rotate-45 bg-slate-400 dark:bg-slate-500" />
-          </button>
-        ) : (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={value === c}
-            aria-label={COLOUR_NAMES[c] ?? `Custom ${c}`}
-            tabIndex={i === tabStop ? 0 : -1}
-            disabled={disabled}
-            className={ring(value === c)}
-            style={{ backgroundColor: c }}
-            onClick={() => onChange(c)}
-          />
-        ),
-      )}
-      {allowCustom ? (
-        <Tooltip label="Add a custom colour">
-          <button
-            type="button"
-            aria-label="Add a custom colour"
-            aria-expanded={customOpen}
-            disabled={disabled}
-            className={`${dim} flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-dashed border-slate-400 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-500 dark:text-slate-300 dark:hover:bg-slate-800`}
-            onClick={() => setCustomOpen((open) => !open)}
-          >
-            <PlusIcon size={14} />
-          </button>
-        </Tooltip>
-      ) : null}
-    </div>
-  );
-  if (!allowCustom) return group;
+  const yours = useDocumentColours();
   return (
-    <div className="flex flex-col">
-      {group}
-      {customOpen ? (
-        // The picker keeps a picker's width; the swatches above keep the row's.
-        <div className="max-w-xs">
-          <CustomColourEditor
-            start={customValue}
-            onUse={(hex) => {
-              setCustomOpen(false);
-              onChange(hex.toLowerCase());
-            }}
-          />
-        </div>
-      ) : null}
-    </div>
+    <ColourSwatchButton
+      label={label}
+      swatch={value}
+      value={value}
+      standard={STANDARD}
+      yours={yours}
+      onPick={(id) => onChange(id.toLowerCase())}
+      className="h-7 w-7 hover:bg-slate-100 dark:hover:bg-slate-800"
+    />
   );
 }
 
-// The width of ColourSelect's swatch popover: seven sm swatches to a row.
-const COLOUR_POPOVER_PX = 232;
-
-// An item's own Colour in the card panel (docs/specs/026-plan/items.md "Colour"): one quiet field-sized trigger
-// showing the colour's dot and name (or None), opening the swatches (with None) in a small popover under it. The
-// popover is drawn in place, inside the field (as LinkedCardField draws its list), so the card panel's focus trap
-// keeps it: opening moves focus to the picked swatch, the arrows move along them, and Enter or Space picks. A pick
-// closes it, as do Escape (which stays here, so the card panel stays open, and hands focus back to the trigger),
-// Tab out of it and a press outside. It hangs from the field's right edge, so it stays inside the Details column.
+/**
+ * An item's own Colour in the card panel: a field naming the colour (or None), opening the picker with None first.
+ * Escape closes the picker only, handing focus back to the field, so the card panel stays open.
+ */
 export function ColourSelect({
   value,
   onChange,
@@ -191,114 +81,30 @@ export function ColourSelect({
   disabled?: boolean;
   id?: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const boxRef = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const pop = useRef<HTMLDivElement>(null);
-  const popId = useId();
-  const close = (refocus = true) => {
-    setOpen(false);
-    if (refocus) trigger.current?.focus();
-  };
-  // Escape closes the popover only, before the panel's own Escape (which would close the card).
-  useEscape(() => close(), {
-    enabled: open,
-    capture: true,
-    stopPropagation: true,
-    preventDefault: true,
-  });
-  // A press outside the field closes it.
-  useClickOutside(boxRef, () => close(false), open);
-  // Opened, focus goes to the picked swatch (None when there is none), and the popover scrolls into view should it
-  // hang below the Details column's fold.
-  useEffect(() => {
-    if (!open) return;
-    pop.current?.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')?.focus();
-    pop.current?.scrollIntoView?.({ block: 'nearest' });
-  }, [open]);
-  const name = value ? (COLOUR_NAMES[value] ?? value) : 'None';
+  const yours = useDocumentColours();
   return (
-    <div
-      ref={boxRef}
-      className="relative w-full"
-      // Tab out of the popover (focus leaving the field) closes it.
-      onBlur={(e) => {
-        if (open && !boxRef.current?.contains(e.relatedTarget as Node | null)) close(false);
-      }}
-    >
-      <button
-        ref={trigger}
-        id={id}
-        type="button"
-        disabled={disabled}
-        aria-label={`${label}: ${name}`}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={open ? popId : undefined}
-        className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-left text-[13px] text-slate-800 transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-600"
-        onClick={() => (open ? close(false) : setOpen(true))}
-        onKeyDown={(e) => {
-          if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-      >
-        {value ? (
-          <span
-            aria-hidden
-            className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-black/10 dark:ring-white/20"
-            style={{ backgroundColor: value }}
-          />
-        ) : (
-          <span
-            aria-hidden
-            className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-slate-300 dark:border-slate-600"
-          >
-            <span className="h-px w-2.5 rotate-45 bg-slate-400 dark:bg-slate-500" />
-          </span>
-        )}
-        <span
-          className={`min-w-0 flex-1 truncate ${value ? '' : 'text-slate-500 dark:text-slate-400'}`}
-        >
-          {name}
-        </span>
-        <ChevronDownIcon className="shrink-0 text-slate-400" />
-      </button>
-      {open ? (
-        <div
-          ref={pop}
-          id={popId}
-          role="dialog"
-          aria-label={label}
-          // Focusable by a press only: a browser that never focuses a pressed button (Safari) moves focus here
-          // instead, still inside the field, so the blur above does not close it before the pick lands.
-          tabIndex={-1}
-          className="absolute right-0 top-full z-20 mt-1 rounded-lg outline-none border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-          style={{ width: COLOUR_POPOVER_PX }}
-        >
-          <ColourSwatches
-            value={value}
-            label={label}
-            allowNone
-            size="sm"
-            onChange={(c) => {
-              onChange(c);
-              close();
-            }}
-          />
-        </div>
-      ) : null}
-    </div>
+    <ColourField
+      id={id}
+      label={label}
+      disabled={disabled}
+      value={value ?? NONE}
+      none={!value}
+      swatch={value ?? 'transparent'}
+      name={value ? planColourName(value) : 'None'}
+      leading={NONE_OPTION}
+      standard={STANDARD}
+      yours={yours}
+      onPick={(picked) => onChange(picked === NONE ? undefined : picked.toLowerCase())}
+    />
   );
 }
 
-// An item's own colour as a small ringed dot, named for a screen reader by its swatch.
+// An item's own colour as a small ringed dot, named for a screen reader by its colour word.
 export function ColourDot({ colour, className = '' }: { colour: string; className?: string }) {
   return (
     <span
       role="img"
-      aria-label={`${COLOUR_NAMES[colour] ?? 'Own'} colour`}
+      aria-label={`${planColourName(colour)} colour`}
       className={`inline-block h-2 w-2 shrink-0 rounded-full ring-1 ring-black/10 dark:ring-white/20 ${className}`}
       style={{ backgroundColor: colour }}
     />

@@ -5,10 +5,9 @@
 // swatches. It edits the palette and styles nothing: a picked colour is saved
 // INTO the swatch, and Clear override puts the theme's colour back.
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
-import { normaliseHex } from '@/lib/swatch-overrides';
+import { CustomColourEditor } from '@/components/colour/CustomColourEditor';
 
 const GAP = 8;
 const MARGIN = 8;
@@ -38,10 +37,6 @@ export function SwatchOverridePopover({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const colourRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(colour);
-  const [hexText, setHexText] = useState(colour);
-  const [hexError, setHexError] = useState(false);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -72,9 +67,9 @@ export function SwatchOverridePopover({
     anchor.focus();
   };
 
-  // Focus moves in once, on open.
+  // Focus moves in once, on open: the editor's colour square.
   useEffect(() => {
-    colourRef.current?.focus();
+    ref.current?.querySelector<HTMLElement>('[role="slider"]')?.focus();
   }, []);
 
   // A press anywhere else closes it.
@@ -86,18 +81,6 @@ export function SwatchOverridePopover({
     window.addEventListener('pointerdown', onDown, true);
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [anchor]);
-
-  const commitHex = () => {
-    const hex = normaliseHex(hexText);
-    if (!hex) {
-      setHexError(true);
-      return;
-    }
-    setHexError(false);
-    setDraft(hex);
-    setHexText(hex);
-    if (hex !== colour.toLowerCase() || !overridden) onSave(hex);
-  };
 
   return createPortal(
     <div
@@ -118,55 +101,22 @@ export function SwatchOverridePopover({
         }
       }}
       style={{ left: 0, top: 0, visibility: 'hidden' }}
-      className="pointer-events-auto fixed z-[var(--z-toolbar)] flex w-52 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 text-slate-700 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+      className="pointer-events-auto fixed z-[var(--z-toolbar)] flex w-64 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 text-slate-700 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
     >
       <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Custom colour
       </span>
+      {/* The one custom colour editor (docs/specs/004-interface-design/colour-picker.md "Picking a
+          colour of your own"): Use saves the colour into the swatch and closes. */}
+      <CustomColourEditor
+        start={colour}
+        boardWarning={false}
+        onUse={(hex) => {
+          onSave(hex.toLowerCase());
+          close();
+        }}
+      />
       <div className="flex items-center gap-2">
-        <label className="flex items-center">
-          <span className="sr-only">Colour</span>
-          <input
-            ref={colourRef}
-            type="color"
-            value={draft}
-            onInput={(e) => {
-              setDraft(e.currentTarget.value);
-              setHexText(e.currentTarget.value);
-              setHexError(false);
-            }}
-            // The picker's close, not every drag tick: one save per choice.
-            onChange={(e) => onSave(e.currentTarget.value.toLowerCase())}
-            className="h-8 w-10 cursor-pointer rounded-md border border-slate-200 bg-transparent p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700"
-          />
-        </label>
-        <label className="flex min-w-0 flex-1 flex-col">
-          <span className="sr-only">Hex</span>
-          <input
-            type="text"
-            inputMode="text"
-            spellCheck={false}
-            value={hexText}
-            aria-invalid={hexError || undefined}
-            aria-describedby={hexError ? 'swatch-hex-error' : undefined}
-            onChange={(e) => setHexText(e.currentTarget.value)}
-            onBlur={commitHex}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                commitHex();
-              }
-            }}
-            className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 font-mono text-xs text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-          />
-        </label>
-      </div>
-      {hexError ? (
-        <p id="swatch-hex-error" className="text-[11px] text-rose-700 dark:text-rose-300">
-          Enter a colour like #1a2b3c
-        </p>
-      ) : null}
-      <div className="flex items-center justify-between gap-2">
         {overridden ? (
           <button
             type="button"
@@ -182,13 +132,6 @@ export function SwatchOverridePopover({
           // Nothing to clear yet: say what the swatch is instead of a dead button.
           <span className="px-1 text-[11px] text-slate-500 dark:text-slate-400">{themeNote}</span>
         )}
-        <button
-          type="button"
-          onClick={close}
-          className={`h-7 rounded-md bg-brand-600 px-3 text-xs font-medium text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${SOLID_BRAND_DARK_CONTROL}`}
-        >
-          Done
-        </button>
       </div>
     </div>,
     document.body,

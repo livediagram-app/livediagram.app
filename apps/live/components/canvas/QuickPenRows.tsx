@@ -13,6 +13,9 @@ import type { BoardColourSection } from '@/lib/quick-style';
 import { WHITEBOARD_PEN_WIDTHS } from '@/lib/whiteboard-prefs';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
+import { QuickMoreColours } from './QuickMoreColours';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useCanvasSurface } from './CanvasSurfaceContext';
 
 export function QuickPenRows({
   pen,
@@ -23,6 +26,7 @@ export function QuickPenRows({
   quickStyle: QuickStyleApi;
   showTitles: boolean;
 }) {
+  const surface = useCanvasSurface();
   const swatches = (options: QuickPenStyle['colour']['options']) =>
     options.map((o) => ({ ...o, content: null }));
   return (
@@ -35,6 +39,17 @@ export function QuickPenRows({
         columns={QUICK_ROW_TARGETS}
         value={pen.colour.value}
         onChoose={quickStyle.setPenColour}
+        more={
+          // The main pen keeps the board's ink: its row is the ink alone, with nothing more.
+          pen.colour.options.length > 1 ? (
+            <QuickMoreColours
+              rowTitle="Marker colour"
+              value={pen.colour.value}
+              standard={standardGroup('strong', surface, 'name')}
+              onPick={quickStyle.setPenColour}
+            />
+          ) : null
+        }
       />
       {pen.colour.custom.length > 0 ? (
         <QuickRadioRow
@@ -82,6 +97,7 @@ export function BoardColourRows({
   onChoose: (colour: PenColourChoice) => void;
   showTitles: boolean;
 }) {
+  const surface = useCanvasSurface();
   const swatches = (options: BoardColourSection['options']) =>
     options.map((o) => ({ ...o, content: null }));
   return (
@@ -94,6 +110,14 @@ export function BoardColourRows({
         columns={QUICK_ROW_TARGETS}
         value={section.value}
         onChoose={onChoose}
+        more={
+          <QuickMoreColours
+            rowTitle={title}
+            value={section.value}
+            standard={standardGroup('strong', surface, 'name')}
+            onPick={onChoose}
+          />
+        }
       />
       {section.custom.length > 0 ? (
         <QuickRadioRow

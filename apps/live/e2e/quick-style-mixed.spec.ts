@@ -129,18 +129,23 @@ test.describe('the quick style panel on a mixed whiteboard selection', () => {
     await expect(p).toBeVisible();
     // Two strokes, rectangle, arrow, text, path: the sticky and the image are passed over.
     await expect(p.getByText('6 elements', { exact: true })).toBeVisible();
-    for (const row of ['Marker colour', 'Marker width', 'Stroke', 'Text colour', 'Stroke width']) {
+    // Colour rows are groups of toggle buttons (docs/specs/004-interface-design/colour-picker.md);
+    // the rest are radio groups.
+    for (const row of ['Marker colour', 'Stroke', 'Text colour']) {
+      await expect(p.getByRole('group', { name: row, exact: true })).toBeVisible();
+    }
+    for (const row of ['Marker width', 'Stroke width']) {
       await expect(p.getByRole('radiogroup', { name: row, exact: true })).toBeVisible();
     }
     // The shapes' named colours mark no theme swatch.
-    const stroke = p.getByRole('radiogroup', { name: 'Stroke', exact: true });
-    await expect(stroke.getByRole('radio', { checked: true })).toHaveCount(0);
+    const stroke = p.getByRole('group', { name: 'Stroke', exact: true });
+    await expect(stroke.getByRole('button', { pressed: true })).toHaveCount(0);
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/mixed-before.png` });
 
-    // Keyboard: the rows are radio groups reached with Tab, moved with the arrow keys.
-    await stroke.getByRole('radio').first().focus();
+    // Keyboard: a colour row is one Tab stop; the arrows move, Enter picks.
+    await stroke.getByRole('button').first().focus();
     await page.keyboard.press('Enter');
-    await expect(stroke.getByRole('radio').first()).toHaveAttribute('aria-checked', 'true');
+    await expect(stroke.getByRole('button').first()).toHaveAttribute('aria-pressed', 'true');
 
     const width = p.getByRole('radiogroup', { name: 'Stroke width', exact: true });
     await width.getByRole('radio', { name: 'Thick' }).click();
@@ -148,10 +153,10 @@ test.describe('the quick style panel on a mixed whiteboard selection', () => {
       'aria-checked',
       'true',
     );
-    const marker = p.getByRole('radiogroup', { name: 'Marker colour', exact: true });
-    await marker.getByRole('radio', { name: 'Green' }).click();
-    await expect(marker.getByRole('radio', { name: 'Green' })).toHaveAttribute(
-      'aria-checked',
+    const marker = p.getByRole('group', { name: 'Marker colour', exact: true });
+    await marker.getByRole('button', { name: 'Green' }).click();
+    await expect(marker.getByRole('button', { name: 'Green' })).toHaveAttribute(
+      'aria-pressed',
       'true',
     );
     if (SHOTS) {

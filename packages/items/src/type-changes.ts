@@ -1,6 +1,7 @@
 // Changing card types by name (docs/specs/026-plan/plan-agents.md "Changing card types"): an agent's add, set,
 // delete and restore changes applied in order to a document's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
+import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS } from './glyphs';
 import {
   CUSTOM_FIELD_KINDS,
@@ -106,8 +107,10 @@ function must<T extends object>(named: ({ ok: true } & T) | ({ ok: false } & Nam
 
 function colourOf(input: string): string {
   const hex = input.trim().toLowerCase();
-  if ((PLAN_TYPE_COLOURS as readonly string[]).includes(hex)) return hex;
-  throw invalid(`"${input}" is not a Plan colour. Colours: ${PLAN_TYPE_COLOURS.join(', ')}.`);
+  if (HEX_COLOUR.test(hex)) return hex;
+  throw invalid(
+    `"${input}" is not a colour. Give a #rrggbb colour, for example ${PLAN_TYPE_COLOURS.join(', ')}.`,
+  );
 }
 
 function glyphOf(input: string): string {

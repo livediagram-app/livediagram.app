@@ -148,7 +148,7 @@ element in the same colour.
 - **Draw mode writes Ink, unfilled.** A shape, line or arrow made in Draw mode
   is written with an Ink outline and no fill, so it looks the same in Diagram
   mode and to every collaborator.
-- **Marker colours are first-class.** The stock colours (Ink, Blue, Red,
+- **Marker colours are first-class.** The stock colours (Ink, Grey, Blue, Red,
   Orange, Yellow, Green, Teal, Violet, Pink) are stored by name on any element and
   drawn in the version tuned for **the canvas behind them**, light or dark,
   on every tab, in every export, thumbnail and image the api or MCP renders.

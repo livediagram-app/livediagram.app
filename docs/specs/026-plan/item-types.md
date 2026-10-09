@@ -53,7 +53,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`               | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it. |
 | `label`            | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                             |
-| `color`            | A colour from the Plan palette's twelve swatches; on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                             |
+| `color`            | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                     |
 | `icon`             | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                   |
 | `fields`           | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                             |
 | `custom`           | Its custom fields: `{ id, label, kind, options?, linkType?, onCard? }` (`linkType`: a Card field's target card type id)                                                                                                                         |
@@ -256,7 +256,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     points at with room to breathe, drawn over the editor), and each step opens the editor tab it is about and points at a real
     control, which stays usable: the person types the name, picks a colour or adds a field while the step is up, and
     their edits stay in the draft. The steps: **Name It, Then Give It a Look** (the Configuration tab's General
-    section: Name, Colour and Glyph together, the caret put in Name), **Lay Out Its Fields** (the Configuration tab's
+    section: the Name field holding glyph, name and colour, the caret put in Name), **Lay Out Its Fields** (the Configuration tab's
     Fields section, scrolled into view), **Choose Its States** (the States tab),
     **Arrange the Card** (the Display tab), then **Save It** (Save), and a closing card with a link to the Card Types article.
     While it runs, Escape belongs to the tour (it never closes the editor). Telemetry: `UI` · `Started` ·
@@ -264,17 +264,17 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
     icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
   - **Configuration**: one scrolling panel of two sections: **General**, then **Fields**, set off by a rule. General
-    opens the panel without a visible heading (its Name and Colour say what it is; the heading is kept for screen
+    opens the panel without a visible heading (its Name field says what it is; the heading is kept for screen
     readers and the tour); Fields shows its heading (Title Case, a size above the row labels). Each holds every
     control and check described for it below.
-  - **General** (a section of Configuration): **Name**, one field holding the glyph and the name (no Glyph row of its own): at its start the chosen
-    glyph on a tint of the type's colour with a small chevron (named "Glyph: {Name}"), then the name typed after it,
-    the field no wider than a 32-character name needs; and **Colour** (the twelve swatches, then **+** for a custom
-    colour, which opens the custom colour picker in place (as in [Draw](../023-draw-mode/draw-mode.md)); a custom
-    colour in force shows as a picked swatch before the +). On desktop (768 px and up) Name and Colour share one
-    row, Name on the left and Colour to its right, their labels on one line and the swatches centred on the name
-    field's height; the name field gives up width before the swatches wrap, and the custom colour picker opens below the swatches without moving Name. On a phone they stack, Name above
-    Colour. The glyph opens a popover under it (above it when there is no room below), drawn over the editor so its
+  - **General** (a section of Configuration): **Name**, one field holding the glyph, the name and the colour (no
+    Glyph or Colour row of its own): at its start the chosen glyph on a tint of the type's colour with a small chevron
+    (named "Glyph: {Name}"), then the name typed after it, then at its end a swatch of the type's colour (named
+    "Colour", its tooltip "Colour"), the field no wider than a 32-character name needs. The swatch opens the one
+    [colour picker](../004-interface-design/colour-picker.md) in a popover (the swatch-button skin): the strong
+    standard colours, Custom colours and **+**, which opens the custom colour editor in place; a colour not on offer
+    shows as the picked first of Custom colours. A pick closes the popover and hands focus back to the swatch; Escape
+    closes the popover only, never the editor. The glyph opens a popover under it (above it when there is no room below), drawn over the editor so its
     scrolling body never clips it: **Search
     glyphs** (focused on open) and, on the same row, a **Glyph category** menu (**All glyphs**, then the eight
     categories: **Work**, **People**, **Communication**, **Planning**, **Ideas and Notes**, **Status and Signals**,

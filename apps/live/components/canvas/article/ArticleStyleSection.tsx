@@ -16,19 +16,12 @@ import {
 import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Tooltip } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { PanelSection } from '../illustrate-page-panel-sections';
+import { ColourPicker } from '@/components/colour/ColourPicker';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
-// The accents an article can take besides its theme's (docs/specs/007-editor/article-pages.md
-// "Article style").
-const ARTICLE_ACCENTS: readonly { label: string; value: string }[] = [
-  { label: 'Blue', value: '#2563eb' },
-  { label: 'Teal', value: '#0d9488' },
-  { label: 'Green', value: '#16a34a' },
-  { label: 'Amber', value: '#b45309' },
-  { label: 'Red', value: '#dc2626' },
-  { label: 'Pink', value: '#db2777' },
-  { label: 'Purple', value: '#7c3aed' },
-  { label: 'Slate', value: '#334155' },
-];
+// The Theme accent's id in the colour picker: the article stores no accent of its own.
+const THEME_ACCENT = 'theme';
 
 export type ArticleStyleChange = { look: ArticleLookId } | { patch: Partial<ArticleStyle> };
 
@@ -57,6 +50,7 @@ export function ArticleStyleSection({
   const r = resolveArticleStyle(style);
   const accent = r.accent ?? themeAccent;
   const preview = (patch: Partial<ArticleStyle>) => onPreview({ ...style, ...patch });
+  const yours = useDocumentColours();
   return (
     <div onPointerLeave={() => onPreview(null)}>
       {part === 'style' ? (
@@ -76,29 +70,21 @@ export function ArticleStyleSection({
             </div>
           </PanelSection>
           <PanelSection title="Accent">
-            <div
-              role="radiogroup"
-              aria-label="Accent colour"
-              className="flex flex-wrap items-center gap-1.5"
-            >
-              <Swatch
-                label="Theme"
-                color={themeAccent}
-                selected={!style?.accent}
-                onPick={() => onChange({ patch: { accent: undefined } })}
-                onHover={() => preview({ accent: undefined })}
-                ring
+            {/* The one colour picker (docs/specs/004-interface-design/colour-picker.md): the
+                theme's accent, then the strong standard colours for light paper. */}
+            <div className="mb-2">
+              <ColourPicker
+                label="Accent colour"
+                value={style?.accent ?? THEME_ACCENT}
+                leading={[{ id: THEME_ACCENT, colour: themeAccent, label: 'Theme' }]}
+                standard={[standardGroup('strong', 'light', 'hex')]}
+                yours={yours}
+                onPick={(id) =>
+                  onChange({ patch: { accent: id === THEME_ACCENT ? undefined : id } })
+                }
+                onPreview={(id) => preview({ accent: id === THEME_ACCENT ? undefined : id })}
+                onPreviewEnd={() => onPreview(null)}
               />
-              {ARTICLE_ACCENTS.map((a) => (
-                <Swatch
-                  key={a.value}
-                  label={a.label}
-                  color={a.value}
-                  selected={style?.accent?.toLowerCase() === a.value}
-                  onPick={() => onChange({ patch: { accent: a.value } })}
-                  onHover={() => preview({ accent: a.value })}
-                />
-              ))}
             </div>
             <Toggle
               label="Headings in the Accent"
@@ -295,46 +281,6 @@ function FontSelect({
         ))}
       </Select>
     </label>
-  );
-}
-
-function Swatch({
-  label,
-  color,
-  selected,
-  onPick,
-  onHover,
-  ring,
-}: {
-  label: string;
-  color: string;
-  selected: boolean;
-  onPick: () => void;
-  onHover: () => void;
-  ring?: boolean;
-}) {
-  return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        aria-label={label}
-        onClick={onPick}
-        onPointerEnter={onHover}
-        onFocus={onHover}
-        className={`relative flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-          selected ? 'outline-2 outline-offset-2 outline-brand-500' : ''
-        }`}
-        style={{ background: color }}
-      >
-        {ring ? (
-          <span className="text-[9px] font-bold text-white" aria-hidden>
-            T
-          </span>
-        ) : null}
-      </button>
-    </Tooltip>
   );
 }
 

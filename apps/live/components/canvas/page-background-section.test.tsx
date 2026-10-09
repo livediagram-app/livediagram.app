@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 
 // The Background section (docs/specs/007-editor/illustrate-pages.md "Backgrounds").
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { IllustratePage, PageFill } from '@livediagram/document';
+import {
+  penColourHex,
+  standardColours,
+  type IllustratePage,
+  type PageFill,
+} from '@livediagram/document';
 import {
   backgroundCategoryOf,
   customGradientSeed,
@@ -61,7 +66,7 @@ describe('BackgroundSection', () => {
     expect(radio('Gradient').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio('Solid'));
     expect(onBackground).not.toHaveBeenCalled();
-    expect(screen.getByRole('radiogroup', { name: 'Background colour' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Background colour' })).toBeTruthy();
   });
 
   it('offers Theme only while the theme has backgrounds', () => {
@@ -109,9 +114,43 @@ describe('BackgroundSection', () => {
     expect(document.querySelector('[data-custom-gradient]')).toBeNull();
   });
 
+  it('offers Paper, then the soft and strong standard colours, on the one colour picker', () => {
+    const onBackground = show({ kind: 'solid', color: standardColours('soft', 'light')[7]!.hex });
+    const light = within(screen.getByRole('group', { name: 'Light' })).getAllByRole('button');
+    expect(light.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Paper',
+      ...standardColours('soft', 'light').map((c) => c.label),
+    ]);
+    expect(within(screen.getByRole('group', { name: 'Dark' })).getAllByRole('button')).toHaveLength(
+      10,
+    );
+    // The page's fill is picked; Paper clears it.
+    expect(light[8]!.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(light[0]!);
+    expect(onBackground).toHaveBeenLastCalledWith({ fill: undefined });
+    fireEvent.pointerEnter(
+      within(screen.getByRole('group', { name: 'Dark' })).getByRole('button', { name: 'Red' }),
+      {
+        pointerType: 'mouse',
+      },
+    );
+    expect(onPreview).toHaveBeenLastCalledWith({
+      fill: { kind: 'solid', color: penColourHex('red', 'light') },
+    });
+  });
+
+  it('shows an older solid colour as the custom colour in force', () => {
+    show({ kind: 'solid', color: '#fbf7ef' });
+    const yours = within(screen.getByRole('group', { name: 'Custom Colours' })).getAllByRole(
+      'button',
+    );
+    expect(yours[0]!.getAttribute('aria-label')).toBe('#fbf7ef');
+    expect(yours[0]!.getAttribute('aria-pressed')).toBe('true');
+  });
+
   it('picks a custom solid in the panel: previews each change, Use commits and closes', () => {
     const onBackground = show({ kind: 'solid', color: '#123456' });
-    fireEvent.click(screen.getByRole('button', { name: 'Custom background colour' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add a custom colour' }));
     const hex = screen.getByRole('textbox', { name: 'Hex' });
     fireEvent.change(hex, { target: { value: '#ff0000' } });
     expect(onPreview).toHaveBeenLastCalledWith({ fill: { kind: 'solid', color: '#ff0000' } });
@@ -121,25 +160,35 @@ describe('BackgroundSection', () => {
     expect(screen.queryByRole('textbox', { name: 'Hex' })).toBeNull();
   });
 
-  it('closes the picker on Escape, dropping the preview and changing nothing', () => {
+  it('closes a gradient end’s picker on Escape, dropping the preview and changing nothing', () => {
     const onBackground = show(custom);
     fireEvent.click(screen.getByRole('button', { name: 'Gradient from colour' }));
-    const hex = screen.getByRole('textbox', { name: 'Hex' });
-    fireEvent.change(hex, { target: { value: '#00ff00' } });
-    expect(onPreview).toHaveBeenLastCalledWith({ fill: { ...custom, from: '#00ff00' } });
-    fireEvent.keyDown(hex, { key: 'Escape' });
+    const popover = screen.getByRole('dialog', { name: 'Gradient from colour' });
+    fireEvent.pointerEnter(
+      within(within(popover).getByRole('group', { name: 'Light' })).getByRole('button', {
+        name: 'Green',
+      }),
+      {
+        pointerType: 'mouse',
+      },
+    );
+    expect(onPreview).toHaveBeenLastCalledWith({
+      fill: { ...custom, from: standardColours('soft', 'light')[5]!.hex },
+    });
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(onPreview).toHaveBeenLastCalledWith(null);
     expect(onBackground).not.toHaveBeenCalled();
-    expect(screen.queryByRole('textbox', { name: 'Hex' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Gradient from colour' })).toBeNull();
   });
 
-  it('uses a gradient end picked in the panel', () => {
+  it('uses a gradient end picked from its popover', () => {
     const onBackground = show(custom);
     fireEvent.click(screen.getByRole('button', { name: 'Gradient to colour' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Hex' }), {
-      target: { value: '#0000ff' },
+    const dark = screen.getByRole('group', { name: 'Dark' });
+    fireEvent.click(within(dark).getByRole('button', { name: 'Blue' }));
+    expect(onBackground).toHaveBeenCalledWith({
+      fill: { ...custom, to: penColourHex('blue', 'light') },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
-    expect(onBackground).toHaveBeenCalledWith({ fill: { ...custom, to: '#0000ff' } });
+    expect(screen.queryByRole('dialog', { name: 'Gradient to colour' })).toBeNull();
   });
 });

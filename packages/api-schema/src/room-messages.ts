@@ -499,8 +499,10 @@ export type RoomOp =
       // already throttled to ~30 Hz. Receivers parse it field by field.
       look?: {
         width: 'fine' | 'medium' | 'bold';
-        colour:
-          'presence' | 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'violet' | 'white';
+        // 'presence', a standard colour's name ('red', 'grey'...) or a custom '#rrggbb'
+        // (docs/specs/004-interface-design/colour-picker.md); older clients sent
+        // 'cyan' and 'white', which receivers read as 'teal' and 'ink'.
+        colour: string;
         trail: 'quick' | 'normal' | 'long';
         effect: 'beam' | 'glow' | 'comet' | 'spark';
       };

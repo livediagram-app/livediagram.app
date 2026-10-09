@@ -83,6 +83,7 @@ import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { useTabModeMenu } from '@/hooks/editor/useTabModeMenu';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
+import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
@@ -1290,6 +1291,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toastInfo: toast.info,
   });
   useAssignRef(sheetsModeRef, rawEditorMode.setMode);
+  // A colour picked with + joins the tab's custom colours, which every picker offers.
+  const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
   // Plan asks nothing: a board outside Plan is an element like any other
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
@@ -3009,7 +3012,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pen: {
       held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
       update: whiteboardDock.updatePen,
-      colours: whiteboardDock.colourMemory,
     },
     highlighter,
     toolIntent: pendingDraw,
@@ -3514,6 +3516,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useAssignRef(sheetsPlaceRef, (at, make) => addBoxedAt(at.x, at.y, make));
   return {
     surface,
+    addCustomColour,
     workbenchMode,
     appChrome,
     workbench,

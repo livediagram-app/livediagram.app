@@ -76,8 +76,9 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   it is how a shape, line or text box gets another colour or width once
   drawn, since the pens colour only their own strokes. In Draw mode its
   **Stroke** and **Text colour** rows offer the **stock colours**, the same
-  choices as Marker colour: **Ink** first, then the eight hued colours (each
-  stored by name, drawn in its version for the canvas), then the tab's custom
+  choices as Marker colour: **Ink** first, then the eight hued colours in the
+  standard order, Red to Pink (each stored by name, drawn in its version for the
+  canvas), then **More colours**, then the tab's custom
   colours section when there is one. Ink is stored by name like the others; a
   line with no colour of its own wears its theme default, so no choice is
   marked for it. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
@@ -86,9 +87,10 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   A restyle on a whiteboard never feeds the style memory Diagram mode uses; the
   board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
-  Bold). The quick style panel is **quick choices only**: no colour picker in
-  it. **Marker colour** is the same **nine stock colours** as the marker's
-  picker, adaptive like them. Below them, **a second section of custom
+  Bold). The quick style panel is **quick choices first**: **Marker colour** is
+  Ink and the eight hued stock colours, adaptive like the marker's picker, then
+  **More colours**, which opens the full colour picker
+  ([Colour picker](../004-interface-design/colour-picker.md#quick-style)). Below them, **a second section of custom
   colours appears only when custom colours are used on this whiteboard
   tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
   arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
@@ -330,9 +332,10 @@ Explorer Home's Jump back in.
 - **Picking a marker, and its colour:** a press on a marker picks it up; a
   press on the marker already in hand opens its **colour picker** (a flyout
   on the board side of it, like the others). For Marker 1 it holds the width only.
-- **The colour picker** (Markers 2 and 3), top to bottom:
-  - **Nine stock colours** in one row: **Ink, Blue, Red, Orange, Yellow,
-    Green, Teal, Violet, Pink**, the same nine as the quick style panel's.
+- **The colour picker** (Markers 2 and 3) is the one colour picker
+  ([Colour picker](../004-interface-design/colour-picker.md)), top to bottom:
+  - **Ten stock colours** in one row, the strong standard colours: **Ink, Grey,
+    Red, Orange, Yellow, Green, Teal, Blue, Violet, Pink**.
     **Ink comes first: it is the default colour**, and Markers 2 and 3 can
     take it too (the same ink at another width, say), not only Marker 1.
   - **Every stock colour adapts to the board.** It is stored by name, not as
@@ -346,14 +349,10 @@ Explorer Home's Jump back in.
     at their 6:1 it would read as mustard. On the light board no yellow is
     both light and readable, so it is a deep gold there, like the others at
     6:1.
-  - **Your colours:** up to **eight** custom colours, most recently used
-    first, kept in the user's synced preferences; using a custom colour puts
-    it at the front, so picking it again is one press. A custom colour is one
-    exact hex value on both boards.
-    **Removing one:** a right-click (a long-press on touch, Shift+F10 or the
-    context-menu key on a focused swatch) on a custom colour opens a small
-    menu with **Remove**, which takes it out of Your colours. Strokes already
-    drawn in it keep it, and a marker set to it keeps it until changed.
+  - **Custom Colours:** the colours picked with + in this document, up to
+    twelve, newest first, the marker's own custom colour in force first among
+    them ([Custom colours](../004-interface-design/colour-picker.md#custom-colours)).
+    A custom colour is one exact hex value on both boards.
   - **+** at the end of that row opens the custom picker in place: a
     saturation and brightness square, a hue slider, a hex field and, where
     the browser has one, an **eyedropper**; **Use** applies it. When the
@@ -364,8 +363,8 @@ Explorer Home's Jump back in.
     until needed, so it never shifts the picker.
   - **Width:** Fine, Medium, Bold.
   - Each swatch has its name as its tooltip and accessible name ("Blue",
-    "Custom #ff6b00"); arrow keys move through a row, Enter picks, Escape
-    closes.
+    "#ff6b00"); arrow keys move focus through every swatch and +
+    (wrapping), Enter picks, Escape closes.
 - Markers 2 and 3 start as **Blue** and **Red**. **Existing strokes
   stay as drawn**: a stroke keeps the exact colour it was drawn in; only
   strokes drawn after this record a named colour.
@@ -715,7 +714,7 @@ pattern behind it, never the colour of what is already there.
   belongs to the app it sits in, not a literal green chalkboard.
 - **Ink** is the drawing colour, the same on every theme: `#1c1917` on a
   light canvas, `#e2e8f0` on a dark one (`PEN_INK`), at least 4.5:1 against
-  either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like the
+  either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like Grey and the
   eight hued stock colours.
 - **Marker 1** draws in Ink, and so does any pen stroke or text box with no
   colour of its own, in both modes. Markers 2 and 3 keep the colour they drew

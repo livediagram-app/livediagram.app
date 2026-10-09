@@ -51,6 +51,9 @@ function PatternGrid({
   );
 }
 
+// The pattern is ink on the canvas: lines and dots, so the strong tone only.
+const PATTERN_TONES = ['strong'] as const;
+
 export function CanvasStyleControls({
   backgroundPattern,
   backgroundColor,
@@ -131,7 +134,12 @@ export function CanvasStyleControls({
           <ColorSwatch label="Canvas" value={backgroundColor} onChange={onSetBackgroundColor} />
         </HoverCard>
         <HoverCard title="Pattern colour" description="The colour of the grid dots or ruled lines.">
-          <ColorSwatch label="Pattern" value={patternColor} onChange={onSetPatternColor} />
+          <ColorSwatch
+            label="Pattern"
+            value={patternColor}
+            onChange={onSetPatternColor}
+            tones={PATTERN_TONES}
+          />
         </HoverCard>
       </div>
       <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">

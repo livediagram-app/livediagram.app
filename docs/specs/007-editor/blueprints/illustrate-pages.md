@@ -37,7 +37,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts`                                                                                        |
 | Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                                                                                                          |
 | A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                                                                                                             |
-| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                                               |
+| Background catalogue        | `PAGE_COLOUR_GROUPS` (`page-background-custom.tsx`), `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                |
 | Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                                                                                                                  |
 | The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                                                                                                       |
 | Page edits                  | `IllustratePageEdits`, `illustratePageEdits`, `apps/live/hooks/editor/illustrate-page-edits.ts`                                                                                                                                                                   |
@@ -285,19 +285,19 @@ PageUnlocked`, tracked before the change); rename, orientation, size, background
 - Background section (`apps/live/components/canvas/page-background-section.tsx`): a `Background
 kind` radiogroup (the segmented control: `theme` while `themePresets` is non-empty, `solid`,
   `gradient`), opening on `backgroundCategoryOf(fill, themePresets)` and holding a chosen category
-  in local state (no edit). Theme: the theme swatches. Solid: `PAGE_SOLID_PRESETS` then the custom
-  colour (a `ColourWellButton`, the rainbow until a custom colour is the fill; it toggles
-  `pickingSolid`, which shows `InlineColourPicker` under the swatches). Gradient: `PAGE_GRADIENT_PRESETS` then
+  in local state (no edit). Theme: the theme swatches. Solid: the one colour picker inline
+  (`ColourPicker`, `docs/specs/004-interface-design/blueprints/colour-picker.md`): Paper
+  (`noColour('paper', 'Paper')`, no fill), then `PAGE_COLOUR_GROUPS` (soft light hexes "Light",
+  strong light hexes "Dark"), Custom colours and + (no board warning); a hover or focus previews
+  `{ kind: 'solid', color }`, a pick commits. Gradient: `PAGE_GRADIENT_PRESETS` then
   **Custom gradient** (`customGradientSeed(fill)` on press and hover); while
   `isCustomGradient(fill)`, `CustomGradientEditor` (`page-background-custom.tsx`): From and To
-  `ColourWellButton`s (`editing: 'from' | 'to' | null`, one `InlineColourPicker` under the row), Angle (`MenuSliderRow`, 0 to 355 by 5,
-  previewed in local state, one commit on release when changed) and Swap (one commit). Pattern
-  follows, not on a logo page. `InlineColourPicker` (`page-background-custom.tsx`) wraps
-  `CustomColourEditor` (`components/canvas/whiteboard/CustomColourEditor.tsx`, now with
-  `onPreview` on every change and `boardWarning={false}`): preview per change, `onUse` commits and
-  closes, Escape (stopped from reaching the panel) or the well again `onCancel`s, dropping the
-  preview. The section drops its preview on pointer leave and on a blur whose `relatedTarget` is
-  outside it.
+  `ColourSwatchButton`s opening the picker with `PAGE_COLOUR_GROUPS` in a popover (each hover
+  previews the gradient, a pick commits, Escape or unmounting drops the preview), Angle
+  (`MenuSliderRow`, 0 to 355 by 5, previewed in local state, one commit on release when changed) and
+  Swap (one commit). Pattern follows, not on a logo page. The section drops its preview on pointer
+  leave and on a blur whose `relatedTarget` is outside it. The panel's outside-press and Escape
+  handling leave a `[data-anchored-popover]` alone.
 - Panel opened from a cog (tab Page) or the invite (tab Layouts); `opened = { id, cog, tab }` in
   `IllustratePages`. Desktop: fixed, beside the cog when it fits (`a.right + GAP + WIDTH + EDGE
 <= innerWidth`), else right-aligned under it; re-placed on resize and `PAGE_EASE_MS + 20` after

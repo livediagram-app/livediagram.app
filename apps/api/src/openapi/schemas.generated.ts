@@ -8806,6 +8806,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
+        "const": "grey",
+        "type": "string"
+      },
+      {
         "$ref": "#/components/schemas/HuedPenColourName"
       }
     ]
@@ -11508,6 +11512,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "backgroundPatternScale": {
         "type": "number"
       },
+      "customColours": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"
       },
@@ -11612,6 +11622,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "backgroundPatternScale": {
         "type": "number"
+      },
+      "customColours": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"

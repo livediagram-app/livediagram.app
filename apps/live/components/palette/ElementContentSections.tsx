@@ -138,6 +138,7 @@ export function ElementContentSections({
           {target.type === 'arrow' ? (
             <ColourRow
               label="Background"
+              tone="soft"
               icon={<FillColourIcon />}
               value={target.labelFill ?? 'transparent'}
               {...labelFillHandlers}

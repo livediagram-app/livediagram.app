@@ -11,6 +11,8 @@ import { HIGHLIGHTER_WIDTHS, type HighlighterWidthId } from '@/lib/highlighter-c
 import type { QuickHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
+import { QuickMoreColours } from './QuickMoreColours';
+import { standardGroup } from '@/components/colour/colour-options';
 
 // The widths drawn with the border-width previews, thinnest first.
 const WIDTH_PREVIEW: Record<HighlighterWidthId, 'thin' | 'medium' | 'thick'> = {
@@ -38,6 +40,14 @@ export function QuickHighlighterRows({
         columns={QUICK_ROW_TARGETS}
         value={highlighter.colour.value}
         onChoose={quickStyle.setHighlighterColour}
+        more={
+          <QuickMoreColours
+            rowTitle="Highlighter colour"
+            value={highlighter.colour.value}
+            standard={standardGroup('soft', 'light', 'hex')}
+            onPick={quickStyle.setHighlighterColour}
+          />
+        }
       />
       <QuickRadioRow
         title="Highlighter width"

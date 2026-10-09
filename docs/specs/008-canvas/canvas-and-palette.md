@@ -71,13 +71,15 @@ Boxed elements carry three optional colour fields:
 
 All stored as CSS-compatible colour strings (typically `#rrggbb`).
 
-A **stock colour** (Ink, Blue, Red, Orange, Yellow, Green, Teal, Violet, Pink) is stored by name instead, in
+A **stock colour** (Ink, Grey, Blue, Red, Orange, Yellow, Green, Teal, Violet, Pink) is stored by name instead, in
 `penColour` (the line) or `penTextColour` (the text), and drawn in its version for the canvas; an
 own colour in `strokeColor` / `textColor` wins over a name
 ([One look](../007-editor/editor-modes.md#one-look)). The context menu's **Text**, **Border**, **Line**
-and caption colour rows offer **Ink** as the swatch after the theme's colours, wherever the element
-can store it by name (shapes, text, notes' text, arrows, pen strokes); choosing it stores `ink`, and
-choosing any other colour clears the name. Text with no colour of its own is drawn in Ink.
+and caption colour rows offer the strong standard colours (Ink first,
+[Colour picker](../004-interface-design/colour-picker.md)) by name wherever the element can store a
+name (shapes, text, notes' text, arrows, pen strokes); choosing one stores its name, and choosing any
+other colour clears it. An element with no name field takes the colour's light-paper hex. Text with no
+colour of its own is drawn in Ink.
 
 ### Default scheme, dark half
 
@@ -126,25 +128,15 @@ The **Text colour** picker lives in the element's right-click context menu under
 
 Every row is led by an **icon drawing the surface it paints** (a letter over a bar, a filled box, an outlined box, a banded box, an arrowhead). Those labels are four words of similar length and shape; in a dense menu the glyph is what separates them at a glance, before anyone reads one.
 
-**Every row offers transparent.** A checkerboard swatch leads the palette, because "no colour" is the one option no theme provides and several elements want: a frame or shape showing the canvas through it, a border that is simply absent. A frame in fact DEFAULTS to it.
+**Every row opens the one colour picker** ([Colour picker](../004-interface-design/colour-picker.md)) in a popover beside it, since the menu is narrower than the picker: no colour first ("No text colour", a checkerboard on the row's chip), the **Theme** group, the standard colours (strong on Text, Border, Line, Pointer and Icon; soft on Background, Heading, a caption's background and a cell's background), **Custom colours** (the document's own custom colours) and **+**, the custom colour editor with its eyedropper. A pick commits and closes it; hovering or focusing a swatch previews it.
 
-**The swatches are one contiguous strip**, with no gaps. Gaps meant the hover-preview snapped back to the current colour in the dead zone between each pair, which read as flicker rather than as a comparison. The two **pickers** (pipette, custom "+") sit BEFORE the strip rather than trailing off the end of it: they open something rather than applying a colour, so they are a different kind of control.
+**No colour.** "No colour" is the one option no theme provides and several elements want: a frame or shape showing the canvas through it, a border that is simply absent. A frame in fact DEFAULTS to it.
 
-**Your own palette.** A colour picked off the OS wheel or the pipette that the theme does not already offer is remembered in the synced `customSwatches` preference ([User preferences](../007-editor/user-preferences.md)), newest first, capped at 12, and shown after the presets. Without it, giving a second element the exact colour of the first means re-picking it off the colour wheel and matching by eye, which nobody does accurately. **Right-click one to bin it.** Only ever one you added: a theme's presets come back with the theme, so removing one would be a setting that silently undoes itself, and the pipette and "+" are not swatches to remove at all.
+The same picker is offered wherever an element's colour is chosen, including a **table cell's own menu** (`TableCellMenu`). Its rows hover-preview over the selected cells like every other row, without committing, so sweeping the colours costs no undo entries.
 
-The same palette is offered wherever a colour is chosen, including a **table cell's own menu** (`TableCellMenu`), which previously had bare `<input type="color">` chips and so made colouring a cell a matching-by-eye job that every other surface solved in one click. Its rows hover-preview over the selected cells like every other row, without committing, so sweeping a palette costs no undo entries.
+**The Theme Palette.** The active theme's colours (`themePresetColors` in `apps/live/lib/themes.ts`), so they match it rather than a fixed rainbow, each named by a colour word (`colourWords`: "Blue", "Light blue", "Deep blue"). The set is a **ramp**, not just the single theme colour: the theme's accent hue is spun into light → base → dark variants, plus the fill / text colours, then a neutral ramp (white → light grey → slate → ink). A multi-colour theme ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)) instead leads with a tint + base of every branch hue. Deduped, capped at 20. Tints / shades are computed via `tint` / `shade` in `packages/document/src/colors.ts`.
 
-**Theme-matching preset swatches.** Each colour picker offers a row of quick-pick swatches above the custom-colour input, derived from the active theme (`themePresetColors` in `apps/live/lib/themes.ts`) so they match it rather than a fixed rainbow. The set is a **ramp**, not just the single theme colour: the theme's accent hue is spun into light → base → dark variants (so the user has several on-theme intensities one click away without opening the swatch), plus the fill / text colours, then a neutral ramp (white → light grey → slate → ink, four steps: a single-accent theme's six plus these four, the pipette and the custom "+" make twelve, two full rows of six in the menu, and a fifth neutral pushed the "+" onto a row of its own). A multi-colour theme ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)) instead leads with a tint + base of every branch hue. Deduped, capped at 20, free-wrapping. Tints / shades are computed via `tint` / `shade` in `packages/document/src/colors.ts`.
-
-**Pick a colour off the screen.** Before the custom-colour "+" in every
-Colours row sits a **pipette**: click it, then click anything on screen (an
-image on the canvas, a logo in another window, an element already coloured
-the way you want) and that colour is applied exactly as a swatch click is,
-through the same commit (so undo and the hover-preview snapshot behave the
-same). It uses the browser's `EyeDropper` (`hooks/ui/useEyeDropper.ts`) and
-is offered only where the browser has one (Chromium); elsewhere the row
-shows no pipette rather than a button that can't work, since there is no
-fallback worth having.
+**Pick a colour off the screen.** The custom colour editor behind **+** has a **pipette**: click it, then click anything on screen (an image on the canvas, a logo in another window, an element already coloured the way you want) and the editor takes that colour. It uses the browser's `EyeDropper` (`hooks/ui/useEyeDropper.ts`) and is offered only where the browser has one (Chromium); elsewhere there is no pipette rather than a button that can't work.
 
 Arrows don't expose any colour pickers yet.
 

@@ -9,6 +9,14 @@
 // It IS published alongside each laser sample, so peers draw your pen, not
 // theirs.
 
+import {
+  STANDARD_COLOUR_NAMES,
+  isHexColour,
+  penColourHex,
+  penColourLabel,
+  type Appearance,
+  type StandardColourName,
+} from '@livediagram/document';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
 export type LaserWidth = 'fine' | 'medium' | 'bold';
@@ -16,8 +24,10 @@ export type LaserTrail = 'quick' | 'normal' | 'long';
 export type LaserEffect = 'beam' | 'glow' | 'comet' | 'spark';
 // 'presence' means "whatever colour I am in this room" — the identity colour
 // that already ties a cursor, a name chip, and an avatar's shirt together.
-export type LaserColour =
-  'presence' | 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'violet' | 'white';
+// Otherwise a standard colour by name (drawn in its version for the canvas,
+// docs/specs/004-interface-design/colour-picker.md) or a custom `#rrggbb`.
+export const LASER_PRESENCE = 'presence';
+export type LaserColour = typeof LASER_PRESENCE | StandardColourName | string;
 
 export type LaserConfig = {
   width: LaserWidth;
@@ -57,20 +67,12 @@ export const LASER_EFFECTS: readonly { id: LaserEffect; label: string; hint: str
   { id: 'spark', label: 'Spark', hint: 'A dotted trail rather than a line' },
 ];
 
-// The swatch palette. Deliberately a fixed set and not a picker: this gets
-// changed mid-presentation, where a colour wheel is a worse answer than eight
-// obvious choices.
-export const LASER_COLOURS: readonly { id: LaserColour; label: string; hex: string | null }[] = [
-  { id: 'presence', label: 'Your colour', hex: null },
-  { id: 'red', label: 'Red', hex: '#ef4444' },
-  { id: 'orange', label: 'Orange', hex: '#f97316' },
-  { id: 'yellow', label: 'Yellow', hex: '#facc15' },
-  { id: 'green', label: 'Green', hex: '#22c55e' },
-  { id: 'cyan', label: 'Cyan', hex: '#06b6d4' },
-  { id: 'blue', label: 'Blue', hex: '#3b82f6' },
-  { id: 'violet', label: 'Violet', hex: '#a855f7' },
-  { id: 'white', label: 'White', hex: '#f8fafc' },
-];
+// The colours before the colour picker (docs/specs/004-interface-design/colour-picker.md), read as
+// their nearest standard colour so a pen saved then keeps its colour.
+const LEGACY_LASER_COLOURS: Readonly<Record<string, StandardColourName>> = {
+  cyan: 'teal',
+  white: 'ink',
+};
 
 // --- What the overlay draws from --------------------------------------------
 
@@ -90,12 +92,36 @@ export function laserLifetimeMs(config: LaserConfig): number {
   return TRAIL_MS[config.trail];
 }
 
-// The colour to draw with: the chosen swatch, or the participant's own colour
-// when it is set to 'presence' (and as the fallback, since every trail has a
-// participant colour but not every one has a swatch).
-export function laserColour(config: LaserConfig, participantColour: string): string {
-  const swatch = LASER_COLOURS.find((c) => c.id === config.colour);
-  return swatch?.hex ?? participantColour;
+const isStandardName = (v: unknown): v is StandardColourName =>
+  (STANDARD_COLOUR_NAMES as readonly unknown[]).includes(v);
+
+// The colour to draw with: a standard colour in its version for the canvas, a
+// custom colour as it is, or the participant's own colour when it is set to
+// 'presence' (and as the fallback, since every trail has a participant colour
+// but not every one has a colour of its own).
+export function laserColour(
+  config: LaserConfig,
+  participantColour: string,
+  appearance: Appearance = 'light',
+): string {
+  const { colour } = config;
+  if (isStandardName(colour)) return penColourHex(colour, appearance);
+  if (isHexColour(colour)) return colour.toLowerCase();
+  return participantColour;
+}
+
+/** The colour's name for the panel's collapsed row: "Your colour", "Blue", "#rrggbb". */
+export function laserColourLabel(colour: LaserColour): string {
+  if (isStandardName(colour)) return penColourLabel(colour);
+  if (isHexColour(colour)) return colour.toLowerCase();
+  return 'Your colour';
+}
+
+function parseLaserColour(value: unknown): LaserColour {
+  if (typeof value !== 'string') return DEFAULT_LASER_CONFIG.colour;
+  if (value === LASER_PRESENCE || isStandardName(value)) return value;
+  if (isHexColour(value)) return value.toLowerCase();
+  return LEGACY_LASER_COLOURS[value] ?? DEFAULT_LASER_CONFIG.colour;
 }
 
 // --- Parsing ----------------------------------------------------------------
@@ -114,7 +140,7 @@ export function parseLaserConfig(raw: unknown): LaserConfig {
   const o = parsed as Record<string, unknown>;
   return {
     width: pick(o.width, LASER_WIDTHS, DEFAULT_LASER_CONFIG.width),
-    colour: pick(o.colour, LASER_COLOURS, DEFAULT_LASER_CONFIG.colour),
+    colour: parseLaserColour(o.colour),
     trail: pick(o.trail, LASER_TRAILS, DEFAULT_LASER_CONFIG.trail),
     effect: pick(o.effect, LASER_EFFECTS, DEFAULT_LASER_CONFIG.effect),
   };

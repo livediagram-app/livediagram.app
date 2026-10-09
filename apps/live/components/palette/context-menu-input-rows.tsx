@@ -1,49 +1,37 @@
-import type { ReactNode } from 'react';
-import { Tooltip, Glyph } from '@livediagram/ui';
-import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
-import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
+import { useState, type ReactNode } from 'react';
+import { Glyph } from '@livediagram/ui';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
-import { INK_PEN_COLOUR, type IconPosition } from '@livediagram/document';
-import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
-
-const NOOP = () => {};
+import { type IconPosition, type StandardTone } from '@livediagram/document';
+import { onMouseHover } from '@/components/primitives/hover-preview';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { ColourPopover } from '@/components/colour/ColourPopover';
+import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 // "No colour". A real value, not an absence: it is what a frame defaults to,
 // and what you want when a shape should show the canvas through it.
 const TRANSPARENT = 'transparent';
 
-// The standard checkerboard that means "nothing here" in every graphics tool.
-// Drawn rather than described, because a plain white swatch labelled
-// Transparent is indistinguishable from a white swatch.
+// The standard checkerboard that means "nothing here" in every graphics tool,
+// on the row's chip: a plain white chip labelled Transparent would read as white.
 const CHECKER =
   'repeating-conic-gradient(rgb(203 213 225) 0% 25%, rgb(255 255 255) 0% 50%) 50% / 8px 8px';
 
 const isTransparent = (color: string): boolean =>
   color.toLowerCase() === TRANSPARENT || color.toLowerCase() === 'none';
 
-// The palette half of a ColourRow's props: the active theme's swatches plus
-// the user's own. One bundle, spread at every call site, because every picker
-// in the editor must offer the SAME palette (see useColourPalette) and four
-// loose props repeated at a dozen sites is how two of them ended up passing
-// only the presets, silently giving those rows no custom swatches and no way
-// to add one.
+// The palette half of a ColourRow's props: the active theme's colours, spread at every call site
+// (useColourPalette) so every row offers the SAME Theme Palette.
 export type ColourPalette = {
-  // Preset swatches to offer, derived from the active theme so they match it.
   presets: string[];
-  // The user's own palette: colours they have used that the theme did not
-  // offer. Shown after the presets and removable, which the presets are not
-  // (a theme's colours are the theme's to decide).
-  customs?: string[];
-  onAddCustom?: (color: string) => void;
-  onRemoveCustom?: (color: string) => void;
 };
 
-// A small preset palette for the inline colour picker. The "+" custom chip
-// still opens the OS picker for anything off-palette.
-// One labelled colour row inside the Colours section: the label + current
-// swatch toggle an inline preset palette (clicking the row again closes it,
-// so the picker never gets stuck open). A "+" chip opens the OS picker for a
-// custom colour.
+// One labelled colour row in an element menu's Colours section (docs/specs/008-canvas/
+// canvas-and-palette.md Colours): the label, a mark for what it paints and the colour in force
+// open the one colour picker (docs/specs/004-interface-design/colour-picker.md) beside it, in a
+// popover, since the menu is narrower than the picker. The Theme Palette is the theme's colours, then
+// the standard colours (strong for lines and text, soft for backgrounds), then Custom colours.
 export function ColourRow({
   label,
   icon,
@@ -52,94 +40,44 @@ export function ColourRow({
   onToggle,
   onChange,
   presets,
-  customs,
-  onAddCustom,
-  onRemoveCustom,
   onPreview,
   onCommit,
   onPreviewEnd,
   ink,
+  tone = 'strong',
 }: {
   label: string;
-  // A mark for what this row paints (docs/specs/008-canvas/canvas-and-palette.md Colours). Every category shows
-  // one: "Text", "Background", "Border" and "Heading" are four words of
-  // similar length and shape, and at a glance in a dense menu the glyph is
-  // what tells them apart, not the reading.
+  // A mark for what this row paints: "Text", "Background", "Border" and "Heading" are four words of
+  // similar length and shape, and in a dense menu the glyph is what tells them apart.
   icon?: ReactNode;
   value: string;
   open: boolean;
   onToggle: () => void;
   onChange: (color: string) => void;
-  // Hover-to-preview for the discrete swatches (desktop pointer), mirroring the
-  // style-preset tiles: onPreview shows the colour live, onPreviewEnd reverts,
-  // and onCommit is the click-commit that snapshots the true pre-hover value for
-  // undo. The custom "+" <input> keeps onChange (debounced drag). All optional,
-  // so a caller without the preview wiring still works on plain onChange.
+  // Hover-to-preview: onPreview shows a colour live, onPreviewEnd reverts, and onCommit is the
+  // pick that snapshots the true pre-hover value for undo. Without them a pick is onChange.
   onPreview?: (color: string) => void;
   onCommit?: (color: string) => void;
   onPreviewEnd?: () => void;
-  // Ink, in its version for the canvas, where the row can store it by name
-  // (docs/specs/007-editor/editor-modes.md "One look"): the swatch after the theme's colours.
+  // Set where the row can store a stock colour by name (docs/specs/007-editor/editor-modes.md
+  // "One look"): the standard colours are then picked by name, Ink included, and adapt per canvas.
   ink?: string;
+  // Lines and text take the strong colours; backgrounds the soft ones.
+  tone?: StandardTone;
 } & ColourPalette) {
-  // Revert an in-flight swatch preview if the menu/section unmounts mid-hover
-  // (pointerleave doesn't fire on unmount).
-  useRevertOnUnmount(onPreviewEnd ?? NOOP);
-  const eyeDropper = useEyeDropper();
-
-  // Commit a colour AND remember it, so the next element can be given the
-  // same one by clicking rather than by matching it off the colour wheel.
-  const pick = (color: string) => {
-    (onCommit ?? onChange)(color);
-    onAddCustom?.(color);
-  };
-
-  // A colour you added says how to bin it; a preset needs no hint.
-  const swatch = (c: string, removable: boolean) =>
-    removable ? (
-      <Tooltip key={c} label={`${c} (right-click to remove)`}>
-        {swatchButton(c, true)}
-      </Tooltip>
-    ) : (
-      swatchButton(c, false)
-    );
-
-  const swatchButton = (c: string, removable: boolean) => (
-    <button
-      key={c}
-      type="button"
-      aria-label={removable ? `${c} (right-click to remove)` : c}
-      onClick={() => pick(c)}
-      onContextMenu={
-        removable
-          ? (e) => {
-              // Bin a colour you are done with. Only ever a colour YOU added:
-              // the theme's own presets come back with the theme, so removing
-              // one would be a setting that silently undoes itself.
-              e.preventDefault();
-              e.stopPropagation();
-              onPreviewEnd?.();
-              onRemoveCustom?.(c);
-            }
-          : undefined
-      }
-      onPointerEnter={onPreview ? onMouseHover(() => onPreview(c)) : undefined}
-      onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
-      className={`h-7 w-7 cursor-pointer transition ${
-        value.toLowerCase() === c.toLowerCase()
-          ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
-          : 'hover:brightness-95'
-      }`}
-      style={{ backgroundColor: c }}
-    />
-  );
-
+  const surface = useCanvasSurface();
+  // In state, not a ref: a row can mount already open, and the popover needs its anchor then.
+  const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
+  const yours = useDocumentColoursWhen(open, presets);
+  const theme = themeOptions(presets);
   return (
     <div>
       <button
+        ref={setTrigger}
         type="button"
         onClick={onToggle}
         aria-expanded={open}
+        aria-haspopup="dialog"
         className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
       >
         <span className="flex items-center gap-2">
@@ -152,106 +90,41 @@ export function ColourRow({
         </span>
         <span
           className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600"
-          style={
-            isTransparent(value) ? { background: CHECKER } : { backgroundColor: hexish(value) }
-          }
+          style={isTransparent(value) ? { background: CHECKER } : { backgroundColor: value }}
           aria-hidden
         />
       </button>
-      {open ? (
-        // Swatches are sized for a comfortable touch target on mobile.
-        <div className="flex flex-col gap-1.5 px-3 pb-2.5 pt-1">
-          {/* The two PICKERS lead the row. They open something rather than
-              applying a colour, so they are a different kind of control from
-              the swatches and sit apart from them, before the palette rather
-              than trailing off the end of it. */}
-          <div className="flex items-center gap-1.5">
-            {eyeDropper.supported ? (
-              <Tooltip label={`Pick ${label} colour from the screen`}>
-                <button
-                  type="button"
-                  aria-label={`Pick ${label} colour from the screen`}
-                  onClick={() => {
-                    void eyeDropper.pick().then((hex) => {
-                      if (hex) pick(hex);
-                    });
-                  }}
-                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:text-brand-300"
-                >
-                  <PipetteIcon />
-                </button>
-              </Tooltip>
-            ) : null}
-            <label
-              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-sm leading-none text-slate-500 dark:border-slate-600"
-              aria-label={`Custom ${label} colour`}
-            >
-              +
-              <input
-                type="color"
-                value={hexish(value)}
-                onChange={(e) => onChange(e.target.value)}
-                // The drag itself streams through onChange (debounced); only
-                // the released value is worth remembering.
-                onBlur={(e) => onAddCustom?.(e.target.value)}
-                className="absolute h-0 w-0 opacity-0"
-              />
-            </label>
-          </div>
-          {/* The palette is one CONTIGUOUS strip: no gaps, so sweeping across
-              it previews every colour in turn. Gaps between swatches meant
-              the preview snapped back to the current colour in the dead zone
-              between each pair, which read as flicker rather than as a
-              comparison. Rounding lives on the strip, not the swatches. */}
-          <div className="flex flex-wrap overflow-hidden rounded-md border border-slate-300 dark:border-slate-600">
-            {/* No colour: the one option every row needs and no theme
-                provides. */}
-            <Tooltip label={`No ${label.toLowerCase()} colour`}>
-              <button
-                type="button"
-                aria-label={`No ${label.toLowerCase()} colour`}
-                onClick={() => (onCommit ?? onChange)(TRANSPARENT)}
-                onPointerEnter={onPreview ? onMouseHover(() => onPreview(TRANSPARENT)) : undefined}
-                onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
-                className={`h-7 w-7 cursor-pointer transition ${
-                  isTransparent(value)
-                    ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
-                    : 'hover:brightness-95'
-                }`}
-                style={{ background: CHECKER }}
-              />
-            </Tooltip>
-            {presets.map((c) => swatch(c, false))}
-            {ink ? (
-              <Tooltip label="Ink">
-                <button
-                  type="button"
-                  aria-label="Ink"
-                  aria-pressed={value.toLowerCase() === ink.toLowerCase()}
-                  // Chosen by name, so never one of your colours.
-                  onClick={() => (onCommit ?? onChange)(INK_PEN_COLOUR)}
-                  onPointerEnter={
-                    onPreview ? onMouseHover(() => onPreview(INK_PEN_COLOUR)) : undefined
-                  }
-                  onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
-                  className={`h-7 w-7 cursor-pointer transition ${
-                    value.toLowerCase() === ink.toLowerCase()
-                      ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
-                      : 'hover:brightness-95'
-                  }`}
-                  style={{ backgroundColor: ink }}
-                />
-              </Tooltip>
-            ) : null}
-            {(customs ?? [])
-              .filter((c) => !presets.some((p) => p.toLowerCase() === c.toLowerCase()))
-              .map((c) => swatch(c, true))}
-          </div>
-        </div>
+      {open && trigger ? (
+        <ColourPopover
+          anchor={trigger}
+          // Beside the menu (or its flyout) the row sits in, which is narrower than the picker.
+          beside={trigger.closest<HTMLElement>('[data-menu-flyout], [data-context-menu]')}
+          onClose={onToggle}
+          label={`${label} colour`}
+          value={isTransparent(value) ? TRANSPARENT : value}
+          leading={[noColour(TRANSPARENT, `No ${label.toLowerCase()} colour`)]}
+          theme={theme}
+          standard={[standardGroup(tone, surface, ink ? 'name' : 'hex')]}
+          yours={yours}
+          boardWarning={ink !== undefined}
+          onPreview={onPreview}
+          onPreviewEnd={onPreviewEnd}
+          onPick={(id) => {
+            (onCommit ?? onChange)(id);
+            onToggle();
+          }}
+        />
       ) : null}
     </div>
   );
 }
+
+// Custom colours only while the row's picker is open, so a closed menu row never walks the document.
+function useDocumentColoursWhen(open: boolean, offered: readonly string[]): string[] {
+  const colours = useDocumentColours(open ? offered : NO_COLOURS);
+  return open ? colours : [];
+}
+const NO_COLOURS: readonly string[] = [];
 
 // The inline-icon placement picker laid out as a cross (Top / Left / Right /
 // Bottom around an empty centre), each cell an arrow + label.

@@ -1,115 +1,90 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { penColourHex, standardColours } from '@livediagram/document';
 import { ColourRow } from './context-menu-input-rows';
 
+// docs/specs/008-canvas/canvas-and-palette.md Colours, on the one colour picker
+// (docs/specs/004-interface-design/colour-picker.md).
 const PRESETS = ['#f0f9ff', '#0ea5e9'];
 
 function renderRow(overrides: Partial<Parameters<typeof ColourRow>[0]> = {}) {
   const onCommit = vi.fn();
   const onChange = vi.fn();
-  const onAddCustom = vi.fn();
-  const onRemoveCustom = vi.fn();
+  const onToggle = vi.fn();
   render(
     <ColourRow
       label="Background"
       value="#0ea5e9"
       open
-      onToggle={() => {}}
+      onToggle={onToggle}
       onChange={onChange}
       onCommit={onCommit}
       presets={PRESETS}
-      customs={['#ff0055']}
-      onAddCustom={onAddCustom}
-      onRemoveCustom={onRemoveCustom}
       {...overrides}
     />,
   );
-  return { onCommit, onChange, onAddCustom, onRemoveCustom };
+  return { onCommit, onChange, onToggle };
 }
 
 afterEach(cleanup);
 
 describe('ColourRow', () => {
-  it('offers a transparent option, because no theme provides one', () => {
-    const { onCommit } = renderRow();
-    fireEvent.click(screen.getByRole('button', { name: /no background colour/i }));
-    expect(onCommit).toHaveBeenCalledWith('transparent');
-  });
-
-  it('shows the pickers BEFORE the swatches', () => {
-    // They open something rather than applying a colour, so they lead the row
-    // instead of trailing off the end of it.
+  it('opens the picker: no colour and the theme first, then the standard colours, then Custom colours', () => {
     renderRow();
-    const buttons = screen.getAllByRole('button');
-    const custom = buttons.findIndex((b) => /custom background colour/i.test(b.textContent ?? ''));
-    const firstSwatch = buttons.findIndex((b) =>
-      /no background colour/i.test(b.getAttribute('aria-label') ?? ''),
+    const theme = within(screen.getByRole('group', { name: 'Theme Palette' })).getAllByRole(
+      'button',
     );
-    // The "+" label is a <label>, not a button, so fall back to the pipette
-    // when the environment reports no EyeDropper: either way nothing that
-    // applies a colour may come before them.
-    if (custom >= 0) expect(custom).toBeLessThan(firstSwatch);
+    expect(theme.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'No background colour',
+      'Blue',
+      'Cyan',
+    ]);
+    expect(theme[2]!.getAttribute('aria-pressed')).toBe('true');
+    expect(
+      within(screen.getByRole('group', { name: 'Standard Colours' })).getAllByRole('button'),
+    ).toHaveLength(10);
+    expect(screen.getByRole('group', { name: 'Custom Colours' })).toBeTruthy();
   });
 
-  it('remembers a colour that was not already on the palette', () => {
-    const { onAddCustom } = renderRow();
-    fireEvent.click(screen.getByRole('button', { name: '#0ea5e9' }));
-    expect(onAddCustom).toHaveBeenCalledWith('#0ea5e9');
+  it('picks transparent, committing and closing', () => {
+    const { onCommit, onToggle } = renderRow();
+    fireEvent.click(screen.getByRole('button', { name: 'No background colour' }));
+    expect(onCommit).toHaveBeenCalledWith('transparent');
+    expect(onToggle).toHaveBeenCalled();
   });
 
-  it('bins a custom colour on right-click, and never a preset', () => {
-    const { onRemoveCustom } = renderRow();
-    // A colour the user added says so, and removing it works.
-    const custom = screen.getByRole('button', { name: /#ff0055 \(right-click to remove\)/i });
-    fireEvent.contextMenu(custom);
-    expect(onRemoveCustom).toHaveBeenCalledWith('#ff0055');
-
-    // A theme preset is not the user's to bin: it would come back with the
-    // theme, so the control would silently undo itself.
-    onRemoveCustom.mockClear();
-    fireEvent.contextMenu(screen.getByRole('button', { name: '#0ea5e9' }));
-    expect(onRemoveCustom).not.toHaveBeenCalled();
+  it('offers the soft colours by hex for a background', () => {
+    const { onCommit } = renderRow({ tone: 'soft' });
+    fireEvent.click(screen.getByRole('button', { name: 'Green' }));
+    expect(onCommit).toHaveBeenCalledWith(standardColours('soft', 'light')[5]!.hex);
   });
 
-  it('does not repeat a custom colour that the theme also offers', () => {
-    renderRow({ customs: ['#0ea5e9'] });
-    expect(screen.queryByRole('button', { name: /#0ea5e9 \(right-click/i })).toBeNull();
-    expect(screen.getAllByRole('button', { name: '#0ea5e9' })).toHaveLength(1);
+  it('falls back to onChange without a commit handler', () => {
+    const { onChange } = renderRow({ onCommit: undefined });
+    fireEvent.click(screen.getByRole('button', { name: 'Red' }));
+    expect(onChange).toHaveBeenCalledWith(penColourHex('red', 'light'));
   });
 
-  it('renders the category icon beside the label', () => {
-    renderRow({ icon: <svg data-testid="category-icon" /> });
+  it('shows nothing until opened, and the category icon beside the label', () => {
+    renderRow({ open: false, icon: <svg data-testid="category-icon" /> });
     expect(screen.getByTestId('category-icon')).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "One look": Ink is the swatch after the theme's colours.
-describe('ColourRow with Ink', () => {
-  it('offers Ink after the presets and before your colours, named and with a tooltip', () => {
-    renderRow({ ink: '#1c1917' });
-    const ink = screen.getByRole('button', { name: 'Ink' });
-    const lastPreset = screen.getByRole('button', { name: '#0ea5e9' });
-    const custom = screen.getByRole('button', { name: /#ff0055/ });
-    expect(lastPreset.compareDocumentPosition(ink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(ink.compareDocumentPosition(custom) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(ink.style.backgroundColor).toBe('rgb(28, 25, 23)');
-  });
-
-  it('chooses Ink by name, and never adds it to your colours', () => {
-    const { onCommit, onAddCustom } = renderRow({ ink: '#1c1917' });
+// docs/specs/007-editor/editor-modes.md "One look": where a row can store a stock colour by name.
+describe('ColourRow storing names', () => {
+  it('picks the standard colours by name, Ink included, and marks the one drawn', () => {
+    const { onCommit } = renderRow({
+      label: 'Text',
+      ink: '#1c1917',
+      value: penColourHex('teal', 'light'),
+    });
+    expect(screen.getByRole('button', { name: 'Teal' }).getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Ink' }));
     expect(onCommit).toHaveBeenCalledWith('ink');
-    expect(onAddCustom).not.toHaveBeenCalled();
-  });
-
-  it('marks Ink when the row shows it', () => {
-    renderRow({ ink: '#1c1917', value: '#1C1917' });
-    expect(screen.getByRole('button', { name: 'Ink' }).getAttribute('aria-pressed')).toBe('true');
-  });
-
-  it('shows no Ink where the row cannot store it', () => {
-    renderRow();
-    expect(screen.queryByRole('button', { name: 'Ink' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Grey' }));
+    expect(onCommit).toHaveBeenLastCalledWith('grey');
   });
 });

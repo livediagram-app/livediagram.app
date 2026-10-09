@@ -73,21 +73,24 @@ describe('the type editor’s tabs', () => {
     const general = within(panel).getByRole('region', { name: 'General' });
     const fields = within(panel).getByRole('region', { name: 'Fields' });
     expect(within(general).getByLabelText('Name')).toBeTruthy();
-    expect(within(general).getByText('Colour')).toBeTruthy();
+    expect(within(general).getByRole('button', { name: 'Colour' })).toBeTruthy();
     expect(within(fields).getByText('On the Card')).toBeTruthy();
     // General first, Fields after it.
     expect(general.compareDocumentPosition(fields) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('puts Name and Colour side by side in one row, Name first', () => {
+  it('holds the glyph, the name and the colour in one Name field, colour last', () => {
     editor();
     const general = screen.getByRole('region', { name: 'General' });
-    const name = within(general).getByText('Name').parentElement!;
-    const colour = within(general).getByText('Colour').parentElement!;
-    // One shared row (a grid from the md breakpoint), Name on the left, Colour to its right.
-    expect(name.parentElement).toBe(colour.parentElement);
-    expect(name.parentElement!.className).toMatch(/\bmd:grid\b/);
-    expect(name.nextElementSibling).toBe(colour);
+    const name = within(general).getByLabelText('Name');
+    const field = name.parentElement!;
+    const glyph = within(field).getByRole('button', { name: /^Glyph/ });
+    const colour = within(field).getByRole('button', { name: 'Colour' });
+    // Glyph first, the name after it, the colour last.
+    expect(field.firstElementChild!.contains(glyph)).toBe(true);
+    expect(field.lastElementChild!.contains(colour)).toBe(true);
+    // No Colour row of its own.
+    expect(within(general).queryByText('Colour')).toBeNull();
   });
 
   it('lists Details above the panel’s tabs, Overview first', () => {

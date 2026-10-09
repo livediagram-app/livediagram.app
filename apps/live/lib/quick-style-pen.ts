@@ -5,6 +5,8 @@
 // of them, most recently drawn first; Marker width is the pens' named widths.
 import {
   PEN_COLOUR_NAMES,
+  STANDARD_COLOUR_NAMES,
+  type HuedPenColourName,
   SNAP_COLOUR_FIELDS,
   isCustomPenColour,
   isPenColourName,
@@ -99,10 +101,16 @@ const inkOption = (palette: PenPalette): PenColourOption => ({
   name: 'Ink',
   swatch: palette.ink,
 });
+// The quick rows' hued colours in the standard colours' order (docs/specs/004-interface-design/
+// colour-picker.md "The colours"), Red to Pink; Grey waits in More colours.
+const QUICK_HUES = STANDARD_COLOUR_NAMES.filter((c): c is HuedPenColourName =>
+  (PEN_COLOUR_NAMES as readonly string[]).includes(c),
+);
+
 /** The whiteboard's colours as choices: Ink, the eight hued stock colours, adaptive per board. */
 export const stockOptions = (palette: PenPalette): PenColourOption[] => [
   inkOption(palette),
-  ...PEN_COLOUR_NAMES.map((c) => optionOf(c, palette)),
+  ...QUICK_HUES.map((c) => optionOf(c, palette)),
 ];
 /** The tab's custom colours as choices, most recently drawn first. */
 export const customOptions = (palette: PenPalette): PenColourOption[] =>

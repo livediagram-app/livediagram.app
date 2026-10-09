@@ -16,11 +16,50 @@ import {
   type LineSeries,
   type PieSlice,
 } from '@livediagram/document';
-import { hexish } from '@/components/palette/palette-controls';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+
+// A data row's colour (a pie slice, a legend row): its chip, shaped like the chart's own, opening
+// the one colour picker (docs/specs/004-interface-design/colour-picker.md): the strong standard
+// colours by hex, Custom colours and +.
+function DataColour({
+  label,
+  value,
+  shown,
+  shape,
+  onPick,
+}: {
+  label: string;
+  // The row's own colour, if it has one; `shown` falls back to the chart's palette.
+  value: string | undefined;
+  shown: string;
+  shape: string;
+  onPick: (color: string) => void;
+}) {
+  const yours = useDocumentColours();
+  return (
+    <ColourSwatchButton
+      label={label}
+      value={value ?? null}
+      swatch={shown}
+      standard={[standardGroup('strong', 'light', 'hex')]}
+      yours={yours}
+      className="h-5 w-5"
+      onPick={onPick}
+    >
+      <span
+        aria-hidden
+        className={`h-4 w-4 border border-slate-300 dark:border-slate-600 ${shape}`}
+        style={{ backgroundColor: shown }}
+      />
+    </ColourSwatchButton>
+  );
+}
 
 // Pie-chart data editor (docs/specs/009-elements/pie-chart.md): one row per slice — a colour swatch
 // (recolourable), a label, and a value — plus add / remove. Local draft while
@@ -51,20 +90,13 @@ export function PieDataEditor({
       <div className="flex flex-col gap-1">
         {rows.map((s, i) => (
           <div key={i} className="flex items-center gap-1">
-            <label
-              className="relative h-4 w-4 shrink-0 cursor-pointer rounded-[3px] border border-slate-300 dark:border-slate-600"
-              style={{ backgroundColor: colorAt(i, s) }}
-              aria-label="Slice colour"
-            >
-              <input
-                type="color"
-                value={hexish(colorAt(i, s))}
-                onChange={(e) =>
-                  onChange(rows.map((r, j) => (j === i ? { ...r, color: e.target.value } : r)))
-                }
-                className="absolute h-0 w-0 opacity-0"
-              />
-            </label>
+            <DataColour
+              label="Slice colour"
+              value={s.color}
+              shown={colorAt(i, s)}
+              shape="rounded-[3px]"
+              onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
+            />
             <input
               className={`${cellInput} flex-1`}
               value={s.label}
@@ -127,23 +159,16 @@ export function LegendDataEditor({
       <div className="flex flex-col gap-1">
         {rows.map((item, i) => (
           <div key={i} className="flex items-center gap-1">
-            <label
+            <DataColour
+              label="Legend colour"
+              value={item.color}
+              shown={colorAt(i, item)}
               // Round, matching the swatch on the card rather than the pie
               // editor's square chip: the editor should look like the thing
               // it edits.
-              className="relative h-4 w-4 shrink-0 cursor-pointer rounded-full border border-slate-300 dark:border-slate-600"
-              style={{ backgroundColor: colorAt(i, item) }}
-              aria-label="Legend colour"
-            >
-              <input
-                type="color"
-                value={hexish(colorAt(i, item))}
-                onChange={(e) =>
-                  onChange(rows.map((r, j) => (j === i ? { ...r, color: e.target.value } : r)))
-                }
-                className="absolute h-0 w-0 opacity-0"
-              />
-            </label>
+              shape="rounded-full"
+              onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
+            />
             <input
               className={`${cellInput} flex-1`}
               value={item.label}
