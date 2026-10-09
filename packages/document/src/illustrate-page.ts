@@ -129,6 +129,21 @@ export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   return [...PAPER_AND_SCREEN_SIZE_IDS, 'slide'];
 }
 
+/** The size tiles a page's panel shows: its kind's sizes (pageSizesFor), Fit to Content first on
+ *  a page already in it, and never two tiles of one shape: turned landscape, the Story (9:16) is
+ *  the 16:9 Slide, so only one of the two is offered (the one the page is in, else the Slide). */
+export function pageSizeChoices(
+  page: Pick<IllustratePage, 'kind' | 'size' | 'orientation'>,
+): readonly PageSizeId[] {
+  const current = page.size ?? 'a4';
+  let sizes = pageSizesFor(pageKindOf(page));
+  if (page.orientation === 'landscape' && sizes.includes('wide') && sizes.includes('slide')) {
+    const drop: PageSizeId = current === 'wide' ? 'slide' : 'wide';
+    sizes = sizes.filter((id) => id !== drop);
+  }
+  return current === 'fit' ? ['fit', ...sizes] : sizes;
+}
+
 export function isPageSizeId(v: unknown): v is PageSizeId {
   return typeof v === 'string' && v in PAGE_SIZES;
 }

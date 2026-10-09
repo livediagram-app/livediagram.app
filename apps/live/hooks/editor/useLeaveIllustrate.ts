@@ -5,7 +5,9 @@
 // Cancel stays. A tab with content but no articles asks a lighter question, a confirmation beside
 // the mode switch (docs/specs/007-editor/editor-modes.md "Leaving Illustrate"): its pages do not
 // show in Diagram or Draw, so what is on them may not look the same; Switch or Cancel. A visitor, a
-// locked tab or an empty tab switches straight away.
+// locked tab or an empty tab switches straight away. An article with a locked page is held as it is
+// (docs/specs/007-editor/illustrate-pages.md "Locking a page"): Convert leaves it an article, and a
+// tab whose articles are all held asks only the lighter question.
 import { useCallback, useState } from 'react';
 import {
   articlesOf,
@@ -16,6 +18,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { articleLocked } from '@/lib/article/article-lock';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -45,8 +48,9 @@ export function useLeaveIllustrate<
     (next: EditorMode) => {
       const leaving =
         mode === 'illustrate' && next !== 'illustrate' && canEdit && !!tab && tab.locked !== true;
-      if (leaving && Object.keys(articlesOf(tab)).length > 0) setPending(next);
-      else if (leaving && tab.elements.length > 0) setConfirming(next);
+      const flows = leaving ? Object.keys(articlesOf(tab)) : [];
+      if (leaving && flows.some((flow) => !articleLocked(tab, flow))) setPending(next);
+      else if (leaving && (tab.elements.length > 0 || flows.length > 0)) setConfirming(next);
       else rawSet(next);
     },
     [mode, rawSet, canEdit, tab],
@@ -56,6 +60,8 @@ export function useLeaveIllustrate<
     const splits = new Map<string, string[][]>();
     const typed = new Map<string, ArticleBlock[]>();
     for (const flow of Object.keys(articlesOf(tab))) {
+      // A held article stays as it is: its writing is neither taken nor turned.
+      if (articleLocked(tab, flow)) continue;
       const handle = articleHandleOf(flow);
       if (!handle) continue;
       // What is being typed goes into the pages too, in the same edit (one undo step).
@@ -68,13 +74,17 @@ export function useLeaveIllustrate<
     rawSet(pending, (t) => {
       let next = t;
       for (const [flow, blocks] of typed) {
-        const doc = articlesOf(next)[flow];
+        const doc = articleLocked(next, flow) ? undefined : articlesOf(next)[flow];
         if (doc)
           next = withArticleFlow(next, flow, doc.style ? { blocks, style: doc.style } : { blocks });
       }
       return withArticlesAsPages(next, splits);
     });
-    debugLog('[article] articles turned into pages', { tabId: tab.id, articles: splits.size });
+    debugLog('[article] articles turned into pages', {
+      tabId: tab.id,
+      articles: splits.size,
+      held: Object.keys(articlesOf(tab)).filter((flow) => articleLocked(tab, flow)).length,
+    });
     setPending(null);
   };
   const keep = () => {

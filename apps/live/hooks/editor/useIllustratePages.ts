@@ -97,6 +97,9 @@ export function useIllustratePages(deps: {
   getViewport: () => ViewPose;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
+  // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
+  // open) another; set whether or not this tab is in Illustrate mode.
+  framePageRef?: RefObject<((pageId: string) => void) | null>;
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
 }): IllustratePagesView | null {
@@ -199,6 +202,15 @@ export function useIllustratePages(deps: {
     const raf = requestAnimationFrame(() => goToLanded());
     return () => cancelAnimationFrame(raf);
   }, [landed]);
+
+  const { framePageRef } = deps;
+  useEffect(() => {
+    if (!framePageRef) return;
+    framePageRef.current = setGoTo;
+    return () => {
+      framePageRef.current = null;
+    };
+  }, [framePageRef]);
 
   if (!on) return null;
   const focusPage = (pageId: string) =>

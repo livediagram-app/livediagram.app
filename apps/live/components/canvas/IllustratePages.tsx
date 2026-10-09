@@ -13,6 +13,7 @@ import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
 import { PageLockButton, pageLockRoom } from './PageLockButton';
 import { track } from '@/lib/telemetry';
+import { isArticleLocked } from '@/lib/article/article-lock';
 import { PageNavigator } from './PageNavigator';
 import {
   articleBodyLinePx,
@@ -22,6 +23,7 @@ import {
   ILLUSTRATE_PAGE_GAP,
   pageIsDark,
   pageLabel,
+  pageUnits,
   resolveArticleStyle,
   resolveFontStack,
   type LaidOutPage,
@@ -147,6 +149,8 @@ export function IllustratePages({
   const last = pages[pages.length - 1]!;
   // A label dragged sideways reorders the pages (usePageReorderDrag).
   const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
+  // A label drags only when there is something to swap with: two units (a page, or a whole article).
+  const reorderable = pageUnits(pages).length > 1;
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
   // The panel goes with its page, and with the right to edit (zen, a lock, a view role): it never
@@ -214,22 +218,31 @@ export function IllustratePages({
           !bare &&
           !locked &&
           offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
+        // A slide page's deck button sits beside its cog (PageDeckButton); any other page shows it
+        // once the deck has a slide of it, so its eye is there wherever the page is presented.
+        const deckButton =
+          !!edit &&
+          !!view.deck &&
+          !mobile &&
+          (page.kind === 'slide' || !!view.deck.slideOf(page.id));
+        const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
+        // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own):
+        // the invite and the label share what they leave.
+        const fixedRoom =
+          (edit ? COG_ROOM + pageLockRoom(locked, !mobile) : 0) +
+          (deckButton ? DECK_ROOM : 0) +
+          (logoButtons ? logoTitleBarRoom(true, !mobile) : 0);
         const invite =
           !empty || choosing
             ? null
-            : !mobile && room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2
+            : !mobile && room - fixedRoom >= INVITE_WIDE + LABEL_MIN * 2
               ? 'wide'
-              : room >= INVITE_ICON + COG_ROOM + LABEL_MIN
+              : room - fixedRoom >= INVITE_ICON + LABEL_MIN
                 ? 'icon'
                 : null;
-        // A slide page's deck button sits beside its cog (PageDeckButton).
-        const deckButton = !!edit && !!view.deck && page.kind === 'slide' && !mobile;
-        const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
         const labelRoom =
           room -
-          (edit ? COG_ROOM + pageLockRoom(locked, !mobile) : 0) -
-          (deckButton ? DECK_ROOM : 0) -
-          (logoButtons ? logoTitleBarRoom(true, !mobile) : 0) -
+          fixedRoom -
           (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0);
         return (
           <div
@@ -290,7 +303,7 @@ export function IllustratePages({
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
                   className={`pointer-events-auto block max-w-full truncate whitespace-nowrap rounded px-1 py-0.5 text-xs font-medium text-slate-500 transition hover:bg-white/80 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100 ${
-                    edit && pages.length > 1 ? 'cursor-grab active:cursor-grabbing' : ''
+                    edit && reorderable ? 'cursor-grab active:cursor-grabbing' : ''
                   }`}
                 >
                   {label}
@@ -417,6 +430,7 @@ export function IllustratePages({
           key={`${open.id}:${opened.seq ?? 0}`}
           page={open}
           count={pages.length}
+          heldByLock={isArticleLocked(pages, open.id)}
           getAnchor={() => anchorOf(open.id)}
           initialTab={opened.tab}
           themeBackgrounds={view.themeBackgrounds}

@@ -68,7 +68,7 @@ describe('slide layouts', () => {
   });
 
   it('are found by id, a slide-only one too', () => {
-    expect(pageLayoutById('slide-bullets').label).toBe('Title and bullets');
+    expect(pageLayoutById('slide-bullets').label).toBe('Title and Bullets');
     expect(pageLayoutById('quote').label).toBe('Quote');
   });
 

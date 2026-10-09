@@ -59,6 +59,7 @@ import {
 } from '@/lib/article/article-commands';
 import { articleSchema } from '@/lib/article/article-schema';
 import { track } from '@/lib/telemetry';
+import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
 import { LinkField, ToolbarPopover } from './page-toolbar-menus';
 import { usePageToolbarPlacement } from './page-toolbar-placement';
 import { useHoveredArticlePage, useOffPagePressClears } from './page-toolbar-presence';
@@ -98,12 +99,6 @@ const FORMAT_EVENT = {
   block: 'ArticleBlockStyle',
   link: 'ArticleLink',
 } as const;
-const INSERT_EVENT = {
-  divider: 'ArticleDivider',
-  pageBreak: 'ArticlePageBreak',
-  quote: 'ArticleQuote',
-  code: 'ArticleCode',
-} as const;
 
 type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'more' | null;
 
@@ -116,7 +111,9 @@ export function PageToolbar({
 }: {
   // A comment or an action on the selected text (a margin note): handled by the host.
   onNote?: (flow: string, kind: 'comment' | 'action') => void;
-  // The article pages on the tab, each with its article: what a hover or a press is measured on.
+  // The article pages on the tab that may be written on, each with its article: what a hover or a
+  // press is measured on. An article with a locked page is left out (it is read-only), so the
+  // toolbar never shows for it, hovered or worked on.
   articlePages: readonly { id: string; flow: string }[];
   // The screen px of a page's top margin at the current zoom: the room the band sits in.
   topRoomOf: (pageId: string) => number;
@@ -125,7 +122,9 @@ export function PageToolbar({
   // An insert the writing alone cannot make (an object or a drawing): handled by the host.
   onInsert?: (flow: string, what: ObjectInsert) => void;
 }) {
-  const selected = useActiveArticle();
+  const worked = useActiveArticle();
+  const selected =
+    worked && articlePages.some((p) => p.flow === worked.handle.flow) ? worked : null;
   const hovered = useHoveredArticlePage(articlePages);
   // Shown for the article being worked on, else for the article page under the pointer.
   const hoverHandle = !selected && hovered ? articleHandleOf(hovered.flow) : undefined;
@@ -139,7 +138,7 @@ export function PageToolbar({
           focused: false,
         }
       : null);
-  useOffPagePressClears(selected, articlePages);
+  useOffPagePressClears(worked, articlePages);
   const [open, setOpen] = useState<Open>(null);
   const linkRequest = useArticleLinkRequest();
   // ⌘K in the writing opens the link field.
@@ -208,7 +207,7 @@ export function PageToolbar({
             ? [S.nodes.paragraph!.create({ style: 'quote' })]
             : [S.nodes.code_block!.create()],
     );
-    track('Element', 'Added', INSERT_EVENT[what]);
+    track('Element', 'Added', ARTICLE_BLOCK_INSERT_EVENT[what]);
   };
   const more = (action: MoreAction) => {
     if (action === 'style') {
@@ -235,7 +234,7 @@ export function PageToolbar({
       <div
         ref={bar}
         role="toolbar"
-        aria-label="Article formatting"
+        aria-label="Article Formatting"
         data-page-toolbar=""
         data-article-keep-active=""
         onMouseDown={(e) => e.preventDefault()}
@@ -329,7 +328,7 @@ export function PageToolbar({
           <AlignGlyph align={selection.align ?? 'left'} />
         </Button>
         <Button
-          label="More formatting"
+          label="More Formatting"
           anchor="more"
           menu
           expanded={open === 'more'}
@@ -365,7 +364,7 @@ export function PageToolbar({
         </Button>
       </div>
       {open === 'style' ? (
-        <ToolbarPopover anchor="style" menu onClose={close} label="Text style" width={210}>
+        <ToolbarPopover anchor="style" menu onClose={close} label="Text Style" width={210}>
           <StylePanel
             selection={selection}
             onStyle={(style) => choose(() => run(setBlockStyle(style), 'block'))}
@@ -428,7 +427,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'more' ? (
-        <ToolbarPopover anchor="more" menu onClose={close} label="More formatting" width={220}>
+        <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={220}>
           <MorePanel selection={selection} onAction={(a) => choose(() => more(a))} />
         </ToolbarPopover>
       ) : null}

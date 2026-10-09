@@ -176,7 +176,10 @@ style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carri
   (`b-empty` paragraph).
 - **Turn Into Pages** (`withArticlesAsPages`): Page elements (`createShape('page')`) per article
   page under every other element; article pages become `kind: 'infographic'` (`flow` dropped);
-  `articles` deleted; `articleNote` dropped from markers. One edit.
+  `articles` deleted; `articleNote` dropped from markers. One edit. A held article (any page
+  `locked`) is skipped: its pages keep `kind: 'article'` and `flow`, its stored flow stays in
+  `articles` (by identity, the only entries left), and markers whose ids are in its writing
+  (`articleNoteIds`) keep `articleNote`. Every article held: the same tab back.
 - **Snapshot, restore**: the writing is tab data, so history, undo, offline store, export JSON
   and version restore carry it unchanged. No migration: every field is new and optional; a tab
   without `articles` has none.
@@ -210,7 +213,9 @@ ILLUSTRATE_PAGE_GAP`, so the browser breaks lines between pages and wraps text r
 - **Commit**: `dispatchTransaction` schedules `flush` `ARTICLE_IDLE_COMMIT_MS` after a local doc
   change; `flush` runs `docToBlocks(doc, committed.blocks)` and, when changed, `onCommit(flow,
 blocks)` → one `commitTabs` (`withArticleFlow`, the style kept); `onCommit` returns false when
-  the host refuses (no rights, a locked tab), and the blocks then stay local, uncommitted, for the
+  the host refuses (`articleEditRefused`: no rights, a locked tab, any page of the article locked;
+  asked again inside the updater, so a lock that lands meanwhile holds), and the blocks then stay
+  local, uncommitted, for the
   next commit. Also flushed on blur, on
   Escape, before undo / redo, before every handle edit (`insertZone`, `moveZone`, `markNote`
   take the writing as written themselves), on unmount and on Turn Into Pages.
@@ -226,7 +231,9 @@ blocks)` → one `commitTabs` (`withArticleFlow`, the style kept); `onCommit` re
 - **Measure** (one `requestAnimationFrame` after a doc change, a props change, `document.fonts`
   `loadingdone`): `pagesNeeded` from the rightmost client rect's column; each `.article-zone`'s
   page index and corner (half-px rounded); each first `[data-note-id]` rect as an
-  `ArticleNotePlace`; `local` = a local change within `WRITER_WINDOW_MS` or the view has focus.
+  `ArticleNotePlace`; `local` = a local change (a local doc transaction, or the handle's
+  `claimLayout` / `markNote`) within `WRITER_WINDOW_MS`. Focus alone never makes a client the
+  writer (two clients with the caret in one article would both settle one overflow).
   Reported as `onLayout(FlowLayout)`.
 - **Publish**: on focus and each transaction while focused: `setLocalArticleCaret(flow,
 caretOf(state))` (editable only), `setActiveArticle({ handle, pageId: caretPage, selection,
@@ -256,7 +263,9 @@ focused: true })`. On blur: an open slash menu closes; a tick later (one pending
 ### Keys, rules, slash menu
 
 - `articleKeymap` first after the slash plugin, then `baseKeymap`; bindings as the spec's
-  "Keyboard", plus `Mod-y` redo. Undo / redo go to the host history (`onUndo` / `onRedo`), never
+  "Keyboard", plus `Mod-y` redo. `Mod-Enter` is `toggleTodoChecked` (`article-commands.ts`): the
+  selected to-do items ticked, or all unticked when every one is; false with no to-do selected, so
+  `baseKeymap`'s `Mod-Enter` (`exitCode`) still runs in code. Undo / redo go to the host history (`onUndo` / `onRedo`), never
   ProseMirror's. Escape flushes and blurs.
 - `enter`: code takes `\n` (an empty last line leaves it for a paragraph); at the end of a heading
   with an empty body paragraph next, the caret moves into it; an empty list item steps out
@@ -282,13 +291,21 @@ focused: true })`. On blur: an open slash menu closes; a tick later (one pending
   `SLASH_QUERY_MAX`, Escape (meta `close`). While open it takes ↑ ↓ Enter Tab Escape;
   `filterSlashItems` orders name-starts, name-contains, keyword-starts. A pick removes the query
   (`removeSlashQuery`) then: a style, a list, a divider or a page break (+ paragraph) via
-  `insertBlocksAfterCaret`, or `onInsert(flow, what)`.
+  `insertBlocksAfterCaret`, or `onInsert(flow, what)`. A block that went in (the command returned
+  true) is counted by `slashInsertEvent(action)` (`lib/article/article-telemetry.ts`, sharing
+  `ARTICLE_BLOCK_INSERT_EVENT` with the toolbar's Insert): divider, page break, quote, code; an
+  object is counted by `insertObject` once it lands. There is no Icon entry: an icon needs a chosen
+  glyph, so it comes in from the palette.
+- While the menu is open the writing carries `aria-controls`, `aria-haspopup="listbox"` and
+  `aria-activedescendant`; never `aria-expanded` (not allowed on `role="textbox"`, ARIA 1.2).
 
 ### The page toolbar (`PageToolbar`)
 
 - Shown for `useActiveArticle()`, else for the article page under the pointer
   (`useHoveredArticlePage`: `pointermove`, rAF, `HOVER_SLACK`, `HOVER_GRACE_MS`; touch ignored;
-  over `[data-article-keep-active]` keeps it). Only while `articles.editable`.
+  over `[data-article-keep-active]` keeps it). Only while `articles.editable`. `articlePages`
+  (from `ArticleFlows`) leaves out every page of a held article (`lockedArticleFlows`), and an
+  active article whose flow is not among them is ignored, so the toolbar never shows for it.
 - `useOffPagePressClears`: a capture-phase pointerdown off the active article's sheets and off
   every `[data-article-keep-active]` (the toolbar, its popovers, the zone bar, the page's cog row
   and panel) runs `clearActiveArticle(flow)`.
@@ -341,6 +358,8 @@ ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)`, `withZoneLanded`
   5. `withZonesFitted` per article: an object zone takes its object's size (capped to the text
      width) and pins it to its corner; an object zone with no object leaves the writing; a drawing
      zone grows right and down to keep members `ARTICLE_DRAWING_PAD` inside, never shrinks.
+- **`insertObject`** counts `INSERT_EVENT[what]` only after the insert went in (`insertZone`
+  returned a zone, or `placeAt` was called at a caret point), never for a refused one.
 - **`insertZone(spec, near)`**: at `boundaryNear(near)` or after the caret's block; an empty
   paragraph holding the caret beside the boundary gives its place; a paragraph is appended when the
   zone ends the writing; the caret goes after it. Returns `LandedZone` (blocks taken as written,
@@ -359,12 +378,25 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
   height `max(least, h)` up to `ARTICLE_ZONE_MAX`, width up to the text width or its wrap share,
   never under the members' need), wrap / align (`withZoneWrap`: a wrapped zone over 2/3 of the text
   width is scaled down with its members).
-- **Embed** (a floating object's In line / Wrap): `zonePlanFor` + `insertZone` at the objects'
+- **Held articles** (`lib/article/article-lock.ts`): `lockedArticleFlows(pages)`,
+  `isArticleLocked(pages, pageId)` (the page locked, or any page of its article; for the page
+  panel), `articleLocked(tab, flow)`. `articleEditRefused(canEdit, tab, flow)` (`useArticles.ts`)
+  guards every entry point: `onCommit`, `onLayout`, `insertObject`, `zoneAction`, `embed`,
+  `addNote`, `moveZone`, `setStyle`. `useArticleIntake` reads the held set before touching an
+  editor: no relocation, no intake (an element dropped on an unlocked page of a held article stays
+  loose), no gone-zone cleanup and no `withZonesFitted` for a held flow. `ArticleFlows` drops held
+  flows from the paper layer, the editors' `editable`, `zoneTarget`, `floatingTarget` and
+  `articlePages`.
+- **Embed** (a floating object's In Line / Wrap): `zonePlanFor` + `insertZone` at the objects'
   centre, landed, members moved in, then `withZoneWrap` for a side wrap.
 - **Move by grip** (`useZoneDrag`): window pointer listeners, rAF ghost and caret
   (`boundaryNear(point, zoneId)`), `.article-zone-lifted` dims the zone; release with a caret calls
   `moveZone` → `handle.moveZone` (`null` when dropped beside itself) → `withZoneMoved` (landed,
   members carried by the delta). Escape or `pointercancel` drops it.
+- **Move by keys**: the grip (`ZoneBar` `onMoveStep`) maps ↑ / ← to -1 and ↓ / → to 1
+  (`zoneGripStep`), calling `moveZone(flow, zoneId, { by })` (`ZoneMoveTo`) → `handle.moveZone`,
+  whose target is `zoneStepTarget(doc, from, by)`: before the block above, or after the block
+  below; null at either end (no edit). Telemetry `ArticleZoneMoved` as a drag.
 - **Object drop caret** (`useObjectDropCaret`): while the canvas gesture is `move` with one object
   selected in an object zone, each frame reads the element's screen box and shows
   `boundaryNear` once its centre is off the zone and on the article's pages.
@@ -405,8 +437,11 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
 ### Leaving Illustrate (`useLeaveIllustrate`)
 
 Wraps `useEditorMode(...)`. `setMode(next)` asks (sets `pending`) only when the mode is
-`'illustrate'`, `next` is not, the person may edit, the tab is unlocked and has an article; else it
-switches. `convert`: per flow, `takeBlocks()` then `blocksByPage()`; `ArticlesToPages`; then ONE
+`'illustrate'`, `next` is not, the person may edit, the tab is unlocked and has an article with
+no locked page (`articleLocked`); a tab whose articles are all held, or with elements, asks the
+lighter `confirming` instead; else it switches. `convert`: per flow not held, `takeBlocks()` then
+`blocksByPage()` (a held article's editor is never read, and the updater writes no typed blocks
+into a flow held by then); `ArticlesToPages`; then ONE
 switch, `rawSet(pending, t => withArticlesAsPages(t', splits))`, so the conversion and the switch
 are one tab edit (one undo puts the tab back in Illustrate with its articles). `keep` switches;
 `cancel` clears. Shift+D and the tab menu's Mode on the active tab reach the wrapped `setMode`, so
@@ -553,16 +588,16 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 
 ## Presentation and UX
 
-Copy and layout as the spec. Labels: toolbar **Article formatting**; buttons **Style: <style>**,
+Copy and layout as the spec. Labels: toolbar **Article Formatting**; buttons **Style: <style>**,
 **Bold**, **Italic**, **Underline**, **Colour**, **Link**, **Lists**, **Alignment**, **More
-formatting**, **Insert**, **Comment**, **Assign Action** (each tooltip with its shortcut, ⌘ or
-Ctrl spelled by platform via `keyLabel`); menus **Text style**, **Lists** (with **Increase
-indent** / **Decrease indent** while in a list), **Alignment**, **Colour** (**Text** / **Highlight**,
+Formatting**, **Insert**, **Comment**, **Assign Action** (each tooltip with its shortcut, ⌘ or
+Ctrl spelled by platform via `keyLabel`); menus **Text Style**, **Lists** (with **Increase
+indent** / **Decrease indent** while in a list), **Alignment** (**Align Left**, **Align Centre**, **Align Right**, **Justify**), **Colour** (**Text** / **Highlight**,
 **Default colour** / **No highlight**), **Link** (placeholder "Paste or type a link", **Apply**,
-**Remove**), **Insert**, **More formatting** (**Strikethrough**, **Inline code**, **Superscript**,
+**Remove**), **Insert**, **More Formatting** (**Strikethrough**, **Inline code**, **Superscript**,
 **Subscript**, **Clear formatting**, **Article style**); slash menu **Insert a block** with each
-entry's hint; zone bar **Drag to move**, **In line**, **Wrap left**, **Wrap right**, **Float**,
-**Align left / centre / right**, **Delete** (**Delete drawing** on a drawing); grips **Drawing
+entry's hint; zone bar **Drag to Move**, **In Line**, **Wrap Left**, **Wrap Right**, **Float**,
+**Align Left**, **Align Centre**, **Align Right**, **Delete** (**Delete Drawing** on a drawing); grips **Drawing
 height / width / size**; placeholders "Title", "Subtitle", "Heading 1..3", "Quote", "List",
 "To-do", "Start writing, or press / for blocks", "Type / for blocks"; page break "Page break"; the
 Style tab sections **Looks**, **Accent** (**Headings in the Accent**), **Page** (**Margins**,
@@ -584,8 +619,10 @@ failure is a silent no-op with a debug log).
   `aria-checked`; swatches `role="radiogroup"` / `role="radio"`; Escape closes (capture) and the
   caret returns.
 - Slash menu `role="listbox"` with `role="option"` and `aria-selected`; keys stay in the writing.
-- Zone bar `role="toolbar"` named "Drawing" or "Object in the text"; grips `role="separator"`
-  with orientation and names; every control has a Tooltip naming it.
+- Zone bar `role="toolbar"` named "Drawing" or "Object in the text"; its move grip is a button
+  (a focus stop with work to do: ↑ ↓ ← → step the zone, `aria-keyshortcuts`); resize grips
+  `role="separator"` with orientation and names; every control has a Tooltip naming it.
+- To-do boxes: ⌘Enter ticks the to-do at the caret, as a press on the box does.
 - Style tab: looks, accents and segmented fields are radiogroups; toggles `role="switch"` with
   `aria-checked`.
 - Decorative parts are `aria-hidden`: page numbers, drop carets, ghosts, peer carets.
@@ -618,37 +655,45 @@ ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] �
 
 ## Testing
 
-| Spec rule                                                                                                           | Test                                                                                                  |
-| ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Writing read defensively, caps, style fields, cache, words, a new article                                           | `packages/document/src/article-flow.test.ts` "article writing: reading it"                            |
-| Block ops: round trip, no resend, two writers merge and converge, missing neighbours, a peer's ops read defensively | `article-flow.test.ts` "article writing: block ops"                                                   |
-| Numbered lists by level, bullets restart                                                                            | `article-flow.test.ts` "list markers"                                                                 |
-| Article as a unit: add, remove, move, duplicate, grow and shrink                                                    | `packages/document/src/article-pages.test.ts` "articles in the row"                                   |
-| A duplicated article's notes point at the copied markers                                                            | `article-pages.test.ts` "a duplicated article keeps its margin notes to itself"                       |
-| First page's choice                                                                                                 | `article-pages.test.ts` "the first page's own choice of kind"                                         |
-| Zones settle with their elements, never swap, drawing clip, objects whole                                           | `packages/document/src/article-zones.test.ts`                                                         |
-| Margin notes: place, follow, stack, untint, go with their text                                                      | `packages/document/src/article-notes.test.ts`                                                         |
-| Turn Into Pages                                                                                                     | `packages/document/src/article-to-page.test.ts`                                                       |
-| Article pages read, flow fallback, kept together                                                                    | `packages/document/src/illustrate-page.test.ts` "page kinds"                                          |
-| Blocks to editor and back, identity kept                                                                            | `apps/live/lib/article/article-convert.test.ts`                                                       |
-| Pasted Markdown, safe links only, plain text                                                                        | `apps/live/lib/article/article-markdown.test.ts`                                                      |
-| Writing synced as block ops, frames, never in tab-meta, merge keeps ours                                            | `apps/live/app/document/[id]/tab-broadcast-ops.test.ts` "articles"                                    |
-| A peer's block ops applied, malformed frames ignored, late writing for a removed article dropped, removal           | `apps/live/app/document/[id]/room-op-apply.test.ts` "documents"                                       |
-| Caret by block and offset                                                                                           | `apps/live/lib/article/article-caret.test.ts`                                                         |
-| Collaborators' carets: names, freshness, tab scope, leaving                                                         | `apps/live/lib/article/article-carets-store.test.ts`                                                  |
-| Peer carets drawn as decorations, follow their block                                                                | `apps/live/lib/article/article-peers.test.ts`                                                         |
-| Caret broadcast throttled, null on leaving, hidden by a vote                                                        | `apps/live/hooks/collab/useArticleCaretBroadcast.test.tsx`                                            |
-| `article-caret` on the wire                                                                                         | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts`      |
-| Into pages never takes an article's pages                                                                           | `packages/document/src/illustrate-paginate.test.ts` "never replaces a locked page or an article page" |
-| Export cuts a drawing at its zone                                                                                   | `apps/live/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"            |
-| A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                       | `apps/live/components/canvas/article/useTouchPagePan.test.tsx`                                        |
-| Reading frame                                                                                                       | `apps/live/lib/viewport.test.ts` "computeReadingFrame"                                                |
-| Article edits through the page panel (add, turn, paint, move, delete)                                               | `apps/live/hooks/editor/illustrate-page-edits.test.ts` "documents"                                    |
+| Spec rule                                                                                                            | Test                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Writing read defensively, caps, style fields, cache, words, a new article                                            | `packages/document/src/article-flow.test.ts` "article writing: reading it"                            |
+| Block ops: round trip, no resend, two writers merge and converge, missing neighbours, a peer's ops read defensively  | `article-flow.test.ts` "article writing: block ops"                                                   |
+| Numbered lists by level, bullets restart                                                                             | `article-flow.test.ts` "list markers"                                                                 |
+| Article as a unit: add, remove, move, duplicate, grow and shrink                                                     | `packages/document/src/article-pages.test.ts` "articles in the row"                                   |
+| A duplicated article's notes point at the copied markers                                                             | `article-pages.test.ts` "a duplicated article keeps its margin notes to itself"                       |
+| First page's choice                                                                                                  | `article-pages.test.ts` "the first page's own choice of kind"                                         |
+| Zones settle with their elements, never swap, drawing clip, objects whole                                            | `packages/document/src/article-zones.test.ts`                                                         |
+| Margin notes: place, follow, stack, untint, go with their text                                                       | `packages/document/src/article-notes.test.ts`                                                         |
+| Turn Into Pages                                                                                                      | `packages/document/src/article-to-page.test.ts`                                                       |
+| Article pages read, flow fallback, kept together                                                                     | `packages/document/src/illustrate-page.test.ts` "page kinds"                                          |
+| Blocks to editor and back, identity kept                                                                             | `apps/live/lib/article/article-convert.test.ts`                                                       |
+| Pasted Markdown, safe links only, plain text                                                                         | `apps/live/lib/article/article-markdown.test.ts`                                                      |
+| Writing synced as block ops, frames, never in tab-meta, merge keeps ours                                             | `apps/live/app/document/[id]/tab-broadcast-ops.test.ts` "articles"                                    |
+| A peer's block ops applied, malformed frames ignored, late writing for a removed article dropped, removal            | `apps/live/app/document/[id]/room-op-apply.test.ts` "documents"                                       |
+| Caret by block and offset                                                                                            | `apps/live/lib/article/article-caret.test.ts`                                                         |
+| Collaborators' carets: names, freshness, tab scope, leaving                                                          | `apps/live/lib/article/article-carets-store.test.ts`                                                  |
+| Peer carets drawn as decorations, follow their block                                                                 | `apps/live/lib/article/article-peers.test.ts`                                                         |
+| Caret broadcast throttled, null on leaving, hidden by a vote                                                         | `apps/live/hooks/collab/useArticleCaretBroadcast.test.tsx`                                            |
+| `article-caret` on the wire                                                                                          | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts`      |
+| Into pages never takes an article's pages                                                                            | `packages/document/src/illustrate-paginate.test.ts` "never replaces a locked page or an article page" |
+| Export cuts a drawing at its zone                                                                                    | `apps/live/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"            |
+| A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                        | `apps/live/components/canvas/article/useTouchPagePan.test.tsx`                                        |
+| Reading frame                                                                                                        | `apps/live/lib/viewport.test.ts` "computeReadingFrame"                                                |
+| Article edits through the page panel (add, turn, paint, move, delete)                                                | `apps/live/hooks/editor/illustrate-page-edits.test.ts` "documents"                                    |
+| A locked page holds its article: every entry point refused, a lock landing mid-commit holds, inserts counted once in | `apps/live/hooks/editor/useArticles.locks.test.ts`                                                    |
+| Nothing taken into a held article's writing; an unlocked one takes a drop in                                         | `apps/live/hooks/editor/useArticleIntake.locks.test.ts`                                               |
+| Held articles by page and by tab                                                                                     | `apps/live/lib/article/article-lock.test.ts`                                                          |
+| Turn Into Pages keeps a held article, its pages and notes; all held: the same tab                                    | `packages/document/src/article-to-page.test.ts`                                                       |
+| Leaving with held articles: the lighter question, held writing never taken                                           | `apps/live/hooks/editor/useLeaveIllustrate.test.ts`                                                   |
+| Slash-menu block inserts counted as the toolbar's                                                                    | `apps/live/lib/article/article-telemetry.test.ts`                                                     |
+| ⌘Enter ticks the to-do at the caret, falls through elsewhere                                                         | `apps/live/lib/article/article-commands.todo.test.ts`                                                 |
+| Zone grip arrow keys step a block up or down, nowhere past the ends                                                  | `apps/live/components/canvas/article/zone-step.test.ts`                                               |
 
 Not covered by a unit test (browser-checked): `ArticleEditor` (keys, input rules, slash menu,
-measure and commit timing, paste into an empty block), `PageToolbar` placement and hover,
-`useArticles` / `useArticleIntake` orchestration, zone drag and grips, `useLeaveIllustrate` and
-its dialog, `snapshotWriting` and the exported writing, the Style tab.
+measure and commit timing, the writer rule's `local`, paste into an empty block), `PageToolbar`
+placement and hover, the rest of `useArticles` / `useArticleIntake` orchestration, zone drag and
+grips, the leave dialog, `snapshotWriting` and the exported writing, the Style tab.
 
 ## Assets and external resources
 

@@ -9,6 +9,7 @@ import {
   pageKindOf,
   pageLabel,
   pageMargin,
+  pageSizeChoices,
   pageSizesFor,
 } from './illustrate-page';
 import { withPageKindChosen } from './article-pages';
@@ -118,5 +119,21 @@ describe('logo pages', () => {
         background: { fill: { kind: 'solid', color: '#000000' } },
       },
     ]);
+  });
+});
+
+// docs/specs/007-editor/illustrate-pages.md "Sizes": no two size tiles of one shape.
+describe('pageSizeChoices', () => {
+  it('offers the Slide, not a second 16:9 Story, on a landscape infographic page', () => {
+    const landscape = { orientation: 'landscape' as const };
+    expect(pageSizeChoices(landscape)).toContain('slide');
+    expect(pageSizeChoices(landscape)).not.toContain('wide');
+    expect(pageSizeChoices({ ...landscape, size: 'wide' })).toContain('wide');
+    expect(pageSizeChoices({ ...landscape, size: 'wide' })).not.toContain('slide');
+    expect(pageSizeChoices({ orientation: 'portrait' })).toEqual(pageSizesFor('infographic'));
+  });
+
+  it('puts Fit to Content first on a page already in it', () => {
+    expect(pageSizeChoices({ orientation: 'portrait', size: 'fit' })[0]).toBe('fit');
   });
 });

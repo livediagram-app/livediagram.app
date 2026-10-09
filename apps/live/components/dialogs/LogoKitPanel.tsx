@@ -6,15 +6,14 @@
 // it the images it has loaded for previews.
 import { useState } from 'react';
 import type { LaidOutPage, Tab } from '@livediagram/document';
-import { Button } from '@livediagram/ui';
+import { Button, Select } from '@livediagram/ui';
 import { BackBar } from '@/components/primitives/BackBar';
 import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
+import { exportPageLabel } from '@/lib/export-pages';
 import { downloadBlob, loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
-
-// A checkerboard under the preview, so see-through paper reads as see-through.
-const CHECKER = 'repeating-conic-gradient(rgb(226 232 240) 0% 25%, white 0% 50%) 50% / 16px 16px';
+import { PREVIEW_CHECKER } from './ImageExportPanel';
 
 type Images = Awaited<ReturnType<typeof loadTabImages>>;
 
@@ -81,24 +80,26 @@ export function LogoKitPanel({
         paper stays see-through.
       </p>
       {logoPages.length > 1 ? (
+        // Each page by its full label, as the page picker of every other format names it.
         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
           Logo page
-          <select
+          <Select
+            size="sm"
+            className="min-w-0 flex-1"
             value={page.id}
             onChange={(e) => setPageId(e.target.value)}
-            className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
           >
             {logoPages.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name ?? `Page ${p.index + 1}`}
+                {exportPageLabel(p, pages.length)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       ) : null}
       <div
         className="mx-auto flex h-56 w-56 items-center justify-center overflow-hidden rounded-lg ring-1 ring-slate-200 dark:ring-slate-700"
-        style={{ background: CHECKER }}
+        style={{ background: PREVIEW_CHECKER }}
       >
         {previewSvg ? (
           <img

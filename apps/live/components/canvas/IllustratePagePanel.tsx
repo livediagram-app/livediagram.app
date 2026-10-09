@@ -42,6 +42,7 @@ export type PagePanelTab = 'page' | 'layouts' | 'style' | 'text';
 export function IllustratePagePanel({
   page,
   count,
+  heldByLock = false,
   getAnchor,
   initialTab,
   themeBackgrounds,
@@ -55,6 +56,8 @@ export function IllustratePagePanel({
   // An article page's Style and Text tabs (docs/specs/007-editor/article-pages.md "Article style").
   articleStyle?: (part: 'style' | 'text') => ReactNode;
   count: number;
+  // Another page of this page's article is locked (isArticleLocked): its shared edits are held.
+  heldByLock?: boolean;
   // The cog the panel hangs from, looked up when placed.
   getAnchor: () => HTMLElement | undefined;
   initialTab: PagePanelTab;
@@ -153,8 +156,10 @@ export function IllustratePagePanel({
   const placeLabel = `Page ${page.index + 1}`;
   const title = page.name ?? (count > 1 ? placeLabel : 'Page');
   // A locked page's panel says so, its name and sections unavailable (docs/specs/007-editor/
-  // illustrate-pages.md "Locking a page"); moving and duplicating it still work.
-  const locked = page.locked === true;
+  // illustrate-pages.md "Locking a page"); moving and duplicating it still work. A page of an
+  // article another of whose pages is locked is held too, all but its own name.
+  const selfLocked = page.locked === true;
+  const locked = selfLocked || heldByLock;
   const body = (
     <>
       {locked ? (
@@ -162,16 +167,20 @@ export function IllustratePagePanel({
           role="status"
           className="mx-3 mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-500/15 dark:text-amber-100"
         >
-          This page is locked. Unlock it beside the cog to change it.
+          {selfLocked
+            ? 'This page is locked. Unlock it beside the cog to change it.'
+            : "A page of this article is locked. Unlock it to change the article's pages."}
         </p>
       ) : null}
-      <div inert={locked} className={locked ? 'opacity-50' : undefined}>
+      <div inert={selfLocked} className={selfLocked ? 'opacity-50' : undefined}>
         <NameField
           key={page.id}
           name={page.name ?? ''}
           placeholder={count > 1 ? placeLabel : 'Untitled page'}
           onRename={(name) => edit.rename(page.id, name)}
         />
+      </div>
+      <div inert={locked} className={locked ? 'opacity-50' : undefined}>
         <PanelTabs
           tab={tab}
           kind={page.flow ? 'article' : 'other'}
@@ -213,7 +222,7 @@ export function IllustratePagePanel({
           />
         )}
       </div>
-      <PageActions page={page} edit={edit} onClose={() => onClose(false)} />
+      <PageActions page={page} locked={locked} edit={edit} onClose={() => onClose(false)} />
     </>
   );
   const label = `${title} settings`;
@@ -243,6 +252,8 @@ export function IllustratePagePanel({
         role="dialog"
         aria-label={label}
         data-page-panel
+        // The page's own panel: working in it keeps an article's toolbar on its page.
+        data-article-keep-active=""
         tabIndex={-1}
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] flex outline-none animate-fade-in flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white pb-1 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
@@ -389,10 +400,13 @@ function ActionButton({
 // the whole article, and says so.
 function PageActions({
   page,
+  locked,
   edit,
   onClose,
 }: {
   page: LaidOutPage;
+  // The page, or its article, is held by a lock: no split and no delete.
+  locked: boolean;
   edit: IllustratePageEdits;
   onClose: () => void;
 }) {
@@ -403,7 +417,7 @@ function PageActions({
       {page.size === 'fit' && (
         <ActionButton
           label="Split Into Pages"
-          onClick={page.locked !== true ? () => edit.splitPage(page.id) : undefined}
+          onClick={!locked ? () => edit.splitPage(page.id) : undefined}
         >
           <SplitPagesIcon className="h-4 w-4" />
         </ActionButton>
@@ -431,7 +445,7 @@ function PageActions({
       <ActionButton
         label={`Delete ${noun}`}
         onClick={
-          removePage && page.locked !== true
+          removePage && !locked
             ? () => {
                 onClose();
                 removePage(page.id);

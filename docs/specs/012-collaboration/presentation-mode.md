@@ -77,8 +77,8 @@ type Slide = {
   // space are the slide's.
   tabId: TabId;
   elementIds: ElementId[];
-  // A page slide: an Infographic page of the tab, resolved live (what is on
-  // the page now, framed to the page; elementIds empty). While it presents,
+  // A page slide: an Illustrate page of the tab, of any kind, resolved live
+  // (what is on the page now, framed to the page; elementIds empty). While it presents,
   // the canvas shows that page's sheet alone. See
   // docs/specs/007-editor/illustrate-pages.md "Slides".
   pageId?: string;
@@ -135,13 +135,13 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
 - **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
 - **Remove from slide** — the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
-- **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories — **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
-- **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on.
+- **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories — **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on; not offered on a page slide, which is whatever is on its page) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
+- **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on. The confirm says so: "The elements stay on the canvas." ("The element stays", for one), or for a page slide "The page stays."
 - **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided — so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
 - **Reorder** by dragging rows. The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-document/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
 - **Rename** inline, **delete**, and **duplicate** a slide.
 - **Presenter notes** opened from the row's `…` menu, written in a text area under the list, with the slide's optional **time budget** beside them — the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
-- Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one.
+- Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one. A page slide has no members to highlight: its row frames its page instead, as the page's own label does ([Illustrate pages](../007-editor/illustrate-pages.md) "Slides").
 - **Present** — enters the full-screen deck at slide 1, with a badge carrying the slide count.
 
 ### What the panel does not do

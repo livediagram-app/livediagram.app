@@ -6,7 +6,8 @@
 // first page of an article, the caret in its title; Slide turns it into a 16:9 landscape slide;
 // Logo into the 1024 artboard. Held at one screen size, centred on the page.
 import type { PageKind } from '@livediagram/document';
-import { PAGE_KINDS, PageKindCard } from './page-kind-cards';
+import { useRef } from 'react';
+import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
 
 export function FirstPageChoice({
   zoom,
@@ -15,6 +16,7 @@ export function FirstPageChoice({
   zoom: number;
   onChoose: (kind: PageKind) => void;
 }) {
+  const cards = useRef<(HTMLButtonElement | null)[]>([]);
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       <div
@@ -35,9 +37,20 @@ export function FirstPageChoice({
         <p className="mb-2.5 mt-0.5 px-0.5 text-xs text-slate-500 dark:text-slate-400">
           Choose now: a page keeps its kind once you start.
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          {PAGE_KINDS.map((k) => (
-            <PageKindCard key={k.kind} choice={k} onChoose={() => onChoose(k.kind)} />
+        <div
+          className="grid grid-cols-2 gap-2"
+          // Arrow keys move between the cards, as in the Add a Page popover.
+          onKeyDown={(e) => moveBetweenKindCards(e, cards.current)}
+        >
+          {PAGE_KINDS.map((k, i) => (
+            <PageKindCard
+              key={k.kind}
+              choice={k}
+              ref={(el) => {
+                cards.current[i] = el;
+              }}
+              onChoose={() => onChoose(k.kind)}
+            />
           ))}
         </div>
       </div>

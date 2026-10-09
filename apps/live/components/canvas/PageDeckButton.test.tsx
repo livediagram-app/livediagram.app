@@ -25,7 +25,7 @@ describe('PageDeckButton', () => {
     const deck = controls({ id: 's1', hidden: false });
     render(<PageDeckButton pageId="p1" deck={deck} />);
     const button = screen.getByRole('button', { name: 'Hide from the presentation' });
-    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(button.hasAttribute('aria-pressed')).toBe(false);
     fireEvent.click(button);
     expect(deck.toggleHidden).toHaveBeenCalledWith('s1');
   });

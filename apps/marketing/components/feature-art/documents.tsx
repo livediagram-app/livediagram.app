@@ -680,7 +680,7 @@ export function ArticleLooksArt() {
 
 /** A 16:9 slide page taking a layout from the picker, ready to add to the deck. */
 export function SlideLayoutsArt() {
-  const layouts = ['Title', 'Agenda', 'Two columns', 'Image + text'];
+  const layouts = ['Title', 'Agenda', 'Two Columns', 'Image + Text'];
   const chosen = 3;
   return (
     <Stage>

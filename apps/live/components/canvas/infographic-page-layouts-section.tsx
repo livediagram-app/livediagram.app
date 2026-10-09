@@ -31,7 +31,7 @@ const WIDE_THUMB_W = 104;
 
 export function LayoutsSection(props: LayoutBrowserProps) {
   return (
-    <PanelSection title="Start from a layout">
+    <PanelSection title="Start From a Layout">
       <LayoutBrowser {...props} />
     </PanelSection>
   );

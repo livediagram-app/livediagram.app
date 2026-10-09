@@ -11,6 +11,7 @@ import {
   type ArticleFlow,
   type ArticleRun,
 } from './article-flow';
+import { articleNoteIds } from './article-notes';
 import { createShape } from './shape-factory';
 import { PAGE_HEADING_MAX } from './data-shapes';
 import {
@@ -117,14 +118,23 @@ export function articleAsPages(
  * The tab with every article turned into Page elements: the Page elements go under everything
  * else (they are the paper the rest was drawn on), the article pages become infographic pages, the
  * writing goes, and margin-note markers become ordinary annotations. `splits` holds, per article,
- * each page's block ids as laid out. The same tab back when it has no articles.
+ * each page's block ids as laid out. An article with a locked page is held as it is
+ * (docs/specs/007-editor/illustrate-pages.md "Locking a page"): it stays an article, its pages,
+ * writing and margin notes untouched. The same tab back when no article can be turned.
  */
 export function withArticlesAsPages<T extends ArticlesTab>(
   tab: T,
   splits: ReadonlyMap<string, readonly (readonly string[])[]>,
 ): T {
-  const docs = articlesOf(tab);
+  const all = articlesOf(tab);
+  const held = new Set(
+    illustratePagesOf(tab).flatMap((p) => (p.flow && p.locked === true ? [p.flow] : [])),
+  );
+  const docs = Object.fromEntries(Object.entries(all).filter(([flow]) => !held.has(flow)));
   if (Object.keys(docs).length === 0) return tab;
+  const kept = Object.fromEntries(Object.entries(all).filter(([flow]) => held.has(flow)));
+  // The margin notes of a held article stay notes: their markers keep their link to its writing.
+  const keptNotes = articleNoteIds(kept);
   const laid = layOutIllustratePages(illustratePagesOf(tab));
   const made: Element[] = [];
   for (const [flow, doc] of Object.entries(docs)) {
@@ -132,14 +142,14 @@ export function withArticlesAsPages<T extends ArticlesTab>(
     if (own.length) made.push(...articleAsPages(doc, own, splits.get(flow) ?? null));
   }
   const pages: IllustratePage[] = illustratePagesOf(tab).map((p) => {
-    if (p.kind !== 'article') return p;
+    if (p.kind !== 'article' || (p.flow && held.has(p.flow))) return p;
     const { kind: _k, flow: _f, ...rest } = p;
     void _k;
     void _f;
     return { ...rest, kind: 'infographic' as const };
   });
   const elements = (tab.elements as Element[]).map((el) => {
-    if (el.type !== 'annotation' || !el.articleNote) return el;
+    if (el.type !== 'annotation' || !el.articleNote || keptNotes.has(el.id)) return el;
     const { articleNote: _n, ...rest } = el;
     void _n;
     return rest;
@@ -147,5 +157,9 @@ export function withArticlesAsPages<T extends ArticlesTab>(
   const repaged = withIllustratePages({ ...tab, elements: [...made, ...elements] }, pages);
   const { articles: _a, ...rest } = repaged as typeof repaged & { articles?: unknown };
   void _a;
-  return rest as T;
+  if (Object.keys(kept).length === 0) return rest as T;
+  // Only the held articles stay, as stored (never re-parsed into a new shape).
+  const stored = (tab as { articles?: Record<string, unknown> }).articles ?? {};
+  const keptStored = Object.fromEntries(Object.entries(stored).filter(([flow]) => held.has(flow)));
+  return { ...rest, articles: keptStored } as T;
 }

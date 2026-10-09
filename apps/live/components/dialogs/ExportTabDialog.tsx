@@ -310,13 +310,22 @@ export function ExportTabDialog({
     [active, tab, planData],
   );
 
+  // A page's PNG and SVG leave a logo page's plain paper see-through (exportPages), so their
+  // preview does too, over a checkerboard; a PDF page always has its paper.
+  const seeThrough = !!page && (active === 'png' || active === 'svg');
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(tab, { ...opts, images: previewImages, page, ...planOpts }),
-    [tab, previewImages, page, planOpts],
+      renderTabToSvg(tab, {
+        ...opts,
+        images: previewImages,
+        page,
+        ...(seeThrough ? { transparentPaper: true } : {}),
+        ...planOpts,
+      }),
+    [tab, previewImages, page, seeThrough, planOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -451,8 +460,11 @@ export function ExportTabDialog({
             pageExport={!!pages}
             busy={busy}
             error={error}
+            checkerboard={seeThrough && page?.kind === 'logo'}
+            // Illustrate mode has no Layers, so no "Hidden layers" option: hidden layers stay
+            // out, as they stay off its canvas.
             hasHiddenLayers={
-              offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+              !pages && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
             previewReady={previewReady}

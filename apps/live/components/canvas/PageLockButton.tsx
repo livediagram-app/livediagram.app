@@ -38,8 +38,8 @@ export function PageLockButton({
       <Tooltip label={label}>
         <button
           type="button"
+          // Its name says what a press does; no aria-pressed as well, or it reads "Unlock page, pressed".
           aria-label={label}
-          aria-pressed={locked}
           data-page-lock={locked ? 'locked' : 'open'}
           onClick={onToggle}
           className={`flex h-6 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
