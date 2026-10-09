@@ -49,6 +49,7 @@ import { CARD_FIELD_LABELS } from './board-setup-edits';
 import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
 import { PlanCardFace, type CardFaceEdit } from './PlanCardFace';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { dayKey } from './day-label';
 import { planPalette } from './plan-palette';
 import { useCardFieldDrag } from './useCardFieldDrag';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
@@ -77,12 +78,6 @@ export function cardZoomFor(width: number | undefined): number {
 
 const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
 
-const dayFromToday = (days: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-};
-
 // A card with something in every field, so each placed field shows.
 function sampleCard(type: ItemTypeDef): Item {
   return {
@@ -94,8 +89,8 @@ function sampleCard(type: ItemTypeDef): Item {
       title: `Example ${type.label || 'card'}`,
       assignee: SAMPLE_PERSON,
       priority: 'high',
-      due: dayFromToday(3),
-      start: dayFromToday(-2),
+      due: dayKey(3),
+      start: dayKey(-2),
       labels: ['Design'],
       estimate: 3,
       checklist: [
@@ -125,7 +120,7 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
     case 'number':
       return [[c.id, 5]];
     case 'date':
-      return [[c.id, dayFromToday(7)]];
+      return [[c.id, dayKey(7)]];
     case 'checkbox':
       return [[c.id, true]];
     case 'link':

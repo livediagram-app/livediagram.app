@@ -20,6 +20,15 @@ export {
   type TextAreaProps,
   type TextInputProps,
 } from './TextInput';
+export {
+  DATE_YEAR_MIN,
+  DateInput,
+  dateCommit,
+  isWholeDay,
+  openDatePicker,
+  type DateCommit,
+  type DateInputProps,
+} from './DateInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
