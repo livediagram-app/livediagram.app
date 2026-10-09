@@ -4,6 +4,7 @@ import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './
 import {
   ledgerCommentAuthors,
   ledgerKey,
+  mergeLedgerAnswersIntoTab,
   mergeLedgerIntoTab,
   opForTheWire,
   recordInLedger,
@@ -284,5 +285,39 @@ describe('a dot on a Plan card', () => {
       votes: { 'item:i1': ['a'] },
       seq: 4,
     });
+  });
+});
+
+describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "Integrity")', () => {
+  const dot = (voter: string) => ({
+    kind: 'vote',
+    tabId: 't1',
+    elementId: 'e1',
+    voter,
+    delta: 1,
+    round: 'r1',
+  });
+
+  it('writes every answer, idea and dot the room holds into the stored tab, once', () => {
+    const ledger = ledgerOf([done('a'), done('b'), dot('a')]);
+    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' };
+    const stored = tab([card()], { vote });
+    const merged = mergeLedgerAnswersIntoTab(stored, ledger);
+    expect(who(merged)).toEqual(['a', 'b']);
+    expect(merged.vote?.votes).toEqual({ e1: ['a'] });
+    expect(mergeLedgerAnswersIntoTab(merged, ledger)).toBe(merged);
+  });
+
+  it('leaves ticks, threads and board changes to an Editor', () => {
+    const list = card({ shape: 'checklist', checklistItems: [{ text: 'one', done: false }] });
+    const ledger = ledgerOf([delta({ kind: 'check', index: 0, text: 'one', done: true })]);
+    const stored = tab([list]);
+    expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
+  });
+
+  it('ignores answers from a round the stored tab has moved past', () => {
+    const ledger = ledgerOf([done('a')]);
+    const cleared = tab([card({ collabRound: 'r2', responses: [] })]);
+    expect(who(mergeLedgerAnswersIntoTab(cleared, ledger))).toEqual([]);
   });
 });

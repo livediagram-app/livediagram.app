@@ -49,7 +49,24 @@ describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifica
     await recordSharedAccess(repeat.env, 'visitor-1', 'diag-1', 'edit', null);
     const update = repeat.one('UPDATE shared_with');
     expect(update.sql).toContain('tab_id = ?');
-    expect(update.bindings).toEqual(['edit', null, expect.any(Number), 'visitor-1', 'diag-1']);
+    expect(update.bindings).toEqual([
+      'edit',
+      null,
+      null,
+      expect.any(Number),
+      'visitor-1',
+      'diag-1',
+    ]);
+  });
+
+  // docs/specs/013-workspace/share-roles.md (migration 0080): a Participant's visit keeps view in the legacy column.
+  it('records a Participant visit as role view with level participate', async () => {
+    const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
+    await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'participate', null);
+    expect(db.one('INSERT OR IGNORE INTO shared_with').bindings.slice(2, 4)).toEqual([
+      'view',
+      'participate',
+    ]);
   });
 
   it('never reads first-ness from a separate SELECT (a race would double count)', async () => {
@@ -101,7 +118,9 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
     expect(item!.tabId).toBe('tab-2');
     const sql = db.one('FROM shared_with s').sql;
     expect(sql).toContain('share_links.tab_id IS s.tab_id');
-    expect(sql).toContain('share_links.role = s.role');
+    expect(sql).toContain(
+      'COALESCE(share_links.level, share_links.role) = COALESCE(s.level, s.role)',
+    );
   });
 
   it('drops rows whose share has since been revoked', async () => {

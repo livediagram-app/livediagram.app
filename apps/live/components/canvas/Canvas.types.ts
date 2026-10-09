@@ -50,6 +50,9 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only for every structural control, with a
+  // palette of its own holding only what it may add.
+  participantPalette?: boolean;
   documentName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;

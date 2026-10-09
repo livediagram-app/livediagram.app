@@ -516,12 +516,12 @@ export const updateDocumentShape = {
 export const shareDocumentShape = {
   documentId: z.string().describe('The document to share (from find_documents / read_document).'),
   role: z
-    .enum(['view', 'edit'])
+    .enum(['view', 'participate', 'edit'])
     .optional()
     .describe(
-      'What the link grants. "view" (default) — recipients can open and read but ' +
-        'not change it; safest for just showing your work. "edit" — recipients ' +
-        'can also edit. No sign-in is needed to open either.',
+      'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
+        'but cannot reshape it; right for a retro or a workshop. "view": they look, comment ' +
+        'and answer polls. "edit": they can change anything. No sign-in is needed to open any.',
     ),
   expiry: z
     .enum(['never', 'week', 'month', 'sixMonths'])

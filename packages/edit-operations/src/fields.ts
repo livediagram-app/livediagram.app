@@ -41,7 +41,8 @@ export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
 export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
 export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
-const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type']);
+// `addedBy` is the server's record of which Participant added an element (docs/specs/013-workspace/share-roles.md).
+const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type', 'addedBy']);
 const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 'textColor']);
 // A stroke's former point fields, which normalising packs (docs/specs/006-document/stroke-points.md).
 const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>>> = {

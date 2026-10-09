@@ -371,3 +371,22 @@ describe('tool parameter descriptions', () => {
     expect(missing).toEqual([]);
   });
 });
+
+// docs/specs/013-workspace/share-roles.md: an agent's link is a Participant link unless it names a level.
+describe('share_document level', () => {
+  it('asks the api for participate by default, and for what the agent names', async () => {
+    const roles: unknown[] = [];
+    const recording = async (request: Request) => {
+      if (new URL(request.url).pathname.endsWith('/share'))
+        roles.push(((await request.clone().json()) as { role: unknown }).role);
+      return api(request);
+    };
+    const client = await connectTestClient(recording);
+    await client.callTool({ name: 'share_document', arguments: { documentId: 'd1' } });
+    await client.callTool({
+      name: 'share_document',
+      arguments: { documentId: 'd1', role: 'view' },
+    });
+    expect(roles).toEqual(['participate', 'view']);
+  });
+});

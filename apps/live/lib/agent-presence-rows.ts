@@ -3,6 +3,7 @@
 // modal render, and the focus each agent names on the active tab. Pure: the clock is passed in.
 
 import {
+  isAccessLevel,
   AGENT_PRESENCE_FOCUS_MAX,
   AGENT_PRESENCE_STATUS_MAX,
   MAX_COLOR_LEN,
@@ -28,7 +29,7 @@ function agentEntryOf(value: unknown): AgentPresence | null {
   if (!isRecord(value)) return null;
   const { id, name, color, role, tabId, status, focus, joins, self, person } = value;
   if (typeof id !== 'string' || typeof name !== 'string' || typeof color !== 'string') return null;
-  if (role !== 'edit' && role !== 'view') return null;
+  if (!isAccessLevel(role)) return null;
   if (typeof tabId !== 'string' || typeof person !== 'number') return null;
   if (status !== undefined && typeof status !== 'string') return null;
   const focusIds = clampedIds(focus, AGENT_PRESENCE_FOCUS_MAX);

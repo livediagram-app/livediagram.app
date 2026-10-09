@@ -179,6 +179,10 @@ export function useRoomConnection(opts: {
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
+  // A Participant session (docs/specs/013-workspace/share-roles.md): it always joins with a ticket, which
+  // carries the adder key the room stamps on what it adds, and the key comes back for `onAdderKey`.
+  participant?: boolean;
+  onAdderKey?: (key: string | null) => void;
 }) {
   const {
     hydrated,
@@ -229,6 +233,8 @@ export function useRoomConnection(opts: {
     receiveSheetPresence,
     receivePeerModeSwitch,
     onRoomJoined,
+    participant = false,
+    onAdderKey,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
@@ -250,7 +256,9 @@ export function useRoomConnection(opts: {
     self: selfForRoom(),
     shareCode: sessionShareCode,
     signedIn: isSignedIn,
+    participant,
   }));
+  const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // The switch flipped, or the picture changed: tell the open room, which updates the roster in
   // place (switch off = initials for everyone from this update on).
   const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
@@ -647,12 +655,14 @@ export function useRoomConnection(opts: {
     let cancelled = false;
     let openedRoom: ReturnType<typeof connectRoom> | null = null;
     void (async () => {
-      const { self, shareCode, signedIn } = connectAs();
-      const ticket =
-        documentTeamId || signedIn
+      const { self, shareCode, signedIn, participant: asParticipant } = connectAs();
+      const minted =
+        documentTeamId || signedIn || asParticipant
           ? await apiCreateRoomTicket(self.id, documentId, shareCode)
           : null;
       if (cancelled) return;
+      const ticket = minted?.ticket ?? null;
+      announceAdderKey(minted?.adderKey ?? null);
       openedRoom = connectRoom(
         documentId,
         self,
@@ -670,7 +680,12 @@ export function useRoomConnection(opts: {
           // role comes from the code.
           ownerId: self.id,
           // Each reconnect needs its own ticket: the upgrade spends the one it admits.
-          mintTicket: () => apiCreateRoomTicket(self.id, documentId, shareCode),
+          mintTicket: async () => {
+            const again = await apiCreateRoomTicket(self.id, documentId, shareCode);
+            // A Participant's key comes back with every ticket (the same key, derived per document).
+            if (again?.adderKey) announceAdderKey(again.adderKey);
+            return again?.ticket ?? null;
+          },
         },
         roomReadFacilitatorToken,
       );

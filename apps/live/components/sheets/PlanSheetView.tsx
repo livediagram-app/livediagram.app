@@ -210,6 +210,7 @@ function SheetWorkspace({
     palette,
     interactive,
     canEdit,
+    canShape: canEdit && bridge.canShape,
     maximised,
     locale: bridge.locale,
     announce: (m) => plan?.announce(m),

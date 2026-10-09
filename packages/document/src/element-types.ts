@@ -464,6 +464,9 @@ export type TextSizing = 'fit' | 'wrap';
 export type TextElement = {
   id: ElementId;
   type: 'text';
+  // Who added it, when a Participant did (docs/specs/013-workspace/share-roles.md "What a Participant changes"):
+  // the server-derived adder key the room stamped. Absent on everything an Editor added. Never set by a client.
+  addedBy?: string;
   // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
@@ -712,6 +715,8 @@ export type TableElement = {
 export type StickyElement = {
   id: ElementId;
   type: 'sticky';
+  // Who added it, when a Participant did: see TextElement.addedBy.
+  addedBy?: string;
   // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;

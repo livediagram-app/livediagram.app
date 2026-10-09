@@ -223,6 +223,8 @@ export function EditorCanvasHost() {
     facilitator,
     isPinchingRef,
     isReadOnly,
+    can,
+    participating,
     laserTrailRows,
     livePresence,
     lockedByOther,
@@ -454,12 +456,13 @@ export function EditorCanvasHost() {
     // card that can't show your own avatar is showing the wrong room.
     participants: [selfParticipant, ...livePresence],
     tabTimer: activeTab.timer,
-    respond: isReadOnly ? undefined : collabElements.respond,
+    // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
+    respond: can.takePart ? collabElements.respond : undefined,
     setResponsesRevealed:
       isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
     clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
     chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
-    addIdea: isReadOnly ? undefined : collabElements.addIdea,
+    addIdea: can.takePart ? collabElements.addIdea : undefined,
     revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
     clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
     scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
@@ -480,7 +483,7 @@ export function EditorCanvasHost() {
     clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
     // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
     // editing and running the round are the facilitator's, else any editor's.
-    answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
+    answerQuiz: can.takePart ? quiz.answerQuiz : undefined,
     startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
     lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
     revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
@@ -511,6 +514,7 @@ export function EditorCanvasHost() {
         activeTabLoaded={loadedTabIds.has(activeTab.id)}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
+        participantPalette={participating && can.addContent}
         documentName={documentName}
         tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
         tabBackgroundColor={backdrop.backgroundColor}

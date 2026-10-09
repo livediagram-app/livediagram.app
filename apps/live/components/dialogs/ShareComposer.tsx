@@ -4,12 +4,12 @@ import { useState, type KeyboardEvent } from 'react';
 import { Button, CheckIcon, Select } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import { DEFAULT_LINK_LEVEL, LEVEL_ORDER } from '@livediagram/api-schema';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { LIFETIMES, ROLE_PASS, SECTION_LABEL, ScopeOptions } from './share-dialog-parts';
 
-const ROLES: ShareRole[] = ['edit', 'view'];
-
-// "Issue a pass" (docs/specs/007-editor/live-app.md "Layout, top to bottom"): two role cards as a
+// "Issue a pass" (docs/specs/007-editor/live-app.md "Layout, top to bottom"): three role cards
+// (docs/specs/013-workspace/share-roles.md) as a
 // radio group, then the fine print: Opens (multi-tab only) and Valid, a sliding segmented control
 // ending in the Create Pass button (which also copies the new link). Owns the draft pass; the
 // dialog owns issuing it.
@@ -22,7 +22,7 @@ export function ShareComposer({
   busy: boolean;
   onIssue: (role: ShareRole, expiry: ShareLinkExpiry, tabId: string | null) => void;
 }) {
-  const [role, setRole] = useState<ShareRole>('edit');
+  const [role, setRole] = useState<ShareRole>(DEFAULT_LINK_LEVEL);
   // Never = the pre-expiry default (docs/specs/013-workspace/share-link-expiry.md): works until revoked.
   const [expiry, setExpiry] = useState<ShareLinkExpiry>('never');
   // '' = All tabs, else a tab id (docs/specs/013-workspace/tab-scoped-share-links.md). Only offered
@@ -30,11 +30,21 @@ export function ShareComposer({
   const [scope, setScope] = useState('');
   const multiTab = tabs.length > 1;
 
-  // Arrow keys move between the two cards, as in any radio group.
+  // Arrow keys walk the cards, wrapping; Home and End reach the ends, as in any radio group.
   const onRoleKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    const i = LEVEL_ORDER.indexOf(role);
+    const last = LEVEL_ORDER.length - 1;
+    const to: Record<string, number> = {
+      ArrowLeft: i - 1,
+      ArrowUp: i - 1,
+      ArrowRight: i + 1,
+      ArrowDown: i + 1,
+      Home: 0,
+      End: last,
+    };
+    if (!(e.key in to)) return;
     e.preventDefault();
-    const next: ShareRole = role === 'edit' ? 'view' : 'edit';
+    const next = LEVEL_ORDER[(to[e.key]! + LEVEL_ORDER.length) % LEVEL_ORDER.length]!;
     setRole(next);
     e.currentTarget.parentElement
       ?.querySelector<HTMLButtonElement>(`[data-role="${next}"]`)
@@ -62,9 +72,9 @@ export function ShareComposer({
       <div
         role="radiogroup"
         aria-label="What the pass lets people do"
-        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+        className="grid grid-cols-1 gap-2"
       >
-        {ROLES.map((r) => {
+        {LEVEL_ORDER.map((r) => {
           const pass = ROLE_PASS[r];
           const { Icon } = pass;
           const active = role === r;

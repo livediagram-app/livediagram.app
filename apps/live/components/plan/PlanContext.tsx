@@ -47,7 +47,10 @@ export type PlanContextValue = {
   people: readonly ItemPerson[];
   // Plan mode is on for this person: cards take the pointer.
   planInput: boolean;
+  // The board's structure: columns, card types, fields, settings, and retiring a card (Trash, Archive).
   canEdit: boolean;
+  // Adding, editing and moving cards (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
+  canEditCards: boolean;
   // Votes need only participate access (docs/specs/026-plan/items.md "Who may do what").
   canVote: boolean;
   presence: ReadonlyMap<string, PlanCardPresence>;

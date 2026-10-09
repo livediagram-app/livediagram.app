@@ -49,6 +49,9 @@ export type EditorKeyboardShortcutsDeps = {
   // undo) stay intact and the visitor can't desync state via
   // shortcuts that would otherwise reach the canvas.
   isReadOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it deletes, types into and
+  // Space-edits elements; what it may touch is decided where each lands (the commit guard, beginEdit).
+  participant?: boolean;
   // Action callbacks that perform the actual mutation. Each one is
   // a fresh closure every render: the hook reads them via a ref so
   // the keydown listener always sees the latest version.

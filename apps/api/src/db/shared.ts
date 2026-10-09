@@ -3,6 +3,7 @@
 import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 import { firstTabCountSql, isEmptyCount } from './tabs';
+import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';
 
 // Record a visitor's access to a shared document. Idempotent on
 // (owner_id, document_id): repeat visits just bump last_seen + role.
@@ -28,15 +29,15 @@ export async function recordSharedAccess(
 ): Promise<boolean> {
   const now = Date.now();
   const inserted = await env.DB.prepare(
-    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id) VALUES (?, ?, ?, ?, ?, ?)',
   )
-    .bind(ownerId, documentId, role, now, tabId)
+    .bind(ownerId, documentId, legacyRoleColumn(role), levelColumn(role), now, tabId)
     .run();
   if (inserted.meta.changes === 1) return true;
   await env.DB.prepare(
-    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND document_id = ?',
+    'UPDATE shared_with SET role = ?, level = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND document_id = ?',
   )
-    .bind(role, tabId, now, ownerId, documentId)
+    .bind(legacyRoleColumn(role), levelColumn(role), tabId, now, ownerId, documentId)
     .run();
   return false;
 }
@@ -80,12 +81,12 @@ export async function hasSharedAccess(
 // All-tabs code, and vice versa.
 export async function listSharedWith(env: Env, ownerId: string): Promise<SharedWithItem[]> {
   const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
+    `SELECT d.id, d.name, d.saved_at, s.role, s.level, s.tab_id,
             (SELECT code
                FROM share_links
               WHERE share_links.document_id = d.id
                 AND share_links.purpose = 'share'
-                AND share_links.role = s.role
+                AND COALESCE(share_links.level, share_links.role) = COALESCE(s.level, s.role)
                 AND share_links.tab_id IS s.tab_id
                 AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)
               ORDER BY share_links.created_at ASC
@@ -106,7 +107,8 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       id: string;
       name: string;
       saved_at: number;
-      role: ShareRole;
+      role: string;
+      level: string | null;
       tab_id: string | null;
       share_code: string | null;
       owner_name: string | null;
@@ -119,7 +121,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       id: r.id,
       name: r.name,
       savedAt: r.saved_at,
-      role: r.role,
+      role: storedLevelOf(r),
       shareCode: r.share_code as string,
       tabId: r.tab_id ?? null,
       ownerName: r.owner_name,

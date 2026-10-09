@@ -5,6 +5,7 @@
 
 import { fnv1aString } from '@livediagram/document';
 import { randomPick } from './random';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
 
@@ -48,7 +49,7 @@ export type Participant = {
   // because guest / private-document sessions don't have a role. The
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
-  role?: 'edit' | 'view';
+  role?: AccessLevel;
   // Their published profile picture (docs/specs/014-identity/profile-picture.md §5), as the room
   // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
   // screen. Our own entry carries our picture whatever the switch says.

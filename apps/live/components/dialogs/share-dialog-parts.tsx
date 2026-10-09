@@ -1,6 +1,6 @@
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
-import { lucideClock, lucideEye, lucidePencilLine } from '@livediagram/icons/lucide';
+import { lucideClock, lucideEye, lucidePencilLine, lucideVote } from '@livediagram/icons/lucide';
 
 // Presentational parts of the share dialog: the expiry-label lookup, the
 // role catalogue every pass surface reads (docs/specs/007-editor/live-app.md
@@ -25,12 +25,14 @@ export const LIFETIMES: { value: ShareLinkExpiry; label: string }[] = [
 ];
 
 const EditPassIcon = lucideGlyph(lucidePencilLine, 18);
+const ParticipatePassIcon = lucideGlyph(lucideVote, 18);
 const ViewPassIcon = lucideGlyph(lucideEye, 18);
 export const ClockIcon = lucideGlyph(lucideClock, 12);
 
 // One entry per role. The stub colour is the role at a glance, so the
 // composer's role card, the pass stub and nothing else use it: brand for
-// edit, violet for view.
+// edit, teal for participate, violet for view (docs/specs/013-workspace/share-roles.md).
+// Keyed in LEVEL_ORDER, the cards' order.
 export const ROLE_PASS: Record<
   ShareRole,
   {
@@ -53,10 +55,19 @@ export const ROLE_PASS: Record<
     solid: 'bg-brand-500 text-white dark:bg-brand-600',
     selected: 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10',
   },
+  participate: {
+    stamp: 'Participant',
+    title: 'Participant',
+    blurb: "Adds stickies, writes and votes. Can't reshape the board.",
+    Icon: ParticipatePassIcon,
+    // teal-700 under the 10 px bold stamp: 5.47:1 (blueprint "Accessibility").
+    solid: 'bg-teal-700 text-white dark:bg-teal-600/60',
+    selected: 'border-teal-600 bg-teal-50/70 dark:border-teal-400 dark:bg-teal-500/10',
+  },
   view: {
     stamp: 'Viewer',
     title: 'Viewer',
-    blurb: "Watches, pans and zooms. Can't change a thing.",
+    blurb: "Watches, comments and answers polls. Can't change a thing.",
     Icon: ViewPassIcon,
     solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
     selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',

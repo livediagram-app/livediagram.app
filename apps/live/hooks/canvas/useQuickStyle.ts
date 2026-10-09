@@ -105,6 +105,8 @@ export type QuickStyleDeps = {
   drawMode: boolean;
   theme: ThemeDefinition;
   editsBlocked: boolean;
+  // A Participant styles only what it may recolour (docs/specs/013-workspace/share-roles.md); absent for an Editor.
+  canStyle?: (el: Element) => boolean;
   // The live active-tab elements, read at the moment of a choice.
   liveElements: () => Element[];
   commit: (mapElements: (els: Element[]) => Element[]) => void;
@@ -131,13 +133,14 @@ export type QuickStyleDeps = {
 export function useQuickStyle(
   deps: QuickStyleDeps & { selectionIds: ReadonlySet<string> },
 ): QuickStyleApi {
-  const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
+  const { activeTab, theme, selectionIds, liveElements, commit, memory, canStyle } = deps;
   const { overrides } = deps.swatchOverrides;
 
   const selected = useMemo(
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
+  const editsBlocked = deps.editsBlocked || (!!canStyle && selected.some((el) => !canStyle(el)));
   // In Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays") the
   // defaults read as the board's ink, and the style memory is Draw mode's own
   // (useStyleMemory's board scope), never Diagram mode's.

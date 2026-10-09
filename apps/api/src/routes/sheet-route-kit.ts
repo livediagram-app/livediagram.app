@@ -8,6 +8,7 @@ import { relaySheets } from '../room-client';
 import {
   deniedOnTab,
   gateEdit,
+  gateParticipate,
   gateGrant,
   gateRead,
   missingDocument,
@@ -21,13 +22,28 @@ export type SheetCaller = {
   owner: string;
   // The one tab a tab-scoped grant reaches, or null for the whole document.
   scopeTab: string | null;
+  // The document's owner and team, for a second gate on the same caller (sheetCallerEdits).
+  ownerId: string;
+  teamId: string | null;
 };
+
+// Whether a caller already admitted at participate also holds edit (docs/specs/013-workspace/share-roles.md): one
+// more gate, on the document the first one read, asked only for a write that changes a Sheet's shape.
+export function sheetCallerEdits(ctx: RouteContext, caller: SheetCaller): Promise<boolean> {
+  return gateEdit(
+    ctx,
+    caller.documentId,
+    caller.ownerId,
+    caller.teamId,
+    caller.scopeTab ?? undefined,
+  );
+}
 
 // A relay larger than this asks clients to fetch the sheet instead (blueprint sheet-store.md, D5).
 export const SHEET_RELAY_BYTES_MAX = 262_144;
 export const SHEET_WRITE_RETRIES = 3;
 
-const GATES = { read: gateRead, edit: gateEdit } as const;
+const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
 
 export function sheetRejected(error: SheetError, status = 400, at?: string): Response {
   console.info('[sheets] sheets.rejected', { error });
@@ -46,7 +62,7 @@ export const sheetBusy = () => {
 export async function sheetCaller(
   ctx: RouteContext,
   documentId: string,
-  level: 'read' | 'edit',
+  level: 'read' | 'participate' | 'edit',
 ): Promise<SheetCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
@@ -54,14 +70,14 @@ export async function sheetCaller(
   if (!doc) return missingDocument(ctx, documentId);
   const gate = GATES[level];
   if (await gate(ctx, documentId, doc.ownerId, doc.teamId))
-    return { documentId, owner, scopeTab: null };
+    return { documentId, owner, scopeTab: null, ownerId: doc.ownerId, teamId: doc.teamId };
   const tabId = ctx.url.searchParams.get('tabId');
   if (!tabId) {
     const grant = await gateGrant(ctx, documentId, doc.ownerId, doc.teamId);
     return grant && grant.tabScope === null ? forbidden() : deniedOnTab(ctx, doc);
   }
   if (!(await gate(ctx, documentId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
-  return { documentId, owner, scopeTab: tabId };
+  return { documentId, owner, scopeTab: tabId, ownerId: doc.ownerId, teamId: doc.teamId };
 }
 
 export function relaySheet(ctx: RouteContext, documentId: string, op: SheetsRoomOp): void {

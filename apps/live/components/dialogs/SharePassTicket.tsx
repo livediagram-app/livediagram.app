@@ -7,7 +7,8 @@ import { ROLE_PASS } from './share-dialog-parts';
 // Active and expired passes share it so the two read as the same object in two
 // states. A perforated edge with punched notches was tried and read as stray
 // dots and circles at this size, so the stub's colour edge is the only divide.
-const STUB_WIDTH = 'w-16';
+// Wide enough for PARTICIPANT at 10 px with its tracking (blueprint SR7).
+const STUB_WIDTH = 'w-24';
 
 // Arrival and departure (docs/specs/007-editor/live-app.md "Share dialog"):
 // the <li> is a one-row grid whose row eases between 0fr and 1fr, so a pass

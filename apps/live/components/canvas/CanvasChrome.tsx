@@ -27,6 +27,7 @@ import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
+import { ParticipantToolbar } from '@/components/palette/ParticipantToolbar';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
@@ -520,6 +521,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
+      {readOnly && props.participantPalette ? (
+        <ParticipantToolbar
+          hidden={chromeHidden}
+          canvasTool={canvasTool}
+          onSetCanvasTool={props.onSetCanvasTool}
+          onExitAvatarMode={props.onExitAvatarMode}
+          {...pickPaletteAddHandlers(props)}
+          pendingDraw={pendingDraw}
+          esBoard={props.esBoard}
+        />
+      ) : null}
       {!readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}

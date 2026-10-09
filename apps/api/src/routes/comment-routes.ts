@@ -44,7 +44,6 @@ import { recordCommentAdded, recordCommentResolved } from '../timeline';
 import type { TabDTO } from '../types';
 import {
   deniedOnTab,
-  gateParticipate,
   gateRead,
   missingDocument,
   readBody,
@@ -70,8 +69,8 @@ async function participant(
   if (owner instanceof Response) return owner;
   const doc = await getDocument(ctx.env, id);
   if (!doc) return missingDocument(ctx, id);
-  if (!(await gateParticipate(ctx, id, doc.ownerId, doc.teamId, tabId)))
-    return deniedOnTab(ctx, doc);
+  // A Viewer comments (docs/specs/013-workspace/share-roles.md): read access is the door.
+  if (!(await gateRead(ctx, id, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
   return { doc, owner };
 }
 

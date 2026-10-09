@@ -52,7 +52,10 @@ export type SheetController = {
   grid: Grid;
   palette: PlanPalette;
   interactive: boolean;
+  // Writes cells (docs/specs/013-workspace/share-roles.md): an Editor and a Participant.
   canEdit: boolean;
+  // Changes the Sheet's shape (rows, columns, settings, title): an Editor only. Absent: as canEdit.
+  canShape?: boolean;
   maximised: boolean;
   locale: string;
   selection: Selection;
@@ -134,6 +137,7 @@ export function useSheetControllerState(opts: {
   palette: PlanPalette;
   interactive: boolean;
   canEdit: boolean;
+  canShape?: boolean;
   maximised: boolean;
   locale: string;
   announce: (message: string) => void;
@@ -214,8 +218,16 @@ export function useSheetControllerState(opts: {
       mergeAt: (r, c) => mergeAt(geometry, r, c),
     };
   }, [sheet.layout, geometry, workbook, sheet.id]);
+  // A Participant writes cells and never the shape (docs/specs/013-workspace/share-roles.md); the server refuses
+  // it too, so it is held back here rather than shown and taken away.
+  const canShape = opts.canShape ?? opts.canEdit;
+  const shapeRefused = useLatest(() => {
+    opts.toast("Only an editor can change a Sheet's rows, columns or settings.");
+    return false;
+  });
   const write = useCallback(
     (w: SheetWrite, kind: SheetChangeKind) => {
+      if (!canShape && w.kind !== 'cells') return shapeRefused.current();
       const before = store.sheet(sheet.id);
       const refused = store.write(sheet.id, w);
       if (refused) return false;
@@ -224,11 +236,12 @@ export function useSheetControllerState(opts: {
       if (before) onWrote.current?.(before, w);
       return true;
     },
-    [store, sheet.id, onWrote],
+    [store, sheet.id, onWrote, canShape, shapeRefused],
   );
   // Writes to several sheets as one change, one undo step (Insert Cells, a cut other sheets' formulas follow).
   const writeAll = useCallback(
     (edits: readonly { sheetId: string; write: SheetWrite }[], kind: SheetChangeKind) => {
+      if (!canShape && edits.some((e) => e.write.kind !== 'cells')) return shapeRefused.current();
       const before = store.sheet(sheet.id);
       const refused = store.writeAll(edits);
       if (refused) return false;
@@ -239,11 +252,12 @@ export function useSheetControllerState(opts: {
         for (const e of edits) if (e.sheetId === sheet.id) onWrote.current?.(before, e.write);
       return true;
     },
-    [store, sheet.id, onWrote],
+    [store, sheet.id, onWrote, canShape, shapeRefused],
   );
   const focusGrid = useCallback(() => gridEl?.focus({ preventScroll: true }), [gridEl]);
   return {
     ...opts,
+    canShape,
     geometry,
     grid,
     selection,

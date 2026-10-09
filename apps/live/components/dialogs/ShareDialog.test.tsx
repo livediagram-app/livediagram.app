@@ -122,6 +122,26 @@ describe('ShareDialog passes', () => {
     );
   });
 
+  // docs/specs/013-workspace/share-roles.md: three cards, Editor first; arrows wrap, Home and End reach the ends.
+  it('offers Editor, Participant and Viewer, and issues a Participant pass', async () => {
+    const created = link({ code: 'NEW23456', role: 'participate' });
+    const props = renderDialog({ onCreateLink: vi.fn().mockResolvedValue(created) });
+    const cards = screen.getAllByRole('radio').filter((r) => r.hasAttribute('data-role'));
+    expect(cards.map((c) => c.getAttribute('data-role'))).toEqual(['edit', 'participate', 'view']);
+    const editor = cards[0]!;
+    fireEvent.keyDown(editor, { key: 'ArrowRight' });
+    expect(cards[1]!.getAttribute('aria-checked')).toBe('true');
+    fireEvent.keyDown(cards[1]!, { key: 'End' });
+    expect(cards[2]!.getAttribute('aria-checked')).toBe('true');
+    fireEvent.keyDown(cards[2]!, { key: 'ArrowRight' });
+    expect(editor.getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('radio', { name: /Participant/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Pass' }));
+    await vi.waitFor(() =>
+      expect(props.onCreateLink).toHaveBeenCalledWith('participate', 'never', null),
+    );
+  });
+
   it('issues the pass with the lifetime picked on the Valid control', async () => {
     const props = renderDialog();
     const forever = screen.getByRole('radio', { name: 'Forever' });

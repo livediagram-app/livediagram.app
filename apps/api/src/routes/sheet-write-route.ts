@@ -29,7 +29,7 @@ import {
   recountStatement,
   type SheetHead,
 } from '../db';
-import { json } from '../responses';
+import { forbidden, json } from '../responses';
 import { readBody, type RouteContext } from './context';
 import { writer } from './item-route-kit';
 import {
@@ -37,6 +37,7 @@ import {
   relaySheet,
   sheetBusy,
   sheetCaller,
+  sheetCallerEdits,
   sheetNotFound,
   sheetRejected,
 } from './sheet-route-kit';
@@ -109,10 +110,13 @@ export async function writeSheet(
   documentId: string,
   sheetId: string,
 ): Promise<Response> {
-  const caller = await sheetCaller(ctx, documentId, 'edit');
+  // A Participant writes cells; rows, columns and the title are the Sheet's shape, an Editor's
+  // (docs/specs/013-workspace/share-roles.md "What a Participant changes").
+  const caller = await sheetCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
   const body = readWrite(await readBody(ctx));
   if (!body) return sheetRejected('write_invalid');
+  if (body.write.kind !== 'cells' && !(await sheetCallerEdits(ctx, caller))) return forbidden();
   const by = await writer(ctx, caller.owner);
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
     const head = await readSheetHead(ctx.env, documentId, sheetId);

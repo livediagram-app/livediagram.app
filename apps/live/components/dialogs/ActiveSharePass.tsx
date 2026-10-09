@@ -30,6 +30,9 @@ import {
   ScopeOptions,
 } from './share-dialog-parts';
 
+// The pass link field's name per level (docs/specs/013-workspace/share-roles.md).
+const PASS_LINK_WORD = { edit: 'Edit', participate: 'Participate', view: 'View' } as const;
+
 // One ACTIVE share link, drawn as a pass (docs/specs/007-editor/live-app.md "The pass metaphor";
 // docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/embeds.md +
 // docs/specs/013-workspace/share-link-expiry.md + docs/specs/013-workspace/live-image-share.md).
@@ -105,7 +108,7 @@ export function ActiveSharePass({
           readOnly
           value={shareUrlFor(link.code)}
           onFocus={(e) => e.currentTarget.select()}
-          aria-label={`${link.role === 'edit' ? 'Edit' : 'View'} pass link`}
+          aria-label={`${PASS_LINK_WORD[link.role]} pass link`}
           className="min-w-0 flex-1 truncate rounded-lg border border-slate-200 bg-slate-50 py-1.5 pr-10 pl-2.5 font-mono text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
         />
         <Tooltip label={copied ? 'Copied' : 'Copy link'}>
@@ -186,7 +189,7 @@ export function ActiveSharePass({
           hoverCardDescription={`Copy an embed of this document as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
             link.role === 'edit'
               ? 'This edit pass embeds an editable canvas.'
-              : 'This view pass embeds a read-only canvas.'
+              : 'This pass embeds a look-only canvas.'
           }`}
           trackType="EmbedCode"
           items={[

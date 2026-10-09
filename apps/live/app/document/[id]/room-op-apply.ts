@@ -6,6 +6,7 @@ import {
   applyElementDelta,
   articlesOf,
   applyElementOp,
+  applyRoomElementOp,
   applyVoteDelta,
   mergeIncomingElement,
   voteDeltaApplies,
@@ -45,7 +46,8 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         // sender's is a snapshot from their last save (docs/specs/012-collaboration/collab-race-hardening.md).
         const elOp =
           op.op.kind === 'update' || op.op.kind === 'add' ? mergeOpOverLocal(tab, op.op) : op.op;
-        const elements = applyElementOp(tab.elements, elOp);
+        // A patch (a Participant's change, relayed by the room) touches only the fields it names.
+        const elements = applyRoomElementOp(tab.elements, elOp);
         return elements === tab.elements ? tab : { ...tab, elements };
       });
     case 'el-delta':

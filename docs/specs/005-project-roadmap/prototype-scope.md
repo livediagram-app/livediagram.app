@@ -102,11 +102,13 @@ The editor is real:
 
 `sessionStorage` holds only the facilitator baton, per document, for the life of the browser tab ([Facilitator](../012-collaboration/facilitator.md)).
 
+- **Participant share links** ([Share roles](../013-workspace/share-roles.md)): a third level between Viewer and Editor, so a facilitator hands a retro to a team who add stickies, write, move and recolour stickies and vote, without reshaping the board; the room applies their changes through one participant content rule.
+
 ## Next
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
 - **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
-- **Access levels** ([Share roles](../013-workspace/share-roles.md)): Viewer, Participant and Editor for share links and API tokens, with ownership as separate powers, replacing view/edit and the read-only flag.
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
 
 ## Later
 

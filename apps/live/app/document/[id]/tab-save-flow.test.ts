@@ -10,7 +10,12 @@ import {
 } from '@livediagram/document';
 import { presetSetup } from '@livediagram/items';
 import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
-import { saveTabAndRelay, type SaveRoom } from './tab-save-flow';
+import {
+  participantElementOps,
+  relayParticipantChanges,
+  saveTabAndRelay,
+  type SaveRoom,
+} from './tab-save-flow';
 
 const board = (): Tab =>
   ({
@@ -177,5 +182,32 @@ describe('saveTabAndRelay', () => {
       saveTabAndRelay(base, renamed(base, 'todo', 'Ready'), () => null, put),
     ).resolves.toBe(3);
     expect(put).toHaveBeenCalledTimes(1);
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md "Integrity": a Participant's save is element ops to the room.
+describe('relayParticipantChanges', () => {
+  const box = { x: 0, y: 0, width: 10, height: 10 };
+  const tab = (elements: unknown[]): Tab => ({ id: 't1', name: 'T', elements }) as Tab;
+  const a = { id: 'a', type: 'sticky', ...box, label: 'a' };
+  const b = { id: 'b', type: 'sticky', ...box, label: 'b' };
+
+  it('sends each element change as an el op, never a reorder or a tab', async () => {
+    const sent: RoomOutgoing[] = [];
+    const room: SaveRoom = { send: (m) => void sent.push(m), sequence: async () => true };
+    const before = tab([a, b]);
+    const after = tab([{ ...b, label: 'B' }, a, { id: 'c', type: 'text', ...box, label: 'c' }]);
+    expect(await relayParticipantChanges(before, after, () => room)).toBeNull();
+    const ops = sent.map((m) => (m as { op: { kind: string; op: { kind: string } } }).op);
+    expect(ops.every((op) => op.kind === 'el')).toBe(true);
+    expect(ops.map((op) => op.op.kind).sort()).toEqual(['add', 'update']);
+  });
+
+  it('fails while the room is closed, so the autosave retries', async () => {
+    await expect(relayParticipantChanges(tab([a]), tab([b]), () => null)).rejects.toThrow();
+  });
+
+  it('derives nothing for an unchanged tab', () => {
+    expect(participantElementOps(tab([a]), tab([a]))).toEqual([]);
   });
 });

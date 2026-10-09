@@ -9,6 +9,7 @@
 // the REST access gates for this document moments ago.
 
 import type { Env, ShareRole } from '../types';
+import { isAccessLevel } from '@livediagram/api-schema';
 
 // Long enough to cover a slow page load between mint and upgrade; short
 // enough that a leaked ticket is useless almost immediately.
@@ -32,6 +33,9 @@ export type WsAdmission = {
   // The workbench pairing a workbench session's ticket was minted under
   // (docs/specs/013-workspace/workbench-embeds.md), so the room can close exactly its sockets. Null otherwise.
   workbenchPairing: string | null;
+  // A Participant's adder key (adderKeyFor; docs/specs/013-workspace/share-roles.md "Integrity"), which the room
+  // stamps on the stickies and text it adds. Null for every other level and when no identity resolved.
+  adderKey: string | null;
 };
 
 export async function createWsTicket(
@@ -45,7 +49,7 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
@@ -57,6 +61,7 @@ export async function createWsTicket(
       admission.account ? 1 : 0,
       admission.personTag,
       admission.workbenchPairing,
+      admission.adderKey,
     )
     .run();
   return ticket;
@@ -73,7 +78,7 @@ export async function consumeWsTicket(
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag, workbench_pairing, adder_key',
   )
     .bind(ticket, documentId, now)
     .first<{
@@ -83,8 +88,10 @@ export async function consumeWsTicket(
       account?: number | null;
       person_tag?: string | null;
       workbench_pairing?: string | null;
+      adder_key?: string | null;
     }>();
-  if (row?.role !== 'edit' && row?.role !== 'view') return null;
+  // A ticket names a level this worker knows, or admits nobody.
+  if (!row || !isAccessLevel(row.role)) return null;
   return {
     role: row.role,
     tabScope: row.tab_scope ?? null,
@@ -92,5 +99,6 @@ export async function consumeWsTicket(
     account: row.account === 1,
     personTag: row.person_tag ?? null,
     workbenchPairing: row.workbench_pairing ?? null,
+    adderKey: row.adder_key ?? null,
   };
 }

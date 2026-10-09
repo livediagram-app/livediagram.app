@@ -9,6 +9,7 @@ import type { WorkbenchRole } from '@livediagram/api-schema';
 
 import {
   canEditDocument,
+  canParticipateDocument,
   canReadDocument,
   resolveDocumentGrant,
   type DocumentGrant,
@@ -142,9 +143,9 @@ export function gateRead(
   );
 }
 
-// The participation gate (docs/specs/024-agents/agent-presence.md "Token levels"): comments, session answers and
-// agent presence. Until share roles are built it names today's rule, read access to the document or tab; a
-// read-only token is refused every write at the choke point. It becomes the Participant check when share roles land.
+// The Participant gate (docs/specs/013-workspace/share-roles.md): the content doors a Participant may use beside
+// an Editor, Plan cards and Sheet cells. A Viewer is refused. Comments and agent presence stay on gateRead: a
+// Viewer comments, and an agent acts at its owner's level.
 export function gateParticipate(
   ctx: RouteContext,
   documentId: string,
@@ -152,7 +153,17 @@ export function gateParticipate(
   documentTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return gateRead(ctx, documentId, documentOwnerId, documentTeamId, tabId);
+  return canParticipateDocument(
+    ctx.env,
+    documentId,
+    ctx.resolveOwner(),
+    shareCodeOf(ctx.request),
+    documentOwnerId,
+    sharePasswordOf(ctx.request),
+    documentTeamId,
+    ctx.verifiedUserId,
+    tabId,
+  );
 }
 
 export function gateEdit(

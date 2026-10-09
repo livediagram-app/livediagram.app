@@ -3,12 +3,17 @@ import {
   WORKBENCH_ENDED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
+  isAccessLevel,
+  isParticipationOp,
   isPresenceOpKind,
   isRoomOpRef,
   parseBuildId,
+  parseStoredLevel,
   isSystemOpKind,
+  type AccessLevel,
 } from '@livediagram/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
+import { ADDER_KEY_LENGTH, opForTheWire, stampCommentAuthor } from '@livediagram/document';
+import { RoomParticipantWrites } from './room-participant';
 import { RoomLedgerStore } from './room-ledger-store';
 import { RoomLivePoll } from './room-live-poll';
 import { RoomSelectionStore, selectionFromOp, type LiveSession } from './room-selections';
@@ -27,6 +32,7 @@ import {
   type LoggedOp,
   MAX_TAB_ID_LEN,
   admitFrame,
+  answersAsSelf,
   helloPresence,
   resolveCatchup,
 } from './document-room-rules';
@@ -147,7 +153,7 @@ const FACILITATOR_KEY = 'facilitator';
 // without them a hostile frame could make serializeAttachment throw.
 type SessionAttachment = {
   presenceId: string;
-  verifiedRole?: 'edit' | 'view';
+  verifiedRole?: AccessLevel;
   presence: ParticipantPresence | null;
   //   - `isOwner`: whether the api resolved this upgrade as the document's
   //     OWNER (docs/specs/012-collaboration/facilitator.md). A boolean, never an id: it is the one thing the
@@ -182,6 +188,12 @@ type SessionAttachment = {
   //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
   //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
   workbenchPairing?: string | null;
+  //   - `adderKey`: a Participant's adder key, from X-Verified-Adder (docs/specs/013-workspace/share-roles.md
+  //     "Integrity"): what the room stamps on the stickies and text it adds. 32 hex characters.
+  //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
+  //     row. The room is named after it, so every session carries the same value.
+  adderKey?: string | null;
+  documentId?: string | null;
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
@@ -191,6 +203,8 @@ const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'doc
 const MAX_PERSON_TAG_LEN = 64;
 // A workbench pairing id is a UUID.
 const MAX_PAIRING_ID_LEN = 36;
+// A document id is a UUID; the clamp keeps a forged header from bloating the attachment.
+const MAX_DOCUMENT_ID_LEN = 64;
 // A network tag is a 32-hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_NETWORK_TAG_LEN = 32;
 
@@ -266,12 +280,23 @@ export class DocumentRoom implements DurableObject {
   // same row would be exactly the race that once cost the dot vote its votes.
   // In memory because a queue only matters while requests are in flight; a
   // hibernation wake has none.
-  private qaQueue: Promise<unknown> = Promise.resolve();
+  // The tab write queue (blueprint SR2): Q&A board writes and a Participant's writes, one at a time per document.
+  private tabWriteQueue: Promise<unknown> = Promise.resolve();
+  // A Participant's content and answers (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
+  private participantWrites: RoomParticipantWrites;
 
   constructor(state: DurableObjectState, env?: Env) {
     this.state = state;
     this.env = env;
     this.ledger = new RoomLedgerStore(state.storage);
+    this.participantWrites = new RoomParticipantWrites({
+      env,
+      enqueue: (step) => this.queueTabWrite(step),
+      sequence: (from, op, except) => this.sequenceMutation(from, op, except),
+      sendTo: (ws, payload) => this.sendTo(ws, payload),
+      position: () => ({ epoch: this.epoch, seq: this.seq }),
+      readLedger: (tabId) => this.ledger.read(tabId),
+    });
     this.poll = new RoomLivePoll(state.storage);
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
@@ -406,8 +431,9 @@ export class DocumentRoom implements DurableObject {
     // after a hibernation cycle, defeating a crafted client that lies
     // in its own hello payload.
     const headerRole = request.headers.get('X-Verified-Role');
-    const verifiedRole: 'edit' | 'view' | undefined =
-      headerRole === 'edit' || headerRole === 'view' ? headerRole : undefined;
+    const verifiedRole: AccessLevel | undefined = isAccessLevel(headerRole)
+      ? headerRole
+      : undefined;
     // Same trust argument as the role: only the worker can set it.
     const isOwner = request.headers.get('X-Verified-Owner') === '1';
     // Same trust argument again: the scope and the admitting code are set by
@@ -418,6 +444,8 @@ export class DocumentRoom implements DurableObject {
     const personTag = request.headers.get('X-Verified-Person') || null;
     const networkTag = request.headers.get('X-Verified-Network') || null;
     const workbenchPairing = request.headers.get('X-Verified-Workbench-Pairing') || null;
+    const adderKey = request.headers.get('X-Verified-Adder') || null;
+    const documentId = request.headers.get('X-Verified-Document') || null;
     this.acceptSession(
       server,
       verifiedRole,
@@ -428,6 +456,8 @@ export class DocumentRoom implements DurableObject {
       personTag,
       networkTag,
       workbenchPairing,
+      adderKey,
+      documentId,
     );
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -437,7 +467,7 @@ export class DocumentRoom implements DurableObject {
   // fetch so tests can drive sessions without constructing WebSocketPair.
   acceptSession(
     ws: WebSocket,
-    verifiedRole?: 'edit' | 'view',
+    verifiedRole?: AccessLevel,
     isOwner = false,
     tabScope: string | null = null,
     shareCode: string | null = null,
@@ -445,6 +475,8 @@ export class DocumentRoom implements DurableObject {
     personTag: string | null = null,
     networkTag: string | null = null,
     workbenchPairing: string | null = null,
+    adderKey: string | null = null,
+    documentId: string | null = null,
   ): void {
     // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
@@ -464,6 +496,8 @@ export class DocumentRoom implements DurableObject {
       networkTag: networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
       pollAnsweredAs: null,
       workbenchPairing: workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
+      adderKey: adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
+      documentId: documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -614,6 +648,14 @@ export class DocumentRoom implements DurableObject {
     this.broadcast({ kind: 'op', from: 'system', op });
   }
 
+  // One step on the tab write queue (blueprint SR2), after every step before it. A failed step must not wedge
+  // every write after it.
+  private queueTabWrite<T>(step: () => Promise<T>): Promise<T> {
+    const run = this.tabWriteQueue.then(step);
+    this.tabWriteQueue = run.catch(() => undefined);
+    return run;
+  }
+
   // One Q&A board write, queued behind every other one for this document
   // (docs/specs/012-collaboration/qa-board.md). Reached only from the api worker's qa route, which has already
   // checked access and derived the actor, so the body is trusted the same way
@@ -628,7 +670,7 @@ export class DocumentRoom implements DurableObject {
     } catch {
       return new Response('bad json', { status: 400 });
     }
-    const step = this.qaQueue.then(async () => {
+    const step = this.queueTabWrite(async () => {
       const result = await writeQaAction(env, req);
       if (result.ok && result.changed) {
         this.broadcastOrderedSystemOp({
@@ -641,8 +683,6 @@ export class DocumentRoom implements DurableObject {
       }
       return result;
     });
-    // A failed step must not wedge every write after it.
-    this.qaQueue = step.catch(() => undefined);
     const result = await step;
     return result.ok
       ? Response.json({ notes: result.notes, rev: result.rev })
@@ -782,7 +822,31 @@ export class DocumentRoom implements DurableObject {
       // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
       if (!scopedSenderMayRelay(msg.op, session.tabScope ?? null)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
-      if (sender.role !== 'edit' && !isPresenceOp) return;
+      // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,
+      // responses and ideas relay like an Editor's; its `el` op goes through the participant content rule and
+      // never relays as sent; everything else needs an Editor.
+      const level = parseStoredLevel(sender.role);
+      if (!isPresenceOp && level !== 'edit') {
+        if (level !== 'participate') return;
+        if (opKind === 'el') {
+          void this.participantWrites.applyContentOp(
+            {
+              ws,
+              presenceId: sender.id,
+              documentId: session.documentId ?? null,
+              adderKey: session.adderKey ?? null,
+            },
+            msg.op,
+            msg.ref,
+          );
+          return;
+        }
+        if (!isParticipationOp(msg.op) || !answersAsSelf(msg.op, sender.key)) return;
+        this.participantWrites.scheduleAnswers(
+          session.documentId ?? null,
+          (msg.op as { tabId?: unknown }).tabId,
+        );
+      }
       // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
       // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
       if (opKind === 'drag-preview' && sender.role !== 'edit') return;
