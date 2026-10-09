@@ -163,7 +163,8 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Sixteen tools: eleven for documents and five for Plan boards ([§4.9b](#49b-the-plan-tools)). The search/view capability is two tools (find, then read); create,
+Twenty tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)) and four for sheets
+([§4.9c](#49c-the-sheet-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
 share, rename, and delete complete the CRUD verbs, with list_trash and
@@ -564,6 +565,32 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
   changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
 
+### 4.9c The sheet tools
+
+The spreadsheets Sheet elements show ([Sheet store](../029-sheets/sheet-store.md#agents)). A sheet is named by its
+title (case aside) or id, cells by A1, rows by number and columns by letter, never the ids of rows and columns; the
+server (`apps/mcp/src/sheet-tools.ts` over `packages/agent-verbs/src/sheets/`) resolves them and refuses an unknown
+sheet with the sheets there are. Values are worked out by the editor's engine (`@livediagram/sheets`), with the
+document's Plan cards when a formula reads them.
+
+- **`list_sheets`** (read): the document's sheets (or one tab's), each with its title, tab, the rows and columns in
+  use and that range in A1, and the id of the Sheet element framing it (null when none does).
+- **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value, display }`,
+  plus the frozen rows and columns, merges and filter. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
+  of the range and answers at most `SHEET_READ_CHARS_MAX` (100,000) characters of cells; past either it stops,
+  sets `truncated` and says in `note` where to read on.
+- **`change_sheet`** (destructive, as it clears and deletes): up to 50 changes in order, each built against the
+  sheet as the ones before it left it: `set` `{ at, rows }`, `clear` `{ range, what }`, `format` `{ range, format }`
+  (bold, italic, underline, strikethrough, colours, font size, alignment, wrap, number format, decimals,
+  currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
+  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }` and `freeze` `{ rows, cols }`. Each
+  is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
+  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`); a refusal
+  answers what was applied before it.
+- **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
+  uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)
+  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts** — pre-canned templates a client surfaces as slash
@@ -646,14 +673,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the sixteen tools, and each is a preset in
+Three behaviours cover the twenty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                              |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`                                    |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`                                          |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                           |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`                    |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`                                       |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -757,6 +784,10 @@ says why by its status (no such tab, view only, the last tab).
 | `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
 | `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
 | `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
+| `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                     |
+| `read_sheet`        | `sheetId`, `title`, `tabId`, `range`, `rows`, `cols`, `cells[]` of `{ at, input, value, display }`, `truncated`, `note?`, `frozen { rows, cols }`, `merges[]`, `filter`, `url`                                          |
+| `change_sheet`      | `sheetId`, `title`, `applied[]` (one line per change), `rev`, `url`                                                                                                                                                     |
+| `add_sheet`         | `tabId`, `sheetId`, `elementId`, `title`, `filled`, `truncated`, `changesetId`, `rev`, `url`                                                                                                                            |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

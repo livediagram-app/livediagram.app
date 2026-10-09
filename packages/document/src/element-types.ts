@@ -16,6 +16,7 @@ import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
+import type { ChartSource } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
@@ -337,6 +338,9 @@ export type ShapeElement = {
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
   chartPalette?: ChartPaletteId;
+  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is read live from there,
+  // the fields above holding the last read. Only meaningful on the pie, bar and line chart kinds.
+  chartSource?: ChartSource;
   // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
@@ -397,6 +401,8 @@ export type ShapeElement = {
   planCard?: PlanCardRef;
   // Plan view (docs/specs/026-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
   planView?: PlanViewRef;
+  // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
+  planSheet?: PlanSheetRef;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.
@@ -1371,6 +1377,7 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-board',
   'plan-card',
   'plan-view',
+  'plan-sheet',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
@@ -1383,6 +1390,42 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
 // `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
 // absent is Detailed.
 export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
+
+// What a Sheet element frames: one sheet of the document's sheet store (docs/specs/029-sheets/sheet-store.md).
+// `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
+// one when it is first drawn, then drops the mark (docs/specs/029-sheets/sheet.md "Copying a Sheet element").
+// `fillTab`: the Sheet fills its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), as a board can.
+export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true };
+
+// A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
+export function newPlanSheetId(): string {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+}
+
+// The sheet id pattern (@livediagram/sheets SHEET_ID_PATTERN), repeated here so the document package never
+// imports the engine.
+export const PLAN_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
+
+export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
+  if (typeof v !== 'object' || v === null) return false;
+  const {
+    sheetId: id,
+    copyOf,
+    fillTab,
+    ...rest
+  } = v as {
+    sheetId?: unknown;
+    copyOf?: unknown;
+    fillTab?: unknown;
+  };
+  // An empty id is a Sheet element not yet given its sheet (the factory's), as a Plan card's empty item id.
+  const idOk = typeof id === 'string' && (id === '' || PLAN_SHEET_ID_PATTERN.test(id));
+  const copyOk =
+    copyOf === undefined || (typeof copyOf === 'string' && PLAN_SHEET_ID_PATTERN.test(copyOf));
+  return (
+    idOk && copyOk && (fillTab === undefined || fillTab === true) && Object.keys(rest).length === 0
+  );
+}
 
 // What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
 // The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.

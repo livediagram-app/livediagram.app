@@ -32,7 +32,7 @@ const inside = (inner: Element, outer: Element) => {
 
 // The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): one Plan board each, the set-up
 // its use wants, and seed items that land in the board's columns. Blank Plan is the exception
-// (docs/specs/026-plan/plan-templates.md "Blank Plan"): an empty tab, so Plan offers Start with a Board.
+// (docs/specs/026-plan/plan-templates.md "Blank Plan"): an empty tab, so Plan offers Start Planning.
 describe('plan templates', () => {
   const kinds = PLAN_TEMPLATE_KINDS.filter((kind) => kind !== 'blank-plan');
 

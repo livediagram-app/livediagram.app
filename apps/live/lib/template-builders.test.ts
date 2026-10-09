@@ -285,7 +285,7 @@ describe('buildTemplate translation invariance', () => {
         k !== 'whiteboard' &&
         k !== 'article' &&
         k !== 'blank-illustration' &&
-        // An empty Plan tab: it opens on Start with a Board (docs/specs/026-plan/plan-templates.md).
+        // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
         !(PAGED_KINDS as readonly string[]).includes(k),
     ),

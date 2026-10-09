@@ -86,7 +86,7 @@ describe('the Card Finder', () => {
 });
 
 describe('the Card Finder’s filters', () => {
-  it('narrows by a field and value, and Clear Filters shows them all again', () => {
+  it('narrows by a field and value, a chip inside the search, and Clear Search shows them all again', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Add Filter' }));
     fireEvent.click(
@@ -98,8 +98,24 @@ describe('the Card Finder’s filters', () => {
     fireEvent.click(picker.getByRole('button', { name: /No status/ }));
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toContain('Sam Reed');
-    expect(screen.getByText('State:')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
+    // The filter is a chip in the search box itself.
+    expect(within(screen.getByRole('search')).getByText('State:')).toBeTruthy();
+    // Backspace in the empty box takes it off; Clear Search clears words and filters alike.
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Search cards' }), { key: 'Backspace' });
+    expect(rows()).toHaveLength(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Filter' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Add Filter' })).getByRole('button', {
+        name: 'State',
+      }),
+    );
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Add Filter' })).getByRole('button', {
+        name: /No status/,
+      }),
+    );
+    expect(rows()).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Search' }));
     expect(rows()).toHaveLength(3);
   });
 });

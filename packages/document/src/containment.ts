@@ -172,3 +172,35 @@ export function containerContents(
   }
   return out;
 }
+
+// A Sheet carries the charts drawn from its own sheet that sit on it (docs/specs/029-sheets/sheet.md "Charts"): a
+// chart whose centre is inside a moved Sheet's box moves with it; one dragged off onto the canvas stays put. `ids`
+// unchanged when no Sheet is among them.
+export function withSheetCharts(
+  elements: readonly Element[],
+  ids: ReadonlySet<ElementId>,
+): ReadonlySet<ElementId> {
+  const sheets = elements.filter(
+    (el): el is Boxed & { type: 'shape'; planSheet?: { sheetId: string } } =>
+      ids.has(el.id) && el.type === 'shape' && el.shape === 'plan-sheet' && hasGeometry(el),
+  );
+  if (sheets.length === 0) return ids;
+  const out = new Set(ids);
+  for (const el of elements) {
+    if (out.has(el.id) || el.type !== 'shape' || !el.chartSource || !hasGeometry(el)) continue;
+    const cx = el.x + el.width / 2;
+    const cy = el.y + el.height / 2;
+    if (
+      sheets.some(
+        (s) =>
+          s.planSheet?.sheetId === el.chartSource!.sheetId &&
+          cx >= s.x &&
+          cx <= s.x + s.width &&
+          cy >= s.y &&
+          cy <= s.y + s.height,
+      )
+    )
+      out.add(el.id);
+  }
+  return out;
+}

@@ -27,8 +27,13 @@ export type DocumentEnvelope = {
     items?: Item[];
     // The type catalogue (docs/specs/026-plan/item-types.md), the same way: optional and additive.
     itemTypes?: ItemTypeCatalogue;
+    // The sheet store (docs/specs/029-sheets/sheet-store.md "Copies and exports"), the same way. The sheets'
+    // shape is the sheets engine's SheetJson; the api validates them on import.
+    sheets?: EnvelopeSheet[];
   };
 };
+
+export type EnvelopeSheet = { id: string; tabId: string; title: string; [key: string]: unknown };
 
 export type DocumentEnvelopeFailure =
   'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
@@ -39,6 +44,7 @@ export function documentToEnvelopeText(
   exportedAt: number,
   items: Item[] = [],
   itemTypes: ItemTypeCatalogue | null = null,
+  sheets: readonly EnvelopeSheet[] = [],
 ): string {
   const envelope: DocumentEnvelope = {
     kind: DOCUMENT_ENVELOPE_KIND,
@@ -51,6 +57,7 @@ export function documentToEnvelopeText(
       tabs,
       ...(items.length ? { items } : {}),
       ...(itemTypes ? { itemTypes } : {}),
+      ...(sheets.length ? { sheets: [...sheets] } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -60,6 +67,12 @@ function isTab(value: unknown): value is EnvelopeTab {
   if (!value || typeof value !== 'object') return false;
   const t = value as Record<string, unknown>;
   return typeof t.id === 'string' && typeof t.name === 'string' && Array.isArray(t.elements);
+}
+
+function isSheetLike(value: unknown): value is EnvelopeSheet {
+  if (!value || typeof value !== 'object') return false;
+  const s = value as Record<string, unknown>;
+  return typeof s.id === 'string' && typeof s.tabId === 'string' && typeof s.title === 'string';
 }
 
 // Shared with the per-tab JSON import, which reads a tab export's items the same way.
@@ -124,6 +137,7 @@ export function parseDocumentEnvelope(
         tabs: d.tabs,
         // Items that do not look like items are left behind; the api validates the rest.
         ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),
+        ...(Array.isArray(d.sheets) ? { sheets: d.sheets.filter(isSheetLike) } : {}),
         // A catalogue that does not read back is left behind: the built-in types stand.
         ...(itemTypes ? { itemTypes } : {}),
       },

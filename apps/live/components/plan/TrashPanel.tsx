@@ -3,14 +3,13 @@
 // The Trash (docs/specs/026-plan/items.md "Trash"): the cards moved there, newest change first. Each row
 // carries its type's stripe and glyph, its number and title (two lines), and where it came from and when;
 // Restore puts it back in that status, Delete deletes it for good after asking (the workspace Trash's
-// ConfirmPopover). Empty Trash deletes them all after asking. A popover above its button in Plan mode's bottom-right cluster, like Card Types.
+// ConfirmPopover). Empty Trash deletes them all at once. A popover above its button in Plan mode's bottom-right cluster, like Card Types.
 import { useMemo, useState } from 'react';
 import { TRASHED_FROM_FIELD, isTrashed, itemTitle, statusLabel, typeIn } from '@livediagram/items';
 import { Button, CountBadge, EmptyState, relativeSince, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { useConfirm } from '@/hooks/ui/useConfirm';
 import { usePlan } from './PlanContext';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
@@ -23,7 +22,6 @@ export function TrashPanel({
   onPopoverClose: () => void;
 }) {
   const plan = usePlan();
-  const confirm = useConfirm();
   // When the panel opened: each row says how long ago its card was trashed from here.
   const [now] = useState(() => Date.now());
   // The card whose Delete is asking "for good?", and the button it points at.
@@ -143,13 +141,8 @@ export function TrashPanel({
               <Button
                 variant="secondary"
                 className="gap-1.5 rounded-lg py-2 text-[13px] font-semibold"
-                onClick={async () => {
-                  const ok = await confirm({
-                    title: 'Empty the Trash?',
-                    message: `${trashed.length} ${trashed.length === 1 ? 'card is' : 'cards are'} deleted for good. This can't be undone.`,
-                    confirmLabel: 'Empty Trash',
-                  });
-                  if (!ok) return;
+                // At once, no confirm: pressing Empty Trash in the Trash is the intent (items.md "Trash").
+                onClick={() => {
                   plan.emptyTrash();
                   plan.announce('Trash emptied');
                   // Nothing left to show: the panel closes.

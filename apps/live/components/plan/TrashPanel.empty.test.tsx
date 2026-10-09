@@ -5,10 +5,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, TRASH_STATUS, type Item } from '@livediagram/items';
 import { TrashPanel } from './TrashPanel';
 
-// docs/specs/026-plan/items.md "Trash": Empty Trash, once confirmed, deletes them all and closes the panel.
+// docs/specs/026-plan/items.md "Trash": Empty Trash deletes them all at once, unasked, and closes the panel.
 const plan: Record<string, unknown> = {};
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
-vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => async () => true }));
+const confirm = vi.fn(async () => true);
+vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => confirm }));
 vi.mock('@/components/primitives/MovablePanel', () => ({
   MovablePanel: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
@@ -45,6 +46,7 @@ describe('emptying the Trash', () => {
       fireEvent.click(screen.getByRole('button', { name: /Empty Trash/ }));
     });
     expect(emptyTrash).toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
   });
 });

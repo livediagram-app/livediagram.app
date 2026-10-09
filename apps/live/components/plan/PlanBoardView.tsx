@@ -59,6 +59,7 @@ import { planBoardKey } from './plan-board-keys';
 import { planOwnColours, planPalette } from './plan-palette';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
+import { FocusElementButton } from './FocusElementButton';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
@@ -339,10 +340,15 @@ export function PlanBoardView({
             <>
               {/* The board's settings, the same as its element menu's Board and Cards, for an editor. */}
               <BoardMoreMenu boardId={element.id} title={setup.title} />
-              {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
+              {/* Focus glides the view to fit the board; not while it already fills the view. */}
+              {maximised || filled ? null : (
+                <FocusElementButton bounds={element} kind="Board" palette={palette} />
+              )}
               {filled ? null : (
                 <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
               )}
+              {/* The cog last, at the header's far right. */}
+              {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
             </>
           ) : null
         }

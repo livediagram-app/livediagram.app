@@ -4,10 +4,13 @@
 // factories; re-exported from ./index so the public surface is
 // unchanged.
 
+import { copiedSheetId, relinkCopiedCharts } from './chart-source';
 import {
   eventStormingTilt,
   isBoxed,
+  newPlanSheetId,
   type ArrowElement,
+  type PlanSheetRef,
   type BoxedElement,
   type Element,
   type ElementId,
@@ -22,8 +25,14 @@ import {
 // EVERY copy path must spread this: the set duplication below, and the
 // editor's hand-rolled single / multi duplicate paths. It exists precisely
 // because "the one place copies happen" turned out to be three places.
-export function freshCopyFields(el: Element): { rotation?: number } {
+export function freshCopyFields(el: Element): { rotation?: number; planSheet?: PlanSheetRef } {
   if (el.type === 'sticky' && el.fixedSize) return { rotation: eventStormingTilt() };
+  // A copied Sheet frames a new sheet, made from the original's when it is first drawn
+  // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
+  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
+    return {
+      planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },
+    };
   return {};
 }
 
@@ -41,20 +50,20 @@ export function duplicateElements(
   dy: number,
 ): { newElements: Element[]; idMap: Map<ElementId, ElementId> } {
   const idMap = new Map<ElementId, ElementId>();
-  const newBoxed: BoxedElement[] = [];
+  let newBoxed: BoxedElement[] = [];
+  const sheetIds = new Map<string, string>();
 
   for (const el of elements) {
     if (!ids.has(el.id) || !isBoxed(el)) continue;
     const newId = crypto.randomUUID();
     idMap.set(el.id, newId);
-    newBoxed.push({
-      ...el,
-      id: newId,
-      x: el.x + dx,
-      y: el.y + dy,
-      ...freshCopyFields(el),
-    });
+    const copy = { ...el, id: newId, x: el.x + dx, y: el.y + dy, ...freshCopyFields(el) };
+    const sheet = copiedSheetId(el, copy as { planSheet?: { sheetId: string } });
+    if (sheet) sheetIds.set(sheet[0], sheet[1]);
+    newBoxed.push(copy as BoxedElement);
   }
+  // A chart copied with its Sheet reads the Sheet's copy (docs/specs/029-sheets/sheet.md "Charts").
+  newBoxed = relinkCopiedCharts(newBoxed, sheetIds);
 
   const existingIds = new Set(elements.map((e) => e.id));
 

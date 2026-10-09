@@ -337,7 +337,7 @@ states.
 ## Accessibility
 
 - Play badge: `<button aria-label="Play video">`; **Load embed** has visible text.
-- Control buttons: `aria-label`, repeated visually by a `Tooltip` (after a 1 s hover, at once on
+- Control buttons: `aria-label`, repeated visually by a `Tooltip` (after a 500 ms hover, at once on
   keyboard focus, on a long press on touch;
   [Tooltips, hover cards and popovers](../../004-interface-design/tooltips-hover-cards-popovers.md));
   `aria-pressed` on the player toggle. The controls' new-tab anchor carries `aria-label` and a

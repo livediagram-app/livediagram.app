@@ -112,6 +112,7 @@ export function EditorContextMenuHost() {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    unlinkChartSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
     setCodeWrapSelected,
@@ -283,7 +284,8 @@ export function EditorContextMenuHost() {
       // "bring to front" means "over the note it overlaps".
       onCutElement={() => {
         copySelection();
-        deleteSelected();
+        // A Cut keeps the sheets of its Sheets for the paste: it never asks (sheet-store.md "Deleting a sheet").
+        deleteSelected({ cut: true });
       }}
       onCopyElement={copySelection}
       onDuplicateElement={duplicateSelected}
@@ -348,6 +350,7 @@ export function EditorContextMenuHost() {
       onSetPieAnimRepeat={setPieAnimRepeatSelected}
       onSetChartLegend={setChartLegendSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
+      onUnlinkChart={unlinkChartSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
       onSetCodeWrap={setCodeWrapSelected}

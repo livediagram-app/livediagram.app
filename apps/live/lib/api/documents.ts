@@ -8,6 +8,7 @@ import {
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
+  type SheetCreateRequest,
 } from '@livediagram/api-schema';
 import type {
   LiveDoc,
@@ -174,6 +175,8 @@ export async function apiCreateDocument(
     markUsed?: boolean;
     // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync.
     items?: ItemCreate[];
+    // Sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), whole.
+    sheets?: SheetCreateRequest[];
     // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
     itemTypes?: ItemTypeCatalogue | null;
   },

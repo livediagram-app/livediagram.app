@@ -284,7 +284,7 @@ export function PlanBoardMenuSections({
 }
 
 // One collapsible group of the panel.
-function BoardSettingsSection({
+export function BoardSettingsSection({
   title,
   icon,
   open,

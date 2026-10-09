@@ -74,7 +74,11 @@ export function useChartSetters({
   // import builds the next categories + series and commits them together).
   const setLineDataSelected = (categories: string[], series: LineSeries[]) =>
     setPieFieldSelected({ lineCategories: categories, lineSeries: series }, 'LineData');
+  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): Unlink keeps the data it last read
+  // and makes it an ordinary chart, edited by hand.
+  const unlinkChartSelected = () => setPieFieldSelected({ chartSource: undefined }, 'ChartData');
   return {
+    unlinkChartSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

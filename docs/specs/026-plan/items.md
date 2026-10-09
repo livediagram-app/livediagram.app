@@ -173,8 +173,8 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   first, with its type's stripe and glyph, its whole title, its type, number, the status it came from and when,
   and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own. **Delete** asks first
   in a confirm popover beside the button ("Delete #12 for good? This cannot be undone.", **Delete**), as
-  the workspace Trash does; **Empty Trash** deletes every one after a confirmation ("This can't be undone"), then the Trash
-  panel closes.
+  the workspace Trash does; **Empty Trash** deletes every one at once, with no confirmation (the button is in the Trash and says what it
+  does), announced ("Trash emptied"), then the Trash panel closes.
 - An empty Trash shows the shared empty state: **The Trash is empty**, and how to put a card there.
 - Moving many cards to the Trash at once (a deleted card type's, a removed column's) is one change: one request
   per 200 cards, one undo step, one update for everyone watching.
@@ -258,10 +258,12 @@ author redaction, and the same thread list, composer and resolve control the com
   left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
   card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
   its type. Each carries a count.
-- **Filters**: under the switch, a chip per field filter ("State: Done", "Assignee: No assignee"), each with a
-  cross, and **Add Filter**, the picker Card Search uses ([Plan views](plan-views.md#card-search)): a field the
-  listed cards' types offer (Card Type among them while they hold more than one type), then one of its values among them with its count, so no filter leaves nothing. Every
-  filter must match; **Clear Filters** removes them. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
+- **Filters**: inside the search box itself ([Search and filters](../004-interface-design/search-and-filters.md)), a
+  chip per field filter before the words ("State: Done", "Assignee: No assignee"), each with a cross, and **Add
+  Filter** at the box's right edge, the picker Card Search uses ([Plan views](plan-views.md#card-search)): a field the
+  listed cards' types offer (Card Type always among them), then one of its values among them with its count, so no
+  filter leaves nothing. Every filter must match; Backspace in an empty box takes the last off, and the box's
+  **Clear Search** clears the words and the filters. They are the person's own while the panel is open, never saved. Filters matching nothing: **No cards match these filters** (below).
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row is the card as a board draws it at **Compact** size, laid out as its type's Display says, so a card
   looks the same in the panel as on a board (named for assistive technology "Open {Title}, {Type} #{n}"). Its state is not shown: a state filter
@@ -272,7 +274,7 @@ author redaction, and the same thread list, composer and resolve control the com
 - Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
   **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
   match** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these filters**
-  ("Remove a filter, or Clear Filters, to see more."); no strays, **Every card is on a board** ("None of them sits
+  ("Remove a filter, or clear the search, to see more."); no strays, **Every card is on a board** ("None of them sits
   off a board here.").
 - Opening it is tracked as `Plan · Opened · CardFinder`.
 

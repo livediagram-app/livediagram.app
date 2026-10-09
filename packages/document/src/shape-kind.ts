@@ -181,4 +181,7 @@ export type ShapeKind =
   | 'plan-card'
   // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card,
   // named by `planView.view`.
-  | 'plan-view';
+  | 'plan-view'
+  // Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab framing one sheet of the document's sheet
+  // store, named by `planSheet.sheetId`.
+  | 'plan-sheet';

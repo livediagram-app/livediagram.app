@@ -147,6 +147,7 @@ describe('palette layouts', () => {
       'plan-widgets',
       'plan-metrics',
       'plan-visualisations',
+      'plan-sheets',
       'plan-content',
       'plan-tools',
     ]);
@@ -170,6 +171,7 @@ describe('palette layouts', () => {
       expect(ids(mode)).not.toContain('plan-cards');
       expect(ids(mode)).not.toContain('plan-widgets');
       expect(ids(mode)).not.toContain('plan-visualisations');
+      expect(ids(mode)).not.toContain('plan-sheets');
     }
   });
 

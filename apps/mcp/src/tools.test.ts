@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
 import { ITEM_TYPES } from '@livediagram/items';
+import { emptySheet, sheetToJson } from '@livediagram/sheets';
 // `./image-result` reaches the resvg WASM renderer, which cannot load in the
 // plain-node test environment — the reason that file exists as its own module in
 // the first place (see its header). Stubbing it is what makes tools.ts
@@ -88,6 +89,8 @@ const PLAN = {
   types: ITEM_TYPES,
 };
 const LIVE_DOC = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
+// One blank sheet on the tab, so the sheet tools have a sheet to name.
+const SHEET = sheetToJson(emptySheet({ id: 'sheet_budget', tabId: 't_1', title: 'Budget' }));
 
 // A plausible api: enough of each route's response shape for every tool to
 // run to its success result.
@@ -100,6 +103,8 @@ function okResponse(request: Request): Response {
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
+  if (path.endsWith('/sheets'))
+    return request.method === 'POST' ? json({ sheet: SHEET }) : json({ sheets: [SHEET] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
@@ -184,6 +189,7 @@ const ARGS = {
   limit: 5,
   changes: [],
   board: 'Sprint',
+  sheet: 'Budget',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -196,22 +202,26 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the sixteen documented tools, each with a description', () => {
+  it('registers the twenty documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
       'add_board',
+      'add_sheet',
       'add_tab',
       'change_board',
       'change_card_types',
       'change_items',
+      'change_sheet',
       'create_document',
       'delete_document',
       'find_documents',
       'list_items',
+      'list_sheets',
       'list_templates',
       'list_trash',
       'read_document',
+      'read_sheet',
       'rename_document',
       'restore_document',
       'share_document',
@@ -323,6 +333,11 @@ describe('tool annotations', () => {
     add_board: 'write',
     change_board: 'write',
     change_card_types: 'destructive',
+    // docs/specs/029-sheets/sheet-store.md "Agents": change_sheet clears and deletes cells, rows and columns.
+    list_sheets: 'read',
+    read_sheet: 'read',
+    change_sheet: 'destructive',
+    add_sheet: 'write',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -365,9 +380,11 @@ describe('tool annotations', () => {
     expect(readOnly).toEqual([
       'find_documents',
       'list_items',
+      'list_sheets',
       'list_templates',
       'list_trash',
       'read_document',
+      'read_sheet',
     ]);
 
     // Destructive is only meaningful on a writer, and MCP defaults it to TRUE
@@ -388,6 +405,7 @@ describe('tool annotations', () => {
     expect(destructive).toEqual([
       'change_card_types',
       'change_items',
+      'change_sheet',
       'delete_document',
       'update_document',
     ]);

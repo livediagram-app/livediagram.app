@@ -15,6 +15,8 @@ import {
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
+  type SheetPresenceOp,
+  type SheetsRoomOp,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
@@ -161,6 +163,10 @@ export function useRoomConnection(opts: {
     from: string,
     op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' },
   ) => void;
+  // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). System-only.
+  receiveSheets: (op: SheetsRoomOp) => void;
+  // A peer's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"). Presence.
+  receiveSheetPresence: (from: string, op: SheetPresenceOp) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -208,6 +214,8 @@ export function useRoomConnection(opts: {
     receiveItems,
     receiveItemTypes,
     receivePlanPresence,
+    receiveSheets,
+    receiveSheetPresence,
     onRoomJoined,
   } = opts;
 
@@ -499,6 +507,11 @@ export function useRoomConnection(opts: {
         if (from === 'system') receiveChangeset(op);
       } else if (op.kind === 'plan-presence') {
         receivePlanPresence(from, op);
+      } else if (op.kind === 'sheet-presence') {
+        receiveSheetPresence(from, op);
+      } else if (op.kind === 'sheets') {
+        // Sheet writes (docs/specs/029-sheets/sheet-store.md). System-only, as items.
+        if (from === 'system') receiveSheets(op);
       } else if (op.kind === 'items') {
         // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.

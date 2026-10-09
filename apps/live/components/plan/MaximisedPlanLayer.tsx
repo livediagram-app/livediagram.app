@@ -17,7 +17,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { MaximizeIcon, MinimizeIcon, Tooltip } from '@livediagram/ui';
+import { MENU_SURFACE_ATTR, MaximizeIcon, MinimizeIcon, Tooltip } from '@livediagram/ui';
 import {
   finishRestore,
   maximisePlanElement,
@@ -119,10 +119,18 @@ function originOf(id: string): DOMRect | null {
   return box && box.width > 0 && box.height > 0 ? box : null;
 }
 
-// Escape restores, unless a dialog over the element (the item panel, a confirm) has it first.
-export function escapeRestores(e: Pick<KeyboardEvent, 'key' | 'defaultPrevented'>): boolean {
+// Escape restores, unless a dialog over the element (the item panel, a confirm) or an open menu has it first
+// (menus hear Escape on the document, after this capture listener), or the key is pressed inside something that
+// uses Escape itself (`data-keeps-escape`: a Sheet's cell being edited, its Find bar, its copied range's marquee).
+export function escapeRestores(
+  e: Pick<KeyboardEvent, 'key' | 'defaultPrevented'> & { target?: EventTarget | null },
+): boolean {
+  const keeps = e.target instanceof Element && !!e.target.closest('[data-keeps-escape]');
   return (
-    e.key === 'Escape' && !e.defaultPrevented && !document.querySelector('[aria-modal="true"]')
+    e.key === 'Escape' &&
+    !e.defaultPrevented &&
+    !keeps &&
+    !document.querySelector(`[aria-modal="true"],[${MENU_SURFACE_ATTR}]`)
   );
 }
 

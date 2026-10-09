@@ -14,6 +14,7 @@ import {
   isCodeBlockShape,
   isLineShape,
   isPieShape,
+  isChartShape,
   isProgressShape,
   isRailShape,
   isRatingShape,
@@ -34,6 +35,7 @@ import { LegendView } from '@/components/canvas/LegendView';
 import { ChecklistView } from '@/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
+import { DataChartView } from '@/components/canvas/DataChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
@@ -45,6 +47,16 @@ const PlanCardView = dynamic(
 );
 const PlanViewView = dynamic(
   () => import('@/components/plan/views/PlanViewView').then((m) => m.PlanViewView),
+  { ssr: false },
+);
+// A chart drawn from a sheet range reads it through the sheets chunk, loaded only for such a chart.
+const SheetLinkedChart = dynamic(
+  () => import('@/components/sheets/SheetLinkedChart').then((m) => m.SheetLinkedChart),
+  { ssr: false },
+);
+// The Sheet and its engine load only when one is drawn (docs/specs/029-sheets/sheet.md "Performance").
+const PlanSheetView = dynamic(
+  () => import('@/components/sheets/PlanSheetView').then((m) => m.PlanSheetView),
   { ssr: false },
 );
 
@@ -185,6 +197,18 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && isRatingShape(element.shape) ? (
     // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
     <RatingView element={element} accent={accent} />
+  ) : element.type === 'shape' && element.chartSource && isChartShape(element.shape) ? (
+    // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data read live.
+    <SheetLinkedChart element={element}>
+      {(el) => (
+        <DataChartView
+          element={el}
+          fontFamily={fontFamily}
+          textColor={textColor}
+          palette={chartPalette}
+        />
+      )}
+    </SheetLinkedChart>
   ) : element.type === 'shape' && isPieShape(element.shape) ? (
     // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
     <PieChartView
@@ -225,6 +249,9 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && element.shape === 'plan-view' ? (
     // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card.
     <PlanViewView element={element} fontFamily={fontFamily} chartPalette={chartPalette} />
+  ) : element.type === 'shape' && element.shape === 'plan-sheet' ? (
+    // Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab of the document's sheet store.
+    <PlanSheetView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).

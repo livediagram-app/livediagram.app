@@ -193,7 +193,7 @@ function board({
   );
 }
 
-// Blank Plan: an empty tab showing Start with a Board, a 3 by 2 grid of small board tiles (each a few column
+// Blank Plan: an empty tab showing Start Planning, a 3 by 2 grid of small board tiles (each a few column
 // strips) under the picker's title; the hover story rings the first tile, as a pick.
 function boardPicker() {
   const tiles = [0, 1, 2, 3, 4, 5];
@@ -270,7 +270,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
   const w6 = (72 - 1.6 * 5) / 6 + 1.6;
   switch (kind) {
     case 'blank-plan':
-      // An empty Plan tab: the Start with a Board picker, a tile per board; the story picks the first.
+      // An empty Plan tab: the Start Planning picker, a tile per board; the story picks the first.
       return boardPicker();
     case 'project-planner':
       // Roadmap: projects on Now, Next, Later, Shipped over their Gantt; the story ships a project.

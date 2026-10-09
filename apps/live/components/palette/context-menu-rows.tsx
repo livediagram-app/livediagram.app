@@ -36,6 +36,7 @@ export {
   LegendDataEditor,
   MindFlowTiles,
   LineDataSummary,
+  LinkedChartData,
   PieDataEditor,
 } from './context-menu-data-editors';
 export {

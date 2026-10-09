@@ -616,21 +616,5 @@ export async function exportTabAsPng(tab: Tab, opts: ImageExportOpts = {}): Prom
   });
 }
 
-// ---------------------------------------------------------------------
-// Download helper — trigger a browser save dialog for the produced
-// blob. Lives here so call sites don't repeat the same anchor-element
-// dance every time.
-// ---------------------------------------------------------------------
-
-export function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  // Give the browser a tick to start the download before revoking
-  // the URL — revoking too early aborts the save in some browsers.
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+// The download helper lives on its own (the Sheet's CSV uses it without the export code).
+export { downloadBlob } from './download-blob';

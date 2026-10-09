@@ -231,7 +231,7 @@ describe('plan templates', () => {
     }
   });
 
-  it('leaves Blank Plan’s one tab empty, so the tab shows Start with a Board', () => {
+  it('leaves Blank Plan’s one tab empty, so the tab shows Start Planning', () => {
     expect(PLAN_TEMPLATE_TABS['blank-plan']).toHaveLength(1);
     expect(buildPlanTab(PLAN_TEMPLATE_TABS['blank-plan'][0]!, 100, -50)).toEqual([]);
   });

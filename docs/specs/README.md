@@ -36,6 +36,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
 - ./027-repositories/README.md - when linking a code repository to livediagram: `livediagram.toml`, mirrors, sync and merge, git, diagram-as-code sources
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
+- ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store
 
 ## Workflow
 

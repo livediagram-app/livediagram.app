@@ -31,6 +31,7 @@ const GROUPED_ROWS = [
 ] as const;
 export const NAMED_ONLY = [
   'board',
+  'sheet',
   'type',
   'template',
   'icon',

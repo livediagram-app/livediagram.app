@@ -194,7 +194,11 @@ types, fields and people as the board shows them; add_board puts a board on a
 tab (a preset or columns by name) and change_board changes one (title, columns,
 the card types it shows); change_card_types adds and edits card types and their
 custom fields. A board shows only the card types it takes. A Plan template (kanban, project-planner, bug-triage)
-makes a document with boards ready to fill.`;
+makes a document with boards ready to fill. Sheets (spreadsheets on a tab) have
+theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A1
+(inputs, worked-out values and what they show), change_sheet sets, clears and
+formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
+and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---

@@ -66,7 +66,8 @@ export type PlanContextValue = {
     before?: string | null;
     // The new item's id, when the caller opens it next.
     id?: string;
-  }) => void;
+    // Whether the card was made (false: refused, and the store put back).
+  }) => Promise<boolean>;
   moveItem: (itemId: string, move: ItemMove) => void;
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;

@@ -4,6 +4,7 @@
 // under a document id lives here.
 
 import { readSeedItems, seedItems } from './item-routes';
+import { readSeedSheets, seedSheets } from './sheet-routes';
 import {
   catalogueWithBoardTypes,
   validateItemTypeCatalogue,
@@ -117,6 +118,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         intent?: unknown;
         markUsed?: unknown;
         items?: unknown;
+        sheets?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -183,6 +185,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // before anything is written.
       const seedItemCreates = readSeedItems(body.items, owner);
       if (seedItemCreates instanceof Response) return seedItemCreates;
+      // Seed sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), validated the same way.
+      const seedSheetCreates = readSeedSheets(body.sheets);
+      if (seedSheetCreates instanceof Response) return seedSheetCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
       // id that already exists under a DIFFERENT owner would silently transfer
@@ -319,6 +324,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Items only on a genuine create: a re-commit of an id never re-seeds its store.
       if (!clash && seedItemCreates.length > 0) {
         const refused = await seedItems(ctx, body.id, owner, seedItemCreates);
+        if (refused) return refused;
+      }
+      if (!clash && seedSheetCreates.length > 0) {
+        const refused = await seedSheets(ctx, body.id, owner, seedSheetCreates);
         if (refused) return refused;
       }
       const liveDoc = await getDocument(env, body.id);

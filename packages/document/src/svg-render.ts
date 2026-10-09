@@ -9,6 +9,7 @@
 // (Workers / jsdom), so wrapping still works headless.
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
+import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import {
   hasShapeSilhouette,
@@ -204,6 +205,10 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       shape.stroke,
       el.textColor ?? '#1e293b',
     )}</g>`;
+  }
+  if (el.type === 'shape' && el.shape === 'plan-sheet') {
+    const model = el.planSheet?.sheetId ? opts.sheets?.get(el.planSheet.sheetId) : undefined;
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgPlanSheet(el, model, surface)}</g>`;
   }
   if (
     el.type === 'shape' &&
@@ -468,6 +473,9 @@ export function renderElementsToSvg(
     items?: ReadonlyMap<string, Item>;
     // The document's item types (docs/specs/026-plan/item-types.md).
     itemTypes?: readonly ItemTypeDef[];
+    // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
+    // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
+    sheets?: ReadonlyMap<string, SheetRenderModel>;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -520,6 +528,7 @@ export function renderElementsToSvg(
             chartPalette,
             items: opts.items,
             itemTypes: opts.itemTypes,
+            sheets: opts.sheets,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

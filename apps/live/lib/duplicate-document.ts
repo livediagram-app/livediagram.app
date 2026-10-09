@@ -35,6 +35,7 @@ import {
 } from './offline/offline-store';
 import { fetchItems } from './api/items';
 import { storeAsCreates } from '@livediagram/items';
+import { fetchAllSheets, sheetAsCreate } from './api/sheets';
 
 // The refusals that mean "not beside the source for this person", where the copy is filed at the
 // explicit root of My documents instead (docs/specs/013-workspace/default-folders.md "Duplicate").
@@ -95,6 +96,14 @@ export async function duplicateDocument(
     shareCode: null,
     tabId: null,
   }).catch(() => null);
+  // The sheet store too (docs/specs/029-sheets/sheet-store.md "Copies"): sheet ids kept, each on its tab's new id.
+  const sheets = (
+    await fetchAllSheets({ ownerId, documentId: sourceId, shareCode: null, tabId: null }).catch(
+      () => [],
+    )
+  )
+    .filter((s) => tabIdMap.has(s.tabId))
+    .map((s) => ({ ...s, tabId: tabIdMap.get(s.tabId)! }));
   // Offline Mode (docs/specs/006-document/offline-mode.md): a copy of an offline document is another OFFLINE
   // document. Creating it on the server instead would silently upload content
   // the user explicitly chose to keep in this browser. Tabs are stored whole
@@ -105,7 +114,7 @@ export async function duplicateDocument(
         { id: newId, name: `${src.name} copy`, tabs: remappedTabs },
         Date.now(),
       );
-      if (itemStore?.items.length || src.itemTypes) {
+      if (itemStore?.items.length || src.itemTypes || sheets.length) {
         const rec = await offlineGetRecord(newId);
         if (rec) {
           await offlinePutRecord({
@@ -119,6 +128,7 @@ export async function duplicateDocument(
               : {}),
             // The type catalogue comes with it (docs/specs/026-plan/item-types.md).
             ...(src.itemTypes ? { itemTypes: src.itemTypes } : {}),
+            ...(sheets.length ? { sheets } : {}),
           });
         }
       }
@@ -141,6 +151,7 @@ export async function duplicateDocument(
       ...(intent ? { intent } : {}),
       ...(itemStore?.items.length ? { items: storeAsCreates(itemStore.items) } : {}),
       ...(src.itemTypes ? { itemTypes: src.itemTypes } : {}),
+      ...(sheets.length ? { sheets: sheets.map(sheetAsCreate) } : {}),
     });
   try {
     await create(placement ?? { teamId: src.teamId, folderId: src.folderId });

@@ -75,6 +75,14 @@ describe('card search', () => {
     expect(left).not.toContain('Estimate');
   });
 
+  it('offers Card Type even when every card is of one type, in the board order, and not without cards', () => {
+    const projects = searchCards(cards, [{ by: 'type', key: 't:project' }]);
+    const labels = searchFields(projects, []).map((f) => f.label);
+    expect(labels).toContain('Card Type');
+    expect(labels.indexOf('Card Type')).toBeLessThan(labels.indexOf('State'));
+    expect(searchFields([], []).map((f) => f.label)).not.toContain('Card Type');
+  });
+
   it('names a filter by its field and value, and validates what is stored', () => {
     expect(searchFilterLabel({ by: 'status', key: 's:done' }, cards)).toEqual({
       field: 'State',

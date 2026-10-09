@@ -13,6 +13,10 @@ describe('the MCP tool verbs', () => {
       'add_board',
       'change_board',
       'change_card_types',
+      'list_sheets',
+      'read_sheet',
+      'change_sheet',
+      'add_sheet',
       'find_documents',
       'read_document',
       'list_templates',
@@ -46,6 +50,8 @@ describe('the MCP tool verbs', () => {
     const reads = MCP_TOOL_VERBS.filter((v) => v.behaviour === 'read').map((v) => v.mcp.tool);
     expect(reads).toEqual([
       'list_items',
+      'list_sheets',
+      'read_sheet',
       'find_documents',
       'read_document',
       'list_templates',

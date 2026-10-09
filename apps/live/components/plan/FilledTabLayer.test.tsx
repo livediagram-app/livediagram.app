@@ -76,7 +76,7 @@ describe('a board filling its tab', () => {
   it('ends a maximise on it, and Escape does not restore it', () => {
     act(() => maximisePlanElement('el'));
     const fill = (id: string | null) =>
-      act(() => setPlanCover({ fillTabBoardId: id, tabElementCount: 1 }));
+      act(() => setPlanCover({ fillTabId: id, fillTabKind: 'Board', tabElementCount: 1 }));
     const { result } = renderHook(() => useBoardMaximised('el', true));
     expect(result.current).toEqual({ maximised: true, filled: false });
     fill('el');

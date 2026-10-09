@@ -14,7 +14,8 @@
 
 import { embedTabImages } from '@livediagram/api-schema';
 import { migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/document';
-import { typesOf } from '@livediagram/items';
+import { cardSourceOf, typesOf } from '@livediagram/items';
+import { renderModelsForTab, sheetFramesOf } from '@livediagram/sheets';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
@@ -29,6 +30,7 @@ import {
   thumbnailKey,
   type StoredTabBody,
   listItems,
+  listSheets,
   servableImageIds,
 } from './db';
 import { imageRefIds } from './image-refs/extract';
@@ -249,14 +251,33 @@ async function renderTabBodyToSvg(
   const plan = tab.elements.some(
     (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
   );
-  const items = plan
-    ? new Map((await listItems(env, liveDoc.id)).map((i) => [i.id, i]))
+  // A Sheet draws its window of cells (docs/specs/029-sheets/sheet.md "Exports and images"); card functions in
+  // its formulas read the items too.
+  const frames = sheetFramesOf(tab.elements as never);
+  const sheetJson = frames.length
+    ? await listSheets(env, liveDoc.id, {
+        ids: [...new Set(frames.map((f) => f.sheetId))].slice(0, 50),
+      })
+    : [];
+  const sheetCards = sheetJson.some((s) =>
+    s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
+  );
+  const items =
+    plan || sheetCards
+      ? new Map((await listItems(env, liveDoc.id)).map((i) => [i.id, i]))
+      : undefined;
+  const sheets = frames.length
+    ? renderModelsForTab(sheetJson, frames, {
+        cards:
+          sheetCards && items ? cardSourceOf(items.values(), typesOf(liveDoc.itemTypes)) : null,
+      })
     : undefined;
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
     items,
+    sheets,
     // Custom types keep their colours (docs/specs/026-plan/item-types.md).
     itemTypes: plan ? typesOf(liveDoc.itemTypes) : undefined,
   });

@@ -1368,6 +1368,27 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'sheets',
+    title: 'Sheets',
+    description:
+      'A spreadsheet tab on the canvas: setup, cells, formulas, formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
+    keywords:
+      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'sheet-functions',
+    title: 'Sheet Functions',
+    description: 'Every function a Sheet formula can use, with its arguments and an example.',
+    keywords:
+      'sheet functions function list formulas formula reference spreadsheet functions excel functions sum average count countif sumif vlookup xlookup index match if iferror concat text date today now round filter sort unique sequence pmt npv cardcount cardsum cards plan cards errors div/0 n/a name ref value spill',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'illustrate',
     title: 'Illustrate Mode',
     description:

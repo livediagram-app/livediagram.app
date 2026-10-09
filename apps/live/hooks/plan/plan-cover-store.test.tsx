@@ -16,7 +16,7 @@ import {
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(() => {
   act(() => {
-    setPlanCover({ fillTabBoardId: null, tabElementCount: 0 });
+    setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 });
     releasePlanElement('v');
     releasePlanElement('b');
   });
@@ -36,12 +36,12 @@ describe('plan-cover-store', () => {
     expect(renders).toHaveBeenCalledTimes(1);
     // Forty elements added, one at a time: no re-render.
     for (let n = 1; n <= 40; n++)
-      act(() => setPlanCover({ fillTabBoardId: null, tabElementCount: n }));
+      act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: n }));
     expect(renders).toHaveBeenCalledTimes(1);
-    act(() => setPlanCover({ fillTabBoardId: 'a', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'a', fillTabKind: 'Board', tabElementCount: 1 }));
     expect(renders).toHaveBeenCalledTimes(2);
     // Still covered, still board 'a': elements added while filled re-render nothing.
-    act(() => setPlanCover({ fillTabBoardId: 'a', tabElementCount: 2 }));
+    act(() => setPlanCover({ fillTabId: 'a', fillTabKind: 'Board', tabElementCount: 2 }));
     expect(renders).toHaveBeenCalledTimes(2);
   });
 
@@ -53,7 +53,7 @@ describe('plan-cover-store', () => {
     act(() => maximisePlanElement('b', 'Board'));
     expect(isBoardCovering()).toBe(true);
     act(() => releasePlanElement('b'));
-    act(() => setPlanCover({ fillTabBoardId: 'x', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'x', fillTabKind: 'Board', tabElementCount: 1 }));
     expect(isBoardCovering()).toBe(true);
   });
 
@@ -62,7 +62,7 @@ describe('plan-cover-store', () => {
       return <span>{useTabElementCount()}</span>;
     }
     const { container } = render(<Count />);
-    act(() => setPlanCover({ fillTabBoardId: null, tabElementCount: 7 }));
+    act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 7 }));
     expect(container.textContent).toBe('7');
   });
 });

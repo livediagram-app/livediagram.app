@@ -11,7 +11,7 @@ export type TooltipProps = {
   children: ReactElement;
 };
 
-// A tooltip: the control's name, after a 1 s hover or at once on keyboard
+// A tooltip: the control's name, after a 500 ms hover or at once on keyboard
 // focus (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md). Never the only carrier of
 // the name; the control keeps its own accessible name and this repeats it.
 //

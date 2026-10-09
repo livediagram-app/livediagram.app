@@ -163,7 +163,7 @@ export function usePlanSlice(opts: {
       before?: string | null;
       id?: string;
     }) => {
-      void write({
+      const made = write({
         kind: 'create',
         creates: [
           {
@@ -179,6 +179,7 @@ export function usePlanSlice(opts: {
         ],
       });
       track('Plan', 'Added', titleCaseType(input.type));
+      return made;
     },
     [write],
   );

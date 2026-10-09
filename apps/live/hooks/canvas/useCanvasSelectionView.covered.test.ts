@@ -33,7 +33,7 @@ const input = {
 
 afterEach(() => {
   releasePlanElement('b');
-  setPlanCover({ fillTabBoardId: null, tabElementCount: 0 });
+  setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 });
 });
 
 describe('selection chrome over a covered canvas', () => {
@@ -52,7 +52,7 @@ describe('selection chrome over a covered canvas', () => {
   });
 
   it('hides it while a board fills the tab', () => {
-    setPlanCover({ fillTabBoardId: 'b', tabElementCount: 1 });
+    setPlanCover({ fillTabId: 'b', fillTabKind: 'Board', tabElementCount: 1 });
     const { result } = renderHook(() => useCanvasSelectionView(input));
     expect(result.current.selected?.id).toBe('b');
     expect(result.current.showPopover).toBe(false);

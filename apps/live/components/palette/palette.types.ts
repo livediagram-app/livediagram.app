@@ -120,6 +120,8 @@ export type PaletteProps = {
   // `once`: picked up for one stroke (a logo page's palette), else held until put down.
   onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
   onBeginShapePen: () => void;
+  // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
+  onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
   // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.

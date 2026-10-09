@@ -111,3 +111,28 @@ describe('useCanvasPinchZoom and a sideways scroller', () => {
     expect(viewport.get().offset).toEqual({ x: 0, y: -30 });
   });
 });
+
+// A Sheet's grid or a board's body scrolls itself: a plain wheel there is theirs, but a Ctrl or Cmd wheel still zooms
+// the canvas.
+describe('useCanvasPinchZoom over an element that scrolls', () => {
+  it('leaves a plain wheel to it and zooms on a Ctrl or Cmd wheel', () => {
+    setup();
+    const grid = document.createElement('div');
+    grid.style.overflowY = 'auto';
+    Object.defineProperty(grid, 'scrollHeight', { value: 900 });
+    Object.defineProperty(grid, 'clientHeight', { value: 300 });
+    canvas.append(grid);
+    const on = (init: WheelEventInit) =>
+      act(() => {
+        grid.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init }));
+      });
+    on({ deltaY: 30 });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
+    on({ deltaY: -40, ctrlKey: true });
+    expect(viewport.get().zoom).toBeGreaterThan(1);
+    const z = viewport.get().zoom;
+    on({ deltaY: -40, metaKey: true });
+    expect(viewport.get().zoom).toBeGreaterThan(z);
+  });
+});

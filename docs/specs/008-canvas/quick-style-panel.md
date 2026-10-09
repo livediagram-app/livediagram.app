@@ -346,7 +346,7 @@ WCAG 2.2 AA.
   accessible name. The arrow keys move between options and choose, per the radio-group pattern;
   Tab moves between rows.
 - Every icon-only option has an accessible name and a **Tooltip** that repeats it (the name after a
-  1 s hover, at once on keyboard focus, see
+  500 ms hover, at once on keyboard focus, see
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)).
 - Focus is always visible. Every option is a target of at least 24 × 24 px, including the
   compact swatches whose colour draws smaller inside it.

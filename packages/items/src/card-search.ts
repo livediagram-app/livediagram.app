@@ -96,10 +96,13 @@ export function searchFields(
 ): CardSearchField[] {
   const inPlay = typesInPlay(matching, types);
   const out: CardSearchField[] = [];
-  for (const by of swimlaneGroupingsFor(inPlay)) {
+  // Card Type is always offered while there are cards, even all of one type (a board's swimlanes skip it then):
+  // naming it is worth it (Setup Sheet's card table takes its new rows' type from it).
+  const offered = new Set<SwimlaneBy>(swimlaneGroupingsFor(inPlay));
+  if (matching.length) offered.add('type');
+  else offered.delete('type');
+  for (const by of SWIMLANE_BY.filter((b) => offered.has(b))) {
     if (by === 'none') continue;
-    // Card Type is worth filtering while the matching cards hold more than one type.
-    if (by === 'type' && new Set(matching.map((c) => c.type)).size < 2) continue;
     out.push({ by, label: GROUPING_LABELS[by] ?? by });
   }
   for (const f of laneFieldsOf(inPlay)) out.push({ by: 'field', field: f.id, label: f.label });

@@ -159,6 +159,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Plan views (docs/specs/026-plan/plan-views.md): ten metrics, five visualisations.
   'plan-metrics': 10,
   'plan-visualisations': 5,
+  'plan-sheets': 1,
   // Borrowed tiles, listed by the Plan layout (palette-layouts.ts), so no tile of their own.
   'plan-content': 0,
   'plan-tools': 0,

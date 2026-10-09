@@ -24,7 +24,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - Every document has one. Until its card types are **chosen**, it reads as the **default types**, from code: a
   document stores nothing, and a default type improved in a later release reaches it.
 - **The first boards choose them.** While a document's card types are not chosen and it has no cards, the first
-  boards made in it (a template's tabs, a board from Start with a Board or the palette, an agent's) make its card
+  boards made in it (a template's tabs, a board from Start Planning or the palette, an agent's) make its card
   types exactly the [ready-made types](plan-templates.md#ready-made-card-types) those boards bring, in the order
   they name them: a Hiring Pipeline document has Role, Candidate and Onboarding Task, a Kanban board's Task and
   Action. A Blank board brings the five default types, so a document started with one reads as before. A board

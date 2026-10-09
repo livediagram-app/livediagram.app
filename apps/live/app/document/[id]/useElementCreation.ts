@@ -36,6 +36,7 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
+import { isPlacedSheetStart, placeNewSheet } from '@/lib/sheet-seeds';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -433,6 +434,14 @@ export function useElementCreation(opts: {
               // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
               ...(kind === 'plan-board' ? planBoardPlacement(art?.choice) : {}),
               ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
+              // A Sheet names a new sheet (docs/specs/029-sheets/sheet.md "Placing a sheet").
+              ...(kind === 'plan-sheet'
+                ? {
+                    planSheet: placeNewSheet(
+                      isPlacedSheetStart(art?.choice) ? { start: art.choice } : {},
+                    ),
+                  }
+                : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).

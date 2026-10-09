@@ -6,7 +6,14 @@
 // draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
 // become new tabs).
 
-import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
+import {
+  copiedSheetId,
+  freshCopyFields,
+  relinkCopiedCharts,
+  remapElementRefs,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
@@ -24,11 +31,19 @@ import { debugLog } from '@/lib/debug-log';
 // same way.
 export const remintElementIds = (elements: Element[]): Element[] => {
   const idMap = new Map<string, string>();
-  const next = elements.map((el) => {
+  const sheetIds = new Map<string, string>();
+  const minted = elements.map((el) => {
     const id = crypto.randomUUID();
     idMap.set(el.id, id);
-    return { ...el, id };
+    // A Sheet's copy frames a new sheet made from the original's (freshCopyFields).
+    const sheet = el.type === 'shape' && el.shape === 'plan-sheet' ? freshCopyFields(el) : {};
+    const copy = { ...el, id, ...sheet } as Element;
+    const pair = copiedSheetId(el, copy as { planSheet?: { sheetId: string } });
+    if (pair) sheetIds.set(pair[0], pair[1]);
+    return copy;
   });
+  // A chart on the tab reads the tab's copy of its Sheet (docs/specs/029-sheets/sheet.md "Charts").
+  const next = relinkCopiedCharts(minted, sheetIds);
   // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
   // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
   // nodes named parents on the SOURCE tab and paired portals lost their

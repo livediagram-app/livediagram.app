@@ -104,7 +104,7 @@ Minimal chrome meets WCAG 2.2 AA:
 - **Controls keep their accessible names.** A hidden caption was never the only name: each control keeps its
   `aria-label` or equivalent.
 - **The words come back on hover and focus.** A control whose visible label is hidden shows it through its hint: its
-  hover card where it already has one (the hover card's title is the name), otherwise a Tooltip (1 s hover, instant on
+  hover card where it already has one (the hover card's title is the name), otherwise a Tooltip (500 ms hover, instant on
   keyboard focus, long press on touch), per [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md).
   Palette tiles use a Tooltip.
 - **Non-interactive labels stay in the document.** A panel title keeps its text as visually hidden text; the selection

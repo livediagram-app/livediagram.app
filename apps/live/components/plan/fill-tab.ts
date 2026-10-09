@@ -5,16 +5,44 @@ import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
 
 const isBoard = (el: Element) => el.type === 'shape' && el.shape === 'plan-board';
 
-// The board filling the tab: the first (in canvas order) whose set-up has Fill Tab on, or null. Reads the stored
-// flag as normaliseBoardSetup does (exactly true), without normalising every board.
-export function fillTabBoardIdOf(elements: readonly Element[]): string | null {
+const isSheet = (el: Element) => el.type === 'shape' && el.shape === 'plan-sheet';
+
+export type FillTabKind = 'Board' | 'Sheet';
+
+// The element filling the tab: the first (in canvas order) board whose set-up has Fill Tab on, or Sheet whose
+// `planSheet` has, or null. Reads the stored flag exactly (true), without normalising every board.
+export function fillTabElementOf(
+  elements: readonly Element[],
+): { id: string; kind: FillTabKind } | null {
   for (const el of elements) {
-    if (!isBoard(el)) continue;
-    const setup = (el as { planBoard?: unknown }).planBoard;
-    if (setup && typeof setup === 'object' && (setup as { fillTab?: unknown }).fillTab === true)
-      return el.id;
+    if (isBoard(el)) {
+      const setup = (el as { planBoard?: unknown }).planBoard;
+      if (setup && typeof setup === 'object' && (setup as { fillTab?: unknown }).fillTab === true)
+        return { id: el.id, kind: 'Board' };
+    } else if (isSheet(el)) {
+      if ((el as { planSheet?: { fillTab?: unknown } }).planSheet?.fillTab === true)
+        return { id: el.id, kind: 'Sheet' };
+    }
   }
   return null;
+}
+
+// The tab once the Sheet `id` fills it: the Sheet alone, Fill Tab on. The same array when it is not on the tab.
+export function fillTabSheetElements(elements: Element[], id: string): Element[] {
+  const sheet = elements.find((el) => el.id === id && isSheet(el)) as
+    (Element & { planSheet?: { sheetId: string } }) | undefined;
+  if (!sheet?.planSheet) return elements;
+  return [{ ...sheet, planSheet: { ...sheet.planSheet, fillTab: true } } as Element];
+}
+
+// The Sheet `id` back on the canvas (Fill Tab off).
+export function unfillSheetElements(elements: Element[], id: string): Element[] {
+  return elements.map((el) => {
+    const ref = (el as { planSheet?: { sheetId: string; fillTab?: true } }).planSheet;
+    if (el.id !== id || !isSheet(el) || !ref?.fillTab) return el;
+    const { fillTab: _drop, ...rest } = ref;
+    return { ...el, planSheet: rest } as Element;
+  });
 }
 
 // What turning Fill Tab on for `boardId` deletes: every other element, and how many of them are locked.

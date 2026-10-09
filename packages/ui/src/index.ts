@@ -36,6 +36,8 @@ export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { SheetBuildAnimation } from './SheetBuildAnimation';
+export { LoadingSweep } from './LoadingSweep';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';

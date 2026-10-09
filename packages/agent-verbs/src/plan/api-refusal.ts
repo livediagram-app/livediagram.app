@@ -2,6 +2,7 @@
 // and the next call to make, the same words on the CLI and the MCP. A 5xx or anything not from the api is not a
 // refusal: the caller lets it throw.
 import { ApiError } from '@livediagram/api-client';
+import { SHEET_REFUSAL_WORDS } from '../sheets/sheet-refusals';
 
 export const FIELD_HINT =
   'Fields: title, description, status (a column name), assignee (a name), priority (urgent|high|medium|low), ' +
@@ -16,6 +17,7 @@ const BY_CODE: Readonly<Record<string, string>> = {
   title_required: 'an item needs a title.',
   item_types_invalid: 'the card types would break a rule.',
   place_invalid: 'the column or position is not valid.',
+  ...SHEET_REFUSAL_WORDS,
 };
 
 const BY_STATUS: Readonly<Record<number, string>> = {

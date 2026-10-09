@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import { presetSetup } from '@livediagram/items';
 import {
-  fillTabBoardIdOf,
+  fillTabElementOf,
+  fillTabSheetElements,
+  unfillSheetElements,
   fillTabConfirm,
   fillTabElements,
   fillTabOthers,
@@ -20,12 +22,35 @@ const board = (id: string, fillTab?: unknown): Element =>
 const note = (id: string, locked = false): Element =>
   ({ ...createShape('square', 0, 0), id, ...(locked ? { locked: true } : {}) }) as Element;
 
-describe('fillTabBoardIdOf', () => {
-  it('is the first board in canvas order with Fill Tab exactly on', () => {
-    expect(fillTabBoardIdOf([note('n'), board('a'), board('b', 'yes')])).toBeNull();
-    expect(fillTabBoardIdOf([note('n'), board('a', true), board('b', true)])).toBe('a');
-    expect(fillTabBoardIdOf([board('a'), board('b', true)])).toBe('b');
-    expect(fillTabBoardIdOf([])).toBeNull();
+const sheet = (id: string, fillTab?: true): Element =>
+  ({
+    ...createShape('plan-sheet', 0, 0),
+    id,
+    planSheet: { sheetId: 'sheet0001', ...(fillTab ? { fillTab } : {}) },
+  }) as Element;
+
+describe('fillTabElementOf', () => {
+  it('is the first board or Sheet in canvas order with Fill Tab exactly on', () => {
+    expect(fillTabElementOf([note('n'), board('a'), board('b', 'yes')])).toBeNull();
+    expect(fillTabElementOf([note('n'), board('a', true), board('b', true)])).toEqual({
+      id: 'a',
+      kind: 'Board',
+    });
+    expect(fillTabElementOf([board('a'), board('b', true)])).toEqual({ id: 'b', kind: 'Board' });
+    expect(fillTabElementOf([sheet('s'), sheet('t', true), board('b', true)])).toEqual({
+      id: 't',
+      kind: 'Sheet',
+    });
+    expect(fillTabElementOf([])).toBeNull();
+  });
+
+  it('fills the tab with a Sheet alone, and puts it back on the canvas', () => {
+    const filled = fillTabSheetElements([note('n'), sheet('s')], 's');
+    expect(filled).toEqual([sheet('s', true)]);
+    expect(fillTabSheetElements([note('n')], 's')).toEqual([note('n')]);
+    expect(unfillSheetElements(filled, 's')).toEqual([sheet('s')]);
+    const els = [note('n'), sheet('t')];
+    expect(unfillSheetElements(els, 't')).toEqual(els);
   });
 });
 

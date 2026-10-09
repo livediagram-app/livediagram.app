@@ -13,7 +13,7 @@ import {
   type RoomOp,
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
-import type { ItemsRoomOp, ItemTypesRoomOp } from '@livediagram/api-schema';
+import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@livediagram/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -436,4 +436,9 @@ export async function relayItemTypes(
 // broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
   await broadcastOp(env, documentId, op, 'items', true);
+}
+
+// A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.
+export async function relaySheets(env: Env, documentId: string, op: SheetsRoomOp): Promise<void> {
+  await broadcastOp(env, documentId, op, 'sheets', true);
 }

@@ -130,22 +130,22 @@ export function TableHeaderMenu({
   const afterDir = isCol ? 'right' : 'down';
   return (
     <>
-      <MenuButton label={isCol ? 'Insert left' : 'Insert above'} onClick={() => onAdd(index)}>
+      <MenuButton label={isCol ? 'Insert Left' : 'Insert Above'} onClick={() => onAdd(index)}>
         <ArrowIcon dir={beforeDir} />
       </MenuButton>
-      <MenuButton label={isCol ? 'Insert right' : 'Insert below'} onClick={() => onAdd(index + 1)}>
+      <MenuButton label={isCol ? 'Insert Right' : 'Insert Below'} onClick={() => onAdd(index + 1)}>
         <ArrowIcon dir={afterDir} />
       </MenuButton>
       <MenuSeparator />
       <MenuButton
-        label={isCol ? 'Move left' : 'Move up'}
+        label={isCol ? 'Move Left' : 'Move Up'}
         disabled={index === 0}
         onClick={() => onMove(index, index - 1)}
       >
         <ArrowIcon dir={beforeDir} />
       </MenuButton>
       <MenuButton
-        label={isCol ? 'Move right' : 'Move down'}
+        label={isCol ? 'Move Right' : 'Move Down'}
         disabled={index === count - 1}
         onClick={() => onMove(index, index + 1)}
       >
@@ -153,7 +153,7 @@ export function TableHeaderMenu({
       </MenuButton>
       <MenuSeparator />
       <MenuButton
-        label={isCol ? 'Delete column' : 'Delete row'}
+        label={isCol ? 'Delete Column' : 'Delete Row'}
         disabled={count <= 1}
         onClick={() => onDelete(index)}
       >

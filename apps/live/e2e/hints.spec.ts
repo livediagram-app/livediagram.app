@@ -43,12 +43,12 @@ async function keyboardFocus(page: Page, target: Locator) {
 }
 
 test.describe('Tooltip on a palette tile', () => {
-  test('names the tile only after a 1 s hover', async ({ page, pageErrors }) => {
+  test('names the tile only after a 500 ms hover', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
     await squareTile(page).hover();
 
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(250);
     await expect(page.locator(TOOLTIP)).toHaveCount(0);
 
     const tooltip = page.locator(TOOLTIP);

@@ -61,6 +61,7 @@ import {
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
 import { registerPlanTools } from './plan-tools';
+import { registerSheetTools } from './sheet-tools';
 import {
   mcpAddTab,
   mcpCreateDocument,
@@ -78,6 +79,8 @@ import {
 export function registerTools(server: McpServer, env: Env): void {
   // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
   registerPlanTools(server, env);
+  // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
+  registerSheetTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra as Extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a

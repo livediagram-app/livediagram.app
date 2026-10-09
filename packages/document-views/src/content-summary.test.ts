@@ -70,6 +70,11 @@ describe('contentSummaryOf (R14)', () => {
       'view=gantt',
     );
     expect(contentSummaryOf(shape('plan-view', { planView: undefined }))).toBe('view=none');
+    // A Sheet names its sheet, or none.
+    expect(contentSummaryOf(shape('plan-sheet', { planSheet: { sheetId: 'sheet0001' } }))).toBe(
+      'sheet=sheet0001',
+    );
+    expect(contentSummaryOf(shape('plan-sheet', { planSheet: undefined }))).toBe('sheet=none');
   });
 
   it('has nothing to say about other kinds', () => {

@@ -145,7 +145,7 @@ test.describe('editor modes', () => {
     await chooseMode(page, 'Plan');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
     await expect(boards(page)).toHaveCount(1);
-    await expect(page.getByRole('heading', { name: 'Start with a Board' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Start Planning' })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 

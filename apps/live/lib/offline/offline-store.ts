@@ -11,6 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import { upgradeStores } from './legacy-offline-store';
+import type { SheetJson } from '@livediagram/sheets';
 import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
 import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
@@ -62,6 +63,9 @@ export type OfflineDocumentRecord = {
   itemsNextKey?: number;
   // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the default types.
   itemTypes?: ItemTypeCatalogue | null;
+  // The document's sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents"): every sheet, cells
+  // included. Optional: a record without it has none.
+  sheets?: SheetJson[];
 };
 
 // A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md

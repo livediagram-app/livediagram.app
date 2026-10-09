@@ -22,3 +22,4 @@ Follow the references below only as needed; never upfront.
 - ./touch-targets.md - when adding a small control: the 44px tap area on touch screens, `touch-target` / `touch-target-y`, and which shared controls carry it
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule
 - ./date-fields.md - when adding, styling or saving a date or time input: it fits its column on phones and iPads, saves only a whole date (`DateInput`), a dropdown opens the picker, and how a card's date reads
+- ./search-and-filters.md - when a search can also be narrowed by filters: one field, the filters as chips inside it (FilterSearchBox), never a filter row under the box

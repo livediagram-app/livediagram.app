@@ -29,11 +29,14 @@ export function AddFilterPicker({
   valuesOf,
   onPick,
   className = '',
+  inBox = false,
 }: {
   fields: readonly FilterField[];
   valuesOf: (fieldId: string) => readonly FilterValue[];
   onPick: (fieldId: string, valueKey: string) => void;
   className?: string;
+  // Inside a search box's right edge (FilterSearchBox): a quiet button rather than a dashed pill.
+  inBox?: boolean;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [field, setField] = useState<FilterField | null>(null);
@@ -54,12 +57,16 @@ export function AddFilterPicker({
         type="button"
         aria-haspopup="dialog"
         aria-expanded={anchor !== null}
-        className={`inline-flex cursor-pointer items-center gap-1 rounded-full border border-dashed border-slate-300 px-2.5 py-0.5 text-[12px] font-medium text-slate-600 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200 ${className}`}
+        className={`inline-flex cursor-pointer items-center gap-1 text-[12px] font-medium text-slate-600 transition hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200 ${
+          inBox
+            ? 'h-6 whitespace-nowrap rounded-md px-1.5 hover:bg-brand-50 dark:hover:bg-brand-500/10'
+            : 'rounded-full border border-dashed border-slate-300 px-2.5 py-0.5 hover:border-brand-400 hover:bg-brand-50 dark:border-slate-600 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
+        } ${className}`}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => (anchor ? close() : setAnchor(e.currentTarget))}
       >
         <PlusIcon size={11} />
-        Add Filter
+        <span className="text-optical-centre">Add Filter</span>
       </button>
       {anchor ? (
         <AnchoredPopover anchor={anchor} name="Add Filter" width={POPOVER_PX} onClose={close}>

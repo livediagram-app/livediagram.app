@@ -65,22 +65,30 @@ Plan must cost nothing to a document that does not use it:
 
 ## Starting a board
 
-- An empty Plan tab (nothing on its canvas at all) shows, in the middle of the canvas, **Start with a Board**: a tile per board type, in the
-  palette's order (Blank first, All Cards always last) and the Archive board left out, each a small picture of the board (its columns, its rows, cards in the
+- An empty Plan tab (nothing on its canvas at all) shows, in the middle of the canvas, **Start Planning**, with two tabs:
+  **Boards** (open first) and **Spreadsheets**: a tile per sheet type, each a small drawn table over its name and line, placing a Sheet in the
+  middle of the view: **Empty Sheet** ("Set it up next: a layout, your cards or a blank grid.", Setup Sheet from the
+  start), **Card Table** ("Your cards of a type as rows, linked both ways. Pick which next.", only while the document
+  has cards; Setup Sheet opens on its Cards step, Plan Cards chosen, to filter by Card Type), **Budget** ("Items,
+  categories and amounts, with a total.") and **Tracker** ("Tasks, owners, a status and due dates."), these two
+  opening Setup Sheet on Style with their start chosen and Freeze Header Row on, so **Create Sheet** makes them.
+  Back reaches Start From as ever; a sheet later cleared starts Setup Sheet from the beginning. Boards holds a tile per board type, in the
+  palette's order (Blank first, All Cards always last) and the Archive board left out (switching tabs cascades the
+  tiles in, the shared cascade within the motion budget; the picker's first paint does not animate), each a small picture of the board (its columns, its rows, cards in the
   colours of the types it takes) over its name and its full description, in the tab's light or dark look, as a new
   infographic page offers its layouts. Choosing one places that board,
   empty, in the middle of the view. It is gone once the tab has anything on it (a board, or a
   shape, a note or a view drawn first: the palette's Boards still add one), and never shown to someone who may only
   view. It keeps clear of the toolbar above and the bottom-right buttons below, scrolling inside itself when the
   tiles run taller than the room; on a phone it shows two tiles a row with shorter pictures.
-- Every list of board types (the palette's Boards, Start with a Board) is one list (`PLAN_BOARD_TILES`), and **All
+- Every list of board types (the palette's Boards, Start Planning) is one list (`PLAN_BOARD_TILES`), and **All
   Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
   All Cards in the palette).
 - Plan mode has no empty-canvas Quick Start banner: the board picker is its start. Its foot holds a quiet
   **Open Quick Start** button (the sparkle icon) that opens the regular Quick Start for this tab, for a diagram
   template or another kind of tab instead.
 - **A new tab from Plan stays Plan**: adding a tab (the tab bar's **+**) while in Plan mode opens it in Plan
-  (`opensIn` Plan, for everyone), straight to **Start with a Board**, with no Quick Start
+  (`opensIn` Plan, for everyone), straight to **Start Planning**, with no Quick Start
   ([Editor modes](../007-editor/editor-modes.md)). In any other mode a new tab opens as before.
 
 ## Switching modes keeps the tab
@@ -109,9 +117,9 @@ Plan must cost nothing to a document that does not use it:
 
 ## The palette
 
-The Plan layout offers seven categories and opens on **Cards**. The card-backed five, **Cards**, **Boards**,
-**Widgets**, **Metrics** and **Visualisations**, sit under the **Plan** heading of the category picker, first; then
-**Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
+The Plan layout offers eight categories and opens on **Cards**. **Cards**, **Boards**, **Widgets**, **Metrics** and
+**Visualisations** sit under the **Boards & Cards** heading of the category picker, first; then **Sheet** under
+**Spreadsheets** ([Sheet](../029-sheets/sheet.md)); then **Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
 ([Item types](item-types.md)); the Toolbar strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
 drawing or decorating categories (Shapes, Icons, Stickers and the rest stay with the other modes); the few other
 elements a team plans beside its boards come in Content and Tools:
@@ -123,6 +131,7 @@ elements a team plans beside its boards come in Content and Tools:
 | Widgets        | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas                                           |
 | Metrics        | The read-out widgets free on the canvas, over every card ([Plan views](plan-views.md#metrics))                                           |
 | Visualisations | Gantt Chart, Due Calendar, Cards by Field, Priority by Status, Card Search ([Plan views](plan-views.md#visualisations))                  |
+| Sheet          | Sheet: a spreadsheet tab of cells and formulas ([Sheet](../029-sheets/sheet.md))                                                         |
 | Content        | Sticky Note, Text, Image, Page                                                                                                           |
 | Tools          | Temperature, Estimate, Idea Box, Picker, Timer, Stopwatch                                                                                |
 

@@ -3,6 +3,8 @@
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
+import { isPlanSheetRef } from './element-types';
+import { isChartSource } from './chart-source';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -269,6 +271,16 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     // may not be initialised yet (a ReferenceError in the browser).
     valid: (v: unknown) => isPlanViewSettings(v),
     rule: 'an object { view } naming a plan view, with an optional swimlaneBy, swimlaneField, namesWidth (120 to 2000) and rowOrder (up to 2000 card ids)',
+  },
+  {
+    field: 'chartSource',
+    valid: (v: unknown) => isChartSource(v),
+    rule: 'an object { sheetId, range: { r1, c1, r2, c2 } } naming a sheet of the document and row and column ids',
+  },
+  {
+    field: 'planSheet',
+    valid: (v: unknown) => isPlanSheetRef(v),
+    rule: 'an object { sheetId } naming a sheet of the document',
   },
   {
     field: 'legendItems',

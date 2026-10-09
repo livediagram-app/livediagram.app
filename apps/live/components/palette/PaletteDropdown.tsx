@@ -2,6 +2,11 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard, Portal } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
+// openOnHover: a mouse resting this long on the trigger opens the menu (passing over it does not), and the menu
+// closes this long after the pointer leaves both it and the trigger, so a path from one to the other keeps it open.
+export const DROPDOWN_HOVER_OPEN_MS = 120;
+export const DROPDOWN_HOVER_CLOSE_MS = 250;
+
 export type PaletteDropdownOption = {
   id: string;
   label: string;
@@ -88,6 +93,7 @@ export function PaletteDropdown({
   groupLabels,
   dataTourId,
   iconOnly = false,
+  openOnHover = false,
 }: {
   value: string;
   options: PaletteDropdownOption[];
@@ -143,8 +149,33 @@ export function PaletteDropdown({
   // still the accessible name via aria-label). The strip's canvas-tool
   // picker uses it, the way Excalidraw's tool bar shows a tool as its icon.
   iconOnly?: boolean;
+  // A mouse hovering the trigger opens the menu (the Sheet toolbar's category switcher, on a desktop); touch and
+  // the keyboard keep click-to-open. A click then opens rather than toggles.
+  openOnHover?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const hoverTimer = useRef<number | null>(null);
+  const clearHover = () => {
+    if (hoverTimer.current !== null) window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+  };
+  useEffect(() => clearHover, []);
+  // Pointer handlers for the trigger and the menu alike; inert without openOnHover or for a pen or a finger.
+  const hoverProps = openOnHover
+    ? {
+        onPointerEnter: (e: React.PointerEvent) => {
+          if (e.pointerType !== 'mouse') return;
+          clearHover();
+          if (!open)
+            hoverTimer.current = window.setTimeout(() => setOpen(true), DROPDOWN_HOVER_OPEN_MS);
+        },
+        onPointerLeave: (e: React.PointerEvent) => {
+          if (e.pointerType !== 'mouse') return;
+          clearHover();
+          hoverTimer.current = window.setTimeout(() => setOpen(false), DROPDOWN_HOVER_CLOSE_MS);
+        },
+      }
+    : {};
   const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   // Fixed-position coords for the portalled menu. `left`/`right` is picked
@@ -219,9 +250,8 @@ export function PaletteDropdown({
     };
   }, [open, align, gap]);
 
-  // Click-only: the dropdown opens on click and closes on click / outside
-  // pointer-down (see the effect above). No hover-open — hovering across a
-  // dropdown must never change the open category underneath the pointer.
+  // Click to open by default: the dropdown opens on click and closes on click / outside pointer-down (see the effect
+  // above). `openOnHover` opens it for a resting mouse as well, but hovering never changes the value: only a pick does.
   const selected = options.find((o) => o.id === value) ?? options[0];
   // 'flush' triggers (the palette's tool + category pickers) get roomier
   // padding than the bordered filter dropdowns so they're a bigger, easier
@@ -235,7 +265,10 @@ export function PaletteDropdown({
   const trigger = (
     <button
       type="button"
-      onClick={() => setOpen((o) => !o)}
+      onClick={() => {
+        clearHover();
+        setOpen((o) => (openOnHover ? true : !o));
+      }}
       aria-haspopup="listbox"
       aria-expanded={open}
       aria-label={ariaLabel}
@@ -260,7 +293,7 @@ export function PaletteDropdown({
     </button>
   );
   return (
-    <div className="relative min-w-0" ref={triggerRef}>
+    <div className="relative min-w-0" ref={triggerRef} {...hoverProps}>
       {/* The hover card steps aside while the menu is open: it would otherwise
           sit on top of the options it describes. */}
       {hoverCardTitle && !open ? (
@@ -274,6 +307,7 @@ export function PaletteDropdown({
         <Portal>
           <div
             ref={menuRef}
+            {...hoverProps}
             role="listbox"
             data-palette-dropdown-menu
             data-tour-id={dataTourId ? `${dataTourId}-menu` : undefined}

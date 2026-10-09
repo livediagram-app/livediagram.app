@@ -1,5 +1,6 @@
 'use client';
 
+import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
@@ -24,6 +25,9 @@ import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
 import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
+import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
+import { useSheetsBridge } from '@/hooks/sheets/useSheetsBridge';
+import { useSheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
 import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
@@ -1111,6 +1115,37 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     send: (op) => roomRef.current?.send({ kind: 'op', op }),
   });
 
+  // The sheet store's bridge (docs/specs/029-sheets/sheet-store.md "Live for everyone"): the room's sheet ops reach
+  // the lazily loaded sheet chunk through it, once a Sheet is drawn.
+  const sheetsCommitRef = useRef<((map: (els: Element[]) => Element[]) => void) | null>(null);
+  const sheetsPlaceRef = useRef<
+    ((at: { x: number; y: number }, make: (x: number, y: number) => BoxedElement) => void) | null
+  >(null);
+  const sheetsModeRef = useRef<((mode: 'plan') => void) | null>(null);
+  const sheets = useSheetsBridge({
+    documentId: documentId ?? '',
+    ownerId: selfParticipant.id,
+    shareCode: sessionShareCode,
+    tabScope: sessionTabScope,
+    self: planItems.self,
+    canEdit,
+    peers: livePresence,
+    pushUndo: itemUndo.push,
+    toast: (message) => toast.error(message),
+    notify: (message) => toast.info(message),
+    send: (op) => roomRef.current?.send({ kind: 'op', op }),
+    activeTabId: activeId,
+    // `commit`, `undo` and `redo` are declared further down; read at call time.
+    commitElements: (map) => sheetsCommitRef.current?.(map),
+    placeElement: (at, make) => sheetsPlaceRef.current?.(at, make),
+    tickElements: (map) =>
+      tickTabs((ts) =>
+        ts.map((t) => (t.id === activeId ? { ...t, elements: map(t.elements) } : t)),
+      ),
+    switchToPlan: () => sheetsModeRef.current?.('plan'),
+    selectElement: (id) => setSelectedId(id),
+  });
+
   useRoomConnection({
     hydrated,
     documentId,
@@ -1155,15 +1190,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer: async () => {
       planItems.refetch();
+      sheets.resync();
       await resyncFromServer();
     },
     receiveChangeset: changesetFeed.receiveChangeset,
     receiveItems: planItems.receive,
     receiveItemTypes: itemTypes.receive,
     receivePlanPresence: planPresence.receive,
+    receiveSheets: sheets.receiveSheets,
+    receiveSheetPresence: sheets.receiveSheetPresence,
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
+      sheets.resync();
+      sheets.reannounce();
       // A rejoined connection has a new presence id, which carries no hold until it is said again.
       planPresence.reannounce();
     },
@@ -1238,6 +1278,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is.
   const rawEditorMode = useEditorMode(activeTab, { canEdit });
+  useAssignRef(sheetsModeRef, rawEditorMode.setMode);
   // An editor's switch also moves the tab's Opens in, so the two never disagree.
   const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
@@ -1371,6 +1412,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     fitToScreen,
     fitToBounds,
+    focusOn,
     centreOn,
     isCentredOn,
     scrollIntoView,
@@ -2113,7 +2155,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // Undo / redo handlers. See useEditorHistory.
-  const { tick, undo, redo } = useEditorHistory({
+  const editorHistory = useEditorHistory({
     activeId,
     editsBlocked,
     canUndo,
@@ -2123,6 +2165,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
+  const { tick, undo, redo } = editorHistory;
   // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
   // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
   // edited while presenting).
@@ -2738,6 +2781,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
     useCellLinkPicker({ editsBlocked, commit });
 
+  // Deleting a Sheet asks before taking its sheet (docs/specs/029-sheets/sheet-store.md "Deleting a sheet").
+  const readTabsForSheets = useCallback(() => tabsRef.current, []);
+  const sheetDeleteGuard = useSheetDeleteGuard({
+    readTabs: readTabsForSheets,
+    activeTabId: activeId,
+    confirm,
+    sheetsAttached: sheets.sheetsAttached,
+    sheetTitle: sheets.sheetTitle,
+    releaseSheets: sheets.releaseSheets,
+  });
+
   // Structural element operations (delete, marquee commit, lock, and the
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
@@ -2754,6 +2808,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     stackSelectedBack,
     spawnConnectSelected,
   } = useElementSelectionActions({
+    sheetDeleteGuard,
     currentSelectionIds,
     readSelection,
     activeTab,
@@ -2893,6 +2948,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    unlinkChartSelected,
     setLineDataSelected,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
@@ -3272,6 +3328,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
     insertBoardScene: (scene, at) => void boardSceneInsert.insertScene(scene, at),
   });
+  // A CSV file dropped in Plan mode places a Sheet from it (docs/specs/029-sheets/sheet.md "Placing a sheet").
+  const dropFileOnCanvas = useSheetCsvDrop({
+    planMode: editorMode.mode === 'plan',
+    blocked: createBlocked,
+    addBoxedAt,
+    dropOther: dropBoardFile,
+    toast: (message) => toast.error(message),
+  });
   // Board scenes pasted or dropped from another tool (docs/specs/020-import-export/board-scene.md
   // "In the editor"): one commit at the pointer, selected, with its notice.
   const boardSceneInsert = useBoardSceneInsert({
@@ -3368,9 +3432,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // editor already exposes, composed into one undo-friendly action.
       copySelection();
       if (readSelection().multiSelectedIds.size > 0) {
-        deleteMultiSelected();
+        deleteMultiSelected({ cut: true });
       } else {
-        deleteSelected();
+        deleteSelected({ cut: true });
       }
     },
     onBringToFront: bringSelectedToFront,
@@ -3421,6 +3485,26 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useWorkbenchEnd(workbench, documentTrashed.trashed);
 
+  // Focus zooms in no further than this on a small element.
+  const FOCUS_ZOOM_MAX = 1.5;
+  // Focus (docs/specs/026-plan/plan-board.md "Focus"): a board's or a Sheet's header glides the view to fit it.
+  const focusBounds = useCallback(
+    (b: { x: number; y: number; w: number; h: number }) => focusOn(b, FOCUS_ZOOM_MAX),
+    [focusOn],
+  );
+  // A board, visualisation or Sheet this person just added glides into view, as Focus does.
+  const selectedNow = useCallback(() => readSelection().selectedId, [readSelection]);
+  useFocusNewPlanElement({
+    tabId: activeId,
+    elements: activeTab.elements,
+    selectedId: selectedNow,
+    focus: focusBounds,
+  });
+
+  // The sheets bridge's way back into the editor (hooks/sheets/useSheetsBridge.ts): assigned last, once every
+  // slice it reaches exists.
+  useAssignRef(sheetsCommitRef, commit);
+  useAssignRef(sheetsPlaceRef, (at, make) => addBoxedAt(at.x, at.y, make));
   return {
     surface,
     workbenchMode,
@@ -3432,6 +3516,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     agentFocusByElement,
     plan,
     planTour,
+    // The sheet store's bridge, provided to Sheet elements (components/sheets).
+    sheetsBridge: sheets.bridge,
+    // A header's Focus: glide the view to fit an element (hooks/canvas/useCanvasFocus.tsx).
+    focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,
@@ -3468,7 +3556,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
     pasteFromClipboard,
-    dropBoardFile,
+    dropBoardFile: dropFileOnCanvas,
     hasClipboard,
     boardSceneInsert,
     insertLibraryShape,
@@ -3910,6 +3998,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    unlinkChartSelected,
     setLineDataSelected,
     resetShapeStyleSelected,
     resetArrowStyleSelected,

@@ -21,6 +21,7 @@ import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_REPORT_REASONS,
   PLACEMENT_DEFAULT_KEYS,
+  SHEET_CHANGE_KINDS,
   pascalToken,
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
@@ -329,7 +330,26 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
   // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
   'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
-    values: ['BoardMaximised', 'ViewMaximised', 'BoardRestored', 'ViewRestored'],
+    values: [
+      'BoardMaximised',
+      'ViewMaximised',
+      'SheetMaximised',
+      'BoardRestored',
+      'ViewRestored',
+      'SheetRestored',
+    ],
+  },
+  // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
+  'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
+    values: [...SHEET_CHANGE_KINDS],
+  },
+  // A Sheet set up from Setup Sheet names how it started (SheetSetup.tsx TELEMETRY).
+  'apps/live/components/sheets/SheetSetup.tsx Sheet·Created': {
+    values: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv'],
+  },
+  'apps/live/components/sheets/useSheetActions.ts Sheet·Used': {
+    values: ['SUM', 'AVERAGE', 'IF', 'VLOOKUP', 'CARDCOUNT'],
+    open: "a function's name, from the Sheet's closed function list (packages/sheets FUNCTION_NAMES)",
   },
   // An item opened: `Item` from a board or a list, or how the item panel moved to it (item-trail.ts ItemOpenVia).
   'apps/live/hooks/plan/usePlanSlice.ts Plan·Opened': {
