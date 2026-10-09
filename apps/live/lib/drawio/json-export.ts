@@ -4,6 +4,7 @@
 // style), which is laid out by the layered layout Mermaid import uses.
 
 import {
+  isRecord,
   layoutClusteredGraph,
   type ArrowElement,
   type BoxedElement,
@@ -31,9 +32,6 @@ export type JsonExportPage = { id: string; name: string; cells: JsonCell[] };
 
 export type JsonExport = { kind: 'xml'; text: string } | { kind: 'graph'; pages: JsonExportPage[] };
 
-const isObject = (v: unknown): v is Record<string, unknown> =>
-  !!v && typeof v === 'object' && !Array.isArray(v);
-
 /** The export's pages, or the full diagram its `data` carries. Refuses anything else. */
 export function readJsonExport(text: string): JsonExport {
   let raw: unknown;
@@ -42,14 +40,14 @@ export function readJsonExport(text: string): JsonExport {
   } catch {
     throw new DrawioRefused('not-xml');
   }
-  if (!isObject(raw) || !Array.isArray(raw.pages)) throw new DrawioRefused('not-xml');
+  if (!isRecord(raw) || !Array.isArray(raw.pages)) throw new DrawioRefused('not-xml');
   if (typeof raw.data === 'string' && raw.data.trimStart().startsWith('<mxfile')) {
     return { kind: 'xml', text: raw.data };
   }
-  const pages = raw.pages.filter(isObject).map((p, i) => ({
+  const pages = raw.pages.filter(isRecord).map((p, i) => ({
     id: typeof p.id === 'string' && p.id ? p.id : `page-${i + 1}`,
     name: typeof p.name === 'string' ? p.name : '',
-    cells: Array.isArray(p.cells) ? (p.cells.filter(isObject) as JsonCell[]) : [],
+    cells: Array.isArray(p.cells) ? (p.cells.filter(isRecord) as JsonCell[]) : [],
   }));
   if (pages.length === 0) throw new DrawioRefused('no-pages');
   return { kind: 'graph', pages };

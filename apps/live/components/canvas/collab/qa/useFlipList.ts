@@ -8,14 +8,7 @@
 // already in the units the translate is applied in.
 
 import { useEffectEvent, useLayoutEffect, useRef } from 'react';
-
-function motionReduced(): boolean {
-  if (typeof window === 'undefined') return true;
-  return (
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true ||
-    document.documentElement.classList.contains('reduce-motion')
-  );
-}
+import { prefersReducedMotion } from '@/lib/motion-preference';
 
 // `order` is the list's ids in display order; the effect re-runs only when it
 // changes. Rows register with `rowRef(id)`.
@@ -29,7 +22,7 @@ export function useFlipList(order: string[]) {
   const flip = useEffectEvent(() => {
     const before = last.current;
     const after = new Map<string, number>();
-    const reduce = motionReduced();
+    const reduce = prefersReducedMotion();
     for (const id of order) {
       const node = nodes.current.get(id);
       if (!node) continue;

@@ -1,6 +1,7 @@
 import { CopyIcon } from '../icons/actions';
 import { HeartIcon } from '../icons/community';
 import { formatCommunityCount } from './format-count';
+import { plural, pluralWord } from '@livediagram/document';
 
 // How a post has done, as a card's corner shows it (docs/specs/025-community/community.md "Gallery"): the copy count,
 // and, where the heart is not a button (the landing page), the like count. The words are for screen readers (the
@@ -10,8 +11,7 @@ const STAT =
   'inline-flex items-center gap-1 px-1.5 py-1 tabular-nums text-slate-500 dark:text-slate-400';
 
 // The word for a count, one or many ("1 like", "3 likes"): one source for every count the Community shows.
-export const communityPlural = (n: number, one: string, many: string) => (n === 1 ? one : many);
-const plural = (n: number, one: string, many: string) => `${n} ${communityPlural(n, one, many)}`;
+export const communityPlural = (n: number, one: string, many: string) => pluralWord(n, one, many);
 
 export function CommunityCopyCount({ count }: { count: number }) {
   return (

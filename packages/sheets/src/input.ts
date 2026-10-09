@@ -47,7 +47,8 @@ export function localeSeparators(locale: string): Separators {
   return v;
 }
 
-function escapeRe(s: string): string {
+/** `s` as a literal inside a RegExp pattern. */
+export function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
@@ -56,8 +57,8 @@ function escapeRe(s: string): string {
 export function parseLocaleNumber(text: string, locale: string): number | null {
   const { group, decimal } = localeSeparators(locale);
   // A no-break space group (fr) also accepts a plain space.
-  const g = group === ' ' || group === ' ' ? '[\\s  ]' : escapeRe(group);
-  const d = escapeRe(decimal);
+  const g = group === ' ' || group === ' ' ? '[\\s  ]' : escapeRegExp(group);
+  const d = escapeRegExp(decimal);
   const re = new RegExp(
     `^([+-]?)(\\d{1,3}(?:${g}\\d{3})+|\\d+)?(?:${d}(\\d+))?(?:[eE]([+-]?\\d+))?$`,
   );

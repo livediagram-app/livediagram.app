@@ -4,11 +4,13 @@
 // `settingsHash` covers everything else, which push names as not pushed.
 
 import {
+  isRecord,
   isValidTab,
   parseDocumentEnvelope,
   type DocumentEnvelope,
   type Tab,
 } from '@livediagram/document';
+import { sha256Hex } from '@livediagram/api-schema';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
 // `pulledAt` is absent from a mirror file, which holds no time (repository-link blueprint "The mirror file").
@@ -35,8 +37,7 @@ export function canonicalJson(value: unknown): string {
 }
 
 export async function sha256(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return sha256Hex(new TextEncoder().encode(text));
 }
 
 export async function tabHashes(tab: Tab): Promise<{ hash: string; settingsHash: string }> {
@@ -63,9 +64,6 @@ export const idSlug = (id: string) => id.slice(0, ID_SLUG_LENGTH);
 export function pullFileText(file: PullFile): string {
   return `${JSON.stringify(file, null, 2)}\n`;
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 function isPulledTab(value: unknown): value is PulledTab {
   return (

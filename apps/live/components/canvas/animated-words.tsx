@@ -9,7 +9,7 @@
 // content (data attributes), never in the DOM text.
 
 import type { ReactNode } from 'react';
-import type { TextAnimation } from '@livediagram/document';
+import { fnv1aString, type TextAnimation } from '@livediagram/document';
 
 // Every unit is restyled each frame its label's progress moves, at about 10 µs a unit in the
 // editor (measured), so a label is held to a few dozen units: a title or a label types letter by
@@ -96,26 +96,16 @@ export function planTextAnimation(
   return { animation: drawn, mode, count: Math.max(1, count), seed };
 }
 
-// FNV-1a over a string: a small, stable hash, so everyone sees the same stand-ins and flickers.
-function hash(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return h >>> 0;
-}
-
 const STAND_INS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%&*?@';
 
 /** A deterministic stand-in glyph for Scramble's slot `k` of unit `i`. */
 export function scrambleGlyph(seed: string, i: number, k: number): string {
-  return STAND_INS[hash(`${seed}:${i}:${k}`) % STAND_INS.length]!;
+  return STAND_INS[fnv1aString(`${seed}:${i}:${k}`) % STAND_INS.length]!;
 }
 
 /** Whether unit `i` flickers, and its phase in [0, 1) when it does. */
 export function flickerPhase(seed: string, i: number): number | undefined {
-  const h = hash(`${seed}:flick:${i}`);
+  const h = fnv1aString(`${seed}:flick:${i}`);
   if ((h % 1000) / 1000 >= FLICKER_SHARE && i !== 0) return undefined;
   return (h % 997) / 997;
 }

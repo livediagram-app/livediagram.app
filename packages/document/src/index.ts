@@ -496,6 +496,12 @@ export * from './export-tab-text';
 export * from './export-tab-plan';
 export * from './plan-board-layout';
 export * from './comment-mentions';
+// The shared plain-object guard for untrusted JSON.
+export * from './is-record';
+// The shared FNV-1a string hash for deterministic picks.
+export * from './string-hash';
+// The shared count-with-noun wording.
+export * from './plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';

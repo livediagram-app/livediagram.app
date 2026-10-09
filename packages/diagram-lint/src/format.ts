@@ -3,8 +3,7 @@
 
 import type { LintCode, LintFinding, LintReport, LintSeverity } from '@livediagram/api-schema';
 import { LINT_MAX_LINES_PER_CODE, LINT_MESSAGE_COLUMN_MAX } from './constants';
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+import { plural } from '@livediagram/document';
 
 const LETTER: Readonly<Record<LintSeverity, string>> = { error: 'E', warning: 'W', info: 'I' };
 // The longest code.

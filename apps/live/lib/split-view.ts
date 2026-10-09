@@ -4,6 +4,14 @@
 // here is a function of plain numbers and ids so the gesture, the layout and the persistence can be
 // tested without a DOM.
 
+import { isRecord } from '@livediagram/document';
+import {
+  readLocalStorageSafe,
+  removeLocalStorageSafe,
+  safeJson,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
+
 // The narrowest either pane may get. Either can hold the editor, so both keep the editor's floor:
 // Tailwind's `sm` (640 px), the width its palette, Explorer and canvas are laid out for. Under it
 // the floating panels cover most of the canvas.
@@ -148,23 +156,16 @@ const PAIR_KEY_PREFIX = 'livediagram:v2:split-view-pair:';
 const FRACTION_KEY = 'livediagram:v2:split-view-fraction';
 
 export function readStoredPair(documentId: string): SplitPair | null {
-  try {
-    const raw = JSON.parse(window.localStorage.getItem(PAIR_KEY_PREFIX + documentId) ?? 'null');
-    return raw && typeof raw.leftId === 'string' && typeof raw.rightId === 'string'
-      ? { leftId: raw.leftId, rightId: raw.rightId }
-      : null;
-  } catch {
-    return null;
-  }
+  const raw = safeJson(readLocalStorageSafe(PAIR_KEY_PREFIX + documentId) ?? 'null');
+  return isRecord(raw) && typeof raw.leftId === 'string' && typeof raw.rightId === 'string'
+    ? { leftId: raw.leftId, rightId: raw.rightId }
+    : null;
 }
 
+// Storage blocked (private mode): the split still works, it just isn't remembered.
 export function writeStoredPair(documentId: string, pair: SplitPair | null): void {
-  try {
-    if (pair) window.localStorage.setItem(PAIR_KEY_PREFIX + documentId, JSON.stringify(pair));
-    else window.localStorage.removeItem(PAIR_KEY_PREFIX + documentId);
-  } catch {
-    // Storage blocked (private mode): the split still works, it just isn't remembered.
-  }
+  if (pair) writeLocalStorageSafe(PAIR_KEY_PREFIX + documentId, JSON.stringify(pair));
+  else removeLocalStorageSafe(PAIR_KEY_PREFIX + documentId);
 }
 
 // The split to show when a document reopens on `activeId`: the stored pair, each tab on its side,
@@ -188,18 +189,11 @@ export function restoredPair(
 }
 
 export function readStoredFraction(): number {
-  try {
-    const raw = Number(window.localStorage.getItem(FRACTION_KEY));
-    return raw > 0 && raw < 1 ? raw : SPLIT_DEFAULT_FRACTION;
-  } catch {
-    return SPLIT_DEFAULT_FRACTION;
-  }
+  const raw = Number(readLocalStorageSafe(FRACTION_KEY));
+  return raw > 0 && raw < 1 ? raw : SPLIT_DEFAULT_FRACTION;
 }
 
+// As above: unremembered, not broken.
 export function writeStoredFraction(fraction: number): void {
-  try {
-    window.localStorage.setItem(FRACTION_KEY, String(fraction));
-  } catch {
-    // As above: unremembered, not broken.
-  }
+  writeLocalStorageSafe(FRACTION_KEY, String(fraction));
 }

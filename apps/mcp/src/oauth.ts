@@ -5,7 +5,7 @@
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
 import { appBase } from './tool-helpers';
-import { bytesToBase64Url, DEVICE_CODE_GRANT, isLoopbackHostname } from '@livediagram/api-schema';
+import { DEVICE_CODE_GRANT, isLoopbackHostname, pkceChallenge } from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
 import { lookupClient, type ClientReg } from './oauth-clients';
@@ -56,11 +56,6 @@ const CODE_TTL = 60 * 5; // 5 minutes
 
 function randomId(): string {
   return crypto.randomUUID().replace(/-/g, '');
-}
-
-async function sha256base64url(s: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return bytesToBase64Url(buf);
 }
 
 // A redirect target is https anywhere, or plain http on a loopback host (a
@@ -304,7 +299,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (redirectUri && redirectUri !== record.redirectUri) {
       return c.json({ error: 'invalid_grant', error_description: 'redirect_uri mismatch' }, 400);
     }
-    const challenge = await sha256base64url(verifier);
+    const challenge = await pkceChallenge(verifier);
     if (challenge !== record.codeChallenge) {
       return c.json({ error: 'invalid_grant', error_description: 'PKCE verification failed' }, 400);
     }
@@ -319,4 +314,3 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 }
 
 // Exported for unit tests.
-export const __test = { sha256base64url };

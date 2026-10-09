@@ -12,6 +12,7 @@ import {
   unpaintedShapeInk,
   type RGB,
 } from './colors';
+import { clamp } from './geometry-primitives';
 import type { ThemeDefinition } from './themes';
 
 export const QUICK_SWATCH_SLOTS = [1, 2, 3, 4, 5, 6] as const;
@@ -241,10 +242,6 @@ function disambiguate(six: { color: string; name: string }[]): { color: string; 
 function lightnessOf(hex: string): number {
   const rgb = hexToRgb(hex);
   return rgb ? rgbToHsl(rgb).l : 0;
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
 }
 
 function mix(a: string, b: string, amountOfA: number): string {

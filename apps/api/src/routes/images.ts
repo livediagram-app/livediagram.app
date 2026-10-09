@@ -17,6 +17,7 @@ import { ACCEPTED_IMAGE_TYPES, type AcceptedImageType, sniffImageType } from '..
 import { stripJpegMetadata } from '../image-strip';
 import {
   badRequest,
+  conflict,
   CORS_HEADERS,
   forbidden,
   imagesUnavailable,
@@ -219,10 +220,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       console.info('[images] cap refused a racing upload', { owner });
       const totals = await imageTotalsByOwner(env, owner);
       // Room again already (an image was deleted meanwhile): let the client retry.
-      return (
-        galleryFull(caps, totals, storedBytes.byteLength) ??
-        json({ error: 'upload_conflict' }, { status: 409 })
-      );
+      return galleryFull(caps, totals, storedBytes.byteLength) ?? conflict('upload_conflict');
     }
     // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload. The dedupe branches
     // above return early, so pasting the same screenshot twice is one

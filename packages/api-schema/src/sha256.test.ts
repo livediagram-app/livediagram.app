@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sha256Hex } from './sha256';
+import { pkceChallenge, sha256Hex } from './sha256';
 
 // sha256Hex is the load-bearing primitive for image dedup (docs/specs/009-elements/images.md):
 // the live editor hashes bytes before POSTing them and stamps the
@@ -80,5 +80,13 @@ describe('sha256Hex', () => {
     const a = await sha256Hex(bytesOf('a'));
     const b = await sha256Hex(bytesOf('b'));
     expect(a).not.toBe(b);
+  });
+});
+
+describe('pkceChallenge', () => {
+  it('matches the RFC 7636 appendix B example', async () => {
+    expect(await pkceChallenge('dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk')).toBe(
+      'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+    );
   });
 });

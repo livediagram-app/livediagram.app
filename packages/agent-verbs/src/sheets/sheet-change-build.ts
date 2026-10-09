@@ -25,6 +25,7 @@ import {
   type Workbook,
 } from '@livediagram/sheets';
 import type { SheetRefusal } from './sheet-state';
+import { plural } from '@livediagram/document';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
 export interface SheetFormatInput {
@@ -104,8 +105,6 @@ function span(text: string, axis: 'r' | 'c'): { from: number; to: number } | nul
   if (pos.some((p) => p < 0)) return null;
   return { from: Math.min(...pos), to: Math.max(...pos) };
 }
-
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 export function buildSheetChange(
   wb: Workbook,

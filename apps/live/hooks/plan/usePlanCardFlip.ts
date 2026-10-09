@@ -10,18 +10,11 @@
 // a reshuffle of more than FLIP_CARDS_MAX cards (a filter, a swimlane change) snaps, as gliding them all is noise,
 // not news. Reduced motion snaps.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { prefersReducedMotion } from '@/lib/motion-preference';
 
 // The most cards that glide in one change; past it the board snaps.
 export const FLIP_CARDS_MAX = 40;
 const FLIP_CLASS = 'plan-card-flip';
-
-function motionReduced(): boolean {
-  if (typeof window === 'undefined') return true;
-  return (
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true ||
-    document.documentElement.classList.contains('reduce-motion')
-  );
-}
 
 // A node's place within `root`, in layout units.
 export function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; y: number } {
@@ -72,7 +65,12 @@ export function usePlanCardFlip(
       moves.push([node, dx, dy]);
     }
     last.current = after;
-    if (before.size === 0 || moves.length === 0 || moves.length > FLIP_CARDS_MAX || motionReduced())
+    if (
+      before.size === 0 ||
+      moves.length === 0 ||
+      moves.length > FLIP_CARDS_MAX ||
+      prefersReducedMotion()
+    )
       return;
     // Invert: each card back where it was, with no transition...
     for (const [node, dx, dy] of moves) {

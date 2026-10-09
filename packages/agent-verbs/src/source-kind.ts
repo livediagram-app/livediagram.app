@@ -2,16 +2,13 @@
 // edit operations send `{ operations }`; a graph, Mermaid, elements or a whole `replace` send `{ replace }`.
 
 import type { ChangesetRequest } from '@livediagram/api-schema';
-import { startsWithMermaidHeader } from '@livediagram/document';
+import { isRecord, startsWithMermaidHeader } from '@livediagram/document';
 
 export type SourceKind = 'operations' | 'graph' | 'mermaid' | 'elements' | 'replace';
 
 export type ClassifiedSource =
   | { kind: SourceKind; body: Pick<ChangesetRequest, 'operations' | 'replace'> }
   | { kind: 'unknown' };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const isOperation = (value: unknown) => isRecord(value) && 'op' in value;
 

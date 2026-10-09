@@ -3,6 +3,7 @@
 // are looked up by the caller.
 
 import type { ChangesetCounts } from '@livediagram/api-schema';
+import { isRecord } from '@livediagram/document';
 import { oneLine } from '../output/one-line';
 
 export type RoomEvent =
@@ -18,9 +19,6 @@ export type RoomEvent =
   | { kind: 'element'; tabId: string; elementId: string; change: 'added' | 'changed' | 'removed' }
   | { kind: 'tab'; tabId: string }
   | { kind: 'document'; name: string; tabs: { id: string; name: string }[] };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const str = (record: Record<string, unknown>, key: string): string | null => {
   const value = record[key];
