@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { DISTRIBUTED_APPS, LICENCE_APPS } from './apps.ts';
+import { DISTRIBUTED_APPS, LICENCE_APPS, SELF_HOSTED_APPS } from './apps.ts';
 
 const appsDir = fileURLToPath(new URL('../../../apps/', import.meta.url));
 const appDirs = readdirSync(appsDir).filter((d) => statSync(appsDir + d).isDirectory());
@@ -10,9 +10,9 @@ const appDirs = readdirSync(appsDir).filter((d) => statSync(appsDir + d).isDirec
 describe('LICENCE_APPS', () => {
   it('registers every app in apps/, deployed or distributed, so a new one cannot ship unlisted', () => {
     expect(appDirs.length).toBeGreaterThan(5);
-    expect([...LICENCE_APPS.map((a) => a.id), ...DISTRIBUTED_APPS].toSorted()).toEqual(
-      appDirs.toSorted(),
-    );
+    expect(
+      [...LICENCE_APPS.map((a) => a.id), ...DISTRIBUTED_APPS, ...SELF_HOSTED_APPS].toSorted(),
+    ).toEqual(appDirs.toSorted());
   });
 
   it('bundles each app with the tool it builds with', () => {

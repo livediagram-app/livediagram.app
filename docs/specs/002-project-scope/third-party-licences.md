@@ -27,6 +27,11 @@ reach a deployed artefact, and nothing else.
   deployed; its bundle ships its own `THIRD_PARTY_LICENSES` beside the code, generated from its
   esbuild metafile ([CLI blueprint](../015-api/blueprints/cli.md)), so the page leaves it out.
   `DISTRIBUTED_APPS` names it, so every directory in `apps/` is still accounted for.
+- **The self-hosted stack is not on this page.** `apps/server` runs only in a deployment the
+  operator owns ([Self-hosted runtime](../016-platform/self-hosted-runtime.md)); the hosted site
+  never bundles it, so its dependencies would name obligations this deployment does not have.
+  `SELF_HOSTED_APPS` names it, so every directory in `apps/` is still accounted for. What the
+  image itself owes those licences — notices travelling with it — is not built yet.
 - **First-party code is not listed.** The `@livediagram/*` workspaces are this repo, under its MIT
   licence.
 - **Vendored works.** A directory inside a package that carries its own `package.json` name and its
