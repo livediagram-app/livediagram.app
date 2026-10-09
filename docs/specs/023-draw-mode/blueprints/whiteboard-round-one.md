@@ -409,6 +409,13 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   - `shapeTouchesBrush(el, a, b, r)`: `a`, `b` unrotated about the centre into local px; true when a
     line lies within `r + halfWidth` of the segment, or `a` or `b` lies in a fill region. Skipped
     early beyond `OUTLINE_REACH_FACTOR` half diagonals of the centre.
+- `useCanvasSurfaceGestures.onPointerDownCapture` returns first for a press inside
+  `[data-floating-panel]` or `[data-zoom-cluster]` (the bottom-right cluster: Undo / Redo, Layers,
+  Theme & Canvas, Zoom), before the pen-seen pan, the path, spotlight, avatar, eraser and draw
+  intercepts (`inCornerCluster`). The cluster's buttons stop propagation only in the bubble phase,
+  after this capture handler; without the guard a held pen inked a dot under Undo and the click
+  undid that dot. `<main>`'s bubble `onPointerDown` skips its draw fallback for the same target, so a
+  press on a strip's frame, which does not stop propagation, starts no draw either.
 - `useCanvasSurfaceGestures.onPointerDownCapture`: on a whiteboard, Select, Shift, primary button, no
   draw intent or held Space, a press on the canvas that is not inside `[data-canvas-handle]` (resize
   handles) starts an `additive` marquee with `clickTarget` = the pressed `[data-element-id]`.
