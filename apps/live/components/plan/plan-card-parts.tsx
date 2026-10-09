@@ -10,6 +10,7 @@ import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { FLAG_COLOUR } from './item-flag';
 import { labelColour } from './label-colour';
+import { dayKey, dayLabel } from './day-label';
 
 export const LATE_COLOUR = '#dc2626';
 export const SOON_COLOUR = '#d97706';
@@ -29,25 +30,11 @@ export function checklistProgress(item: Item): { done: number; total: number } |
   return { done, total: rows.length };
 }
 
-export function dayLabel(day: string): string {
-  const d = new Date(`${day}T00:00:00`);
-  return Number.isNaN(d.getTime())
-    ? day
-    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-}
-
-function todayKey(offset = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
 // Where a due date stands: past (and not done), within DUE_SOON_DAYS, or neither.
 export function dueState(due: string, done: boolean): 'late' | 'soon' | 'later' {
   if (done) return 'later';
-  if (due < todayKey()) return 'late';
-  return due <= todayKey(DUE_SOON_DAYS) ? 'soon' : 'later';
+  if (due < dayKey()) return 'late';
+  return due <= dayKey(DUE_SOON_DAYS) ? 'soon' : 'later';
 }
 
 // A footer pill: an icon and a value on a soft fill, or tinted in a colour that means something.

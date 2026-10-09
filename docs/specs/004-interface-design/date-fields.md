@@ -24,3 +24,34 @@ two-column field grid on an iPad) the field ran past the panel's edge and pushed
   one line's height. Tapping still opens the system date picker.
 - **Desktop browsers** keep their native look and calendar icon.
 - In the base layer, so a field's own utilities still win.
+
+## Typing and saving
+
+A date field (`DateInput` in `@livediagram/ui`) saves a date only once it is whole, so typing one
+in a segment at a time never loses what is already there.
+
+- **A whole date saves at once.** Picking a day from the calendar, or typing the last digit of a
+  four-digit year, saves it. A year below 1000 is still being typed (the browser reads the first digit
+  of 2026 as the year 0002), so it never saves; years run from 1000 to 9999 and no further.
+- **A part-typed date waits.** While any segment is empty or the year is short, nothing is saved and
+  nothing is cleared: the day and month stay as typed.
+- **Leaving a part-typed date puts the saved one back**, as does Escape. Nothing half-typed is ever
+  kept, and the field never shows a date that is not saved.
+- **Clearing every segment** (or the browser's clear button) clears the date.
+- **A change from elsewhere** (a collaborator, undo) shows in the field at once, except while
+  the field has focus, so it never overwrites typing in progress.
+
+The Plan card panel's Start, Due and custom Date fields and the decision record's Date all use it.
+
+## A dropdown on a date opens the picker
+
+Where a date is chosen from a dropdown rather than typed (a Start or Due column in a
+sheet's card table), the dropdown opens the system date picker straight away, anchored to the cell.
+There is no popover holding a second date field. Typing a date stays in the cell itself.
+
+## Showing a date
+
+A card's saved date reads the same way wherever Plan shows it: day, short month and year ("30 Oct 2026") in the card
+panel and its custom fields; day and short month ("30 Oct") on a board card, where room is
+tight; day, long month and year ("30 October 2026") on a card's slide. All of them go through one
+`dayLabel` helper, in the viewer's locale.

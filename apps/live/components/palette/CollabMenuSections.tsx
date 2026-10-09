@@ -35,6 +35,7 @@ import {
   type EstimateScale,
   type ShapeElement,
 } from '@livediagram/document';
+import { DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
@@ -263,14 +264,15 @@ export function DecisionMenuSection({
           <label className={labelClass} htmlFor="lvd-decision-date">
             Date
           </label>
-          <input
+          <DateInput
             id="lvd-decision-date"
-            type="date"
+            unstyled
             className={`${fieldClass} mt-1`}
-            value={target?.decisionDate ?? ''}
-            // Empty clears the field entirely: an undated card shows nothing
-            // rather than "no date" (docs/specs/012-collaboration/decision-record.md).
-            onChange={(e) => onSetDate(e.target.value || undefined)}
+            value={target?.decisionDate}
+            // Saves only a whole date (docs/specs/004-interface-design/date-fields.md); an emptied
+            // field clears it entirely: an undated card shows nothing rather than "no date"
+            // (docs/specs/012-collaboration/decision-record.md).
+            onCommit={onSetDate}
           />
         </div>
         <div>

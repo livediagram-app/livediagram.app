@@ -23,17 +23,11 @@ import { descriptionRuns } from './ItemDescription';
 import { PersonDisc } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { FLAG_COLOUR } from './item-flag';
+import { dayLabel } from './day-label';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from './plan-palette';
 
 // How much larger than the panel the description reads on a slide.
 const DESCRIPTION_ZOOM = 1.55;
-
-function dueLabel(due: string): string {
-  const d = new Date(`${due}T00:00:00`);
-  return Number.isNaN(d.getTime())
-    ? due
-    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
-}
 
 function checklistRows(item: Item): { text: string; done: boolean }[] {
   const rows = item.fields['checklist'];
@@ -143,7 +137,7 @@ export function ItemSlideView({
         ) : null}
         {typeof due === 'string' ? (
           <span className={fact} style={factStyle}>
-            Due {dueLabel(due)}
+            Due {dayLabel(due, 'long')}
           </span>
         ) : null}
         {typeof estimate === 'number' ? (

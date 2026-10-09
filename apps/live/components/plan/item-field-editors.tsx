@@ -4,7 +4,15 @@
 // kind: text that saves on a pause in typing, and pickers that save at once. Each calls `onSave` with
 // the field's new value, or `undefined` to clear it.
 import { ChipField } from '@/components/primitives/ChipField';
-import { CheckIcon, CloseIcon, PlusIcon, Select, TextInput, TextArea } from '@livediagram/ui';
+import {
+  CheckIcon,
+  CloseIcon,
+  DateInput,
+  PlusIcon,
+  Select,
+  TextInput,
+  TextArea,
+} from '@livediagram/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
@@ -358,14 +366,14 @@ export function DateField({
   disabled: boolean;
   onSave: Save;
 }) {
+  // Saves only a whole date (docs/specs/004-interface-design/date-fields.md "Typing and saving").
   return (
-    <TextInput
+    <DateInput
       id={id}
-      type="date"
       disabled={disabled}
       compact
-      value={typeof value === 'string' ? value : ''}
-      onChange={(e) => onSave(e.target.value || undefined)}
+      value={typeof value === 'string' ? value : undefined}
+      onCommit={onSave}
     />
   );
 }
