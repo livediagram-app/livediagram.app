@@ -196,6 +196,21 @@ describe('normaliseBoardSetup', () => {
       expect(normaliseBoardSetup(presetSetup(id))).toEqual(presetSetup(id));
   });
 
+  // docs/specs/026-plan/plan-board.md "Swimlanes": a board's columns are its statuses, so only All Cards rows by them.
+  it('reads rows by status as none, but on an All Cards board', () => {
+    const kanban = presetSetup('kanban');
+    expect(normaliseBoardSetup({ ...kanban, swimlaneBy: 'status' })?.swimlaneBy).toBe('none');
+    expect(normaliseBoardSetup(presetSetup('all-cards'))?.swimlaneBy).toBe('status');
+  });
+
+  // docs/specs/026-plan/plan-board.md "Fill Tab": kept only when exactly true.
+  it('keeps Fill Tab only when it is on', () => {
+    const kanban = presetSetup('kanban');
+    expect(normaliseBoardSetup({ ...kanban, fillTab: true })?.fillTab).toBe(true);
+    for (const v of [false, 'yes', 1, null])
+      expect(normaliseBoardSetup({ ...kanban, fillTab: v })).not.toHaveProperty('fillTab');
+  });
+
   it('drops bad columns and fields, keeps the first of a duplicate status', () => {
     const s = normaliseBoardSetup({
       title: 7,

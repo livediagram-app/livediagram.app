@@ -51,7 +51,7 @@ A board placed from the palette or the picker starts **empty**: its columns are 
   <PlanColumnSettingsScene />
 </Figure>
 
-When you add a column (on an empty board, or with a column's **+ Add Column After**), pick one of the statuses your other boards already use, or press **Add All** to bring them all in, so the cards already in them show straight away. Or type a new name: if it matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
+When you add a column with a column's **+ Add Column After**, the picker lists under **Existing Statuses** every status your document already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column**: if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
 
 Hover a column's head and press its cog (always there on a touch screen) to:
 
@@ -63,16 +63,20 @@ Hover a column's head and press its cog (always there on a touch screen) to:
 - **Remove Column** takes the column off this board only: the state and its cards stay, so another board's column for it still shows them.
 - **Delete Status** deletes the state itself: when it holds cards, it asks where they go (to another column, or to the **Trash**, where you can restore them), then the state's column comes off every board. A board's last column can't be removed or deleted.
 
-A board holds 1 to 12 columns. A new Blank board shows **Setup Board**: first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want. **Create Board** sets it up in one step, and both can change later from the board's cog.
+A board holds 1 to 12 columns. A new Blank board shows **Setup Board**: first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want, then its **Layout**: its **Swimlanes**, its **Card Display** and **Fill Tab**. The Layout step starts as the board is now, so you can press straight through it. **Create Board** sets it all up in one step, and everything can change later from the board's cog.
 
 ## The Board's Own Settings
 
 Press the cog at the top right of the board (**Board Settings**), or right-click the board (or select it and press **⋯**) and open **Board**. Both show four sections, one open at a time:
 
-- **Board Title:** the board's name, and **Setup Board**, which opens the setup screen again filled in with the board as it is, so you can change its card types and columns in one go (**Save Board** keeps each kept column's settings). To put the whole board in the [Slide Deck](/help/selection-modes/slide-deck/), use **Add to Slides** in the board's **⋯** menu at its top right.
-- **Board Swimlanes:** **Group Rows By**, one grid: **None**, **Assignee**, **Type**, **Priority** or **Status**, then a tile per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back.
+- **Board Setup:** the board's name, **Setup Board**, which opens the setup screen again filled in with the board as it is, so you can change its card types, columns and layout in one go (**Save Board** keeps each kept column's settings), and **Fill Tab** (below). To put the whole board in the [Slide Deck](/help/selection-modes/slide-deck/), use **Add to Slides** in the board's **⋯** menu at its top right.
+- **Swimlanes:** **Group Rows By**, one list: **None**, **Assignee**, **Type** or **Priority**, then a row per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. There is no Status row grouping on a board, since its columns already are its statuses (an All Cards board, which has one column, groups its rows by status).
 - **Supported Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Tasks and Actions; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again). You can turn them all off, then add one with **Add New Card Type** under any column's **+ Add card**. A board whose chosen types have all since been deleted shows every type again.
 - **Card Layout:** the **Card Size** (**Minimal**, **Compact** or **Detailed**). What a card shows at each size is set per card type, in its [Display](/help/canvas/plan-mode/card-types/) tab.
+
+## Fill Tab
+
+Turn on **Fill Tab** (in **Board Setup**, or in the **Layout** step of **Setup Board**) and the board always fills its tab, for everyone, every time the tab opens: there is no **Restore Board** and **Escape** leaves it be, while the tab bar stays so you can still move between tabs. The rest of the canvas can't be used, so turning it on deletes everything else on the tab: when there is anything, you are told how many elements first. Your cards are never deleted, and **Undo** brings the canvas back in one step. Choose **On Canvas** to put the board back.
 
 A card type can leave statuses out ([Card types](/help/canvas/plan-mode/card-types/)). A column whose status the dragged card's type leaves out turns red and won't take it. A new card can still be added in any column; it just can't be moved into a left-out status afterwards.
 

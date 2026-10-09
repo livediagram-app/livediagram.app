@@ -16,7 +16,8 @@ import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { paletteCategoriesFor } from './palette-layouts';
+import { coveredPaletteCategories, paletteCategoriesFor } from './palette-layouts';
+import { useBoardCovering } from '@/hooks/plan/plan-cover-store';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -225,9 +226,14 @@ export function usePaletteCatalogue({
   // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
   // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  const categories = paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
-    (c) => hasLibraryShapes || c.id !== 'my-shapes',
-  );
+  // A board covering the canvas (maximised or filling its tab), not a view: cards land only on a board.
+  const boardCovering = useBoardCovering();
+  // While a Plan board covers the canvas, only Cards (coveredPaletteCategories); a maximised view keeps the palette.
+  const categories = boardCovering
+    ? coveredPaletteCategories()
+    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
+        (c) => hasLibraryShapes || c.id !== 'my-shapes',
+      );
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,

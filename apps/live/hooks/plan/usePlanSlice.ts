@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { usePlanFillTab } from './usePlanFillTab';
 import {
   createShape,
   hasPlanInput,
   type EditorMode,
   type Element,
   type Tab,
+  type PlanCardRef,
   type PlanViewRef,
 } from '@livediagram/document';
 import {
@@ -39,6 +41,8 @@ import { useTypeForBoard } from './useTypeForBoard';
 import type { StatusBoard } from './usePlanStatusNames';
 
 const NO_STATUS_BOARDS: readonly StatusBoard[] = [];
+const NO_TAB_ELEMENTS: readonly Element[] = [];
+const NO_ELEMENTS = () => NO_TAB_ELEMENTS;
 import { moveStatusRefusal } from './status-refusal';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
@@ -77,6 +81,8 @@ export function usePlanSlice(opts: {
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
   // Shows a refusal on screen (a toast): a canvas Plan card dropped where it cannot go.
   notify?: (message: string) => void;
+  // Fill Tab (usePlanFillTab): the open tab's live elements.
+  readTabElements?: () => readonly Element[];
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
@@ -265,6 +271,11 @@ export function usePlanSlice(opts: {
     [commentFn],
   );
 
+  const fill = usePlanFillTab({
+    readElements: opts.readTabElements ?? NO_ELEMENTS,
+    commit,
+  });
+
   const updateBoard = useCallback(
     (boardId: string, setup: PlanBoardSetup) => {
       commit((els) =>
@@ -341,6 +352,18 @@ export function usePlanSlice(opts: {
 
   const removeCard = useCallback(
     (cardElementId: string) => commit((els) => els.filter((el) => el.id !== cardElementId)),
+    [commit],
+  );
+
+  const updateCard = useCallback(
+    (cardElementId: string, ref: PlanCardRef) =>
+      commit((els) =>
+        els.map((el) =>
+          el.id === cardElementId && el.type === 'shape' && el.shape === 'plan-card'
+            ? { ...el, planCard: ref }
+            : el,
+        ),
+      ),
     [commit],
   );
 
@@ -447,6 +470,7 @@ export function usePlanSlice(opts: {
       updateView,
       placeCardOut,
       removeCard,
+      updateCard,
       announce,
       setDragging,
       draggingItemId,
@@ -458,6 +482,7 @@ export function usePlanSlice(opts: {
       statusPhases: opts.statusPhases ?? NO_PHASES,
       statusTypes: opts.statusTypes ?? NO_STATUS_TYPES,
       statusBoards: opts.statusBoards ?? NO_STATUS_BOARDS,
+      ...fill,
       ...(hasSlides ? { addItemSlide, addBoardSlide } : {}),
     }),
     [
@@ -488,6 +513,7 @@ export function usePlanSlice(opts: {
       updateView,
       placeCardOut,
       removeCard,
+      updateCard,
       announce,
       setDragging,
       draggingItemId,
@@ -502,6 +528,7 @@ export function usePlanSlice(opts: {
       opts.statusPhases,
       opts.statusTypes,
       opts.statusBoards,
+      fill,
     ],
   );
 

@@ -3,6 +3,7 @@
 import { voteTallies } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
+import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
@@ -13,11 +14,11 @@ import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
-import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
+import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
 import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
@@ -1450,8 +1451,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // slide needed — often 250% on one box — and had to hunt around the canvas.
   const [preShowView, setPreShowView] = useState<{ tabId: string } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
-  // A maximised Plan board or view wears zen's chrome too (docs/specs/026-plan/plan-board.md "Maximised board").
-  const planMaximised = useMaximisedPlanId() !== null;
   // Captured on the way in, restored on the way out: state adjusted during render on the transition
   // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
   // commit as the exit instead of one frame later.
@@ -2048,6 +2047,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded && !workbenchMode, !!clerkUserId);
+  // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
+  const planCover = usePlanCoverWiring({ activeTab, activeId, tabsRef });
   const plan = usePlanSlice({
     planItems,
     itemTypes,
@@ -2068,6 +2069,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     statusTypes: planStatusTypes,
     statusBoards: planStatusBoards,
     notify: toast.info,
+    readTabElements: planCover.readTabElements,
   });
   // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
   const planTour = usePlanTourContent({
@@ -2231,6 +2233,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // --- Tab actions ---------------------------------------------------------
 
+  // A JSON tab export's Plan items join the document after its tab (docs/specs/026-plan/items.md).
+  const importPlanItems = usePlanTabImport({
+    status: planItems.status,
+    items: planItems.items,
+    types: itemTypes.types,
+    addTypes: itemTypes.addTypes,
+    write: planItems.write,
+  });
+
   // Tab-lifecycle actions (add / import / rename / duplicate / delete /
   // reorder, active-tab lock, link-into-document, clear content). They
   // touch history, selection, telemetry, confirm / toast and the
@@ -2272,6 +2283,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     refreshDocumentList,
     confirm,
     toast,
+    importPlanItems,
   });
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
@@ -3247,6 +3259,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Z zen, z-order + fit-to-screen). The full keymap + rationale lives in
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
+    canvasCovered: planCover.canvasCovered,
     formatSourceId,
     setFormatSourceId,
     readSelection,
@@ -3405,7 +3418,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // rather than the workbench. An OVERRIDE of the spread above rather than a
     // write to zen state, so exiting a presentation restores whatever zen the
     // user actually had.
-    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null || planMaximised,
+    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null,
     ...dialogs,
     ...uiState,
     ...persistence,

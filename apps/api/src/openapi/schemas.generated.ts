@@ -8071,6 +8071,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "doneColumnId": {
         "type": "string"
       },
+      "fillTab": {
+        "type": "boolean"
+      },
       "hideWriting": {
         "type": "boolean"
       },
@@ -8103,6 +8106,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "properties": {
       "itemId": {
+        "type": "string"
+      },
+      "size": {
+        "enum": [
+          "minimal",
+          "compact",
+          "detailed"
+        ],
         "type": "string"
       }
     },

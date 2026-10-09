@@ -46,6 +46,7 @@ function setup(tabs: Tab[]) {
     setImportError: vi.fn(),
     requestFit: vi.fn(),
     importScene: vi.fn(),
+    importPlanItems: vi.fn(),
   };
   const { result } = renderHook(() => useTabImport(deps));
   return { deps, api: result.current, tabs: () => current };

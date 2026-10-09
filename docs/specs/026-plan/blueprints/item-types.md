@@ -95,6 +95,19 @@ linkType: 'project' }`) in item-types.ts; Task and the preset Bug and Story carr
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
   `size="lg"`, `phoneSheet`), rendered by `PlanSheetsHost`. Delete with items patches each to the chosen type
   first.
+- Editor tabs (`ItemTypeEditorTabs`): `TYPE_EDITOR_TABS = ['configuration', 'statuses', 'display']`, labelled by
+  `TYPE_EDITOR_TAB_LABELS` ("Configuration", "States", "Display"); the editor's `tab` state starts at
+  `'configuration'` for a new and an edited type alike. The Configuration panel is `ItemTypeConfiguration` (its own
+  file): two `<section>`s, each `aria-labelledby` its `<h3>` heading (`text-[13px] font-semibold`, above the
+  `SheetRow` labels; General's heading is `sr-only` through `hideTitle`, Fields' visible), **General** (`data-tour-id="card-type-general"`: Name with the inline `GlyphPicker`, Colour;
+  at `md` a two-column grid, `grid-cols-[minmax(0,20rem)_max-content]`, each `SheetRow` spanning two `subgrid` rows so
+  the labels share row 1 and the controls row 2, `items-start`; the swatches sit in a `min-h-[2.375rem]` (the name field's height) flex column, `justify-center`, so the in-place custom colour picker grows down without moving Name; below `md` the rows stack as blocks)
+  then **Fields** (`data-tour-id="card-type-fields"`, set off by a top border: the lead line, then
+  `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
+  problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
+- Show Me steps (`card-type-tour-steps.ts`): `general` shows `configuration` and focuses the Name input (focus
+  scrolls it into view); `fields` shows `configuration` and scrolls `card-type-fields` to the panel's top
+  (`scrollIntoView({ block: 'start' })`, instant under reduced motion); `states` and `display` show their tabs.
 
 ## Tabs
 
@@ -120,7 +133,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 - Editor: `ItemTypeStatuses` (its own file) lists `plan.statusNames` as `aria-pressed` chips; every one may go
   off; at `ITEM_TYPE_EXCLUDED_STATUSES_MAX` off, the chips still on are disabled and a `role="note"` says so. The
   draft carries `excludedStatuses` only when non-empty. `ItemTypeEditor` names a catalogue check failing on
-  `.excludedStatuses` "Too many statuses turned off: a type can turn off at most 64." and flags the Statuses tab.
+  `.excludedStatuses` "Too many statuses turned off: a type can turn off at most 64." and flags the States tab.
 - Enforcement (`hooks/plan/status-refusal.ts`): `typeStatusRefusal(types, typeId, status, name)`;
   `moveStatusRefusal(types, item, { status, type? }, name)`, null for the card's own status and checked with the
   lane's type when given; `cardsMovingRefused` / `cardsStayedMessage` for a removed column's cards.
@@ -189,6 +202,8 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | Left-out statuses: api refuses moves, patches, makes     | `apps/api/src/routes/item-routes.test.ts`                 |
 | Left-out statuses: agent refusal message                 | `packages/agent-verbs/src/verbs/item.test.ts`             |
 | Statuses chips, panel Status options                     | `apps/live/components/plan/ItemTypeStatuses.test.tsx`     |
+| Editor tabs, Configuration sections, flags, arrow keys   | `apps/live/components/plan/ItemTypeEditor.tabs.test.tsx`  |
+| Show Me steps open Configuration, scroll to Fields       | `apps/live/components/tour/CardTypeTour.test.tsx`         |
 | Palette card refused in a left-out column                | `apps/live/hooks/plan/plan-card-drop.test.ts`             |
 | Panel, editor, card face, palette in a browser           | checked by hand against the dev stack (screenshots)       |
 

@@ -6,9 +6,10 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
+import type { PlanFillTab } from '@/hooks/plan/usePlanFillTab';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
-import type { PlanViewRef } from '@livediagram/document';
+import type { PlanCardRef, PlanViewRef } from '@livediagram/document';
 import type {
   BoardStatusTypes,
   Item,
@@ -37,7 +38,7 @@ export type PlanContextValue = {
   // Add New Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
   // board once saved (docs/specs/026-plan/plan-board.md "Add New Card Type").
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
-  // Setup Board on a board that has columns (its Board Title's Setup Board): the board showing it, or null.
+  // Setup Board on a board that has columns (its Board Setup's Setup Board): the board showing it, or null.
   setupBoardId: string | null;
   openBoardSetup: (boardId: string | null) => void;
   status: PlanItemsStatus;
@@ -82,6 +83,8 @@ export type PlanContextValue = {
   // A card dragged off a board onto the canvas, at a canvas point: a Plan card is left there.
   placeCardOut: (itemId: string, x: number, y: number) => void;
   removeCard: (cardElementId: string) => void;
+  // A Plan card's own settings (its Card Size): one element edit, synced and undoable.
+  updateCard: (cardElementId: string, ref: PlanCardRef) => void;
   announce: (message: string) => void;
   setDragging: (itemId: string | null) => void;
   // The card being dragged by this person, if any (the Trash grows to take it).
@@ -107,7 +110,7 @@ export type PlanContextValue = {
   statusTypes: BoardStatusTypes;
   // Each board's title and the statuses it names, in board order: the type editor's States groups by them.
   statusBoards: readonly StatusBoard[];
-};
+} & PlanFillTab;
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);
 

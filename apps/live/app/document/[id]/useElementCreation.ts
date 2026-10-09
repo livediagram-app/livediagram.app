@@ -1,4 +1,10 @@
-import { freshBoardSetup, isPlanViewId, planBoardWidthFor, planViewSize } from '@livediagram/items';
+import {
+  freshBoardSetup,
+  isPlanViewId,
+  planBoardHeightFor,
+  planBoardWidthFor,
+  planViewSize,
+} from '@livediagram/items';
 import { SHAPE_DEFAULT_SIZE } from '@livediagram/document';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
@@ -39,12 +45,14 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
 // addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
 // so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
-// A board placed from the palette: its preset, empty, at least as wide as its columns need.
+// A board placed from the palette: its preset, empty, at least as wide as its columns need, and taller while it
+// has no columns yet (planBoardHeightFor).
 function planBoardPlacement(preset: string | undefined) {
   const planBoard = freshBoardSetup(preset);
   return {
     planBoard,
     width: Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard)),
+    height: planBoardHeightFor(planBoard),
   };
 }
 

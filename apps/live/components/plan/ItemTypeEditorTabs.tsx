@@ -1,17 +1,16 @@
 'use client';
 
-// The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"): General, Fields, States and Display, one
+// The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"): Configuration, States and Display, one
 // panel showing at a time, the underline sliding to the chosen tab. A tab holding what stops Save carries a red dot. Arrow keys move between tabs, Home and
 // End go to the ends, as a tablist does.
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { SlidingTabUnderline } from '@/components/primitives/SlidingTabUnderline';
 
-export const TYPE_EDITOR_TABS = ['general', 'fields', 'statuses', 'display'] as const;
+export const TYPE_EDITOR_TABS = ['configuration', 'statuses', 'display'] as const;
 export type TypeEditorTab = (typeof TYPE_EDITOR_TABS)[number];
 
 export const TYPE_EDITOR_TAB_LABELS: Record<TypeEditorTab, string> = {
-  general: 'General',
-  fields: 'Fields',
+  configuration: 'Configuration',
   statuses: 'States',
   display: 'Display',
 };

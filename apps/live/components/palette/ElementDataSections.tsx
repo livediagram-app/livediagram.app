@@ -109,6 +109,11 @@ const PlanBoardMenuSections = dynamic(
   { ssr: false },
 );
 
+// A Plan card's Card flyout (docs/specs/026-plan/plan-board.md "The Plan card"), loaded with the rest of Plan.
+const PlanCardMenuSection = dynamic(
+  () => import('./PlanCardMenuSection').then((m) => m.PlanCardMenuSection),
+  { ssr: false },
+);
 // A Gantt chart's View flyout (docs/specs/026-plan/plan-views.md "Swimlanes"), loaded with the rest of Plan.
 const PlanViewMenuSection = dynamic(
   () => import('./PlanViewMenuSection').then((m) => m.PlanViewMenuSection),
@@ -245,6 +250,13 @@ export function ElementDataSections({
             onClose={props.onClose}
           />
         </>
+      ) : null}
+      {shapeTarget?.shape === 'plan-card' && shapeTarget.planCard ? (
+        <PlanCardMenuSection
+          element={shapeTarget}
+          flyoutProps={flyoutProps('plan-card')}
+          sectionProps={sectionProps}
+        />
       ) : null}
       {shapeTarget?.shape === 'plan-view' && shapeTarget.planView ? (
         <PlanViewMenuSection

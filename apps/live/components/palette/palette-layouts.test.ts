@@ -3,7 +3,9 @@ import { isPlanViewId } from '@livediagram/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
+  COVERED_PALETTE_CATEGORY,
   PALETTE_LAYOUTS,
+  coveredPaletteCategories,
   paletteCategoriesFor,
   paletteCategoryOffered,
   paletteLandingCategory,
@@ -196,5 +198,13 @@ describe('palette layouts', () => {
       expect(t.action).toMatchObject({ type: 'shape', kind: 'plan-view' });
       expect(isPlanViewId((t.action as { plan?: string }).plan)).toBe(true);
     }
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Maximised board": a board covering the canvas leaves the palette only Cards.
+describe('coveredPaletteCategories', () => {
+  it('is Plan’s Cards alone', () => {
+    expect(coveredPaletteCategories().map((c) => c.id)).toEqual([COVERED_PALETTE_CATEGORY]);
+    expect(COVERED_PALETTE_CATEGORY).toBe('plan-cards');
   });
 });

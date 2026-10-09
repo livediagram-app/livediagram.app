@@ -15,6 +15,8 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
+import type { ImportedPlanItems } from '@/lib/import-tab';
+import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import {
   normalizeFolderOrder,
   tabFolderName,
@@ -75,6 +77,8 @@ type TabActionsDeps = {
   refreshDocumentList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
+  // A JSON tab export's Plan items, added after its tab lands (usePlanTabImport).
+  importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
 
 export function useTabActions(deps: TabActionsDeps) {
@@ -145,6 +149,7 @@ export function useTabActions(deps: TabActionsDeps) {
     requestFit,
     // Declared below; called only once an import runs, after this render has defined it.
     importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
+    importPlanItems: deps.importPlanItems,
   });
   // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
   // active tab, or open each board as a new whiteboard tab.

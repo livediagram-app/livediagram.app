@@ -322,7 +322,25 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   document finds its items only if that document has them; a Plan card whose item is not in the store says so.
 - **The `.livediagram` file** (the Google Drive mirror's document file) carries the items, and a copy imported
   from it gets them back. The field is additive, so the file stays version 1.
-- Images, thumbnails and api or MCP renders draw boards and cards from the document's items.
+- Images, thumbnails and api or MCP renders draw boards and cards from the document's items. The Export dialog's
+  preview draws them too, so it shows what the download holds.
+- **A tab's JSON export** (the `livediagram.tab` file) carries the items the tab shows (`itemIdsShownOnTab`, the
+  Trash left out) as `items`, and the document's stored type catalogue as `itemTypes` when it has one. Each item
+  keeps its id, type, key, fields and rank, without its votes or comments: the file travels, and those name people.
+  Both fields are additive and absent when the tab shows no items, so the file keeps its schema version.
+- **Importing that file** into a tab adds its items to the document. Every item whose id the document does not
+  already have is created in status and rank order, numbered afresh by the document; first, the file's types those
+  items use and the document lacks are added (by id, the catalogue's cap holding). An item the document already has
+  is left as it is, so importing a tab's export back into its own document never doubles the cards. The tab's
+  content, the added types and the new cards are separate undo steps, newest first: undo takes the cards away, then
+  the types, then restores the tab. The import waits for the document's item store to load (a document with no Plan content
+  starts loading it once the imported board lands; blueprint DEFAULTS D43). When the store never loads, or refuses the
+  cards (the 2,000 cap), none are added, the tab stays imported, and the import's report says how many cards could
+  not be added.
+- **The Markdown export** lists each Plan board under "Plan Boards": its title, then each column with its card
+  count after a middle dot (`To Do · 3`, never in brackets), then its cards as `#key Title (Type)`. A Plan card on the canvas is listed under "Plan Cards".
+- **The Excalidraw export** draws a board as its frame, title, columns and card faces (each card a labelled
+  rectangle with `#key Title`), laid out as the image export lays them out.
 - A **Community** copy leaves every card's comments out, as it leaves out the canvas's comment threads.
 
 ## Limits

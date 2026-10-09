@@ -91,7 +91,7 @@ export const PLAN_TOUR_STEPS: PlanTourStep[] = [
   },
   {
     id: 'card-types',
-    title: 'Card types',
+    title: 'Card Types',
     body: 'Tasks, notes, ideas and actions each have their own colour and fields. Change them, or make your own, in Card Types.',
     target: 'card-types',
   },

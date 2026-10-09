@@ -2,7 +2,7 @@
 
 // A board's own settings cog (docs/specs/026-plan/plan-board.md "The board set-up"): in its header, left of Maximise,
 // for someone who may edit. It opens a popover holding the same four sections as the board's element menu's Board
-// (Board Title, Board Swimlanes, Supported Cards, Card Layout), one open at a time, so the board is set up without the
+// (Board Setup, Swimlanes, Supported Cards, Card Layout), one open at a time, so the board is set up without the
 // right-click menu. A press outside or
 // Escape closes it, handing focus back to the cog.
 import { useState } from 'react';

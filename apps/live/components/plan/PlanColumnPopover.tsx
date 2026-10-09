@@ -6,7 +6,13 @@
 // column after it (the column picker: an existing status, or a new one); remove it, first asking where its cards go when it has any. Each change is one
 // element edit, made as it happens. Escape or an outside press closes it; on a phone it is a sheet.
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { COLUMN_WIDTHS, isTrashed, type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
+import {
+  COLUMN_WIDTHS,
+  isTrashed,
+  missingBoardStatuses,
+  type PlanBoardSetup,
+  type PlanColumn,
+} from '@livediagram/items';
 import {
   CheckIcon,
   ChevronLeftIcon,
@@ -58,8 +64,6 @@ const GAP = 6;
 const LABEL = 'mb-1.5 block text-[13px] text-slate-700 dark:text-slate-200';
 const STEP =
   'w-8 text-[15px] text-slate-600 transition enabled:hover:bg-slate-100 disabled:opacity-35 dark:text-slate-300 dark:enabled:hover:bg-slate-800';
-const MOVE =
-  'flex items-center justify-center gap-1 rounded-md border border-slate-200 px-2 py-1.5 text-[12px] font-medium text-slate-600 transition enabled:hover:bg-slate-100 disabled:opacity-35 dark:border-slate-700 dark:text-slate-300 dark:enabled:hover:bg-slate-800';
 // The element menu's plain row (PortalMenu MenuActionRow `plain`): icon left, 13px.
 const ROW_BASE =
   'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[13px] transition disabled:opacity-35';
@@ -129,10 +133,23 @@ export function PlanColumnPopover({
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLButtonElement>(null);
   const plan = usePlan();
-  // The statuses a column can take: the boards', and any a card is in.
+  // The statuses a column can take: the boards', any a card is in, and the card types' Default States.
   const statusNames = useMemo(
-    () => pickableStatuses(plan?.statusNames ?? NO_STATUSES, plan?.items?.values() ?? []),
-    [plan?.statusNames, plan?.items],
+    () =>
+      pickableStatuses(plan?.statusNames ?? NO_STATUSES, plan?.items?.values() ?? [], plan?.types),
+    [plan?.statusNames, plan?.items, plan?.types],
+  );
+  // The ones this board lacks, with their cards on it, for the column picker: worked out only while it is open.
+  const existing = useMemo(
+    () =>
+      adding
+        ? missingBoardStatuses(setup, statusNames, {
+            items: plan?.items?.values() ?? [],
+            types: plan?.types,
+            boards: plan?.statusBoards,
+          })
+        : [],
+    [adding, setup, statusNames, plan?.items, plan?.types, plan?.statusBoards],
   );
   // Whether any card (out of the Trash) is in this column's status anywhere: a rename never strands them.
   const hasCards = [...(plan?.items?.values() ?? [])].some(
@@ -343,26 +360,25 @@ export function PlanColumnPopover({
         </SwitchRow>
       </div>
       <div className="border-t border-slate-100 px-1.5 py-1.5 dark:border-slate-800">
-        <div className="grid grid-cols-2 gap-1 px-1.5 pb-1 pt-1.5">
-          <button
-            type="button"
-            className={MOVE}
-            disabled={at <= 0}
-            onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
-          >
-            <ChevronLeftIcon size={14} />
-            Move Left
-          </button>
-          <button
-            type="button"
-            className={MOVE}
-            disabled={at >= setup.columns.length - 1}
-            onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
-          >
-            Move Right
-            <ChevronRightIcon size={14} />
-          </button>
-        </div>
+        {/* One to a row, icon left, as the actions under them are (docs/specs/026-plan/plan-board.md "Option lists"). */}
+        <button
+          type="button"
+          className={ROW}
+          disabled={at <= 0}
+          onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
+        >
+          <ChevronLeftIcon size={16} className="text-slate-400" />
+          Move Left
+        </button>
+        <button
+          type="button"
+          className={ROW}
+          disabled={at >= setup.columns.length - 1}
+          onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
+        >
+          <ChevronRightIcon size={16} className="text-slate-400" />
+          Move Right
+        </button>
         <button
           ref={addButton}
           type="button"
@@ -382,16 +398,17 @@ export function PlanColumnPopover({
             onClose={() => setAdding(false)}
             setup={setup}
             statusNames={statusNames}
+            existing={existing}
             onPick={(pick) => {
               const made = addStatusColumn(setup, column.id, pick);
               if (!made) return;
               // The settings move to the new column: this popover closes, and the new column's head opens its own.
               requestColumnSettings(made.column.id);
-              onChange(made.setup, 'ColumnAdded');
+              onChange(made.setup, 'ColumnAddedExisting');
               onClose(false);
             }}
             onPickAll={(picks) => {
-              onChange(addStatusColumns(setup, column.id, picks), 'ColumnAdded');
+              onChange(addStatusColumns(setup, column.id, picks), 'ColumnAddedExisting');
               onClose(false);
             }}
             onName={(name) => {

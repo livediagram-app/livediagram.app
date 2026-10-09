@@ -3,57 +3,19 @@
 // column made for an existing status keeps that status, so the cards already in it show on this board too.
 import {
   PLAN_COLUMNS_MAX,
-  isTrashed,
-  itemStatus,
+  missingStatuses,
+  pickableStatuses,
   statusKey,
-  statusLabel,
-  type Item,
   statusNamed,
   type PlanBoardSetup,
   type PlanColumn,
+  type StatusPick,
 } from '@livediagram/items';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 
-export type StatusPick = { status: string; name: string };
-
 // A name as the picker compares it (case, spacing and punctuation aside): shared with board placement and renames.
-export { statusKey };
-
-// The statuses the document's boards use (in their order, the open tab's first) that this board has no column
-// for, one per name: the first board's name and status win.
-export function missingStatuses(
-  setup: Pick<PlanBoardSetup, 'columns'>,
-  statusNames: ReadonlyMap<string, string>,
-): StatusPick[] {
-  const onBoard = new Set(setup.columns.map((c) => c.status));
-  const boardKeys = new Set(setup.columns.map((c) => statusKey(c.name)));
-  const seen = new Set<string>();
-  const out: StatusPick[] = [];
-  for (const [status, name] of statusNames) {
-    const key = statusKey(name);
-    if (!key || onBoard.has(status) || boardKeys.has(key) || seen.has(key)) continue;
-    seen.add(key);
-    out.push({ status, name });
-  }
-  return out;
-}
-
-// The statuses a column can be made for: those the document's boards name, then any a card is in that no board names
-// (a board with no columns can still pick up its cards' statuses), named as a status with no column reads.
-export function pickableStatuses(
-  statusNames: ReadonlyMap<string, string>,
-  items: Iterable<Item>,
-): ReadonlyMap<string, string> {
-  let out: Map<string, string> | null = null;
-  for (const it of items) {
-    if (isTrashed(it)) continue;
-    const s = itemStatus(it);
-    if (!s || statusNames.has(s) || out?.has(s)) continue;
-    out ??= new Map(statusNames);
-    out.set(s, statusLabel(s));
-  }
-  return out ?? statusNames;
-}
+// Which statuses the board lacks lives in packages/items (board-status-picks.ts), shared with any other caller.
+export { statusKey, missingStatuses, pickableStatuses, type StatusPick };
 
 // What a typed name would do: use an existing status, clash with a column the board has, or make a new one.
 export type NameMatch =

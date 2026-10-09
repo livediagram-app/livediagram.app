@@ -8,7 +8,6 @@ import { useId, useMemo, useState } from 'react';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
   ITEM_TYPE_EXCLUDED_STATUSES_MAX,
-  ITEM_TYPE_LABEL_MAX,
   NEW_ITEM_TYPE,
   defaultNewTitle,
   newItemTypeId,
@@ -32,9 +31,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { CardTypeTourStage, ShowMeButton, useCardTypeTour } from '@/components/tour/CardTypeTour';
 import { SheetRow } from './PlanModal';
-import { ColourSwatches } from './ColourSwatches';
-import { ItemTypeLayoutEditor } from './ItemTypeLayoutEditor';
-import { GlyphPicker } from './GlyphPicker';
+import { ItemTypeConfiguration } from './ItemTypeConfiguration';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
 import { ItemTypeDisplay, type CardDisplayDraft } from './ItemTypeDisplay';
@@ -108,7 +105,7 @@ export function ItemTypeEditor({
   );
   // The Delete Type button while its confirmation is open.
   const [confirmingAt, setConfirmingAt] = useState<HTMLElement | null>(null);
-  const [tab, setTab] = useState<TypeEditorTab>('general');
+  const [tab, setTab] = useState<TypeEditorTab>('configuration');
   // Show Me: the tour of making a card type, run on this editor (docs/specs/026-plan/item-types.md).
   const tour = useCardTypeTour(setTab);
   const others = types.filter((t) => t.id !== type?.id);
@@ -171,16 +168,14 @@ export function ItemTypeEditor({
             ? 'A custom field needs a name, and a Choice field at least one option.'
             : null;
 
-  // The tabs holding what stops Save (a clashing name is General's; a left-out status problem is States'; a tab or
-  // custom field problem is Fields'). A missing name is not flagged: a new type starts without one, and Save says so.
+  // The tabs holding what stops Save (a left-out status problem is States'; a clashing name, a tab or a custom field
+  // problem is Configuration's). A missing name is not flagged: a new type starts without one, and Save says so.
   const flagged = new Set<TypeEditorTab>(
     !problem || !draft.label
       ? []
-      : clash
-        ? ['general']
-        : !tabProblem && statusesProblem
-          ? ['statuses']
-          : ['fields'],
+      : !clash && !tabProblem && statusesProblem
+        ? ['statuses']
+        : ['configuration'],
   );
 
   return (
@@ -215,48 +210,23 @@ export function ItemTypeEditor({
         onTab={setTab}
         flagged={flagged}
         panels={{
-          general: (
-            <>
-              <div data-tour-id="card-type-general">
-                <SheetRow label="Name" htmlFor={`${titleId}-name`}>
-                  {/* The glyph and the name as one field: pick the glyph at its start, type the name after it. */}
-                  <div className="flex max-w-xs items-center gap-1 rounded-lg border border-slate-200 bg-white pl-1 pr-2 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900">
-                    <GlyphPicker value={glyph} colour={color} onChange={setGlyph} inline />
-                    <input
-                      id={`${titleId}-name`}
-                      value={label}
-                      maxLength={ITEM_TYPE_LABEL_MAX}
-                      placeholder="Customer call"
-                      autoFocus={!type}
-                      onChange={(e) => setLabel(e.target.value)}
-                      className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
-                    />
-                  </div>
-                </SheetRow>
-                <SheetRow label="Colour">
-                  <ColourSwatches allowCustom value={color} onChange={(c) => c && setColor(c)} />
-                </SheetRow>
-              </div>
-            </>
-          ),
-          fields: (
-            <>
-              <div data-tour-id="card-type-fields">
-                <SheetRow label="Fields and Tabs">
-                  <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
-                    Laid out as the card's panel shows them. Add, move or rename to change it.
-                  </p>
-                  <ItemTypeLayoutEditor
-                    typeId={type?.id}
-                    draft={layout}
-                    onChange={setLayout}
-                    detailsLabel={detailsLabel}
-                    onDetailsLabel={setDetailsLabel}
-                    removedSome={removedSome}
-                  />
-                </SheetRow>
-              </div>
-            </>
+          configuration: (
+            <ItemTypeConfiguration
+              nameId={`${titleId}-name`}
+              isNew={!type}
+              label={label}
+              onLabel={setLabel}
+              glyph={glyph}
+              onGlyph={setGlyph}
+              color={color}
+              onColor={setColor}
+              typeId={type?.id}
+              layout={layout}
+              onLayout={setLayout}
+              detailsLabel={detailsLabel}
+              onDetailsLabel={setDetailsLabel}
+              removedSome={removedSome}
+            />
           ),
           display: (
             <div data-tour-id="card-type-display">

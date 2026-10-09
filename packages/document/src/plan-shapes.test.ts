@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, type Item } from '@livediagram/items';
+import { CARD_SIZES, PLAN_BOARD_EMPTY_HEIGHT_PX, presetSetup, type Item } from '@livediagram/items';
+import { PLAN_CARD_SIZES } from './validate-shape';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { elementKindLabel } from './element-kind-label';
 import { isPlanShape, isSelfDrawingShape } from './data-shapes';
@@ -28,7 +29,11 @@ const item = (id: string, fields: Item['fields'], extra: Partial<Item> = {}): It
 describe('plan shapes', () => {
   it('are made with their default size and seed', () => {
     const board = createShape('plan-board', 0, 0);
-    expect(board).toMatchObject({ width: 1120, height: 640, planBoard: presetSetup('blank') });
+    expect(board).toMatchObject({
+      width: 1120,
+      height: PLAN_BOARD_EMPTY_HEIGHT_PX,
+      planBoard: presetSetup('blank'),
+    });
     const card = createShape('plan-card', 0, 0);
     expect(card).toMatchObject({ width: 240, height: 120, planCard: { itemId: '' } });
     expect(SHAPE_DEFAULT_SIZE['plan-card']).toEqual({ width: 240, height: 120 });
@@ -64,6 +69,16 @@ describe('plan shapes', () => {
       field: 'planCard',
     });
     expect(elementValidationIssue({ ...card, planCard: 'x' })).toMatchObject({ field: 'planCard' });
+    // Its own Card Size: one of the board's three, or none (Detailed).
+    expect(PLAN_CARD_SIZES).toEqual([...CARD_SIZES]);
+    for (const size of CARD_SIZES) {
+      expect(
+        elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size } }),
+      ).toBeNull();
+    }
+    expect(
+      elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size: 'huge' } }),
+    ).toMatchObject({ field: 'planCard' });
   });
 });
 

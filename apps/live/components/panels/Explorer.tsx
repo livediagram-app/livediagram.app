@@ -168,6 +168,7 @@ function ExplorerImpl({
       helpArticle="explorerPanel"
       title="Explorer"
       dataTourId="explorer"
+      layoutChrome
       position={position}
       // On mobile the panel becomes a full-width top banner (matches
       // the Palette's banner pattern) so users can switch documents

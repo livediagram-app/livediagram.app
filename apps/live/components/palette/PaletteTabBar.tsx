@@ -90,7 +90,9 @@ export function PaletteTabBar({
   useEffect(() => {
     if (storageKey) writeLocalStorageSafe(storageKey, activeId);
   }, [storageKey, activeId]);
-  const displayed = tabs.find((t) => t.id === activeId) ?? null;
+  // The chosen category, or (while it is not offered: a Plan board covering the canvas offers only Cards) the first,
+  // the choice itself kept so it comes back with its category.
+  const displayed = tabs.find((t) => t.id === activeId) ?? tabs[0] ?? null;
 
   // Soft category-change animation. The panel's height is driven off the
   // measured content height and eased, so switching from a short
@@ -179,7 +181,7 @@ export function PaletteTabBar({
         <PaletteDropdown
           ariaLabel="Palette category"
           dataTourId="palette-category"
-          value={activeId}
+          value={displayed?.id ?? activeId}
           align="right"
           variant="flush"
           // Grow to fit every category rather than capping at max-h +

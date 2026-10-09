@@ -215,3 +215,52 @@ describe('a press that pans through an element', () => {
     vi.useRealTimers();
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Maximised board": a press on a maximised or tab-filling board (or the cover
+// around it) is never a canvas gesture, whatever the tool.
+describe('a press on the canvas cover', () => {
+  it('starts no canvas gesture, while one elsewhere still does', () => {
+    const interceptPress = vi.fn(() => true);
+    const { result } = renderHook(() =>
+      useCanvasSurfaceGestures({
+        canvasTool: 'select',
+        middleMousePan: true,
+        pendingDraw: null,
+        viewportOffset: { x: 0, y: 0 },
+        viewportZoom: 1,
+        mainRef: { current: null },
+        wrapperRef: { current: null },
+        spaceHeldRef: { current: false },
+        setPan: vi.fn(),
+        setMarquee: vi.fn(),
+        spotlight: {},
+        avatar: {},
+        peerAvatars: [],
+        isoCamera: {},
+        beginPendingDrawGesture: () => false,
+        onDeselect: vi.fn(),
+        onCanvasDoubleClick: vi.fn(),
+        interceptPress,
+      } as never),
+    );
+    const cover = document.createElement('div');
+    cover.setAttribute('data-canvas-cover', '');
+    const card = document.createElement('button');
+    cover.appendChild(card);
+    const press = (target: Element) =>
+      ({
+        target,
+        button: 0,
+        clientX: 5,
+        clientY: 5,
+        pointerType: 'mouse',
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      }) as unknown as ReactPointerEvent;
+    result.current.onPointerDownCapture(press(card));
+    result.current.onPointerDownCapture(press(cover));
+    expect(interceptPress).not.toHaveBeenCalled();
+    result.current.onPointerDownCapture(press(document.createElement('div')));
+    expect(interceptPress).toHaveBeenCalledTimes(1);
+  });
+});

@@ -142,3 +142,40 @@ describe('parseImportedTab — stroke points (docs/specs/006-document/stroke-poi
     }
   });
 });
+
+// A tab export's Plan items (docs/specs/026-plan/items.md "Copies and exports").
+describe('parseImportedTab, Plan items', () => {
+  const person = { id: 'p', name: 'Sam', color: '#2563eb' };
+  const item = {
+    id: 'item-1',
+    type: 'task',
+    key: 4,
+    rank: 'i',
+    fields: { title: 'Ship', status: 'todo' },
+    rev: 1,
+    createdAt: 0,
+    updatedAt: 0,
+    createdBy: person,
+    updatedBy: person,
+  };
+
+  it('reads the items, leaving behind what does not look like one', () => {
+    const r = parseImportedTab(
+      JSON.stringify(envelope({ items: [item, { id: 'nope' }] as never })),
+    );
+    expect(r.ok && r.plan).toEqual({ items: [item], itemTypes: null });
+  });
+
+  it('reads a valid catalogue and drops a broken one', () => {
+    const catalogue = { version: 1, types: 'broken' };
+    const r = parseImportedTab(
+      JSON.stringify(envelope({ items: [item], itemTypes: catalogue as never })),
+    );
+    expect(r.ok && r.plan?.itemTypes).toBeNull();
+  });
+
+  it('has no plan for a file without items', () => {
+    const r = parseImportedTab(JSON.stringify(envelope({ items: [] })));
+    expect(r.ok && 'plan' in r).toBe(false);
+  });
+});

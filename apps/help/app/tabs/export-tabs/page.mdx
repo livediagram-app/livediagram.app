@@ -32,10 +32,10 @@ To export only part of a tab, select several elements and press the **Export** b
 
 The dialog shows a card per format:
 
-- **JSON**: a portable `.livediagram-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity.
+- **JSON**: a portable `.livediagram-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity. A tab with Plan boards or Plan cards carries their cards and any custom card types too, without votes or comments.
 - **Mermaid**: the tab as [Mermaid](https://mermaid.js.org/) flowchart text (`.mmd`), which keeps every connection and its style (unlike Markdown); frames export as `subgraph` blocks.
-- **Markdown**: the tab's elements and connections as a Markdown outline (`.md`), a readable summary rather than a full copy.
-- **Excalidraw**: a `.excalidraw` scene you can open at [excalidraw.com](https://excalidraw.com/). Boxes, text, arrows (with their connections), and drawings carry over; element kinds Excalidraw doesn't have (charts, tables, device frames and so on) simplify to labelled boxes.
+- **Markdown**: the tab's elements and connections as a Markdown outline (`.md`), a readable summary rather than a full copy. Each Plan board lists its columns and every card in them.
+- **Excalidraw**: a `.excalidraw` scene you can open at [excalidraw.com](https://excalidraw.com/). Boxes, text, arrows (with their connections), and drawings carry over; element kinds Excalidraw doesn't have (charts, tables, device frames and so on) simplify to labelled boxes. A Plan board comes across as its columns and card faces.
 - **PNG**: a high-resolution image, good for slides, docs and chat.
 - **SVG**: a crisp vector image that scales to any size and opens in design tools.
 - **PDF**: a single-page PDF of the tab, ready to print or share.

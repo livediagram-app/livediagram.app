@@ -55,6 +55,10 @@ import {
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
+// A Plan card's sizes (PlanCardRef.size): the same three as @livediagram/items' CARD_SIZES, written out because
+// that package imports this one and its binding may be uninitialised at module load; plan-shapes.test.ts keeps
+// the two equal.
+export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'compact', 'detailed'];
 
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
 // A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
@@ -253,8 +257,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
       typeof v === 'object' &&
       v !== null &&
       typeof (v as { itemId?: unknown }).itemId === 'string' &&
-      ((v as { itemId: string }).itemId === '' || isValidItemId((v as { itemId: string }).itemId)),
-    rule: 'an object { itemId } naming an item',
+      ((v as { itemId: string }).itemId === '' ||
+        isValidItemId((v as { itemId: string }).itemId)) &&
+      ((v as { size?: unknown }).size === undefined ||
+        PLAN_CARD_SIZES.includes((v as { size: string }).size)),
+    rule: 'an object { itemId, size? } naming an item, size minimal, compact or detailed',
   },
   {
     field: 'planView',

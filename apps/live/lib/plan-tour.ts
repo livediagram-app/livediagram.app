@@ -2,6 +2,7 @@ import { SHAPE_DEFAULT_SIZE, createShape, type ShapeElement } from '@livediagram
 import {
   freshBoardSetup,
   newItemId,
+  planBoardHeightFor,
   planBoardWidthFor,
   type ItemCreate,
   type PlanBoardSetup,
@@ -31,12 +32,14 @@ export function exampleBoard(
   const planBoard = { ...freshBoardSetup('kanban', random), title: EXAMPLE_BOARD_TITLE };
   const base = createShape('plan-board', 0, 0);
   const width = Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard));
+  const height = planBoardHeightFor(planBoard);
   return {
     ...base,
     planBoard,
     width,
+    height,
     x: centre.x - width / 2,
-    y: centre.y - base.height / 2,
+    y: centre.y - height / 2,
   };
 }
 

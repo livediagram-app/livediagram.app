@@ -2,17 +2,21 @@
 // as the palette places one (freshBoardSetup): a column named as a status the document already has takes that
 // status, so its cards show here too; any other column starts empty under a status of its own. Placed to the right
 // of what the tab already holds, so it never covers anything.
-import { planBoardWidthFor, type PlanBoardSetup, type PlanColumn } from './board';
+import {
+  planBoardHeightFor,
+  planBoardWidthFor,
+  type PlanBoardSetup,
+  type PlanColumn,
+} from './board';
 import { PLAN_COLUMN_NAME_MAX, PLAN_COLUMNS_MAX, PLAN_TITLE_MAX } from './limits';
 import type { PlanStatusName } from './plan-outline';
 import { freshBoardSetup, isPlanBoardPresetId, PLAN_BOARD_PRESET_IDS } from './presets';
 import { statusKey, statusNamed } from './status-names';
 import { slugOf } from './type-catalogue';
 
-// A placed board's size (blueprints/DEFAULTS.md D5; wider when its columns need it) and its gap from what the tab
-// holds.
+// A placed board's width (blueprints/DEFAULTS.md D5; wider when its columns need it; its height is
+// planBoardHeightFor) and its gap from what the tab holds.
 export const PLACED_BOARD_WIDTH = 1120;
-export const PLACED_BOARD_HEIGHT = 640;
 export const PLACED_BOARD_GAP = 80;
 
 export interface BoardRequest {
@@ -134,7 +138,7 @@ export function placeBoard(
       shape: 'plan-board',
       ...placeOf(elements),
       width: Math.max(PLACED_BOARD_WIDTH, planBoardWidthFor(setup)),
-      height: PLACED_BOARD_HEIGHT,
+      height: planBoardHeightFor(setup),
       planBoard: setup,
     },
   };

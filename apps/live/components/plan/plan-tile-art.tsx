@@ -266,3 +266,24 @@ export function InfoArt({ size = 14 }: { size?: number }) {
     </Glyph>
   );
 }
+
+// Fill Tab's two tiles (docs/specs/026-plan/plan-board.md "Fill Tab"): a small board on a dashed canvas, or the board
+// filling the whole frame.
+export function FillTabArt({ fill }: { fill: boolean }) {
+  return (
+    <Glyph size={18} units={22}>
+      {fill ? (
+        <>
+          <rect x="2.5" y="3.5" width="17" height="15" rx="2" />
+          <path d="M7.5 3.5v15M12.5 3.5v15" />
+        </>
+      ) : (
+        <>
+          <rect x="2.5" y="3.5" width="17" height="15" rx="2" strokeDasharray="2.4 2" />
+          <rect x="6" y="7.5" width="9" height="7" rx="1.2" />
+          <path d="M9 7.5v7M12 7.5v7" />
+        </>
+      )}
+    </Glyph>
+  );
+}

@@ -1,6 +1,7 @@
 // The maximised Plan element (docs/specs/026-plan/plan-board.md "Maximised board", plan-views.md "Maximised
-// view"): which board or visualisation, if any, this person has filling the canvas. A view for them alone: a
-// module store, never synced, saved or undone.
+// view"): which board or visualisation, if any, this person has filling the canvas area (the editor's header, tab
+// bar, footer, palette and panels stay; no zen chrome). A view for them alone: a module store, never synced, saved
+// or undone. A board filling its tab (plan-board.md "Fill Tab") is not this: it is the board's own setting.
 import { useSyncExternalStore } from 'react';
 import { track } from '@/lib/telemetry';
 
@@ -29,6 +30,11 @@ export function isMaximisedPlanClosing(): boolean {
 
 export function getMaximisedPlanId(): string | null {
   return current?.id ?? null;
+}
+
+// What is maximised: a board, a view, or nothing.
+export function getMaximisedPlanKind(): MaximisedKind | null {
+  return current?.kind ?? null;
 }
 
 export function subscribeMaximisedPlan(listener: () => void): () => void {

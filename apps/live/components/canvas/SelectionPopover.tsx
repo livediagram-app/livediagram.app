@@ -63,18 +63,17 @@ type SelectionPopoverProps = {
   // Small caption above (or below) the toolbar naming what's selected
   // ("Selected Square", "Selected Element").
   title?: string;
-  // Tighter gap between the popover and the element edge. Set
-  // by the view-role caller because the plus duplicate button
-  // (which sits in this gap for editor sessions) doesn't render
-  // when read-only, so the toolbar can sit closer to the element
-  // without overlapping anything.
+  // Tighter gap between the popover and the element edge, set whenever
+  // the "+" quick-connect button (which sits in this gap) doesn't render:
+  // read-only, or a kind that shows none (a Plan board or card, an
+  // annotation), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
 };
 
 // Default gap: leave room for the plus duplicate button between
 // the popover and the element edge. Bumped to 48 px so the plus
 // has clear breathing room (at 36 px the popover crowded it and
-// felt visually cramped). `compact` callers (view-role) drop to
+// felt visually cramped). `compact` callers (no "+" showing) drop to
 // 16 px since there's no plus button to clear.
 const GAP_DEFAULT = 48;
 const GAP_COMPACT = 16;

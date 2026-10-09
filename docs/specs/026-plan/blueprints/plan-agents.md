@@ -112,12 +112,12 @@ types? }`, `change_card_types { documentId, changes[1..32] }`; outputs `listItem
 
 ## Constants and configuration
 
-| Constant              | Value | Where                               | Why                  |
-| --------------------- | ----- | ----------------------------------- | -------------------- |
-| `PLAN_TAB_BATCH`      | 20    | `apps/api/src/routes/plan-route.ts` | the overview's batch |
-| `PLACED_BOARD_WIDTH`  | 1120  | `board-place.ts`                    | D5                   |
-| `PLACED_BOARD_HEIGHT` | 640   | `board-place.ts`                    | D5                   |
-| `PLACED_BOARD_GAP`    | 80    | `board-place.ts`                    | D31                  |
+| Constant                                             | Value    | Where                               | Why                  |
+| ---------------------------------------------------- | -------- | ----------------------------------- | -------------------- |
+| `PLAN_TAB_BATCH`                                     | 20       | `apps/api/src/routes/plan-route.ts` | the overview's batch |
+| `PLACED_BOARD_WIDTH`                                 | 1120     | `board-place.ts`                    | D5                   |
+| `PLAN_BOARD_HEIGHT_PX`, `PLAN_BOARD_EMPTY_HEIGHT_PX` | 640, 880 | `board.ts` (`planBoardHeightFor`)   | D5                   |
+| `PLACED_BOARD_GAP`                                   | 80       | `board-place.ts`                    | D31                  |
 
 ## Defaults ledger
 

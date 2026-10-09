@@ -1,19 +1,13 @@
 'use client';
 
 // A Plan board's settings (docs/specs/026-plan/plan-board.md "The board set-up"), in four sections shown as one panel
-// by its element menu (its Board flyout) and its own cog, a collapsible each: **Board Title**, **Board Swimlanes**
-// (built in or by a field, in one grid), **Supported Cards** (the card types it shows and takes) and **Card Layout**
+// by its element menu (its Board flyout) and its own cog, a collapsible each: **Board Setup** (title, Setup Board and
+// Fill Tab), **Swimlanes** (built in or by a field, in one grid), **Supported Cards** (the card types it shows and takes) and **Card Layout**
 // (the card size; what a card shows is its type's Display). A column's own settings sit on the column, behind its
 // cog. Each change is one element edit, through PlanContext.
 import { useState, type ComponentProps, type ReactNode } from 'react';
 import type { ShapeElement } from '@livediagram/document';
-import {
-  CARD_SIZES,
-  boardAddTypes,
-  normaliseBoardSetup,
-  type CardSize,
-  type PlanBoardSetup,
-} from '@livediagram/items';
+import { boardAddTypes, normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
 import {
   Button,
   ChevronDownIcon,
@@ -23,20 +17,13 @@ import {
   lucideGlyph,
 } from '@livediagram/ui';
 import { lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
-import { CardSizeArt } from '@/components/plan/plan-tile-art';
-import { MenuGroup, SwimlaneTiles, TypeToggleTiles } from './plan-menu-parts';
+import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
+import { PlanFillTabSetting } from './PlanFillTabSetting';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
-
-const SIZE_LABELS: Record<CardSize, string> = {
-  minimal: 'Minimal',
-  compact: 'Compact',
-  detailed: 'Detailed',
-};
 
 function useBoard(element: ShapeElement) {
   const plan = usePlan();
@@ -49,8 +36,9 @@ function useBoard(element: ShapeElement) {
   return { setup, set };
 }
 
-// The Board Title section: its title, then Setup Board, which reopens the setup screen on the board, filled in with
-// it as it is, to change its card types and columns at once. (A board is added to the slides from its own ⋯ menu.)
+// The Board Setup section: its title, then Setup Board, which reopens the setup screen on the board, filled in with
+// it as it is, to change its card types and columns at once, then Fill Tab. (A board is added to the slides from its
+// own ⋯ menu.)
 export function PlanBoardSettings({
   element,
   onClose,
@@ -104,7 +92,23 @@ export function PlanBoardSettings({
   );
 }
 
-// The Board Swimlanes section: built in, then any field the document's types offer (docs/specs/026-plan/plan-board.md
+// Board Setup's body: the title group, then Fill Tab.
+function PlanBoardSetupSection(props: {
+  element: ShapeElement;
+  onClose?: (() => void) | undefined;
+}) {
+  const setup = normaliseBoardSetup(props.element.planBoard);
+  return (
+    <>
+      <PlanBoardSettings {...props} />
+      {setup ? (
+        <PlanFillTabSetting boardId={props.element.id} setup={setup} onClose={props.onClose} />
+      ) : null}
+    </>
+  );
+}
+
+// The Swimlanes section: built in, then any field the document's types offer (docs/specs/026-plan/plan-board.md
 // "Swimlanes by a field"), in one grid: a board has one grouping.
 export function PlanSwimlaneSettings({ element }: { element: ShapeElement }) {
   const board = useBoard(element);
@@ -116,7 +120,8 @@ export function PlanSwimlaneSettings({ element }: { element: ShapeElement }) {
       title="Group Rows By"
       hint="Rows across the board, one for each value of the field you pick."
     >
-      <SwimlaneTiles
+      <SwimlaneOptions
+        noStatus={!setup.allCards}
         by={setup.swimlaneBy}
         field={setup.swimlaneField}
         types={plan?.types ? boardAddTypes(setup, plan.types) : []}
@@ -144,7 +149,7 @@ export function PlanSupportedCardsSettings({ element }: { element: ShapeElement 
   const allowed = boardAddTypes(setup, plan.types).map((x) => x.id);
   return (
     <MenuGroup title="Card Types" hint="The card types this board shows and lets you add.">
-      <TypeToggleTiles
+      <CardTypeOptions
         types={plan.types}
         selected={allowed}
         allowNone
@@ -168,20 +173,13 @@ export function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
       title="Card Size"
       hint="How much of each card shows. Each card type’s Display sets what shows at each size."
     >
-      <MenuTileGrid cols={3}>
-        {CARD_SIZES.map((z) => (
-          <MenuTile
-            key={z}
-            icon={<CardSizeArt size={z} />}
-            label={SIZE_LABELS[z]}
-            active={(setup.cardSize ?? 'detailed') === z}
-            onClick={() => {
-              const { cardSize: _drop, ...rest } = setup;
-              set(z === 'detailed' ? rest : { ...rest, cardSize: z }, 'CardSize');
-            }}
-          />
-        ))}
-      </MenuTileGrid>
+      <CardSizeOptions
+        size={setup.cardSize}
+        onPick={(z) => {
+          const { cardSize: _drop, ...rest } = setup;
+          set(z === 'detailed' ? rest : { ...rest, cardSize: z }, 'CardSize');
+        }}
+      />
     </MenuGroup>
   );
 }
@@ -192,22 +190,22 @@ const LayoutIcon = lucideGlyph(lucideLayoutGrid, 16);
 // The four sections, in order, for the element menu and the cog alike. `shows` leaves one out where it has nothing
 // (Supported Cards on an Archive board).
 export const PLAN_BOARD_SECTIONS: readonly {
-  id: 'board-title' | 'swimlanes' | 'supported-cards' | 'card-layout';
+  id: 'board-setup' | 'swimlanes' | 'supported-cards' | 'card-layout';
   title: string;
   icon: ReactNode;
   Body: (props: { element: ShapeElement; onClose?: (() => void) | undefined }) => ReactNode;
   shows: (setup: PlanBoardSetup) => boolean;
 }[] = [
   {
-    id: 'board-title',
-    title: 'Board Title',
+    id: 'board-setup',
+    title: 'Board Setup',
     icon: <PlanIcon size={16} />,
-    Body: PlanBoardSettings,
+    Body: PlanBoardSetupSection,
     shows: () => true,
   },
   {
     id: 'swimlanes',
-    title: 'Board Swimlanes',
+    title: 'Swimlanes',
     icon: <RowsIcon />,
     Body: PlanSwimlaneSettings,
     shows: () => true,
@@ -228,7 +226,7 @@ export const PLAN_BOARD_SECTIONS: readonly {
   },
 ];
 
-// The four sections as one panel, each a collapsible group, one open at a time (Board Title when it opens): the
+// The four sections as one panel, each a collapsible group, one open at a time (Board Setup when it opens): the
 // element menu's Board flyout and the board's own cog both show this.
 export function PlanBoardSectionsPanel({
   element,
@@ -238,7 +236,7 @@ export function PlanBoardSectionsPanel({
   // Closes whatever holds the panel (the cog's popover, the element menu).
   onClose?: (() => void) | undefined;
 }) {
-  const [open, setOpen] = useState<string | null>('board-title');
+  const [open, setOpen] = useState<string | null>('board-setup');
   const setup = normaliseBoardSetup(element.planBoard);
   return (
     <>

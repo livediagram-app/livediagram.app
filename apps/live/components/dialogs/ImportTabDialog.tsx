@@ -126,7 +126,9 @@ export function ImportTabDialog({
           report
             ? report.scene
               ? "Here's how your board came across."
-              : "Here's how your images came across."
+              : report.images
+                ? "Here's how your images came across."
+                : "Here's how your import came across."
             : activeFormat
               ? `Paste your ${activeFormat.title}, or import a file.`
               : 'Pick a format to import into the current tab.'

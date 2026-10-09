@@ -17,7 +17,7 @@ import {
 import { AddColumnPicker } from './AddColumnPicker';
 
 // The picker's width, its gap from the button, and the arrow's size.
-export const ADD_COLUMN_PICKER_PX = 288;
+export const ADD_COLUMN_PICKER_PX = 304;
 const GAP_PX = 10;
 const ARROW_PX = 12;
 const ORDER: readonly HintPlacement[] = ['right', 'left', 'bottom', 'top'];
@@ -46,7 +46,7 @@ export function AddColumnPickerPopover({
   anchor,
   onClose,
   ...picker
-}: Omit<Parameters<typeof AddColumnPicker>[0], 'autoFocus' | 'palette'> & {
+}: Omit<Parameters<typeof AddColumnPicker>[0], 'autoFocus'> & {
   // + Add Column After: what the popover points at, and where focus goes back to.
   anchor: RefObject<HTMLElement | null>;
   // Closed without adding (Escape, a press outside).

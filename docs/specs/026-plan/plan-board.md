@@ -36,12 +36,15 @@ Stored on the element, shared by everyone, undone like any element edit:
   slides").
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) left of Maximise,
   for someone who may edit. It opens a popover under it holding the same four sub-sections as the element menu's Board
-  (**Board Title**, **Board Swimlanes**, **Supported Cards**, **Card Layout**), each under a heading that opens it,
-  one at a time (Board Title when it opens; opening one closes the other); it scrolls when taller than the window. A press
+  (**Board Setup**, **Swimlanes**, **Supported Cards**, **Card Layout**), each under a heading that opens it,
+  one at a time (Board Setup when it opens; opening one closes the other); it scrolls when taller than the window. A press
   outside or Escape closes it. Telemetry: `Plan` · `Opened` · `BoardSettings`.
 - **Swimlanes**: none, or grouped by assignee, type, priority, status, or **any field** the card types the board
-  shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). The menu lists only what those
-  types offer: None and Status always, Type when it shows more than one type, Assignee, Priority and each field when
+  shows offer, Parent among them (see [Swimlanes by a field](#swimlanes-by-a-field)). A board's columns are its statuses, so rows by status would repeat them: Status is not a choice on a board
+  (the menu and Setup Board leave it out), except on an All Cards board, whose one column holds every status and whose
+  rows are its statuses; a board stored grouping by status (an older one, or an agent's write) reads as no grouping
+  (`normaliseBoardSetup`). A Gantt chart's Swimlanes still offer Status. The menu lists only what those
+  types offer: None always, Type when it shows more than one type, Assignee, Priority and each field when
   one of its types has it; a board stored grouping by `parent` reads as grouping by the Parent field; a grouping already in use stays listed (and pressed) even once its types no longer offer it.
   A Gantt chart's Swimlanes do the same for the card types it draws.
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
@@ -88,15 +91,16 @@ Where each is set, so a setting lives with what it changes, never in one central
   moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as one
   **Board** category (a flyout), holding four sub-sections, each a collapsible group under a small uppercase heading,
-  one open at a time (Board Title when it opens), as the cog shows them: **Board Title** (its **Title**; a board is
-  added to the slides from its own ⋯ menu, above), **Board Swimlanes** (**Group Rows By**, one grid: None, Assignee,
-  Type, Priority, Status, then a tile per groupable field, named by the field and drawn with its kind's glyph),
+  one open at a time (Board Setup when it opens), as the cog shows them: **Board Setup** (its **Title**, **Setup
+  Board** and **Fill Tab**, [Fill Tab](#fill-tab); a board is added to the slides from its own ⋯ menu, above),
+  **Swimlanes** (**Group Rows By**, one grid: None, Assignee,
+  Type, Priority (Status only on an All Cards board), then a row per groupable field, in one [option list](#option-lists), named by the field and drawn with its kind's glyph),
   **Supported Cards** (**Card Types**, below; left out on an Archive board) and **Card Layout** (**Card Size**:
   Minimal, Compact or Detailed; what a card shows at each size is its type's Display, [Card
   display](item-types.md#card-display)). Group Rows By, Card Types and Card Size each open with a one-line info note
   (an "i" in a circle) saying what it does.
   New columns come from a column's **+ Add Column After**.
-- **Card types a board shows**: the Cards menu's **Card Types** row, a tile per card type pressed on or off (none
+- **Card types a board shows**: the Cards menu's **Card Types** row, a row per card type ticked on or off in an [option list](#option-lists) (none
   named is every type). The last one can be turned off too: the board then takes no type, shows no cards, and each
   cell's Add card offers only **Add New Card Type** (stored as an empty `addTypes`). A board shows only cards of those types, and takes only those:
   Add Card offers only them, a palette card of another type gets the red refused zone, and a card of another type
@@ -110,13 +114,17 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **The To-do List board** (preset `todo`, after Kanban in the lists): two columns, **To Do** and **Done** (the done
   column), for Action cards only, Compact cards showing who has each action and when it is due (a to-do list is a
   dense list of short items, so Compact; its checklist is in the card), and the Completion and Due Soon widgets.
-- **Setup Board**: a board with no columns (the Blank board starts so) shows, in place of its columns, a **Setup
-  Board** card in the board's colours (a board glyph, the title, a line on what it is for, Help), with two steps
-  shown as two equal tiles across the card (each a numbered disc, its name and a line: "Which cards go on it", "The
-  stages they move through"; the current one tinted in the brand colour, a done one ticked and clickable to go back,
-  the next one quiet):
-  1. **Card Types**: a tile per card type of the document (its glyph on a tint of its colour, its name, a tick when
-     on), every one on to start; **Select All** and **Clear**; under the tiles **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the tiles already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
+- **Setup Board**: a board with no columns (the Blank board starts so, and starts taller than a set-up board: 880 px
+  against 640, blueprint DEFAULTS D5) shows, in place of its columns, a **Setup
+  Board** card in the board's colours (a board glyph, the title, a line: "Pick its cards, columns and layout. Change
+  them any time from its cog.", Help), with three steps shown as a wizard stepper across the card: a numbered
+  circle per step joined by a connecting line, the step's name beside its circle (under it on a narrow card), no
+  further description. The current step's circle is filled in the brand colour and its name bold
+  (`aria-current="step"`); a done step's circle holds a tick, the line up to the current step is filled in the brand
+  colour, and a done step is a button back to it (pointer, focus ring); a step ahead is muted and not a button. It
+  fits a phone's width without cutting a name.
+  1. **Card Types**: an [option list](#option-lists), a row per card type of the document (its glyph on a tint of its colour, its name, a tick when
+     on), every one on to start; **Select All** and **Clear**; under the list **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
      **Next: Columns** needs at least one. A hairline sits under the step tiles.
   2. **Columns**: the columns chosen so far, top to bottom as the board will show them left to right, each a row
      with a grip, its name, "Existing state" or "New", and a remove cross; "No columns yet. Add one below." while
@@ -125,40 +133,71 @@ Where each is set, so a setting lives with what it changes, never in one central
      it, Escape puts it back; Alt+Up and Alt+Down on a grip move it by keyboard. Its heading counts them with a count badge. Then **Add a New State**, a name field
      and **Add** (Enter adds too): a name matching an existing state uses it ("Uses the existing To Do state, so its
      cards show here."), one already chosen is refused ("That column is already on the board."). Then **Use an
-     Existing State**, a tile per status the document has that is not chosen (a plus on a brand tint, its name, and
-     the boards that use it, "On Sprint, Roadmap", or "Only cards are in it"; named "Add {State}"), two to a row, with
+     Existing State**, an [option list](#option-lists) with a row per status the document has that is not chosen, listed exactly as
+     the column picker's Existing Statuses (the same statuses, order, colour swatch, "On Sprint, Roadmap" or "Not on
+     any board", and card count of the card types chosen in step 1; named "Add {State}"), one to a row, with
      **Add All**. At 12 columns adding stops ("A board holds up to 12 columns."). **Back** returns to step 1 with
-     nothing lost.
-     **Create Board** (needs a column) writes the columns (an existing state keeps its status, so its cards show; a new
-     one has a status of its own) and the card types (every type is no `addTypes`; a chosen few are) as one change, one
-     undo step. Telemetry: `Plan` · `Changed` · `BoardSetUp`. Someone who may only view reads that the board is not
+     nothing lost. **Next: Layout** (needs a column) goes on; Create Board is not offered before the Layout step.
+  3. **Layout** (starting from the board as it is, so pressing straight through keeps its preset's layout): "How the
+     board is laid out. It starts as the board is now; every choice can change later from its cog." Then
+     **Swimlanes** (its line "Rows across the board, one for each value of the field you pick." and the same option list
+     as the board menu's Swimlanes, offering what the card types chosen in step 1 offer), **Card Display** (its line
+     "How much of each card shows. Each card type's Display sets what shows at each size." and the same Minimal,
+     Compact and Detailed rows as the menu's Card Layout), then, under a hairline, **Fill Tab** (a switch row:
+     "Fill Tab", "The board always fills this tab, so the rest of the canvas can't be used."), off to start (on when
+     run again on a board that fills its tab). Turned on while the tab holds other elements, a warning shows under
+     it as a plain bordered notice (never red, destructive-actions.md): "The rest of this canvas becomes unusable, and its N other elements will be deleted when you create
+     the board." (save, on a board run again), with "1 other element" for one; no warning on an otherwise empty tab.
+     **Back** returns to Columns with nothing lost.
+     **Create Board** (**Save Board** on a board run again; the Layout step's only, needs a column) writes the columns (an existing state keeps its
+     status, so its cards show; a new one has a status of its own), the card types (every type is no `addTypes`; a
+     chosen few are) and the layout (grouping, card size, and Fill Tab with its deletion, [Fill Tab](#fill-tab)) as
+     one change, one undo step. Telemetry: `Plan` · `Changed` · `BoardSetUp`. Someone who may only view reads that the board is not
      set up yet.
-- **Setup Board again**: on a board that has columns (not All Cards or Archive), the Board Title section (the cog's,
-  and the element menu's Board) ends in a full-width **Setup Board**. It closes the menu and shows the same screen in
+- **Setup Board again**: on a board that has columns (not All Cards or Archive), the Board Setup section (the cog's,
+  and the element menu's Board) holds a full-width **Setup Board** under its title. It closes the menu and shows the same screen in
   place of the board's columns, for this person only, filled in with the board as it is (its card types ticked, its
-  columns in order), with **Cancel** and, last, **Save Board**. Saving writes both as one change: a column kept keeps
+  columns in order, its layout), with **Cancel** and, last, **Save Board**. Saving writes both as one change: a column kept keeps
   its id and settings (name, WIP limit, colour, width), a new one is made as in setup, and one left out leaves this
   board only (its cards keep their state; the done column goes with its column).
-- **The column picker** is how every column is added (the empty board, and a column's **+ Add Column After**):
-  - **Use an Existing Status**: a chip per status the document's other boards use, or a card is in (out of the
-    Trash) though no board names it, that this board lacks, named as
-    the first board that names it does, in the order the document's boards give them (the open tab's first),
-    one chip per name (ignoring case and spacing). A chip adds a column for that status, so the cards already in
-    it show there. With two or more chips, **Add All** adds them all, in order, as one change (up to the 12-column
-    limit). Without any, the heading and chips are absent.
-  - **Or Name a New Status**: a field and **Add Column** (or Enter). A name that matches an existing status
-    (ignoring case and spacing) uses that status rather than making a near-duplicate, and says so under the field
+- **The column picker** is how a column is added to a board that has columns (a column's **+ Add Column After**;
+  a board with none uses Setup Board, above):
+  - **Existing statuses**: the statuses the document knows that this board has no column for. Known is: a
+    status any board in the document names as a column (on any tab; All Cards and Archive boards aside), a status
+    a card is in (out of the Trash) though no board names it, and a card type's Default State that neither names.
+    One per name (ignoring case, spacing and punctuation; a name this board already has as a column is left out
+    too). Ordered as the document's boards give them (the open tab's first, then tab, board and column order),
+    then the ones only cards are in, by name, then the card types' Default States, in catalogue order. A status no
+    board names reads as its id in Title Case.
+  - **The field**: one field, **Add Column** beside it. With existing statuses it is labelled **Add a Column**
+    ("Find or name a status") and works as a combobox over them: typing narrows the list to the names that hold
+    the text (as names compare), ArrowDown and ArrowUp move a highlight through the rows (Up past the first goes
+    back to the typed text), Enter adds the highlighted status, a press on a row adds it, and a row under the
+    pointer is highlighted. With nothing highlighted, Enter or **Add Column** adds the typed name: a name that
+    matches an existing status uses that status rather than making a near-duplicate, and says so under the field
     as it is typed ("Uses the existing To Do status"); a name this board already has as a column says "This board
-    already has To Do" and adds nothing. Any other name makes a column with a status of its own (its name and a
-    short suffix), so it starts empty. On + Add Column After the popover then moves to the new column with its name
-    selected.
-  - Each add is one board change, undone in one step.
-  - **Where it shows**: on an empty board, inline in the board's body. From a column's settings, **+ Add Column
-    After** opens it as its own small popover hung beside the button (to its right, else left, below or above,
-    whichever fits on screen) with an arrow pointing at it, over the settings popover, which stays open behind it.
-    The picker takes focus as it opens and gives it back to the button when it closes. It closes on a chip, Add All
-    or Add Column, on a press outside it, or on Escape, which closes only the picker (a second Escape closes the
-    settings). A chip or Add Column then moves the settings to the new column; Add All closes them.
+    already has To Do" and adds nothing; any other name makes a column with a status of its own (its name and a
+    short suffix), so it starts empty. Without existing statuses it is the plain field, labelled **Name a New
+    Status** ("In Review"), and nothing else shows: the picker is then what it always was.
+  - **Existing Statuses**: under the field and a hairline, a small uppercase heading with the count, then a row per
+    status: a colour swatch (the colour the first board using it gives its column; a hollow ring when none does),
+    its name, a quiet line saying where it is used ("On Sprint, Roadmap", or "Not on any board"), and a pill with
+    how many of its cards this board would show ("4 cards", "1 card", "No cards"): cards out of the Trash and the
+    Archive, of the card types this board shows. The list scrolls past about five rows. With two or more and the
+    field blank, **Add All** (by the heading) adds them all, in order, as one change (up to the 12-column limit).
+    When the typed text narrows the list to nothing: "No existing status matches "{text}"." (Add Column then makes
+    it new).
+  - A status picked from the list (or matched by name) keeps its status and its name, so the cards already in it
+    show in the new column. Each add is one board change, undone in one step. Telemetry: `Plan` · `Changed` ·
+    `ColumnAdded` for a new status, `ColumnAddedExisting` for an existing one (a row, a matched name, Add All).
+  - **Where it shows**: **+ Add Column After** opens it as its own small popover hung beside the button (to its
+    right, else left, below or above, whichever fits on screen) with an arrow pointing at it, over the settings
+    popover, which stays open behind it. The picker's field takes focus as it opens; focus goes back to the button
+    when it closes. It closes on an add, on a press outside it, or on Escape, which closes only the picker (a second
+    Escape closes the settings). An added status or new name then moves the settings to the new column, its name
+    selected; Add All closes them.
+  - **Light and dark**: it wears the editor's popover surface (white, slate-900 in dark), the highlight in the
+    brand tint; row colour changes are instant under reduced motion.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
 - **One name, one status**: a document never has two statuses of the same name (compared as the column picker
@@ -302,14 +341,14 @@ In Plan mode:
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
-  the **Add a Card** menu (the shared anchored menu with a tile grid and no header, since it opens under its
+  the **Add a Card** menu (the shared anchored menu with an option list and no header, since it opens under its
   own button; a bottom sheet titled "Add a Card" on a phone), as
-  Illustrate's + opens "Add a page": a tile per card type the board shows, each its glyph on a tint of its
+  Illustrate's + opens "Add a page": a row per card type the board shows, each its glyph on a tint of its
   colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
-  (taking the row's field). Arrow keys move between the tiles as in every menu; Escape, a press anywhere
+  (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
-- **Add New Card Type**: under the tiles, the menu ends in **Add New Card Type**, for someone who may edit while the catalogue has room for another type. It closes the menu and opens the type editor
+- **Add New Card Type**: under the rows, the menu ends in **Add New Card Type**, for someone who may edit while the catalogue has room for another type. It closes the menu and opens the type editor
   on a new type whose statuses are only this board's columns' (every other status of the document turned off), so
   its cards fit the board. Saving it adds it to this board's card types when the board takes a chosen few (a board
   that takes every type already shows it); closing the editor makes nothing. Telemetry: `Plan` · `Added` ·
@@ -407,24 +446,86 @@ card to the previous or next column; **Shift+Up/Down** moves it within the colum
 Trash; **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In Progress,
 position 2 of 4").
 
+## Option lists
+
+Every option picker in Plan mode is one **option list** (`OptionRows`): a bordered, rounded box holding a row per
+choice, one to a row, each row its icon at the left, then its name (Title Case), a quiet second line where it helps
+(where a state is used), and at the right a marker. A one-of-a-set list (a radio group) ticks the chosen row and tints
+it in the brand colour (light and dark); an on-or-off list (checkboxes) shows a box at the right, filled and ticked
+when on; a list of actions (Add a Card, an existing state to add) has no marker. Hover and keyboard focus tint a row;
+outside a menu one row is in the Tab order and ArrowUp / ArrowDown / Home / End move between rows, Enter or Space
+picks; inside a command menu the rows are its items (`menuitemradio`, `menuitemcheckbox`, `menuitem`) and the menu's
+own keys move between them. In Setup Board it wears the board's colours. It is used by:
+
+- the board menu and cog: **Swimlanes** (Group Rows By), **Supported Cards** (Card Types), **Card Layout** (Card
+  Size), **Board Setup** (Fill Tab: On Canvas, Fill Tab); a Gantt chart's Card Types and Swimlanes;
+- **Setup Board**: Card Types, Use an Existing State, and the Layout step's Swimlanes and Card Display;
+- **Add a Card**'s card types; a card type's **States**; the **Card Types** panel's rows (each with its own Edit and
+  Duplicate, so the same box and rows without a marker); the column picker's Existing Statuses;
+- a column's settings: **Move Left** and **Move Right** are rows, icon left, like the actions under them.
+
+Left as they are: the board preset gallery (PlanBoardPicker: large visual previews to compare), the glyph palette
+(GlyphPicker: an icon grid, where a row each would be far too long) and a type's Display size switch (ItemTypeDisplay:
+a three-way segmented control, not a list of options), and the palette's Plan tiles (cards and views to drag onto the
+canvas, part of the palette's catalogue, not a setting).
+
 ## Maximised board
 
 A board can be maximised to work on it without the rest of the canvas around it.
 
 - In Plan mode, the board's header ends with **Maximise Board** (a maximise icon, with a tooltip) at its top
   right.
-- Maximised, the board fills the canvas: it is drawn over everything else, at its full screen size, and the
-  editor wears [zen mode](../007-editor/zen-mode.md)'s chrome (no header, tab bar, palette or panels).
-  Everything on the board works as it does on the canvas: cards drag, open and add, and widgets filter. The
-  header does not move the board while it is maximised.
+- Maximised, the board fills the canvas area: it is drawn over the canvas and everything on it, while the
+  editor's chrome stays as the person has it (the header, the tab bar and footer, and the palette as a toolbar or
+  panels, per their setting); zen mode is not switched on (a zen mode the person had on stays on). It starts clear
+  of the chrome laid over the canvas, measured from that chrome as it is (never a fixed number): below the Toolbar
+  layout's top row (the menu button and mode menu at the top left, the palette toolbar at the top centre), and
+  beside the layout's own panels (the Explorer, the Palette as panels: a panel nearer the left edge pushes the left
+  side in, one nearer the right the right side). It runs down to the canvas's foot: the bottom-right controls (undo, the dock, zoom) float over it,
+  still clickable, and its last cards are reached by scrolling. The Map is hidden while a board is maximised or fills
+  its tab (there is no canvas to map) and comes back when it is restored. Around the board, the whole canvas area is
+  painted with the canvas's own background (its colour and pattern), so nothing on the canvas shows through, in any
+  strip the board leaves beside or below the panels. A sheet
+  across the canvas (a phone) pushes the top or bottom instead. It never gives up more than 45% of the canvas on an
+  axis. It follows the chrome as it changes (a panel opened, closed, moved or collapsed, the window resized), and a
+  panel dragged over it still floats above it. A panel opened for a moment (the Trash, the Cards panel, card search,
+  Card Types, Layers, a vote or poll, the AI panel, the item panel) floats over the board and never moves or resizes
+  it, so nothing jumps as it opens or closes. Everything on the board works as it does on the canvas: cards drag,
+  open and add, and widgets filter. The header does not move the board while it is maximised.
+- **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
+  (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot, so a phone scrolls sooner); a column
+  set wider takes its slots and the gaps between them. A board of five slots or fewer fills the width as on the
+  canvas; one of more scrolls its columns (and their swimlanes with them) sideways under a fixed header, by
+  scrollbar, trackpad or Shift and the wheel. A card dragged (mouse, pen or finger) near the left or right edge of the
+  columns scrolls them sideways, faster the nearer the edge, stopping at the ends; a pointer that only hovers never
+  scrolls them. Under reduced motion it still scrolls, at one gentle speed. On the canvas a board keeps its columns sharing its width.
 - On a touch screen, a finger on the maximised board's empty space scrolls the board (across and down), since
   it covers the canvas there is nothing to pan; a finger on a card still picks it up.
 - **Restore Board** (a minimise icon, in the same place) or **Escape** puts it back. Escape restores only when
   no dialog (the item panel, a confirm) is open over the board; Escape in a dialog closes the dialog first. One
   Escape restores even with something selected: it restores and does nothing else (it does not also deselect).
+- **The palette offers only Cards**: while a board (not a view: cards land only on a board, so a maximised Gantt
+  chart or other view keeps the palette as it is) is maximised or fills its tab, the palette (as panels or as the
+  toolbar, on a phone too) opens on Plan's **Cards** and its category picker lists Cards alone, whatever the mode,
+  since a card is the one thing that lands on the board. The category the person had stays chosen underneath and is
+  back the moment the board is restored.
+- **Nothing under it moves**: while a board is maximised (or fills its tab), the canvas takes no input that would
+  change it. A cover over the whole canvas area (the board sits in it at its insets) takes every press, double-click,
+  right-click and wheel around the board, so nothing is selected, dragged, marqueed, resized, drawn, panned or
+  zoomed, by any tool; a press on the board itself is the board's alone, never also a canvas gesture. The canvas's
+  own keyboard shortcuts stand down (no arrow nudge, Delete, select-all, duplicate, lock, z-order, zoom, paste or
+  tool key; the chords the browser would take over, Cmd+D and Cmd+A among them, are prevented), while undo and redo
+  (Cmd+Z, Cmd+Shift+Z, Ctrl+Y), search (Cmd+K), zen (Z), the mode switch (Shift+D), Escape, the chrome (header, tab
+  bar, palette, panels, the bottom-right controls) and everything on the board keep working; copy and cut are left to
+  the browser, for text on the board.
+- **No selection chrome over it**: while a board is maximised (or fills its tab, [Fill Tab](#fill-tab)), no selection
+  toolbar, popover, multi-selection toolbar or quick-connect plus floats over the canvas, for the board or anything
+  else selected, however the selection came about (a press before maximising, select-all, undo or redo, a
+  collaborator, the tab opening with the board selected). The selection itself is kept, and its chrome returns on
+  restore.
 - **Nothing is lost either way**: maximising and restoring move the board, they never redraw it from scratch, so
   its collapsed rows, an open popover and a drag in progress carry over.
-- **It animates both ways**: maximising, the board grows from its place on the canvas to fill the screen;
+- **It animates both ways**: maximising, the board grows from its place on the canvas to fill the canvas area;
   restoring, it shrinks back into its place, and only then is it on the canvas again (250 ms, the dialogs' `long`
   token and ease-out). Growing, its content fades in over the grow's last moments, so the whole maximise settles
   within those 250 ms. Under reduced motion it switches at once. Restoring before it has finished growing goes
@@ -435,13 +536,69 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - It ends on its own when the board leaves the screen: switching tab, the board being deleted (by anyone), or
   leaving Plan mode. A zen mode the person had on before stays on after Restore.
 - One board at a time: maximising another board (there is no way to reach one while maximised) is not offered.
-- It works the same on a phone and a tablet: the board fills the screen, and its body scrolls.
+- It works the same on a phone and a tablet: the board fills the canvas area, and its body scrolls.
 - Telemetry: `Plan / Toggled / BoardMaximised` and `Plan / Toggled / BoardRestored`.
+
+## Fill Tab
+
+A board can be set to **fill its tab**: the tab becomes the board, for everyone, every time the tab is shown. Named
+**Fill Tab** (what it does to the tab, in two words, beside Maximise, which is one person's view for a moment).
+
+- **Stored on the board** (`fillTab: true` on its set-up; absent is off), so it syncs to collaborators, survives a
+  reload and is undone like any board edit.
+- **Where it is set**: the **Board Setup** section (the element menu's Board, and the board's cog) holds a **Fill
+  Tab** group (info note: "The board always fills this tab, so the rest of the canvas can't be used.") with two
+  rows in an [option list](#option-lists), **On Canvas** and **Fill Tab**, the current one ticked; and the Setup Board wizard's Layout step (above).
+  Only someone who may edit sees either. It is offered on every board, All Cards and Archive boards included.
+- **Turning it on deletes everything else on the tab's canvas**: every other element (shapes, notes, arrows, other
+  Plan boards, Plan cards and views, locked elements and those on hidden or locked layers too, since nothing under
+  the board could be reached again). When there is any, the menu (or a phone's settings sheet) closes and a confirm (the shared confirm dialog) says
+  so first:
+  "Fill the Tab with {Title}?", "The rest of this canvas becomes unusable, and its N other elements will be deleted
+  (M of them locked). Undo brings them back.", **Delete and Fill Tab** / **Cancel** (the board's set-up is read as it is when the change is made, so an edit
+  made while the confirm was open is kept) (the locked clause only when
+  some are). On an otherwise empty tab it applies at once. Cards (items) are not elements: they are never deleted by
+  this, and a card whose board was deleted reads as its state does with no board ([A state no board
+  names](#a-state-no-board-names)).
+- **One undo step**: the deletion and the setting are one change, so one undo brings every element back and the
+  board back onto the canvas. Turning it off is a board edit too (nothing comes back but the canvas).
+- **Filled**: whenever the tab is shown (opening the document, switching to the tab, a reload, a collaborator's or
+  a share link's view), the board is drawn over the canvas area as a maximised board is, in every mode (Plan mode
+  works on it as on the canvas; in Diagram or Draw mode it reads as a board does outside Plan mode, and switching
+  to Plan mode works on it). The editor's header, tab bar, footer, palette and panels stay, so the person can move
+  between tabs and modes; the board sits clear of them as a maximised board does. It appears at once (no grow).
+  The board's **Maximise/Restore** button is hidden, and Escape does not restore it; nothing un-fills it but
+  turning Fill Tab off. Presses, wheel and right-click on it stay on the board, so the canvas under it is never
+  selected, panned, zoomed or menu'd; the board element's own menu is reached through its cog (Board Setup) while
+  it fills the tab.
+- **Turning it off** (the On Canvas row, or the wizard run again) puts the board back on the canvas, where it was,
+  and the normal Maximise/Restore comes back. A person who had the board maximised when Fill Tab came on is
+  released from the maximise at once.
+- **Two boards set to fill one tab** (an agent's or a collaborator's write, a paste): the first in canvas order
+  (element order) fills it; the others stay under it, unseen.
+- **Elements added while it is on** (a collaborator or their agent, a palette shape dropped on the board; this person's own paste and tool keys stand down)
+  are **hidden, not blocked**: they are kept in the tab under the board, unseen and unreachable, until Fill Tab is
+  turned off, and they count among the elements deleted if it is turned on again. Blocking would need every add
+  path (the api, agents, paste) to know the rule; hiding needs none, and nothing is silently lost.
+- **A locked tab**: its edits are refused as every edit there is, so the setting cannot change; a tab locked while
+  filled stays filled. **Read-only viewers and share links** see the board filled and cannot toggle it.
+- **Slides and presenting**: a slide of the board shows the board as a slide does, not filled; presenting covers
+  the screen with the slide anyway.
+- **The board deleted** (by anyone, or by an undo past its creation): nothing fills the tab, and the canvas is back.
+- Telemetry: `Plan / Toggled / FillTabOn` and `Plan / Toggled / FillTabOff`, fired when the change is made (before
+  it is written), from the menu and the wizard alike.
 
 ## The Plan card
 
 - Draws one item's card face at the element's size, with the item type's colour; resizes like a box.
-- Clicking it (in Plan mode) or double-clicking it (other modes) opens the item panel.
+- Has its own **Card Size** (Minimal, Compact or Detailed, the board's three; Detailed when unset), set from the
+  **Card** flyout of its element menu (a collapsible **Card Size** row, closed until opened, as every menu row is), one undoable element edit (`planCard.size`, Detailed stored as absent). Its
+  card type's Display decides what shows at each size, as on a board. Exports and images draw its face as they do
+  today, whatever its size. Telemetry: `Plan` · `Changed` · `PlanCardSize`.
+- A double-click or double-tap opens the item panel, in every mode; a single click or tap only selects it, as for
+  any element. Two presses at one spot within the double-press window count (`usePressWithoutDrag` with
+  `requireDouble`), not the browser's `dblclick`, so a tap works as a click does. A press that travels past the press
+  slop moves the card and counts for nothing.
 - When its item is not in the document's store (deleted, or the tab came from another document) it draws "Item
   not found" in a dashed outline and offers to remove the card.
 
@@ -486,6 +643,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - A board keeps its layers to itself: its sticky column heads never draw over another element, even where boards
   overlap.
 - A selected board or Plan card has no quick-connect pluses: its cards are its content, not nodes to chain from.
+  With no plus to clear, its selection toolbar sits close above it (the 16 px gap read-only views use, not 48 px).
+  Only boxed elements close the gap this way: an arrow keeps 48 px, as its move frame sits in that gap.
 
 ## Both elements everywhere
 

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, ITEM_TYPE_EXCLUDED_STATUSES_MAX, type ItemTypeDef } from '@livediagram/items';
 import { ItemTypeEditor, deleteMessage } from './ItemTypeEditor';
 
-// docs/specs/026-plan/item-types.md "Editing a type": the editor's General, Fields and Statuses tabs.
+// docs/specs/026-plan/item-types.md "Editing a type": the editor's Configuration, States and Display tabs.
 const plan: Record<string, unknown> = {};
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 
@@ -27,21 +27,71 @@ function editor(type: ItemTypeDef = ITEM_TYPES[1]!) {
 }
 
 describe('the type editor’s tabs', () => {
-  it('opens on General, with Fields, States and Display a tab away', () => {
+  it('opens on Configuration, with States and Display a tab away', () => {
     editor();
     const tabs = screen.getAllByRole('tab').map((t) => t.textContent);
-    expect(tabs).toEqual(['General', 'Fields', 'States', 'Display']);
-    expect(screen.getByRole('tab', { name: 'General' }).getAttribute('aria-selected')).toBe('true');
-    expect(screen.getByLabelText('Name')).toBeTruthy();
-    expect(screen.queryByText('On the Card')).toBeNull();
-    fireEvent.click(screen.getByRole('tab', { name: 'Fields' }));
-    expect(screen.getByText('On the Card')).toBeTruthy();
+    expect(tabs).toEqual(['Configuration', 'States', 'Display']);
+    expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    fireEvent.click(screen.getByRole('tab', { name: 'States' }));
     expect(screen.queryByLabelText('Name')).toBeNull();
+    expect(screen.queryByText('On the Card')).toBeNull();
+  });
+
+  it('opens a new type on Configuration too, the caret in Name', () => {
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
+    render(
+      <ItemTypeEditor
+        type={null}
+        types={ITEM_TYPES}
+        itemCount={0}
+        canDelete={false}
+        onSave={vi.fn()}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(document.activeElement).toBe(screen.getByLabelText('Name'));
+  });
+
+  it('shows General then Fields in Configuration, each under its own heading', () => {
+    editor();
+    const panel = screen.getByRole('tabpanel');
+    const headings = within(panel)
+      .getAllByRole('heading', { level: 3 })
+      .map((h) => h.textContent);
+    expect(headings).toEqual(['General', 'Fields']);
+    // General's heading is for screen readers only; Fields shows its own.
+    const [generalHeading, fieldsHeading] = within(panel).getAllByRole('heading', { level: 3 });
+    expect(generalHeading!.className).toMatch(/\bsr-only\b/);
+    expect(fieldsHeading!.className).not.toMatch(/\bsr-only\b/);
+    const general = within(panel).getByRole('region', { name: 'General' });
+    const fields = within(panel).getByRole('region', { name: 'Fields' });
+    expect(within(general).getByLabelText('Name')).toBeTruthy();
+    expect(within(general).getByText('Colour')).toBeTruthy();
+    expect(within(fields).getByText('On the Card')).toBeTruthy();
+    // General first, Fields after it.
+    expect(general.compareDocumentPosition(fields) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('puts Name and Colour side by side in one row, Name first', () => {
+    editor();
+    const general = screen.getByRole('region', { name: 'General' });
+    const name = within(general).getByText('Name').parentElement!;
+    const colour = within(general).getByText('Colour').parentElement!;
+    // One shared row (a grid from the md breakpoint), Name on the left, Colour to its right.
+    expect(name.parentElement).toBe(colour.parentElement);
+    expect(name.parentElement!.className).toMatch(/\bmd:grid\b/);
+    expect(name.nextElementSibling).toBe(colour);
   });
 
   it('lists Details above the panel’s tabs, Overview first', () => {
     editor();
-    fireEvent.click(screen.getByRole('tab', { name: 'Fields' }));
     const names = screen
       .getAllByRole('textbox')
       .map((t) => t.getAttribute('aria-label'))
@@ -52,26 +102,47 @@ describe('the type editor’s tabs', () => {
 
   it('moves between tabs with the arrow keys', () => {
     editor();
-    const general = screen.getByRole('tab', { name: 'General' });
-    fireEvent.keyDown(general, { key: 'ArrowRight' });
-    expect(screen.getByRole('tab', { name: 'Fields' }).getAttribute('aria-selected')).toBe('true');
-    fireEvent.keyDown(general, { key: 'End' });
+    const configuration = screen.getByRole('tab', { name: 'Configuration' });
+    fireEvent.keyDown(configuration, { key: 'ArrowRight' });
+    expect(screen.getByRole('tab', { name: 'States' }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(configuration, { key: 'End' });
     expect(screen.getByRole('tab', { name: 'Display' }).getAttribute('aria-selected')).toBe('true');
-    fireEvent.keyDown(general, { key: 'ArrowRight' });
-    expect(screen.getByRole('tab', { name: 'General' }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(configuration, { key: 'ArrowRight' });
+    expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    fireEvent.keyDown(configuration, { key: 'ArrowLeft' });
+    expect(screen.getByRole('tab', { name: 'Display' }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(configuration, { key: 'Home' });
+    expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
   });
 
-  it('marks the tab holding what stops Save, but not a name still to be given', () => {
+  it('marks Configuration for a clashing name, but not a name still to be given', () => {
     editor();
-    const general = () =>
-      screen.getByRole('tab', { name: /General/ }).querySelector('[aria-label="Needs attention"]');
+    const configuration = () =>
+      screen
+        .getByRole('tab', { name: /Configuration/ })
+        .querySelector('[aria-label="Needs attention"]');
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: '' } });
-    expect(general()).toBeNull();
+    expect(configuration()).toBeNull();
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: ITEM_TYPES[0]!.label } });
-    expect(general()).not.toBeNull();
+    expect(configuration()).not.toBeNull();
     expect(
-      screen.getByRole('tab', { name: /Fields/ }).querySelector('[aria-label="Needs attention"]'),
+      screen.getByRole('tab', { name: /States/ }).querySelector('[aria-label="Needs attention"]'),
     ).toBeNull();
+  });
+
+  it('marks Configuration for a tab with no name', () => {
+    editor();
+    fireEvent.change(screen.getByLabelText('Tab 1 name'), { target: { value: ' ' } });
+    expect(screen.getByText('Give every tab a name.')).toBeTruthy();
+    expect(
+      screen
+        .getByRole('tab', { name: /Configuration/ })
+        .querySelector('[aria-label="Needs attention"]'),
+    ).not.toBeNull();
   });
 
   it('says too many statuses are turned off, on the Statuses tab, not as a custom field problem', () => {
@@ -86,7 +157,9 @@ describe('the type editor’s tabs', () => {
       screen.getByRole('tab', { name: /States/ }).querySelector('[aria-label="Needs attention"]'),
     ).not.toBeNull();
     expect(
-      screen.getByRole('tab', { name: /Fields/ }).querySelector('[aria-label="Needs attention"]'),
+      screen
+        .getByRole('tab', { name: /Configuration/ })
+        .querySelector('[aria-label="Needs attention"]'),
     ).toBeNull();
   });
 });

@@ -21,20 +21,29 @@ const typeInto = (tab: TypeEditorTab, target: string) => async (api: CardTypeTou
   input?.focus();
 };
 
+// Opens the tab, then scrolls the step's section to the top of the tab's scrolling panel, so a section further down
+// (Configuration's Fields, under General) is in view when the ring lands on it.
+const scrollTo = (tab: TypeEditorTab, target: string) => async (api: CardTypeTourApi) => {
+  api.showTab(tab);
+  const section = await waitForSelector(`[data-tour-id="${target}"]`, 1000);
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  section?.scrollIntoView?.({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+};
+
 export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
   {
     id: 'general',
     title: 'Name It, Then Give It a Look',
     body: 'What are these cards? A Customer Call, a Risk, a Request: type its name now, the tour waits. Its colour and glyph mark every card of this type, so they stand out on a busy board.',
     target: 'card-type-general',
-    prepare: typeInto('general', 'card-type-general'),
+    prepare: typeInto('configuration', 'card-type-general'),
   },
   {
     id: 'fields',
     title: 'Lay Out Its Fields',
     body: 'What its cards hold, laid out as the card panel shows them. Add Field gives it more (a Link to Card ties it to another card); drag a field to move it between tabs and Details.',
     target: 'card-type-fields',
-    prepare: on('fields'),
+    prepare: scrollTo('configuration', 'card-type-fields'),
   },
   {
     id: 'states',

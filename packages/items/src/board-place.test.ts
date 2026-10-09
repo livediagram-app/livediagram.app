@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  PLACED_BOARD_GAP,
-  PLACED_BOARD_HEIGHT,
-  PLACED_BOARD_WIDTH,
-  placeBoard,
-  reshapeBoard,
-} from './board-place';
+import { PLACED_BOARD_GAP, PLACED_BOARD_WIDTH, placeBoard, reshapeBoard } from './board-place';
+import { PLAN_BOARD_EMPTY_HEIGHT_PX, PLAN_BOARD_HEIGHT_PX, planBoardHeightFor } from './board';
 import { presetSetup } from './presets';
 
 const fixed = () => 0.5;
@@ -25,7 +20,7 @@ describe('placeBoard', () => {
       shape: 'plan-board',
       x: 400 + PLACED_BOARD_GAP,
       y: -20,
-      height: PLACED_BOARD_HEIGHT,
+      height: PLAN_BOARD_HEIGHT_PX,
     });
     expect(r.board.width).toBeGreaterThanOrEqual(PLACED_BOARD_WIDTH);
     const names = r.board.planBoard.columns.map((c) => c.name);
@@ -103,5 +98,13 @@ describe('reshapeBoard', () => {
     expect(every.ok && every.setup.addTypes).toBeUndefined();
     expect(reshapeBoard(setup, { title: ' ' }, others)).toMatchObject({ ok: false });
     expect(reshapeBoard(setup, { columns: [] }, others)).toMatchObject({ ok: false });
+  });
+});
+
+describe('planBoardHeightFor', () => {
+  it('starts an empty board, waiting for Setup Board, taller than one with columns', () => {
+    expect(planBoardHeightFor(presetSetup('blank'))).toBe(PLAN_BOARD_EMPTY_HEIGHT_PX);
+    expect(planBoardHeightFor(presetSetup('kanban'))).toBe(PLAN_BOARD_HEIGHT_PX);
+    expect(PLAN_BOARD_EMPTY_HEIGHT_PX).toBeGreaterThan(PLAN_BOARD_HEIGHT_PX);
   });
 });

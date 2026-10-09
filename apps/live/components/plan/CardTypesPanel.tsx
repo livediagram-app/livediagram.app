@@ -71,9 +71,9 @@ export function CardTypesPanel({
     return (
       <li
         key={t.id}
-        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-2 transition dark:border-slate-700 dark:bg-slate-900 ${
+        className={`group relative flex items-center gap-2.5 bg-white py-2 pl-3 pr-2 transition-colors motion-reduce:transition-none dark:bg-slate-900 ${
           canEdit
-            ? 'hover:border-slate-300 hover:shadow-sm focus-within:ring-2 focus-within:ring-brand-400 dark:hover:border-slate-600'
+            ? 'hover:bg-slate-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-brand-400 dark:hover:bg-slate-800/70'
             : ''
         }`}
       >
@@ -210,7 +210,11 @@ function TypeGroup({
         {title}
       </h3>
       {children.length > 0 ? (
-        <ul aria-label={title} className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        // One to a row in a bordered box, as Plan's option lists are (docs/specs/026-plan/plan-board.md "Option lists").
+        <ul
+          aria-label={title}
+          className="flex flex-col divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
+        >
           {children}
         </ul>
       ) : empty ? (

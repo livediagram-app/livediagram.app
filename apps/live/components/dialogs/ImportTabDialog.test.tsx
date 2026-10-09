@@ -63,6 +63,17 @@ describe('ImportTabDialog, draw.io', () => {
     );
     expect(screen.getByText("Here's how your images came across.")).toBeTruthy();
   });
+
+  it("reports a JSON import's refused Plan cards (docs/specs/026-plan/items.md)", async () => {
+    open({
+      status: 'done',
+      failures: [{ title: 'Plan Cards', message: "2 cards couldn't be added to this document." }],
+    });
+    expect((await screen.findByTestId('import-image-report')).textContent).toContain(
+      "2 cards couldn't be added",
+    );
+    expect(screen.getByText("Here's how your import came across.")).toBeTruthy();
+  });
 });
 
 describe('ImportTabDialog, offered formats', () => {

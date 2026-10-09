@@ -7,10 +7,11 @@
 import { useMemo } from 'react';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { useSelectionOf } from './useSelectionStore';
+import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 
 export type CanvasSelectionInput = Omit<
   Parameters<typeof deriveCanvasSelection>[0],
-  'selectedId' | 'multiSelectedIds'
+  'selectedId' | 'multiSelectedIds' | 'canvasCovered'
 >;
 
 export type CanvasSelectionView = ReturnType<typeof deriveCanvasSelection>;
@@ -19,8 +20,11 @@ const whole = <T>(s: T) => s;
 
 export function useCanvasSelectionView(input: CanvasSelectionInput): CanvasSelectionView {
   const { selectedId, multiSelectedIds } = useSelectionOf(whole);
+  // A Plan board or view drawn over the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md)
+  // covers it, so no selection chrome floats there, whatever is selected.
+  const canvasCovered = useCanvasCovered();
   return useMemo(
-    () => deriveCanvasSelection({ ...input, selectedId, multiSelectedIds }),
-    [input, selectedId, multiSelectedIds],
+    () => deriveCanvasSelection({ ...input, selectedId, multiSelectedIds, canvasCovered }),
+    [input, selectedId, multiSelectedIds, canvasCovered],
   );
 }

@@ -42,7 +42,7 @@ describe('PlanViewMenuSection', () => {
     const types = screen.getByRole('button', { name: 'Card Types' });
     expect(lanes.getAttribute('aria-expanded')).toBe('false');
     expect(types.getAttribute('aria-expanded')).toBe('false');
-    expect(screen.queryByRole('button', { name: 'Assignee' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Assignee' })).toBeNull();
     fireEvent.click(lanes);
     expect(onToggle).toHaveBeenCalledWith('plan-view-swimlanes');
     fireEvent.click(types);
@@ -55,7 +55,7 @@ describe('PlanViewMenuSection', () => {
     );
     // Task is named but has no Start, so it is not listed; toggling Idea keeps it named.
     show({ view: 'gantt', types: ['project', 'task'] }, { types: dated });
-    fireEvent.click(screen.getByRole('button', { name: 'Idea' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Idea' }));
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', {
       view: 'gantt',
       types: ['project', 'idea', 'task'],
@@ -64,10 +64,10 @@ describe('PlanViewMenuSection', () => {
 
   it('lists only card types with Start and Due, and says why', () => {
     show({ view: 'gantt' });
-    expect(screen.getAllByRole('button', { name: 'Project' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('checkbox', { name: 'Project' }).length).toBeGreaterThan(0);
     // The built-in Task has Due but no Start; Note has neither.
-    expect(screen.queryByRole('button', { name: 'Task' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Note' })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: 'Task' })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: 'Note' })).toBeNull();
     expect(screen.getByRole('note').textContent).toBe(
       'iThe card types this view charts; only those with Start and Due fields are listed.',
     );
@@ -78,7 +78,7 @@ describe('PlanViewMenuSection', () => {
       t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
     );
     show({ view: 'gantt', namesWidth: 300 }, { types: dated });
-    fireEvent.click(screen.getByRole('button', { name: 'Task' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Task' }));
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', {
       view: 'gantt',
       namesWidth: 300,
@@ -92,16 +92,16 @@ describe('PlanViewMenuSection', () => {
       t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
     );
     show({ view: 'gantt', types: ['project', 'task'] }, { types: dated });
-    fireEvent.click(screen.getByRole('button', { name: 'Task' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Task' }));
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', { view: 'gantt' });
     cleanup();
     show({ view: 'gantt' });
     const project = screen
-      .getAllByRole('button', { name: 'Project' })
-      .find((b) => b.getAttribute('aria-pressed') === 'true')!;
+      .getAllByRole('checkbox', { name: 'Project' })
+      .find((b) => b.getAttribute('aria-checked') === 'true')!;
     // The last type keeps its pressed look (not dimmed as disabled), and pressing it changes nothing.
     expect(project.hasAttribute('disabled')).toBe(false);
-    expect(project.getAttribute('aria-pressed')).toBe('true');
+    expect(project.getAttribute('aria-checked')).toBe('true');
     vi.mocked(plan['updateView'] as () => void).mockClear();
     fireEvent.click(project);
     expect(plan['updateView']).not.toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe('PlanViewMenuSection', () => {
 
   it('sets the chart’s swimlanes, keeping its other settings, and tracks it', () => {
     show({ view: 'gantt', namesWidth: 300 });
-    fireEvent.click(screen.getByRole('button', { name: 'Assignee' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Assignee' }));
     expect(plan['updateView']).toHaveBeenCalledWith('chart', {
       view: 'gantt',
       namesWidth: 300,
@@ -120,13 +120,13 @@ describe('PlanViewMenuSection', () => {
 
   it('lanes by a field, and None drops the setting', () => {
     show({ view: 'gantt', swimlaneBy: 'priority' });
-    fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Labels' }));
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', {
       view: 'gantt',
       swimlaneBy: 'field',
       swimlaneField: 'labels',
     });
-    fireEvent.click(screen.getByRole('button', { name: 'None' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'None' }));
     expect(plan['updateView']).toHaveBeenLastCalledWith('chart', { view: 'gantt' });
   });
 
@@ -143,9 +143,9 @@ describe('PlanViewMenuSection', () => {
 
   it('shows nothing for another view, or to someone who may not edit', () => {
     show({ view: 'calendar' });
-    expect(screen.queryByRole('button', { name: 'Assignee' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Assignee' })).toBeNull();
     cleanup();
     show({ view: 'gantt' }, { canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Assignee' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Assignee' })).toBeNull();
   });
 });

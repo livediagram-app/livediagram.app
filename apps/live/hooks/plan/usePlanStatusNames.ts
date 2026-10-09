@@ -13,6 +13,7 @@ import {
   statusColumnsOfSetups,
   statusPhasesOf,
   type BoardStatusTypes,
+  type StatusBoardSource,
   type StatusPhase,
 } from '@livediagram/items';
 
@@ -62,14 +63,23 @@ export function statusTypesOfSetups(
 }
 
 // A board's title and the statuses it names as columns, in board order (All Cards and Archive boards skipped): the
-// type editor's States groups its statuses under them (docs/specs/026-plan/item-types.md "Editing a type").
-export type StatusBoard = { title: string; statuses: readonly string[] };
+// type editor's States groups its statuses under them (docs/specs/026-plan/item-types.md "Editing a type"), and the
+// column picker says which boards use a status, in the colour they give it (docs/specs/026-plan/plan-board.md "The
+// column picker"). `colours` holds only the columns that have one, and is absent when none does.
+export type StatusBoard = StatusBoardSource;
 export function statusBoardsOfSetups(setups: readonly unknown[]): StatusBoard[] {
   const out: StatusBoard[] = [];
   for (const raw of setups) {
     const setup = normaliseBoardSetup(raw);
     if (!setup || setup.allCards || setup.archive || setup.columns.length === 0) continue;
-    out.push({ title: setup.title, statuses: setup.columns.map((c) => c.status) });
+    const colours = new Map<string, string>();
+    for (const c of setup.columns)
+      if (c.color && !colours.has(c.status)) colours.set(c.status, c.color);
+    out.push({
+      title: setup.title,
+      statuses: setup.columns.map((c) => c.status),
+      ...(colours.size ? { colours } : {}),
+    });
   }
   return out;
 }
@@ -114,7 +124,9 @@ export function documentStatusSignatures(
     names: JSON.stringify(statusColumnsOfSetups(setups)),
     phases: JSON.stringify([...statusPhasesOf(setups)]),
     types: JSON.stringify(statusTypesOfSetups(setups, typeIds && new Set(typeIds))),
-    boards: JSON.stringify(statusBoardsOfSetups(setups)),
+    boards: JSON.stringify(
+      statusBoardsOfSetups(setups).map((b) => (b.colours ? { ...b, colours: [...b.colours] } : b)),
+    ),
   };
   signatures.set(key, next);
   if (signatures.size > STATUS_SIGNATURE_CACHE_MAX)
@@ -153,6 +165,15 @@ export function usePlanStatuses(
       ),
     [sig.types],
   );
-  const boards = useMemo(() => JSON.parse(sig.boards) as StatusBoard[], [sig.boards]);
+  // The colours travel in the signature as [status, colour] pairs; back into a Map here.
+  const boards = useMemo(
+    () =>
+      (
+        JSON.parse(sig.boards) as (Omit<StatusBoard, 'colours'> & {
+          colours?: [string, string][];
+        })[]
+      ).map((b) => (b.colours ? { ...b, colours: new Map(b.colours) } : (b as StatusBoard))),
+    [sig.boards],
+  );
   return { names, phases, types, boards };
 }

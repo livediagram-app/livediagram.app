@@ -1,5 +1,5 @@
 import { usePlan } from '@/components/plan/PlanContext';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
@@ -14,6 +14,7 @@ import {
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
+  type TabPlanData,
 } from '@livediagram/document';
 import {
   downloadBlob,
@@ -149,7 +150,13 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
 // extension + mime, and how to serialise the tab to the editable text.
 const TEXT_PANELS: Record<
   TextFormat,
-  { blurb: string; downloadLabel: string; ext: string; mime: string; getText: (tab: Tab) => string }
+  {
+    blurb: string;
+    downloadLabel: string;
+    ext: string;
+    mime: string;
+    getText: (tab: Tab, plan?: TabPlanData) => string;
+  }
 > = {
   file: {
     blurb:
@@ -165,7 +172,7 @@ const TEXT_PANELS: Record<
     downloadLabel: 'Download .mmd',
     ext: 'mmd',
     mime: 'text/plain',
-    getText: mermaidFromTab,
+    getText: (tab) => mermaidFromTab(tab),
   },
   markdown: {
     blurb:
@@ -201,6 +208,22 @@ export function ExportTabDialog({
 }: ExportTabDialogProps) {
   // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
   const plan = usePlan();
+  // Keyed on the items and types alone: the context value also changes with presence and the open item.
+  const planItems = plan?.items;
+  const planTypes = plan?.types;
+  const planCatalogue = plan?.itemTypes.catalogue ?? null;
+  const planOpts = useMemo(
+    () => (planItems ? { items: planItems, itemTypes: planTypes } : {}),
+    [planItems, planTypes],
+  );
+  // The text formats' view of the same (docs/specs/026-plan/items.md "Copies and exports").
+  const planData = useMemo<TabPlanData | undefined>(
+    () =>
+      planItems && planTypes
+        ? { items: planItems, types: planTypes, catalogue: planCatalogue }
+        : undefined,
+    [planItems, planTypes, planCatalogue],
+  );
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
@@ -261,13 +284,20 @@ export function ExportTabDialog({
     };
   }, [active, tab, imageContext]);
 
+  // The open text format's text, built once per format, tab and item change rather than on every render: a JSON
+  // export with a full item store is up to 2,000 cards. The panel reads it only as its starting text.
+  const activeText = useMemo(
+    () => (active && isTextFormat(active) ? TEXT_PANELS[active].getText(tab, planData) : ''),
+    [active, tab, planData],
+  );
+
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(tab, { ...opts, images: previewImages, page }),
-    [tab, previewImages, page],
+      renderTabToSvg(tab, { ...opts, images: previewImages, page, ...planOpts }),
+    [tab, previewImages, page, planOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -291,7 +321,7 @@ export function ExportTabDialog({
         ...opts,
         images,
         page,
-        ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
+        ...planOpts,
       };
       if (pages && page) {
         const pageScope = scopeOf(format);
@@ -360,7 +390,7 @@ export function ExportTabDialog({
         {active && isTextFormat(active) ? (
           <TextExportPanel
             formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
-            initialText={TEXT_PANELS[active].getText(tab)}
+            initialText={activeText}
             blurb={TEXT_PANELS[active].blurb}
             downloadLabel={TEXT_PANELS[active].downloadLabel}
             onDownload={(text) => {

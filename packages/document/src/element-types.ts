@@ -1340,7 +1340,9 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
 }
 
 // What a Plan card points at: one item of the document's item store (docs/specs/026-plan/items.md).
-export type PlanCardRef = { itemId: string };
+// `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
+// absent is Detailed.
+export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
 
 // What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
 // The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.

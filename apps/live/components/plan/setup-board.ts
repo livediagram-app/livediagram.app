@@ -1,6 +1,11 @@
 // Setup Board (docs/specs/026-plan/plan-board.md "Setup Board"): what a board with no columns becomes once the
 // person has chosen its card types and its columns, as one change. Pure.
-import { PLAN_COLUMNS_MAX, type PlanBoardSetup } from '@livediagram/items';
+import {
+  PLAN_COLUMNS_MAX,
+  type CardSize,
+  type PlanBoardSetup,
+  type SwimlaneBy,
+} from '@livediagram/items';
 import { addColumnAfter } from './board-setup-edits';
 import { addStatusColumn, matchStatus, type StatusPick } from './column-status-picks';
 
@@ -41,7 +46,7 @@ export function setUpBoard(
   allTypeIds: readonly string[],
   random: () => number = Math.random,
 ): PlanBoardSetup {
-  // Run again on a board that has columns (Setup Board from its Board Title): a column it keeps keeps its id and its
+  // Run again on a board that has columns (Setup Board from its Board Setup): a column it keeps keeps its id and its
   // settings (name, WIP limit, colour, width); the rest are made afresh, in the order chosen. A column left out leaves
   // this board only: its cards keep their state.
   const kept = new Map(setup.columns.map((c) => [c.status, c]));
@@ -67,7 +72,7 @@ export function setUpBoard(
 }
 
 // What Setup Board starts from on a board that has columns: its columns, as existing states in its order, and the
-// card types it takes.
+// card types it takes (its layout is setupLayoutOf's).
 export function setupFromBoard(
   setup: PlanBoardSetup,
   typeIds: readonly string[],
@@ -79,5 +84,39 @@ export function setupFromBoard(
       name: c.name,
     })),
     typeIds: [...typeIds],
+  };
+}
+
+// Setup Board's Layout step (docs/specs/026-plan/plan-board.md "Setup Board"): the board's swimlanes, card size and
+// Fill Tab, starting from the board as it is (a new board's own defaults), so skipping the step changes none.
+export type SetupLayout = {
+  swimlaneBy: SwimlaneBy;
+  swimlaneField?: string | undefined;
+  cardSize?: CardSize | undefined;
+  fillTab: boolean;
+};
+
+export function setupLayoutOf(setup: PlanBoardSetup): SetupLayout {
+  return {
+    swimlaneBy: setup.swimlaneBy,
+    ...(setup.swimlaneBy === 'field' && setup.swimlaneField
+      ? { swimlaneField: setup.swimlaneField }
+      : {}),
+    ...(setup.cardSize ? { cardSize: setup.cardSize } : {}),
+    fillTab: setup.fillTab === true,
+  };
+}
+
+// The board with the step's layout: its grouping (a field only for a field grouping), its card size (Detailed is
+// absent) and Fill Tab (off is absent).
+export function withSetupLayout(setup: PlanBoardSetup, layout: SetupLayout): PlanBoardSetup {
+  const { swimlaneField: _f, cardSize: _c, fillTab: _t, ...rest } = setup;
+  const field = layout.swimlaneBy === 'field' ? layout.swimlaneField : undefined;
+  return {
+    ...rest,
+    swimlaneBy: layout.swimlaneBy === 'field' && !field ? 'none' : layout.swimlaneBy,
+    ...(field ? { swimlaneField: field } : {}),
+    ...(layout.cardSize && layout.cardSize !== 'detailed' ? { cardSize: layout.cardSize } : {}),
+    ...(layout.fillTab ? { fillTab: true } : {}),
   };
 }
