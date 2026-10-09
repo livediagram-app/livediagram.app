@@ -26,7 +26,7 @@ import type {
   Layer,
   LegendItem,
   MindFlow,
-  ElementAnimation,
+  AnimationSetId,
   IconAnimation,
   IconPosition,
   IconSize,
@@ -267,16 +267,18 @@ export type EditorContextMenuProps = {
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
   onResetArrowStyle: () => void;
-  // Animated elements (docs/specs/008-canvas/canvas-and-palette.md): a looping animation on boxed elements, a flow
-  // animation on arrows, and a glyph animation on icons. `null` clears it. The
-  // onSet* commit; the onPreview* play it live on hover (desktop) and
-  // onAnimationPreviewEnd reverts when the pointer leaves the tile — same
-  // hover-to-preview flow as the style presets above (shared useStylePreview).
-  onSetAnimation: (value: ElementAnimation | null) => void;
+  // Animated elements: one category per animation set (docs/specs/028-animation/element-animations.md),
+  // a flow animation on arrows, and a glyph animation on icons. `null` clears it. The onSet* commit;
+  // the onPreview* play it live on hover (desktop) and onAnimationPreviewEnd reverts when the
+  // pointer leaves the tile (the shared useStylePreview flow). A set's handlers write only its
+  // members of the selection.
+  onSetSetAnimation: (set: AnimationSetId, value: string | null) => void;
+  onPreviewSetAnimation: (set: AnimationSetId, value: string | null) => void;
+  onSetSetAnimationSpeed: (set: AnimationSetId, value: AnimationSpeed) => void;
+  onSetSetAnimationRepeat: (set: AnimationSetId, value: boolean) => void;
   onSetArrowFlow: (value: ArrowFlow | null) => void;
   onSetIconAnimation: (value: IconAnimation | null) => void;
   onSetIconAnimationSpeed: (value: AnimationSpeed) => void;
-  onPreviewAnimation: (value: ElementAnimation | null) => void;
   onPreviewArrowFlow: (value: ArrowFlow | null) => void;
   onPreviewIconAnimation: (value: IconAnimation | null) => void;
   onAnimationPreviewEnd: () => void;
@@ -284,10 +286,8 @@ export type EditorContextMenuProps = {
   onSetProgressAnim: (value: ProgressAnim | null) => void;
   onSetProgressAnimSpeed: (value: AnimationSpeed) => void;
   onSetProgressAnimRepeat: (value: boolean) => void;
-  onSetAnimationSpeed: (value: AnimationSpeed) => void;
   onSetFlowSpeed: (value: AnimationSpeed) => void;
   // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops, false plays once.
-  onSetAnimationRepeat: (value: boolean) => void;
   onSetIconAnimationRepeat: (value: boolean) => void;
   onSetFlowRepeat: (value: boolean) => void;
   onResetColors: () => void;

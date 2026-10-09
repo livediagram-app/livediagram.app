@@ -1,4 +1,6 @@
-import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
+import type { CSSProperties, PointerEvent as ReactPointerEvent, RefObject } from 'react';
+import { renderUnits } from './animated-words';
+import type { TextAnimView } from './useTextAnimation';
 import type { ElementLink, TableCellStyle, TableElement } from '@livediagram/document';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
@@ -25,6 +27,11 @@ export const cellKey = (r: number, c: number): string => `${r}:${c}`;
 // the parent's selection / menu / edit machinery.
 export type TableCellCtx = {
   element: TableElement;
+  // The Table set's cascade reads each cell's row and column (docs/specs/028-animation/element-animations.md).
+  animated: boolean;
+  // The cells' Text animation, and where each cell's units start in the table-wide count.
+  textAnim?: TextAnimView;
+  textStarts?: number[][];
   rows: number;
   cols: number;
   showControls: boolean;
@@ -92,6 +99,9 @@ export function TableCellView({
 }) {
   const {
     element,
+    animated,
+    textAnim,
+    textStarts,
     rows,
     cols,
     showControls,
@@ -225,8 +235,10 @@ export function TableCellView({
             }
           : undefined
       }
-      className="relative min-w-0 overflow-hidden"
+      className="lvd-tbl-cell relative min-w-0 overflow-hidden"
+      data-first-row={animated && r === 0 ? '' : undefined}
       style={{
+        ...(animated ? ({ '--lvd-r': r, '--lvd-c': c } as CSSProperties) : {}),
         padding: cellPad,
         borderRight: c < cols - 1 ? gridBorder : undefined,
         borderBottom: r < rows - 1 ? gridBorder : undefined,
@@ -275,7 +287,16 @@ export function TableCellView({
           setEditing={setEditing}
         />
       ) : (
-        <span className="whitespace-pre-wrap break-words">{cell}</span>
+        <span
+          key={textAnim?.className}
+          className={`whitespace-pre-wrap break-words ${textAnim?.className ?? ''}`}
+          style={textAnim?.style}
+          aria-label={textAnim && cell ? cell : undefined}
+        >
+          {textAnim && cell
+            ? renderUnits(cell, textAnim.plan, { next: textStarts?.[r]?.[c] ?? 0 })
+            : cell}
+        </span>
       )}
       {/* Linked-cell badge: a small link glyph in the corner.
           Clicking it follows the link (works in view + edit

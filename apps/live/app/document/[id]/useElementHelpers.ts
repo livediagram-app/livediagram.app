@@ -9,7 +9,12 @@ import {
 import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
-import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
+import {
+  applyPaint,
+  fitPaintToTarget,
+  paintableArrowFields,
+  paintableBoxedFields,
+} from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
@@ -206,7 +211,11 @@ export function useElementHelpers(opts: {
     if (isBoxed(source) && isBoxed(target)) {
       // The Format Panel (docs/specs/008-canvas/format-panel.md) decides which parts travel; the projection
       // above still decides which parts CAN.
-      const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
+      const projection = fitPaintToTarget(
+        source,
+        target,
+        filterPaintedFields(paintableBoxedFields(source), formatConfig),
+      );
       commit((els) =>
         els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
       );

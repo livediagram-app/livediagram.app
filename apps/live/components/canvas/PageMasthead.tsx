@@ -3,6 +3,8 @@
 import { PAGE_HEADING_MAX, type ShapeElement } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { renderUnits, unitCount } from '@/components/canvas/animated-words';
+import { useTextAnimation } from '@/components/canvas/useTextAnimation';
 
 // A Page's fixed masthead (docs/specs/009-elements/page-element.md): a heading and a subtitle above the body,
 // separated by a hairline rule.
@@ -32,6 +34,19 @@ export function PageMasthead({
   fontFamily: string | undefined;
 }) {
   const zoom = useCanvasZoom();
+  // The page's Text animation runs through its heading too (docs/specs/028-animation/element-animations.md):
+  // the title and subtitle count as one label, the subtitle carrying on where the title ends.
+  const title = element.pageTitle ?? '';
+  const subtitle = element.pageSubtitle ?? '';
+  const view = useTextAnimation(element, [title, subtitle], '#0f172a', false);
+  const line = (text: string, start: number) =>
+    view && text
+      ? {
+          node: renderUnits(text, view.plan, { next: start }),
+          className: view.className,
+          style: view.style,
+        }
+      : undefined;
   return (
     <div
       // Not pointer-events-none as a whole: the two lines are editable. The
@@ -52,6 +67,7 @@ export function PageMasthead({
         maxLength={PAGE_HEADING_MAX}
         className="text-[19px] font-semibold leading-tight text-slate-900"
         ariaLabel="Page title"
+        animated={line(title, 0)}
       />
       <InlineTextLine
         value={element.pageSubtitle ?? ''}
@@ -62,6 +78,7 @@ export function PageMasthead({
         maxLength={PAGE_HEADING_MAX}
         className="text-[12px] font-medium leading-snug text-slate-500"
         ariaLabel="Page subtitle"
+        animated={line(subtitle, view ? unitCount(title, view.plan) : 0)}
       />
     </div>
   );

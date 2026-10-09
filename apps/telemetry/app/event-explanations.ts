@@ -261,6 +261,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Icon': 'Someone placed or repositioned an inline icon on a selected element.',
   'Element|Changed|IconAnimation':
     'Someone gave a selected icon shape a looping animation, or turned it off.',
+  'Element|Changed|TextAnimation':
+    'Someone gave the words of a selected element a text animation, such as typewriter, or turned it off.',
+  'Element|Changed|StickyAnimation':
+    'Someone gave a selected sticky note an animation, such as flutter, or turned it off.',
+  'Element|Changed|DrawingAnimation':
+    'Someone gave a selected drawing or path an animation, such as draw, or turned it off.',
+  'Element|Changed|MediaAnimation':
+    'Someone gave a selected image or video an animation, such as Ken Burns, or turned it off.',
+  'Element|Changed|TableAnimation':
+    'Someone gave a selected table an animation, such as rows cascading in, or turned it off.',
   'Element|Changed|IconSize': "Someone changed a selected Technology icon's tile size.",
   'Element|Changed|Idea-box':
     'Someone added an idea to an Idea Box element, revealed its cards, or cleared it for the next round.',

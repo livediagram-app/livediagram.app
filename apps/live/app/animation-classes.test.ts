@@ -1,60 +1,94 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_ANIMATIONS } from '@livediagram/document';
+import { ANIMATION_SET_VALUES, SHAPE_ANIMATIONS, type AnimationSetId } from '@livediagram/document';
+import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 
-// An element's animation is applied by building a class name:
-// `lvd-anim-${element.animation}`. Nothing checks that the class exists, so an
-// animation added to the union without a matching rule in canvas-motion.css picks
-// cleanly in the UI, saves onto the element, syncs to collaborators, and
-// animates nothing. There is no error, and the element still looks fine at
-// rest, so it reads as "that one is subtle" rather than as a bug.
+// An animation is applied by building a class name from its stored value. Nothing checks that the
+// class exists, so a value added to a set without a matching rule picks cleanly in the UI, saves
+// onto the element, syncs to collaborators, and animates nothing. There is no error, and the
+// element still looks fine at rest, so it reads as "that one is subtle" rather than as a bug.
 //
-// This is not hypothetical for the feature: useBoxedElementAnimation records
-// that glow and pulse "did nothing at all" on stickers because the class was
-// dropped on the way to a renderer that never ran. Same silence, different
-// cause.
-const CSS = readFileSync(fileURLToPath(new URL('./canvas-motion.css', import.meta.url)), 'utf8');
+// Each set's classes live in its own stylesheet (docs/specs/028-animation/element-animations.md);
+// the text-native silhouette classes for legacy values stay in canvas-motion.css.
+const read = (name: string) => {
+  const url = new URL(`./${name}`, import.meta.url);
+  return existsSync(fileURLToPath(url)) ? readFileSync(fileURLToPath(url), 'utf8') : '';
+};
+const SHEET: Record<AnimationSetId, string> = {
+  shape: 'motion-shape.css',
+  text: 'motion-text.css',
+  sticky: 'motion-sticky.css',
+  drawing: 'motion-drawing.css',
+  media: 'motion-media.css',
+  table: 'motion-table.css',
+};
+// The values a set draws with the Shape set's classes (a note and a table are rectangles).
+const SHARED: Partial<Record<AnimationSetId, readonly string[]>> = {
+  sticky: ['pulse', 'glow', 'highlight'],
+  table: ['pulse', 'glow'],
+};
 
-const boxClasses = new Set(
-  [...CSS.matchAll(/^\.lvd-anim-([a-z-]+)/gm)]
-    .map((m) => m[1]!)
-    .filter((name) => !name.startsWith('text-') && name !== 'sticker-gradient'),
-);
+// Structural classes that share a prefix but name no animation (the Shape set's child layer, the
+// units and words of split text, a table's cells, a drawing's masks, lights and pen marker).
+const STRUCTURAL = new Set([
+  'layer',
+  'unit',
+  'word',
+  'cell',
+  'reveal',
+  'fill',
+  'dashmask',
+  'run',
+  'tail',
+  'head',
+  'pen',
+]);
 
-// The label-level variants, for the four animations that paint the glyphs
-// rather than the box (a standalone text element has no fill or border to
-// animate). The hook only ever builds `lvd-anim-text-<a>` for those.
-const textClasses = new Set([...CSS.matchAll(/^\.lvd-anim-text-([a-z-]+)/gm)].map((m) => m[1]!));
+const classesIn = (css: string, prefix: string) =>
+  new Set(
+    [...css.matchAll(new RegExp(`\\.${prefix}([a-z]+)\\b`, 'g'))]
+      .map((m) => m[1]!)
+      .filter((n) => !STRUCTURAL.has(n)),
+  );
+
+const reducedBlock = (css: string) =>
+  [...css.matchAll(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/g)]
+    .map((m) => m[1])
+    .join('\n');
 
 describe('every animation has the CSS its class name promises', () => {
-  it('reads the stylesheet (guard against this test going blind)', () => {
-    expect(CSS.length).toBeGreaterThan(10_000);
-    expect(ELEMENT_ANIMATIONS.length).toBeGreaterThan(10);
+  it('reads the stylesheets (guard against this test going blind)', () => {
+    expect(read('motion-shape.css').length).toBeGreaterThan(5_000);
+    expect(SHAPE_ANIMATIONS.length).toBe(15);
   });
 
-  it('gives every ElementAnimation a .lvd-anim-<name> rule', () => {
-    const silent = ELEMENT_ANIMATIONS.filter((a) => !boxClasses.has(a));
-    expect(silent).toEqual([]);
-  });
+  for (const set of Object.keys(SHEET) as AnimationSetId[]) {
+    const prefix = ANIMATION_CLASS_PREFIX[set];
+    const css = read(SHEET[set]);
+    const own = ANIMATION_SET_VALUES[set].filter((v) => !SHARED[set]?.includes(v));
 
-  it('carries no .lvd-anim-<name> rule that no animation can select', () => {
-    // The mirror: a rule left behind after an animation was renamed or
-    // dropped is dead weight in a stylesheet every editor page loads.
-    const orphaned = [...boxClasses].filter(
-      (name) => !(ELEMENT_ANIMATIONS as readonly string[]).includes(name),
+    it(`gives every ${set} value a .${prefix}<name> rule in ${SHEET[set]}`, () => {
+      const classes = classesIn(css, prefix);
+      expect(own.filter((v) => !classes.has(v))).toEqual([]);
+    });
+
+    it(`carries no .${prefix}<name> rule in ${SHEET[set]} that no ${set} value selects`, () => {
+      const orphaned = [...classesIn(css, prefix)].filter((n) => !own.includes(n));
+      expect(orphaned.sort()).toEqual([]);
+    });
+
+    it(`stops every ${set} animation under reduced motion`, () => {
+      const stopped = classesIn(reducedBlock(css), prefix);
+      expect(own.filter((v) => !stopped.has(v) && css.includes(`.${prefix}${v}`))).toEqual([]);
+    });
+  }
+
+  it('keeps the legacy text-native variants to Shape values', () => {
+    const legacy = classesIn(read('canvas-motion.css'), 'lvd-anim-text-');
+    expect([...legacy].filter((n) => !(SHAPE_ANIMATIONS as readonly string[]).includes(n))).toEqual(
+      [],
     );
-    expect(orphaned.sort()).toEqual([]);
-  });
-
-  it('keeps the text variants to real animations', () => {
-    // Deliberately a SUBSET check, not parity: only the four silhouette
-    // animations (glow / pulse / trace / gradient) need a glyph-level rule,
-    // because the transform ones already move the text with the box.
-    const strays = [...textClasses].filter(
-      (name) => !(ELEMENT_ANIMATIONS as readonly string[]).includes(name),
-    );
-    expect(strays.sort()).toEqual([]);
-    expect(textClasses.size).toBeGreaterThan(0);
+    expect(legacy.size).toBeGreaterThan(0);
   });
 });

@@ -4,6 +4,12 @@
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
 @import './canvas-motion.css';
+@import './motion-shape.css';
+@import './motion-text.css';
+@import './motion-sticky.css';
+@import './motion-media.css';
+@import './motion-drawing.css';
+@import './motion-table.css';
 @import './thumbnail-loader.css';
 @import './article-pages.css';
 @import './split-view.css';

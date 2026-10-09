@@ -149,7 +149,6 @@ export function MultiSelectionContextMenu({
         // "Animation" categories (boxed animation + arrow flow). Disambiguate
         // by kind only when both are present; on a single-kind selection the
         // plain "Animation" reads fine.
-        const bothAnimated = boxedSel.length > 0 && !!arrowSrc;
         // Menu parity with the single-element menu (docs/specs/008-canvas/canvas-and-palette.md): everything you
         // can restyle on ONE element works on a selection / group too. Each
         // section reads its display value off the first matching member and
@@ -240,7 +239,6 @@ export function MultiSelectionContextMenu({
                   scaffold={scaffold}
                   boxedSel={boxedSel}
                   arrowSrc={arrowSrc}
-                  bothAnimated={bothAnimated}
                   colourable={colourable}
                   textSrc={textSrc}
                   fillSrc={fillSrc}
@@ -262,7 +260,6 @@ export function MultiSelectionContextMenu({
               scaffold={scaffold}
               boxedSel={boxedSel}
               arrowSrc={arrowSrc}
-              bothAnimated={bothAnimated}
               colourable={colourable}
               textSrc={textSrc}
               fillSrc={fillSrc}

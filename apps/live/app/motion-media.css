@@ -1,0 +1,295 @@
+/*
+ * The Media animation set (docs/specs/028-animation/element-animations.md "Media"), for images and
+ * videos. The class sits on the frame (the rounded, overflow-hidden box that holds the picture):
+ * Ken Burns, Zoom and Pan move the picture inside it (its img / iframe child), so motion never
+ * shows past the frame or its crop; Tilt turns the frame; the reveals filter or clip the frame;
+ * Sheen sweeps a band across it. Speed and Repeat come from the wrapper (--lvd-anim-speed,
+ * --lvd-anim-iter).
+ *
+ * The reveals bring the picture in over the first 45% of their cycle, hold, fade out and are whole
+ * again at 100% (so a last-frame jump shows the picture); with Repeat off (.lvd-once) they reveal
+ * once and stay.
+ */
+
+.lvd-media-kenburns > img,
+.lvd-media-kenburns > iframe,
+.lvd-media-zoom > img,
+.lvd-media-zoom > iframe,
+.lvd-media-pan > img,
+.lvd-media-pan > iframe {
+  transform-origin: 50% 50%;
+}
+
+/* Ken Burns: a slow push and drift across the picture, there and back. */
+@keyframes lvd-media-kenburns {
+  0%,
+  100% {
+    scale: 1.04;
+    translate: -2% -1.5%;
+  }
+  50% {
+    scale: 1.14;
+    translate: 2.5% 1.5%;
+  }
+}
+.lvd-media-kenburns > img,
+.lvd-media-kenburns > iframe {
+  animation: lvd-media-kenburns calc(20s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Zoom: a slow push in and back out. */
+@keyframes lvd-media-zoom {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.15;
+  }
+}
+.lvd-media-zoom > img,
+.lvd-media-zoom > iframe {
+  animation: lvd-media-zoom calc(12s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Pan: a slow drift from side to side across a slightly enlarged picture. */
+@keyframes lvd-media-pan {
+  0%,
+  100% {
+    scale: 1;
+    translate: 0 0;
+  }
+  25% {
+    scale: 1.15;
+    translate: -6% 0;
+  }
+  75% {
+    scale: 1.15;
+    translate: 6% 0;
+  }
+}
+.lvd-media-pan > img,
+.lvd-media-pan > iframe {
+  animation: lvd-media-pan calc(16s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Tilt: a gentle three-dimensional turn, as if held in the hand. */
+@keyframes lvd-media-tilt {
+  0%,
+  100% {
+    transform: perspective(800px) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: perspective(600px) rotateX(7deg) rotateY(-10deg) scale(0.97);
+  }
+  50% {
+    transform: perspective(600px) rotateX(0deg) rotateY(-2deg) scale(0.98);
+  }
+  75% {
+    transform: perspective(600px) rotateX(-7deg) rotateY(10deg) scale(0.97);
+  }
+}
+.lvd-media-tilt {
+  animation: lvd-media-tilt calc(6s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Develop (reveal): from washed out to full colour, like an instant photo. */
+@keyframes lvd-media-develop {
+  0% {
+    filter: sepia(0.6) brightness(1.6) contrast(0.5) blur(1px);
+  }
+  45%,
+  86% {
+    filter: none;
+    opacity: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    filter: none;
+    opacity: 1;
+  }
+}
+@keyframes lvd-media-develop-once {
+  from {
+    filter: sepia(0.6) brightness(1.6) contrast(0.5) blur(1px);
+  }
+  to {
+    filter: none;
+  }
+}
+.lvd-media-develop {
+  animation: lvd-media-develop calc(8s * var(--lvd-anim-speed, 1)) ease-out
+    var(--lvd-anim-iter, infinite) both;
+}
+.lvd-media-develop.lvd-once {
+  animation: lvd-media-develop-once calc(3.6s * var(--lvd-anim-speed, 1)) ease-out 1 both;
+}
+
+/* Focus (reveal): the picture sharpens from a blur. */
+@keyframes lvd-media-focus {
+  0% {
+    filter: blur(8px);
+    opacity: 0.6;
+  }
+  45%,
+  86% {
+    filter: blur(0);
+    opacity: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+@keyframes lvd-media-focus-once {
+  from {
+    filter: blur(8px);
+    opacity: 0.6;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+.lvd-media-focus {
+  animation: lvd-media-focus calc(6s * var(--lvd-anim-speed, 1)) cubic-bezier(0.2, 0.7, 0.4, 1)
+    var(--lvd-anim-iter, infinite) both;
+}
+.lvd-media-focus.lvd-once {
+  animation: lvd-media-focus-once calc(2.4s * var(--lvd-anim-speed, 1))
+    cubic-bezier(0.2, 0.7, 0.4, 1) 1 both;
+}
+
+/* Wipe (reveal): wiped in from the left. */
+@keyframes lvd-media-wipe {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  45%,
+  86% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+@keyframes lvd-media-wipe-once {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.lvd-media-wipe {
+  animation: lvd-media-wipe calc(5s * var(--lvd-anim-speed, 1)) cubic-bezier(0.65, 0, 0.35, 1)
+    var(--lvd-anim-iter, infinite) both;
+}
+.lvd-media-wipe.lvd-once {
+  animation: lvd-media-wipe-once calc(2s * var(--lvd-anim-speed, 1)) cubic-bezier(0.65, 0, 0.35, 1)
+    1 both;
+}
+
+/* Iris (reveal): opens from a circle at its centre. */
+@keyframes lvd-media-iris {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+  }
+  45%,
+  86% {
+    clip-path: circle(75% at 50% 50%);
+    opacity: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    clip-path: circle(75% at 50% 50%);
+    opacity: 1;
+  }
+}
+@keyframes lvd-media-iris-once {
+  from {
+    clip-path: circle(0% at 50% 50%);
+  }
+  to {
+    clip-path: circle(75% at 50% 50%);
+  }
+}
+.lvd-media-iris {
+  animation: lvd-media-iris calc(5s * var(--lvd-anim-speed, 1)) cubic-bezier(0.65, 0, 0.35, 1)
+    var(--lvd-anim-iter, infinite) both;
+}
+.lvd-media-iris.lvd-once {
+  animation: lvd-media-iris-once calc(2s * var(--lvd-anim-speed, 1)) cubic-bezier(0.65, 0, 0.35, 1)
+    1 both;
+}
+
+/* Sheen: a band of light sweeps across the surface now and then. */
+@keyframes lvd-media-sheen {
+  0% {
+    translate: -120% 0;
+  }
+  25%,
+  100% {
+    translate: 120% 0;
+  }
+}
+.lvd-media-sheen {
+  position: relative;
+}
+.lvd-media-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.45) 48%,
+    rgb(255 255 255 / 0.15) 54%,
+    transparent 70%
+  );
+  translate: -120% 0;
+  animation: lvd-media-sheen calc(4s * var(--lvd-anim-speed, 1)) cubic-bezier(0.45, 0, 0.55, 1)
+    var(--lvd-anim-iter, infinite);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lvd-media-kenburns > img,
+  .lvd-media-kenburns > iframe,
+  .lvd-media-zoom > img,
+  .lvd-media-zoom > iframe,
+  .lvd-media-pan > img,
+  .lvd-media-pan > iframe,
+  .lvd-media-tilt,
+  .lvd-media-develop,
+  .lvd-media-develop.lvd-once,
+  .lvd-media-focus,
+  .lvd-media-focus.lvd-once,
+  .lvd-media-wipe,
+  .lvd-media-wipe.lvd-once,
+  .lvd-media-iris,
+  .lvd-media-iris.lvd-once,
+  .lvd-media-sheen::after {
+    animation: none;
+  }
+}

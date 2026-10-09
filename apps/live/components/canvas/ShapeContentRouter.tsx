@@ -17,6 +17,7 @@ import {
   isProgressShape,
   isRailShape,
   isRatingShape,
+  type ShapeKind,
 } from '@livediagram/document';
 import dynamic from 'next/dynamic';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
@@ -72,6 +73,31 @@ type ShapeContentRouterProps = Pick<
   // Filter-based animation class for silhouette content (a sticker's art).
   artAnimClass: string | undefined;
 };
+
+/**
+ * Whether ShapeSvgOverlay draws this shape: an SVG-rendered kind that no face of its own claims
+ * first (the router below). Its Pulse, Glow, Trace and Gradient ride the overlay only then; a
+ * self-faced kind takes them on the element (docs/specs/028-animation/element-animations.md).
+ */
+export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
+  return (
+    isSvgRenderedShape(kind) &&
+    kind !== 'sticker' &&
+    kind !== 'icon' &&
+    kind !== 'plan-board' &&
+    kind !== 'plan-card' &&
+    kind !== 'plan-view' &&
+    !isProgressShape(kind) &&
+    !isRailShape(kind) &&
+    !isRatingShape(kind) &&
+    !isPieShape(kind) &&
+    !isBarShape(kind) &&
+    !isCodeBlockShape(kind) &&
+    !isLegendShape(kind) &&
+    !isChecklistShape(kind) &&
+    !isLineShape(kind)
+  );
+}
 
 // The per-shape-type inner content of a boxed element: stickers, tech /
 // curated icons,

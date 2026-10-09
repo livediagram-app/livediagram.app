@@ -1863,8 +1863,9 @@ export const articles: Article[] = [
   {
     slug: 'animations',
     title: 'Animating Elements',
-    description: 'Loop a subtle animation on shapes, arrows, and icons.',
-    keywords: 'animate motion pulse loop effects moving flow wiggle',
+    description: 'Animate shapes, text, notes, drawings, media, tables, arrows, and icons.',
+    keywords:
+      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

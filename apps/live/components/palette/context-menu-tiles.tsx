@@ -11,8 +11,8 @@ import { useState, type ReactNode } from 'react';
 import {
   ANIMATION_SPEEDS,
   ARROW_FLOWS,
-  ELEMENT_ANIMATIONS,
   ICON_ANIMATIONS,
+  animationLabel,
   type AnimationSpeed,
   type ArrowFlow,
   type ChartLegendPosition,
@@ -20,16 +20,15 @@ import {
   ICON_WEIGHTS,
   ICON_WEIGHT_PX,
   type IconWeight,
-  type ElementAnimation,
   type IconAnimation,
   type IconSize,
 } from '@livediagram/document';
 import { SizeButton } from '@/components/palette/palette-controls';
+import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {
-  AnimationKindGlyph,
-  FlowKindGlyph,
-  IconAnimKindGlyph,
-} from '@/components/palette/context-menu-icons';
+  ArrowFlowPreview,
+  IconAnimationPreview,
+} from '@/components/palette/animation-previews-existing';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import { IconPrims } from '@/components/primitives/icon-glyph';
@@ -37,7 +36,7 @@ import { Glyph } from '@livediagram/ui';
 
 // Stable no-op so a tile grid without preview handlers (e.g. a future caller)
 // still calls useRevertOnUnmount unconditionally (hook-rule safe).
-const NOOP = () => {};
+export const NOOP = () => {};
 
 // Gate the Speed row on the COMMITTED motion, not the live hover-preview value.
 // The menu derives the selection from the live tab, which the hover preview
@@ -46,7 +45,7 @@ const NOOP = () => {};
 // tile under the cursor before the click lands, committing the wrong one (the
 // reported race). The state captures the committed value at open (useState ignores
 // later args) and only changes on a real pick, so hovering never reflows.
-function useSpeedRowGate<T>(committed: T | null, onSet: (v: T | null) => void) {
+export function useSpeedRowGate<T>(committed: T | null, onSet: (v: T | null) => void) {
   const [picked, setPicked] = useState(committed);
   const handleSet = (v: T | null) => {
     setPicked(v);
@@ -85,7 +84,7 @@ export function SpeedTiles({
 // surface (boxed / arrow / icon / the data-shape anims) offers the same pair,
 // so the loop's pace and its play-once switch can't drift between pickers.
 // Repeat defaults on; off = the animation plays a single cycle and holds.
-function SpeedAndRepeatRows({
+export function SpeedAndRepeatRows({
   speed,
   repeat,
   onSetSpeed,
@@ -121,60 +120,6 @@ export function TileLabel({ glyph, label }: { glyph: ReactNode; label: string })
   );
 }
 
-// Boxed-element Animation control: an illustrated tile per kind (None / Pulse /
-// Blink / Glow / Trace / Gradient / Bounce / Wobble) plus the Speed row once one
-// is active. Shared by the single and multi-select menus.
-export function AnimationTiles({
-  animation,
-  speed,
-  repeat,
-  onSet,
-  onSetSpeed,
-  onSetRepeat,
-  onPreview,
-  onPreviewEnd,
-}: {
-  animation: ElementAnimation | null;
-  speed: AnimationSpeed;
-  // Whether the animation loops (on by default); false = play once and hold.
-  repeat: boolean;
-  onSet: (v: ElementAnimation | null) => void;
-  onSetSpeed: (v: AnimationSpeed) => void;
-  onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md): play the hovered motion live on the
-  // selection without committing; onPreviewEnd reverts. Omitted = no preview.
-  onPreview?: (v: ElementAnimation | null) => void;
-  onPreviewEnd?: () => void;
-}) {
-  useRevertOnUnmount(onPreviewEnd ?? NOOP);
-  const { showSpeed, handleSet } = useSpeedRowGate(animation, onSet);
-  return (
-    <>
-      <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-        {withNone(ELEMENT_ANIMATIONS).map((v) => (
-          <SizeButton
-            key={v ?? 'none'}
-            active={animation === v}
-            onClick={() => handleSet(v)}
-            onPointerEnter={onPreview ? onMouseHover(() => onPreview(v)) : undefined}
-            onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
-          >
-            <TileLabel glyph={<AnimationKindGlyph kind={v} />} label={v ?? 'None'} />
-          </SizeButton>
-        ))}
-      </div>
-      {showSpeed ? (
-        <SpeedAndRepeatRows
-          speed={speed}
-          repeat={repeat}
-          onSetSpeed={onSetSpeed}
-          onSetRepeat={onSetRepeat}
-        />
-      ) : null}
-    </>
-  );
-}
-
 // Arrow Flow control: None / Dashes / Dots / Beads / Pulse / Grow / Glow
 // illustrated, plus the Speed row.
 export function FlowTiles({
@@ -194,7 +139,7 @@ export function FlowTiles({
   onSet: (v: ArrowFlow | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
   onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md), as in AnimationTiles.
+  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md), as in AnimationSetTiles.
   onPreview?: (v: ArrowFlow | null) => void;
   onPreviewEnd?: () => void;
 }) {
@@ -204,15 +149,17 @@ export function FlowTiles({
     <>
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {withNone(ARROW_FLOWS).map((v) => (
-          <SizeButton
+          <AnimationPreviewTile
             key={v ?? 'none'}
             active={flow === v}
+            label={v ? animationLabel(v) : 'None'}
+            frame={v === 'draw' ? 0.25 : v ? 0.3 : 0}
             onClick={() => handleSet(v)}
-            onPointerEnter={onPreview ? onMouseHover(() => onPreview(v)) : undefined}
-            onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
+            onPreview={onPreview ? () => onPreview(v) : undefined}
+            onPreviewEnd={onPreviewEnd}
           >
-            <TileLabel glyph={<FlowKindGlyph kind={v} />} label={v ?? 'None'} />
-          </SizeButton>
+            <ArrowFlowPreview flow={v} />
+          </AnimationPreviewTile>
         ))}
       </div>
       {showSpeed ? (
@@ -258,15 +205,17 @@ export function IconAnimationTiles({
     <>
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
         {withNone(ICON_ANIMATIONS).map((v) => (
-          <SizeButton
+          <AnimationPreviewTile
             key={v ?? 'none'}
             active={animation === v}
+            label={v ? animationLabel(v) : 'None'}
+            frame={v ? 0.25 : 0}
             onClick={() => handleSet(v)}
-            onPointerEnter={onPreview ? onMouseHover(() => onPreview(v)) : undefined}
-            onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
+            onPreview={onPreview ? () => onPreview(v) : undefined}
+            onPreviewEnd={onPreviewEnd}
           >
-            <TileLabel glyph={<IconAnimKindGlyph kind={v} />} label={v ?? 'None'} />
-          </SizeButton>
+            <IconAnimationPreview animation={v} />
+          </AnimationPreviewTile>
         ))}
       </div>
       {showSpeed ? (

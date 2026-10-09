@@ -93,7 +93,7 @@ export function useEditorCommands(open: boolean): {
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
-    setAnimationSelected,
+    clearAnimationsSelected,
     setArrowFlowSelected,
     setMarkerSelected,
     openComments,
@@ -152,7 +152,8 @@ export function useEditorCommands(open: boolean): {
   const hasAnimation = single
     ? single.type === 'arrow'
       ? !!single.flow
-      : isBoxed(single) && !!single.animation
+      : isBoxed(single) &&
+        (!!single.animation || !!(single as { textAnimation?: string }).textAnimation)
     : false;
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
@@ -223,7 +224,7 @@ export function useEditorCommands(open: boolean): {
     combine: (op) => void combineSelected(op),
     mirrorCopy: () => illustratePages?.logo?.mirrorCopy(),
     clearAnimation: () =>
-      single?.type === 'arrow' ? setArrowFlowSelected(null) : setAnimationSelected(null),
+      single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,
     addComment: () => {
       if (selectedId) openComments(selectedId);

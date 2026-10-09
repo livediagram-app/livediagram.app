@@ -86,7 +86,7 @@ With `PROGRESS_LOOPING_ANIMS = ['pulse', 'stripes']`, fill plays once and holds
 1. The Progress section shows only when `isProgressShape(target.shape)`, inside the Tools flyout.
 2. `ProgressRow`: a 0 to 100 range input (`PercentSliderRow`, label "Percentage", right-aligned
    `{pct}%` readout) calling `setProgressSelected`.
-3. `ProgressAnimTiles`: None / Fill / Pulse / Stripes tiles (`ProgressAnimKindGlyph`), no header;
+3. `ProgressAnimTiles`: None / Fill / Pulse / Stripes tiles (`ProgressAnimPreview` miniatures in `AnimationPreviewTile`s), no header;
    once an animation is set, `SpeedTiles` (Slowest / Slow / Normal / Fast) and a Repeat toggle
    mount beneath, growing the Tools flyout on a selection [QE14].
 4. The boxed-element Animation category is offered as well, animating the wrapper [QE2].

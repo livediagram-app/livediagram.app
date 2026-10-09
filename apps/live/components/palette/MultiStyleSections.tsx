@@ -4,16 +4,12 @@ import {
   TextColourIcon,
 } from '@/components/palette/context-menu-icons';
 import {
-  animLoops,
-  DEFAULT_ANIMATION_SPEED,
   defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
   DEFAULT_ICON_WEIGHT,
   defaultTextColor,
-  isChartShape,
   shownBorderRadius,
-  PIE_LOOPING_ANIMS,
   type ArrowElement,
   type BorderStroke,
   type BorderStyle,
@@ -24,20 +20,14 @@ import {
 } from '@livediagram/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import {
-  AnimationMenuGlyph,
   BorderGlyph,
   IconCategoryGlyph,
   PaletteMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
-import {
-  AnimationTiles,
-  FlowTiles,
-  IconAnimationTiles,
-  IconSizeTiles,
-  IconWeightTiles,
-} from '@/components/palette/context-menu-tiles';
-import { ColourRow, PieAnimTiles } from '@/components/palette/context-menu-rows';
+import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
+import { ColourRow } from '@/components/palette/context-menu-rows';
+import { AnimationSections } from '@/components/palette/AnimationSections';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -60,7 +50,6 @@ export function MultiStyleSections({
   scaffold,
   boxedSel,
   arrowSrc,
-  bothAnimated,
   colourable,
   textSrc,
   fillSrc,
@@ -77,7 +66,6 @@ export function MultiStyleSections({
   scaffold: ReturnType<typeof useContextMenuScaffold>;
   boxedSel: BoxedElement[];
   arrowSrc: ArrowElement | undefined;
-  bothAnimated: boolean;
   colourable: boolean;
   textSrc: Element | undefined;
   fillSrc: BoxedElement | undefined;
@@ -98,16 +86,6 @@ export function MultiStyleSections({
   // As in the single-element menu: a swatch reads the canvas's ink for any
   // element that carries no colour of its own (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
-  // Type-aware animation sets, mirroring the single menu: a selection
-  // that is ALL charts gets the slice animations, ALL icons the glyph
-  // animations; anything mixed falls back to the generic boxed set
-  // (which is what a mixed selection can share).
-  const allCharts =
-    boxedSel.length > 0 && boxedSel.every((el) => el.type === 'shape' && isChartShape(el.shape));
-  const allIcons =
-    boxedSel.length > 0 && boxedSel.every((el) => el.type === 'shape' && el.shape === 'icon');
-  const chartSrc = allCharts ? (boxedSel[0] as ShapeElement) : undefined;
-  const iconSrc = allIcons ? (boxedSel[0] as ShapeElement) : undefined;
   // First line-art icon: gates + feeds the Weight row, which applies to every line-art icon.
   const lineIconSrc = boxedSel.find(
     (el): el is ShapeElement =>
@@ -115,65 +93,16 @@ export function MultiStyleSections({
   );
   return (
     <>
-      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — applies to every boxed member of the
-          selection. */}
-      {part === 'motion' && boxedSel.length ? (
-        <MenuAccordionSection
-          title={bothAnimated ? 'Shape Animation' : 'Animation'}
-          icon={<AnimationMenuGlyph />}
-          {...sectionProps('m-animation')}
-        >
-          {chartSrc ? (
-            <PieAnimTiles
-              anim={chartSrc.pieAnim ?? null}
-              speed={chartSrc.pieAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-              repeat={animLoops(chartSrc.pieAnim, chartSrc.pieAnimRepeat, PIE_LOOPING_ANIMS)}
-              onSet={props.onSetPieAnim}
-              onSetSpeed={props.onSetPieAnimSpeed}
-              onSetRepeat={props.onSetPieAnimRepeat}
-            />
-          ) : iconSrc ? (
-            <IconAnimationTiles
-              animation={iconSrc.iconAnimation ?? null}
-              speed={iconSrc.iconAnimationSpeed ?? DEFAULT_ANIMATION_SPEED}
-              repeat={iconSrc.iconAnimationRepeat ?? true}
-              onSet={props.onSetIconAnimation}
-              onSetSpeed={props.onSetIconAnimationSpeed}
-              onSetRepeat={props.onSetIconAnimationRepeat}
-              onPreview={props.onPreviewIconAnimation}
-              onPreviewEnd={props.onAnimationPreviewEnd}
-            />
-          ) : (
-            <AnimationTiles
-              animation={boxedSel[0]!.animation ?? null}
-              speed={boxedSel[0]!.animationSpeed ?? DEFAULT_ANIMATION_SPEED}
-              repeat={boxedSel[0]!.animationRepeat ?? true}
-              onSet={props.onSetAnimation}
-              onSetSpeed={props.onSetAnimationSpeed}
-              onSetRepeat={props.onSetAnimationRepeat}
-              onPreview={props.onPreviewAnimation}
-              onPreviewEnd={props.onAnimationPreviewEnd}
-            />
-          )}
-        </MenuAccordionSection>
-      ) : null}
-      {part === 'motion' && arrowSrc ? (
-        <MenuAccordionSection
-          title={bothAnimated ? 'Arrow Animation' : 'Animation'}
-          icon={<AnimationMenuGlyph />}
-          {...sectionProps('m-flow')}
-        >
-          <FlowTiles
-            flow={arrowSrc.flow ?? null}
-            speed={arrowSrc.flowSpeed ?? DEFAULT_ANIMATION_SPEED}
-            repeat={arrowSrc.flowRepeat ?? true}
-            onSet={props.onSetArrowFlow}
-            onSetSpeed={props.onSetFlowSpeed}
-            onSetRepeat={props.onSetFlowRepeat}
-            onPreview={props.onPreviewArrowFlow}
-            onPreviewEnd={props.onAnimationPreviewEnd}
-          />
-        </MenuAccordionSection>
+      {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set in
+          the selection, each applying to that set's members only. */}
+      {part === 'motion' ? (
+        <AnimationSections
+          elements={arrowSrc ? [...boxedSel, arrowSrc] : boxedSel}
+          keyPrefix="m-"
+          sectionProps={sectionProps}
+          flyoutProps={scaffold.flyoutProps}
+          handlers={props}
+        />
       ) : null}
       {part === 'style' && colourable ? (
         <MenuAccordionSection
