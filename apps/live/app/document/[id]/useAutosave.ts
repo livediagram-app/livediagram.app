@@ -32,6 +32,7 @@ import {
   type RemoteOpJournal,
 } from './save-baseline';
 import { emptyAfterSave } from '@/lib/list-row-empty';
+import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
 
 // Per-tab autosave (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -266,6 +267,9 @@ export function useAutosave(opts: {
 
       setSaveStatus('saving');
       savesInFlightRef.current++;
+      // How long the save took, Saving to Saved (docs/specs/017-telemetry/timing-telemetry.md), sampled
+      // to one per page per minute. A failed save records nothing; the Error category counts it.
+      const timing = startEditorTiming('Save');
       const journal = remoteOpJournalRef.current;
       const mark = openSaveWindow(journal);
       const gen = ++saveGenRef.current;
@@ -340,6 +344,8 @@ export function useAutosave(opts: {
             lastSavedNameRef.current = next.name;
           }
           setSaveStatus('saved');
+          if (sampleSaveTiming()) timing.end();
+          else timing.cancel();
           retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
@@ -360,6 +366,7 @@ export function useAutosave(opts: {
           );
         })
         .catch((err: unknown) => {
+          timing.cancel();
           if (isDocumentTrashedError(err)) {
             writesForbiddenRef.current = true;
             reportTrashed();

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ClerkProvider } from '@/components/providers/ClerkProvider';
 import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
+import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
 import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
@@ -118,6 +119,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ErrorTelemetryBoot />
         <StaleBuildBoot />
         <PageViewBoot />
+        <TimingTelemetryBoot />
         <TruthArmBoot />
         <ClerkProvider>
           <ToastProvider>

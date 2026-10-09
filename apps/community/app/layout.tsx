@@ -10,6 +10,7 @@ import {
   PUBLIC_VIEWPORT,
   SITE_URL,
   SiteFooter,
+  WebVitalsBoot,
 } from '@livediagram/ui';
 
 // The livediagram Community (docs/specs/025-community/community.md): an indexable static site served
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <PageViewBoot />
+        <WebVitalsBoot />
         <Header />
         <main className="flex-1 pb-20">
           <CommunityGate>{children}</CommunityGate>

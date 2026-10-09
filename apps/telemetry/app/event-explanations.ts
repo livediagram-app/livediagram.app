@@ -1181,6 +1181,8 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Timing|Measured':
+    'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
   'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
   'Draw|Selected':

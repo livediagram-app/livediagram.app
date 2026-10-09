@@ -15,6 +15,7 @@ import {
   PointerGlyph,
   SearchGlyph,
   SparkGlyph,
+  TimerGlyph,
   WindowGlyph,
 } from './glyphs';
 import { WindowPanel } from './WindowPanel';
@@ -31,6 +32,7 @@ import { HelpView } from './HelpView';
 import { CommunityView } from './CommunityView';
 import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
+import { TimingsView } from './TimingsView';
 import { MetricSearch } from './MetricSearch';
 import { dropRetiredEvents } from './retired-events';
 
@@ -45,7 +47,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Tab order follows the product funnel: who arrives, signs up, opens and
 // makes things (Dashboard), which pages they read (Pages), what they build
 // (Palette / Look & Feel), how they organise it (Editing), how they get
-// unstuck (Help), what they share with everyone (Community), error health (Exceptions), then the power-user lens
+// unstuck (Help), what they share with everyone (Community), error health (Exceptions), how fast it all is
+// (Timings), then the power-user lens
 // (Search).
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
@@ -58,6 +61,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'community', label: 'Community', icon: <HeartGlyph /> },
   { key: 'settings', label: 'Settings', icon: <SettingsGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
+  { key: 'timings', label: 'Timings', icon: <TimerGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];
 
@@ -188,6 +192,8 @@ export default function TelemetryDashboard() {
               <SettingsView summary={summary} active={active} />
             ) : view === 'exceptions' ? (
               <ExceptionsView summary={summary} active={active} />
+            ) : view === 'timings' ? (
+              <TimingsView summary={summary} active={active} />
             ) : summary.daily ? (
               <div className="mt-8">
                 <MetricSearch windows={summary.windows} daily={summary.daily} active={active} />

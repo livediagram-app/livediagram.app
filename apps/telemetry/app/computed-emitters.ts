@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   ALL_CTA_SOURCES,
+  ALL_TIMING_TYPES,
   COMMUNITY_CATEGORIES,
   COMMUNITY_REPORT_REASONS,
   PLACEMENT_DEFAULT_KEYS,
@@ -454,4 +455,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
+  // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web
+  // Vitals go through the one reportTiming, so this one site sends every metric in every bucket.
+  'packages/telemetry-client/src/timing.ts Timing·Measured': { values: ALL_TIMING_TYPES },
 };

@@ -10839,7 +10839,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Warning",
       "Liked",
       "Unliked",
-      "Reported"
+      "Reported",
+      "Measured"
     ],
     "type": "string"
   },
@@ -10881,7 +10882,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Explorer",
       "Agent",
       "Plan",
-      "Community"
+      "Community",
+      "Timing"
     ],
     "type": "string"
   },

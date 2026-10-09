@@ -13,6 +13,7 @@
 import {
   lucideSlidersHorizontal,
   lucideSquareDashed,
+  lucideTimer,
   lucideUndo2,
 } from '@livediagram/icons/lucide';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
@@ -535,6 +536,9 @@ export function DotGlyph() {
     </Glyph>
   );
 }
+
+// The Timings tab: a stopwatch.
+export const TimerGlyph = lucideGlyph(lucideTimer, 16);
 
 export function AlertGlyph() {
   return (

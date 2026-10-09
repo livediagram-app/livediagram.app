@@ -11,4 +11,5 @@ export type ViewKey =
   | 'community'
   | 'settings'
   | 'exceptions'
+  | 'timings'
   | 'search';

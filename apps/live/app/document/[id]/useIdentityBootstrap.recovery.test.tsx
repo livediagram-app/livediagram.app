@@ -31,6 +31,18 @@ vi.mock('@/lib/guest-identity', () => ({
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('./seed-fetched-document', () => ({ makeSeedFetchedDocument: () => seed }));
+const { timing, timingLib } = vi.hoisted(() => {
+  const timing = { end: vi.fn(), cancel: vi.fn(), endAfterPaint: vi.fn() };
+  return {
+    timing,
+    timingLib: {
+      startEditorTiming: vi.fn(() => timing),
+      documentLoadOrigin: vi.fn(() => 0),
+      noteDocumentLoadEnded: vi.fn(),
+    },
+  };
+});
+vi.mock('@/lib/timing', () => timingLib);
 
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { AUTO_RELOAD_KEY, LOAD_TIMEOUT_MS, resetLoadProgressForTests } from '@/lib/load-progress';
@@ -38,7 +50,7 @@ import { track } from '@/lib/telemetry';
 
 type Setters = Record<string, ReturnType<typeof vi.fn>>;
 
-function render() {
+function render(passwordRetry = 0) {
   const fns: Setters = {};
   const set = new Proxy(fns, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
@@ -46,7 +58,7 @@ function render() {
   renderHook(() =>
     useIdentityBootstrap({
       authLoaded: true,
-      passwordRetry: 0,
+      passwordRetry,
       hydrated: false,
       clerkUserId: null,
       clerkDisplayName: null,
@@ -183,5 +195,49 @@ describe('useIdentityBootstrap recovery', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(seed).toHaveBeenCalledTimes(1);
     expect(fns['setHydrated']).toHaveBeenCalledTimes(1);
+  });
+});
+
+// The DocumentLoad timing (docs/specs/017-telemetry/timing-telemetry.md): ends on screen for a load
+// that reached `done`, from the navigation for the page's first load; never for a failure.
+describe('useIdentityBootstrap DocumentLoad timing', () => {
+  beforeEach(() => {
+    Object.values(timing).forEach((fn) => fn.mockClear());
+    Object.values(timingLib).forEach((fn) => fn.mockClear());
+  });
+
+  it('ends after paint for a load that opened the document', async () => {
+    api.apiLoadDocument.mockResolvedValue(DOC);
+    render();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(timingLib.startEditorTiming).toHaveBeenCalledWith('DocumentLoad', { from: 0 });
+    expect(timing.endAfterPaint).toHaveBeenCalledTimes(1);
+    expect(timingLib.noteDocumentLoadEnded).toHaveBeenCalled();
+  });
+
+  it('is dropped for a document that is not there', async () => {
+    api.apiLoadDocument.mockResolvedValue(null);
+    render();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(timing.endAfterPaint).not.toHaveBeenCalled();
+    expect(timing.cancel).toHaveBeenCalled();
+    expect(timingLib.noteDocumentLoadEnded).toHaveBeenCalled();
+  });
+
+  it('is dropped for a load that throws', async () => {
+    identity.ensureCollabKey.mockImplementation(() => {
+      throw new TypeError('boom');
+    });
+    render();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(timing.cancel).toHaveBeenCalled();
+    expect(timing.endAfterPaint).not.toHaveBeenCalled();
+  });
+
+  it('is not timed on a password retry', async () => {
+    api.apiLoadDocument.mockResolvedValue(DOC);
+    render(1);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(timingLib.startEditorTiming).not.toHaveBeenCalled();
   });
 });
