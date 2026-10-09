@@ -2,14 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { FALLBACK_ITEM_TYPE, ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { planGlyphPath, PLAN_GLYPH_FALLBACK, PLAN_GLYPHS } from './glyphs';
 import {
-  builtInDefaultStatus,
+  readyMadeDefaultStatus,
   resolvedDefaultStatus,
   defaultStatusOf,
-  restoredCatalogue,
   withDefaultStatuses,
   BUILT_IN_FIELD_IDS,
   ITEM_TYPE_FIELDS_MAX,
-  builtInCatalogue,
+  defaultCatalogue,
   customFieldOf,
   isBuiltInFieldId,
   ITEM_TYPES_MAX,
@@ -46,7 +45,7 @@ const withCall = (types: unknown[] = [...ITEM_TYPES, call]) => ({ version: 1, ty
 describe('the type catalogue', () => {
   it('is the built-ins until a document stores its own', () => {
     expect(typesOf(null)).toBe(ITEM_TYPES);
-    expect(typesOf(builtInCatalogue())).toEqual(ITEM_TYPES);
+    expect(typesOf(defaultCatalogue())).toEqual(ITEM_TYPES);
     expect(typeIn(ITEM_TYPES, 'project').label).toBe('Project');
     expect(typeIn(ITEM_TYPES, 'gone')).toBe(FALLBACK_ITEM_TYPE);
   });
@@ -149,7 +148,7 @@ describe('reading a type', () => {
   });
 
   it('starts a first change from the built-ins', () => {
-    expect(builtInCatalogue()).toEqual({ version: 1, types: ITEM_TYPES });
+    expect(defaultCatalogue()).toEqual({ version: 1, types: ITEM_TYPES });
   });
 });
 
@@ -259,26 +258,7 @@ describe('a type’s Default State', () => {
   });
 });
 
-// docs/specs/026-plan/item-types.md "The catalogue": Restore Built-In Types keeps the document's own types.
-describe('restoring the built-in types', () => {
-  const task = ITEM_TYPES.find((t) => t.id === 'task')!;
-  const bug = { ...task, id: 'bug', label: 'Bug' };
-
-  it('puts the built-ins back as they started and keeps the document’s own, after them', () => {
-    const stored = { version: 1, types: [{ ...task, label: 'Chore' }, bug] };
-    const next = restoredCatalogue(stored)!;
-    expect(next.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
-    expect(next.types.find((t) => t.id === 'task')!.label).toBe('Task');
-    expect(next.types.at(-1)).toBe(bug);
-  });
-
-  it('removes the stored catalogue when the document added none', () => {
-    expect(restoredCatalogue({ version: 1, types: [{ ...task, label: 'Chore' }] })).toBeNull();
-    expect(restoredCatalogue(null)).toBeNull();
-  });
-});
-
-describe('a built-in type’s Default State', () => {
+describe('a ready-made type’s Default State', () => {
   const names = new Map([
     ['backlog~a1', 'Backlog'],
     ['todo~a1', 'To do'],
@@ -287,11 +267,13 @@ describe('a built-in type’s Default State', () => {
   const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
   it('is the document’s state of its name, unless turned off, and never beats a chosen one', () => {
-    expect(builtInDefaultStatus(task, names)).toBe('todo~a1');
-    expect(builtInDefaultStatus({ id: 'project' }, names)).toBe('backlog~a1');
-    expect(builtInDefaultStatus({ id: 'idea' }, names)).toBeUndefined();
-    expect(builtInDefaultStatus({ id: 'custom' }, names)).toBeUndefined();
-    expect(builtInDefaultStatus({ ...task, excludedStatuses: ['todo~a1'] }, names)).toBeUndefined();
+    expect(readyMadeDefaultStatus(task, names)).toBe('todo~a1');
+    expect(readyMadeDefaultStatus({ id: 'project' }, names)).toBe('backlog~a1');
+    expect(readyMadeDefaultStatus({ id: 'idea' }, names)).toBeUndefined();
+    expect(readyMadeDefaultStatus({ id: 'custom' }, names)).toBeUndefined();
+    expect(
+      readyMadeDefaultStatus({ ...task, excludedStatuses: ['todo~a1'] }, names),
+    ).toBeUndefined();
     expect(resolvedDefaultStatus(task, names)).toBe('todo~a1');
     expect(resolvedDefaultStatus({ ...task, defaultStatus: 'done~a1' }, names)).toBe('done~a1');
     expect(resolvedDefaultStatus({ id: 'custom' }, names)).toBeUndefined();

@@ -2066,12 +2066,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     writeQuiet: planItems.writeQuiet,
   });
   // A newly placed board brings its preset's card types (a Bug Triage board, Bug). See usePresetCardTypes.
-  usePresetCardTypes({
+  const presetCardTypes = usePresetCardTypes({
     tabs,
     activeId,
     enabled: planNeeded && hydrated && !isReadOnly,
-    types: itemTypes.types,
-    addTypes: itemTypes.addTypes,
+    canBring: hydrated && !isReadOnly,
+    itemsReady: planItems.status === 'ready',
+    hasCards: planItems.items.size > 0,
+    catalogue: itemTypes.catalogue,
+    saveCatalogue: itemTypes.saveCatalogue,
   });
   // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded && !workbenchMode, !!clerkUserId);
@@ -2418,6 +2421,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTemplatePickerMode,
     requestFit,
     markTabLoaded,
+    bringCardTypes: presetCardTypes.bring,
   });
 
   // One undo step per burst of a continuous control: the background

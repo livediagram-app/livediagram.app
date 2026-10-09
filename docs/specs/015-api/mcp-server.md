@@ -562,7 +562,7 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset.
 - **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
-  changes (`add`, `set`, `delete`, `restore_built_ins`), checked whole and saved once.
+  changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
 
 ### 4.10 Prompts (discoverability)
 

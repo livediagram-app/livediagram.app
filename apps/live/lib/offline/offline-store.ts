@@ -60,7 +60,7 @@ export type OfflineDocumentRecord = {
   items?: Item[];
   itemsRev?: number;
   itemsNextKey?: number;
-  // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the default types.
   itemTypes?: ItemTypeCatalogue | null;
 };
 
@@ -419,7 +419,8 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
 // record of uses starts with the day and the moment it was made, as a first open would
 // (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
 export async function offlineCreateDocument(
-  d: { id: string; name: string; tabs?: Tab[] },
+  // `itemTypes`: the type catalogue it starts with (a Plan template's brought types), already validated.
+  d: { id: string; name: string; tabs?: Tab[]; itemTypes?: ItemTypeCatalogue | null },
   now: number,
   extra: {
     createdAt?: number;
@@ -435,6 +436,7 @@ export async function offlineCreateDocument(
     createdAt: extra.createdAt ?? now,
     savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
+    ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
   };
   await backend.put(rec);
@@ -455,7 +457,7 @@ export async function offlineSaveDocumentMeta(
 }
 
 // An offline document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"), already
-// validated by the caller; null goes back to the built-in types.
+// validated by the caller; null goes back to the default types.
 export async function offlineSaveItemTypes(
   id: string,
   itemTypes: ItemTypeCatalogue | null,

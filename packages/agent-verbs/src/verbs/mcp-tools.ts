@@ -270,9 +270,10 @@ export const mcpChangeCardTypes = mcpTool('change_card_types', {
   behaviour: 'destructive',
   title: 'Change the card types',
   description:
-    'Add, edit, delete or restore a document’s card types (the kinds of card its boards hold, like Task ' +
+    'Add, edit or delete a document’s card types (the kinds of card its boards hold, like Task ' +
     'or Bug), with custom fields by name: add {name, color, glyph, fields, custom, defaultStatus, ' +
-    'excludedStatuses}, set {type, ...}, delete {type} (its cards go to the Trash), restore_built_ins. ' +
+    'excludedStatuses}, set {type, ...}, delete {type} (its cards go to the Trash), add_default_types ' +
+    '(any of Project, Task, Note, Idea and Action it lacks). ' +
     'Checked and saved together; answers the ids it made. A board shows a new type only once it takes it: ' +
     'see change_board.',
   inputSchema: changeCardTypesShape,

@@ -61,7 +61,7 @@ export const typeApply = defineVerb({
   id: 'type.apply',
   summary: 'Change card types from a file',
   description:
-    'Applies card type changes from a JSON file (or stdin, with -f -): an array of add, set, delete and restore_built_ins changes, checked and saved together.',
+    'Applies card type changes from a JSON file (or stdin, with -f -): an array of add, set, delete and add_default_types changes, checked and saved together.',
   behaviour: 'destructive',
   input: z.object({ doc: docArg, file: z.string().describe('The JSON file, or - for stdin') }),
   output: z.object({ applied: z.array(z.string()), trashed: z.array(z.string()) }),

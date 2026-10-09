@@ -33,7 +33,8 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'kanban',
     caption: 'Kanban',
-    description: 'A Kanban Board: Backlog to Done, with WIP limits on the busy columns.',
+    description:
+      'A Kanban Board of Tasks and Actions: Backlog to Done, with WIP limits on the busy columns.',
   },
   {
     preset: 'todo',
@@ -43,7 +44,8 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'sprint',
     caption: 'Sprint',
-    description: 'A Sprint Board of Tasks, a row per person and estimates on every card.',
+    description:
+      'A Sprint Board of Stories, Tasks and Bugs, a row per person and estimates on every card.',
   },
   {
     preset: 'retro',
@@ -58,7 +60,7 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'bug-triage',
     caption: 'Bug Triage',
-    description: 'Tasks labelled bug, from New to Fixed, a row per priority.',
+    description: 'Bugs from New to Fixed, a row per priority.',
   },
   {
     preset: 'weekly',

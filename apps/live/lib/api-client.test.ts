@@ -486,6 +486,27 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(body.tabs[0]).toMatchObject({ id: 't1', name: 'Tab' });
     expect(out).toEqual({ id: 'd1' });
   });
+
+  // docs/specs/026-plan/item-types.md "The type catalogue": a copy's catalogue, or a Plan template's brought
+  // types, ride the create; the built-ins (none given) send nothing.
+  it('sends the type catalogue when one is given', async () => {
+    const fetchSpy = vi.fn().mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ document: { id: 'd1' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const itemTypes = { version: 1, types: [] };
+    await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [], itemTypes });
+    await apiCreateDocument('owner', { id: 'd2', name: 'N', tabs: [], itemTypes: null });
+    const bodies = fetchSpy.mock.calls.map(
+      ([, init]) => JSON.parse((init as RequestInit).body as string) as Record<string, unknown>,
+    );
+    expect(bodies[0]!.itemTypes).toEqual(itemTypes);
+    expect(bodies[1]).not.toHaveProperty('itemTypes');
+  });
 });
 
 describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {

@@ -66,8 +66,20 @@ function board(spec: BoardSpec, x: number, y: number): Box {
   };
 }
 
-function view(viewId: PlanViewId, x: number, y: number, width: number, height: number): Box {
-  return { ...createShape('plan-view', x, y), width, height, planView: { view: viewId } };
+function view(
+  viewId: PlanViewId,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  types?: readonly string[],
+): Box {
+  return {
+    ...createShape('plan-view', x, y),
+    width,
+    height,
+    planView: { view: viewId, ...(types ? { types: [...types] } : {}) },
+  };
 }
 
 // Metrics in a row, wrapping at `width`; returns the elements and the height they take.
@@ -89,8 +101,14 @@ function metricRow(spec: PlanTabSpec, y: number, width: number): [Box[], number]
   return [out, rows * h + (rows - 1) * METRIC_GAP + GAP];
 }
 
-// Charts two to a row; the Gantt, and a chart left over at the end, take the full width.
-function chartGrid(charts: readonly PlanVisualisation[], y: number, width: number): Box[] {
+// Charts two to a row; the Gantt, and a chart left over at the end, take the full width. The Gantt draws
+// `ganttTypes` when given.
+function chartGrid(
+  charts: readonly PlanVisualisation[],
+  y: number,
+  width: number,
+  ganttTypes?: readonly string[],
+): Box[] {
   const out: Box[] = [];
   const half = (width - CHART_GAP) / 2;
   let i = 0;
@@ -99,7 +117,7 @@ function chartGrid(charts: readonly PlanVisualisation[], y: number, width: numbe
     const next = charts[i + 1];
     if (chart === 'gantt' || next === undefined || next === 'gantt') {
       const h = chart === 'gantt' ? GANTT_H : PLAN_CHART_SIZE.height;
-      out.push(view(chart, 0, y, width, h));
+      out.push(view(chart, 0, y, width, h, chart === 'gantt' ? ganttTypes : undefined));
       y += h + CHART_GAP;
       i += 1;
       continue;
@@ -187,7 +205,7 @@ export function buildPlanTab(spec: PlanTabSpec, cx: number, cy: number): Element
   const [metrics, metricsH] = metricRow(spec, y, width);
   out.push(...metrics);
   y += metricsH;
-  out.push(...chartGrid(spec.charts ?? [], y, width));
+  out.push(...chartGrid(spec.charts ?? [], y, width, spec.ganttTypes));
   out.push(...rail(spec.rail ?? [], width + GAP));
   // An empty tab (Blank Plan): nothing to place.
   if (out.length === 0) return [];

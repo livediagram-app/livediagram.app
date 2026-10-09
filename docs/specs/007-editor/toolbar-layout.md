@@ -288,6 +288,9 @@ their bottom-row buttons. What changes to fit the width:
   pop in a 10ms beat apart (a cascade, settling within 250ms), and the outgoing ones shrink away on a layer over
   the top. Only a real switch animates; the first set is simply there.
   Reduced motion collapses it to instant (`ToolbarStripRail`).
+- **The rail is always as wide as its tiles.** Its width follows the tiles as laid out, whenever they change
+  (a category switch, a tile added or gone, such as a card type), never a tile caught mid-slide: no empty gap
+  after the last tile once they settle.
 
 ## Look
 

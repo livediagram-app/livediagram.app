@@ -4,7 +4,11 @@
 // under a document id lives here.
 
 import { readSeedItems, seedItems } from './item-routes';
-import { validateItemTypeCatalogue, type ItemTypeCatalogue } from '@livediagram/items';
+import {
+  catalogueWithBoardTypes,
+  validateItemTypeCatalogue,
+  type ItemTypeCatalogue,
+} from '@livediagram/items';
 import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
@@ -133,11 +137,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
       // with no intent given, the first compiled tab supplies it, as the MCP derives it.
       let derivedIntent: CreationIntent | null = null;
+      let templateElements: Tab['elements'] = [];
       if (Array.isArray(body.tabs)) {
         const seed = compileSeededTabs(body.tabs, body.id);
         if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
         body.tabs = seed.tabs as Tab[];
         derivedIntent = seed.intent;
+        templateElements = seed.templateElements;
       }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
       // create at the root of My documents lands in. Malformed, it refuses the create.
@@ -216,6 +222,21 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         if (!checked.ok)
           return json({ error: 'item_types_invalid', reason: checked.reason }, { status: 400 });
         itemTypes = checked.catalogue;
+      }
+      // A seeded Plan template's boards bring their card types (docs/specs/026-plan/item-types.md "The type
+      // catalogue"): with no catalogue given and no cards, they are its card types; else they join the one given.
+      const brought = catalogueWithBoardTypes(
+        itemTypes,
+        templateElements,
+        (seedItemCreates?.length ?? 0) > 0,
+      );
+      if (brought) {
+        console.info('[item-types] brought', {
+          documentId: body.id,
+          chosen: itemTypes === null,
+          types: brought.types.length,
+        });
+        itemTypes = brought;
       }
       // Where the document is filed, decided before the write and written by it
       // (docs/specs/013-workspace/folders.md "Placement on create"). An invalid placement refuses

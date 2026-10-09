@@ -95,6 +95,51 @@ describe('seeded tabs compiled on create', () => {
     expect(await listItems(db.env, 'd1')).toEqual([]);
   });
 
+  // docs/specs/026-plan/item-types.md "The type catalogue": a template's boards choose a new document's card types.
+  it('makes a Plan template’s document with exactly the card types its boards take', async () => {
+    expect((await create([{ id: 't1', name: 'Hiring', template: 'hiring-pipeline' }])).status).toBe(
+      201,
+    );
+    expect((await getDocument(db.env, 'd1'))?.itemTypes?.types.map((t) => t.id)).toEqual([
+      'role',
+      'candidate',
+      'onboarding-task',
+    ]);
+  });
+
+  it('adds them to a catalogue the create gives, and leaves a diagram template’s alone', async () => {
+    const own = {
+      version: 1,
+      types: [
+        {
+          id: 'task',
+          label: 'Task',
+          newTitle: 'New task',
+          glyph: 'task',
+          color: '#71717a',
+          fields: ['title', 'status'],
+        },
+      ],
+    };
+    await create([{ id: 't1', name: 'Bugs', template: 'bug-triage' }], { itemTypes: own });
+    expect((await getDocument(db.env, 'd1'))?.itemTypes?.types.map((t) => t.id)).toEqual([
+      'task',
+      'bug',
+    ]);
+    await handleDocuments(
+      makeTestRouteContext('POST', '/api/documents', {
+        env: db.env,
+        ...asUser('user_alice'),
+        body: {
+          id: 'd2',
+          name: 'Retro',
+          tabs: [{ id: 't9', name: 'Retro', template: 'start-stop-continue' }],
+        },
+      }),
+    );
+    expect((await getDocument(db.env, 'd2'))?.itemTypes ?? null).toBeNull();
+  });
+
   it('keeps an intent the create gives', async () => {
     await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], {
       intent: { mode: 'draw' },
@@ -129,7 +174,7 @@ describe('compileSeededTabs', () => {
       { name: 'C', template: 'kanban' },
       'not a tab',
     ];
-    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null });
+    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null, templateElements: [] });
   });
 
   it('names an unnamed compiled tab, keeps its other fields, and themes it', () => {

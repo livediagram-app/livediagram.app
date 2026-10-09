@@ -2,7 +2,7 @@
 
 // The palette's Cards category (docs/specs/026-plan/item-types.md "Where types show"): card tiles
 // drawn from the document's item types, so a type someone adds shows here and a renamed or deleted
-// one changes or goes. Outside the editor (no PlanContext) the built-in types stand.
+// one changes or goes. Outside the editor (no PlanContext) the default types stand.
 import { ITEM_TYPES } from '@livediagram/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { PaletteTileGrid } from './PaletteTileGrid';

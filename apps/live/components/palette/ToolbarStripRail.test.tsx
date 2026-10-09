@@ -1,14 +1,22 @@
 // @vitest-environment jsdom
 // The strip's animated rail (docs/specs/007-editor/toolbar-layout.md): tiles pop in only on a real category
 // switch, and the outgoing set leaves on an inert layer.
-import { cleanup, render } from '@testing-library/react';
+import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 
+// The observers made, so a test can report a resize of the rail's content.
+const observers: (() => void)[] = [];
 beforeAll(() => {
-  globalThis.ResizeObserver ??= class {
-    observe() {}
+  globalThis.ResizeObserver = class {
+    readonly cb: () => void;
+    constructor(cb: () => void) {
+      this.cb = cb;
+    }
+    observe() {
+      observers.push(this.cb);
+    }
     unobserve() {}
     disconnect() {}
   } as unknown as typeof ResizeObserver;
@@ -81,5 +89,19 @@ describe('ToolbarStripRail', () => {
       (b) => b.textContent,
     );
     expect(leaving).toEqual(['three']);
+  });
+
+  // A tile sliding to its new slot (fewer card types) overflows sideways while it slides: the rail takes the
+  // content's laid-out width, never that overflow, so no gap is left after the last tile.
+  it('sizes itself to the tiles as laid out, not to a tile caught mid-slide', () => {
+    const { container } = render(
+      <ToolbarStripRail railKey="a" items={items('one', 'two')} leavingItems={null} />,
+    );
+    const rail = container.querySelector('[data-strip-rail]') as HTMLElement;
+    const content = rail.firstElementChild as HTMLElement;
+    Object.defineProperty(content, 'offsetWidth', { configurable: true, value: 80 });
+    Object.defineProperty(content, 'scrollWidth', { configurable: true, value: 115 });
+    act(() => observers.forEach((cb) => cb()));
+    expect(rail.style.width).toBe('80px');
   });
 });

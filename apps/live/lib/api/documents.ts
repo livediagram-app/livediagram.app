@@ -201,6 +201,8 @@ export async function apiCreateDocument(
       ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
       ...(d.items && d.items.length ? { items: d.items } : {}),
+      // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
+      ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     }),
   });
   const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');

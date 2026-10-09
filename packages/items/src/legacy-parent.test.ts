@@ -4,13 +4,15 @@ import { NO_LANE, normaliseBoardSetup, projectBoard } from './board';
 import { ITEM_TYPES, PARENT_FIELD, PARENT_FIELD_ID } from './item-types';
 import { readCardSearchFilter, readGrouping, readPlanViewSettings } from './legacy-parent';
 import { isPlanViewSettings } from './plan-views';
-import { PRESET_CARD_TYPES } from './preset-types';
+import { READY_MADE_CARD_TYPES } from './brought-types';
 import { ITEM_TYPE_CUSTOM_MAX, customFieldCount, readItemTypeCatalogue } from './type-catalogue';
 import { item } from './test-items';
 
 describe('Parent as a Card field', () => {
-  it('is on Task and the preset Bug and Story, linking to Projects under its old key', () => {
-    for (const t of [ITEM_TYPES[1], ...PRESET_CARD_TYPES]) {
+  it('is on Task and the brought Bug and Story, linking to Projects under its old key', () => {
+    const work = READY_MADE_CARD_TYPES.filter((t) => t.id === 'bug' || t.id === 'story');
+    expect(work).toHaveLength(2);
+    for (const t of [ITEM_TYPES[1], ...work]) {
       expect(t.fields).toContain(PARENT_FIELD_ID);
       expect(t.custom).toContainEqual(PARENT_FIELD);
     }

@@ -45,7 +45,7 @@ export const ITEM_TYPE_EXCLUDED_STATUSES_MAX = 64;
 // The one tab a type without its own shows.
 export const OVERVIEW_TAB_ID = 't-overview';
 
-// The colours a type is given from: the built-in types' five (Project, Task, Note, Idea, Action), then
+// The colours a type is given from: the default types' five (Project, Task, Note, Idea, Action), then
 // seven more.
 export const PLAN_TYPE_COLOURS = [
   '#18181b',
@@ -105,7 +105,7 @@ export interface ItemTypeCatalogue {
 
 const BUILT_IN_FIELDS = new Set<string>(BUILT_IN_FIELD_IDS);
 
-// The types a document's stored catalogue holds, or the built-ins when it holds none.
+// The types a document's stored catalogue holds, or the default types when it holds none.
 export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly ItemTypeDef[] {
   return stored?.types ?? ITEM_TYPES;
 }
@@ -378,24 +378,35 @@ export function defaultStatusOf(
   return d && typeAllowsStatus(type, d) ? d : undefined;
 }
 
-// A built-in type's Default State, by name (docs/specs/026-plan/item-types.md "An item type"): a document's state
-// ids are its own, so the name is matched to the document's state of that name. By type id, so it holds for a
-// built-in type stored in a document's catalogue too.
-export const BUILT_IN_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = {
+// A built-in or brought type's Default State, by name (docs/specs/026-plan/item-types.md "An item type"): a
+// document's state ids are its own, so the name is matched to the document's state of that name. By type id, so it
+// holds for such a type stored in a document's catalogue too. A brought type's is the first column of the board it
+// is made for (docs/specs/026-plan/plan-templates.md "The brought types").
+export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = {
   project: 'Backlog',
   task: 'To Do',
   action: 'To Do',
   note: 'To Do',
   idea: 'Ideas',
+  bug: 'New',
+  story: 'Backlog',
+  request: 'New',
+  content: 'Ideas',
+  role: 'Opening Soon',
+  candidate: 'Applied',
+  'onboarding-task': 'Before Day One',
+  objective: 'Draft',
+  'key-result': 'Not Started',
+  'launch-check': 'Not Checked',
 };
 
 // The built-in default's state in this document (`statusNames`: status id to name), or undefined: not a built-in
 // type, no state of that name, or one the type turns off.
-export function builtInDefaultStatus(
+export function readyMadeDefaultStatus(
   type: Pick<ItemTypeDef, 'id' | 'excludedStatuses'>,
   statusNames: Iterable<readonly [string, string]>,
 ): string | undefined {
-  const name = BUILT_IN_DEFAULT_STATE_NAMES[type.id];
+  const name = READY_MADE_DEFAULT_STATE_NAMES[type.id];
   const hit = name ? statusNamed(name, statusNames) : undefined;
   return hit && typeAllowsStatus(type, hit.status) ? hit.status : undefined;
 }
@@ -406,7 +417,7 @@ export function resolvedDefaultStatus(
   type: Pick<ItemTypeDef, 'id' | 'defaultStatus' | 'excludedStatuses'>,
   statusNames: Iterable<readonly [string, string]>,
 ): string | undefined {
-  return defaultStatusOf(type) ?? builtInDefaultStatus(type, statusNames);
+  return defaultStatusOf(type) ?? readyMadeDefaultStatus(type, statusNames);
 }
 
 // Creates with no status of their own given their type's Default State (an API or MCP create); a create that
@@ -454,7 +465,7 @@ export function validateItemTypeCatalogue(input: unknown): Result {
 }
 
 // A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else the
-// built-ins, so a damaged value never stops a document opening.
+// default types, so a damaged value never stops a document opening.
 export function readItemTypeCatalogue(input: unknown): ItemTypeCatalogue | null {
   if (input === null || input === undefined) return null;
   const parsed = typeof input === 'string' ? safeParse(input) : input;
@@ -470,19 +481,7 @@ function safeParse(text: string): unknown {
   }
 }
 
-// The catalogue a first change starts from: the built-ins, as a stored catalogue.
-// Restore Built-In Types (docs/specs/026-plan/item-types.md "The catalogue"): the five built-ins as they started,
-// then every type the document added, kept as it is. With none added, null: the stored catalogue goes and the
-// built-ins are read from code again.
-export function restoredCatalogue(
-  stored: ItemTypeCatalogue | null | undefined,
-): ItemTypeCatalogue | null {
-  const builtIn = new Set<string>(ITEM_TYPES.map((t) => t.id));
-  const own = (stored?.types ?? []).filter((t) => !builtIn.has(t.id));
-  if (own.length === 0) return null;
-  return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...ITEM_TYPES, ...own] };
-}
-
-export function builtInCatalogue(): ItemTypeCatalogue {
+// The catalogue a first change starts from: the default types, as a stored catalogue.
+export function defaultCatalogue(): ItemTypeCatalogue {
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: ITEM_TYPES };
 }

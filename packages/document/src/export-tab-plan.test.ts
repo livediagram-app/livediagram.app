@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  builtInCatalogue,
+  defaultCatalogue,
   ITEM_TYPES,
   presetSetup,
   type Item,
@@ -31,7 +31,8 @@ const item = (id: string, key: number, fields: Item['fields'], type = 'task'): I
 const board = {
   ...createShape('plan-board', 0, 0),
   id: 'board',
-  planBoard: presetSetup('kanban'),
+  // A Kanban board taking Notes too, so a Note shows beside the Tasks.
+  planBoard: { ...presetSetup('kanban'), addTypes: ['task', 'action', 'note'] },
 } as BoxedElement;
 const card = (itemId: string, y = 700) =>
   ({
@@ -79,12 +80,12 @@ describe('tabToJsonText with a plan', () => {
   it('adds the items, and the catalogue once the document stores one', () => {
     expect(parse(tabToJsonText(tabOf(board), plan)).items?.map((i) => i.id)).toEqual(['b', 'a']);
     expect(parse(tabToJsonText(tabOf(board), plan)).itemTypes).toBeUndefined();
-    const catalogue = builtInCatalogue();
+    const catalogue = defaultCatalogue();
     expect(parse(tabToJsonText(tabOf(board), { ...plan, catalogue })).itemTypes).toEqual(catalogue);
   });
 
   it('adds neither field when the tab shows no items', () => {
-    const env = parse(tabToJsonText(tabOf(), { ...plan, catalogue: builtInCatalogue() }));
+    const env = parse(tabToJsonText(tabOf(), { ...plan, catalogue: defaultCatalogue() }));
     expect('items' in env).toBe(false);
     expect('itemTypes' in env).toBe(false);
     expect('items' in parse(tabToJsonText(tabOf(board)))).toBe(false);

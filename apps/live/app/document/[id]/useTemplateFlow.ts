@@ -61,6 +61,8 @@ export function useTemplateFlow(opts: {
   requestFit: () => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
   markTabLoaded: (id: string) => void;
+  // Adds the card types the template's boards bring, every tab's (usePresetCardTypes' bring).
+  bringCardTypes: (elements: Tab['elements']) => void;
 }) {
   const {
     activeId,
@@ -76,6 +78,7 @@ export function useTemplateFlow(opts: {
     setTemplatePickerMode,
     requestFit,
     markTabLoaded,
+    bringCardTypes,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -201,6 +204,9 @@ export function useTemplateFlow(opts: {
         elements: theme ? recolourElementsForTheme(raw, theme) : raw,
       };
     });
+    // A Plan template's boards bring their card types, every tab's (docs/specs/026-plan/plan-templates.md "Card
+    // types a template uses"), before the tabs land.
+    bringCardTypes([...elements, ...followers.flatMap((f) => f.elements)]);
     commitTabs((ts) => {
       const active = ts.find((t) => t.id === activeId);
       if (!active) return ts;

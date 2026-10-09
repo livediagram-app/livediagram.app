@@ -59,7 +59,8 @@ Derived from [Plan templates](../plan-templates.md).
 
 - Builders are element-only and make no items: a template comes with no cards.
 - `plan-template-catalogue.ts` (pure data): `PLAN_TEMPLATE_KINDS`; `PLAN_TEMPLATE_TABS:
-Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`;
+Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`, the Gantt's
+  `types` set to the board's `addTypes` when it charts a board of dated cards; every board names its `addTypes`;
   `BoardSpec = { preset, setup?, width, height, title }`; `RailItem` is a `sticky` (text), `timer` (minutes, a
   `session-button`), `picker` (label) or `temperature` (label). Hand-off columns name the same status and name
   on each board that shares them.
@@ -78,6 +79,15 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
   overrides, inserted after the active tab, each `markTabLoaded`), the MCP's `create_document` and the api's
   `compileSeededTabs` (the followers after the compiled tab, fresh ids). A replace fills its one tab with the
   first.
+- Card types on every path ([Item types](../item-types.md#the-type-catalogue)), each through
+  `catalogueWithBoardTypes(stored, elements, hasCards)`: `/new` passes `itemTypes: catalogueWithBoardTypes(null,
+elements)` to the create (cloud and Offline Mode), so a template's document has exactly its types; Quick Start
+  calls `bring(elements)` (`usePresetCardTypes`) for every tab it makes before `commitTabs`, so the open-tab effect
+  then finds nothing to change; `compileSeededTabs` returns the template tabs' `templateElements` and the create
+  route applies them to the catalogue the body gave (or null) with `hasCards` from its seed items; the MCP's
+  `create_document` sends `itemTypes` likewise; `add_board` and the MCP's template `add_tab` call
+  `bringBoardCardTypes(api, documentId, elements, known?)` (agent-verbs), which PUTs only when the catalogue
+  changes. Each logs `[item-types] brought` with whether the types were chosen.
 - Statuses: `usePlanStatuses(tabs, activeId, enabled)` returns the `names` and `phases` maps from
   `documentStatusSignatures(tabs, activeId)`: each tab's board set-ups are cached in a `WeakMap` by its
   elements array, each set-up list gets a numeric id, and the two JSON signatures are cached by the joined ids

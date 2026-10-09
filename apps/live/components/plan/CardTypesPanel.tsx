@@ -3,15 +3,15 @@
 // The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the document's item
 // types, each with its glyph and colour, its name and how many items have it. A popover hanging above
 // its button in Plan mode's bottom-right cluster. Edit and Add New Card Type open the type editor, Duplicate opens it on a
-// new type filled from that one; Restore built-in types puts the built-ins back. Someone who may only view sees
-// the list.
+// new type filled from that one; Add Default Types adds any of the five default types the document lacks. One list:
+// no type is set apart from another. Someone who may only view sees the list.
 import { AddCardTypeButton } from './AddCardTypeButton';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { usePlan } from './PlanContext';
-import { ITEM_TYPES, ITEM_TYPES_MAX } from '@livediagram/items';
+import { ITEM_TYPES_MAX, defaultTypesToAdd } from '@livediagram/items';
 import { Button, DuplicateIcon, PencilIcon, Tooltip } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
@@ -26,7 +26,8 @@ export function CardTypesPanel({
   onPopoverClose: () => void;
 }) {
   const plan = usePlan();
-  const confirm = useConfirm();
+  // The Add Default Types button while its confirmation is open.
+  const [confirmingAt, setConfirmingAt] = useState<HTMLElement | null>(null);
   const counts = useMemo(() => {
     const n = new Map<string, number>();
     for (const it of plan?.items.values() ?? []) n.set(it.type, (n.get(it.type) ?? 0) + 1);
@@ -35,10 +36,8 @@ export function CardTypesPanel({
   if (!plan) return null;
   const { types, canEdit, itemTypes } = plan;
   const full = types.length >= ITEM_TYPES_MAX;
-  // Built-in types (by id, edited or not) apart from the ones this document added (docs/specs/026-plan/item-types.md
-  // "The Card Types panel").
-  const builtIn = types.filter((t) => BUILT_IN_IDS.has(t.id));
-  const own = types.filter((t) => !BUILT_IN_IDS.has(t.id));
+  // Add Default Types shows only while the document lacks one of the five, and has room for it.
+  const missingDefaults = full ? [] : defaultTypesToAdd(types);
   // One type's row: its edit (stretched over the row), Duplicate, and the pencil.
   const row = (t: (typeof types)[number]) => {
     const count = counts.get(t.id) ?? 0;
@@ -154,36 +153,43 @@ export function CardTypesPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-3 pb-3">
-        {/* Every built-in deleted: no heading over nothing; Restore built-in types brings them back. */}
-        {builtIn.length > 0 ? (
-          <TypeGroup title="Built-In Types">{builtIn.map(row)}</TypeGroup>
-        ) : null}
-        <TypeGroup
-          title="Your Types"
-          empty={canEdit ? 'Types you add show here.' : 'No types of your own yet.'}
+        {/* One to a row in a bordered box, as Plan's option lists are (docs/specs/026-plan/plan-board.md "Option
+            lists"); a catalogue always holds at least one type. */}
+        <ul
+          aria-label="Card Types"
+          className="flex flex-col divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
         >
-          {own.map(row)}
-        </TypeGroup>
+          {types.map(row)}
+        </ul>
         {canEdit ? (
           <>
             <AddCardTypeButton onClick={() => plan.editType('new')} />
-            {itemTypes.catalogue ? (
+            {missingDefaults.length > 0 ? (
               <Button
                 variant="ghost"
                 size="xs"
                 className="self-center px-2 py-0.5 text-[11px] font-normal"
-                onClick={async () => {
-                  const ok = await confirm({
-                    title: 'Restore Built-In Types?',
-                    message:
-                      'Project, Task, Note, Idea and Action go back to how they started. Your own types stay as they are.',
-                    confirmLabel: 'Restore',
-                  });
-                  if (ok) itemTypes.restoreBuiltIns();
-                }}
+                aria-haspopup="dialog"
+                aria-expanded={confirmingAt !== null}
+                onClick={(e) => setConfirmingAt(e.currentTarget)}
               >
-                Restore built-in types
+                Add Default Types
               </Button>
+            ) : null}
+            {confirmingAt && missingDefaults.length > 0 ? (
+              <ConfirmPopover
+                anchor={confirmingAt}
+                message={addDefaultTypesMessage(missingDefaults.map((t) => t.label))}
+                confirmLabel="Add Types"
+                onConfirm={() => {
+                  setConfirmingAt(null);
+                  itemTypes.addDefaultTypes();
+                }}
+                onCancel={() => {
+                  confirmingAt.focus();
+                  setConfirmingAt(null);
+                }}
+              />
             ) : null}
           </>
         ) : null}
@@ -192,36 +198,12 @@ export function CardTypesPanel({
   );
 }
 
-const BUILT_IN_IDS: ReadonlySet<string> = new Set(ITEM_TYPES.map((t) => t.id));
-
-// A group of the panel's rows under a small heading, or its empty note.
-function TypeGroup({
-  title,
-  empty,
-  children,
-}: {
-  title: string;
-  empty?: string;
-  children: ReactNode[];
-}) {
-  return (
-    <section className="flex flex-col gap-1.5">
-      <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        {title}
-      </h3>
-      {children.length > 0 ? (
-        // One to a row in a bordered box, as Plan's option lists are (docs/specs/026-plan/plan-board.md "Option lists").
-        <ul
-          aria-label={title}
-          className="flex flex-col divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700"
-        >
-          {children}
-        </ul>
-      ) : empty ? (
-        <p className="rounded-lg border border-dashed border-slate-200 px-3 py-2 text-[12px] text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          {empty}
-        </p>
-      ) : null}
-    </section>
-  );
+// What Add Default Types asks before it adds (docs/specs/026-plan/item-types.md "The type catalogue"): the types it
+// will add, by name, and that nothing the document has changes.
+export function addDefaultTypesMessage(labels: readonly string[]): string {
+  const list =
+    labels.length > 1
+      ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}`
+      : (labels[0] ?? '');
+  return `Add ${list} to this document’s card types? They go after the ones you have, and nothing you have changes.`;
 }

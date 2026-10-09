@@ -24,7 +24,7 @@ never told a change worked when it shows on no board.
     limit);
   - **statuses**: each status the boards name, once, with its column name, the first board's name winning (the
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
-  - **types**: the document's card types (its catalogue, or the built-ins), each with its id, name and fields,
+  - **types**: the document's card types (its catalogue, or the default types), each with its id, name and fields,
     custom fields by id, name and kind (and a Choice's options).
 - Each board's card types are part of what it shows: a card is on a board only when its column is there and the
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
@@ -66,6 +66,11 @@ Every write takes what a person would say, and stores the ids:
   that status, so its cards show on both boards; any other column gets a status of its own and starts empty.
 - It goes on the tab named, else the first tab that already has a board, else the first tab, to the right of
   everything the tab holds (tops aligned), as one changeset an agent can revert.
+- It brings its preset's card types, as placing it in the editor does
+  ([Item types](item-types.md#the-type-catalogue)): in a document whose card types are not chosen and that has no
+  cards, they become its card types; otherwise each [ready-made type](plan-templates.md#ready-made-card-types) it
+  takes that the document lacks (a Bug Triage board's Bug) is added. So does `add_tab` with a Plan template, for
+  the boards on its one tab.
 - The answer gives its columns with their names and statuses.
 
 ## Changing a board
@@ -99,7 +104,8 @@ Every write takes what a person would say, and stores the ids:
 excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes values.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the
     Trash; the answer says how many. The catalogue's last type cannot be deleted.
-  - `restore_built_ins`: as Restore Built-In Types.
+  - `add_default_types`: as Add Default Types: any of Project, Task, Note, Idea and Action the document lacks, after
+    its types; nothing it has changes. `restore_built_ins`, its older name, does the same.
 - The tool reads the catalogue, applies every change, checks the whole result with the editor's rules
   (`validateItemTypeCatalogue`) and saves it once; a refusal saves nothing and names the change and the rule. It
   answers the types as `list_items` lists them, with the ids it made (`bug`, `f-severity`), so the next call can

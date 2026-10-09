@@ -5,14 +5,15 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                        |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?` |
-| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = built-ins               |
-| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, onCard? }`; kinds `CUSTOM_FIELD_KINDS`  |
-| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`      |
-| card type (UI)    | the panel `CardTypesPanel`, its button `CardTypesClusterButton`, the editor `ItemTypeEditor`      |
-| Restore Built-Ins | `ItemTypesSlice.restoreBuiltIns()` (saves null)                                                   |
+| Spec term         | Identifier                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| item type         | `ItemTypeDef` (`item-types.ts`): `id`, `label`, `newTitle`, `glyph`, `color`, `fields`, `custom?`            |
+| type catalogue    | `ItemTypeCatalogue` `{ version: 1, types }` (`type-catalogue.ts`); null = not chosen (defaults)              |
+| custom field      | `CustomFieldDef` `{ id, label, kind, options?, linkType?, onCard? }`; kinds `CUSTOM_FIELD_KINDS`             |
+| glyph set         | `PLAN_GLYPHS` (`glyphs.ts`), ids `PlanGlyphId`; `planGlyphPath(id)`; `PLAN_GLYPH_CATEGORIES`                 |
+| card type (UI)    | the panel `CardTypesPanel`, its button `CardTypesClusterButton`, the editor `ItemTypeEditor`                 |
+| Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover` |
+| default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                |
 
 ## Package `@livediagram/items`
 
@@ -66,12 +67,12 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 - `editor-persistence`: `documentItemTypes` state, seeded by `seed-fetched-document`.
 - `hooks/plan/useItemTypes.ts` (`ItemTypesSlice`): `types`, `saveType`, `deleteType` (never the last),
-  `restoreBuiltIns`, `receive`. A change is optimistic, saved whole through `lib/api/item-types.ts`
+  `addTypes`, `addDefaultTypes`, `saveCatalogue` (a whole catalogue, one step), `receive`. A change is optimistic, saved whole through `lib/api/item-types.ts`
   (`saveItemTypes`, offline-aware), kept as answered, reverted with "Couldn’t save the card types" on failure,
   and pushed as one undo step (undo and redo replay a save without a step).
 - `PlanContext`: `types`, `itemTypes`, `editType(id | 'new')`; `usePlanSlice` holds `editingTypeId`.
 - Parent: `PARENT_FIELD_ID` (`'parent'`) and `PARENT_FIELD` (`{ id: 'parent', label: 'Parent', kind: 'card',
-linkType: 'project' }`) in item-types.ts; Task and the preset Bug and Story carry it in `custom`. The old grouping
+linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story carry it in `custom`. The old grouping
   (`LEGACY_PARENT_GROUPING`, `swimlaneBy: 'parent'`) stays valid on boards, views and search filters and is read as
   the field: `normaliseBoardSetup`, and `legacy-parent.ts` (`readGrouping`, `readCardSearchFilter`: `e:{id}` keys to
   `f:"{id}"`, `readPlanViewSettings`, used by `PlanViewView` and `PlanViewMenuSection`).
@@ -178,7 +179,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
-  Save. Copy: "Card Types", "+ Add Type", "Restore Built-In Types", "New Card Type", "Edit Card Type",
+  Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this document’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
   "+ Add Field", "Built-In Fields", "New Custom Field", "Add Custom Field", "Show on card", "Delete",
   "Keep as Item".
 
@@ -209,24 +210,40 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 ## Constants and configuration
 
-| Constant                          | Value  | Why                                                                  |
-| --------------------------------- | ------ | -------------------------------------------------------------------- |
-| `ITEM_TYPES_MAX`                  | 32     | Spec "An item type"                                                  |
-| `ITEM_TYPE_FIELDS_MAX`            | 24     | Spec                                                                 |
-| `ITEM_TYPE_CUSTOM_MAX`            | 12     | Spec                                                                 |
-| `ITEM_TYPE_LABEL_MAX`             | 32     | Spec                                                                 |
-| `CUSTOM_CHOICE_OPTIONS_MAX`       | 20     | Spec                                                                 |
-| `CUSTOM_CHOICE_OPTION_MAX`        | 40     | D11                                                                  |
-| `ITEM_TYPES_BYTES`                | 32,768 | Spec "Limits and validation"                                         |
-| `ITEM_TYPE_EXCLUDED_STATUSES_MAX` | 64     | Far more than a board's columns; keeps the catalogue small           |
-| `PLAN_TYPE_COLOURS`               | 12     | The built-ins' five (Black, Gray, Blue, Yellow, Red) then seven more |
+| Constant                          | Value  | Why                                                                      |
+| --------------------------------- | ------ | ------------------------------------------------------------------------ |
+| `ITEM_TYPES_MAX`                  | 32     | Spec "An item type"                                                      |
+| `ITEM_TYPE_FIELDS_MAX`            | 24     | Spec                                                                     |
+| `ITEM_TYPE_CUSTOM_MAX`            | 12     | Spec                                                                     |
+| `ITEM_TYPE_LABEL_MAX`             | 32     | Spec                                                                     |
+| `CUSTOM_CHOICE_OPTIONS_MAX`       | 20     | Spec                                                                     |
+| `CUSTOM_CHOICE_OPTION_MAX`        | 40     | D11                                                                      |
+| `ITEM_TYPES_BYTES`                | 32,768 | Spec "Limits and validation"                                             |
+| `ITEM_TYPE_EXCLUDED_STATUSES_MAX` | 64     | Far more than a board's columns; keeps the catalogue small               |
+| `PLAN_TYPE_COLOURS`               | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more |
 
-## Built-in types
+## Default and ready-made types
 
-`ITEM_TYPES`: `project` (#18181b), `task` (#71717a), `note` (#2563eb), `idea` (#eab308), `action` (#dc2626).
-Presets set the types a board adds (Sprint: Tasks and Actions, Bug triage: Tasks, Roadmap: Projects); the item panel's
-Parent lists Projects. `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill,
-pencil; the row opens the editor), with a dashed Add Type tile.
+`ITEM_TYPES` (the default types): `project` (#18181b), `task` (#71717a), `note` (#2563eb), `idea` (#eab308),
+`action` (#dc2626). `READY_MADE_CARD_TYPES` (`packages/items/src/brought-types.ts`, pure data, the table in
+[Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the ten more. Presets set the types
+a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug Triage: Bugs, Roadmap: Projects).
+
+- `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`, or `ITEM_TYPES`' ids for one that names none (Blank);
+  nothing for Archive or All Cards.
+- `broughtTypesToAdd(named, types)`: the ready-made types named that `types` lacks, each once, in order;
+  `boardTypesToAdd(elements, types)` the same off the elements; `defaultTypesToAdd(types)` the missing defaults.
+- `catalogueWithBoardTypes(stored, elements, hasCards = false)`: with `stored` null and no cards, exactly the types
+  the boards bring (null when none, or when they are the five defaults in order: already what it reads as);
+  otherwise `typesOf(stored)` with the missing ones after, capped at `ITEM_TYPES_MAX`; null when nothing changes.
+- `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
+- The editor: `usePresetCardTypes({ catalogue, hasCards, itemsReady, saveCatalogue, ... })` applies it to boards
+  that appear on the open tab once the items are read, and `bring(elements)` (Quick Start) at once, or held until
+  they are. Nothing in the interface sets a type apart: `CardTypesPanel` is one list (`aria-label` "Card Types").
+
+`CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill, pencil; the row opens the
+editor), with a dashed Add Type tile and Add Default Types under it while `defaultTypesToAdd(types)` is not empty.
+The item panel's Parent lists Projects.
 
 ## Glyph set
 

@@ -18,7 +18,8 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // docs/specs/026-plan/item-types.md "An item type": a dragged card is refused only a move into a status its type
 // leaves out. One already in such a status is reordered there, or changes lanes, freely; a swimlane by type is
 // checked with the lane's type.
-const kanban = presetSetup('kanban');
+// Taking Notes too, so a card can change type between a Note lane and a Task lane.
+const kanban = { ...presetSetup('kanban'), addTypes: ['task', 'action', 'note'] };
 const last = kanban.columns[kanban.columns.length - 1]!.status;
 const first = kanban.columns[0]!.status;
 const types = ITEM_TYPES.map((t) => (t.id === 'task' ? { ...t, excludedStatuses: [last] } : t));

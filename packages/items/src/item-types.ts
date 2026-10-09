@@ -171,7 +171,7 @@ const BUILT_IN_TYPES = [
   },
 ] as const satisfies readonly ItemTypeDef[];
 
-// Every built-in type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
+// Every default type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
 // the tuple, so each type stays addressable by position and its id literal.
 type WithComments<T extends readonly ItemTypeDef[]> = {
   readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly string[] };

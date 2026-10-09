@@ -8,13 +8,13 @@
 import { useCallback, useMemo } from 'react';
 import type { ItemTypesRoomOp } from '@livediagram/api-schema';
 import {
-  builtInCatalogue,
+  defaultCatalogue,
   readItemTypeCatalogue,
   typesOf,
   ITEM_TYPE_CATALOGUE_VERSION,
   type ItemTypeCatalogue,
   type ItemTypeDef,
-  restoredCatalogue,
+  defaultTypesToAdd,
   ITEM_TYPES_MAX,
 } from '@livediagram/items';
 import { saveItemTypes } from '@/lib/api/item-types';
@@ -23,7 +23,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
 
 export type ItemTypesSlice = {
-  // The stored catalogue, or null for the built-in types.
+  // The stored catalogue, or null while the document's card types are not chosen (the default types).
   catalogue: ItemTypeCatalogue | null;
   types: readonly ItemTypeDef[];
   // Adds or replaces a type (matched by id), keeping its place.
@@ -32,7 +32,10 @@ export type ItemTypesSlice = {
   // Types added together, as one change; any whose id the catalogue already has is skipped, and the catalogue's
   // cap holds.
   addTypes: (defs: readonly ItemTypeDef[]) => void;
-  restoreBuiltIns: () => void;
+  // Any of the five default types the document lacks, after its types (Add Default Types); one change.
+  addDefaultTypes: () => void;
+  // The whole catalogue a board's types leave (catalogueWithBoardTypes), as one change.
+  saveCatalogue: (next: ItemTypeCatalogue) => void;
   receive: (op: ItemTypesRoomOp) => void;
 };
 
@@ -49,7 +52,7 @@ export function useItemTypes(opts: {
   const latest = useLatest(opts);
   const types = useMemo(() => typesOf(catalogue), [catalogue]);
 
-  // Saves `next` (null: the built-ins). `undoable` is false for an undo or redo replaying a step.
+  // Saves `next` (null: the default types). `undoable` is false for an undo or redo replaying a step.
   const save = useCallback(
     (first: ItemTypeCatalogue | null, firstUndoable: boolean) => {
       // Recursive: an undo step replays a save, which pushes no step of its own.
@@ -80,7 +83,7 @@ export function useItemTypes(opts: {
 
   const withTypes = useCallback(
     (change: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[]) => {
-      const base = latest.current.catalogue ?? builtInCatalogue();
+      const base = latest.current.catalogue ?? defaultCatalogue();
       void save({ version: ITEM_TYPE_CATALOGUE_VERSION, types: change(base.types) }, true);
     },
     [latest, save],
@@ -99,7 +102,6 @@ export function useItemTypes(opts: {
     (typeId: string) => withTypes((ts) => (ts.length > 1 ? ts.filter((t) => t.id !== typeId) : ts)),
     [withTypes],
   );
-  // The built-ins back as they started; the document's own types stay.
   const addTypes = useCallback(
     (defs: readonly ItemTypeDef[]) =>
       withTypes((ts) => {
@@ -108,17 +110,30 @@ export function useItemTypes(opts: {
       }),
     [withTypes],
   );
-  const restoreBuiltIns = useCallback(
-    () => void save(restoredCatalogue(latest.current.catalogue), true),
-    [latest, save],
+  const addDefaultTypes = useCallback(
+    () =>
+      withTypes((ts) =>
+        [...ts, ...defaultTypesToAdd(ts)].slice(0, Math.max(ts.length, ITEM_TYPES_MAX)),
+      ),
+    [withTypes],
   );
+  const saveCatalogue = useCallback((next: ItemTypeCatalogue) => void save(next, true), [save]);
   const receive = useCallback(
     (op: ItemTypesRoomOp) => setCatalogue(readItemTypeCatalogue(op.itemTypes)),
     [setCatalogue],
   );
 
   return useMemo(
-    () => ({ catalogue, types, saveType, deleteType, addTypes, restoreBuiltIns, receive }),
-    [catalogue, types, saveType, deleteType, addTypes, restoreBuiltIns, receive],
+    () => ({
+      catalogue,
+      types,
+      saveType,
+      deleteType,
+      addTypes,
+      addDefaultTypes,
+      saveCatalogue,
+      receive,
+    }),
+    [catalogue, types, saveType, deleteType, addTypes, addDefaultTypes, saveCatalogue, receive],
   );
 }

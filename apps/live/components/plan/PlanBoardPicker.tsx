@@ -9,6 +9,7 @@
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SparkleIcon } from '@livediagram/ui';
 import {
+  READY_MADE_CARD_TYPES,
   ITEM_TYPES,
   PLAN_BOARD_PRESETS,
   boardAddTypes,
@@ -36,7 +37,10 @@ function BoardPreview({ preset, palette }: { preset: PlanBoardPresetId; palette:
 // A board drawn from its preset (its columns, rows and card colours), for a preset with no picture of its own.
 function GenericPreview({ preset, palette }: { preset: PlanBoardPresetId; palette: PlanPalette }) {
   const setup = PLAN_BOARD_PRESETS[preset].setup;
-  const colours = boardAddTypes(setup, ITEM_TYPES).map((t) => accentOn(t.color, palette));
+  // Cards in the colours of the types it would bring: its own (a Bug Triage board's red Bugs), else the defaults.
+  const colours = boardAddTypes(setup, setup.addTypes ? READY_MADE_CARD_TYPES : ITEM_TYPES).map(
+    (t) => accentOn(t.color, palette),
+  );
   const columns = setup.columns.slice(0, PREVIEW_COLUMNS);
   const lanes = setup.swimlaneBy === 'none' ? 1 : 2;
   const empty = preset === 'blank';

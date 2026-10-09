@@ -13,19 +13,19 @@ import { fieldKeyOf, resolveStatus, resolveType, type NameRefusal } from './plan
 import { statusKey } from './status-names';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
+  ITEM_TYPES_MAX,
   PLAN_TYPE_COLOURS,
   REQUIRED_TYPE_FIELDS,
-  builtInCatalogue,
   defaultNewTitle,
   isBuiltInFieldId,
   newCustomFieldId,
   newItemTypeId,
   requiredFieldsOf,
-  restoredCatalogue,
   typesOf,
   validateItemTypeCatalogue,
   type ItemTypeCatalogue,
 } from './type-catalogue';
+import { defaultTypesToAdd } from './brought-types';
 
 // A new type's starting look and fields (blueprints/DEFAULTS.md D10): what the type editor's Add Type opens on.
 export const NEW_ITEM_TYPE: Omit<ItemTypeDef, 'id' | 'newTitle'> = {
@@ -70,6 +70,9 @@ export type CardTypeChange =
       excludedStatuses?: readonly string[];
     }
   | { op: 'delete'; type: string }
+  // Any of the five default types the document lacks, after its types (docs/specs/026-plan/plan-agents.md); its
+  // older name, `restore_built_ins`, does the same.
+  | { op: 'add_default_types' }
   | { op: 'restore_built_ins' };
 
 export type TypeChangeRefusal = NameRefusal | { code: 'type_change_invalid'; message: string };
@@ -77,7 +80,7 @@ export type TypeChangeRefusal = NameRefusal | { code: 'type_change_invalid'; mes
 export type TypeChangesResult =
   | {
       ok: true;
-      // The catalogue to store: null goes back to the built-ins.
+      // The catalogue to store: null leaves the document's card types not chosen (the default types).
       catalogue: ItemTypeCatalogue | null;
       // One line per change applied.
       applied: string[];
@@ -161,7 +164,8 @@ export function applyCardTypeChanges(
   statuses: readonly PlanStatusName[],
 ): TypeChangesResult {
   let types: ItemTypeDef[] = [...typesOf(stored)];
-  let restoredToBuiltIns = false;
+  // Only defaults added to a document whose card types are not chosen: nothing to store.
+  let unchosen = stored == null;
   const applied: string[] = [];
   const deleted: string[] = [];
   const replace = (next: ItemTypeDef) => {
@@ -169,7 +173,8 @@ export function applyCardTypeChanges(
   };
   try {
     for (const c of changes) {
-      if (c.op !== 'restore_built_ins') restoredToBuiltIns = false;
+      const addsDefaults = c.op === 'add_default_types' || c.op === 'restore_built_ins';
+      if (!addsDefaults) unchosen = false;
       if (c.op === 'add') {
         const name = c.name.trim();
         if (types.some((t) => statusKey(t.label) === statusKey(name)))
@@ -262,10 +267,13 @@ export function applyCardTypeChanges(
         deleted.push(type.id);
         applied.push(`- ${type.label} (${type.id})`);
       } else {
-        const restored = restoredCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types });
-        types = [...(restored ?? builtInCatalogue()).types];
-        restoredToBuiltIns = restored === null;
-        applied.push('↺ the built-in card types restored');
+        const missing = defaultTypesToAdd(types);
+        types = [...types, ...missing].slice(0, Math.max(types.length, ITEM_TYPES_MAX));
+        applied.push(
+          missing.length
+            ? `+ ${missing.map((t) => `${t.label} (${t.id})`).join(', ')}`
+            : '= every default card type is here already',
+        );
       }
     }
   } catch (err) {
@@ -280,6 +288,5 @@ export function applyCardTypeChanges(
       code: 'type_change_invalid',
       message: `The card types would break a rule (${checked.reason}); nothing was saved.`,
     };
-  // Restoring with no type of the document's own left goes back to the built-ins read from code.
-  return { ok: true, catalogue: restoredToBuiltIns ? null : checked.catalogue, applied, deleted };
+  return { ok: true, catalogue: unchosen ? null : checked.catalogue, applied, deleted };
 }

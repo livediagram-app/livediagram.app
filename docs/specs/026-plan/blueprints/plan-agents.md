@@ -29,9 +29,12 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 - `applyItemChanges`: one plan read per call; changes in order, each seeing earlier ones' items; first refusal
   stops; answers `applied` lines naming the column (`in To Do`, or `(on no board)`).
 - `applyCardTypeChanges`: changes in order on a working list; `add` starts from `NEW_ITEM_TYPE` (shared with the
-  type editor); `delete` names the type for its cards to go to the Trash; `restore_built_ins` uses
-  `restoredCatalogue`, and a result equal to the built-ins (restore last, nothing after it) is stored as null. The
-  whole result goes through `validateItemTypeCatalogue`.
+  type editor); `delete` names the type for its cards to go to the Trash; `add_default_types` (and its
+  older name `restore_built_ins`) appends `defaultTypesToAdd(types)`, and a document whose card types were not
+  chosen, given nothing but those, stays null. The whole result goes through `validateItemTypeCatalogue`.
+- `bringBoardCardTypes(api, documentId, elements, known?)`: nothing read or written when no Plan board is among the
+  elements; else `catalogueWithBoardTypes(stored, elements, hasCards)` from the document's `itemTypes` and whether it
+  has any item (`known` when the caller has read them, as `addBoard` has), PUT only when it changes.
 - `changeCardTypes`: PUT the catalogue, then `set { status: trash, trashedFrom }` on each live card of a deleted
   type, as the editor's `trashItems`.
 - `placeBoard`: preset through `freshBoardSetup`; columns by name reuse a status `statusNamed` finds (each status

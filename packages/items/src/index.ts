@@ -23,7 +23,7 @@ export * from './plan-view-gantt';
 export * from './gantt-row-order';
 export * from './plan-view-charts';
 export * from './presets';
-export * from './preset-types';
+export * from './brought-types';
 export * from './card-search';
 export * from './card-display';
 export * from './status-names';

@@ -86,7 +86,8 @@ describe('plan shapes in exports', () => {
   const board = {
     ...createShape('plan-board', 0, 0),
     id: 'b',
-    planBoard: presetSetup('kanban'),
+    // A Kanban board taking Notes too, so a Note shows beside the Tasks.
+    planBoard: { ...presetSetup('kanban'), addTypes: ['task', 'action', 'note'] },
   } as BoxedElement;
   const card = {
     ...createShape('plan-card', 1200, 0),

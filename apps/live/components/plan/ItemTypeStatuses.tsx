@@ -7,7 +7,7 @@
 // the status it is made in. A type leaves out at most ITEM_TYPE_EXCLUDED_STATUSES_MAX: at the cap a status still
 // ticked cannot be unticked (Deselect All stops there too), and a note says why.
 import { useId } from 'react';
-import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, builtInDefaultStatus } from '@livediagram/items';
+import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, readyMadeDefaultStatus } from '@livediagram/items';
 import { Button, Select } from '@livediagram/ui';
 import { OptionRows } from './OptionRows';
 
@@ -75,7 +75,7 @@ export function ItemTypeStatuses({
   // The Default State ('' for none), and its setter; without the setter the menu is left out.
   defaultStatus?: string;
   onDefaultStatus?: (status: string) => void;
-  // The type's id: a built-in type's named Default State shows in place of None.
+  // The type's id: a ready-made type's named Default State shows in place of None.
   typeId?: string;
   // Each board's title and the statuses it names: the statuses are grouped under them (statusGroups).
   boards?: readonly { title: string; statuses: readonly string[] }[];
@@ -88,14 +88,14 @@ export function ItemTypeStatuses({
       </p>
     );
   const onCount = statuses.filter((s) => !excluded.includes(s.status)).length;
-  // A built-in type's Default State by name, as this document has it (none chosen falls back to it).
-  const builtInId = typeId
-    ? builtInDefaultStatus(
+  // A ready-made type's Default State by name, as this document has it (none chosen falls back to it).
+  const readyMadeId = typeId
+    ? readyMadeDefaultStatus(
         { id: typeId, excludedStatuses: excluded },
         statuses.map((s) => [s.status, s.name] as const),
       )
     : undefined;
-  const builtIn = statuses.find((s) => s.status === builtInId);
+  const namedDefault = statuses.find((s) => s.status === readyMadeId);
   const full = excluded.length >= ITEM_TYPE_EXCLUDED_STATUSES_MAX;
   const allOn = onCount === statuses.length;
   const allOff =
@@ -196,16 +196,16 @@ export function ItemTypeStatuses({
             id={defaultId}
             className="w-full sm:w-64"
             selectClassName="text-[13px]"
-            // Each state once, by its own name. A built-in type with no default chosen shows its built-in one picked
+            // Each state once, by its own name. A ready-made type with no default chosen shows its named one picked
             // (no None: it falls back to that anyway); what is picked is saved as picked.
             value={
               defaultStatus && !excluded.includes(defaultStatus)
                 ? defaultStatus
-                : (builtIn?.status ?? '')
+                : (namedDefault?.status ?? '')
             }
             onChange={(e) => onDefaultStatus(e.target.value)}
           >
-            {builtIn ? null : <option value="">None</option>}
+            {namedDefault ? null : <option value="">None</option>}
             {statuses
               .filter((s) => !excluded.includes(s.status))
               .map((s) => (

@@ -32,7 +32,7 @@ export function makeSeedFetchedDocument(deps: {
   setDocumentName: SetState<string>;
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
   setDocumentPresentation: SetState<string | null>;
-  // The type catalogue (docs/specs/026-plan/item-types.md), null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), null for the default types.
   setDocumentItemTypes: SetState<ItemTypeCatalogue | null>;
   setDocumentOwnerColor: SetState<string | null>;
   setDocumentOwnerId: SetState<string | null>;
