@@ -16,6 +16,7 @@ elements, its snapshots, its changesets or its room.
 | **cell write**            | A change to cells' inputs and/or formats                                       | update, edit              |
 | **layout write**          | A change to rows or columns: insert, delete, move, resize, hide, freeze        | structural change         |
 | **sheet rev**             | The sheet's revision, raised by one on every write to it                       | version                   |
+| **referenced**            | Named by an element of its document: a Sheet's `sheetId` or a copy's `copyOf`  | used, linked              |
 
 ## What a sheet is
 
@@ -50,7 +51,8 @@ elements, its snapshots, its changesets or its room.
 ## Changing a sheet
 
 - **Create** (placing a Sheet element, a copy, a CSV): a title, its tab and optionally its layout and cells. It
-  may name its id (made by the client), and a restore (undo, a sync) its old rev.
+  may name its id (made by the client), and a restore (undo, a sync) its old rev. A **restore** of a sheet
+  that is still stored keeps it, and cancels a delete waiting on it being unreferenced.
 - **Cell write**: a set of cells by row and column id, each with an input to set or clear and/or format keys to
   set or clear. Two people writing different cells, or different format keys of a cell, never overwrite each
   other; the same input or format key resolves to the last write.
@@ -61,14 +63,32 @@ elements, its snapshots, its changesets or its room.
   end).
 - **Sort** is a layout write of the rows (their new order) for a whole-sheet sort, and a cell write for a range.
 - **Rename**: a new title; refused when another sheet on its tab has it (`sheet_title_taken`).
-- **Delete**: removes the sheet and its cells.
+- **Delete**: removes the sheet and its cells. **Delete when unreferenced** (the editor's, with its element) removes
+  them now if nothing references the sheet, or else as soon as nothing does ([Deleting a sheet](#deleting-a-sheet)).
 - Every write answers with what is stored: the changed cells, the layout if it changed, and the sheet rev.
 
-## Sheets no element frames
+## Deleting a sheet
 
-- Deleting a Sheet element does not delete its sheet, so Undo, a tab restored from the Trash, or a paste of the
-  cut element brings the sheet back as it was.
-- A sheet no element on its tab has framed for 30 days is deleted for good by the api's daily sweep.
+A sheet is **referenced** by every element in its document that names it: a Sheet element showing it
+(`sheetId`), and a copy not yet made (`copyOf`: a duplicated Sheet, a pasted one, or one on a duplicated tab, which
+is made from it when first drawn). A sheet nothing references is **unreferenced**.
+
+- **Delete with the element**: deleting a Sheet element (Delete, Backspace, the selection's trash button, the
+  context menu's Delete, the command palette) whose sheet nothing else references asks first, one dialog for the
+  whole selection: **Delete Sheet?** ("Sheet 1 and its cells are deleted. Undo brings it back while this page is
+  open."), or **Delete 3 Sheets?** for several ("Sheet 1, Costs, Budget and their cells are deleted. Undo brings them back while this page is open."), with **Delete** and **Cancel**. **Delete** removes the elements and
+  the sheets with them; **Cancel** removes nothing.
+- A sheet something else still references (another Sheet element, a copy not yet made) is not asked about and
+  stays: only the element goes.
+- The api deletes a sheet the person deleted with its element as soon as it is unreferenced. If the element's
+  removal has not reached the api yet, the sheet goes the moment it does.
+- **Undo** puts the element back and makes the sheet again as it was (its id, title, rows, columns and cells),
+  while the page that deleted it is open. **Redo** removes the element again; its sheet is then left as a Cut's is.
+- **Cut**, an agent's or another person's removal, deleting a layer, a tab, or Fill Tab's clearing do not ask and
+  do not delete the sheet: it is kept, so a paste, an Undo or a restore brings it back.
+- A sheet unreferenced for 30 days is deleted for good. The api notes the moment a sheet becomes unreferenced (or
+  referenced again) as the tabs that reference it are saved, and deletes, once a day, the sheets unreferenced for
+  longer.
 - Deleting a document for good deletes its sheets with it.
 
 ## Who may do what

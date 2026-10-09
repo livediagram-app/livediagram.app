@@ -19,6 +19,7 @@ import { collabIndexCopyStatements, collabIndexStatements } from './collab-index
 import { redactTabDataForCommunity } from '../community-redact';
 import { imageGrantCopyStatements } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
+import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import { PUBLIC_POST } from './community';
@@ -548,6 +549,8 @@ export async function copyDocument(
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
       // Placement grants (docs/specs/009-elements/images.md): the copy may serve what its source could.
       ...imageGrantCopyStatements(env, sourceId, newId, imageRefIdsFromData(data), now),
+      // The copy's Sheets reference the copied sheets, which keep their ids (sheet-refs.ts).
+      sheetRefCopyStatement(env, row.id, freshTabId),
     ];
   });
   // The items go in the same batch as the tabs (two statements that copy nothing from a store without

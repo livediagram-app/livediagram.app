@@ -30,6 +30,7 @@ import {
   listSheets,
   readSheetHead,
 } from '../db';
+import { sheetDeleteWhenUnreferencedStatements, sheetKeepStatement } from '../db/sheet-refs';
 import { json, methodNotAllowed, noContent } from '../responses';
 import { readBody, type RouteContext } from './context';
 import { writer } from './item-route-kit';
@@ -81,7 +82,11 @@ function readCreate(raw: unknown, maxCells = SHEET_WRITE_CELLS_MAX): ReadCreate 
     return { error: sheetRejected('write_invalid') };
   if (b.cells !== undefined && !Array.isArray(b.cells))
     return { error: sheetRejected('write_invalid') };
-  if (Array.isArray(b.cells) && b.cells.length > maxCells)
+  if (b.restore !== undefined && b.restore !== true)
+    return { error: sheetRejected('write_invalid') };
+  // A restore puts back a whole sheet the editor held, so it takes a whole sheet's cells (as a seed does).
+  const cap = b.restore === true ? SHEET_CELLS_MAX : maxCells;
+  if (Array.isArray(b.cells) && b.cells.length > cap)
     return { error: sheetRejected('write_too_large', 413) };
   return {
     create: {
@@ -91,6 +96,7 @@ function readCreate(raw: unknown, maxCells = SHEET_WRITE_CELLS_MAX): ReadCreate 
       ...(typeof b.copyOf === 'string' ? { copyOf: b.copyOf } : {}),
       ...(b.layout !== undefined ? { layout: b.layout as SheetLayout } : {}),
       ...(b.cells !== undefined ? { cells: b.cells as SheetCellJson[] } : {}),
+      ...(b.restore === true ? { restore: true as const } : {}),
     },
   };
 }
@@ -174,10 +180,28 @@ async function create(ctx: RouteContext, documentId: string): Promise<Response> 
   if (caller instanceof Response) return caller;
   const read = readCreate(await readBody(ctx));
   if ('error' in read) return read.error;
+  const kept = read.create.restore ? await keepRestored(ctx, caller, read.create) : null;
+  if (kept) return json(kept);
   const made = await makeSheet(ctx, caller, read.create, await writer(ctx, caller.owner));
   if (made instanceof Response) return made;
   const body: SheetResponse = { sheet: made };
   return json(body, { status: 201 });
+}
+
+// A restore of a sheet still stored on its tab: kept, its waiting delete cancelled (sheet-store.md "Deleting a
+// sheet"). Null when it is not stored there, and the restore makes it.
+async function keepRestored(
+  ctx: RouteContext,
+  caller: SheetCaller,
+  create: SheetCreateRequest,
+): Promise<SheetResponse | null> {
+  if (!create.id || (caller.scopeTab && create.tabId !== caller.scopeTab)) return null;
+  const head = await readSheetHead(ctx.env, caller.documentId, create.id);
+  if (!head || head.tabId !== create.tabId) return null;
+  await ctx.env.DB.batch([sheetKeepStatement(ctx.env, caller.documentId, create.id)]);
+  const [stored] = await listSheets(ctx.env, caller.documentId, { ids: [create.id] });
+  console.info('[sheets] sheets.restored', { documentId: caller.documentId, kept: true });
+  return stored ? { sheet: stored } : null;
 }
 
 async function remove(ctx: RouteContext, documentId: string, sheetId: string): Promise<Response> {
@@ -185,7 +209,20 @@ async function remove(ctx: RouteContext, documentId: string, sheetId: string): P
   if (caller instanceof Response) return caller;
   const head = await readSheetHead(ctx.env, documentId, sheetId);
   if (!head || (caller.scopeTab && head.tabId !== caller.scopeTab)) return sheetNotFound();
-  await ctx.env.DB.batch([deleteSheetStatement(ctx.env, documentId, sheetId)]);
+  if (ctx.url.searchParams.get('whenUnreferenced') === 'true') {
+    // Deleted with its element: now if nothing references it, else by the tab write that removes the last reference
+    // (sheet-refs.ts), which needs no relay: nothing in the document shows it then.
+    const results = await ctx.env.DB.batch(
+      sheetDeleteWhenUnreferencedStatements(ctx.env, documentId, sheetId),
+    );
+    const deleted = ((results[1] as { results?: unknown[] } | undefined)?.results?.length ?? 0) > 0;
+    if (!deleted) {
+      console.info('[sheets] sheets.delete.deferred', { documentId });
+      return noContent();
+    }
+  } else {
+    await ctx.env.DB.batch([deleteSheetStatement(ctx.env, documentId, sheetId)]);
+  }
   relaySheet(ctx, documentId, {
     kind: 'sheets',
     sheetId,

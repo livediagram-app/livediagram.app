@@ -10680,6 +10680,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "layout": {
         "$ref": "#/components/schemas/SheetLayout"
       },
+      "restore": {
+        "const": true,
+        "type": "boolean"
+      },
       "tabId": {
         "type": "string"
       },

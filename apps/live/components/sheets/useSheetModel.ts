@@ -88,6 +88,8 @@ export function useSheetModel(
     });
     const detach = bridge.attach({
       receive: (op) => store.receive(op),
+      title: (id) => store.sheet(id)?.title,
+      release: (ids) => store.release(ids),
       presence: (from, op) => presence.receive(from, op),
       resync: () => store.resync(),
       reannounce: () => presence.reannounce(),
@@ -116,6 +118,8 @@ export function useSheetModel(
   // Make the sheet a placed or copied Sheet names, once the tab has loaded and it is not there.
   useEffect(() => {
     if (!sheetId || status !== 'ready' || store.sheet(sheetId) || !bridge.canEdit) return;
+    // Undo brought back a Sheet this person deleted with its sheet: the sheet comes back as it was.
+    if (store.restoreReleased(sheetId)) return;
     const titles = store.titlesOn(tabId);
     const placed = takePlacedSheet(sheetId);
     if (placed) {

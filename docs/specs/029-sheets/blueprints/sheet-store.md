@@ -1,7 +1,7 @@
 # Sheet store blueprint
 
 Derived from [Sheet store](../sheet-store.md). Implementation contract for the api's sheet tables and routes, the
-room op, the editor's sheet slice, the offline store, copies, the sweep and the agent doors. The pure model and
+room op, the editor's sheet slice, the offline store, copies, deleting a sheet and the agent doors. The pure model and
 writes are the engine's ([sheets-engine](sheets-engine.md#writes-storets)); this blueprint stores and moves them.
 
 ## Domain and naming
@@ -29,7 +29,7 @@ CREATE TABLE sheets (
   rev INTEGER NOT NULL,
   cell_count INTEGER NOT NULL DEFAULT 0,
   cell_bytes INTEGER NOT NULL DEFAULT 0,
-  unframed_since INTEGER,              -- set by the sweep when no element frames it; cleared when one does
+  unframed_since INTEGER,              -- renamed unreferenced_since by 0079
   write_nonce TEXT,                    -- the write that last moved rev: guards that write's own statements
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
   updated_by TEXT NOT NULL,            -- JSON SheetPerson
@@ -47,6 +47,25 @@ CREATE TABLE sheet_cells (
   FOREIGN KEY (document_id, sheet_id) REFERENCES sheets(document_id, id) ON DELETE CASCADE
 );
 ```
+
+Migration `apps/api/migrations/0079_sheet_refs.sql` (Deleting a sheet):
+
+```sql
+ALTER TABLE sheets RENAME COLUMN unframed_since TO unreferenced_since;
+ALTER TABLE sheets ADD COLUMN delete_when_unreferenced INTEGER;  -- 1: deleted with its element; gone once unreferenced
+CREATE TABLE sheet_refs (
+  tab_id TEXT NOT NULL REFERENCES tabs(id) ON DELETE CASCADE,
+  sheet_id TEXT NOT NULL,             -- a planSheet.sheetId or planSheet.copyOf on the tab
+  PRIMARY KEY (tab_id, sheet_id)
+);
+CREATE INDEX sheet_refs_sheet ON sheet_refs(sheet_id);
+CREATE INDEX sheets_unreferenced ON sheets(unreferenced_since) WHERE unreferenced_since IS NOT NULL;
+CREATE TRIGGER sheet_refs_removed AFTER DELETE ON sheet_refs ...  -- settle step 1 then 2, for OLD.sheet_id
+CREATE TRIGGER sheet_refs_added AFTER INSERT ON sheet_refs ...    -- settle step 3, for NEW.sheet_id
+```
+
+The triggers find the sheet's document through `document_tabs` for the row's tab, and stamp
+`CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)` (milliseconds, SQLite's clock).
 
 - Field classification: `title`, `input`, `format` are user content (never logged); `updated_by` is display
   identity (a hashed id, `itemPersonId`); the rest is structural.
@@ -108,10 +127,10 @@ and `writes` added to `API_ROUTE_WORDS`.
 | GET    | `/sheets?ids=a,b`         | read |                                          | `SheetsResponse` (≤ 50 ids)                  |
 | POST   | `/sheets`                 | edit | `SheetCreate`                            | 201 `SheetResponse { sheet }`                |
 | POST   | `/sheets/:sheetId/writes` | edit | `{ write: SheetWrite; baseRev?; undo? }` | `SheetWriteResponse { applied, rev, cells }` |
-| DELETE | `/sheets/:sheetId`        | edit |                                          | 204                                          |
+| DELETE | `/sheets/:sheetId`        | edit | `?whenUnreferenced=true`                 | 204                                          |
 
 - `SheetCreate = { id?: string; tabId: string; title: string; layout?: SheetLayout; cells?: CellDto[]; copyOf?:
-string }`. `copyOf` copies another sheet of the document server-side (cells and layout), with the new title; the
+string; restore?: true }`. `copyOf` copies another sheet of the document server-side (cells and layout), with the new title; the
   create is refused `409 sheet_exists` when `id` is taken, `409 sheet_title_taken` when the tab has the title,
   `413 sheets_full`, `400 { error: SheetRejection }` from `validateSheetCreate`. A create larger than
   `SHEET_WRITE_CELLS_MAX` cells is sent as a create of the layout then cell writes (the editor's `createSheet`).
@@ -192,13 +211,67 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
   its own undo puts back); redo writes the change again. A change sent in parts (a big paste), or reaching several
   sheets (Insert Cells, a cut whose cells other sheets' formulas read, a replacing CSV import), is one step.
 
-## The sweep
+## Deleting a sheet
 
-- `apps/api/src/sheet-sweep.ts`, run from the daily `scheduled` handler (`index.ts`): it checks up to
-  `SHEET_SWEEP_TABS_MAX` tabs that hold sheets, chosen at random each day (stateless; every tab is seen within days),
-  reads each tab's elements (`plan-sheet` → `planSheet.sheetId`, `framedSheetIds`), sets `unframed_since = now` on
-  sheets no element frames (where null), clears it on framed ones, and deletes sheets whose `unframed_since` is
-  older than `SHEET_UNFRAMED_DAYS` (30). Logs `[sheets] sweep` with counts.
+- **Reference index** (`apps/api/src/db/sheet-refs.ts`):
+  - `sheetRefIds(elements)`: every `plan-sheet` shape's `planSheet.sheetId` and `planSheet.copyOf`, deduplicated.
+  - `REFERENCED` (SQL fragment): `EXISTS (SELECT 1 FROM sheet_refs r JOIN document_tabs dt ON dt.tab_id = r.tab_id
+WHERE r.sheet_id = sheets.id AND dt.document_id = sheets.document_id)`. A sheet id is unique only in its
+    document (a copied document keeps them), so a reference counts only through a tab of the sheet's document.
+  - `sheetRefReplaceStatements(env, tabId, ids)`: `DELETE FROM sheet_refs WHERE tab_id = ?1 AND sheet_id NOT IN
+(json_each(?2))`, then `INSERT OR IGNORE ... SELECT ?1, value FROM json_each(?2)` when `ids` is non-empty.
+  - `sheetSettleStatements(env, documentId, now)`, in order:
+    1. `DELETE FROM sheets WHERE document_id = ?1 AND delete_when_unreferenced = 1 AND NOT REFERENCED`;
+    2. `UPDATE sheets SET unreferenced_since = ?2 WHERE document_id = ?1 AND unreferenced_since IS NULL AND NOT
+REFERENCED`;
+    3. `UPDATE sheets SET unreferenced_since = NULL WHERE document_id = ?1 AND unreferenced_since IS NOT NULL AND
+REFERENCED`.
+       Each is bounded by the document's sheets (`DOCUMENT_SHEETS_MAX`, the `sheets` primary key prefix), and is one
+       index probe that matches nothing for a document without sheets.
+  - `sheetRefCopyStatement(env, fromTabId, toTabId)`: `INSERT INTO sheet_refs SELECT ?2, sheet_id FROM sheet_refs
+WHERE tab_id = ?1` (a copied document's tabs, without a parse).
+- **Where it runs**: `tabWriteStatements` (every editor save and every changeset) appends
+  `sheetRefReplaceStatements` after the tabs and `document_tabs` upserts (the FK and the triggers read them). The
+  settling runs in the triggers, per reference added or removed, so a write whose references are unchanged settles
+  nothing. `seedTabs`
+  appends `sheetRefReplaceStatements` per tab (its sheets are seeded after). The document copy appends
+  `sheetRefCopyStatement` per tab. `deleteTabRow` runs `sheetSettleStatements` after unlinking: the link the triggers
+  find the document by is gone first (the tab's rows go by the FK cascade, or stop counting through the join). `swapTabData` changes no element, so it
+  adds nothing. A create stores `unreferenced_since = CASE WHEN REFERENCED THEN NULL ELSE now END`, so a sheet whose
+  element never reaches the api expires too.
+- **Delete when unreferenced**: `DELETE /sheets/:sheetId?whenUnreferenced=true` runs one batch: `UPDATE sheets SET
+delete_when_unreferenced = 1 WHERE document_id = ? AND id = ?`, then `DELETE FROM sheets WHERE document_id = ? AND
+id = ? AND NOT REFERENCED RETURNING id`. A row returned relays `{ deleted: true }`; otherwise the tab write that
+  removes the last reference deletes it (settle step 1) without a relay: nothing in the document shows it. 204
+  either way; `404 sheet_not_found` when there is no such sheet.
+- **Restore**: `SheetCreate.restore?: true` (the editor's undo). When the id is stored on the same tab, the create
+  sets `delete_when_unreferenced = NULL` and answers 200 with the stored sheet; otherwise it creates as usual. A
+  restore takes up to `SHEET_CELLS_MAX` cells in one request (as a seed does).
+- **Expiry** (`apps/api/src/sheet-sweep.ts` `runSheetExpiry`, from the daily `scheduled` handler): repeatedly reads
+  `SELECT document_id, id, cell_count FROM sheets WHERE unreferenced_since < ?cutoff ORDER BY unreferenced_since
+LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells by cascade), taking sheets in
+  order while the batch holds at most `SHEET_EXPIRY_BATCH_CELLS` cells (always at least one), and stops when none are
+  left or the cells deleted reach `SHEET_EXPIRY_CELLS_MAX`; the rest waits a day. Cost follows what expired, not
+  how many tabs or sheets exist. Logs `[sheets] sheets.expired { sheets, cells, more }`.
+- **Editor**:
+  - `apps/live/lib/sheet-references.ts` `sheetsDeletedWith(tabs, activeTabId, targetIds)`: the sheet ids of the
+    targets' Sheet elements (not a copy not yet made: it has no sheet) that no element outside the targets, on any
+    tab, references by `sheetId` or `copyOf`.
+  - `apps/live/hooks/sheets/useSheetDeleteGuard.ts`: `guard(targetIds)` answers `null` when no sheet goes (delete at
+    once) or a promise of `{ release }` (confirmed) or `null` (cancelled), after `useConfirm` with the spec's copy
+    (title by `sheetTitle` from the bridge, falling back to `Sheet`). When the sheet chunk has not attached, it
+    answers `null`: the sheet is then left as a Cut's.
+  - `useElementSelectionActions`: `deleteSelected(opts?)` and `deleteMultiSelected(opts?)` take `{ cut: true }` (Cut
+    and the context menu's Cut skip the guard); a pending guard deletes the targets it was asked about when confirmed,
+    then calls `release()`.
+  - Bridge: `SheetsHandlers.release(ids)` and `SheetsHandlers.title(id)`; the bridge's `releaseSheets(ids)` and
+    `sheetTitle(id)` answer false / undefined before the chunk attaches.
+  - Store client: `release(ids)` keeps each sheet's view as a session snapshot (`released`), drops it, and sends
+    `deleteSheet(scope, id, { whenUnreferenced: true })`. `useSheetModel`, finding its sheet missing on a loaded tab,
+    first calls `restoreReleased(id, tabId)`: a snapshot is created again (`restore: true`, the next free title if its
+    own is taken) and the snapshot dropped. Redo removes the element without a guard.
+  - Offline: `offlineDeleteSheet` deletes at once (the editor established nothing references the sheet); a restore
+    of an id still stored keeps it.
 
 ## Agents
 
@@ -232,6 +305,12 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | Write to a sheet another person deleted             | `404 sheet_not_found`; the store drops it; the element draws "Sheet not found" with **Remove** |
 | Element whose sheet is not in the store             | "Sheet not found" face (dashed outline), offering Remove                                       |
+| Delete with element, removal not saved yet          | Marked `delete_when_unreferenced`; the tab write removing the last reference deletes it        |
+| Undo before the delete lands                        | The restore keeps the stored sheet and clears the mark (200)                                   |
+| Redo of a confirmed delete                          | The element goes without asking; its sheet waits as a Cut's (30 days)                          |
+| Restored title now taken on the tab                 | `uniqueSheetTitle` (the next free title) before the restore is sent                            |
+| Delete before any Sheet has drawn                   | No dialog; the sheet waits as a Cut's                                                          |
+| A sheet whose element never reached the api         | Noted at create (`sheetNoteUnreferencedStatement`), so it expires                              |
 | Concurrent writes to one sheet                      | Rev-guarded batch, retried up to 3 times, then `409 sheet_busy` (toast, refetch)               |
 | Insert after a row someone deleted                  | The engine resolves to the stored neighbour or the end                                         |
 | Room op before the GET answer                       | Held until the load ends, then merged by rev                                                   |
@@ -256,40 +335,51 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 - A write is one D1 batch of at most 6 statements, independent of its cell count.
 - A whole-sheet sort is one layout write (`orderRows`, ≤ 10,000 ids ≈ 70 KB); no cell is rewritten.
 - Room op carries only the landed write and the touched cells, capped at `SHEET_RELAY_BYTES_MAX`.
+- Deleting a sheet adds one statement to every tab write (two when the tab has a Sheet): measured on the test
+  harness's SQLite, 0.055 ms a write with no sheets and 0.066 ms at `DOCUMENT_SHEETS_MAX`, flat in the number of
+  sheets; the settling triggers run only for references added or removed. It rides the write's existing batch (no
+  extra D1 round trip). The daily expiry reads only expired rows by the partial index.
 
 ## Observability
 
 Log fingerprints (`[sheets]`): api `sheets.rejected <error>`, `sheets.write.retry`, `sheets.write.busy`,
-`sheets.full`, `sheets.created`, `sheets.deleted`, `sheets.sweep`; editor `sheets.refetch.gap`,
+`sheets.full`, `sheets.created`, `sheets.deleted`, `sheets.delete.deferred`, `sheets.restored`, `sheets.expired`; editor `sheets.refetch.gap`,
 `sheets.write.failed <error>`, `sheets.offline.write`, `sheets.recalc.truncated`, `sheets.load.failed`. Never
 inputs, formats or titles.
 
 ## Testing
 
-| Rule                                                         | Test                                                                                                                                                                                 |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Routes: create, list, gates, tab scope, rejections, caps     | `apps/api/src/routes/sheet-routes.test.ts` ("creating and listing sheets", "access")                                                                                                 |
-| Write batch: upsert, patch per key, clear, rows, rename      | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                |
-| Rev race retries then busy; huge write relayed as refetch    | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                |
-| Delete; copy a sheet; copy a document; seeds                 | `apps/api/src/routes/sheet-routes.test.ts` ("deleting, copies and seeds")                                                                                                            |
-| Sweep marks, clears, deletes                                 | `apps/api/src/sheet-sweep.test.ts`                                                                                                                                                   |
-| Room op scoped to the tab                                    | `apps/api/src/room-scope.test.ts`                                                                                                                                                    |
-| Store client: optimistic, reconcile, gap, queue, split, undo | `apps/live/components/sheets/sheet-store-client.test.ts`                                                                                                                             |
-| Presence: receive, throttle, re-say                          | `apps/live/components/sheets/sheet-presence-store.test.ts`                                                                                                                           |
-| Model: attach, load, placed and copied sheets, cards         | `apps/live/components/sheets/useSheetModel.test.tsx`                                                                                                                                 |
-| Bridge: room ops, attach, undo journal                       | `apps/live/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                    |
-| Api client, offline store, clipboard seeds                   | `apps/live/lib/api/sheets.test.ts`, `lib/offline/offline-sheets.test.ts`, `lib/clipboard-payload.sheets.test.ts`                                                                     |
-| Agent verbs, MCP tools and output schemas                    | `packages/agent-verbs/src/sheets/sheet-engine.test.ts`, `packages/agent-verbs/src/verbs/sheet.test.ts`, `apps/mcp/src/sheet-tools.test.ts`, `output-schema.test.ts`, `tools.test.ts` |
+| Rule                                                            | Test                                                                                                                                                                                                                                          |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Routes: create, list, gates, tab scope, rejections, caps        | `apps/api/src/routes/sheet-routes.test.ts` ("creating and listing sheets", "access")                                                                                                                                                          |
+| Write batch: upsert, patch per key, clear, rows, rename         | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
+| Rev race retries then busy; huge write relayed as refetch       | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
+| Delete; copy a sheet; copy a document; seeds                    | `apps/api/src/routes/sheet-routes.test.ts` ("deleting, copies and seeds")                                                                                                                                                                     |
+| Reference index: sheetId and copyOf, marks, clears, settles     | `apps/api/src/db/sheet-refs.test.ts`                                                                                                                                                                                                          |
+| Delete when unreferenced, now or on the last reference; restore | `apps/api/src/routes/sheet-routes.test.ts` ("deleting with the element")                                                                                                                                                                      |
+| Expiry deletes past 30 days, bounded by cells                   | `apps/api/src/sheet-sweep.test.ts`                                                                                                                                                                                                            |
+| Which sheets a delete takes (duplicates, copies, other tabs)    | `apps/live/lib/sheet-references.test.ts`                                                                                                                                                                                                      |
+| Confirm, cancel, Cut skips, release, undo restores              | `apps/live/hooks/sheets/useSheetDeleteGuard.test.tsx`, `hooks/canvas/useElementSelectionActions.test.ts`, `components/sheets/sheet-store-client.test.ts`, `components/sheets/useSheetModel.test.tsx`, `hooks/sheets/useSheetsBridge.test.tsx` |
+| Offline restore keeps a stored sheet; delete query              | `apps/live/lib/offline/offline-sheets.test.ts`, `lib/api/sheets.test.ts`                                                                                                                                                                      |
+| Room op scoped to the tab                                       | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                             |
+| Store client: optimistic, reconcile, gap, queue, split, undo    | `apps/live/components/sheets/sheet-store-client.test.ts`                                                                                                                                                                                      |
+| Presence: receive, throttle, re-say                             | `apps/live/components/sheets/sheet-presence-store.test.ts`                                                                                                                                                                                    |
+| Model: attach, load, placed and copied sheets, cards            | `apps/live/components/sheets/useSheetModel.test.tsx`                                                                                                                                                                                          |
+| Bridge: room ops, attach, undo journal                          | `apps/live/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                                                                             |
+| Api client, offline store, clipboard seeds                      | `apps/live/lib/api/sheets.test.ts`, `lib/offline/offline-sheets.test.ts`, `lib/clipboard-payload.sheets.test.ts`                                                                                                                              |
+| Agent verbs, MCP tools and output schemas                       | `packages/agent-verbs/src/sheets/sheet-engine.test.ts`, `packages/agent-verbs/src/verbs/sheet.test.ts`, `apps/mcp/src/sheet-tools.test.ts`, `output-schema.test.ts`, `tools.test.ts`                                                          |
 
 ## Constants and configuration
 
-| Constant                    | Value  | Provenance / safe range                              |
-| --------------------------- | ------ | ---------------------------------------------------- |
-| `SHEET_WRITE_RETRIES`       | 3      | As items                                             |
-| `SHEET_REFETCH_DEBOUNCE_MS` | 400    | As items                                             |
-| `SHEET_RELAY_BYTES_MAX`     | 262144 | Default (D5); well under a WebSocket frame's 1 MB    |
-| `SHEET_UNFRAMED_DAYS`       | 30     | Spec                                                 |
-| `SHEET_SWEEP_TABS_MAX`      | 500    | Default (D6); keeps the cron inside its CPU budget   |
-| `SHEET_IDS_PER_GET_MAX`     | 50     | Default (D7)                                         |
-| `AGENT_READ_CELLS_MAX`      | 5000   | Default (D8); a read an agent can hold               |
-| `SHEET_READ_CHARS_MAX`      | 100000 | Default; about 25,000 tokens of cells a read answers |
+| Constant                    | Value  | Provenance / safe range                                   |
+| --------------------------- | ------ | --------------------------------------------------------- |
+| `SHEET_WRITE_RETRIES`       | 3      | As items                                                  |
+| `SHEET_REFETCH_DEBOUNCE_MS` | 400    | As items                                                  |
+| `SHEET_RELAY_BYTES_MAX`     | 262144 | Default (D5); well under a WebSocket frame's 1 MB         |
+| `SHEET_UNFRAMED_DAYS`       | 30     | Spec                                                      |
+| `SHEET_EXPIRY_BATCH`        | 25     | Default (D6); expired sheets read per query               |
+| `SHEET_EXPIRY_BATCH_CELLS`  | 100000 | Default (D6); cells one D1 batch deletes, 2 full sheets   |
+| `SHEET_EXPIRY_CELLS_MAX`    | 500000 | Default (D6); cells one daily run deletes, 10 full sheets |
+| `SHEET_IDS_PER_GET_MAX`     | 50     | Default (D7)                                              |
+| `AGENT_READ_CELLS_MAX`      | 5000   | Default (D8); a read an agent can hold                    |
+| `SHEET_READ_CHARS_MAX`      | 100000 | Default; about 25,000 tokens of cells a read answers      |

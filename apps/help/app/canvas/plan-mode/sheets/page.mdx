@@ -112,6 +112,18 @@ Press **Maximise Sheet** in the header, before the cog, to fill the canvas with 
 
 To make a Sheet the whole tab, open **Sheet Settings**, then **Sheet Options**, and choose **Fill Tab**. The Sheet then fills the tab for everyone, in every mode. Anything else on the tab is deleted (you're asked first), as one step you can undo. Choose **On Canvas** to put it back on the canvas.
 
+## Delete a Sheet
+
+Select a Sheet and press Delete (or use the trash button or the right-click menu). If nothing else in the document uses its sheet, you're asked first: **Delete** removes the Sheet and its cells together. Undo brings both back while the page stays open.
+
+Nothing is asked, and the cells are kept, when:
+
+- another Sheet shows the same sheet, or a copy of it hasn't been opened yet (a duplicated Sheet or tab);
+- you **Cut** the Sheet, so you can paste it back;
+- someone else, or an agent, removes it.
+
+Cells nothing uses any more are deleted for good after 30 days.
+
 ## CSV
 
 From the Sheet's **Sheet Settings** (the cog in its header), **Download CSV** saves `<title>.csv` with each value as shown. **Import CSV…** reads a `.csv` or `.tsv` file in: on a sheet that already has cells, choose **Replace Sheet** or **Insert at Selection**.

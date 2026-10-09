@@ -84,6 +84,25 @@ describe('offlineCreateSheet', () => {
     expect(copy.cells).toEqual(stored('sheetAAAA', 't1').cells);
   });
 
+  it('keeps a sheet still stored on a restore, and makes one that is gone', async () => {
+    await offlinePutRecord(testRecord({ sheets: [stored('sheetAAAA', 't1')] }));
+    const kept = await offlineCreateSheet(
+      'd1',
+      { id: 'sheetAAAA', tabId: 't1', title: 'Other', restore: true },
+      ME,
+    );
+    expect(kept).toEqual(stored('sheetAAAA', 't1'));
+    await expect(
+      offlineCreateSheet('d1', { id: 'sheetAAAA', tabId: 't2', title: 'X', restore: true }, ME),
+    ).rejects.toMatchObject({ code: 'sheet_exists' });
+    const made = await offlineCreateSheet(
+      'd1',
+      { id: 'sheetBBBB', tabId: 't1', title: 'Back', layout, restore: true },
+      ME,
+    );
+    expect(made).toMatchObject({ id: 'sheetBBBB', title: 'Back' });
+  });
+
   it('takes the layout and cells given', async () => {
     await offlinePutRecord(testRecord());
     const made = await offlineCreateSheet(

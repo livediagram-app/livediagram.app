@@ -561,3 +561,91 @@ describe('deleting, copies and seeds', () => {
     expect(badEntry.status).toBe(400);
   });
 });
+
+describe('deleting with the element', () => {
+  const sheetEl = (sheetId: string) => ({
+    id: `e-${sheetId}`,
+    type: 'shape',
+    shape: 'plan-sheet',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    planSheet: { sheetId },
+  });
+  const saveTab = (id: string, elements: unknown[]) =>
+    db.upsertTab(sql.env, 'd1', { id, name: id, elements } as never, id === 't1' ? 0 : 1);
+  const stored = () =>
+    sql.sql.prepare(`SELECT id, delete_when_unreferenced AS del FROM sheets`).all();
+
+  it('notes a new sheet as unreferenced until a tab references it', async () => {
+    const since = () =>
+      (sql.sql.prepare(`SELECT unreferenced_since AS s FROM sheets`).get() as { s: number | null })
+        .s;
+    await make();
+    expect(since()).toEqual(expect.any(Number));
+    await saveTab('t1', [sheetEl('sheetA00')]);
+    expect(since()).toBeNull();
+    // Its element saved before the sheet was made: referenced from the start.
+    await saveTab('t2', [sheetEl('sheetB00')]);
+    await make({ id: 'sheetB00', tabId: 't2', title: 'Other' });
+    expect(
+      sql.sql.prepare(`SELECT unreferenced_since AS s FROM sheets WHERE id = 'sheetB00'`).get(),
+    ).toEqual({ s: null });
+  });
+
+  it('deletes at once when nothing references the sheet any more', async () => {
+    await make();
+    await saveTab('t1', [sheetEl('sheetA00')]);
+    await saveTab('t1', []);
+    const res = await call({ method: 'DELETE', path: '/sheets/sheetA00?whenUnreferenced=true' });
+    expect(res.status).toBe(204);
+    expect(stored()).toEqual([]);
+    expect(relayed.at(-1)!.op).toMatchObject({ sheetId: 'sheetA00', deleted: true });
+  });
+
+  it('waits for the tab write that removes the last reference', async () => {
+    await make();
+    await saveTab('t1', [sheetEl('sheetA00')]);
+    const before = relayed.length;
+    const res = await call({ method: 'DELETE', path: '/sheets/sheetA00?whenUnreferenced=true' });
+    expect(res.status).toBe(204);
+    expect(stored()).toEqual([{ id: 'sheetA00', del: 1 }]);
+    expect(relayed).toHaveLength(before);
+    await saveTab('t1', []);
+    expect(stored()).toEqual([]);
+  });
+
+  it('restores a sheet still stored by keeping it, so a later removal only notes it', async () => {
+    await make();
+    await saveTab('t1', [sheetEl('sheetA00')]);
+    await call({ method: 'DELETE', path: '/sheets/sheetA00?whenUnreferenced=true' });
+    const kept = await make({ restore: true });
+    expect(kept.status).toBe(200);
+    expect(kept.body.sheet.id).toBe('sheetA00');
+    expect(stored()).toEqual([{ id: 'sheetA00', del: null }]);
+    await saveTab('t1', []);
+    expect(stored()).toEqual([{ id: 'sheetA00', del: null }]);
+  });
+
+  it('restores a deleted sheet whole, past one write’s cells', async () => {
+    const l = layout();
+    const cells = Array.from({ length: 6000 }, (_, i) => ({
+      r: `rest${String(i).padStart(4, '0')}`,
+      c: l.cols[0],
+      i: { n: i },
+    }));
+    const body = { layout: { ...l, rows: cells.map((c) => c.r) }, cells };
+    expect((await make(body)).status).toBe(413);
+    const res = await make({ ...body, restore: true });
+    expect(res.status).toBe(201);
+    expect((await db.listSheets(sql.env, 'd1'))[0]!.cells).toHaveLength(6000);
+    expect((await make({ restore: 'yes' })).status).toBe(400);
+  });
+
+  it('makes a restore on another tab of a stored id a clash, as any create', async () => {
+    await make();
+    const res = await make({ tabId: 't2', restore: true });
+    expect(res.status).toBe(409);
+  });
+});

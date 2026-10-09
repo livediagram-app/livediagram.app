@@ -111,7 +111,8 @@ cells are worked out in every browser that shows it.
   right; a Sheet filling its tab has neither Focus nor Maximise ([Fill Tab](#fill-tab)).
 - The **Sheet Settings** cog (a settings glyph, with a tooltip, in Plan mode) opens a popover of collapsible
   sections, one open at a time, as a board's Board Settings ([Sheet Settings](#sheet-settings)). The element's own
-  Style, Duplicate and Delete are the canvas selection's, as a board's are.
+  Style, Duplicate and Delete are the canvas selection's, as a board's are; deleting a Sheet
+  deletes its sheet, asked first ([Deleting a sheet](sheet-store.md#deleting-a-sheet)).
 - **Maximise Sheet** (a maximise icon, with a tooltip) sits at the header's right, before the cog ([Maximised](#maximised)).
 
 ### Sheet Settings

@@ -638,6 +638,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Sheet|Imported|Csv':
     'Someone filled a Sheet from a CSV file: Import CSV, or a CSV file dropped on the canvas in Plan mode.',
   'Sheet|Exported|Csv': "Someone downloaded a Sheet's cells as a CSV file.",
+  'Sheet|Deleted|Confirmed':
+    'Someone deleted a Sheet whose cells nothing else used, and confirmed deleting the cells with it.',
+  'Sheet|Deleted|Cancelled':
+    'Someone started deleting a Sheet whose cells nothing else used, then cancelled, keeping both.',
   'Plan|Toggled|SheetFillTabOn':
     'Someone set a Sheet to fill its tab for everyone, deleting the rest of that canvas (undo brings it back).',
   'Plan|Toggled|SheetFillTabOff': 'Someone put a Sheet that filled its tab back on the canvas.',
@@ -1528,6 +1532,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Sheet|Imported': 'Someone filled a Sheet from a file (the value says which kind: Csv).',
   'Sheet|Exported':
     "Someone downloaded a Sheet's cells as a file (the value says which kind: Csv).",
+  'Sheet|Deleted':
+    'Someone was asked before deleting a Sheet with its cells (the value says Confirmed or Cancelled).',
   'Sheet|Used':
     'Someone saved a Sheet formula using a function for the first time in that formula (the value is the function name, from the fixed list).',
   'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',

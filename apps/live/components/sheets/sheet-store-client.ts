@@ -10,7 +10,9 @@ import {
   inverseSheetWrite,
   mergeSheetChange,
   sheetFromJson,
+  sheetToJson,
   splitWrite,
+  uniqueSheetTitle,
   validateWrite,
   type CardSource,
   type Sheet,
@@ -83,6 +85,9 @@ export class SheetStore {
   private readonly queues = new Map<string, Promise<void>>();
   private readonly listeners = new Set<() => void>();
   private readonly refetchTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  // Sheets this person deleted with their elements, as they were: Undo puts the element back and its sheet with it
+  // (sheet-store.md "Deleting a sheet"). Kept for the session, as undo is.
+  private readonly released = new Map<string, SheetJson>();
   private cards: CardSource | null = null;
   version = 0;
 
@@ -344,12 +349,45 @@ export class SheetStore {
     return null;
   }
 
-  async remove(sheetId: string): Promise<void> {
-    try {
-      await this.api.deleteSheet(this.deps.scope, sheetId);
-    } catch (e) {
-      this.refused(e, sheetId);
+  // Delete sheets with their elements: gone from the store now, kept as they were for Undo, and deleted by the api
+  // once nothing in the document references them.
+  release(sheetIds: readonly string[]): void {
+    for (const id of sheetIds) {
+      const entry = this.entries.get(id);
+      if (!entry) continue;
+      this.released.set(id, sheetToJson(entry.view));
+      this.drop(id);
+      this.enqueue(id, async () => {
+        try {
+          await this.api.deleteSheet(this.deps.scope, id, { whenUnreferenced: true });
+        } catch (e) {
+          // Already gone is what was wanted.
+          if (!(e instanceof ApiError && e.code === 'sheet_not_found')) this.refused(e, id);
+        }
+      });
     }
+    this.notify();
+  }
+
+  // A Sheet whose sheet this person deleted with it is back (Undo): make the sheet again as it was, under the next
+  // free title if its own is taken now. False when there is nothing to put back.
+  restoreReleased(sheetId: string): boolean {
+    const json = this.released.get(sheetId);
+    if (!json) return false;
+    this.released.delete(sheetId);
+    const title = uniqueSheetTitle(json.title, this.titlesOn(json.tabId));
+    this.create(
+      {
+        id: json.id,
+        tabId: json.tabId,
+        title,
+        layout: json.layout,
+        cells: json.cells,
+        restore: true,
+      },
+      { ...json, title },
+    );
+    return true;
   }
 
   private enqueue(sheetId: string, task: () => Promise<void>): void {

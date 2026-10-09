@@ -253,14 +253,35 @@ describe('the sheet store client', () => {
     expect(s.sheet('sheet0002')).toBeUndefined();
     s.receive({ kind: 'sheets', sheetId: 'sheet0001', tabId: 't1', rev: 9, created: true });
     s.receive({ kind: 'sheets', sheetId: 'unknown1', tabId: 't1', rev: 1, refetch: true });
-    await s.remove('sheet0001');
-    expect(srv.api.deleteSheet).toHaveBeenCalled();
     srv.api.createSheet.mockRejectedValueOnce(
       new ApiError('sheet create', 409, 'sheet_title_taken'),
     );
     s.create({ id: 'sheet0003', tabId: 't1', title: 'Sheet 1', layout: emptyLayout(rand, 2, 2) });
     await s.settle();
     expect(s.sheet('sheet0003')).toBeUndefined();
+  });
+  it('deletes a sheet with its element, and Undo makes it again as it was', async () => {
+    s.write('sheet0001', set(0, 0, 7));
+    await s.settle();
+    s.release(['sheet0001', 'notloaded']);
+    expect(s.sheet('sheet0001')).toBeUndefined();
+    await s.settle();
+    expect(srv.api.deleteSheet).toHaveBeenCalledTimes(1);
+    expect(srv.api.deleteSheet).toHaveBeenCalledWith(expect.anything(), 'sheet0001', {
+      whenUnreferenced: true,
+    });
+    // A new sheet took the title meanwhile: the restored one takes the next free title.
+    s.create({ id: 'sheet0009', tabId: 't1', title: 'Sheet 1', layout: emptyLayout(rand, 2, 2) });
+    expect(s.restoreReleased('sheet0001')).toBe(true);
+    // Back at once, as it was.
+    expect(s.sheet('sheet0001')!.title).toBe('Sheet 1 2');
+    expect(value(0, 0)).toBe(7);
+    // Once: a second Undo of the same element has nothing to make.
+    expect(s.restoreReleased('sheet0001')).toBe(false);
+    await s.settle();
+    const create = srv.api.createSheet.mock.calls.at(-1)![1] as Record<string, unknown>;
+    expect(create).toMatchObject({ id: 'sheet0001', restore: true, title: 'Sheet 1 2' });
+    expect((create.cells as unknown[]).length).toBe(1);
   });
   it('lets the caller take a refused create over', async () => {
     const toast = vi.fn();
@@ -499,9 +520,17 @@ describe('the sheet store client, edges', () => {
     expect(s.sheet('sheet0005')).toBeUndefined();
   });
 
-  it('says a refused delete', async () => {
+  it('says a refused delete, but not one already gone', async () => {
     srv.api.deleteSheet.mockRejectedValueOnce(new ApiError('sheet delete', 403, 'forbidden'));
-    await s.remove('sheet0001');
+    s.release(['sheet0001']);
+    await s.settle();
     expect(toast).toHaveBeenCalledWith("Couldn't save that change");
+    toast.mockClear();
+    srv.api.deleteSheet.mockRejectedValueOnce(new ApiError('sheet delete', 404, 'sheet_not_found'));
+    s.restoreReleased('sheet0001');
+    await s.settle();
+    s.release(['sheet0001']);
+    await s.settle();
+    expect(toast).not.toHaveBeenCalled();
   });
 });

@@ -52,7 +52,10 @@ export async function offlineCreateSheet(
     const rec = await record(documentId);
     const sheets = rec.sheets ?? [];
     const id = create.id ?? makeSheetId();
-    if (sheets.some((s) => s.id === id)) throw new ApiError('sheet create', 409, 'sheet_exists');
+    const stored = sheets.find((s) => s.id === id);
+    // A restore (the editor's undo) of a sheet still here keeps it, as the api does.
+    if (stored && create.restore && stored.tabId === create.tabId) return stored;
+    if (stored) throw new ApiError('sheet create', 409, 'sheet_exists');
     const lower = create.title.toLowerCase();
     if (sheets.some((s) => s.tabId === create.tabId && s.title.toLowerCase() === lower))
       throw new ApiError('sheet create', 409, 'sheet_title_taken');
@@ -128,6 +131,8 @@ export async function offlineWriteSheet(
   });
 }
 
+// An offline document has no reference index: the editor deletes a sheet with its element only once it has found
+// nothing else references it (sheet-references.ts), so a delete when unreferenced deletes at once.
 export async function offlineDeleteSheet(documentId: string, sheetId: string): Promise<void> {
   return serializeOfflineWrite(async () => {
     const rec = await record(documentId);

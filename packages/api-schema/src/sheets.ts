@@ -35,6 +35,9 @@ export type SheetCreateRequest = {
   layout?: SheetLayout;
   cells?: SheetCellDto[];
   copyOf?: string;
+  // The editor's undo of a sheet deleted with its element: a sheet still stored under `id` on the tab is kept (its
+  // waiting delete cancelled) and answered as it is; otherwise it is made from the body, up to a whole sheet's cells.
+  restore?: true;
 };
 
 // One write. `wid` is the client's id for it, echoed on the room op so the writer knows its own; `undo` marks an

@@ -873,6 +873,14 @@ export const SHEET_CSV_IMPORTED = chart(
   { types: ['Csv'] },
 );
 
+export const SHEET_DELETED = chart(
+  'Sheet',
+  'Deleted',
+  'Sheets Deleted With Their Element',
+  'Deleting a Sheet element whose sheet nothing else used asked first: Confirmed deleted the sheet too, Cancelled kept both.',
+  { types: ['Confirmed', 'Cancelled'] },
+);
+
 export const SHEET_CSV_EXPORTED = chart(
   'Sheet',
   'Exported',
@@ -893,6 +901,7 @@ export const SHEETS: MetricStack = {
     SHEET_FIND,
     SHEET_CSV_IMPORTED,
     SHEET_CSV_EXPORTED,
+    SHEET_DELETED,
   ],
 };
 

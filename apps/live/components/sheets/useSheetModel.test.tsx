@@ -201,6 +201,34 @@ describe('a placed sheet', () => {
   });
 });
 
+describe('a sheet deleted with its element', () => {
+  it('is made again as it was when Undo brings the element back', async () => {
+    const stored = sheetJson('sheetDEL1', { title: 'Costs' });
+    stored.cells = [{ r: stored.layout.rows[0]!, c: stored.layout.cols[0]!, i: { n: 4 } }];
+    fetchSheets.mockResolvedValue([stored]);
+    const b = bridge();
+    const el = element({ sheetId: 'sheetDEL1' });
+    const first = model(el, b);
+    await waitFor(() => expect(first.result.current.sheet?.id).toBe('sheetDEL1'));
+    expect(b.handlers!.title('sheetDEL1')).toBe('Costs');
+    act(() => b.handlers!.release(['sheetDEL1']));
+    first.unmount();
+    await waitFor(() =>
+      expect(vi.mocked(api.deleteSheet)).toHaveBeenCalledWith(expect.anything(), 'sheetDEL1', {
+        whenUnreferenced: true,
+      }),
+    );
+    const again = model(el, b);
+    await waitFor(() => expect(again.result.current.sheet?.id).toBe('sheetDEL1'));
+    expect(again.result.current.workbook.value('sheetDEL1', 0, 0)).toBe(4);
+    expect(createSheet).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: 'sheetDEL1', title: 'Costs', restore: true }),
+      by,
+    );
+  });
+});
+
 describe('a copied sheet', () => {
   it('copies a loaded sheet, its cells at once, and drops the copy mark', async () => {
     const source = sheetJson('sheetSRC1', {

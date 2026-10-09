@@ -743,7 +743,15 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Delete a sheet and its cells.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [SHEET_TAB_QUERY],
+    query: [
+      SHEET_TAB_QUERY,
+      {
+        name: 'whenUnreferenced',
+        required: false,
+        description:
+          'true to delete it once no element of the document references it (now, if none does): the editor deleting a Sheet with its element.',
+      },
+    ],
     statuses: [204, 400, 401, 403, 404, 410],
   },
   {

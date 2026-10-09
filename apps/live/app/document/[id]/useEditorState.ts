@@ -27,6 +27,7 @@ import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeD
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
 import { useSheetsBridge } from '@/hooks/sheets/useSheetsBridge';
+import { useSheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
 import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
@@ -2780,6 +2781,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
     useCellLinkPicker({ editsBlocked, commit });
 
+  // Deleting a Sheet asks before taking its sheet (docs/specs/029-sheets/sheet-store.md "Deleting a sheet").
+  const readTabsForSheets = useCallback(() => tabsRef.current, []);
+  const sheetDeleteGuard = useSheetDeleteGuard({
+    readTabs: readTabsForSheets,
+    activeTabId: activeId,
+    confirm,
+    sheetsAttached: sheets.sheetsAttached,
+    sheetTitle: sheets.sheetTitle,
+    releaseSheets: sheets.releaseSheets,
+  });
+
   // Structural element operations (delete, marquee commit, lock, and the
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
@@ -2796,6 +2808,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     stackSelectedBack,
     spawnConnectSelected,
   } = useElementSelectionActions({
+    sheetDeleteGuard,
     currentSelectionIds,
     readSelection,
     activeTab,
@@ -3419,9 +3432,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // editor already exposes, composed into one undo-friendly action.
       copySelection();
       if (readSelection().multiSelectedIds.size > 0) {
-        deleteMultiSelected();
+        deleteMultiSelected({ cut: true });
       } else {
-        deleteSelected();
+        deleteSelected({ cut: true });
       }
     },
     onBringToFront: bringSelectedToFront,

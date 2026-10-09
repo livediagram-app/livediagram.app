@@ -40,6 +40,8 @@ function opts(over: Partial<Opts> = {}): Opts {
 
 const handlers = (): SheetsHandlers => ({
   receive: vi.fn(),
+  title: vi.fn((id: string) => (id === 's1' ? 'Budget' : undefined)),
+  release: vi.fn(),
   presence: vi.fn(),
   resync: vi.fn(),
   reannounce: vi.fn(),
@@ -146,6 +148,20 @@ describe('useSheetsBridge', () => {
     detach();
     r.receiveSheets(sheetsOp);
     expect(h.receive).toHaveBeenCalledOnce();
+  });
+
+  it('names and releases sheets only once the chunk has attached', () => {
+    const { result } = renderHook(() => useSheetsBridge(opts()));
+    const r = result.current;
+    expect(r.sheetsAttached()).toBe(false);
+    expect(r.sheetTitle('s1')).toBeUndefined();
+    expect(r.releaseSheets(['s1'])).toBe(false);
+    const h = handlers();
+    r.bridge.attach(h);
+    expect(r.sheetsAttached()).toBe(true);
+    expect(r.sheetTitle('s1')).toBe('Budget');
+    expect(r.releaseSheets(['s1'])).toBe(true);
+    expect(h.release).toHaveBeenCalledWith(['s1']);
   });
 
   it('keeps the newer handlers when an older attachment detaches', () => {

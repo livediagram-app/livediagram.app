@@ -110,10 +110,17 @@ export async function writeSheet(
   return expectOk<SheetWriteResponse>(res, 'sheet write');
 }
 
-export async function deleteSheet(scope: SheetsScope, sheetId: string): Promise<void> {
+// `whenUnreferenced`: the editor deleting a Sheet with its element; the api deletes the sheet once nothing in the
+// document references it (sheet-store.md "Deleting a sheet").
+export async function deleteSheet(
+  scope: SheetsScope,
+  sheetId: string,
+  opts: { whenUnreferenced?: boolean } = {},
+): Promise<void> {
   if (await isOfflineId(scope.documentId))
     return (await offline()).offlineDeleteSheet(scope.documentId, sheetId);
-  const res = await apiFetch(sheetsUrl(scope, `/${encodeURIComponent(sheetId)}`), {
+  const query: Record<string, string> = opts.whenUnreferenced ? { whenUnreferenced: 'true' } : {};
+  const res = await apiFetch(sheetsUrl(scope, `/${encodeURIComponent(sheetId)}`, query), {
     method: 'DELETE',
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
   });

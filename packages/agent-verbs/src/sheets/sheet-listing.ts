@@ -15,7 +15,7 @@ export interface ListedSheet {
   rows: number;
   cols: number;
   filled: string | null;
-  // The Sheet element on the tab that frames it, or null when none does (a sheet no element frames is swept).
+  // The Sheet element on the tab that frames it, or null when none does (a sheet nothing references expires after 30 days).
   elementId: string | null;
 }
 

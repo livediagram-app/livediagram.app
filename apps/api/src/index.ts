@@ -75,7 +75,7 @@ import { workbenchRefusal } from './auth/workbench-confinement';
 import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
-import { runSheetSweep } from './sheet-sweep';
+import { runSheetExpiry } from './sheet-sweep';
 
 export { DocumentRoom };
 
@@ -543,9 +543,9 @@ const worker = {
         now - CHANGESET_RETENTION_MS,
         deleteOldChangesets,
       );
-      // docs/specs/029-sheets/sheet-store.md "Sheets no element frames": mark, clear and delete unframed sheets.
+      // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
       ctx.waitUntil(
-        runSheetSweep(env).catch((err) => console.error('[sheets] sheets.sweep failed', err)),
+        runSheetExpiry(env).catch((err) => console.error('[sheets] sheets.expired failed', err)),
       );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.

@@ -12,6 +12,7 @@ import {
   type SheetPerson,
 } from '@livediagram/sheets';
 import type { Env } from '../types';
+import { sheetNoteUnreferencedStatement } from './sheet-refs';
 
 type SheetRow = {
   id: string;
@@ -398,6 +399,7 @@ export function insertSheetStatements(
       ).bind(documentId, sheet.id, chunk),
     );
   out.push(recountStatement(env, documentId, sheet.id));
+  out.push(sheetNoteUnreferencedStatement(env, documentId, sheet.id, now));
   return out;
 }
 
@@ -418,6 +420,7 @@ export function copySheetStatements(
       `INSERT INTO sheet_cells (document_id, sheet_id, row_id, col_id, input, format)
        SELECT document_id, ?, row_id, col_id, input, format FROM sheet_cells WHERE document_id = ? AND sheet_id = ?`,
     ).bind(to.id, documentId, fromId),
+    sheetNoteUnreferencedStatement(env, documentId, to.id, now),
   ];
 }
 

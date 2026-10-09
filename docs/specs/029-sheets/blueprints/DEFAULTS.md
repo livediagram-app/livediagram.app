@@ -9,7 +9,7 @@ One row per default applied where a spec is silent or qualitative.
 | D3  | sheets-engine | Largest array a formula may return             | 100,000 values                                                             |
 | D4  | sheets-engine | How the regex time limit is enforced           | A work estimate (text length × pattern length) up to 10,000,000            |
 | D5  | sheet-store   | Largest room op before clients refetch instead | 256 KB                                                                     |
-| D6  | sheet-store   | Tabs the daily sweep checks per run            | 500 tabs holding sheets, picked at random each day (stateless)             |
+| D6  | sheet-store   | How much the daily expiry deletes per run      | 25 sheets read a query, 100,000 cells a batch, 500,000 cells a run         |
 | D7  | sheet-store   | Sheets named in one GET                        | 50                                                                         |
 | D8  | sheet-store   | Cells an agent reads at once                   | 5,000                                                                      |
 | D9  | sheet-element | Toolbar, formula bar and status bar heights    | 44, 28 and 24 px                                                           |

@@ -284,7 +284,8 @@ export function EditorContextMenuHost() {
       // "bring to front" means "over the note it overlaps".
       onCutElement={() => {
         copySelection();
-        deleteSelected();
+        // A Cut keeps the sheets of its Sheets for the paste: it never asks (sheet-store.md "Deleting a sheet").
+        deleteSelected({ cut: true });
       }}
       onCopyElement={copySelection}
       onDuplicateElement={duplicateSelected}

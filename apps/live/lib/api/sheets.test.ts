@@ -174,6 +174,12 @@ describe('writing on a cloud document', () => {
     expect(header(c, 'X-Owner-Id')).toBe('owner-1');
   });
 
+  it('deletes a sheet with its element once nothing references it', async () => {
+    respond(() => new Response(null, { status: 204 }));
+    await deleteSheet(shared, 'sheetAAAA', { whenUnreferenced: true });
+    expect(calls[0]!.url).toBe(`${base}/sheetAAAA?tabId=tab-x&whenUnreferenced=true`);
+  });
+
   it('maps a refused delete to its code', async () => {
     respond(() => Response.json({ error: 'sheet_not_found' }, { status: 404 }));
     await expect(deleteSheet(cloud, 'sheetAAAA')).rejects.toMatchObject({

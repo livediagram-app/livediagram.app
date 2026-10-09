@@ -17,6 +17,10 @@ export type SheetPeer = { id: string; name: string; color: string };
 
 export type SheetsHandlers = {
   receive(op: SheetsRoomOp): void;
+  // A loaded sheet's title (the delete dialog names it).
+  title(sheetId: string): string | undefined;
+  // Delete sheets with their elements, kept for Undo (sheet-store.md "Deleting a sheet").
+  release(sheetIds: readonly string[]): void;
   presence(from: string, op: SheetPresenceOp): void;
   resync(): void;
   reannounce(): void;
@@ -143,6 +147,14 @@ export function useSheetsBridge(opts: {
       [],
     ),
     resync: useCallback(() => handlers.current?.resync(), []),
+    // Before a Sheet has drawn nothing is attached: no title, and nothing to release (the sheet is kept, as a Cut's).
+    sheetTitle: useCallback((id: string) => handlers.current?.title(id), []),
+    releaseSheets: useCallback((ids: readonly string[]) => {
+      if (!handlers.current) return false;
+      handlers.current.release(ids);
+      return true;
+    }, []),
+    sheetsAttached: useCallback(() => handlers.current !== null, []),
     reannounce: useCallback(() => handlers.current?.reannounce(), []),
   };
 }
