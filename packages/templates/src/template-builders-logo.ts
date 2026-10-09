@@ -1,6 +1,7 @@
 // Logo-design template (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"): a
-// brand exploration for a made-up coffee roaster that opens in Illustrate, one Square page per
-// artboard. Six lockup pages show the compositions a designer actually weighs up: horizontal and
+// brand exploration for a made-up coffee roaster that opens in Illustrate, one Logo page (the 1024
+// artboard, docs/specs/007-editor/logo-pages.md) per lockup, so the guides, mirror, Combine,
+// previews and Logo Kit all work on it. Six lockup pages show the compositions a designer actually weighs up: horizontal and
 // stacked lockups with and without a tagline, the mark alone as an app icon, and a one-colour
 // version, each captioned with its number and where it gets used. A seventh page records the brand
 // palette with names, roles and hex codes, so the exploration reads as a finished deliverable and
@@ -14,7 +15,7 @@
 
 import { createShape, createText, type Element, type IllustratePage } from '@livediagram/document';
 import { heading, type Kit } from './page-layout-kit';
-import { pageKits, templatePage } from './template-page-kit';
+import { pageKits, templateLogoPage, templatePage } from './template-page-kit';
 
 // The brand palette. Fills that carry the identity set `themeLockFill` so a
 // theme switch can't flatten them into the theme's single element fill.
@@ -27,8 +28,9 @@ const TAGLINE = '#92400e';
 const BRAND = 'Sunny Side';
 const TAG = 'Small-batch, roasted at dawn';
 
-// The lockups are drawn at this multiple of their artboard-sheet size: page scale on a Square.
-const S = 2.5;
+// The lockups are drawn at this multiple of their artboard-sheet size: page scale on the 1024
+// artboard (2.5 on a 1080 Square, scaled to 1024).
+const S = (2.5 * 1024) / 1080;
 
 // The mark: a sunrise disc with a sun glyph, sized per lockup.
 function mark(x: number, y: number, size: number, fill: string, glyph: string): Element[] {
@@ -183,15 +185,13 @@ const SWATCHES = [
   { name: 'Ink', role: 'Text: body copy and one-colour prints', hex: INK },
 ];
 
-/** The exploration's pages: a Square page per lockup, then the palette. The app icon sits on
- *  Crema, the way a launcher would show it. */
+/** The exploration's pages: a Logo page per lockup, then the palette on a Square infographic page.
+ *  The app icon sits on Crema, the way a launcher would show it. */
 export function logoDesignPages(): IllustratePage[] {
   return [
     ...BOARDS.map((b, i) =>
-      templatePage(
+      templateLogoPage(
         i + 1,
-        'square',
-        'portrait',
         b.name,
         b.variant === 'app-icon' ? { fill: { kind: 'solid', color: CREMA } } : undefined,
       ),

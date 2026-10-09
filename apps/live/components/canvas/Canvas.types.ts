@@ -1,3 +1,4 @@
+import type { CombineOp } from '@/lib/combine/combine';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
@@ -289,6 +290,10 @@ export type CanvasProps = {
     target?: EventTarget | null,
   ) => void;
   onDuplicateMultiSelected: () => void;
+  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): offered while the multi-selection
+  // is combinable shapes on one logo page.
+  canCombine?: () => boolean;
+  onCombine?: (op: CombineOp) => void;
   onDeleteMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
@@ -365,9 +370,12 @@ export type CanvasProps = {
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginHighlighter: () => void;
   // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
+  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
+  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
+  onBeginPath: () => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end

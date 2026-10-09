@@ -5,6 +5,7 @@
 // context-menu-rows.tsx (which re-exports everything here) so that file
 // keeps the generic look-and-feel rows.
 
+import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { type ReactNode } from 'react';
 import {
   clampPercent,
@@ -249,23 +250,14 @@ export function PercentSliderRow({
   onPct: (pct: number) => void;
 }) {
   return (
-    <div className="px-3 py-1.5">
-      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">{label}</p>
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={pct}
-          onChange={(e) => onPct(Number(e.target.value))}
-          aria-label={label}
-          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
-        />
-        <span className="w-10 text-right text-xs font-medium text-slate-700 dark:text-slate-200">
-          {pct}%
-        </span>
-      </div>
-    </div>
+    <MenuSliderRow
+      label={label}
+      min={0}
+      max={100}
+      value={pct}
+      display={`${pct}%`}
+      onChange={onPct}
+    />
   );
 }
 

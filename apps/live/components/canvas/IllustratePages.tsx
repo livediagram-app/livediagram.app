@@ -3,8 +3,15 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
-import { EMPTY_PAGE_LAYOUTS_WIDTH, EmptyPageLayouts } from './EmptyPageLayouts';
+import {
+  EMPTY_PAGE_LAYOUTS_WIDE_WIDTH,
+  EMPTY_PAGE_LAYOUTS_WIDTH,
+  EmptyPageLayouts,
+} from './EmptyPageLayouts';
 import { PageDeckButton } from './PageDeckButton';
+import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
+import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
+import { PageLockButton, pageLockRoom } from './PageLockButton';
 import { track } from '@/lib/telemetry';
 import { PageNavigator } from './PageNavigator';
 import {
@@ -28,6 +35,7 @@ import {
   type PageReorder,
 } from '@/hooks/canvas/usePageReorderDrag';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
 import { AddPageButton } from './AddPageButton';
@@ -122,6 +130,13 @@ export function IllustratePages({
   );
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
+  // Being on a logo page (opened on one, adding one, going to one, pressing into one) turns the
+  // palette to its Logo category.
+  const logoPalette = useLogoPaletteSwitch(pages, !!edit && !bare);
+  const goToPage = (page: (typeof pages)[number]) => {
+    focusPage(page.id);
+    logoPalette.pageShown(page);
+  };
   // A background hovered in a page's panel: a shared preview (page-background-preview), so the
   // writing and the elements on the page take its ink too.
   const preview = usePageBackgroundPreview();
@@ -162,6 +177,8 @@ export function IllustratePages({
   // the card.
   const showsLayoutCard = (page: LaidOutPage) =>
     !!edit &&
+    page.locked !== true &&
+    page.startedBlank !== true &&
     !page.flow &&
     page.kind !== 'article' &&
     edit.contentCount(page.id) === 0 &&
@@ -187,10 +204,16 @@ export function IllustratePages({
         // them and the label, as an icon while there is room for that, else not at all.
         const room = page.rect.width * zoom;
         // Layouts are for infographic pages: an article page never invites one.
-        const empty = !!edit && !page.flow && edit.contentCount(page.id) === 0;
+        // A locked page offers nothing to add (docs/specs/007-editor/illustrate-pages.md
+        // "Locking a page"): no layout invite, no kind choice.
+        const locked = page.locked === true;
+        const empty = !!edit && !locked && !page.flow && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
         const choosing =
-          !!edit && !bare && offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
+          !!edit &&
+          !bare &&
+          !locked &&
+          offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
         const invite =
           !empty || choosing
             ? null
@@ -201,10 +224,12 @@ export function IllustratePages({
                 : null;
         // A slide page's deck button sits beside its cog (PageDeckButton).
         const deckButton = !!edit && !!view.deck && page.kind === 'slide' && !mobile;
+        const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
         const labelRoom =
           room -
-          (edit ? COG_ROOM : 0) -
+          (edit ? COG_ROOM + pageLockRoom(locked, !mobile) : 0) -
           (deckButton ? DECK_ROOM : 0) -
+          (logoButtons ? logoTitleBarRoom(true, !mobile) : 0) -
           (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0);
         return (
           <div
@@ -230,6 +255,19 @@ export function IllustratePages({
               ...pageSheetStyle(background, rulingOf(page)),
             }}
           >
+            {/* An empty logo page's guides, under its own cards (LogoPageGuides draws them over
+                the artwork once the page has some). */}
+            {page.kind === 'logo' &&
+            edit &&
+            edit.contentCount(page.id) === 0 &&
+            showsLogoGuides(view, bare, page.id) ? (
+              <div
+                className="pointer-events-none absolute"
+                style={{ left: -page.rect.x, top: -page.rect.y }}
+              >
+                <LogoGuidesSvg page={page} tools={view.logo!} />
+              </div>
+            ) : null}
             <div
               className={`absolute left-0 flex items-center ${labelRoom < LABEL_MIN || bare ? 'hidden' : ''}`}
               style={{
@@ -248,7 +286,7 @@ export function IllustratePages({
                   type="button"
                   {...drag.handlers(page.id)}
                   onClick={() => {
-                    if (!drag.endsDrag()) focusPage(page.id);
+                    if (!drag.endsDrag()) goToPage(page);
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
                   className={`pointer-events-auto block max-w-full truncate whitespace-nowrap rounded px-1 py-0.5 text-xs font-medium text-slate-500 transition hover:bg-white/80 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100 ${
@@ -268,6 +306,18 @@ export function IllustratePages({
               >
                 {invite && openId !== page.id ? (
                   <LayoutInvite wide={invite === 'wide'} onOpen={() => openLayouts(page.id)} />
+                ) : null}
+                {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
+                {logoButtons && view.logo ? (
+                  <LogoTitleBar pageId={page.id} tools={view.logo} />
+                ) : null}
+                {/* The page's lock, before the cog (PageLockButton). */}
+                {edit ? (
+                  <PageLockButton
+                    locked={locked}
+                    labelled={!mobile}
+                    onToggle={() => edit.setLocked(page.id, !locked)}
+                  />
                 ) : null}
                 {/* Beside the cog: this slide's place in the deck. */}
                 {deckButton && view.deck ? (
@@ -291,7 +341,7 @@ export function IllustratePages({
                 zoom={zoom}
                 onGo={(i) => {
                   const to = pages[i];
-                  if (to) focusPage(to.id);
+                  if (to) goToPage(to);
                 }}
               />
             ) : null}
@@ -349,6 +399,13 @@ export function IllustratePages({
                   track('UI', 'Closed', 'EmptyPageLayouts');
                   setLayoutsHidden((hidden) => new Set(hidden).add(page.id));
                 }}
+                onBlank={() => {
+                  track('UI', 'Closed', 'EmptyPageLayoutsBlank');
+                  edit.startBlank(page.id);
+                }}
+                wide={
+                  page.rect.width * zoom >= EMPTY_PAGE_LAYOUTS_WIDE_WIDTH + LAYOUT_CARD_MARGIN * 2
+                }
               />
             </div>
           ))

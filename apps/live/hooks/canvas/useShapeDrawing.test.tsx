@@ -111,6 +111,7 @@ describe('useShapeDrawing marker', () => {
       colour: 'green',
       width: 2.5,
       recognise: true,
+      penId: 'second',
     });
     expect(result.current.selectedId).toBeNull();
     localStorage.clear();

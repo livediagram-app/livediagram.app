@@ -28,13 +28,16 @@ import { buildBeforeAfter, buildFeatureMatrix, buildProsCons } from './page-layo
 import { buildAnnouncement, buildDidYouKnow, buildSaveTheDate } from './page-layouts-social';
 import { buildCycle, buildFunnel, buildPictogram, buildRanking } from './page-layouts-figures';
 
+import type { LogoLayoutId } from './logo-layouts';
 import type { SlideLayoutId } from './slide-layouts';
 
 export type { LayoutBox } from './page-layout-kit';
 
-// Every layout's id: the infographic layouts' and the slide layouts' (SlideLayoutId).
+// Every layout's id: the infographic layouts', the slide layouts' (SlideLayoutId) and the logo
+// layouts' (LogoLayoutId).
 export type PageLayoutId =
   | SlideLayoutId
+  | LogoLayoutId
   | 'title'
   | 'big-number'
   | 'key-stats'

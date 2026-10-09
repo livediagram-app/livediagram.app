@@ -77,6 +77,24 @@ export const EDITOR_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'LogoGuidesOn',
+      'LogoGuidesOff',
+      'Logo Guides',
+      "A logo page's construction guides.",
+    ),
+    changed('LogoGuideStrength', 'Logo Guide Strength', 'Logo guides set Faint, Medium or Strong.'),
+    {
+      category: 'UI',
+      action: 'Toggled',
+      typeIn: (type) =>
+        /^LogoGuide(CentreLines|Diagonals|SafeArea|Circles|Square|Grid)(On|Off)$/.test(type ?? ''),
+      title: 'Logo Guide Parts',
+      blurb:
+        'One of the logo guides (centre lines, diagonals, safe area, circles, square, grid) shown or hidden.',
+      rising: 'neutral',
+    },
+    toggle(
+      'UI',
       'PowerUserModeOn',
       'PowerUserModeOff',
       'Power User Mode',

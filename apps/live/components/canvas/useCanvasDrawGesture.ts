@@ -3,7 +3,7 @@ import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagra
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
-import { isPlanCardIntent, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { isFreePenIntent, isPlanCardIntent, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { usePlanCardPlacingGap } from '@/hooks/plan/usePlanCardPlacingGap';
 import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
@@ -28,6 +28,8 @@ type CanvasDrawGestureDeps = Pick<
   // then STAMPS the note at this placement instead of drawing a box to size.
   stampAt: ((canvasX: number, canvasY: number) => StampPlacement) | null;
   showStamp: (placement: StampPlacement | null) => void;
+  // On a whiteboard (Draw mode) a pen draws freely; elsewhere a marker lines up like the pencil.
+  whiteboard: boolean;
 };
 
 // Canvas draw-to-size + freehand pen gesture, lifted out of Canvas.tsx. Owns
@@ -46,6 +48,7 @@ export function useCanvasDrawGesture({
   onCommitFreehand,
   stampAt,
   showStamp,
+  whiteboard,
 }: CanvasDrawGestureDeps) {
   // Draw-to-size gesture state. Set when the user starts a drag on
   // the canvas while pendingDraw is set; cleared on pointer-up
@@ -117,8 +120,9 @@ export function useCanvasDrawGesture({
       // (docs/specs/026-plan/plan-mode.md "The palette").
       onCommitDraw(pendingDraw, sx, sy, sx, sy);
     } else if (isWhiteboardPenIntent(pendingDraw)) {
-      // A whiteboard pen starts where it touches (no guides for pens).
-      beginWhiteboardStroke(e, { x: sx, y: sy });
+      // A whiteboard pen starts where it touches (no guides for pens); off a whiteboard a marker
+      // starts from an aligned point, as the pencil does.
+      beginWhiteboardStroke(e, whiteboard ? { x: sx, y: sy } : snapDrawStart(sx, sy));
     } else if (pendingDraw.type === 'freehand') {
       // Snap the first stroke point to nearby alignments (same as a shape's
       // first corner) so the sketch can begin from an aligned start.
@@ -153,7 +157,7 @@ export function useCanvasDrawGesture({
     !drawDrag &&
     !penPoints &&
     !stampAt &&
-    !isWhiteboardPenIntent(pendingDraw) &&
+    !isFreePenIntent(pendingDraw, whiteboard) &&
     !isPlanCardIntent(pendingDraw);
   // A pressed Plan card opens the gap where it would land as the pointer crosses a board.
   usePlanCardPlacingGap(isPlanCardIntent(pendingDraw) ? (pendingDraw.plan ?? 'task') : null);

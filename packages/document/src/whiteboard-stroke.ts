@@ -6,7 +6,7 @@ import { createFreehand } from './factories';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';
 import type { FreehandElement, PathElement } from './index';
-import { pathWorldAnchors } from './path-element';
+import { pathContours, pathWorldAnchors } from './path-element';
 import { samplePath } from './path-geometry';
 
 type Point = { x: number; y: number };
@@ -169,14 +169,22 @@ export function insidePolygon(p: Point, pts: readonly Point[]): boolean {
  * "Selecting and erasing"): its drawn line, and the inside of a closed path with a fill.
  */
 export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number): boolean {
-  const pts = samplePath(pathWorldAnchors(el), el.closed);
+  // A combined shape's every contour (docs/specs/007-editor/logo-pages.md "Combine").
+  const contours = pathContours(el).map((nodes) =>
+    samplePath(pathWorldAnchors(el, nodes), el.closed),
+  );
   const reach = r + BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE] / 2;
-  if (pts.length === 0 || boxesApart(pts, a, b, reach)) return false;
-  for (let i = 1; i < pts.length; i++) {
-    if (segmentDistance(pts[i - 1]!, pts[i]!, a, b) <= reach) return true;
+  const all = contours.flat();
+  if (all.length === 0 || boxesApart(all, a, b, reach)) return false;
+  for (const pts of contours) {
+    for (let i = 1; i < pts.length; i++) {
+      if (segmentDistance(pts[i - 1]!, pts[i]!, a, b) <= reach) return true;
+    }
   }
   const filled = el.closed && el.fillColor !== undefined && el.fillColor !== 'transparent';
-  return filled && (insidePolygon(a, pts) || insidePolygon(b, pts));
+  // Even-odd: a point inside a hole is inside two contours, so outside the shape.
+  const inside = (p: Point) => contours.filter((pts) => insidePolygon(p, pts)).length % 2 === 1;
+  return filled && (inside(a) || inside(b));
 }
 
 // Cut long segments so the brush cannot slip between two samples.

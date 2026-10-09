@@ -106,6 +106,8 @@ export type PaletteTileSection =
   // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
   | 'plan-metrics'
   | 'plan-visualisations'
+  // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
+  | 'logo'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -151,6 +153,8 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
+  | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
@@ -176,7 +180,14 @@ type PaletteTileAction =
   // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
   // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
   // the person's own, read when the Search opens.
-  | { type: 'marker'; penId: WhiteboardPenId; colour: PenColour | null; width: number };
+  | {
+      type: 'marker';
+      penId: WhiteboardPenId;
+      colour: PenColour | null;
+      width: number;
+      // Picked up for one stroke (a logo page's palette), as the pencil is.
+      once?: true;
+    };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
@@ -496,6 +507,19 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <Prims prims={lucideType} />
       </Glyph>
     ),
+  },
+  // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
+  // the same tool Draw mode's dock holds, in the Logo category only.
+  {
+    id: 'logo:pen',
+    blurb: 'Click for corners, drag for curves',
+    section: 'logo',
+    caption: 'Pen',
+    label: 'Pen',
+    description:
+      'Draw a precise path: click to place corners, drag to pull out curves, and close it on its first point.',
+    action: { type: 'path' },
+    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:pencil',

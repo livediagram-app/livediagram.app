@@ -193,6 +193,10 @@ export const ELEMENT_FIELD_NAMES = {
     'richText',
     'sizing',
     'textScale',
+    'letterSpacing',
+    'fontWeight',
+    'textCase',
+    'textArc',
   ]),
   sticky: fieldsOf<StickyElement>()([
     'id',
@@ -334,6 +338,7 @@ export const ELEMENT_FIELD_NAMES = {
     'height',
     'nodes',
     'closed',
+    'subpaths',
     'fillColor',
     'strokeColor',
     'penColour',

@@ -17,6 +17,7 @@ import {
   MAX_ILLUSTRATE_PAGES,
   nextIllustratePageId,
   PAGE_NAME_MAX,
+  newLogoPage,
   newSlidePage,
   withIllustratePages,
   type IllustratePage,
@@ -151,6 +152,7 @@ export function withArticleDuplicated<T extends PagesTab>(
       ...p,
       id,
       flow: newFlow,
+      locked: undefined,
       ...(p.name ? { name: `${p.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
     };
   });
@@ -257,8 +259,8 @@ export function offersPageKindChoice(
 }
 
 /** The tab with its first page's kind chosen: an infographic page (kept, now chosen), an article
- *  (the page becomes its first page, its writing a new Title and paragraph), or a slide (the page
- *  turned into a 16:9 landscape slide). Null when the page no
+ *  (the page becomes its first page, its writing a new Title and paragraph),, a slide (the page
+ *  turned into a 16:9 landscape slide) or a logo page (the 1024 artboard). Null when the page no
  *  longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
@@ -276,6 +278,18 @@ export function withPageKindChosen<T extends PagesTab>(
       {
         ...newSlidePage(page.id),
         ...(page.background ? { background: page.background } : {}),
+        ...(name ? { name } : {}),
+      },
+    ]);
+  }
+  if (kind === 'logo') {
+    // The artboard keeps the page's name and fill; a logo page takes no pattern.
+    const { name } = page;
+    const fill = page.background?.fill;
+    return withIllustratePages(tab, [
+      {
+        ...newLogoPage(page.id),
+        ...(fill ? { background: { fill } } : {}),
         ...(name ? { name } : {}),
       },
     ]);

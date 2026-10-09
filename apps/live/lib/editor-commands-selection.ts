@@ -62,6 +62,33 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
+  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): shapes on a logo page into one path.
+  if (ctx.canCombine) {
+    for (const [op, name, words] of [
+      ['unite', 'Unite Shapes', 'union merge join add'],
+      ['subtract', 'Subtract Shapes', 'minus cut punch remove difference'],
+      ['intersect', 'Intersect Shapes', 'overlap common intersection'],
+      ['exclude', 'Exclude Shapes', 'xor difference cut overlap'],
+    ] as const) {
+      out.push({
+        id: `combine-${op}`,
+        name,
+        keywords: `combine boolean logo shape path ${words}`,
+        run: () => h.combine(op),
+      });
+    }
+  }
+
+  // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror").
+  if (ctx.canMirrorCopy) {
+    out.push({
+      id: 'mirror-copy',
+      name: 'Mirror Copy',
+      keywords: 'mirror reflect flip symmetry logo copy twin',
+      run: h.mirrorCopy,
+    });
+  }
+
   // Rotation is for a single element that can turn (an annotation marker cannot).
   if (isSingle && ctx.singleRotates) {
     for (const deg of [90, 180, 270] as const) {

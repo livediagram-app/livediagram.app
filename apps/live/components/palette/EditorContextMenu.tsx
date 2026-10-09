@@ -60,6 +60,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
+import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
@@ -340,6 +341,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               ))}
             </div>
           </MenuAccordionSection>
+        ) : null}
+        {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
+        {props.onMirrorCopy ? (
+          <MenuActionRow
+            icon={<MirrorCopyGlyph />}
+            label="Mirror Copy"
+            onClick={runAndClose(props.onMirrorCopy)}
+          />
         ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ──
             Skipped entirely for an event-storming note: its colour, text

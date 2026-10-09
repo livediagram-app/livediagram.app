@@ -72,6 +72,8 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   const copy: IllustratePage = {
     ...source,
     id: newPageId,
+    // A copy is unlocked (docs/specs/007-editor/illustrate-pages.md "Locking a page").
+    locked: undefined,
     ...(source.name ? { name: `${source.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
   };
   const next = [...pages.slice(0, index + 1), copy, ...pages.slice(index + 1)];

@@ -16,6 +16,7 @@ export {
 } from './template-builders-plan';
 export * from './page-layouts';
 export * from './slide-layouts';
+export * from './logo-layouts';
 export * from './layout-catalogue';
 export * from './template-tab';
 export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';

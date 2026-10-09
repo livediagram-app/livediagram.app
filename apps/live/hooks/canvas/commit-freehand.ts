@@ -127,7 +127,14 @@ export function makeCommitFreehand({
     }
 
     if (whiteboardPen) {
-      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen, ink)]);
+      const stroke = whiteboardStroke(simplified, whiteboardPen, ink);
+      commit((els) => [...els, stroke]);
+      // A marker picked up for one stroke goes back down and its stroke is selected, as the
+      // pencil's is.
+      if (whiteboardPen.once) {
+        setPendingDraw(null);
+        setSelectedId(stroke.id);
+      }
       return;
     }
 

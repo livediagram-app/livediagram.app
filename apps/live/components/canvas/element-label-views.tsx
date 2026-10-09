@@ -19,6 +19,7 @@ import {
   labelBasePx,
   labelRunPx,
   labelTextStyleCss,
+  wordmarkTextCss,
   MULTI_FONT_PX,
   TEXT_ALIGN,
   type LabelPadding,
@@ -60,7 +61,8 @@ export function ScalingLabel({
     if (!node) return;
     const b = node.getBBox();
     setBBox({ x: b.x, y: b.y, w: b.width || 1, h: b.height || 1 });
-  }, [text]);
+    // Tracking, weight and case change the glyphs' extent too.
+  }, [text, style?.letterSpacing, style?.weight, style?.uppercase, style?.lowercase]);
 
   const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
 
@@ -79,7 +81,15 @@ export function ScalingLabel({
           y="0"
           dominantBaseline="hanging"
           fontFamily={style?.fontFamily ?? 'ui-sans-serif, system-ui, sans-serif'}
-          fontWeight={style?.bold ? 700 : 500}
+          fontWeight={style?.weight ?? (style?.bold ? 700 : 500)}
+          style={{
+            letterSpacing: style?.letterSpacing ? `${style.letterSpacing}em` : undefined,
+            textTransform: style?.uppercase
+              ? 'uppercase'
+              : style?.lowercase
+                ? 'lowercase'
+                : undefined,
+          }}
           fontStyle={style?.italic ? 'italic' : undefined}
           textDecoration={
             style?.underline && style?.strikethrough
@@ -226,6 +236,7 @@ export function RichLabel({
   fontFamily,
   multiline,
   uppercase,
+  wordmark,
   className = '',
   animClass,
 }: {
@@ -242,6 +253,8 @@ export function RichLabel({
   // Paint in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md) — whole-label, so
   // it sits on the wrapper rather than on each run's style.
   uppercase?: boolean;
+  // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight and case on the wrapper.
+  wordmark?: LabelTextStyle;
   className?: string;
   // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
   animClass?: string;
@@ -260,7 +273,13 @@ export function RichLabel({
         style={{
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
-          textTransform: uppercase ? 'uppercase' : undefined,
+          ...(wordmark ? wordmarkTextCss(wordmark) : {}),
+          textTransform:
+            uppercase || wordmark?.uppercase
+              ? 'uppercase'
+              : wordmark?.lowercase
+                ? 'lowercase'
+                : undefined,
         }}
       >
         {runs.map((run, i) => (

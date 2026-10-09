@@ -1,6 +1,7 @@
 // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md): the active tab's pages
 // laid out in their row, the edits to them (illustrate-page-edits) and framing one in the view. It
 // also centres the view on the first page whenever the mode or the tab changes.
+import type { LogoToolsView } from './useLogoTools';
 import {
   useCallback,
   useEffect,
@@ -64,6 +65,9 @@ export type IllustratePagesView = {
   // under it (the clip leaves the page out) so the preview never mixes with it.
   layoutPreview: { pageId: string; layout: PageLayoutId } | null;
   setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
+  // A logo page's own tools, each person's (docs/specs/007-editor/logo-pages.md): composed in by
+  // the editor.
+  logo?: LogoToolsView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: IllustratePageEdits;
   // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
@@ -100,8 +104,8 @@ export function useIllustratePages(deps: {
   const on = hasPageLook(mode);
   const tabId = activeTab.id;
 
-  // Frames a page (the first by default) below a top strip, seen whole, whatever its kind. The fit
-  // box holds either orientation, so turning a page needs no refit. `read` frames an article page
+  // Frames a page (the first by default) below a top strip, seen whole, whatever its kind: the page
+  // itself, so turning or resizing one frames it again (illustrate-page-edits). `read` frames an article page
   // to be written on a phone instead: its text column across the screen.
   // A page framed on request (its navigator, its label, a page just added, an article page taking
   // the caret on a phone) glides there; the frame on entering the mode lands at once. A glide under
@@ -181,8 +185,8 @@ export function useIllustratePages(deps: {
   });
   const mayEdit = useCallback(() => canEditNow.current, []);
   const [layoutPreview, setLayoutPreview] = useState<IllustratePagesView['layoutPreview']>(null);
-  // A page just added or duplicated: framed once it lands in the row (a frame later, as its
-  // sheet mounts).
+  // A page just added or duplicated, or the one before a deleted page: framed once it is in the
+  // row (a frame later, as its sheet mounts or the row closes up).
   const [goTo, setGoTo] = useState<string | null>(null);
   const goToLanded = useEffectEvent(() => {
     const page = layOutIllustratePages(illustratePagesOf(activeTab)).find((p) => p.id === goTo);
@@ -244,7 +248,7 @@ export function useIllustratePages(deps: {
       current,
       elements: activeTab.elements,
       commitTabs,
-      onCreated: setGoTo,
+      onGoTo: setGoTo,
       onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,

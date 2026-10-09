@@ -14,6 +14,7 @@ import { tileDragStart } from './palette-tile-drag';
 import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
 import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import { MarkerPaletteTile } from './MarkerPaletteTile';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -38,6 +39,7 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
+  beginPath: () => void;
   addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
@@ -55,7 +57,7 @@ export type PaletteTileActions = {
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
   // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
-  beginMarker: (penId: WhiteboardPenId) => void;
+  beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
   // Whether image uploads are available (the editor supplied onAddImage);
   // gates the `needsImage` tiles exactly as the Tools / Components tabs
   // always have.
@@ -86,6 +88,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
+    case 'path':
+      return actions.beginPath;
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
@@ -114,7 +118,7 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
     case 'plan-widget':
       return () => addPlanWidgetToBoard(a.widget);
     case 'marker':
-      return () => actions.beginMarker(a.penId);
+      return () => (a.once ? actions.beginMarker(a.penId, true) : actions.beginMarker(a.penId));
   }
 }
 
@@ -179,8 +183,9 @@ export function tileActive(
       return (
         pendingDraw.type === 'freehand' &&
         pendingDraw.variant === 'whiteboard' &&
-        pendingDraw.colour === a.colour &&
-        pendingDraw.width === a.width
+        (pendingDraw.penId !== undefined
+          ? pendingDraw.penId === a.penId
+          : pendingDraw.colour === a.colour && pendingDraw.width === a.width)
       );
     default:
       return pendingDraw.type === a.type;
@@ -200,14 +205,46 @@ export function PaletteTile({
   actions,
   pendingDraw,
   compact,
+  onPress,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   compact?: boolean;
+  // A press of the tile's own (a held marker opening its flyout), else the tile's action.
+  onPress?: () => void;
+}) {
+  // A marker held, pressed again, opens its colour and width (MarkerPaletteTile).
+  if (def.action.type === 'marker' && !onPress)
+    return (
+      <MarkerPaletteTile def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />
+    );
+  return (
+    <TileButton
+      def={def}
+      actions={actions}
+      pendingDraw={pendingDraw}
+      compact={compact}
+      onPress={onPress}
+    />
+  );
+}
+
+function TileButton({
+  def,
+  actions,
+  pendingDraw,
+  compact,
+  onPress,
+}: {
+  def: PaletteTileDef;
+  actions: PaletteTileActions;
+  pendingDraw: PendingDraw | null | undefined;
+  compact?: boolean;
+  onPress?: () => void;
 }) {
   const a = def.action;
-  const onClick = tileHandler(def, actions);
+  const onClick = onPress ?? tileHandler(def, actions);
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);

@@ -5,6 +5,7 @@ import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
+import { LOGO_TOOL_TYPES } from '../logo-types';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -476,8 +477,9 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts).
-  { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') },
+  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts),
+  // as are a logo page's tools (Logo Tools Used).
+  { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') && !LOGO_TOOL_TYPES.includes(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(

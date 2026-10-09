@@ -92,6 +92,7 @@ import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
+import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
@@ -532,6 +533,7 @@ function CanvasView(props: CanvasProps) {
       onCommitFreehand,
       stampAt,
       showStamp,
+      whiteboard: props.editorMode === 'draw',
     });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
@@ -563,6 +565,8 @@ function CanvasView(props: CanvasProps) {
     onDeselect,
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
+    // A logo page's shown guides take a click near them (docs/specs/007-editor/logo-pages.md).
+    snapPoint: (p) => props.illustratePages?.logo?.snapPoint?.(p, viewportZoom) ?? null,
   });
   // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
@@ -711,6 +715,8 @@ function CanvasView(props: CanvasProps) {
       ) : null}
       <div
         ref={wrapperRef}
+        // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
+        data-canvas-content=""
         onPointerDown={surface.onWrapperPointerDown}
         onDoubleClick={(e) => {
           // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
@@ -858,6 +864,19 @@ function CanvasView(props: CanvasProps) {
         ) : null}
         {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
         {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+        {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
+        {props.illustratePages ? (
+          <LogoCanvasOverlays
+            view={props.illustratePages}
+            bare={props.zenMode === true || canvasTool === 'isometric'}
+            pendingDraw={pendingDraw}
+            penStroke={penStroke}
+            pathDraft={pathTool.draftView}
+            ink={props.whiteboardInk ?? 'currentColor'}
+            wrapperRef={wrapperRef}
+            zoom={viewportZoom}
+          />
+        ) : null}
         {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
@@ -1024,7 +1043,10 @@ function CanvasView(props: CanvasProps) {
         drawDrag={drawDrag}
         drawHover={drawHover}
         stamp={stamp}
-        penPoints={penPoints}
+        // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
+        penPoints={
+          penPoints ?? (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
+        }
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         wrapperRef={wrapperRef}

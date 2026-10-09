@@ -284,7 +284,7 @@ describe('templateCanvasOverrides', () => {
     ]);
   });
 
-  it('opens the logo exploration on Square pages, and timelines get ruled lines', () => {
+  it('opens the logo exploration on Logo pages, and timelines get ruled lines', () => {
     const o = templateCanvasOverrides('logo-design');
     expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
     // Six lockup artboards, then the palette.
@@ -297,7 +297,9 @@ describe('templateCanvasOverrides', () => {
       'One Colour',
       'Palette',
     ]);
-    expect(o.pages!.every((p) => p.size === 'square' && p.kind === 'infographic')).toBe(true);
+    // Each lockup on the logo artboard; the palette on a Square infographic page.
+    expect(o.pages!.slice(0, 6).every((p) => p.size === 'logo' && p.kind === 'logo')).toBe(true);
+    expect(o.pages![6]).toMatchObject({ size: 'square', kind: 'infographic' });
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,

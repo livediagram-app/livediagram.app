@@ -49,6 +49,7 @@ describe('whiteboardPenIntent', () => {
       colour: '#e5484d',
       width: 8,
       recognise: true,
+      penId: 'third',
     });
   });
 });

@@ -7,6 +7,7 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
+  isCompoundPath,
   isMindNode,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -140,7 +141,8 @@ export function CanvasSelectionToolbars({
             // A path's points (docs/specs/023-draw-mode/path-tool.md "Editing"): its edit mode, the
             // Path tool put down first when it is still in hand.
             onEditPoints={
-              !readOnly && !selectedLocked && selected?.type === 'path'
+              // A combined shape edits as a whole (docs/specs/007-editor/logo-pages.md "Combine").
+              !readOnly && !selectedLocked && selected?.type === 'path' && !isCompoundPath(selected)
                 ? () => {
                     if (props.pendingDraw) props.onCancelDraw();
                     props.onBeginEdit(selected.id);
@@ -231,6 +233,7 @@ export function CanvasSelectionToolbars({
                 .every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
+              onCombine={!readOnly && props.canCombine?.() ? props.onCombine : undefined}
               onDelete={props.onDeleteMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}
               onFilter={readOnly ? undefined : props.onFilterMultiSelected}

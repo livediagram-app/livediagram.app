@@ -78,6 +78,7 @@ describe('useWhiteboard', () => {
       colour: null,
       width: 1.5,
       recognise: false,
+      penId: 'main',
     });
   });
 

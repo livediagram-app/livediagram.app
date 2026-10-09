@@ -5806,6 +5806,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "kind": {
         "$ref": "#/components/schemas/PageKind"
       },
+      "locked": {
+        "const": true,
+        "type": "boolean"
+      },
       "name": {
         "type": "string"
       },
@@ -5814,6 +5818,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "size": {
         "$ref": "#/components/schemas/PageSizeId"
+      },
+      "startedBlank": {
+        "const": true,
+        "type": "boolean"
       }
     },
     "required": [
@@ -7650,7 +7658,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "infographic",
       "article",
-      "slide"
+      "slide",
+      "logo"
     ],
     "type": "string"
   },
@@ -7678,7 +7687,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "social",
       "wide",
       "slide",
-      "slide-classic"
+      "slide-classic",
+      "logo"
     ],
     "type": "string"
   },
@@ -7834,6 +7844,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"
+      },
+      "subpaths": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/PathNode"
+          },
+          "type": "array"
+        },
+        "type": "array"
       },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"
@@ -11178,6 +11197,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
+      "fontWeight": {
+        "enum": [
+          400,
+          500,
+          700
+        ],
+        "type": "number"
+      },
       "headerFill": {
         "type": "string"
       },
@@ -11192,6 +11219,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "layerId": {
         "type": "string"
+      },
+      "letterSpacing": {
+        "type": "number"
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
@@ -11238,8 +11268,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textAlignY": {
         "$ref": "#/components/schemas/TextAlignY"
       },
+      "textArc": {
+        "type": "number"
+      },
       "textBold": {
         "type": "boolean"
+      },
+      "textCase": {
+        "enum": [
+          "upper",
+          "lower"
+        ],
+        "type": "string"
       },
       "textColor": {
         "type": "string"

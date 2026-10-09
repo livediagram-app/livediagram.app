@@ -11,6 +11,8 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
+    combine: vi.fn(),
+    mirrorCopy: vi.fn(),
     clearAnimation: vi.fn(),
     setMarker: vi.fn(),
     addComment: vi.fn(),
@@ -423,5 +425,24 @@ describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)'
   // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
   it('never offers the highlighter as a tool', () => {
     expect(ids(base)).not.toContain('tool:highlighter');
+  });
+});
+
+// docs/specs/007-editor/logo-pages.md "Combine": the four operations, only while combinable.
+describe('combine commands', () => {
+  it('are offered only for a combinable selection, each running its operation', () => {
+    const h = handlers();
+    const none = buildEditorCommands({ ...base, selectionCount: 2 }, h);
+    expect(none.some((c) => c.id.startsWith('combine-'))).toBe(false);
+    const cmds = buildEditorCommands({ ...base, selectionCount: 2, canCombine: true }, h);
+    const combine = cmds.filter((c) => c.id.startsWith('combine-'));
+    expect(combine.map((c) => c.name)).toEqual([
+      'Unite Shapes',
+      'Subtract Shapes',
+      'Intersect Shapes',
+      'Exclude Shapes',
+    ]);
+    combine[1]!.run();
+    expect(h.combine).toHaveBeenCalledWith('subtract');
   });
 });

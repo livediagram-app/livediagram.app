@@ -21,6 +21,7 @@ function setup(pendingDraw: PendingDraw) {
       onCommitFreehand,
       stampAt: null,
       showStamp: vi.fn(),
+      whiteboard: true,
     }),
   );
   const move = (x: number, y: number) =>
@@ -79,7 +80,7 @@ describe('a whiteboard pen draws freely (docs/specs/023-draw-mode/draw-mode.md "
     width: 50,
     height: 50,
   } as const;
-  const firstPoint = (pendingDraw: PendingDraw) => {
+  const firstPoint = (pendingDraw: PendingDraw, whiteboard = true) => {
     const wrapper = document.createElement('div');
     wrapper.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
     const { result } = renderHook(() =>
@@ -93,6 +94,7 @@ describe('a whiteboard pen draws freely (docs/specs/023-draw-mode/draw-mode.md "
         onCommitFreehand: vi.fn(),
         stampAt: null,
         showStamp: vi.fn(),
+        whiteboard,
       }),
     );
     act(() => {
@@ -108,6 +110,10 @@ describe('a whiteboard pen draws freely (docs/specs/023-draw-mode/draw-mode.md "
 
   it('still snaps a pencil on a diagram', () => {
     expect(firstPoint({ type: 'freehand' }).x).toBe(103);
+  });
+
+  it('off a whiteboard (a logo page), a marker starts from an aligned point as the pencil does', () => {
+    expect(firstPoint(WB_PEN, false).x).toBe(103);
   });
 });
 
@@ -126,6 +132,7 @@ describe('a whiteboard pen draws through the live pipeline (docs/specs/023-draw-
         onCommitFreehand: vi.fn(),
         stampAt: null,
         showStamp: vi.fn(),
+        whiteboard: true,
       }),
     );
     act(() => {

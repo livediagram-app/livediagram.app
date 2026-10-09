@@ -4,7 +4,13 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/document';
+import {
+  DEFAULT_MIND_FLOW,
+  isMindNode,
+  logoPageAt,
+  mindFlowOf,
+  resolveLayerId,
+} from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
@@ -161,6 +167,11 @@ export function EditorContextMenuHost() {
     toggleTextStyleSelected,
     commitTextSize,
     previewTextSize,
+    commitWordmark,
+    previewWordmark,
+    illustratePages,
+    canCombine,
+    combineSelected,
     commitFont,
     previewFont,
     commitPadding,
@@ -225,6 +236,16 @@ export function EditorContextMenuHost() {
       .map((el) => resolveLayerId(el.layerId, layers)),
   );
   const selectionLayerId = ctxLayerIds.size === 1 ? [...ctxLayerIds][0]! : null;
+
+  // Wordmark type is offered for a text element whose centre is on a logo page
+  // (docs/specs/007-editor/logo-pages.md "Wordmark type").
+  const wordmarkOffered =
+    !!illustratePages &&
+    ctxSelectedEl?.type === 'text' &&
+    !!logoPageAt(illustratePages.pages, {
+      x: ctxSelectedEl.x + ctxSelectedEl.width / 2,
+      y: ctxSelectedEl.y + ctxSelectedEl.height / 2,
+    });
 
   return (
     <EditorContextMenu
@@ -400,6 +421,13 @@ export function EditorContextMenuHost() {
       onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
       onSetTextSize={commitTextSize}
       onPreviewTextSize={previewTextSize}
+      wordmarkOffered={wordmarkOffered}
+      onCombine={canCombine() ? (op) => void combineSelected(op) : undefined}
+      onMirrorCopy={
+        illustratePages?.logo?.canMirrorCopy() ? illustratePages.logo.mirrorCopy : undefined
+      }
+      onSetWordmark={commitWordmark}
+      onPreviewWordmark={previewWordmark}
       onSetFont={commitFont}
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}

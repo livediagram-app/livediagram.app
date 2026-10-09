@@ -47,7 +47,6 @@ import {
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
-  illustratePageSnapBoxes,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -75,6 +74,7 @@ import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf } from '@livediagram/document'
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
+import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
@@ -200,6 +200,8 @@ import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
+import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
@@ -237,7 +239,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canUndo: canTabUndo,
     canRedo: canTabRedo,
     commit: rawCommitTabs,
-    tick: tickTabs,
+    tick: rawTickTabs,
     markCheckpoint: rawMarkCheckpoint,
     cancelToCheckpoint: rawCancelToCheckpoint,
     reset: rawResetTabs,
@@ -265,6 +267,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
   // take in what was just added to a page (useArticleIntake) without taking a peer's.
   const localEditSeqRef = useRef(0);
+  // Set once Illustrate mode's pages are known (below): the tab the lock guard applies to, and how
+  // it says something was held back.
+  const pageLockGuardRef = useRef<PageLockGuard | null>(null);
+  // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
+  // Stable, as the history's own tick is: effects and loaders depend on its identity.
+  const tickTabs = useCallback(
+    (mapTabs: (ts: Tab[]) => Tab[]) =>
+      rawTickTabs((ts) => guardLockedPagesIn(ts, mapTabs(ts), pageLockGuardRef.current)),
+    [rawTickTabs],
+  );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
@@ -279,7 +291,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // 'diagram'. Same choke point as the layer stamp below, and
       // `stampTabKind` returns the tab unchanged when it already has one,
       // so an untouched tab keeps its identity for the memoised views.
-      const next = mapTabs(ts).map(stampTabKind);
+      const mapped = mapTabs(ts).map(stampTabKind);
+      // Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): in Illustrate
+      // mode nothing is added to, moved onto, changed on or taken off a locked page.
+      const next = guardLockedPagesIn(ts, mapped, pageLockGuardRef.current);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -1836,6 +1851,18 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toastInfo: toast.info,
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
   });
+  // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
+  const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
+  useAssignRef(
+    pageLockGuardRef,
+    illustratePages
+      ? {
+          tabId: activeId,
+          // Said after the commit: the guard runs inside a state update, where no toast may be set.
+          onBlocked: () => queueMicrotask(() => announcePageLocked(toast.info)),
+        }
+      : null,
+  );
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1963,6 +1990,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     markCheckpoint,
     toastInfo: toast.info,
+    extraInertIds: pageLockedIds,
   });
   const {
     layers,
@@ -2575,6 +2603,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // commit handlers). beginDrawIfEnabled short-circuits the palette
   // adds below into draw mode; the rest is consumed by the Canvas +
   // keyboard hook. See useShapeDrawing.
+  // Logo pages (docs/specs/007-editor/logo-pages.md): the mirror-aware draw commit, the logo tools,
+  // previews, Combine and the keyline snaps. See useLogoEditor.
+  const logo = useLogoEditor({
+    illustrateView,
+    pages: illustratePages?.pages ?? null,
+    activeTab,
+    commit,
+    currentSelectionIds,
+    setSelectedId,
+    setMultiSelectedIds,
+    prefs: userPreferences,
+    setPrefs: setUserPreferences,
+    selfId: selfParticipant.id,
+    toast,
+    readOnly: isReadOnly,
+    getZoom: () => zoomRef.current,
+  });
+  const { canCombine, combineSelected, canTidyUp, tidyUpSelected } = logo;
   const {
     pendingDraw,
     beginDraw,
@@ -2585,6 +2631,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginMarker,
     beginShapePen,
     beginPolygon,
+    beginPath,
     commitFreehand,
     commitPolygon,
     highlighter,
@@ -2595,7 +2642,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCanvasTool,
     activeTab,
     drawMode,
-    commit,
+    commit: logo.drawCommit,
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
@@ -2607,7 +2654,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: createBlocked,
-    commit,
+    commit: logo.drawCommit,
     styleNewElement: styleMemory.styleNewElement,
     setSelectedId,
   });
@@ -2981,6 +3028,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewTextAlign,
     commitTextAlign,
     previewTextSize,
+    previewWordmark,
+    commitWordmark,
     commitTextSize,
     previewFont,
     commitFont,
@@ -3178,7 +3227,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
-    pageSnapBoxes: illustratePages ? illustratePageSnapBoxes(illustratePages.pages) : null,
+    // Every page's edges and margin, and a logo page's keylines (useLogoEditor).
+    pageSnapBoxes: logo.snapBoxes,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -3381,7 +3431,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,
-    illustratePages: illustrateView,
+    illustratePages: logo.view,
+    canCombine,
+    combineSelected,
+    canTidyUp,
+    tidyUpSelected,
+    // Arms a draw tool: the Logo palette's markers, from the live pen (PaletteLogoTab).
+    beginDraw,
     // A page slide presenting outside Illustrate draws its article's writing from these.
     presentArticles: articles,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
@@ -3545,6 +3601,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginMarker,
     beginShapePen,
     beginPolygon,
+    beginPath,
     bringSelectedToFront,
     broadcastAvatar,
     broadcastAvatarPush,
@@ -3748,6 +3805,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewTextAlign,
     commitTextAlign,
     previewTextSize,
+    previewWordmark,
+    commitWordmark,
     commitTextSize,
     previewFont,
     commitFont,

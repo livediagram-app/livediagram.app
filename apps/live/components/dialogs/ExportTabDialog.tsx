@@ -6,6 +6,7 @@ import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
+import { LogoKitPanel } from './LogoKitPanel';
 import {
   isLayerVisible,
   tabLayers,
@@ -47,6 +48,7 @@ const EXPORT_LABEL: Record<Format, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
+  'logo-kit': 'LogoKit',
 };
 
 // An Illustrate tab's pages exported (docs/specs/007-editor/illustrate-pages.md "Telemetry"): one
@@ -96,7 +98,16 @@ type ExportTabDialogProps = {
   pages?: LaidOutPage[];
 };
 
-export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
+export type Format =
+  | 'markdown'
+  | 'mermaid'
+  | 'excalidraw'
+  | 'pdf'
+  | 'png'
+  | 'svg'
+  | 'file'
+  // A logo page's kit (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one.
+  | 'logo-kit';
 
 // The four text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -143,6 +154,11 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
+  },
+  {
+    kind: 'logo-kit',
+    title: 'Logo Kit',
+    description: 'An SVG, PNGs from 16 to 1024 px and a favicon.ico, in one .zip.',
   },
 ];
 
@@ -242,12 +258,15 @@ export function ExportTabDialog({
   // All pages or One page, per format: each starts where DEFAULT_PAGE_SCOPE puts it.
   const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
   const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
+  // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
+  const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? ILLUSTRATE_FORMATS.map((kind) => {
+    ? [...ILLUSTRATE_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
       })
-    : CARDS;
+    : // Off Illustrate there are no pages, so no logo page: never the Logo Kit.
+      CARDS.filter((c) => c.kind !== 'logo-kit');
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -365,9 +384,11 @@ export function ExportTabDialog({
 
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
-    ? isTextFormat(active!)
-      ? `Copy this tab as ${activeCard.title}, or download a file.`
-      : `Set the image options for ${activeCard.title}, then download.`
+    ? active === 'logo-kit'
+      ? 'Download a logo page as an SVG, PNGs and a favicon.'
+      : isTextFormat(active!)
+        ? `Copy this tab as ${activeCard.title}, or download a file.`
+        : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -399,6 +420,17 @@ export function ExportTabDialog({
               track('Document', 'Exported', EXPORT_LABEL[active]);
             }}
             onCopied={() => track('Document', 'Exported', EXPORT_LABEL[active])}
+            onBack={() => setActive(null)}
+          />
+        ) : active === 'logo-kit' && pages ? (
+          <LogoKitPanel
+            tab={tab}
+            pages={pages}
+            documentName={documentName}
+            images={previewImages}
+            imagesReady={previewReady}
+            imageContext={imageContext}
+            onDone={onClose}
             onBack={() => setActive(null)}
           />
         ) : active ? (

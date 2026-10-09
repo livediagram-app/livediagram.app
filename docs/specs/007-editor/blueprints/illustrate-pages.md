@@ -35,7 +35,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts`                                                                              |
 | Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                                                                                                |
 | A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                                                                                                   |
-| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `apps/live/lib/illustrate-page-paint.ts`                                                                                                                                       |
+| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                                     |
 | Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                                                                                                        |
 | The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                                                                                             |
 | Page edits                  | `IllustratePageEdits`, `illustratePageEdits`, `apps/live/hooks/editor/illustrate-page-edits.ts`                                                                                                                                                         |
@@ -47,7 +47,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page panel                  | `IllustratePagePanel` (`PagePanelTab` `'page' \| 'layouts' \| 'style' \| 'text'`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                                                               |
 | Background hover preview    | `setPageBackgroundPreview`, `usePageBackgroundPreview`, `previewedBackground`, `withPreviewedBackgrounds`, `apps/live/lib/page-background-preview.ts`                                                                                                   |
 | Theme accent                | `themeAccent(theme)`, `illustrate-page-paint.ts`; `IllustratePagesView.themeAccent`                                                                                                                                                                     |
-| Panel sections              | `SizeSection`, `OrientationSection`, `BackgroundSection`, `illustrate-page-panel-sections.tsx`                                                                                                                                                          |
+| Panel sections              | `SizeSection`, `OrientationSection` (`illustrate-page-panel-sections.tsx`), `BackgroundSection` (`page-background-section.tsx`)                                                                                                                         |
 | Layouts section             | `LayoutsSection` (state: `category` open or null for the overview, `pending`), `infographic-page-layouts-section.tsx`; tile art `LayoutThumb`                                                                                                           |
 | Layout hover preview        | `InfographicLayoutPreview`; `IllustratePagesView.layoutPreview`                                                                                                                                                                                         |
 | Page clip                   | `IllustratePageClip` (`hiddenPageId`), `pagesClipPath`                                                                                                                                                                                                  |
@@ -220,8 +220,53 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
   tints (dark tone) or shades (light tone) in steps of 0.1 from 0.2 until `PAGE_INK_CONTRAST`,
   falling back to `#ffffff` / `#0f172a`.
 
+### Locking a page
+
+- Data: `IllustratePage.locked?: true` (`packages/document/src/illustrate-page.ts`), parsed for every
+  kind; `withDuplicatedPage` and `withArticleDuplicated` drop it from a copy.
+- `packages/document/src/page-lock.ts`: `elementsOnLockedPages(elements, laidOutPages)` (centre by
+  `elementBounds`, arrows resolved) and `guardLockedPages(prev, next, prevPages, nextPages)`:
+  while the pages' layout and locks are unchanged, an element held by a locked page whose place
+  (bounds and rotation) changed gets its previous `x`/`y`/`width`/`height`/`rotation` back (look
+  fields pass), a new element landing on one is left out, and an existing one moved onto one is put
+  back; deletions pass; `blocked` reports it.
+- `apps/live/lib/page-lock-guard.ts`: `guardLockedPagesIn(prevTabs, nextTabs, guard)` in
+  `useEditorState`'s `commitTabs` before layer stamping and in its `tickTabs` (a `useCallback` over
+  the history's tick: drag landings, nudges, resizes), for `pageLockGuardRef` (the active tab
+  while Illustrate mode's pages exist); `onBlocked` defers `announcePageLocked` (a toast at most
+  every 2.5 s) with `queueMicrotask`, the guard running inside a state update.
+- Inert: `usePageLockedIds(elements, illustratePages?.pages)` (`hooks/editor/usePageLockedIds.ts`)
+  feeds `useLayersState`'s `extraInertIds`, joining `layerInertIds` (selection, marquee, select-all,
+  pruning).
+- Edits (`illustrate-page-edits.ts`): `isLocked`, `setLocked` (`Tab · Changed · PageLocked /
+PageUnlocked`, tracked before the change); rename, orientation, size, background, layout, kind
+  and delete are refused for a locked page, or any page of its article
+  (`[illustrate-page] refused: page locked`). `useArticles.onLayout` leaves a flow with a locked
+  page as it is.
+- UI: `PageLockButton` (`components/canvas/PageLockButton.tsx`) before the cog, its room
+  `pageLockRoom(locked, !mobile)`; a locked page shows no layout invite, card or kind choice. The
+  panel (`IllustratePagePanel`) shows a `role="status"` notice and renders its name and sections
+  `inert` at 50% opacity; Delete page is disabled. `ArticleFlows` makes a flow with a locked page
+  read-only (`editable` false, no paper press).
+
 ### Panel, previews, reorder
 
+- Background section (`apps/live/components/canvas/page-background-section.tsx`): a `Background
+kind` radiogroup (the segmented control: `theme` while `themePresets` is non-empty, `solid`,
+  `gradient`), opening on `backgroundCategoryOf(fill, themePresets)` and holding a chosen category
+  in local state (no edit). Theme: the theme swatches. Solid: `PAGE_SOLID_PRESETS` then the custom
+  colour (a `ColourWellButton`, the rainbow until a custom colour is the fill; it toggles
+  `pickingSolid`, which shows `InlineColourPicker` under the swatches). Gradient: `PAGE_GRADIENT_PRESETS` then
+  **Custom gradient** (`customGradientSeed(fill)` on press and hover); while
+  `isCustomGradient(fill)`, `CustomGradientEditor` (`page-background-custom.tsx`): From and To
+  `ColourWellButton`s (`editing: 'from' | 'to' | null`, one `InlineColourPicker` under the row), Angle (`MenuSliderRow`, 0 to 355 by 5,
+  previewed in local state, one commit on release when changed) and Swap (one commit). Pattern
+  follows, not on a logo page. `InlineColourPicker` (`page-background-custom.tsx`) wraps
+  `CustomColourEditor` (`components/canvas/whiteboard/CustomColourEditor.tsx`, now with
+  `onPreview` on every change and `boardWarning={false}`): preview per change, `onUse` commits and
+  closes, Escape (stopped from reaching the panel) or the well again `onCancel`s, dropping the
+  preview. The section drops its preview on pointer leave and on a blur whose `relatedTarget` is
+  outside it.
 - Panel opened from a cog (tab Page) or the invite (tab Layouts); `opened = { id, cog, tab }` in
   `IllustratePages`. Desktop: fixed, beside the cog when it fits (`a.right + GAP + WIDTH + EDGE
 <= innerWidth`), else right-aligned under it; re-placed on resize and `PAGE_EASE_MS + 20` after

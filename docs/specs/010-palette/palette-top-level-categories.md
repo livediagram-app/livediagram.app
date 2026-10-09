@@ -37,14 +37,14 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band           | Categories                                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| _(no heading)_ | Popular, full width                                                                                        |
-| **Plan**       | Cards, Boards, Widgets, Metrics, Visualisations ([Plan mode](../026-plan/plan-mode.md#the-palette) only)   |
-| **Common**     | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
-| **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                               |
-| **Decorate**   | Icons, Stickers, Technology, Media                                                                         |
-| **Dynamic**    | Data, Collaborate                                                                                          |
+| Band           | Categories                                                                                                                                                                                      |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_ | Popular, full width                                                                                                                                                                             |
+| **Plan**       | Cards, Boards, Widgets, Metrics, Visualisations ([Plan mode](../026-plan/plan-mode.md#the-palette) only)                                                                                        |
+| **Common**     | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
+| **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
+| **Decorate**   | Icons, Stickers, Technology, Media                                                                                                                                                              |
+| **Dynamic**    | Data, Collaborate                                                                                                                                                                               |
 
 ## Why flatten
 

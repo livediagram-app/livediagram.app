@@ -302,7 +302,7 @@ describe('settings sub-categories', () => {
   it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw']);
+    expect(children).toEqual(['draw', 'illustrate']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

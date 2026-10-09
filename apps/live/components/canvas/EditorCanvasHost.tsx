@@ -142,6 +142,7 @@ export function EditorCanvasHost() {
     beginMarker,
     beginShapePen,
     beginPolygon,
+    beginPath,
     broadcastAvatar,
     broadcastAvatarPush,
     avatarShove,
@@ -193,6 +194,8 @@ export function EditorCanvasHost() {
     dropPaletteItem,
     duplicateDocument,
     duplicateMultiSelected,
+    canCombine,
+    combineSelected,
     contextMenu,
     duplicateSelected,
     stackSelectedFront,
@@ -660,6 +663,8 @@ export function EditorCanvasHost() {
         collab={collab}
         onEraseStart={isReadOnly ? undefined : beginErase}
         onDuplicateMultiSelected={duplicateMultiSelected}
+        canCombine={canCombine}
+        onCombine={(op) => void combineSelected(op)}
         onDeleteMultiSelected={deleteMultiSelected}
         onToggleLockMultiSelected={toggleLockMultiSelected}
         onFilterMultiSelected={narrowMultiSelection}
@@ -707,6 +712,7 @@ export function EditorCanvasHost() {
         onBeginMarker={beginMarker}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
+        onBeginPath={beginPath}
         pendingDraw={pendingDraw}
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}

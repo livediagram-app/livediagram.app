@@ -62,6 +62,18 @@ const scribble = [
 ];
 
 describe('a whiteboard pen stroke', () => {
+  it('stays in hand after a stroke, unless picked up for one (the Logo palette): then put down, its stroke selected', () => {
+    const held = setup(pen());
+    held.commit(scribble, false);
+    expect(held.setPendingDraw).not.toHaveBeenCalled();
+    const once = setup(pen({ once: true }));
+    once.commit(scribble, false);
+    expect(once.elements).toHaveLength(1);
+    expect(once.setPendingDraw).toHaveBeenCalledWith(null);
+    expect(once.setSelectedId).toHaveBeenCalledWith(once.elements[0]!.id);
+    expect(held.setSelectedId).not.toHaveBeenCalled();
+  });
+
   it('records the pen width and no colour for the main pen', () => {
     const s = setup(pen());
     s.commit(scribble, false);

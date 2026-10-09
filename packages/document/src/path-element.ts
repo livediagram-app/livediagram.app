@@ -3,7 +3,7 @@
 // anchors in canvas px and hands them back through `pathGeometry`.
 import type { PathElement, PathNode, PathPoint } from './element-types';
 import type { Point } from './geometry-primitives';
-import { pathBounds, type PathAnchor } from './path-geometry';
+import { pathBounds, pathD, type PathAnchor } from './path-geometry';
 
 export type PathGeometry = Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'nodes'>;
 
@@ -25,6 +25,61 @@ export function pathAnchors(el: PathShape, origin?: Point): PathAnchor[] {
     if (n.handleOut) anchor.handleOut = px(n.handleOut);
     return anchor;
   });
+}
+
+/** Every contour of a path: its nodes, then a combined shape's further contours. */
+export function pathContours(el: Pick<PathElement, 'nodes' | 'subpaths'>): PathNode[][] {
+  return el.subpaths?.length ? [el.nodes, ...el.subpaths] : [el.nodes];
+}
+
+/** A path of several contours given in canvas px (each a list of anchors), the box wrapping them
+ *  all and every contour normalised to it: `base` gives the rest of the element (id, style). */
+export function pathOfContours(
+  base: Omit<PathElement, 'x' | 'y' | 'width' | 'height' | 'nodes' | 'subpaths'>,
+  contours: readonly (readonly PathAnchor[])[],
+): PathElement {
+  const boxes = contours.map((c) => pathBounds(c, base.closed));
+  const x0 = Math.min(...boxes.map((b) => b.x));
+  const y0 = Math.min(...boxes.map((b) => b.y));
+  const x1 = Math.max(...boxes.map((b) => b.x + b.width));
+  const y1 = Math.max(...boxes.map((b) => b.y + b.height));
+  const width = Math.max(MIN_PATH_BOX, x1 - x0);
+  const height = Math.max(MIN_PATH_BOX, y1 - y0);
+  const norm = (p: Point): PathPoint => ({ nx: (p.x - x0) / width, ny: (p.y - y0) / height });
+  const [first, ...rest] = contours.map((c) =>
+    c.map((a) => {
+      const node: PathNode = { ...norm(a), mode: a.mode };
+      if (a.handleIn) node.handleIn = norm(a.handleIn);
+      if (a.handleOut) node.handleOut = norm(a.handleOut);
+      return node;
+    }),
+  );
+  return {
+    ...base,
+    x: x0,
+    y: y0,
+    width,
+    height,
+    nodes: first ?? [],
+    ...(rest.length ? { subpaths: rest } : {}),
+  } as PathElement;
+}
+
+/** Whether the path is a combined shape of several contours (docs/specs/007-editor/logo-pages.md
+ *  "Combine"): filled even-odd, edited as a whole. */
+export function isCompoundPath(el: Pick<PathElement, 'subpaths'>): boolean {
+  return (el.subpaths?.length ?? 0) > 0;
+}
+
+/** The SVG path data of every contour, in canvas px or relative to `origin`. */
+export function pathElementD(
+  el: PathShape & Pick<PathElement, 'closed' | 'subpaths'>,
+  origin?: Point,
+  fmt?: (n: number) => number,
+): string {
+  return pathContours(el)
+    .map((nodes) => pathD(pathAnchors({ ...el, nodes }, origin), el.closed, fmt))
+    .join(' ');
 }
 
 /** The box of the drawn curve (at least 1 px each way) and the nodes normalised inside it. */
@@ -76,9 +131,10 @@ const turn = (p: Point, c: Point, cos: number, sin: number): Point => ({
   y: c.y + (p.x - c.x) * sin + (p.y - c.y) * cos,
 });
 
-/** The nodes where they show on screen: turned by the element's rotation about its centre. */
-export function pathWorldAnchors(el: PathElement): PathAnchor[] {
-  const anchors = pathAnchors(el);
+/** The nodes where they show on screen: turned by the element's rotation about its centre. A
+ *  combined shape's further contour is given as `nodes`. */
+export function pathWorldAnchors(el: PathElement, nodes: PathNode[] = el.nodes): PathAnchor[] {
+  const anchors = pathAnchors({ ...el, nodes });
   const rotation = el.rotation ?? 0;
   if (rotation % 360 === 0) return anchors;
   const r = (rotation * Math.PI) / 180;
