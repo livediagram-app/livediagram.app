@@ -25,7 +25,8 @@
 // the direct setters in useElementStyle use).
 
 import { useRef, type MutableRefObject } from 'react';
-import { isBoxed } from '@livediagram/document';
+import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@livediagram/document';
+import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
   ArrowFlow,
   ArrowThickness,
@@ -36,7 +37,6 @@ import type {
   CodeThemeId,
   Element,
   TablePreset,
-  ElementAnimation,
   IconAnimation,
   IconPosition,
   ElementShadow,
@@ -319,10 +319,12 @@ export function useStylePreview(deps: {
     // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is
     // the "None" tile. Reuses the snapshot/revert/commit machinery above, so a
     // hovered-then-clicked animation undoes to the true pre-hover value.
-    previewAnimation: (v: ElementAnimation | null) =>
-      previewStyle((el) => (isBoxed(el) ? { ...el, animation: v ?? undefined } : el)),
-    commitAnimation: (v: ElementAnimation | null) =>
-      commitStyle((el) => (isBoxed(el) ? { ...el, animation: v ?? undefined } : el), 'Animation'),
+    // Each animation set's category (docs/specs/028-animation/element-animations.md) writes only the
+    // members of its set; the telemetry type names the set.
+    previewSetAnimation: (set: AnimationSetId, v: string | null) =>
+      previewStyle((el) => withSetAnimation(el, set, v)),
+    commitSetAnimation: (set: AnimationSetId, v: string | null) =>
+      commitStyle((el) => withSetAnimation(el, set, v), ANIMATION_SET_TELEMETRY_TYPE[set]),
     previewArrowFlow: (v: ArrowFlow | null) =>
       previewStyle((el) => (el.type === 'arrow' ? { ...el, flow: v ?? undefined } : el)),
     commitArrowFlow: (v: ArrowFlow | null) =>

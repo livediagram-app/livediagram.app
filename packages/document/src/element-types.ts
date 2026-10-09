@@ -39,6 +39,7 @@ import type {
   Reaction,
   CodeLanguage,
   ElementAnimation,
+  TextAnimation,
   ElementId,
   ElementLink,
   IconAnimation,
@@ -416,6 +417,12 @@ export type ShapeElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -510,6 +517,12 @@ export type TextElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -668,6 +681,12 @@ export type TableElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -761,6 +780,12 @@ export type StickyElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like

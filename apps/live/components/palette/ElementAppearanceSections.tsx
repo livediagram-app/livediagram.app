@@ -238,8 +238,6 @@ export function ElementAppearanceSections({
         isAgenda={isAgenda}
         isDecision={isDecision}
         isChair={isChair}
-        isIcon={isIcon}
-        boxed={boxed}
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}
       />

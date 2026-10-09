@@ -114,3 +114,12 @@ The words for the public gallery of published documents ([Community](../025-comm
 | **community key**  | The random per-browser key the Community app sends for likes and reports; never an owner id | voter id, device id                   |
 
 - **Edit Listing** names the act of changing a post's details in copy; the thing is still a post.
+
+## Animation
+
+- An **animation set** is the catalogue of animations one family of elements takes: Shape, Sticky, Drawing,
+  Media, Table, and Text for words ([Element animations](../028-animation/element-animations.md)). Icons, charts
+  and arrows keep sets of their own.
+- An element's **body set** animates the element; the **Text set** animates its words. A set is never a kind or a
+  mode.
+- A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.

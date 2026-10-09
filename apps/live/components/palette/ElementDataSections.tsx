@@ -21,21 +21,16 @@ import {
   chartPaletteColors,
   PIE_DEFAULT_SLICES,
   PIE_PALETTE,
-  PIE_LOOPING_ANIMS,
   PROGRESS_LOOPING_ANIMS,
   RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
   RATING_LOOPING_ANIMS,
   DEFAULT_BUTTON_MODE,
   SELECTION_MODES,
-  type AnimationSpeed,
-  type ArrowFlow,
   type ChecklistItem,
   type EntityField,
   type LegendItem,
   type PieSlice,
-  type ElementAnimation,
-  type IconAnimation,
 } from '@livediagram/document';
 import {
   AvatarModeIcon,
@@ -48,12 +43,9 @@ import {
   SpotlightIcon,
 } from '@/components/palette/palette-icons';
 import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
-import {
-  AnimationMenuGlyph,
-  ProgressMenuGlyph,
-  ToolsMenuGlyph,
-} from '@/components/palette/context-menu-icons';
+import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
@@ -71,12 +63,7 @@ import {
   SessionMenuSection,
 } from '@/components/palette/BehaviourMenuSections';
 
-import {
-  AnimationTiles,
-  FlowTiles,
-  IconAnimationTiles,
-  LegendPositionTiles,
-} from '@/components/palette/context-menu-tiles';
+import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
 import {
   hasWebRowsSection,
   WebRowsMenuSection,
@@ -90,7 +77,6 @@ import {
   LegendDataEditor,
   MindFlowTiles,
   LineDataSummary,
-  PieAnimTiles,
   PieDataEditor,
   ProgressAnimTiles,
   ProgressRow,
@@ -152,8 +138,6 @@ type ElementDataSectionsProps = {
   isAgenda: boolean;
   isDecision: boolean;
   isChair: boolean;
-  isIcon: boolean;
-  boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
 };
@@ -201,8 +185,6 @@ export function ElementDataSections({
   isAgenda,
   isDecision,
   isChair,
-  isIcon,
-  boxed,
   sectionProps,
   flyoutProps,
 }: ElementDataSectionsProps) {
@@ -578,83 +560,15 @@ export function ElementDataSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
-      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — a looping attention/status effect on the
-            element. None clears it. Pie charts swap the boxed-element set for
-            their own slice animations (the chart family's set). */}
-      {boxed ? (
-        <MenuAccordionSection
-          title="Animation"
-          icon={<AnimationMenuGlyph />}
-          {...sectionProps('animation')}
-        >
-          {isChart ? (
-            <PieAnimTiles
-              anim={shapeTarget?.pieAnim ?? null}
-              speed={shapeTarget?.pieAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-              repeat={animLoops(
-                shapeTarget?.pieAnim,
-                shapeTarget?.pieAnimRepeat,
-                PIE_LOOPING_ANIMS,
-              )}
-              onSet={props.onSetPieAnim}
-              onSetSpeed={props.onSetPieAnimSpeed}
-              onSetRepeat={props.onSetPieAnimRepeat}
-            />
-          ) : isIcon ? (
-            // Icons get their own glyph-motion set (spin / beat / pulse / …)
-            // instead of the boxed-element animation set.
-            <IconAnimationTiles
-              animation={(target as { iconAnimation?: IconAnimation }).iconAnimation ?? null}
-              speed={
-                (target as { iconAnimationSpeed?: AnimationSpeed }).iconAnimationSpeed ??
-                DEFAULT_ANIMATION_SPEED
-              }
-              repeat={(target as { iconAnimationRepeat?: boolean }).iconAnimationRepeat ?? true}
-              onSet={props.onSetIconAnimation}
-              onSetSpeed={props.onSetIconAnimationSpeed}
-              onSetRepeat={props.onSetIconAnimationRepeat}
-              onPreview={props.onPreviewIconAnimation}
-              onPreviewEnd={props.onAnimationPreviewEnd}
-            />
-          ) : (
-            <AnimationTiles
-              animation={(target as { animation?: ElementAnimation }).animation ?? null}
-              speed={
-                (target as { animationSpeed?: AnimationSpeed }).animationSpeed ??
-                DEFAULT_ANIMATION_SPEED
-              }
-              repeat={(target as { animationRepeat?: boolean }).animationRepeat ?? true}
-              onSet={props.onSetAnimation}
-              onSetSpeed={props.onSetAnimationSpeed}
-              onSetRepeat={props.onSetAnimationRepeat}
-              onPreview={props.onPreviewAnimation}
-              onPreviewEnd={props.onAnimationPreviewEnd}
-            />
-          )}
-        </MenuAccordionSection>
-      ) : null}
-      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — animate an arrow to show direction: marching
-            dashes, a travelling dot, beads, or an in-place pulse / grow / glow.
-            None clears it. (Labelled "Animation" to match the boxed-element
-            control; the field is still `flow`.) */}
-      {target.type === 'arrow' ? (
-        <MenuAccordionSection
-          title="Animation"
-          icon={<AnimationMenuGlyph />}
-          {...sectionProps('flow')}
-        >
-          <FlowTiles
-            flow={(target as { flow?: ArrowFlow }).flow ?? null}
-            speed={(target as { flowSpeed?: AnimationSpeed }).flowSpeed ?? DEFAULT_ANIMATION_SPEED}
-            repeat={(target as { flowRepeat?: boolean }).flowRepeat ?? true}
-            onSet={props.onSetArrowFlow}
-            onSetSpeed={props.onSetFlowSpeed}
-            onSetRepeat={props.onSetFlowRepeat}
-            onPreview={props.onPreviewArrowFlow}
-            onPreviewEnd={props.onAnimationPreviewEnd}
-          />
-        </MenuAccordionSection>
-      ) : null}
+      {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
+            element takes, such as Shape Animation and Text Animation for a labelled shape. */}
+      <AnimationSections
+        elements={[target]}
+        keyPrefix=""
+        sectionProps={sectionProps}
+        flyoutProps={flyoutProps}
+        handlers={props}
+      />
       {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a
             line-art glyph, Background / Border paint the icon's box. Pie charts

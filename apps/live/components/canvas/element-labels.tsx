@@ -27,6 +27,7 @@ import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
+import type { TextAnimView } from './useTextAnimation';
 import { wordmarkTextStyle } from './label-style';
 import { WordmarkArcLabel } from './WordmarkArcLabel';
 
@@ -61,6 +62,9 @@ export function renderLabel(
   // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
   // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
   hug?: TextHugLabel,
+  // The label's Text animation (docs/specs/028-animation/element-animations.md "Text"), undefined
+  // when it has none or is being edited; useTextAnimation builds it.
+  textAnim?: TextAnimView,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
@@ -199,6 +203,7 @@ export function renderLabel(
         alignY={alignY}
         padding={padding}
         style={textStyle}
+        textAnim={textAnim}
       />
     );
   }
@@ -216,6 +221,7 @@ export function renderLabel(
         // <text> fill — withhold it here so the glyphs don't vanish; glow /
         // pulse / trace ride the SVG drop-shadow fine.
         animClass={labelAnimClass === 'lvd-anim-text-gradient' ? undefined : labelAnimClass}
+        textAnim={textAnim}
       />
     );
   }
@@ -229,6 +235,7 @@ export function renderLabel(
       padding={textPadding}
       style={textStyle}
       animClass={labelAnimClass}
+      textAnim={textAnim}
     />
   );
 }

@@ -18,7 +18,7 @@ import {
 // rainbow / strobe keep the user's static stroke and just breathe opacity /
 // thickness / a halo / its colour. A missing entry (no flow, or 'dots' /
 // 'comet') leaves the path on its static style.
-const FLOW_PATH_CLASS: Partial<Record<ArrowFlow, string>> = {
+export const FLOW_PATH_CLASS: Partial<Record<ArrowFlow, string>> = {
   dashes: 'lvd-arrow-flow',
   beads: 'lvd-arrow-beads',
   pulse: 'lvd-arrow-pulse',
@@ -37,7 +37,7 @@ const FLOW_PATH_CLASS: Partial<Record<ArrowFlow, string>> = {
 // units (one full-length dash + an equal gap that the reveal slides through).
 // 'signal' is one long dash per 80-unit period (matching its -80 offset
 // keyframe) so a single packet travels the line at a time.
-const FLOW_PATH_DASH: Partial<Record<ArrowFlow, string>> = {
+export const FLOW_PATH_DASH: Partial<Record<ArrowFlow, string>> = {
   dashes: '8 6',
   beads: '0.1 12',
   draw: '1 1',

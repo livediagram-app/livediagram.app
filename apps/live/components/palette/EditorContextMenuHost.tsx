@@ -147,10 +147,10 @@ export function EditorContextMenuHost() {
     previewArrowPreset,
     clearStylePreview,
     resetArrowStyleSelected,
-    commitAnimation,
+    commitSetAnimation,
     commitArrowFlow,
     commitIconAnimation,
-    previewAnimation,
+    previewSetAnimation,
     previewArrowFlow,
     previewIconAnimation,
     setIconAnimationSpeedSelected,
@@ -158,9 +158,9 @@ export function EditorContextMenuHost() {
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
     setProgressAnimRepeatSelected,
-    setAnimationSpeedSelected,
+    setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
-    setAnimationRepeatSelected,
+    setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     resetColorsSelected,
@@ -397,10 +397,10 @@ export function EditorContextMenuHost() {
       onApplyChartPalette={commitChartPalette}
       onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
-      onSetAnimation={commitAnimation}
+      onSetSetAnimation={commitSetAnimation}
       onSetArrowFlow={commitArrowFlow}
       onSetIconAnimation={commitIconAnimation}
-      onPreviewAnimation={previewAnimation}
+      onPreviewSetAnimation={previewSetAnimation}
       onPreviewArrowFlow={previewArrowFlow}
       onPreviewIconAnimation={previewIconAnimation}
       onAnimationPreviewEnd={clearStylePreview}
@@ -409,9 +409,9 @@ export function EditorContextMenuHost() {
       onSetProgressAnim={setProgressAnimSelected}
       onSetProgressAnimSpeed={setProgressAnimSpeedSelected}
       onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
-      onSetAnimationSpeed={setAnimationSpeedSelected}
+      onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
       onSetFlowSpeed={setFlowSpeedSelected}
-      onSetAnimationRepeat={setAnimationRepeatSelected}
+      onSetSetAnimationRepeat={setSetAnimationRepeatSelected}
       onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
       onSetFlowRepeat={setFlowRepeatSelected}
       onResetColors={resetColorsSelected}

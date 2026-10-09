@@ -9,14 +9,7 @@ import { MENU_ICON_PX, QUICK_ACTION_ICON_PX } from './context-menu-icons';
 // One menu, one size step (docs/specs/004-interface-design/iconography.md, "Relation to optical
 // alignment"): every menu glyph renders at MENU_ICON_PX, the quick-action verbs at
 // QUICK_ACTION_ICON_PX, and each sits centred. Option previews carry their own sizes.
-const PREVIEWS = new Set([
-  'DirArrow',
-  'RotationGlyph',
-  'AnimationKindGlyph',
-  'FlowKindGlyph',
-  'IconAnimKindGlyph',
-  'ProgressAnimKindGlyph',
-]);
+const PREVIEWS = new Set(['DirArrow', 'RotationGlyph']);
 // Asymmetric by design (named exceptions to the centring rule).
 const ASYMMETRIC = new Map([
   ['RotationMenuIcon', 'Lucide rotate-cw-square: the turn arrow overhangs the top-left'],

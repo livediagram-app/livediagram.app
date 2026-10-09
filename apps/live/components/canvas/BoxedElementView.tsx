@@ -50,6 +50,8 @@ import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
+import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
+import { AnimationLayer } from '@/components/canvas/AnimationLayer';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
@@ -310,7 +312,7 @@ function BoxedElementViewImpl({
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
   // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
-  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle } =
+  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle, layer, layerAnim } =
     useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
@@ -344,6 +346,9 @@ function BoxedElementViewImpl({
     cornerPx,
   );
 
+  // The Text animation on the label's words (docs/specs/028-animation/element-animations.md).
+  const textAnim = useLabelTextAnimation(element, label, textColor, isEditing);
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -367,6 +372,7 @@ function BoxedElementViewImpl({
     !!inlineIcon || !!marker,
     labelAnimClass,
     textHug.label,
+    textAnim,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -624,6 +630,20 @@ function BoxedElementViewImpl({
         <ShapeHitOutline
           element={element}
           borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
+        />
+      ) : null}
+
+      {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
+      {layer && layerAnim ? (
+        <AnimationLayer
+          animation={layerAnim}
+          width={element.width}
+          height={element.height}
+          radius={
+            shapeKind === 'circle' || shapeKind === 'stadium'
+              ? Math.min(element.width, element.height) / 2
+              : cornerPx
+          }
         />
       ) : null}
 

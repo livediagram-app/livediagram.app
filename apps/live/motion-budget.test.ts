@@ -6,7 +6,17 @@ import { checkMotionBudget, formatViolations } from '@livediagram/tailwind-confi
 // chrome transition settles within 250ms, hovers within 150ms, cascades as a
 // whole within 250ms. Canvas motion follows its own specs and lives only in the
 // stylesheets listed here, which the guard does not read.
-const CANVAS_STYLESHEETS = ['app/canvas-motion.css', 'app/qa-board.css'];
+const CANVAS_STYLESHEETS = [
+  'app/canvas-motion.css',
+  'app/qa-board.css',
+  // The animation sets (docs/specs/028-animation/element-animations.md).
+  'app/motion-shape.css',
+  'app/motion-text.css',
+  'app/motion-sticky.css',
+  'app/motion-drawing.css',
+  'app/motion-media.css',
+  'app/motion-table.css',
+];
 
 describe('editor motion budget', () => {
   it('keeps every chrome duration within the budget', () => {

@@ -1,0 +1,166 @@
+/*
+ * The Table animation set (docs/specs/028-animation/element-animations.md "Table"). The class sits
+ * on the table's grid (useTableAnimation); each cell carries its row and column (--lvd-r, --lvd-c)
+ * and the grid its counts (--lvd-rows, --lvd-cols). Pulse and Glow are the Shape set's.
+ *
+ * The cascades animate ONE registered number on the grid, --lvd-tbl-p, from 0 to 1; each cell
+ * derives its moment from its row, column or diagonal, so the whole cascade fits the same time
+ * however many rows a table has (EA10). Its initial value is 1, so with no animation every cell
+ * shows. A cascade cycle reveals over the first 45%, holds, fades and is whole again at 100%; with
+ * Repeat off (.lvd-once) it reveals once and stays.
+ */
+
+@property --lvd-tbl-p {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+@keyframes lvd-tbl-progress {
+  from {
+    --lvd-tbl-p: 0;
+  }
+  to {
+    --lvd-tbl-p: 1;
+  }
+}
+@keyframes lvd-tbl-clear {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.lvd-tbl-rows,
+.lvd-tbl-columns,
+.lvd-tbl-cells {
+  animation:
+    lvd-tbl-progress calc(5s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite) both,
+    lvd-tbl-clear calc(5s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite) both;
+}
+.lvd-tbl-rows.lvd-once,
+.lvd-tbl-columns.lvd-once,
+.lvd-tbl-cells.lvd-once {
+  animation: lvd-tbl-progress calc(5s * var(--lvd-anim-speed, 1)) linear 1 both;
+}
+
+/* Each cell's moment (--u of --n) and its share of the reveal (--k), two turns long. */
+.lvd-tbl-rows .lvd-tbl-cell {
+  --u: var(--lvd-r, 0);
+  --n: var(--lvd-rows, 1);
+}
+.lvd-tbl-columns .lvd-tbl-cell {
+  --u: var(--lvd-c, 0);
+  --n: var(--lvd-cols, 1);
+}
+.lvd-tbl-cells .lvd-tbl-cell {
+  --u: calc(var(--lvd-r, 0) + var(--lvd-c, 0));
+  --n: calc(var(--lvd-rows, 1) + var(--lvd-cols, 1) - 1);
+}
+.lvd-tbl-rows .lvd-tbl-cell,
+.lvd-tbl-columns .lvd-tbl-cell,
+.lvd-tbl-cells .lvd-tbl-cell {
+  --k: clamp(0, (clamp(0, var(--lvd-tbl-p) / 0.45, 1) * (var(--n) + 1) - var(--u)) / 2, 1);
+  opacity: var(--k);
+}
+
+/* Rows: each row rises into place, top to bottom. */
+.lvd-tbl-rows .lvd-tbl-cell {
+  translate: 0 calc((1 - var(--k)) * (1 - var(--k)) * 0.5em);
+}
+/* Columns: each column slides in from the left. */
+.lvd-tbl-columns .lvd-tbl-cell {
+  translate: calc((1 - var(--k)) * (1 - var(--k)) * -0.6em) 0;
+}
+/* Cells: each cell pops in along the diagonal from the top-left. */
+.lvd-tbl-cells .lvd-tbl-cell {
+  scale: calc(0.85 + 0.15 * var(--k) + sin(var(--k) * 180deg) * 0.04);
+}
+
+/* Scan and Sweep: a soft bar of the accent crosses the rows, or the columns, then is gone. */
+@keyframes lvd-tbl-scan {
+  0% {
+    translate: 0 -100%;
+  }
+  60%,
+  100% {
+    translate: 0 calc(var(--lvd-rows, 1) * 100%);
+  }
+}
+@keyframes lvd-tbl-sweep {
+  0% {
+    translate: -100% 0;
+  }
+  60%,
+  100% {
+    translate: calc(var(--lvd-cols, 1) * 100%) 0;
+  }
+}
+.lvd-tbl-scan::after,
+.lvd-tbl-sweep::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 18%, transparent);
+}
+.lvd-tbl-scan::after {
+  inset: 0 0 auto 0;
+  height: calc(100% / var(--lvd-rows, 1));
+  translate: 0 -100%;
+  animation: lvd-tbl-scan calc(3s * var(--lvd-anim-speed, 1)) cubic-bezier(0.45, 0, 0.55, 1)
+    var(--lvd-anim-iter, infinite);
+}
+.lvd-tbl-sweep::after {
+  inset: 0 auto 0 0;
+  width: calc(100% / var(--lvd-cols, 1));
+  translate: -100% 0;
+  animation: lvd-tbl-sweep calc(3s * var(--lvd-anim-speed, 1)) cubic-bezier(0.45, 0, 0.55, 1)
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Header: a band of light runs across the header row now and then. */
+@keyframes lvd-tbl-header {
+  0% {
+    translate: -110% 0;
+  }
+  20%,
+  100% {
+    translate: 110% 0;
+  }
+}
+.lvd-tbl-header .lvd-tbl-cell[data-first-row]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 35%, transparent) 50%,
+    transparent 75%
+  );
+  translate: -110% 0;
+  animation: lvd-tbl-header calc(3s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
+  animation-delay: calc(var(--lvd-c, 0) * 0.12s * var(--lvd-anim-speed, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lvd-tbl-rows,
+  .lvd-tbl-columns,
+  .lvd-tbl-cells,
+  .lvd-tbl-rows.lvd-once,
+  .lvd-tbl-columns.lvd-once,
+  .lvd-tbl-cells.lvd-once,
+  .lvd-tbl-scan::after,
+  .lvd-tbl-sweep::after,
+  .lvd-tbl-header .lvd-tbl-cell[data-first-row]::after {
+    animation: none;
+  }
+}

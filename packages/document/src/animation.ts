@@ -11,60 +11,9 @@
 // Arrow flow (ArrowFlow / ARROW_FLOWS) is deliberately NOT here: it is the
 // arrows' own vocabulary and stays beside them.
 
-// Looping element animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Applied to a boxed
-// element as a CSS class; deterministic (no broadcast), reduced-motion-safe
-// (the keyframes are disabled under prefers-reduced-motion), and freezes to a
-// static frame on PNG / SVG export. 'pulse' is an attention ping (an
-// expanding ring), 'blink' a status breathe (opacity), 'glow' a soft halo,
-// 'trace' a light running the element's outline, 'gradient' a moving gradient
-// blending the fill + accent colours, 'bounce' a vertical bob, 'wobble' a
-// tilt wiggle, 'shake' a quick horizontal jitter, 'jelly' a squash-and-stretch,
-// 'float' a slow circular drift, 'swing' a pendulum from the top edge. The
-// emphasis set stays in place and draws the eye without travelling:
-// 'heartbeat' is a lub-dub double-pump (uniform scale), 'breathe' a slow
-// gentle swell, 'shimmer' an occasional quick brightness glint, 'highlight' a
-// periodic dip-then-brighten of the fill (a luminous "look here" swell that
-// reads on any colour). trace / gradient render against the true shape
-// outline (an SVG stroke / fill for SVG-rendered shapes, the CSS border /
-// background for CSS-rendered shapes + other boxed elements); shimmer /
-// highlight are `filter`-based so they follow any silhouette with no SVG
-// special case; bounce / wobble / shake / jelly / float / swing / heartbeat /
-// breathe drive the independent `translate` / `rotate` / `scale` CSS
-// properties so they compose with an element's own rotation rather than
-// clobbering it (swing also pivots from `transform-origin: top center`).
-export type ElementAnimation =
-  | 'pulse'
-  | 'blink'
-  | 'glow'
-  | 'trace'
-  | 'gradient'
-  | 'heartbeat'
-  | 'breathe'
-  | 'shimmer'
-  | 'highlight'
-  | 'bounce'
-  | 'wobble'
-  | 'shake'
-  | 'jelly'
-  | 'float'
-  | 'swing';
-export const ELEMENT_ANIMATIONS: readonly ElementAnimation[] = [
-  'pulse',
-  'blink',
-  'glow',
-  'trace',
-  'gradient',
-  'heartbeat',
-  'breathe',
-  'shimmer',
-  'highlight',
-  'bounce',
-  'wobble',
-  'shake',
-  'jelly',
-  'float',
-  'swing',
-];
+// The body animation sets and the Text set live in './animation-sets'
+// (docs/specs/028-animation/element-animations.md); re-exported here so every import path keeps working.
+export * from './animation-sets';
 
 // Animation / flow speed (docs/specs/008-canvas/canvas-and-palette.md). A multiplier on each animation's tuned
 // base duration (so every animation keeps its own feel; speed just scales it):
