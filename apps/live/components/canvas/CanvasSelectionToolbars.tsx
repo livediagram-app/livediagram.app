@@ -48,6 +48,7 @@ export function CanvasSelectionToolbars({
     selectionBounds,
     selectedLocked,
     showPopover,
+    showPlus,
     multiToolbarBounds,
     showMultiToolbar,
   } = useCanvasSelectionView(selectionInput);
@@ -188,7 +189,9 @@ export function CanvasSelectionToolbars({
                     }
                   : undefined
             }
-            compact={readOnly}
+            // Close to the element whenever no "+" sits in the gap: read-only, and kinds that show none (a Plan
+            // board or card, an annotation, an event-storming board).
+            compact={readOnly || !showPlus}
           />
         </div>
       ) : null}

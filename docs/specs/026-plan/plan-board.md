@@ -643,6 +643,7 @@ A board can be set to **fill its tab**: the tab becomes the board, for everyone,
 - A board keeps its layers to itself: its sticky column heads never draw over another element, even where boards
   overlap.
 - A selected board or Plan card has no quick-connect pluses: its cards are its content, not nodes to chain from.
+  With no plus to clear, its selection toolbar sits close above it (the 16 px gap read-only views use, not 48 px).
 
 ## Both elements everywhere
 
