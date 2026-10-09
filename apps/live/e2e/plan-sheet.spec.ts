@@ -49,7 +49,7 @@ test('a Sheet takes a formula, works it out, keeps it, and maximises like a boar
               id: 'sheet',
               type: 'shape',
               shape: 'plan-sheet',
-              // Clear of the palette docked at the top.
+              // Clear of the toolbar along the top.
               x: 120,
               y: 260,
               width: 960,
@@ -112,8 +112,6 @@ test('a Sheet takes a formula, works it out, keeps it, and maximises like a boar
     .toContain('6*7');
 
   // Maximise fills the canvas; Escape with nothing in edit puts it back.
-  // The palette, docked at the top right of this window, sits over the Sheet's header: fold it away first.
-  await page.getByRole('button', { name: 'Collapse palette' }).click();
   await page.getByRole('button', { name: 'Maximise Sheet' }).click();
   await expect(page.getByRole('button', { name: 'Restore Sheet' })).toBeVisible();
   await grid.focus();

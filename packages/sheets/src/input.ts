@@ -71,7 +71,8 @@ export function parseLocaleNumber(text: string, locale: string): number | null {
 // A plain `.`-decimal number with no grouping, as text in formulas is coerced ("3", "-1.5", "2e3").
 export function parsePlainNumber(text: string): number | null {
   const t = text.trim();
-  if (!/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(t)) return null;
+  // The fraction only after a point, so the digits either side never compete for one run (linear).
+  if (!/^[+-]?(\d+(?:\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(t)) return null;
   const n = Number(t);
   return Number.isFinite(n) ? n : null;
 }

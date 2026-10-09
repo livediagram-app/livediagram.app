@@ -133,10 +133,12 @@ export function parseTimeText(text: string): number | null {
 
 export type ParsedDate = { serial: number; hasTime: boolean };
 
-const ISO_RE = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](.+))?$/;
-const NUMERIC_RE = /^(\d{1,4})[/.-](\d{1,2})[/.-](\d{1,4})(?:\s+(.+))?$/;
-const NAMED_DMY_RE = /^(\d{1,2})(?:st|nd|rd|th)?[\s-]+([A-Za-z]+)\.?,?[\s-]+(\d{2,4})(?:\s+(.+))?$/;
-const NAMED_MDY_RE = /^([A-Za-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{2,4})(?:\s+(.+))?$/;
+// A time after a date starts at its first non-space, so the space before it and the time never compete (linear).
+const ISO_RE = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T]\s*(\S.*))?$/;
+const NUMERIC_RE = /^(\d{1,4})[/.-](\d{1,2})[/.-](\d{1,4})(?:\s+(\S.*))?$/;
+const NAMED_DMY_RE =
+  /^(\d{1,2})(?:st|nd|rd|th)?[\s-]+([A-Za-z]+)\.?,?[\s-]+(\d{2,4})(?:\s+(\S.*))?$/;
+const NAMED_MDY_RE = /^([A-Za-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{2,4})(?:\s+(\S.*))?$/;
 
 function withTime(serial: number, rest: string | undefined): ParsedDate | null {
   if (rest === undefined) return { serial, hasTime: false };

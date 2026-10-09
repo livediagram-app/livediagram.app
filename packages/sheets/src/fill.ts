@@ -35,10 +35,16 @@ function monthly(ns: number[]): Series | null {
   };
 }
 
-const TRAILING = /^(.*?)(\d+)$/;
+// A text's trailing number ("Item 12" -> ["Item ", "12"]), found by a scan from the end rather than a regex that
+// backtracks over a long run of digits.
+function trailingNumber(t: string): [string, string, string] | null {
+  let i = t.length;
+  while (i > 0 && t.charCodeAt(i - 1) >= 48 && t.charCodeAt(i - 1) <= 57) i--;
+  return i === t.length ? null : [t, t.slice(0, i), t.slice(i)];
+}
 
 function textNumbers(ts: string[], one: number): Series | null {
-  const ms = ts.map((t) => TRAILING.exec(t));
+  const ms = ts.map(trailingNumber);
   if (ms.some((m) => !m) || new Set(ms.map((m) => m![1])).size !== 1) return null;
   const prefix = ms[0]![1]!;
   const ns = ms.map((m) => Number(m![2]));
