@@ -17,6 +17,13 @@ import { isPanThrough } from '@/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
+// The bottom-right cluster (Undo / Redo, Layers, Theme & Canvas, Zoom) is chrome, never canvas.
+// Its buttons stop the press only in the bubble phase, after the capture intercept: without this,
+// a held Draw mode marker inked a dot under Undo and the click then undid that dot instead of the
+// stroke the person meant (and an armed eraser, shape or spotlight acted under the button too).
+const inCornerCluster = (target: EventTarget | null): boolean =>
+  !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
+
 // How presses on the bare canvas surface route between the tools
 // (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/isometric-view.md), lifted out of Canvas's JSX: the capture-phase
 // intercepts (spotlight grow / shrink, eraser, middle-mouse pan,
@@ -163,6 +170,8 @@ export function useCanvasSurfaceGestures({
     // start a gesture at the click point and drop the pending shape
     // behind the panel. Bail before any canvas gesture starts.
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+    // The bottom-right cluster is chrome too (see inCornerCluster).
+    if (inCornerCluster(e.target)) return;
     // A maximised or tab-filling Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"):
     // a press on it, or on the cover around it, is the board's or nothing, never a canvas gesture.
     if ((e.target as Element | null)?.closest?.('[data-canvas-cover]')) return;
@@ -451,8 +460,9 @@ export function useCanvasSurfaceGestures({
     // level move + up listeners) operates in one space.
     // Usually the capture-phase intercept above has already started
     // the gesture (and stopped propagation); this is the fallback
-    // for the rect-less edge case where it didn't.
-    if (pendingDraw && beginPendingDrawGesture(e)) return;
+    // for the rect-less edge case where it didn't. A press on the corner cluster's strip frames
+    // (which don't stop it) bubbles here, and is chrome, not a draw.
+    if (pendingDraw && !inCornerCluster(e.target) && beginPendingDrawGesture(e)) return;
     // Auto-fit on load can scale the wrapper below 1, which
     // shrinks its hit region inside `main`. Without this mirror
     // handler, clicks in the "outside the shrunken wrapper but

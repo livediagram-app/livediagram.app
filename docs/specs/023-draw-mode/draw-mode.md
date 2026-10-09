@@ -149,7 +149,9 @@ pointing at the button that opened it, on the edge facing the dock, over its but
        of its kind, drawn with a drag or dropped with a click) and closes the
        flyout; **Escape** closes it without picking.
 - **No Undo or Redo in the dock:** the bottom-right cluster and the keyboard
-  already carry them in every mode, so the dock does not repeat them.
+  already carry them in every mode, so the dock does not repeat them. The
+  cluster is chrome, never canvas: a press on it with a pen held (or any other
+  tool armed) inks nothing, so Undo takes back the last stroke.
 - **The sticky note is a shape here, not a drawing tool.** It has no button
   in the drawing tools bar; it is one of the shapes: found in the Shapes
   flyout's search ("sticky", "note", "post-it"), shown in its slots once
