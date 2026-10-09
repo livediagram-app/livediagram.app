@@ -145,12 +145,16 @@ export function RichTextEditor({
           }
           // Same for the context menu riding alongside the edit session
           // (docs/specs/008-canvas/canvas-and-palette.md): its buttons preserve focus via the capture listener
-          // in useRichTextSession, but its form controls (the colour input,
-          // the opacity slider) legitimately take focus — that's a menu
-          // interaction, not a click-away.
+          // in useRichTextSession, but its form controls (the opacity slider)
+          // legitimately take focus — that's a menu interaction, not a
+          // click-away. And for the toolbar's colour picker, which opens in a
+          // popover outside the toolbar and focuses its swatches
+          // (docs/specs/004-interface-design/colour-picker.md).
           if (
             e.relatedTarget instanceof Element &&
-            e.relatedTarget.closest('[data-context-menu],[data-menu-flyout]')
+            e.relatedTarget.closest(
+              '[data-context-menu],[data-menu-flyout],[data-anchored-popover]',
+            )
           ) {
             return;
           }

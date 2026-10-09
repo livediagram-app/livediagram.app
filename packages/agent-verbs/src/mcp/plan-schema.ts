@@ -23,8 +23,8 @@ const fieldsArg = z
   .describe(
     'Fields by name: description, status (a column name), assignee (a person’s name, e.g. "Sam"), priority ' +
       '(urgent|high|medium|low), labels (["seo","copy"] or "seo, copy"), estimate (0-999), start and due ' +
-      '(YYYY-MM-DD), color (a Plan swatch: ' +
-      PLAN_TYPE_COLOURS.join(' ') +
+      '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
+      PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"). A field the card type lacks is refused: add it with ' +
       'change_card_types.',
@@ -142,7 +142,9 @@ const customField = z.object({
   onCard: z.boolean().optional().describe('Draw it on the card face.'),
 });
 
-const colourArg = z.string().describe(`A Plan swatch: ${PLAN_TYPE_COLOURS.join(' ')}.`);
+const colourArg = z
+  .string()
+  .describe(`A #rrggbb colour, e.g. ${PLAN_TYPE_COLOURS.slice(0, 4).join(' ')}.`);
 const glyphArg = z.string().describe('A Plan glyph id (task, bug, story, epic, star, flag...).');
 const builtInFields = z
   .array(z.string())

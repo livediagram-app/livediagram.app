@@ -74,8 +74,8 @@ Stored on the element, shared by everyone, undone like any element edit:
 Where each is set, so a setting lives with what it changes, never in one central panel:
 
 - **A column's own settings** sit on the column: a cog at the far right of its head (shown on hover and focus,
-  always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (none or
-  one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After**,
+  always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (No colour or any colour from the
+  [colour picker](../004-interface-design/colour-picker.md)), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After**,
   then two ways to take it away. **Remove Column** (a column glyph) takes it off this board only, at once: the
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read
   as No status, as any card of a state no board names). **Delete Status** (a bin) deletes the state: when it

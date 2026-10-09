@@ -32,7 +32,7 @@ const arrow = {
   from: { kind: 'free', x: 0, y: 0 },
   to: { kind: 'free', x: 9, y: 9 },
 } as ArrowElement;
-const STOCK = ['Ink', 'Blue', 'Red', 'Orange', 'Yellow', 'Green', 'Teal', 'Violet', 'Pink'];
+const STOCK = ['Ink', 'Red', 'Orange', 'Yellow', 'Green', 'Teal', 'Blue', 'Violet', 'Pink'];
 
 const view = (els: Element[], p: PenPalette = palette) =>
   onWhiteboard(quickStyleView(els, defaultScheme('light')), els, p)!;
@@ -45,7 +45,7 @@ describe('onWhiteboard', () => {
     expect(v.sections.boardStroke!.options.map((o) => o.name)).toEqual(STOCK);
     expect(v.sections.boardText!.options.map((o) => o.name)).toEqual(STOCK);
     expect(v.sections.boardStroke!.options[0]!.swatch).toBe(INK);
-    expect(v.sections.boardStroke!.options[1]!.swatch).toBe(penColourHex('blue', 'light'));
+    expect(v.sections.boardStroke!.options[6]!.swatch).toBe(penColourHex('blue', 'light'));
     expect(v.sections.boardStroke!.custom).toEqual([]);
   });
 

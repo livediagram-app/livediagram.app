@@ -10,7 +10,6 @@ import {
   isBuiltInFieldId,
   linkCandidates,
   typeAllowsStatus,
-  itemColourValue,
   type Item,
   type ItemFieldId,
   type ItemFieldValue,
@@ -29,6 +28,7 @@ import {
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { LinkedCardField } from './LinkedCardField';
 import { usePlan } from './PlanContext';
+import { isHexColour } from '@livediagram/document';
 import { ColourSelect } from './ColourSwatches';
 import { PHASE_COLOURS } from './views/view-frame';
 import { track } from '@/lib/telemetry';
@@ -198,7 +198,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         <ColourSelect
           id={id}
           disabled={disabled}
-          value={itemColourValue(value)}
+          value={isHexColour(value) ? value.toLowerCase() : undefined}
           onChange={(c) => {
             onSave(f, c);
             track('Plan', 'Changed', 'ProjectColour');

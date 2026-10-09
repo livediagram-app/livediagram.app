@@ -79,6 +79,20 @@ The words for a program working on documents for a person ([Agents](../024-agent
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
 
+## Colours
+
+The words for choosing a colour ([Colour picker](../004-interface-design/colour-picker.md)).
+
+| Term                     | Means                                                                                           | Never called                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **colour picker**        | The one control that chooses a colour, in any skin                                              | swatch picker, palette, colour well   |
+| **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                    | stock colours (outside Draw), presets |
+| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills) | shade, variant                        |
+| **theme colours**        | The active theme's own colours, offered on the canvas only                                      | presets                               |
+| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                   | custom swatches, recent colours       |
+| **custom colour editor** | The square, hue, hex and eyedropper panel that **+** opens                                      | colour wheel, native picker           |
+| **skin**                 | Where and how a picker opens: inline, field, swatch button                                      | variant, mode                         |
+
 ## Repositories and workbenches
 
 The words for diagrams living beside code ([Repositories](../027-repositories/README.md),

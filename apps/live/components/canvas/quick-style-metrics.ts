@@ -5,8 +5,8 @@ import { PEN_COLOUR_NAMES } from '@livediagram/document';
 export const QUICK_TARGET_PX = 24;
 export const QUICK_BORDER_PX = 1;
 export const QUICK_COMPACT_PADDING_PX = 8;
-// A theme's colour row in Diagram mode: its seven swatches and Ink.
-const THEME_ROW_TARGETS = 8;
+// A theme's colour row in Diagram mode: its seven swatches, Ink and More colours.
+const THEME_ROW_TARGETS = 9;
 // Targets in every colour row: the widest of a theme's row and the stock colours (Ink and the hued
-// ones) in Draw mode, so the panel is one width in both modes.
-export const QUICK_ROW_TARGETS = Math.max(THEME_ROW_TARGETS, 1 + PEN_COLOUR_NAMES.length);
+// ones) and More colours in Draw mode, so the panel is one width in both modes.
+export const QUICK_ROW_TARGETS = Math.max(THEME_ROW_TARGETS, 1 + PEN_COLOUR_NAMES.length + 1);

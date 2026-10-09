@@ -1,8 +1,8 @@
 'use client';
 
 // Custom swatches' state (docs/specs/008-canvas/quick-style-panel.md "Custom swatches"): per user, synced,
-// keyed by theme, in the preferences blob beside `customSwatches`, and
-// written the way `customSwatches` is (the same owner, guest or signed in).
+// keyed by theme, in the preferences blob, and written the way every synced
+// preference is (the same owner, guest or signed in).
 // The logic is pure, in lib/swatch-overrides.
 
 import { useMemo } from 'react';

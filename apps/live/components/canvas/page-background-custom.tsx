@@ -1,79 +1,25 @@
 'use client';
 
-// The Background section's custom choices (docs/specs/007-editor/illustrate-pages.md
-// "Backgrounds"): a colour well opening the in-app colour picker in the panel, and the custom
-// gradient's editor (From, To, Angle, Swap). Each previews while changed and commits once.
-import { useState, type ReactNode } from 'react';
+// The Background section's custom gradient editor (docs/specs/007-editor/illustrate-pages.md
+// "Backgrounds"): From and To, each a swatch button opening the one colour picker
+// (docs/specs/004-interface-design/colour-picker.md), the Angle, and Swap. Each previews while
+// changed and commits once.
+import { useState } from 'react';
 import type { PageFill } from '@livediagram/document';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
-import { CustomColourEditor } from './whiteboard/CustomColourEditor';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardOptions, type ColourGroup } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 // The gradient Angle slider's step, in degrees.
 const ANGLE_STEP = 5;
 
-/** A custom colour's well: a swatch of the colour that opens the in-app picker below it
- *  (InlineColourPicker), pressed while open. */
-export function ColourWellButton({
-  label,
-  colour,
-  open,
-  onToggle,
-  className = 'h-6 w-6',
-  children,
-}: {
-  // The well's accessible name.
-  label: string;
-  colour: string;
-  open: boolean;
-  onToggle: () => void;
-  className?: string;
-  children?: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-expanded={open}
-      onClick={onToggle}
-      className={`relative shrink-0 rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-        open ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-      } ${className}`}
-      style={{ background: colour }}
-    >
-      {children}
-    </button>
-  );
-}
-
-/** The in-app colour picker, in the panel under its well: each change previews on the page, Use
- *  commits it and closes, and Escape or the well again closes it and drops the preview. In the
- *  panel, so nothing about it is outside the section (the system picker was: closing it by
- *  clicking away closed the panel before its change arrived). */
-export function InlineColourPicker({
-  start,
-  onPreview,
-  onUse,
-  onCancel,
-}: {
-  start: string;
-  onPreview: (hex: string) => void;
-  onUse: (hex: string) => void;
-  onCancel: () => void;
-}) {
-  return (
-    <div
-      data-inline-colour-picker=""
-      onKeyDown={(e) => {
-        if (e.key !== 'Escape') return;
-        // The picker's Escape, not the panel's.
-        e.stopPropagation();
-        onCancel();
-      }}
-    >
-      <CustomColourEditor start={start} boardWarning={false} onPreview={onPreview} onUse={onUse} />
-    </div>
-  );
-}
+// A page's colours: the soft standard colours, then the strong ones, for light paper (a page is
+// designed on light paper; its stored colours are light-paper hexes).
+export const PAGE_COLOUR_GROUPS: readonly ColourGroup[] = [
+  { heading: 'Light', options: standardOptions('soft', 'light', 'hex') },
+  { heading: 'Dark', options: standardOptions('strong', 'light', 'hex') },
+];
 
 // The custom gradient's editor: From and To, the Angle, and Swap.
 export function CustomGradientEditor({
@@ -91,18 +37,18 @@ export function CustomGradientEditor({
   // The angle while the slider is dragged; committed once on release.
   const [dragAngle, setDragAngle] = useState<number | null>(null);
   const angle = dragAngle ?? fill.angle;
-  // The end whose colour is being picked.
-  const [editing, setEditing] = useState<'from' | 'to' | null>(null);
+  const yours = useDocumentColours();
   const well = (end: 'from' | 'to', label: string) => (
     <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-      <ColourWellButton
+      <ColourSwatchButton
         label={`Gradient ${label.toLowerCase()} colour`}
-        colour={fill[end]}
-        open={editing === end}
-        onToggle={() => {
-          if (editing === end) onPreviewEnd();
-          setEditing(editing === end ? null : end);
-        }}
+        swatch={fill[end]}
+        value={fill[end]}
+        standard={PAGE_COLOUR_GROUPS}
+        yours={yours}
+        onPick={(hex) => onCommit({ ...fill, [end]: hex })}
+        onPreview={(hex) => onPreview({ ...fill, [end]: hex })}
+        onPreviewEnd={onPreviewEnd}
       />
       {label}
     </span>
@@ -123,21 +69,6 @@ export function CustomGradientEditor({
           Swap
         </button>
       </div>
-      {editing ? (
-        <InlineColourPicker
-          key={editing}
-          start={fill[editing]}
-          onPreview={(hex) => onPreview({ ...fill, [editing]: hex })}
-          onUse={(hex) => {
-            onCommit({ ...fill, [editing]: hex });
-            setEditing(null);
-          }}
-          onCancel={() => {
-            onPreviewEnd();
-            setEditing(null);
-          }}
-        />
-      ) : null}
       <MenuSliderRow
         label="Angle"
         min={0}

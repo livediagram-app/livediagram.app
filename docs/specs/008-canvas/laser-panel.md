@@ -19,7 +19,7 @@ A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): 
 Four, each a single-open accordion row with its current value in the collapsed header, over a live **preview stroke** that draws with the current settings.
 
 - **Width** — Fine / Medium / Bold (2 / 3.5 / 6 canvas px). Constant on screen at any zoom, like the trail itself.
-- **Colour** — **Your colour** (the default: the participant colour that already ties your cursor, your name chip, and your avatar's shirt together) plus a small fixed palette (red, orange, yellow, green, cyan, blue, violet, white). A presenter on a dark canvas needs a laser that reads against it, which their identity colour cannot promise.
+- **Colour** — a row opening the one [colour picker](../004-interface-design/colour-picker.md) in a popover beside it (the picker is wider than the panel): **Your colour** first (the default: the participant colour that already ties your cursor, your name chip, and your avatar's shirt together), then the strong standard colours, stored by name and drawn in their version for the canvas, then Custom colours and **+** for a custom colour. A presenter on a dark canvas needs a laser that reads against it, which their identity colour cannot promise. A pen saved with an earlier colour reads Cyan as Teal and White as Ink.
 - **Trail** — how long a sample lives before it fades out: Quick (400ms) / Normal (1s, today's behaviour) / Long (2.5s). Long is what turns the laser from a pointer into something you can draw a shape with.
 - **Effect** — **Beam** (the plain line + head dot), **Glow** (a soft wide halo under the stroke, for projectors), **Comet** (the stroke tapers from head to tail, so the direction of travel reads), **Spark** (a dotted trail rather than a continuous line).
 
@@ -35,11 +35,10 @@ Device-local, in `localStorage` (`livediagram:v2:laser-config`), like the avatar
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): changing a setting emits `UI·Changed·LaserWidth` / `LaserColour` / `LaserTrail` / `LaserEffect`. The colour VALUE is a preset token, never a hex the user typed — there is no custom colour here, deliberately: it would be one more thing to get wrong mid-presentation.
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): changing a setting emits `UI·Changed·LaserWidth` / `LaserColour` / `LaserTrail` / `LaserEffect`. The event names only which setting changed, never the colour itself.
 
 ## Out of scope
 
-- A custom colour picker. The eight presets plus "your colour" cover the need; the panel is meant to be usable while someone is talking.
 - Persisting a pen per document or per team. It is a personal, per-device ergonomic choice.
 - A laser that leaves permanent marks. That is the Pencil ([Canvas and palette](canvas-and-palette.md)) — the laser's whole nature is that it fades.
 - Pointer sounds, click-to-ping, or a "laser cursor" for peers who aren't presenting.

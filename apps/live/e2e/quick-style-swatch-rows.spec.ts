@@ -3,10 +3,9 @@ import { dismissQuickTour, expect, expectNoPageErrors, openStartBlank, test } fr
 
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
 // it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
-// Checked for a diagram's eight-swatch rows (the theme's seven and Ink) and Draw mode's Marker
-// colour rows (the nine stock colours, and the tab's eight custom colours).
+// Checked for a diagram's rows (the theme's seven, Ink and More colours) and Draw mode's Marker
+// colour rows (the nine stock colours and More colours, and the tab's eight custom colours).
 
-const PREFS_KEY = 'livediagram:user-preferences:v1';
 const YOURS = [
   '#ff6b00',
   '#00a39b',
@@ -18,20 +17,6 @@ const YOURS = [
   '#be123c',
 ];
 
-async function withPrefs(page: Page) {
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await page.addInitScript(
-    ([key, recent]) => {
-      const prefs = JSON.parse(localStorage.getItem(key as string) ?? '{}');
-      localStorage.setItem(
-        key as string,
-        JSON.stringify({ ...prefs, whiteboardYourColours: recent }),
-      );
-    },
-    [PREFS_KEY, YOURS] as const,
-  );
-}
-
 const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
 
 // Every swatch row in the panel: one line (every target on the same top, per row of a grid), and
@@ -39,11 +24,11 @@ const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
 async function rowsFit(page: Page) {
   return panel(page).evaluate((root) => {
     const inner = root.getBoundingClientRect();
-    const rows = [...root.querySelectorAll<HTMLElement>('[role="radiogroup"]')].filter((g) =>
-      g.querySelector('[role="radio"] span[style*="background"]'),
+    const rows = [...root.querySelectorAll<HTMLElement>('[role="group"]')].filter((g) =>
+      g.querySelector(':scope > * > button [data-swatch-chip], :scope > button [data-swatch-chip]'),
     );
     return rows.map((g) => {
-      const radios = [...g.querySelectorAll<HTMLElement>('[role="radio"]')];
+      const radios = [...g.querySelectorAll<HTMLElement>('button[data-colour-key]')];
       const box = g.getBoundingClientRect();
       const right = Math.max(...radios.map((r) => r.getBoundingClientRect().right));
       return {
@@ -67,33 +52,35 @@ function expectFit(rows: Awaited<ReturnType<typeof rowsFit>>) {
 }
 
 test.describe('swatch rows', () => {
-  test('a diagram’s eight-swatch rows sit on one line, unclipped', async ({ page, pageErrors }) => {
-    await withPrefs(page);
+  test('a diagram’s colour rows sit on one line, unclipped', async ({ page, pageErrors }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
     await openStartBlank(page);
     await page.keyboard.press('Escape');
     await page.keyboard.press('o');
     await page.mouse.click(500, 400);
     await expect(panel(page)).toBeVisible();
     const rows = await rowsFit(page);
-    expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(8);
+    expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(9);
     expectFit(rows);
     expectNoPageErrors(pageErrors);
   });
 
-  test('a whiteboard’s Marker colour rows: nine stock colours and eight customs, one line each', async ({
+  test('a whiteboard’s Marker colour rows: nine stock colours, More colours and eight customs, one line each', async ({
     page,
     pageErrors,
   }) => {
-    await withPrefs(page);
+    await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/new?template=whiteboard');
     await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await dismissQuickTour(page);
-    // Eight strokes, each in one of Your colours, so the tab uses eight custom colours.
+    // Eight strokes, each in its own custom colour picked with +, so the tab uses eight.
     const marker2 = page.getByRole('button', { name: /^Marker 2/ });
     for (const [i, hex] of YOURS.entries()) {
       await page.keyboard.press('2');
       if ((await marker2.getAttribute('aria-expanded')) !== 'true') await marker2.click();
-      await page.getByRole('button', { name: `Custom ${hex}`, exact: true }).click();
+      await page.getByRole('button', { name: 'Add a custom colour' }).click();
+      await page.getByRole('textbox', { name: 'Hex' }).fill(hex);
+      await page.getByRole('button', { name: 'Use', exact: true }).click();
       await page.keyboard.press('Escape');
       await page.mouse.move(640, 180 + i * 28);
       await page.mouse.down();
@@ -104,7 +91,7 @@ test.describe('swatch rows', () => {
     await page.mouse.click(810, 180);
     await expect(panel(page).getByText('Marker stroke')).toBeVisible();
     const rows = await rowsFit(page);
-    expect(rows.find((r) => r.name === 'Marker colour')?.count).toBe(9);
+    expect(rows.find((r) => r.name === 'Marker colour')?.count).toBe(10);
     expect(rows.find((r) => r.name === 'Custom colours')?.count).toBe(8);
     expectFit(rows);
     expectNoPageErrors(pageErrors);

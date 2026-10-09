@@ -186,13 +186,13 @@ Every page kind (infographic, article, slide and logo) is painted the same way. 
 **Theme** (shown while the tab's theme offers backgrounds), **Solid** and **Gradient**. It opens on
 the category of the page's current fill (a theme preset's on Theme, any other gradient's on
 Gradient, else Solid); moving between categories changes nothing on the page. Each category is
-the swatches below, then, on Solid and Gradient, its **custom** choice last.
+the swatches below, then, on Gradient, its **custom** choice last.
 
-- **Solid**: one colour. The panel offers twelve presets, from light to dark: **Paper** (the
-  default, no `background` stored), **Cream** `#fbf7ef`, **Mist** `#f1f5f9`, **Sky** `#e0f2fe`,
-  **Mint** `#dcfce7`, **Lavender** `#ede9fe`, **Blush** `#fce7f3`, **Sunshine** `#fef9c3`,
-  **Ink** `#1e293b`, **Midnight** `#0f172a`, **Forest** `#14532d`, **Plum** `#3b0764`, and a
-  **custom** colour (see "The colour picker" below).
+- **Solid**: one colour, from the one colour picker drawn in the panel
+  ([Colour picker](../004-interface-design/colour-picker.md)): **Paper** (the default, no
+  `background` stored), then the soft standard colours ("Light") and the strong ones ("Dark"), for
+  light paper, then Custom colours and **+**. A page holding an earlier preset (Cream, Mist, Midnight
+  and so on) keeps it; it shows as the custom colour in force.
 - **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
   element stroke, else its first palette colour, else the brand blue) and a second colour (a
   multi-colour theme's next palette colour, else the accent deepened): **Theme wash** (accent
@@ -207,17 +207,13 @@ the swatches below, then, on Solid and Gradient, its **custom** choice last.
   is the page's fill, then that gradient. Pressing it makes the page's fill a custom gradient
   (starting from the page's current gradient, or its current solid colour to a deepened version
   of it, or Sky to Lavender at 160° on the paper) and opens its editor under the swatches, as does
-  any gradient that is not a preset: **From** and **To** (each a colour well opening the
-  colour picker), **Angle** (a slider, 0° to 359° in steps of
+  any gradient that is not a preset: **From** and **To** (each a swatch button opening the colour
+  picker in a popover, with the Light and Dark rows), **Angle** (a slider, 0° to 359° in steps of
   5°, previewed while dragged, one edit on release) and **Swap** (exchanges From and To, one
   edit). The editor closes when another category or a preset is chosen.
-- **The colour picker** for a custom colour (the custom solid, From, To) opens in the panel under
-  its well, which shows pressed: Draw mode's custom colour picker (a saturation and brightness
-  square, a hue slider, a hex field and, where the browser has one, an eyedropper), without the
-  marker's board warning. Each change previews on the page; **Use** (or Enter in the hex field)
-  applies it as one edit and closes the picker; **Escape** or pressing the well again closes it,
-  dropping the preview. It is the app's own, never the system picker, so it closes without
-  leaving the panel.
+- **Previews**: hovering or focusing any colour (Solid, From, To) previews it on the page; a pick
+  is one edit. **+** opens the custom colour editor (no board warning). **Escape** in a From or To
+  popover closes the popover only, dropping its preview, and never the panel.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
   lines), drawn faintly in the page's ink at 24 px pitch.
 - **A dark page has light ink.** A page is dark when its background (a gradient's mean of its two

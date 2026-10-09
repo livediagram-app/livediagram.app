@@ -14,7 +14,6 @@ import {
   type PlanColumn,
 } from '@livediagram/items';
 import {
-  CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   PlusIcon,
@@ -32,7 +31,6 @@ import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import {
-  COLUMN_COLOURS,
   COLUMN_NAME_MAX,
   WIP_LIMIT_MAX,
   addColumnAfter,
@@ -55,10 +53,20 @@ import {
 } from './column-status-picks';
 import { usePlan } from './PlanContext';
 import { RemoveColumnPopover } from './RemoveColumnPopover';
+import { ColourPicker } from '@/components/colour/ColourPicker';
+import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { COLOUR_PICKER_WIDTH } from '@/components/colour/colour-metrics';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();
 
-const WIDTH = 280;
+// The picker's id for a column with no colour.
+const NO_COLOUR = 'none';
+const NO_COLOUR_OPTION = [noColour(NO_COLOUR, 'No colour')];
+const COLUMN_STANDARD = [standardGroup('strong', 'light', 'hex')];
+
+// The colour picker's width and the body's 12px padding either side.
+const WIDTH = COLOUR_PICKER_WIDTH + 24;
 const GAP = 6;
 
 const LABEL = 'mb-1.5 block text-[13px] text-slate-700 dark:text-slate-200';
@@ -68,35 +76,6 @@ const STEP =
 const ROW_BASE =
   'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[13px] transition disabled:opacity-35';
 const ROW = `${ROW_BASE} text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800`;
-
-// One colour choice: a filled dot (or a dashed ring for none) with a check when chosen.
-function Swatch({
-  label,
-  color,
-  checked,
-  onPick,
-}: {
-  label: string;
-  color?: string;
-  checked: boolean;
-  onPick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={checked}
-      aria-label={label}
-      className={`flex aspect-square w-full items-center justify-center rounded-full transition hover:scale-110 ${
-        color ? '' : 'border border-dashed border-slate-300 text-slate-500 dark:border-slate-600'
-      } ${checked ? 'ring-2 ring-brand-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900' : ''}`}
-      style={color ? { backgroundColor: color } : undefined}
-      onClick={onPick}
-    >
-      {checked ? <CheckIcon size={12} className={color ? 'text-white' : ''} /> : null}
-    </button>
-  );
-}
 
 export function PlanColumnPopover({
   getAnchor,
@@ -133,6 +112,8 @@ export function PlanColumnPopover({
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLButtonElement>(null);
   const plan = usePlan();
+  // Custom colours: the colours picked with + across the document.
+  const yours = useDocumentColours();
   // The statuses a column can take: the boards', any a card is in, and the card types' Default States.
   const statusNames = useMemo(
     () =>
@@ -248,22 +229,21 @@ export function PlanColumnPopover({
       <div className="flex flex-col gap-3 px-3 py-3">
         <div>
           <span className={LABEL}>Colour</span>
-          <div role="radiogroup" aria-label="Colour" className="grid grid-cols-9 gap-1.5">
-            <Swatch
-              label="No colour"
-              checked={!column.color}
-              onPick={() => onChange(recolourColumn(setup, column.id, null), 'ColumnColour')}
-            />
-            {COLUMN_COLOURS.map((c) => (
-              <Swatch
-                key={c}
-                label={`Colour ${c}`}
-                color={c}
-                checked={column.color === c}
-                onPick={() => onChange(recolourColumn(setup, column.id, c), 'ColumnColour')}
-              />
-            ))}
-          </div>
+          {/* The one colour picker (docs/specs/004-interface-design/colour-picker.md): No colour first, the
+              strong standard colours for light paper, then Custom colours with the board's column colours. */}
+          <ColourPicker
+            label="Colour"
+            value={column.color ?? NO_COLOUR}
+            leading={NO_COLOUR_OPTION}
+            standard={COLUMN_STANDARD}
+            yours={yours}
+            onPick={(id) =>
+              onChange(
+                recolourColumn(setup, column.id, id === NO_COLOUR ? null : id.toLowerCase()),
+                'ColumnColour',
+              )
+            }
+          />
         </div>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">

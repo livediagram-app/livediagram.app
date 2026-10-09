@@ -244,7 +244,8 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
   of background shows `transparent`, and an unfilled shape reads as background slot 0. Edits and
   Clear styles skip `memory.recordEdit` / `memory.forget`.
 - Marker rows (`apps/live/lib/quick-style-pen.ts`, `QuickPenRows.tsx`), titled **Marker colour** and
-  **Marker width**, quick choices only (no picker in the panel): `view.pen` is
+  **Marker width**, quick choices first, then More colours (`QuickMoreColours`, the full colour
+  picker, `docs/specs/004-interface-design/colour-picker.md`): `view.pen` is
   `strokesPenStyle(selected, palette)` (pen strokes: `freehand` with `penWidth`, not a highlight,
   unlocked; captioned "Marker stroke" / "N marker strokes"), else `heldPenStyle(pen, palette)` when
   nothing is selected and `whiteboardDock.tool === 'pen'`. `PenPalette = { board, ink, custom }`:
@@ -257,16 +258,15 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
     `tabCustomColours` walks the tab's elements from the last (the most recently drawn) and takes
     the `#rrggbb` `strokeColor` of pen strokes, shapes and lines, lower-cased and deduplicated, at most
     `TAB_CUSTOM_COLOURS_MAX` (8). No Remove there: it reflects the tab.
-  - Both colour rows are `QuickRadioRow` with `columns = QUICK_ROW_TARGETS` (9): a grid of
+  - Both colour rows are `QuickRadioRow` with `columns = QUICK_ROW_TARGETS` (10, More colours
+    included): a grid of
     24 px columns, touching, so a shorter row lines up
     under the full one.
   - A stroke's value is `strokeColor` (lower case) ?? `penColour` ?? Ink; `applyPenStyle` sets Ink by
     clearing both, a name as `penColour` (clearing `strokeColor`), a hex as `strokeColor` (clearing
     `penColour`). For the held pen Ink is `colour: null`.
     `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
-    / `QuickStrokeWidth`) and `remember` the colour (a custom one moves to the front of Your colours),
-    or call `updatePen` for the held pen (its own `Draw·Changed` tokens; `updatePen`
-    remembers). Clear styles shows only when `targetIds` is non-empty. `QuickPenRows`
+    / `QuickStrokeWidth`), or call `updatePen` for the held pen (its own `Draw·Changed` tokens). Clear styles shows only when `targetIds` is non-empty. `QuickPenRows`
     shows `subject.name` as a caption unless `QuickStylePanel` has `powerUser` (from `isPowerUserMode`).
     Choosing the held pen's current value is a no-op.
 
@@ -275,7 +275,8 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
 Spec: draw-mode.md "The colour picker". Pure data in `packages/document/src/pen-colours.ts` (a leaf
 module: no value imports).
 
-- Stock colours: Ink (`null`, `WHITEBOARD_INK`), then `PEN_COLOURS`, eight `{ id, label, hue,
+- Stock colours: Ink (`null`, `WHITEBOARD_INK`), Grey (`GREY_PEN_COLOUR`, OKLCH chroma 0, tuned like the
+  others, not in `PEN_COLOURS` so the snap and import never measure its hue), then `PEN_COLOURS`, eight `{ id, label, hue,
 chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), yellow (90,
   0.18, dark board `YELLOW_DARK_CONTRAST` = 12), green (145, 0.16), teal (190, 0.12), violet (295,
   0.19), pink (350, 0.18). `PenColourName` is the id; `PEN_COLOUR_NAMES`
@@ -302,32 +303,18 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   keeps the ink (`null`, for any pen), a name or a hex (lower-cased); the seven old fixed hexes
   (`LEGACY_PEN_COLOURS`) read as their names; anything else or a missing colour, the pen's default;
   the main pen is always the ink. Existing strokes are untouched.
-- Labels: `colourLabel` "Ink", "Blue", "Custom #ff6b00"; the pen button "Marker 2, blue, medium".
+- Labels: `colourLabel` "Ink", "Blue", "#ff6b00"; the pen button "Marker 2, blue, medium".
 - Resolved colour everywhere the pen shows: the dock glyph (`DrawingToolsGroup`), the cursor
   (`useWhiteboardPenCursor`, the Settings cursor previews), the live ink and recognition preview
   (`WhiteboardPenPreview`), each through `penColourCss(colour, appearance, ink)`; the draw-intent
   default cursor uses the light version.
-- Your colours (`apps/live/lib/pen-colour-memory.ts`, `usePenColourMemory`): user preferences
-  `whiteboardYourColours`, custom hexes, at most `YOUR_COLOURS_MAX` (8), newest first, deduplicated,
-  parsed on read. `rememberPenColour`: a custom hex → the front; Ink or a stock colour → unchanged.
-  `forgetPenColour`: removes one (logged `[whiteboard] custom colour removed from Your colours`).
-  Written off the freshest stored preferences, only when changed. `updatePen` remembers every colour
-  change; the quick style panel remembers a stroke restyle.
 - `ColourPicker` (`components/canvas/whiteboard/ColourPicker.tsx`), in the flyout of Markers 2 and 3
-  above the Width row, 248 px wide (the nine stock colours, or eight of Your colours and +):
-  "Colours", the nine stock colours
-  as 24 px buttons with 20 px chips, `aria-label` the colour's label, `aria-pressed` the colour in
-  force (Ink for `null`); "Your colours", a button per custom hex ("Custom #ff6b00") and "Add a
-  custom colour" (+), which toggles `CustomColourEditor` in place. `useSwatchRowKeys(count)`: roving
-  tabindex per row (the colour in force, else the first); Left and Right (held at the ends), Home and
-  End; focus moves, Enter or Space picks.
-- Removing one of Your colours: right-click, a touch long-press (`useLongPress`), Shift+F10 or the
-  context-menu key on its swatch opens `PortalMenu` below it with one `MenuActionRow` **Remove**
-  (focused on open; Escape closes it back to the swatch). Its content is marked `data-flyout-child`,
-  which `WhiteboardFlyout` counts as its own for outside presses. Remove calls
-  `colourMemory.forget(hex)`; once Your colours no longer hold it, the focus goes to the swatch at its
-  place, or + when it was the last. A marker set to it keeps it until changed.
-- `CustomColourEditor`: a saturation and brightness square (`role="slider"`, pointer drag with
+  above the Width row: the one colour picker (`components/colour/ColourPicker.tsx`,
+  `docs/specs/004-interface-design/blueprints/colour-picker.md`) labelled "Marker colour", with
+  `standardGroup('strong', board, 'name')` (Ink, Grey and the eight hued, by name; Ink maps to the
+  pen's `null`), Custom colours from `useDocumentColours()` and + with `boardWarning`. The per-user Your
+  colours list and its Remove menu are retired (`whiteboardYourColours` is dead).
+- `CustomColourEditor` (`components/colour/CustomColourEditor.tsx`): a saturation and brightness square (`role="slider"`, pointer drag with
   capture, arrows 1%, Shift 10%, `aria-valuetext` "Saturation n%, brightness n%"), a hue range
   (0 to 359), a preview chip, a "Hex" field (valid `#rgb`/`#rrggbb` updates the square; Enter uses
   it), the eyedropper (`useEyeDropper`, only where supported) and **Use**. Opens on the custom colour
@@ -842,7 +829,7 @@ by name so the px can be retuned) → Medium; an unknown `activePenId` or
 | `FreehandElement.streamline`         | element (0 to 1)                                                                 | document     | yes      |
 | `FreehandElement.strokeColor`        | element (a custom colour)                                                        | document     | yes      |
 | `penColour` (freehand, shape, arrow) | element (a named colour)                                                         | document     | yes      |
-| Your colours                         | user preferences blob                                                            | synced       | per user |
+| Custom colours                       | picked with + (`Tab.customColours`, `documentColours`)                           | document     | yes      |
 | `WhiteboardPrefs`                    | `localStorage` `livediagram:v2:whiteboard-pens`                                  | device-local | never    |
 | pen seen                             | module memory                                                                    | session      | never    |
 
@@ -962,15 +949,14 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Stock colours drawn for the canvas                                             | `packages/document/src/stock-colours.test.ts`                                            |
 | Stroke touch and partial split                                                 | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Pen ink: width at pressure, outline, centre line                               | `packages/document/src/pen-stroke.test.ts`                                               |
-| Nine stock colours, each version 4.5:1 or more, darker on the light board      | `packages/document/src/pen-colours.test.ts`                                              |
+| Stock colours and Grey, each version 4.5:1 or more, darker on the light board  | `packages/document/src/pen-colours.test.ts`                                              |
 | `penColour` validated; projected per board; kept by erase pieces               | `validate.test.ts`, `whiteboard.test.ts`, `whiteboard-stroke.test.ts`                    |
 | Canvas and export draw the named colour for the canvas                         | `apps/live/lib/stock-colour-projector.test.ts`, `export-as-seen.test.ts`                 |
 | Marker prefs: ink for any marker, names, custom hex, old colours read as names | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |
 | Commit records a name or a hex                                                 | `apps/live/hooks/canvas/commit-freehand.test.ts`                                         |
-| Your colours newest first, eight, Remove, synced                               | `pen-colour-memory.test.ts`, `useWhiteboard.test.tsx`                                    |
-| Picker: stock row, row keys, Your colours and Remove, custom, reserved warning | `components/canvas/whiteboard/ColourPicker.test.tsx`, `lib/hsv.test.ts`                  |
+| Picker: standard row by name, Ink as null, custom in force, reserved warning   | `components/canvas/whiteboard/ColourPicker.test.tsx`, `lib/hsv.test.ts`                  |
 | Marker glyph and cursor in the resolved colour, ink included                   | `WhiteboardDock.test.tsx`, `useWhiteboardPenCursor.test.tsx`                             |
-| Marker rows: nine stock colours, the tab's customs, Marker 1                   | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`          |
+| Marker rows: nine stock colours, More colours, the tab's customs, Marker 1     | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`          |
 | Swatch rows one line, never clipped, both engines                              | `e2e/quick-style-swatch-rows.spec.ts`                                                    |
 | Settled ink unchanged as samples arrive (no trim)                              | `packages/document/src/pen-stroke.test.ts`                                               |
 | Freehand box on whole canvas px, points round-trip                             | `packages/document/src/freehand.test.ts`                                                 |
@@ -1033,7 +1019,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | `PERFECT_FREEHAND_END_NOISE`    | 3                                | perfect-freehand | its value       |
 | `PEN_STOCK_CONTRAST`            | 6                                | D29              | 4.5 to 7        |
 | `PEN_MIN_CONTRAST`              | 3                                | WCAG 1.4.11      | 3               |
-| `YOUR_COLOURS_MAX`              | 8                                | spec             | fixed           |
+| `YOUR_COLOURS_MAX`              | 12 (`lib/document-colours.ts`)   | colour-picker.md | fixed           |
 | `TAB_CUSTOM_COLOURS_MAX`        | 8                                | spec             | panel width     |
 | Custom picker start             | `#3b82f6`                        | mock             | any hex         |
 | perfect-freehand `size`         | `width / (2 · sin(π/4))`         | calibration      | derived         |

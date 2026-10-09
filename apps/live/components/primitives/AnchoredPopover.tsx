@@ -53,11 +53,29 @@ export function placeAnchored(
       };
 }
 
+// Beside a host panel instead (a menu narrower than what it opens): to its right, level with the
+// anchor, else to its left when the right has no room; the top is clamped on-screen.
+export function placeBeside(
+  anchor: { top: number },
+  host: { left: number; right: number },
+  size: { width: number; height: number },
+  viewport: { width: number; height: number },
+): AnchoredPlace {
+  const right = host.right + GAP;
+  const left =
+    right + size.width <= viewport.width - EDGE
+      ? right
+      : Math.max(EDGE, host.left - GAP - size.width);
+  const top = Math.max(EDGE, Math.min(anchor.top, viewport.height - EDGE - size.height));
+  return { left, side: 'below', top, maxHeight: Math.max(0, viewport.height - top - EDGE) };
+}
+
 export function AnchoredPopover({
   anchor,
   name,
   width,
   onClose,
+  beside,
   children,
 }: {
   anchor: HTMLElement;
@@ -65,6 +83,8 @@ export function AnchoredPopover({
   name: string;
   width: number;
   onClose: () => void;
+  // Open beside this panel rather than under the anchor (placeBeside).
+  beside?: HTMLElement | null;
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -81,12 +101,16 @@ export function AnchoredPopover({
       const node = panel.current;
       if (!node) return;
       const w = Math.min(width, window.innerWidth - 2 * EDGE);
-      const next = placeAnchored(
-        anchor.getBoundingClientRect(),
-        { width: w, height: node.scrollHeight },
-        { width: window.innerWidth, height: window.innerHeight },
-        side.current,
-      );
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const size = { width: w, height: node.scrollHeight };
+      const next = beside
+        ? placeBeside(
+            anchor.getBoundingClientRect(),
+            beside.getBoundingClientRect(),
+            size,
+            viewport,
+          )
+        : placeAnchored(anchor.getBoundingClientRect(), size, viewport, side.current);
       side.current = next.side;
       setPos(next);
     };
@@ -100,7 +124,7 @@ export function AnchoredPopover({
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [anchor, width]);
+  }, [anchor, width, beside]);
 
   useEffect(() => {
     panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
@@ -121,9 +145,9 @@ export function AnchoredPopover({
         aria-label={name}
         // A host popover's outside-press check leaves this one alone.
         data-anchored-popover
-        // Over its dialog, and over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
-        // menu opened mid-tour is never dimmed.
-        className="fixed z-[calc(var(--z-modal)+2)] overflow-y-auto overscroll-contain rounded-lg shadow-lg"
+        // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
+        // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
+        className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg"
         style={{
           width: `min(${width}px, calc(100vw - ${2 * EDGE}px))`,
           left: pos?.left ?? -9999,

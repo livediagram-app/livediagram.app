@@ -152,6 +152,7 @@ export function ElementColourBorderSections({
             {supportsFillColor(target) ? (
               <ColourRow
                 label="Background"
+                tone="soft"
                 icon={<FillColourIcon />}
                 value={
                   (target as { fillColor?: string }).fillColor ??
@@ -169,6 +170,7 @@ export function ElementColourBorderSections({
             {hasHeadingBand(target) ? (
               <ColourRow
                 label="Heading"
+                tone="soft"
                 icon={<HeadingColourIcon />}
                 value={(target as { headerFill?: string }).headerFill ?? 'transparent'}
                 {...headerFillHandlers}

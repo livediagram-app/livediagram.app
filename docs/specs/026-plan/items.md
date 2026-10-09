@@ -90,17 +90,18 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 
 ## Colour
 
-- An item's **Colour** is one of the twelve swatches a card type is given from (the type editor's Colour), or none.
-  Any other value is refused, like any invalid field value.
+- An item's **Colour** is any `#rrggbb` colour, or none. Any other value is refused, like any invalid field value
+  (agents and MCP included).
 - It is an **addition** to the type colour, never a replacement: a card keeps its type's stripe and glyph colour,
   and the item's colour shows as a small dot beside them.
-- It is set in the item panel from one compact dropdown showing the colour's dot and name (or **None**); it opens
-  the same swatches as the type editor, plus **None**, which clears it, in a small popover under the field, inside
-  the item panel (so the panel's focus trap holds it). A pick closes it, as do Escape (which leaves the card open
-  and returns focus to the field), Tab out of it and a press outside.
-- The swatches are one radio group with one Tab stop, the picked swatch (or None, or the first when nothing is
-  picked): the arrow keys move along them (wrapping), Home and End jump to the ends, and Enter or Space picks.
-  Opening the popover (a click, Enter, Space or an arrow key on the field) moves focus to the picked swatch.
+- It is set in the item panel from one compact field showing the colour's swatch and name (or **None**); it opens
+  the one colour picker ([Colour picker](../004-interface-design/colour-picker.md)) in a popover: **None** (which
+  clears it), the strong standard colours, Custom colours and **+**. A pick closes it, as does Escape (which leaves
+  the card open and returns focus to the field) and a press outside. A colour from an earlier Plan palette keeps
+  its word ("Amber", "Cyan").
+- The picker's keyboard is the colour picker's: one Tab stop (the picked swatch, else None), the arrow keys move
+  focus (wrapping), Home and End jump to the ends, and Enter or Space picks. Opening it (a click, or an arrow key on
+  the field) moves focus to the picked swatch.
 - Where it shows:
   - **Card face**: a small dot beside the card's type label.
   - **Parent**: in the item panel, the Parent field (and the cards in its list) draws the linked card's type glyph in

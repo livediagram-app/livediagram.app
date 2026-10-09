@@ -26,6 +26,13 @@ import type {
   TextAlignY,
 } from '@livediagram/document';
 import { HoverCard } from '@livediagram/ui';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+
+// What the swatch shows while the selection has no colour of its own.
+const DEFAULT_TEXT_COLOUR = '#0f172a';
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
@@ -52,6 +59,8 @@ export function RichTextToolbar({
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
 }) {
   const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
+  const appearance = useCanvasSurface();
+  const yours = useDocumentColours();
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
@@ -94,24 +103,21 @@ export function RichTextToolbar({
         <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
       </ToolbarDropdown>
       {TOOLBAR_DIVIDER}
+      {/* The selection's colour: the one colour picker
+          (docs/specs/004-interface-design/colour-picker.md) behind a swatch button. A press
+          never takes focus from the text (the editor keeps its selection, and its onBlur ignores
+          focus landing in the picker's popover). */}
       <HoverCard title="Text colour" description="Colour the selected text.">
-        <label
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-          aria-label="Text color"
-        >
-          <span
-            className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600"
-            style={{ backgroundColor: active.color ?? '#0f172a' }}
-            aria-hidden
-          />
-          <input
-            type="color"
-            value={active.color ?? '#0f172a'}
-            onChange={(e) => onColor(e.target.value)}
-            aria-label="Text color"
-            className="absolute h-0 w-0 opacity-0"
-          />
-        </label>
+        <ColourSwatchButton
+          label="Text colour"
+          value={active.color ?? null}
+          swatch={active.color ?? DEFAULT_TEXT_COLOUR}
+          standard={[standardGroup('strong', appearance, 'hex')]}
+          yours={yours}
+          preserveFocus
+          className={`h-8 w-8 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800`}
+          onPick={onColor}
+        />
       </HoverCard>
     </div>
   );

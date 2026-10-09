@@ -232,11 +232,8 @@ type UserPreferences = {
   // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
-  // Colours you have used that the active theme did not already offer
-  // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it;
-  // right-clicking a swatch removes it. Newest first, capped at 12, synced
-  // like every other preference so a palette you have built follows you
-  // between devices.
+  // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
+  // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
   // The quick style panel's custom swatches (../008-canvas/quick-style-panel.md
   // "Custom swatches"): per theme, newest-edited first, which of a row's six
@@ -257,9 +254,8 @@ type UserPreferences = {
   // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
   whiteboardPinnedShapes?: string[];
   whiteboardShapePicks?: Record<string, [number, number]>;
-  // The whiteboard markers' Your colours (../023-draw-mode/draw-mode.md "The
-  // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
-  // takes one out. Junk is dropped on read (lib/pen-colour-memory).
+  // DEAD, like `customSwatches`: the markers' Custom colours are the document's
+  // (../004-interface-design/colour-picker.md). Kept because it is already stored.
   whiteboardYourColours?: string[];
   // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
   // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the

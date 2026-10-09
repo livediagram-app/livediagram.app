@@ -46,7 +46,12 @@ export type HuedPenColourName = (typeof PEN_COLOURS)[number]['id'];
 // Ink by name (docs/specs/007-editor/editor-modes.md "One look"): the board's own drawing colour,
 // a stock colour like the eight, drawn in PEN_INK for each appearance.
 export const INK_PEN_COLOUR = 'ink';
-export type PenColourName = typeof INK_PEN_COLOUR | HuedPenColourName;
+// Grey (docs/specs/004-interface-design/colour-picker.md "The colours"): a neutral stock colour,
+// tuned per board like the hued ones but with no hue, so it is not in PEN_COLOURS, the list the snap
+// and the board-scene import measure hues against.
+export const GREY_PEN_COLOUR = 'grey';
+const GREY: PenColourSpec = { id: GREY_PEN_COLOUR, label: 'Grey', hue: 0, chroma: 0 };
+export type PenColourName = typeof INK_PEN_COLOUR | typeof GREY_PEN_COLOUR | HuedPenColourName;
 
 /** The eight hued stock colours, in the pickers' order after Ink. */
 export const PEN_COLOUR_NAMES: readonly HuedPenColourName[] = PEN_COLOURS.map((c) => c.id);
@@ -74,7 +79,7 @@ export const PEN_BOARDS: Readonly<Record<Appearance, string>> = {
 const L_STEP = 0.0045;
 const L_STEPS = 200;
 
-const NAMES = new Set<string>([INK_PEN_COLOUR, ...PEN_COLOUR_NAMES]);
+const NAMES = new Set<string>([INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES]);
 
 export function isPenColourName(v: unknown): v is PenColourName {
   return typeof v === 'string' && NAMES.has(v);
@@ -83,6 +88,7 @@ export function isPenColourName(v: unknown): v is PenColourName {
 /** "Blue": the swatch's tooltip and accessible name. */
 export function penColourLabel(name: PenColourName): string {
   if (name === INK_PEN_COLOUR) return 'Ink';
+  if (name === GREY_PEN_COLOUR) return GREY.label;
   return PEN_COLOURS.find((c) => c.id === name)!.label;
 }
 
@@ -180,15 +186,13 @@ function tune(colour: PenColourSpec, board: Appearance): string {
   return toHex(best!);
 }
 
-const TABLE: Readonly<Record<Appearance, Readonly<Record<HuedPenColourName, string>>>> = {
-  light: Object.fromEntries(PEN_COLOURS.map((c) => [c.id, tune(c, 'light')])) as Record<
-    HuedPenColourName,
-    string
-  >,
-  dark: Object.fromEntries(PEN_COLOURS.map((c) => [c.id, tune(c, 'dark')])) as Record<
-    HuedPenColourName,
-    string
-  >,
+type TunedName = Exclude<PenColourName, typeof INK_PEN_COLOUR>;
+const TUNED: readonly PenColourSpec[] = [GREY, ...PEN_COLOURS];
+const tableFor = (board: Appearance) =>
+  Object.fromEntries(TUNED.map((c) => [c.id, tune(c, board)])) as Record<TunedName, string>;
+const TABLE: Readonly<Record<Appearance, Readonly<Record<TunedName, string>>>> = {
+  light: tableFor('light'),
+  dark: tableFor('dark'),
 };
 
 /** The `#rrggbb` a named colour is drawn in on a board. */
@@ -215,6 +219,11 @@ export function penColourCss(colour: PenColour | null, board: Appearance, ink: s
 /** The boards a custom colour is under 3:1 on: the picker's "Hard to see on the dark board". */
 export function penColourHardToSee(hex: string): Appearance[] {
   return (['light', 'dark'] as const).filter((b) => !(penContrast(hex, b) >= PEN_MIN_CONTRAST));
+}
+
+/** The `#rrggbb` at OKLCH (lightness 0..1, chroma, hue in degrees), its chroma cut to fit sRGB. */
+export function oklchHex(l: number, c: number, h: number): string {
+  return toHex(oklchRgb(l, c, h));
 }
 
 /** A `#rrggbb` colour in OKLCH (lightness 0..1, chroma, hue in degrees), or null for anything else. */

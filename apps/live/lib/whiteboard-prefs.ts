@@ -86,10 +86,10 @@ export function penAdjustsColour(pen: WhiteboardPen): boolean {
   return pen.id !== 'main';
 }
 
-/** "Ink", "Blue" or "Custom #ff6b00": a colour's tooltip and accessible name. */
+/** "Ink", "Blue" or "#ff6b00": a colour's tooltip and accessible name. */
 export function colourLabel(colour: PenColour | null): string {
   if (colour === null) return 'Ink';
-  return isPenColourName(colour) ? penColourLabel(colour) : `Custom ${colour}`;
+  return isPenColourName(colour) ? penColourLabel(colour) : colour;
 }
 
 export function widthLabel(px: number): string {

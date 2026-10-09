@@ -129,6 +129,7 @@ export function MultiStyleSections({
           {fillSrc ? (
             <ColourRow
               label="Background"
+              tone="soft"
               icon={<FillColourIcon />}
               value={fillSrc.fillColor ?? defaultFillColor(fillSrc, surface)}
               {...fillColorHandlers}

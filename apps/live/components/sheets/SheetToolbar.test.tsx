@@ -20,8 +20,7 @@ let phone = false;
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => phone }));
 vi.mock('@/hooks/ui/useColourPalette', () => ({
   useColourPalette: () => ({
-    addCustomColor: vi.fn(),
-    swatches: { presets: ['#ff0000', '#00ff00'], customs: [], onAddCustom: vi.fn() },
+    swatches: { presets: ['#ff0000', '#00ff00'] },
   }),
 }));
 
@@ -189,19 +188,14 @@ describe('the sheet toolbar', () => {
     show(h);
     pickCategory('Text');
     // The theme's first colours as swatches, the cell's own ringed.
-    const swatches = within(screen.getByRole('group', { name: 'Text Colour' })).getAllByRole(
-      'button',
-      {
-        name: /^Text Colour #/,
-      },
-    );
+    // The Theme Palette's first five, drawn with the one swatch and named by colour words, then +.
+    const swatches = within(screen.getByRole('group', { name: 'Text Colour' }))
+      .getAllByRole('button')
+      .filter((b) => b.hasAttribute('aria-pressed'));
     expect(swatches).toHaveLength(5);
-    const colour = swatches[0]!
-      .getAttribute('aria-label')!
-      .replace('Text Colour ', '')
-      .toLowerCase();
+    expect(swatches[0]!.getAttribute('aria-label')).not.toMatch(/#/);
     fireEvent.click(swatches[0]!);
-    expect(h.cell('A1')?.format?.fc).toBe(colour);
+    expect(h.cell('A1')?.format?.fc).toMatch(/^#[0-9a-f]{6}$/i);
     expect(swatches[0]!.getAttribute('aria-pressed')).toBe('true');
     const more = () => fireEvent.click(screen.getByRole('button', { name: 'More Text Colours' }));
     more();
@@ -209,44 +203,37 @@ describe('the sheet toolbar', () => {
     expect(h.cell('A1')?.format?.fc).toBeUndefined();
     pickCategory('Cells');
     // The fill as the text: swatches on the toolbar, + for the full picker.
-    const fills = within(screen.getByRole('group', { name: 'Fill Colour' })).getAllByRole(
-      'button',
-      {
-        name: /^Fill Colour #/,
-      },
-    );
+    const fills = within(screen.getByRole('group', { name: 'Fill Colour' }))
+      .getAllByRole('button')
+      .filter((b) => b.hasAttribute('aria-pressed'));
     expect(fills).toHaveLength(5);
     fireEvent.click(fills[1]!);
-    expect(h.cell('A1')?.format?.bg).toBe(
-      fills[1]!.getAttribute('aria-label')!.replace('Fill Colour ', '').toLowerCase(),
-    );
+    expect(h.cell('A1')?.format?.bg).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(fills[1]!.getAttribute('aria-pressed')).toBe('true');
     const moreFill = () =>
       fireEvent.click(screen.getByRole('button', { name: 'More Fill Colours' }));
     moreFill();
-    fireEvent.click(screen.getByRole('button', { name: '#00ff00' }));
+    // The full picker: the Theme Palette (the theme's colours, by word), the standard colours, + for a custom one.
+    const palette = screen.getByRole('group', { name: 'Theme Palette' });
+    fireEvent.click(within(palette).getByRole('button', { name: 'Green' }));
     expect(h.cell('A1')?.format?.bg).toBe('#00ff00');
+    const custom = (hex: string) => {
+      fireEvent.click(screen.getByRole('button', { name: 'Add a custom colour' }));
+      fireEvent.change(screen.getByRole('textbox', { name: 'Hex' }), { target: { value: hex } });
+      fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    };
     moreFill();
-    // A custom colour applies as it is dragged, keeping the menu open.
-    fireEvent.change(screen.getByLabelText('Custom Fill colour').querySelector('input')!, {
-      target: { value: '#123456' },
-    });
+    custom('#123456');
     expect(h.cell('A1')?.format?.bg).toBe('#123456');
-    fireEvent.change(screen.getByLabelText('Custom Fill colour').querySelector('input')!, {
-      target: { value: '#000000' },
-    });
+    moreFill();
     fireEvent.click(screen.getByRole('button', { name: 'No fill colour' }));
     expect(h.cell('A1')?.format?.bg).toBeUndefined();
     pickCategory('Text');
     more();
-    fireEvent.change(screen.getByLabelText('Custom Text colour').querySelector('input')!, {
-      target: { value: '#abcdef' },
-    });
+    custom('#ABCDEF');
     expect(h.cell('A1')?.format?.fc).toBe('#abcdef');
-    fireEvent.change(screen.getByLabelText('Custom Text colour').querySelector('input')!, {
-      target: { value: '#000000' },
-    });
-    expect(h.cell('A1')?.format?.fc).toBe('#000000');
     // Its header row closes it.
+    more();
     fireEvent.click(screen.getByRole('button', { name: 'Text', expanded: true }));
     expect(screen.queryByRole('button', { name: 'No text colour' })).toBeNull();
   });

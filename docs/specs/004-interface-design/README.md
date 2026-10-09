@@ -23,3 +23,4 @@ Follow the references below only as needed; never upfront.
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule
 - ./date-fields.md - when adding, styling or saving a date or time input: it fits its column on phones and iPads, saves only a whole date (`DateInput`), a dropdown opens the picker, and how a card's date reads
 - ./search-and-filters.md - when a search can also be narrowed by filters: one field, the filters as chips inside it (FilterSearchBox), never a filter row under the box
+- ./colour-picker.md - when adding or changing anything that chooses a colour: the one picker, its standard colours (strong and soft), Custom Colours, the custom colour editor, keyboard and skins; read before building anything colour-related, never a new picker

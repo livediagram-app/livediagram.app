@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import {
   DEFAULT_LASER_CONFIG,
@@ -63,12 +64,14 @@ export function LaserOverlay({ trails, zoom }: LaserOverlayProps) {
 }
 
 function Trail({ trail, zoom, now }: { trail: LaserTrail; zoom: number; now: number }) {
+  // A standard colour draws in its version for the canvas behind it.
+  const appearance = useCanvasSurface();
   // A peer who sends no pen at all gets the ORIGINAL laser: medium beam, their
   // own colour, fading over a second. So an older client, or anyone who never
   // opens the panel, looks exactly as they always did.
   const config = trail.config ?? DEFAULT_LASER_CONFIG;
   const lifetime = laserLifetimeMs(config);
-  const stroke = laserColour(config, trail.color);
+  const stroke = laserColour(config, trail.color, appearance);
   const strokeW = laserStrokeWidth(config) / zoom;
   const headR = strokeW * 1.7;
 

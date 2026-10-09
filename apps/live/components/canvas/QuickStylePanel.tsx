@@ -39,6 +39,9 @@ import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { BoardColourRows, QuickPenRows } from './QuickPenRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
+import { QuickMoreColours } from './QuickMoreColours';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useCanvasSurface } from './CanvasSurfaceContext';
 import {
   QUICK_BORDER_PX,
   QUICK_COMPACT_PADDING_PX,
@@ -287,6 +290,7 @@ function QuickStyleSections({
       if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
     };
   const { width, style, textAlign, iconAlign, corners } = view.sections;
+  const surface = useCanvasSurface();
   // Whose style this is when it is not plainly the selection: the pen in hand,
   // the selected strokes, or a tool's next mark. Power user mode leaves it out.
   const caption = view.caption ?? view.pen?.subject.name ?? view.highlighter?.subject.name;
@@ -339,6 +343,28 @@ function QuickStyleSections({
             columns={QUICK_ROW_TARGETS}
             onOptionContext={editFor(row.role)}
             value={colours.value}
+            more={
+              <QuickMoreColours
+                rowTitle={row.title}
+                // The row's pick in force, as the picker names it: a theme swatch's colour, or Ink.
+                value={
+                  colours.value === QUICK_INK
+                    ? 'ink'
+                    : (colours.swatches.find((sw) => sw.slot === colours.value)?.color ?? null)
+                }
+                theme={colours.swatches.map((sw) => ({
+                  id: sw.color,
+                  colour: sw.color,
+                  label: sw.name,
+                }))}
+                standard={standardGroup(
+                  row.role === 'fill' ? 'soft' : 'strong',
+                  surface,
+                  row.role === 'fill' ? 'hex' : 'name',
+                )}
+                onPick={(id) => quickStyle.setColour(row.role, id)}
+              />
+            }
             onChoose={(value) => {
               // Ink is a choice of the Stroke and Text colour rows only.
               if (value !== QUICK_INK) quickStyle[row.set](value);

@@ -226,3 +226,18 @@ describe('hexOklch', () => {
     expect(hexOklch('#fff')).toBeNull();
   });
 });
+
+describe('Grey, the neutral stock colour', () => {
+  it('is a stock name, tuned per board, and never a hue the snap measures', async () => {
+    const m = await import('./pen-colours');
+    expect(m.isPenColourName('grey')).toBe(true);
+    expect(m.penColourLabel('grey')).toBe('Grey');
+    expect(m.PEN_COLOUR_NAMES).not.toContain('grey');
+    for (const board of ['light', 'dark'] as const) {
+      const hex = m.penColourHex('grey', board);
+      expect(m.hexOklch(hex)!.c).toBeLessThan(0.01);
+      expect(m.penContrast(hex, board)).toBeGreaterThanOrEqual(m.PEN_STOCK_CONTRAST - 0.2);
+      expect(hex).not.toBe(m.penColourHex('ink', board));
+    }
+  });
+});

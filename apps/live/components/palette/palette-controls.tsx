@@ -1,7 +1,14 @@
 import { type TextAlignX, type TextAlignY } from '@livediagram/document';
 import { AlignIcon } from '@/components/palette/palette-icons';
 import { onMouseHover } from '@/components/primitives/hover-preview';
+import { useState } from 'react';
 import { HoverCard, Tooltip } from '@livediagram/ui';
+import type { StandardTone } from '@livediagram/document';
+import { ColourPopover } from '@/components/colour/ColourPopover';
+import { SwatchChip } from '@/components/colour/ColourSwatch';
+import { standardGroup, standardOptions } from '@/components/colour/colour-options';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 // The theme-tinted palette tile + its tint context moved to
 // PaletteIconButton.tsx; re-exported so existing imports keep working.
@@ -154,37 +161,97 @@ export function AlignmentGrid({
   );
 }
 
-export function ColorSwatch({
+// A colour well opening the one colour picker (docs/specs/004-interface-design/colour-picker.md)
+// in a popover under its trigger: the canvas and pattern colours here, the custom theme builder's
+// tiles and dots. Free colours, so it offers both tones of the standard colours (soft first, for
+// backgrounds), by hex, for the canvas behind; Custom colours; and +. A pick closes it and hands focus
+// back to the trigger.
+export function useColourWell({
   label,
   value,
   onChange,
+  tones = ['soft', 'strong'],
 }: {
   label: string;
   value: string;
   onChange: (color: string) => void;
+  tones?: readonly StandardTone[];
 }) {
+  const [open, setOpen] = useState(false);
+  // The trigger, held in state (a callback ref) so the popover can anchor to it during render.
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const appearance = useCanvasSurface();
+  const yours = useDocumentColours();
+  const standard =
+    tones.length === 1
+      ? [standardGroup(tones[0]!, appearance, 'hex')]
+      : tones.map((tone) => ({
+          heading: TONE_HEADING[tone],
+          options: standardOptions(tone, appearance, 'hex'),
+        }));
+  const popover =
+    open && anchor ? (
+      <ColourPopover
+        anchor={anchor}
+        label={label}
+        value={value}
+        standard={standard}
+        yours={yours}
+        onClose={() => setOpen(false)}
+        onPick={(hex) => {
+          onChange(hex);
+          setOpen(false);
+          anchor.focus();
+        }}
+      />
+    ) : null;
+  return { open, toggle: () => setOpen((o) => !o), setTrigger: setAnchor, popover };
+}
+
+const TONE_HEADING: Record<StandardTone, string> = {
+  soft: 'Light',
+  strong: 'Dark',
+};
+
+export function ColorSwatch({
+  label,
+  value,
+  onChange,
+  tones,
+}: {
+  label: string;
+  value: string;
+  onChange: (color: string) => void;
+  tones?: readonly StandardTone[];
+}) {
+  const { open, toggle, setTrigger, popover } = useColourWell({
+    label: `${label} colour`,
+    value,
+    onChange,
+    tones,
+  });
   return (
-    <label className="relative flex flex-1 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
-      <span
-        aria-hidden
-        className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800"
-        style={{ backgroundColor: value }}
-      />
-      <span className="flex-1">{label}</span>
-      <input
-        type="color"
-        value={hexish(value)}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={`${label} color`}
-        className="absolute h-0 w-0 opacity-0"
-      />
-    </label>
+    <>
+      <button
+        ref={setTrigger}
+        type="button"
+        aria-label={`${label} colour`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={toggle}
+        className="relative flex flex-1 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <SwatchChip colour={value} small />
+        <span className="flex-1">{label}</span>
+      </button>
+      {popover}
+    </>
   );
 }
 
-// Coerce a colour to a 6-digit hex, or fall back to white, for the native
-// colour <input> (it can't take 'transparent' or named colours). Shared with
-// EditorContextMenu's colour rows.
+// Coerce a colour to a 6-digit hex, or fall back to white, for a swatch that
+// can't draw 'transparent' or a named colour. Shared with the element menu's
+// colour rows.
 export function hexish(color: string): string {
   if (/^#[0-9a-fA-F]{6}$/.test(color)) return color;
   return '#ffffff';
