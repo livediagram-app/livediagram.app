@@ -17,7 +17,8 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
+import { clerkBundled, clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
+import { useSelfHostAuth } from '@/lib/self-host-auth';
 import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from './deferred-auth';
 
 // Test builds only (see e2eAuthEnabled): never part of a real bundle.
@@ -28,10 +29,26 @@ const LazyE2EAuthBridge = e2eAuthEnabled
     })
   : null;
 
-const LazyClerkBridge = dynamic(() => import('./ClerkBridge').then((m) => m.ClerkBridge), {
-  ssr: false,
-  loading: () => null,
-});
+// Only in builds that HAVE Clerk. This used to load unconditionally, which put
+// Clerk's ~96 kB into every route's chunk graph — including on a self-hosted
+// deployment that has no Clerk at all and can never render the bridge
+// (docs/specs/002-project-scope/open-source-and-business-model.md: Clerk is optional). The
+// flag is a compile-time constant, so a Clerk-less build drops the import.
+const LazyClerkBridge = clerkBundled
+  ? dynamic(() => import('./ClerkBridge').then((m) => m.ClerkBridge), {
+      ssr: false,
+      loading: () => null,
+    })
+  : null;
+
+// A self-hosted deployment's own provider (docs/specs/016-platform/self-hosted-runtime.md):
+// the same contract as ClerkBridge, with no Clerk behind it. Which deployments have
+// one is asked at runtime (lib/self-host-auth.ts) rather than read from a build flag —
+// NEXT_PUBLIC_* does not survive into this app's client bundle.
+const LazySelfHostAuthBridge = dynamic(
+  () => import('./SelfHostAuthBridge').then((m) => m.SelfHostAuthBridge),
+  { ssr: false, loading: () => null },
+);
 
 // The auth pages wrap themselves in StaticClerkProvider (Clerk IS the page
 // there), so the bridge must STAND DOWN on those routes — mounting a second
@@ -49,6 +66,7 @@ export const WORKBENCH_ROUTE = '/embed/workbench';
 export function ClerkProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
   const pathname = usePathname();
+  const selfHosted = useSelfHostAuth();
   const staticClerkRoute = STATIC_CLERK_ROUTES.some((r) => pathname?.startsWith(r));
   const workbenchRoute = pathname?.startsWith(WORKBENCH_ROUTE) === true;
   const configured = clerkEnabled && !!clerkPublishableKey && !staticClerkRoute && !workbenchRoute;
@@ -65,9 +83,12 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
   return (
     <DeferredAuthContext.Provider value={workbenchRoute ? DEFERRED_AUTH_PENDING : authState}>
       {children}
-      {configured ? <LazyClerkBridge onState={setAuthState} /> : null}
+      {configured && LazyClerkBridge ? <LazyClerkBridge onState={setAuthState} /> : null}
       {LazyE2EAuthBridge && !staticClerkRoute && !workbenchRoute ? (
         <LazyE2EAuthBridge onState={setAuthState} />
+      ) : null}
+      {selfHosted && !staticClerkRoute && !workbenchRoute ? (
+        <LazySelfHostAuthBridge onState={setAuthState} />
       ) : null}
     </DeferredAuthContext.Provider>
   );

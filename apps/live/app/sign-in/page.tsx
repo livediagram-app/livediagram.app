@@ -1,295 +1,36 @@
 'use client';
 
-// Custom sign-in page. Ported from Manager Toolkit's
-// apps/dashboard/app/sign-in/page.tsx — same email-code + Google OAuth
-// flow, livediagram branding, livediagram routes.
+// /sign-in. Which provider signs people in is asked at RUNTIME
+// (lib/self-host-auth.ts): a self-hosted deployment serves its own identity provider at
+// /api/auth/*, a hosted one has Clerk. The build flag cannot answer it — NEXT_PUBLIC_*
+// does not reach this app's client bundle — so the page waits a moment, then renders
+// the provider the deployment actually has.
 //
-// Per docs/specs/014-identity/auth-and-guest-access.md, this page is never required to use the editor — the
-// editor stays open to guests forever. Sign-in only unlocks per-account
-// persistence (documents travel across devices) and team workspaces.
-// Authenticated users get redirected straight to the editor; guests
-// can sign in here when they want to bind their session to an account.
+// Clerk's half lives in its own module (./clerk-sign-in) so the two cannot drift and a
+// self-hosted deployment never mounts Clerk's provider.
 
-// `useAuth` lives on the modern @clerk/react root export, but
-// `useSignIn` here uses the LEGACY shape ({ signIn, setActive,
-// isLoaded }) that MT's email-code flow was built against. The new
-// signal-based @clerk/react `useSignIn` returns a different shape
-// (`{ signIn, errors, fetchStatus }`) — porting to it is a separate
-// effort. `/legacy` doesn't pull in any Server Actions, so static
-// export still builds.
-import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
-import { useAuth } from '@clerk/react';
-import { useSignIn } from '@clerk/react/legacy';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  AuthCard,
-  AuthDisabledNotice,
-  AuthEmailField,
-  EmailCodeStep,
-  GoogleAuthButton,
-  OrDivider,
-  POST_AUTH_SIGNIN_DEFAULT,
-  RedirectingCard,
-  authHrefWithReturn,
-  messageOf,
-  resolveOAuthCompleteUrl,
-  resolvePostAuthDestination,
-} from '@/components/chrome/auth-shared';
-import { Button } from '@livediagram/ui';
-import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+import { RedirectingCard } from '@/components/chrome/auth-shared';
+import { SelfHostSignInForm } from '@/components/chrome/SelfHostSignInForm';
+import { useSelfHostAuth } from '@/lib/self-host-auth';
 
-function SignInContent() {
-  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
-  const router = useAppNavigation();
-  const searchParams = useSearchParams();
-  const { isLoaded: authLoaded, isSignedIn } = useAuth();
-  const { signIn: clerkSignIn, setActive: setActiveSignIn, isLoaded: signInLoaded } = useSignIn();
+const ClerkSignIn = dynamic(() => import('./clerk-sign-in').then((m) => m.ClerkSignIn), {
+  ssr: false,
+  loading: () => <RedirectingCard />,
+});
 
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [showCodeStep, setShowCodeStep] = useState(false);
-  const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
-  const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Honour ?redirect_url via the shared resolver in auth-shared.
-  // Wrapped in useCallback so the useEffect below has a stable dep.
-  const resolvePostSignInDestination = useCallback(
-    () => resolvePostAuthDestination(searchParams, POST_AUTH_SIGNIN_DEFAULT),
-    [searchParams],
-  );
-
-  // Already signed in? Bounce straight to the editor. Without this the
-  // page renders the form briefly before Clerk fires the redirect on
-  // its own, which looks like a flash.
-  useEffect(() => {
-    if (authLoaded && isSignedIn) {
-      router.replace(resolvePostSignInDestination());
-    }
-  }, [authLoaded, isSignedIn, router, resolvePostSignInDestination]);
-
-  useEffect(() => {
-    if (showCodeStep) codeInputRefs.current[0]?.focus();
-  }, [showCodeStep]);
-
-  const handleSignInWithGoogle = async () => {
-    if (!signInLoaded || !clerkSignIn) return;
-    setError('');
-    setGoogleLoading(true);
-    try {
-      await clerkSignIn.authenticateWithRedirect({
-        strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
-        // Honour ?redirect_url so an OAuth sign-in from a protected
-        // page lands back where it came from, same as the email-code
-        // path does. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
-        redirectUrlComplete: resolveOAuthCompleteUrl(searchParams, POST_AUTH_SIGNIN_DEFAULT),
-      });
-    } catch (err: unknown) {
-      setError(messageOf(err, 'Google sign-in failed'));
-      setGoogleLoading(false);
-    }
-  };
-
-  const handleSubmitEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    if (!signInLoaded || !clerkSignIn) {
-      setLoading(false);
-      return;
-    }
-    try {
-      if (!email.trim()) {
-        setError('Email is required');
-        setLoading(false);
-        return;
-      }
-      const signInRes = await clerkSignIn.create({ identifier: email.trim() });
-      const factor = signInRes.supportedFirstFactors?.find((f) => f.strategy === 'email_code');
-      if (!factor || !('emailAddressId' in factor)) {
-        setError('Email code sign-in is not available. Please contact support.');
-        setLoading(false);
-        return;
-      }
-      await clerkSignIn.prepareFirstFactor({
-        strategy: 'email_code',
-        emailAddressId: factor.emailAddressId,
-      });
-      setCodeDigits(['', '', '', '', '', '']);
-      setShowCodeStep(true);
-      setError('');
-    } catch (err: unknown) {
-      const msg = messageOf(err, 'Something went wrong');
-      // Unknown email → bounce to sign-up with the email pre-filled.
-      // The Clerk message wording shifts between releases ("couldn't
-      // find your account" / "form_identifier_not_found" / "is invalid")
-      // so we match any of the known forms. Routing uses bare paths
-      // (no `/live` prefix) because Next.js prepends the basePath
-      // automatically — `/get-started` would yield
-      // `/live/get-started` which the static-export 404 handler
-      // catches and routes into the editor, ultimately landing the
-      // user on /live/new with no sign-up form in sight.
-      const lower = msg.toLowerCase();
-      if (
-        lower.includes("couldn't find your account") ||
-        lower.includes('form_identifier_not_found') ||
-        lower.includes('identifier is invalid') ||
-        lower.includes('not found')
-      ) {
-        // Carry both the typed email AND any incoming ?redirect_url onto
-        // sign-up, so an unknown-email bounce still returns the user where
-        // they started after they create the account. get-started
-        // re-validates redirect_url before using it.
-        const trimmed = email.trim();
-        const params = new URLSearchParams();
-        if (trimmed) params.set('email', trimmed);
-        const redirect = searchParams.get('redirect_url');
-        if (redirect) params.set('redirect_url', redirect);
-        const qs = params.toString();
-        router.replace(qs ? `/get-started?${qs}` : '/get-started');
-        return;
-      }
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent, codeOverride?: string) => {
-    e.preventDefault();
-    const code = (codeOverride ?? codeDigits.join('')).trim();
-    if (code.length !== 6 || !clerkSignIn) return;
-    setError('');
-    setLoading(true);
-    try {
-      const res = await clerkSignIn.attemptFirstFactor({ strategy: 'email_code', code });
-      if (res.status === 'complete' && res.createdSessionId) {
-        // Session·SignedIn is counted by the api worker on this new
-        // session's first request (docs/specs/017-telemetry/telemetry.md), the same way a Google sign-in
-        // is; no emit here.
-        await setActiveSignIn({ session: res.createdSessionId });
-        router.push(resolvePostSignInDestination());
-        return;
-      }
-      setError('Invalid or expired code. Try again or request a new code.');
-    } catch (err: unknown) {
-      setError(messageOf(err, 'Verification failed'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    setError('');
-    setLoading(true);
-    setCodeDigits(['', '', '', '', '', '']);
-    try {
-      if (clerkSignIn) {
-        const factor = clerkSignIn.supportedFirstFactors?.find((f) => f.strategy === 'email_code');
-        if (factor && 'emailAddressId' in factor) {
-          await clerkSignIn.prepareFirstFactor({
-            strategy: 'email_code',
-            emailAddressId: factor.emailAddressId,
-          });
-          setError('A new code has been sent. Check your email.');
-          codeInputRefs.current[0]?.focus();
-        }
-      }
-    } catch (err: unknown) {
-      setError(messageOf(err, 'Failed to resend code'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const clearAndGoBack = () => {
-    setShowCodeStep(false);
-    setCodeDigits(['', '', '', '', '', '']);
-    setError('');
-  };
-
-  if (authLoaded && isSignedIn) {
-    return <RedirectingCard />;
-  }
-
-  return (
-    <AuthCard
-      subtitle="Sign in to keep your documents and work across multiple devices."
-      error={error}
-      footer={
-        <>
-          New to livediagram?{' '}
-          <Link
-            href={authHrefWithReturn('/get-started/', searchParams.get('redirect_url'))}
-            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
-          >
-            Create an account
-          </Link>
-        </>
-      }
-    >
-      {showCodeStep ? (
-        <EmailCodeStep
-          email={email}
-          codeDigits={codeDigits}
-          setCodeDigits={setCodeDigits}
-          inputRefs={codeInputRefs}
-          loading={loading}
-          ready={clerkSignIn}
-          onSubmit={handleVerifyCode}
-          onResend={handleResendCode}
-          onBack={clearAndGoBack}
-        />
-      ) : (
-        <form onSubmit={handleSubmitEmail} className="space-y-4">
-          {googleOAuthEnabled ? (
-            <>
-              <GoogleAuthButton
-                label="Continue with Google"
-                loading={googleLoading}
-                disabled={!signInLoaded || googleLoading}
-                onClick={() => void handleSignInWithGoogle()}
-              />
-              <OrDivider />
-            </>
-          ) : null}
-          <AuthEmailField value={email} onChange={setEmail} />
-          <Button type="submit" size="md" disabled={loading} className="w-full shadow-sm">
-            {loading ? 'Sending code…' : 'Continue with email'}
-          </Button>
-        </form>
-      )}
-    </AuthCard>
-  );
-}
-
-function SignInPageInner() {
-  // Clerk-disabled deployments (no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
-  // skip the form entirely and show the "guest-only" notice. The
-  // useSignIn / useAuth calls inside SignInContent would throw
-  // outside a ClerkProvider, so the gate has to happen before render.
-  if (!clerkEnabled) return <AuthDisabledNotice />;
-  return (
-    <Suspense fallback={<RedirectingCard />}>
-      <SignInContent />
-    </Suspense>
-  );
-}
-
-// The layout's ClerkProvider is now the DEFERRED one (no Clerk context
-// in the app tree — see components/providers/ClerkProvider.tsx), but
-// this page's hooks need the real thing, and Clerk IS this page — so
-// it wraps itself in the static provider and carries the library in
-// its own route bundle.
 export default function SignInPage() {
-  return (
-    <StaticClerkProvider>
-      <SignInPageInner />
-    </StaticClerkProvider>
-  );
+  const selfHosted = useSelfHostAuth();
+  // Still asking. Rendering either provider now would be a guess, and the wrong guess
+  // is a sign-in page that cannot work.
+  if (selfHosted === null) return <RedirectingCard />;
+  if (selfHosted) {
+    return (
+      <Suspense fallback={<RedirectingCard />}>
+        <SelfHostSignInForm mode="sign-in" />
+      </Suspense>
+    );
+  }
+  return <ClerkSignIn />;
 }

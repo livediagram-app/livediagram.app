@@ -17,6 +17,8 @@ vi.mock('@/lib/clerk-config', () => ({
   clerkEnabled: true,
   clerkPublishableKey: 'pk_test',
   e2eAuthEnabled: false,
+  selfHostAuthEnabled: false,
+  clerkBundled: true,
 }));
 
 // The lazily-loaded bridge, standing in for Clerk: publishes a settled guest.

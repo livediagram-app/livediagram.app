@@ -1,3 +1,18 @@
+'use client';
+
+// MEASURED, and the reason this file is more careful than it looks: the flags below
+// are NOT compile-time constants in practice. Next.js compiles
+// `process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` here into a runtime lookup on the
+// `process` shim (`n.default.env.…` in the emitted chunk), so no bundler can fold it,
+// and a `dynamic()` import gated on such a flag keeps its chunk. A self-hosted build
+// still had every page fetch Clerk: 38 kB on /, /new and the auth pages, 81 kB on the
+// explorer. `'use client'` was tried and does not change it.
+//
+// So `clerkBundled` and `selfHostAuthEnabled` decide what RENDERS, which is correct
+// and worth keeping; removing the library from the bundle is a build-time job — a
+// webpack alias for `@clerk/react` in next.config.ts, applied when the deployment has
+// no Clerk. Until that lands, a self-hosted deployment downloads Clerk and never runs it.
+
 import { clerkPublishableKeyOrNull } from '@livediagram/ui/clerk-key';
 
 // Single source of truth for "is Clerk enabled on this deployment".
@@ -15,11 +30,25 @@ import { clerkPublishableKeyOrNull } from '@livediagram/ui/clerk-key';
 // pages' content entirely on a no-key build via dead-code elimination
 // once tree-shaking gets aggressive.
 
-export const clerkPublishableKey = clerkPublishableKeyOrNull(
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-);
+// Whether a key was baked into THIS build, written as a literal comparison on
+// purpose: a bundler folds `process.env.NEXT_PUBLIC_X === '…'` at build time, and that
+// fold is what lets a Clerk-less deployment drop the library rather than merely never
+// render it. `clerkEnabled` below cannot do that job — it is the verdict of a
+// validation call, which no bundler can evaluate, so a dynamic import gated on it
+// survives into every build and every page fetches Clerk's chunk.
+const clerkKeyBaked = (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '') !== '';
+
+export const clerkPublishableKey = clerkKeyBaked
+  ? clerkPublishableKeyOrNull(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+  : null;
 
 export const clerkEnabled = clerkPublishableKey !== null;
+
+/**
+ * The foldable form of `clerkEnabled`: true in a build that carries a key. Gate
+ * dynamic imports of Clerk modules on THIS, not on `clerkEnabled`.
+ */
+export const clerkBundled = clerkKeyBaked;
 
 // Test builds only: the opt-in Google Drive e2e
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing") signs in without
@@ -28,11 +57,19 @@ export const clerkEnabled = clerkPublishableKey !== null;
 // never sets it) drops the branch and the bridge entirely.
 export const e2eAuthEnabled = process.env.NEXT_PUBLIC_E2E_AUTH === '1';
 
-// Whether this build can have a signed-in session at all: real Clerk, or the
-// test bridge. Only the session plumbing (the deferred provider, the api
-// bootstrap, the account menu) reads this; everything Clerk-specific keeps
-// reading clerkEnabled.
-export const sessionsEnabled = clerkEnabled || e2eAuthEnabled;
+// A self-hosted deployment (docs/specs/016-platform/self-hosted-runtime.md): the app
+// process serves its own identity provider at /api/auth/*, on the same origin, so
+// sign-in is an emailed one-time code rather than Clerk. A compile-time constant
+// like the rest of this file — the self-host image is built with
+// NEXT_PUBLIC_SELF_HOST_AUTH=1, so a build that does not set it drops this branch
+// and the bridge entirely.
+export const selfHostAuthEnabled = process.env.NEXT_PUBLIC_SELF_HOST_AUTH === '1';
+
+// Whether this build can have a signed-in session at all: real Clerk, the test
+// bridge, or the deployment's own provider. Only the session plumbing (the
+// deferred provider, the api bootstrap, the account menu) reads this; everything
+// Clerk-specific keeps reading clerkEnabled.
+export const sessionsEnabled = clerkEnabled || e2eAuthEnabled || selfHostAuthEnabled;
 
 // Whether the sign-in / sign-up pages should show the "Continue with
 // Google" OAuth button. Gated by `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED`

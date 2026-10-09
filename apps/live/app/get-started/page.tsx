@@ -1,333 +1,36 @@
 'use client';
 
-// Sign-up page. Simplified port of MT's apps/dashboard/app/get-started
-// page: livediagram has no teams and no paid tier, so the MT phase
-// model collapses to two:
+// /get-started. Which provider signs people in is asked at RUNTIME
+// (lib/self-host-auth.ts): a self-hosted deployment serves its own identity provider at
+// /api/auth/*, a hosted one has Clerk. The build flag cannot answer it — NEXT_PUBLIC_*
+// does not reach this app's client bundle — so the page waits a moment, then renders
+// the provider the deployment actually has.
 //
-//   Phase 1 — register: first name + last name + email (or Google OAuth)
-//   Phase 2 — verify: 6-digit email code → redirect to editor
-//
-// Post-verification we hand off to /live/ (which resolves to /live/new
-// via the welcome flow, docs/specs/007-editor/new-document-route.md). The guest → authed migration of any
-// pre-existing documents lives in Stage 4 — out of scope for this page
-// for now.
+// Clerk's half lives in its own module (./clerk-sign-up) so the two cannot drift and a
+// self-hosted deployment never mounts Clerk's provider.
 
-// See sign-in/page.tsx for why useSignUp comes from @clerk/react/legacy
-// while useAuth comes from the modern entry.
-import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
-import { useAuth } from '@clerk/react';
-import { useSignUp } from '@clerk/react/legacy';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { Suspense, useEffect, useRef, useState } from 'react';
-import {
-  AuthCard,
-  AuthDisabledNotice,
-  AuthEmailField,
-  EmailCodeStep,
-  GoogleAuthButton,
-  OrDivider,
-  RedirectingCard,
-  authHrefWithReturn,
-  messageOf,
-  resolveOAuthCompleteUrl,
-  resolvePostAuthDestination,
-} from '@/components/chrome/auth-shared';
-import { Button, TextInput } from '@livediagram/ui';
-import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+import { RedirectingCard } from '@/components/chrome/auth-shared';
+import { SelfHostSignInForm } from '@/components/chrome/SelfHostSignInForm';
+import { useSelfHostAuth } from '@/lib/self-host-auth';
 
-type Phase = 1 | 2;
+const ClerkSignUp = dynamic(() => import('./clerk-sign-up').then((m) => m.ClerkSignUp), {
+  ssr: false,
+  loading: () => <RedirectingCard />,
+});
 
-function GetStartedContent() {
-  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
-  const router = useAppNavigation();
-  const searchParams = useSearchParams();
-  const { isLoaded: authLoaded, isSignedIn } = useAuth();
-  const { signUp: clerkSignUp, setActive: setActiveSignUp, isLoaded: signUpLoaded } = useSignUp();
-
-  const [phase, setPhase] = useState<Phase>(1);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState(() => searchParams.get('email')?.trim() ?? '');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
-  const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Already signed in — straight to the editor. Without this guard the
-  // form renders for a frame before Clerk's own redirect fires.
-  useEffect(() => {
-    if (authLoaded && isSignedIn) {
-      router.replace(resolvePostAuthDestination(searchParams));
-    }
-  }, [authLoaded, isSignedIn, router, searchParams]);
-
-  useEffect(() => {
-    if (phase === 2) codeInputRefs.current[0]?.focus();
-  }, [phase]);
-
-  const handleSignUpWithGoogle = async () => {
-    if (!signUpLoaded || !clerkSignUp) return;
-    setError('');
-    setGoogleLoading(true);
-    try {
-      await clerkSignUp.authenticateWithRedirect({
-        strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
-        // Honour ?redirect_url so an OAuth sign-up from a protected
-        // page lands back where it came from, matching the email-code
-        // path. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
-        redirectUrlComplete: resolveOAuthCompleteUrl(searchParams),
-      });
-    } catch (err: unknown) {
-      setError(messageOf(err, 'Google sign-up failed'));
-      setGoogleLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    if (!signUpLoaded || !clerkSignUp) {
-      setLoading(false);
-      return;
-    }
-    try {
-      if (!firstName.trim()) {
-        setError('First name is required');
-        setLoading(false);
-        return;
-      }
-      if (!lastName.trim()) {
-        setError('Last name is required');
-        setLoading(false);
-        return;
-      }
-      if (!email.trim()) {
-        setError('Email is required');
-        setLoading(false);
-        return;
-      }
-      const res = await clerkSignUp.create({
-        emailAddress: email.trim(),
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-      });
-      // Clerk can complete the sign-up immediately when email
-      // verification is configured off — straight to the editor.
-      if (res.status === 'complete' && res.createdSessionId) {
-        // Session·SignedUp is counted by the api worker on this new
-        // session's first request (docs/specs/017-telemetry/telemetry.md), so every sign-up method counts
-        // once; no emit here.
-        await setActiveSignUp({ session: res.createdSessionId });
-        router.replace(resolvePostAuthDestination(searchParams));
-        return;
-      }
-      // Otherwise prepare the 6-digit code and advance to phase 2.
-      if (res.unverifiedFields?.includes('email_address')) {
-        await clerkSignUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-        setCodeDigits(['', '', '', '', '', '']);
-        setPhase(2);
-        setError('');
-      } else {
-        setError('Sign-up could not be completed. Please try again.');
-      }
-    } catch (err: unknown) {
-      const msg = messageOf(err, 'Something went wrong');
-      // Email already in use → send them to sign-in instead, carrying any
-      // ?redirect_url so they still land where they started after signing
-      // in. sign-in re-validates the param before using it.
-      if (
-        msg.toLowerCase().includes('email address is taken') ||
-        msg.toLowerCase().includes('that email address is taken')
-      ) {
-        router.replace(authHrefWithReturn('/sign-in/', searchParams.get('redirect_url')));
-        return;
-      }
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent, codeOverride?: string) => {
-    e.preventDefault();
-    const code = (codeOverride ?? codeDigits.join('')).trim();
-    if (code.length !== 6 || !clerkSignUp) return;
-    setError('');
-    setLoading(true);
-    try {
-      const res = await clerkSignUp.attemptEmailAddressVerification({ code });
-      if (res.status === 'complete' && res.createdSessionId) {
-        // Session·SignedUp is counted by the api worker on this new
-        // session's first request (docs/specs/017-telemetry/telemetry.md), so every sign-up method counts
-        // once; no emit here.
-        await setActiveSignUp({ session: res.createdSessionId });
-        router.replace(resolvePostAuthDestination(searchParams));
-        return;
-      }
-      // Clerk verified the code but isn't ready to mint a session.
-      // The usual cause is the Clerk instance has additional required
-      // fields (password, username, phone) that this UI doesn't
-      // collect. Surface what's outstanding instead of the misleading
-      // "invalid or expired code" — that wording sends the user
-      // chasing a problem that isn't theirs.
-      if (res.status === 'missing_requirements') {
-        const missing = [...(res.missingFields ?? []), ...(res.unverifiedFields ?? [])].filter(
-          (f) => f !== 'email_address',
-        );
-        if (missing.length > 0) {
-          setError(
-            `Your Clerk instance also requires: ${missing.join(', ')}. Disable those requirements in the Clerk dashboard or add them here.`,
-          );
-        } else {
-          setError(`Sign-up could not be completed (status: ${res.status}).`);
-        }
-        return;
-      }
-      setError('Invalid or expired code. Try again or request a new code.');
-    } catch (err: unknown) {
-      setError(messageOf(err, 'Verification failed'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    if (!clerkSignUp) return;
-    setError('');
-    setLoading(true);
-    setCodeDigits(['', '', '', '', '', '']);
-    try {
-      await clerkSignUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setError('A new code has been sent. Check your email.');
-      codeInputRefs.current[0]?.focus();
-    } catch (err: unknown) {
-      setError(messageOf(err, 'Failed to resend code'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (authLoaded && isSignedIn) {
-    return <RedirectingCard />;
-  }
-
-  return (
-    <AuthCard
-      subtitle={
-        phase === 1
-          ? 'Create a free account to keep your documents and work across multiple devices.'
-          : 'Check your email'
-      }
-      error={error}
-      footer={
-        <>
-          Already have an account?{' '}
-          <Link
-            href={authHrefWithReturn('/sign-in/', searchParams.get('redirect_url'))}
-            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
-          >
-            Sign in
-          </Link>
-        </>
-      }
-    >
-      {phase === 1 ? (
-        <form onSubmit={handleRegister} className="space-y-4">
-          {googleOAuthEnabled ? (
-            <>
-              <GoogleAuthButton
-                label="Continue with Google"
-                loading={googleLoading}
-                disabled={!signUpLoaded || googleLoading}
-                onClick={() => void handleSignUpWithGoogle()}
-              />
-              <OrDivider />
-            </>
-          ) : null}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                First name
-              </label>
-              <TextInput
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Jane"
-                autoComplete="given-name"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="lastName"
-                className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                Last name
-              </label>
-              <TextInput
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Doe"
-                autoComplete="family-name"
-              />
-            </div>
-          </div>
-          <AuthEmailField value={email} onChange={setEmail} />
-          <Button type="submit" size="md" disabled={loading} className="w-full shadow-sm">
-            {loading ? 'Creating account…' : 'Create account'}
-          </Button>
-        </form>
-      ) : (
-        <EmailCodeStep
-          email={email}
-          codeDigits={codeDigits}
-          setCodeDigits={setCodeDigits}
-          inputRefs={codeInputRefs}
-          loading={loading}
-          ready={clerkSignUp}
-          onSubmit={handleVerifyCode}
-          onResend={handleResendCode}
-          onBack={() => {
-            setPhase(1);
-            setError('');
-            setCodeDigits(['', '', '', '', '', '']);
-          }}
-        />
-      )}
-    </AuthCard>
-  );
-}
-
-function GetStartedPageInner() {
-  // Same gate as sign-in — see that file for the rationale.
-  if (!clerkEnabled) return <AuthDisabledNotice />;
-  return (
-    <Suspense fallback={<RedirectingCard />}>
-      <GetStartedContent />
-    </Suspense>
-  );
-}
-
-// The layout's ClerkProvider is now the DEFERRED one (no Clerk context
-// in the app tree — see components/providers/ClerkProvider.tsx), but
-// this page's hooks need the real thing, and Clerk IS this page — so
-// it wraps itself in the static provider and carries the library in
-// its own route bundle.
 export default function GetStartedPage() {
-  return (
-    <StaticClerkProvider>
-      <GetStartedPageInner />
-    </StaticClerkProvider>
-  );
+  const selfHosted = useSelfHostAuth();
+  // Still asking. Rendering either provider now would be a guess, and the wrong guess
+  // is a sign-in page that cannot work.
+  if (selfHosted === null) return <RedirectingCard />;
+  if (selfHosted) {
+    return (
+      <Suspense fallback={<RedirectingCard />}>
+        <SelfHostSignInForm mode="sign-up" />
+      </Suspense>
+    );
+  }
+  return <ClerkSignUp />;
 }
