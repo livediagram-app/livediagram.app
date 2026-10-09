@@ -32,9 +32,12 @@ import {
   type BackgroundCategory,
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
-import { hexish } from '@/components/palette/palette-controls';
 import { PanelSection, tileClass } from './illustrate-page-panel-sections';
-import { CustomColourInput, CustomGradientEditor } from './page-background-custom';
+import {
+  ColourWellButton,
+  CustomGradientEditor,
+  InlineColourPicker,
+} from './page-background-custom';
 
 // The custom choices' swatch until one is the page's fill.
 const RAINBOW = 'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)';
@@ -164,12 +167,20 @@ export function BackgroundSection({
   // The custom gradient's editor shows for a gradient no preset names, or once Custom gradient is
   // pressed on a preset one (its colours are where the custom one starts; editing makes it custom).
   const [customOpen, setCustomOpen] = useState(false);
+  // The custom solid colour's picker, open under the swatches.
+  const [pickingSolid, setPickingSolid] = useState(false);
   const customGradient =
     fill?.kind === 'gradient' && (customOpen || isCustomGradient(fill, themePresets)) ? fill : null;
   const pick = (f: PageFill | undefined) => onBackground({ fill: f });
   const preview = (f: PageFill | undefined) => onPreview({ fill: f });
   return (
-    <div onPointerLeave={() => onPreview(null)} onBlur={() => onPreview(null)}>
+    <div
+      onPointerLeave={() => onPreview(null)}
+      // Focus leaving the section, not moving inside it (the colour picker's controls).
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) onPreview(null);
+      }}
+    >
       <PanelSection title="Background">
         <CategoryControl
           categories={categories}
@@ -202,47 +213,58 @@ export function BackgroundSection({
             })}
           </div>
         ) : category === 'solid' ? (
-          <div
-            role="radiogroup"
-            aria-label="Background colour"
-            className="grid grid-cols-7 gap-1.5"
-          >
-            {PAGE_SOLID_PRESETS.map((s) => {
-              const presetFill: PageFill | undefined = s.color
-                ? { kind: 'solid', color: s.color }
-                : undefined;
-              const on = sameFill(fill, presetFill);
-              return (
-                <Swatch
-                  key={s.id}
-                  label={s.label}
-                  background={s.color}
-                  active={on}
-                  onPick={() => pick(presetFill)}
-                  onPreview={() => preview(presetFill)}
-                >
-                  {on ? <SwatchCheck fill={presetFill} /> : null}
-                </Swatch>
-              );
-            })}
-            <Tooltip label={custom ? `Custom ${custom}` : 'Custom colour'}>
-              <label
-                className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                  custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-                }`}
-                style={{ background: custom ?? RAINBOW }}
-              >
-                <CustomColourInput
-                  // A new value is a new input: its native change listener attaches to that one.
-                  key={hexish(custom ?? '#ffffff')}
+          <>
+            <div
+              role="radiogroup"
+              aria-label="Background colour"
+              className="grid grid-cols-7 gap-1.5"
+            >
+              {PAGE_SOLID_PRESETS.map((s) => {
+                const presetFill: PageFill | undefined = s.color
+                  ? { kind: 'solid', color: s.color }
+                  : undefined;
+                const on = sameFill(fill, presetFill);
+                return (
+                  <Swatch
+                    key={s.id}
+                    label={s.label}
+                    background={s.color}
+                    active={on}
+                    onPick={() => pick(presetFill)}
+                    onPreview={() => preview(presetFill)}
+                  >
+                    {on ? <SwatchCheck fill={presetFill} /> : null}
+                  </Swatch>
+                );
+              })}
+              <Tooltip label={custom ? `Custom ${custom}` : 'Custom colour'}>
+                <ColourWellButton
                   label="Custom background colour"
-                  value={hexish(custom ?? '#ffffff')}
-                  onPreview={(color) => preview({ kind: 'solid', color })}
-                  onCommit={(color) => pick({ kind: 'solid', color })}
+                  colour={custom ?? RAINBOW}
+                  open={pickingSolid || !!custom}
+                  className="h-7 w-7"
+                  onToggle={() => {
+                    if (pickingSolid) onPreview(null);
+                    setPickingSolid((v) => !v);
+                  }}
                 />
-              </label>
-            </Tooltip>
-          </div>
+              </Tooltip>
+            </div>
+            {pickingSolid ? (
+              <InlineColourPicker
+                start={custom ?? (fill?.kind === 'solid' ? fill.color : '#ffffff')}
+                onPreview={(color) => preview({ kind: 'solid', color })}
+                onUse={(color) => {
+                  pick({ kind: 'solid', color });
+                  setPickingSolid(false);
+                }}
+                onCancel={() => {
+                  onPreview(null);
+                  setPickingSolid(false);
+                }}
+              />
+            ) : null}
+          </>
         ) : (
           <>
             <div
@@ -283,7 +305,12 @@ export function BackgroundSection({
               </Swatch>
             </div>
             {customGradient ? (
-              <CustomGradientEditor fill={customGradient} onPreview={preview} onCommit={pick} />
+              <CustomGradientEditor
+                fill={customGradient}
+                onPreview={preview}
+                onPreviewEnd={() => onPreview(null)}
+                onCommit={pick}
+              />
             ) : null}
           </>
         )}

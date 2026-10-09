@@ -19,15 +19,17 @@ const theme: ThemeBackgroundPreset[] = [
 ];
 const custom: PageFill = { kind: 'gradient', from: '#123456', to: '#abcdef', angle: 90 };
 
+let onPreview = vi.fn();
 function show(fill?: PageFill, presets: ThemeBackgroundPreset[] = theme) {
   const page = { id: 'p', orientation: 'portrait', ...(fill ? { background: { fill } } : {}) };
   const onBackground = vi.fn();
+  onPreview = vi.fn();
   render(
     <BackgroundSection
       page={page as IllustratePage}
       themePresets={presets}
       onBackground={onBackground}
-      onPreview={vi.fn()}
+      onPreview={onPreview}
     />,
   );
   return onBackground;
@@ -105,5 +107,39 @@ describe('BackgroundSection', () => {
     // A preset chosen again closes it.
     fireEvent.click(radio('Sunrise'));
     expect(document.querySelector('[data-custom-gradient]')).toBeNull();
+  });
+
+  it('picks a custom solid in the panel: previews each change, Use commits and closes', () => {
+    const onBackground = show({ kind: 'solid', color: '#123456' });
+    fireEvent.click(screen.getByRole('button', { name: 'Custom background colour' }));
+    const hex = screen.getByRole('textbox', { name: 'Hex' });
+    fireEvent.change(hex, { target: { value: '#ff0000' } });
+    expect(onPreview).toHaveBeenLastCalledWith({ fill: { kind: 'solid', color: '#ff0000' } });
+    expect(onBackground).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    expect(onBackground).toHaveBeenCalledWith({ fill: { kind: 'solid', color: '#ff0000' } });
+    expect(screen.queryByRole('textbox', { name: 'Hex' })).toBeNull();
+  });
+
+  it('closes the picker on Escape, dropping the preview and changing nothing', () => {
+    const onBackground = show(custom);
+    fireEvent.click(screen.getByRole('button', { name: 'Gradient from colour' }));
+    const hex = screen.getByRole('textbox', { name: 'Hex' });
+    fireEvent.change(hex, { target: { value: '#00ff00' } });
+    expect(onPreview).toHaveBeenLastCalledWith({ fill: { ...custom, from: '#00ff00' } });
+    fireEvent.keyDown(hex, { key: 'Escape' });
+    expect(onPreview).toHaveBeenLastCalledWith(null);
+    expect(onBackground).not.toHaveBeenCalled();
+    expect(screen.queryByRole('textbox', { name: 'Hex' })).toBeNull();
+  });
+
+  it('uses a gradient end picked in the panel', () => {
+    const onBackground = show(custom);
+    fireEvent.click(screen.getByRole('button', { name: 'Gradient to colour' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Hex' }), {
+      target: { value: '#0000ff' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    expect(onBackground).toHaveBeenCalledWith({ fill: { ...custom, to: '#0000ff' } });
   });
 });

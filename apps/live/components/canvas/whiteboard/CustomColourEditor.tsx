@@ -4,7 +4,8 @@
 // picker"): a saturation and brightness square, a hue slider, a hex field and, where the browser has
 // one, an eyedropper; Use applies it. When the colour is under 3:1 on either board, a warning says
 // which and offers a nearby version readable on both, as a swatch to press; its line is always
-// reserved, so it never shifts the picker.
+// reserved, so it never shifts the picker. Shared with the page background's custom colours
+// (page-background-custom.tsx), which preview each change and need no board warning.
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { SOLID_BRAND_DARK_CONTROL, Tooltip, lucideGlyph } from '@livediagram/ui';
@@ -25,10 +26,16 @@ const SQUARE_BIG_STEP = 0.1;
 export function CustomColourEditor({
   start,
   onUse,
+  onPreview,
+  boardWarning = true,
 }: {
   // The custom colour in force, if any: the editor opens on it.
   start?: string;
   onUse: (hex: string) => void;
+  // Each colour as it changes, before Use.
+  onPreview?: (hex: string) => void;
+  // The hard-to-see warning for a marker on either board (a page background has no board).
+  boardWarning?: boolean;
 }) {
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(start ?? START_HEX) ?? hexToHsv(START_HEX)!);
   const hex = hsvToHex(hsv);
@@ -39,6 +46,7 @@ export function CustomColourEditor({
   const set = (next: Hsv) => {
     setHsv(next);
     setText(hsvToHex(next));
+    onPreview?.(hsvToHex(next));
   };
   const setHex = (value: string) => {
     const parsed = hexToHsv(value);
@@ -71,7 +79,7 @@ export function CustomColourEditor({
     set(next);
   };
 
-  const hard = penColourHardToSee(hex);
+  const hard = boardWarning ? penColourHardToSee(hex) : [];
   const readable = hard.length > 0 ? readablePenColour(hex) : null;
   const hue = hsvToHex({ h: hsv.h, s: 1, v: 1 });
   return (
@@ -133,7 +141,10 @@ export function CustomColourEditor({
           onChange={(e) => {
             setText(e.target.value);
             const valid = normaliseHex(e.target.value);
-            if (valid) setHsv(hexToHsv(valid)!);
+            if (valid) {
+              setHsv(hexToHsv(valid)!);
+              onPreview?.(valid);
+            }
           }}
           onKeyDown={(e) => {
             if (e.key !== 'Enter') return;
@@ -167,32 +178,34 @@ export function CustomColourEditor({
         </button>
       </div>
       {/* The warning's line, always there so it never shifts the picker; empty until needed. */}
-      <div
-        className="flex h-6 items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300"
-        data-testid="custom-colour-note"
-        role="status"
-      >
-        {readable ? (
-          <>
-            <WarningIcon aria-hidden />
-            <span>Hard to see on the {hard[0]} board.</span>
-            <Tooltip label={`Use ${readable}, readable on both boards`}>
-              <button
-                type="button"
-                aria-label={`Use ${readable}, readable on both boards`}
-                onClick={() => onUse(readable)}
-                className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-              >
-                <span
-                  aria-hidden
-                  className="block h-5 w-5 rounded-[5px] border border-black/15 dark:border-white/20"
-                  style={{ backgroundColor: readable }}
-                />
-              </button>
-            </Tooltip>
-          </>
-        ) : null}
-      </div>
+      {boardWarning ? (
+        <div
+          className="flex h-6 items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300"
+          data-testid="custom-colour-note"
+          role="status"
+        >
+          {readable ? (
+            <>
+              <WarningIcon aria-hidden />
+              <span>Hard to see on the {hard[0]} board.</span>
+              <Tooltip label={`Use ${readable}, readable on both boards`}>
+                <button
+                  type="button"
+                  aria-label={`Use ${readable}, readable on both boards`}
+                  onClick={() => onUse(readable)}
+                  className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  <span
+                    aria-hidden
+                    className="block h-5 w-5 rounded-[5px] border border-black/15 dark:border-white/20"
+                    style={{ backgroundColor: readable }}
+                  />
+                </button>
+              </Tooltip>
+            </>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

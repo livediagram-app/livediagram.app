@@ -255,12 +255,18 @@ PageUnlocked`, tracked before the change); rename, orientation, size, background
 kind` radiogroup (the segmented control: `theme` while `themePresets` is non-empty, `solid`,
   `gradient`), opening on `backgroundCategoryOf(fill, themePresets)` and holding a chosen category
   in local state (no edit). Theme: the theme swatches. Solid: `PAGE_SOLID_PRESETS` then the custom
-  colour (a `CustomColourInput` behind a rainbow swatch). Gradient: `PAGE_GRADIENT_PRESETS` then
+  colour (a `ColourWellButton`, the rainbow until a custom colour is the fill; it toggles
+  `pickingSolid`, which shows `InlineColourPicker` under the swatches). Gradient: `PAGE_GRADIENT_PRESETS` then
   **Custom gradient** (`customGradientSeed(fill)` on press and hover); while
   `isCustomGradient(fill)`, `CustomGradientEditor` (`page-background-custom.tsx`): From and To
-  `ColourWell`s (preview on `input`, commit on `change`), Angle (`MenuSliderRow`, 0 to 355 by 5,
+  `ColourWellButton`s (`editing: 'from' | 'to' | null`, one `InlineColourPicker` under the row), Angle (`MenuSliderRow`, 0 to 355 by 5,
   previewed in local state, one commit on release when changed) and Swap (one commit). Pattern
-  follows, not on a logo page.
+  follows, not on a logo page. `InlineColourPicker` (`page-background-custom.tsx`) wraps
+  `CustomColourEditor` (`components/canvas/whiteboard/CustomColourEditor.tsx`, now with
+  `onPreview` on every change and `boardWarning={false}`): preview per change, `onUse` commits and
+  closes, Escape (stopped from reaching the panel) or the well again `onCancel`s, dropping the
+  preview. The section drops its preview on pointer leave and on a blur whose `relatedTarget` is
+  outside it.
 - Panel opened from a cog (tab Page) or the invite (tab Layouts); `opened = { id, cog, tab }` in
   `IllustratePages`. Desktop: fixed, beside the cog when it fits (`a.right + GAP + WIDTH + EDGE
 <= innerWidth`), else right-aligned under it; re-placed on resize and `PAGE_EASE_MS + 20` after

@@ -174,8 +174,7 @@ the swatches below, then, on Solid and Gradient, its **custom** choice last.
   default, no `background` stored), **Cream** `#fbf7ef`, **Mist** `#f1f5f9`, **Sky** `#e0f2fe`,
   **Mint** `#dcfce7`, **Lavender** `#ede9fe`, **Blush** `#fce7f3`, **Sunshine** `#fef9c3`,
   **Ink** `#1e293b`, **Midnight** `#0f172a`, **Forest** `#14532d`, **Plum** `#3b0764`, and a
-  **custom** colour (the system colour picker: previewed while dragged, one edit when it
-  settles).
+  **custom** colour (see "The colour picker" below).
 - **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
   element stroke, else its first palette colour, else the brand blue) and a second colour (a
   multi-colour theme's next palette colour, else the accent deepened): **Theme wash** (accent
@@ -190,10 +189,17 @@ the swatches below, then, on Solid and Gradient, its **custom** choice last.
   is the page's fill, then that gradient. Pressing it makes the page's fill a custom gradient
   (starting from the page's current gradient, or its current solid colour to a deepened version
   of it, or Sky to Lavender at 160° on the paper) and opens its editor under the swatches, as does
-  any gradient that is not a preset: **From** and **To** (each the system colour picker,
-  previewed while dragged, one edit when it settles), **Angle** (a slider, 0° to 359° in steps of
+  any gradient that is not a preset: **From** and **To** (each a colour well opening the
+  colour picker), **Angle** (a slider, 0° to 359° in steps of
   5°, previewed while dragged, one edit on release) and **Swap** (exchanges From and To, one
   edit). The editor closes when another category or a preset is chosen.
+- **The colour picker** for a custom colour (the custom solid, From, To) opens in the panel under
+  its well, which shows pressed: Draw mode's custom colour picker (a saturation and brightness
+  square, a hue slider, a hex field and, where the browser has one, an eyedropper), without the
+  marker's board warning. Each change previews on the page; **Use** (or Enter in the hex field)
+  applies it as one edit and closes the picker; **Escape** or pressing the well again closes it,
+  dropping the preview. It is the app's own, never the system picker, so it closes without
+  leaving the panel.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
   lines), drawn faintly in the page's ink at 24 px pitch.
 - **A dark page has light ink.** A page is dark when its background (a gradient's mean of its two
