@@ -156,11 +156,13 @@ Exclude), **Wordmark**, **Logo Kit**.
 - `useLogoPaletteSwitch(pages, active)` (`hooks/canvas/useLogoPaletteSwitch.ts`), called by
   `IllustratePages` (an editor, not bare), returns `pageShown(page)`, which `IllustratePages`'
   `goToPage` (the page label and the `PageNavigator`) calls after `focusPage`. It keeps the page
-  someone was last on and asks (`requestPaletteCategory('logo')` in a zero timeout, after React
-  renders; a timeout so a background tab answers) when that becomes a logo page: on the first
-  render with pages, the page under the canvas centre (`[data-canvas-a11y-root]`), else the
-  first, asked again after `LOGO_PALETTE_OPEN_RETRY_MS` (400) for a palette that mounts later;
-  a logo page id not seen before; `pageShown`; and a capture-phase `pointerdown` on a sheet.
+  someone was last on (a press off every page keeps it) and, when that changes, asks
+  (`requestPaletteCategory`, in a zero timeout, after React renders; a timeout so a background
+  tab answers) for `'logo'` on a logo page, else `'popular'`: on `pageShown` and a capture-phase
+  `pointerdown` on a sheet. A logo page id not seen before asks for `'logo'`. On the first render
+  with pages, the page under the canvas centre (`[data-canvas-a11y-root]`), else the first, asks
+  for `'logo'` only (again after `LOGO_PALETTE_OPEN_RETRY_MS`, 400, for a palette that mounts
+  later); any other page asks nothing.
 
 ### Beside the cog (`apps/live/components/canvas/LogoTitleBar.tsx`)
 

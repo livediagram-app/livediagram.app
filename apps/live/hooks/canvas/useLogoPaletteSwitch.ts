@@ -1,18 +1,21 @@
 'use client';
 
-// The palette turns to its Logo category (docs/specs/007-editor/logo-pages.md "The Logo palette")
-// when someone is on a logo page: the page in view when the document opens, a logo page added, one
-// gone to with its label or the page navigator (`pageShown`), and a press on a logo page other than
-// the page pressed last. Asked just after, so a palette re-rendered with the category (it shows only
-// while the tab has a logo page) is there to answer. Staying on the same page never asks again, so
-// another category chosen meanwhile is kept.
+// The palette follows the page someone is on (docs/specs/007-editor/logo-pages.md "The Logo
+// palette"): Logo on a logo page, Popular on any other. Asked when they move to another page: one
+// gone to with its label or the page navigator (`pageShown`), a press on a page other than the page
+// pressed last, and a logo page added; on opening, only a logo page in view asks (any other keeps
+// the category remembered). Asked just after, so a palette re-rendered with the category (Logo shows
+// only while the tab has a logo page) is there to answer. Staying on the same page never asks
+// again, so another category chosen meanwhile is kept.
 import { useEffect, useRef } from 'react';
 import type { LaidOutPage } from '@livediagram/document';
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 
 // After the current event (React has rendered the add by then); a timeout, not a frame, so a tab in
 // the background still answers.
-const askForLogo = () => window.setTimeout(() => requestPaletteCategory('logo'), 0);
+const ask = (category: 'logo' | 'popular') =>
+  window.setTimeout(() => requestPaletteCategory(category), 0);
+const askForLogo = () => ask('logo');
 // On opening, asked again a little later too: the palette may mount after the pages.
 export const LOGO_PALETTE_OPEN_RETRY_MS = 400;
 
@@ -52,9 +55,13 @@ export function useLogoPaletteSwitch(
 ): { pageShown: (page: LaidOutPage) => void } {
   // The page someone was last on (pressed, gone to, or in view on opening).
   const last = useRef<string | null>(null);
-  const onPage = (page: LaidOutPage | null) => {
-    if (page && page.id !== last.current && page.kind === 'logo') askForLogo();
-    last.current = page?.id ?? null;
+  const onPage = (page: LaidOutPage | null, opening = false) => {
+    if (page && page.id !== last.current) {
+      if (page.kind === 'logo') askForLogo();
+      else if (!opening) ask('popular');
+    }
+    // Off every page (the bare canvas) keeps the page last on, so coming back asks nothing.
+    if (page) last.current = page.id;
   };
 
   // A new logo page: one not here before (the first render with pages only records what is there,
@@ -67,7 +74,7 @@ export function useLogoPaletteSwitch(
     if (!active || !pages.length) return;
     if (before === null) {
       const opened = pageInView(pages);
-      onPage(opened);
+      onPage(opened, true);
       if (opened?.kind === 'logo')
         window.setTimeout(() => requestPaletteCategory('logo'), LOGO_PALETTE_OPEN_RETRY_MS);
       return;

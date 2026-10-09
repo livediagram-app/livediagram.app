@@ -61,10 +61,13 @@ whiteboard a marker lines up as the pencil does: its first point snaps to nearby
 dot shows before the press) and its stroke shows alignment guides as it grows. In the palette a
 held marker pressed again opens Draw mode's own flyout for it below its tile (colour and width); its changes are the marker's everywhere and re-arm it at once.
 
-The palette turns to Logo whenever someone is on a logo page: the page in view when the document
-opens (the one under the canvas's centre, else the first), a logo page added, one gone to with its
-label or the page navigator, and a press on a logo page other than the page they were last on; staying on the same page never turns it again, so another category
-chosen meanwhile is kept.
+The palette follows the page someone moves to: **Logo** on a logo page, **Popular** on any other.
+They move to a page by going to it with its label or the page navigator, or by pressing on a page
+other than the one they were last on; a logo page added turns it to Logo too. On opening, a logo
+page in view (the one under the canvas's centre, else the first) turns it to Logo, and any other
+page leaves the category the person last chose. Staying on the same page never turns it again, so
+another category chosen meanwhile is kept, and a press on the bare canvas between pages changes
+nothing.
 
 ## Beside the cog
 

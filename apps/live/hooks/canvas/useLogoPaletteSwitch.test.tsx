@@ -54,17 +54,19 @@ describe('useLogoPaletteSwitch', () => {
     expect(asked).toEqual(['logo']);
   });
 
-  it('asks when a press lands on a logo page other than the last pressed', () => {
+  it('asks for Logo on a logo page and Popular on any other, when a press moves page', () => {
     sheets(both);
     renderHook(() => useLogoPaletteSwitch(both, true));
+    // The infographic page is the one in view on opening: pressing it is staying on it.
     press(50);
     expect(asked).toEqual([]);
     press(250);
     press(260);
     expect(asked).toEqual(['logo']);
     press(50);
+    press(55);
     press(250);
-    expect(asked).toEqual(['logo', 'logo']);
+    expect(asked).toEqual(['logo', 'popular', 'logo']);
   });
 
   it('stays quiet when inactive (a viewer, or a bare view)', () => {
@@ -88,13 +90,16 @@ describe('useLogoPaletteSwitch', () => {
     expect(asked).toEqual([]);
   });
 
-  it('asks when a logo page is gone to (its label, the navigator), once per page', () => {
+  it('asks when a page is gone to (its label, the navigator), once per page', () => {
     const { result } = renderHook(() => useLogoPaletteSwitch(both, true));
     vi.runAllTimers();
     act(() => result.current.pageShown(both[1]!));
     act(() => result.current.pageShown(both[1]!));
     vi.runAllTimers();
-    expect(asked).toEqual(['logo']);
+    expect(asked).toEqual(['logo']); // And Popular on going back to the infographic page.
+    act(() => result.current.pageShown(both[0]!));
+    vi.runAllTimers();
+    expect(asked).toEqual(['logo', 'popular']);
   });
 
   it('ignores a press on chrome floating over a logo page (a palette category just chosen)', () => {
