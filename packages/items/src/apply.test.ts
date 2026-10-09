@@ -53,6 +53,11 @@ describe('item writes', () => {
     const c = item({ title: 'c', status: 'q' }, { rank: 'i' });
     const d = item({ title: 'd', status: 'q' }, { rank: 'i' });
     expect(rankForPlace([c, d], { status: 'q', after: c.id }) > 'i').toBe(true);
+    // ...and before the cards past the pair, never at the column's end.
+    const e = item({ title: 'e', status: 'q' }, { rank: 's' });
+    const f = item({ title: 'f', status: 'q' }, { rank: 'u' });
+    const r = rankForPlace([c, d, e, f], { status: 'q', after: c.id });
+    expect(r > 'i' && r < 's').toBe(true);
   });
 
   it('patches and inverts a patch', () => {

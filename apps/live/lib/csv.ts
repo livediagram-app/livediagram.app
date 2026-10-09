@@ -69,7 +69,9 @@ function parseCsvRows(text: string): string[][] {
       } else {
         field += c;
       }
-    } else if (c === '"') {
+    } else if (c === '"' && field === '') {
+      // Only a field's first character opens quotes (RFC 4180): a stray `"` mid-field (`5" monitor`)
+      // is a character, never a quoted run that swallows the commas and lines after it.
       inQuotes = true;
     } else if (c === ',') {
       endField();

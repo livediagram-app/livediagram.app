@@ -3,7 +3,7 @@
 // first page replaces the active tab, every further page becomes a new tab
 // straight after it. Pure, so the hook commits it as ONE undo step.
 
-import type { Tab } from '@livediagram/document';
+import { savableElements, type Tab } from '@livediagram/document';
 import type { ImportedPage } from '@/lib/drawio/import';
 import { mergeImportedTab } from '@/lib/import-merge';
 
@@ -24,7 +24,8 @@ export function applyDrawioPages(
     mergeImportedTab(receiving, {
       id: receiving.id,
       name: receiving.name,
-      elements: page.elements,
+      // Only what the api will save lands (board-import.md "What lands").
+      elements: savableElements(page.elements).elements,
       ...(page.layers ? { layers: page.layers } : {}),
       ...(page.backgroundColor ? { backgroundColor: page.backgroundColor } : {}),
     });

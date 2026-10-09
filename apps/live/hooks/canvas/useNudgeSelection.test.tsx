@@ -103,3 +103,21 @@ describe('useNudgeSelection', () => {
     expect(shapes.at('s').y).toBe(67);
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked element is never nudged, alone or in a selection.
+describe('nudging a locked element', () => {
+  it('moves the rest of the selection and leaves the locked one where it is', () => {
+    const locked = { ...shape('l', 0, 0), locked: true } as Element;
+    const h = harness({
+      elements: [locked, shape('s', 200, 0)],
+      multi: ['l', 's'],
+      laneBoard: false,
+    });
+    h.press(10, 0);
+    expect(h.at('l').x).toBe(0);
+    expect(h.at('s').x).toBe(210);
+    const alone = harness({ elements: [locked], selected: 'l', laneBoard: false });
+    alone.press(10, 0);
+    expect(alone.at('l').x).toBe(0);
+  });
+});

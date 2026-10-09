@@ -140,3 +140,50 @@ describe('useEditorDrag — a frame carries by the centre rule', () => {
     expect(moved('neighbour')).toBe(0);
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Locking": a frame carries no locked element it holds.
+describe('useEditorDrag — a frame leaves a locked member put', () => {
+  it('moves the frame and its other members, never the locked one', () => {
+    const before = BOARD().map((el) => (el.id === 'inside' ? { ...el, locked: true } : el));
+    const h = harness(before);
+    dragFrame(h, 50, 0);
+    const after = h.elements();
+    expect(xOf(after, 'frame')! - xOf(before, 'frame')!).toBe(50);
+    expect(xOf(after, 'straddling')! - xOf(before, 'straddling')!).toBe(50);
+    expect(xOf(after, 'inside')).toBe(xOf(before, 'inside'));
+  });
+});
+
+// A pointer the system took back ends with pointercancel and no pointerup: the drag is cancelled, never
+// left live to commit on a later, unrelated release.
+describe('useEditorDrag — a cancelled pointer', () => {
+  it('cancels the drag, leaving everything where it started', () => {
+    const before = BOARD();
+    const h = harness(before);
+    act(() => {
+      h.result.current.beginDrag('frame', 'move', {
+        clientX: START.x,
+        clientY: START.y,
+        button: 0,
+        stopPropagation: vi.fn(),
+        preventDefault: vi.fn(),
+        currentTarget: document.createElement('div'),
+      } as unknown as ReactPointerEvent);
+    });
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('pointermove', { clientX: START.x + 50, clientY: START.y }),
+      );
+    });
+    act(() => {
+      window.dispatchEvent(new Event('pointercancel'));
+    });
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('pointerup', { clientX: START.x + 90, clientY: START.y }),
+      );
+    });
+    expect(xOf(h.elements(), 'frame')).toBe(xOf(before, 'frame'));
+    expect(xOf(h.elements(), 'inside')).toBe(xOf(before, 'inside'));
+  });
+});

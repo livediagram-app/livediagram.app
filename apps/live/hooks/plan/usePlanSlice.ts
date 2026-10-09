@@ -253,6 +253,9 @@ export function usePlanSlice(opts: {
     [write, planItems.items],
   );
   // Every trashed item deleted for good: a few requests at a time (never hundreds at once), one event.
+  // Quiet: emptying the Trash cannot be undone (docs/specs/026-plan/items.md), and one undo step per card
+  // would crowd the shared history.
+  const writeQuiet = planItems.writeQuiet;
   const emptyTrash = useCallback(() => {
     const ids = [...planItems.items.values()].filter(isTrashed).map((it) => it.id);
     if (ids.length === 0) return;
@@ -261,10 +264,10 @@ export function usePlanSlice(opts: {
     void (async () => {
       for (let i = 0; i < ids.length; i += EMPTY_TRASH_BATCH)
         await Promise.all(
-          ids.slice(i, i + EMPTY_TRASH_BATCH).map((id) => write({ kind: 'delete', id })),
+          ids.slice(i, i + EMPTY_TRASH_BATCH).map((id) => writeQuiet({ kind: 'delete', id })),
         );
     })();
-  }, [planItems.items, write]);
+  }, [planItems.items, writeQuiet]);
 
   const commentFn = planItems.comment;
   const commentItem = useCallback(

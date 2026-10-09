@@ -39,8 +39,10 @@ type ParsedMarkdown = { roots: MarkdownNode[]; tables: MarkdownTable[] };
 // code so a backtick span isn't mangled by the asterisk passes.
 export function cleanInline(input: string): string {
   let s = input;
-  s = s.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1'); // image → alt
-  s = s.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1'); // link → text
+  // Each class leaves out its own opener too, so a failed match stops at the next one: a line of a
+  // thousand `[` or `<` is linear, where the open classes rescanned to the line's end from each.
+  s = s.replace(/!\[([^\][]*)\]\([^()]*\)/g, '$1'); // image → alt
+  s = s.replace(/\[([^\][]+)\]\([^()]*\)/g, '$1'); // link → text
   s = s.replace(/`([^`]+)`/g, '$1'); // inline code
   s = s.replace(/(\*\*|__)(.*?)\1/g, '$2'); // bold
   s = s.replace(/(\*|_)(.*?)\1/g, '$2'); // italic
@@ -58,7 +60,7 @@ export function cleanInline(input: string): string {
   // where they are rendered (xmlEscape in the SVG renderer, React on the
   // canvas); nothing downstream interpolates a label as raw markup.
   for (let pass = 0; pass < 5; pass += 1) {
-    const next = s.replace(/<[^>]*>/g, '');
+    const next = s.replace(/<[^<>]*>/g, '');
     if (next === s) break;
     s = next;
   }

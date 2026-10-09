@@ -77,6 +77,24 @@ describe('applyDrawioPages', () => {
     });
   });
 
+  it('lands only elements the api will save (board-import.md "What lands")', () => {
+    const arrow = {
+      id: 'zero',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 10, y: 0 },
+      label: '\n',
+      labelMaxWidth: 0,
+    } as unknown as Element;
+    const next = applyDrawioPages(
+      tabs,
+      'b',
+      [page('b', 'P', { elements: [box('ok'), arrow, box('ok')] })],
+      createTab,
+    );
+    expect(next[1]!.elements.map((e) => e.id)).toEqual(['ok']);
+  });
+
   it('carries layers', () => {
     const layers = [
       { id: 'layer:default', name: 'Layer 1' },

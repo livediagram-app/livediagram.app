@@ -96,11 +96,18 @@ export function DebouncedText({
       return false;
     });
   };
+  // Typing still waiting on the debounce is saved when the field goes, not dropped: Escape closes the card
+  // panel with focus still here, so no blur runs. The latest flush, so it saves with the newest onSave.
+  const pending = useRef<string | null>(null);
+  const flushLatest = useLatest(flush);
   useEffect(
     () => () => {
-      if (timer.current) clearTimeout(timer.current);
+      if (timer.current === null) return;
+      clearTimeout(timer.current);
+      timer.current = null;
+      if (pending.current !== null) void flushLatest.current(pending.current);
     },
-    [],
+    [flushLatest],
   );
   const common = {
     id,
@@ -113,6 +120,7 @@ export function DebouncedText({
       // A wrapping one-line field never holds a line break (a paste brings them).
       const text = wrapLines ? e.target.value.replace(/\r?\n/g, ' ') : e.target.value;
       setDraft(text);
+      pending.current = text;
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => flush(text), ITEM_EDIT_DEBOUNCE_MS);
     },

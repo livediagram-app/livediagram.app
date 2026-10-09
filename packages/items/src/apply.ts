@@ -55,9 +55,12 @@ export function rankForPlace(items: Iterable<Item>, place: ItemPlace, exceptId?:
   }
   const prev = column[index - 1]?.rank ?? null;
   const next = column[index]?.rank ?? null;
-  // Equal neighbours (a concurrent insert) leave no gap; go after the pair.
-  if (prev !== null && next !== null && compareRank(prev, next) >= 0)
-    return rankBetween(prev, null);
+  // Equal neighbours (a concurrent insert) leave no gap: go after the run of equal ranks, before
+  // the first card past it, never to the column's end.
+  if (prev !== null && next !== null && compareRank(prev, next) >= 0) {
+    const past = column.slice(index).find((i) => compareRank(i.rank, prev) > 0);
+    return rankBetween(prev, past?.rank ?? null);
+  }
   return rankBetween(prev, next);
 }
 

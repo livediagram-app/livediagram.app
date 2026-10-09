@@ -100,7 +100,7 @@ export const DRAWIO_CAPTION_WIDTH_SLACK = 1.2;
 function captionWidth(label: string, size: TextSize | undefined): number {
   const px = arrowLabelFontSize(size ?? 'sm');
   const widest = Math.max(...label.split('\n').map((line) => labelTextWidth(line.length, px)));
-  return Math.ceil(widest * DRAWIO_CAPTION_WIDTH_SLACK);
+  return Math.max(1, Math.ceil(widest * DRAWIO_CAPTION_WIDTH_SLACK));
 }
 
 /** The one colour every run of a label is set in, when they share one: an arrow caption has no runs,
@@ -169,7 +169,8 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
   const link = elementLink(cell.link, ctx);
 
   // One label: the edge's own, then its label children, one per line, styled by the first.
-  const labelled = [cell, ...input.labels].filter((c) => cellLabel(c).plain !== '');
+  // A label of nothing but line breaks (`value="&#xa;"`) is no label: it would size the caption to 0.
+  const labelled = [cell, ...input.labels].filter((c) => cellLabel(c).plain.trim() !== '');
   const parts = labelled.map((c) => cellLabel(c).plain);
   if (parts.length > 1) ctx.tally.add('label-moved');
   const styled = labelled[0] ?? cell;

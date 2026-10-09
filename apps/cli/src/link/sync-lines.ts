@@ -3,6 +3,7 @@
 
 import type { MirrorLevel } from './link-file';
 import type { SyncAction, TabMove } from './sync-plan';
+import { oneLine } from '../output/one-line';
 
 export type LineContext = {
   // A path relative to the mirror directory, as the working directory reaches it.
@@ -32,7 +33,7 @@ function writeLine(action: Extract<SyncAction, { kind: 'write' }>, lc: LineConte
   const moved = action.tabs.filter((t: TabMove) => t.from !== t.to);
   if (moved.length === 0) return `~ ${head}`;
   const revs = moved.map((t) => (t.from === null ? `${t.to}` : `${t.from}→${t.to}`)).join(', ');
-  return `~ ${head} · ${moved.map((t) => t.name).join(', ')} · rev ${revs}`;
+  return `~ ${head} · ${moved.map((t) => oneLine(t.name)).join(', ')} · rev ${revs}`;
 }
 
 function refuseLine(action: Extract<SyncAction, { kind: 'refuse' }>, lc: LineContext): string {

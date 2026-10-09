@@ -377,3 +377,44 @@ describe('a canvas Plan card dropped on a board', () => {
     expect(commit).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/026-plan/items.md "Trash": emptying the Trash cannot be undone, so it records no undo step.
+describe('usePlanSlice emptyTrash', () => {
+  it('deletes every trashed card quietly, never through the undoable write', async () => {
+    const trashed = (id: string) => ({ id, type: 'task', fields: { status: 'trash' } });
+    const write = vi.fn(async () => true);
+    const writeQuiet = vi.fn(async () => true);
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems: {
+          items: new Map([
+            ['a', trashed('a')],
+            ['b', trashed('b')],
+            ['c', { id: 'c', type: 'task', fields: { status: 'todo' } }],
+          ]),
+          status: 'ready',
+          self: null,
+          refetch: vi.fn(),
+          write,
+          writeQuiet,
+        } as never,
+        itemTypes: { types: ITEM_TYPES } as never,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: [],
+        presence: new Map(),
+        statusNames: new Map(),
+        commit: () => {},
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    await act(async () => result.current.context.emptyTrash());
+    expect(write).not.toHaveBeenCalled();
+    expect(writeQuiet.mock.calls.map((c) => (c as unknown as [{ id: string }])[0].id)).toEqual([
+      'a',
+      'b',
+    ]);
+  });
+});

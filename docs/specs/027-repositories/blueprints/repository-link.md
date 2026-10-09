@@ -48,7 +48,7 @@ every other file and symbol exists today.
 | `apps/cli/src/link/recorded-state.ts`                                                 | `recordedStateOf` (pure): states at `index` and `none`, from the local sync state                                                                                                                     |
 | `apps/cli/src/link/remote.ts`                                                         | `RemoteFact`, `EnvelopeFields`, `readRemoteFacts`: step 5, each document's overview and envelope, `SYNC_CONCURRENCY` at a time                                                                        |
 | `apps/cli/src/link/sync-survey.ts`                                                    | `surveyLink`: steps 2 to 6, shared by `sync` and `link status`                                                                                                                                        |
-| `apps/cli/src/link/mirror-tree.ts`                                                    | `mirrorTree`: writes when bytes differ, removals (RL42), moves (RL9), empty directories pruned, paths touched (RL23)                                                                                  |
+| `apps/cli/src/link/mirror-tree.ts`                                                    | `mirrorTree`: writes when bytes differ, generated Markdown only over its own (E30), removals (RL42), moves (RL9), empty directories pruned, paths touched (RL23)                                      |
 | `apps/cli/src/link/index-entries.ts`                                                  | `indexEntriesOf`: each document's `INDEX.md` entry as the pass left it (RL16)                                                                                                                         |
 | `apps/cli/src/link/sync-lines.ts`                                                     | `actionLine`, `totalsLine`: the output lines, final copy                                                                                                                                              |
 | `apps/cli/src/testing/link-host.ts`                                                   | The suites' fake host: libraries, folders, teams, documents that move on, trash, purge or fail                                                                                                        |
@@ -735,7 +735,10 @@ for tab "<name>"`, exit 7 (as `pull`).
 - **E29** The level raised from `index` to `files`: every covered document has no `tracked` file, so each is
   `new` and written.
 - **E30** A generated outline file or `INDEX.md` edited by hand: rewritten (outline only when its document is
-  written, RL12); one whose first line is no longer the generated line is never removed (RL42).
+  written, RL12); one whose first line is no longer the generated line is never removed (RL42) nor written
+  over. A Markdown file a person wrote where an outline or `INDEX.md` would go (a document named "README" on a
+  `README.md`, on a case-insensitive disk too) is kept the same way: the pass logs `kept <path>: not generated`
+  and does not report it as written.
 - **E31** `link init` piped (`| tee`, in CI, from an agent) with no `--folder` or `--doc`: exit 2 with the folders
   as commands; stdin is not read.
 - **E32** The picker cancelled, or its terminal closed mid-prompt (end of input): exit 1, nothing written.
@@ -751,7 +754,12 @@ for tab "<name>"`, exit 7 (as `pull`).
   `INDEX.md`; an outline file or `INDEX.md` is removed only when its first line is the generated line (RL42), and a
   file holding an unsent change is never removed (spec).
 - **Never follows symbolic links** inside `dir` while scanning (`CliFiles.list` reports them as `link`), so a
-  hostile repository cannot point a scan at the home directory.
+  hostile repository cannot point a scan at the home directory. Nor through one when writing: before every write,
+  move or removal the nearest existing directory above the path inside `dir` must resolve inside `dir`'s real path,
+  else the pass stops with `invalid_dir` and nothing is written there.
+- **Remote names stay on their line.** An author's, a tab's or an element's name in a `watch`, `wait` or `sync`
+  line has its control characters (line breaks, terminal escapes) printed as spaces, so it cannot forge another
+  line or drive the terminal.
 - **Host.** A link's requests go to the profile's host only after the host check; a self-host link never contacts
   livediagram.app (CLI blueprint I5).
 - **Access.** Each sync reads with the syncing person's credential: `unreadable` documents are never written,

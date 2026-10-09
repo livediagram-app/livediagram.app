@@ -290,6 +290,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         depsRef.current.setMultiSelectedIds(swap.origMultiIds);
       }
     };
+    // A pointer the system took back (a touch interrupted, a native drag starting from content in an
+    // element) ends with `pointercancel` and no `pointerup`: the gesture is cancelled, as Escape cancels
+    // it, rather than left live to follow a pointer with no button held and commit on a later release.
+    // A click-to-place arrow rides through pointer releases by design and is left to its next click.
+    const onPointerCancel = () => {
+      if (drag?.kind === 'arrow-endpoint' && drag.following) return;
+      cancelDrag();
+    };
     // Cancel the drag immediately when a second touch finger lands — that
     // signals a pinch gesture, not a solo drag.
     const onSecondTouch = (e: PointerEvent) => {
@@ -920,6 +928,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
 
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onPointerCancel);
     window.addEventListener('pointerdown', onSecondTouch);
     window.addEventListener('pointerdown', onPlaceClick, true);
     window.addEventListener('keydown', onKey, true);
@@ -930,6 +939,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (moveRaf !== null) cancelAnimationFrame(moveRaf);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onPointerCancel);
       window.removeEventListener('pointerdown', onSecondTouch);
       window.removeEventListener('pointerdown', onPlaceClick, true);
       window.removeEventListener('keydown', onKey, true);

@@ -19,6 +19,12 @@ describe('parseCsvLineData (docs/specs/009-elements/pie-chart.md)', () => {
     expect(out!.series[0]!.values).toEqual([1, 2]);
   });
 
+  it('reads a stray quote mid-field as a character, never merging the rows after it', () => {
+    const out = parseCsvLineData('Item,Count\n5" monitor,3\nDesk,2');
+    expect(out!.categories).toEqual(['5" monitor', 'Desk']);
+    expect(out!.series[0]!.values).toEqual([3, 2]);
+  });
+
   it('coerces non-numeric / missing values to 0 and names blank series', () => {
     const out = parseCsvLineData('x,\nJan,nope\nFeb,');
     expect(out!.series[0]!.name).toBe('Series 1');

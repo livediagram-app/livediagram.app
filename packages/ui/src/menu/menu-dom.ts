@@ -89,6 +89,25 @@ export function isInMenuSurface(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest(SURFACE) !== null;
 }
 
+// Controls Space presses or ticks for itself (WAI-ARIA): the canvas's Space never takes these.
+const PRESSABLE =
+  'button, a[href], select, summary, input, textarea, [contenteditable=""], [contenteditable="true"], [role="button"], [role="checkbox"], [role="switch"], [role="radio"], [role="tab"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="slider"]';
+
+/** Whether Space on this target belongs to a control (WAI-ARIA: it presses a button, ticks a box): a
+ *  canvas's Space shortcut (pan, a tap into a label edit) stands down for it. Only a control focused from
+ *  the keyboard (`:focus-visible`) counts, so a toolbar button that keeps focus after a mouse click does
+ *  not swallow Space-to-pan. */
+export function isPressableControl(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  const control = target.closest(PRESSABLE);
+  if (!control) return false;
+  try {
+    return control.matches(':focus-visible');
+  } catch {
+    return true;
+  }
+}
+
 const TEXT_INPUT = /^(text|search|email|url|tel|password|number)$/;
 
 /** A text field or editable region holds focus: opening a menu never takes it away. */

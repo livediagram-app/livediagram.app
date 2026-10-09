@@ -72,8 +72,15 @@ export function useBoxedDragHandlers({
     // (members reposition + resize proportionally around the corner opposite
     // the drag handle). A bare single-element drag falls through to the
     // singleton set.
+    // A locked member stays put (docs/specs/008-canvas/canvas-and-palette.md "Locking"): the rest of the
+    // selection moves without it, and so does a frame or lane without a locked element it holds.
+    const lockedIds = new Set(
+      d.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
+    );
+    const unlocked = (set: ReadonlySet<string>) =>
+      lockedIds.size === 0 ? set : new Set([...set].filter((id) => !lockedIds.has(id)));
     const baseIds = multiSelectedIds.has(elementId)
-      ? multiSelectedIds
+      ? unlocked(multiSelectedIds)
       : new Set<string>([elementId]);
 
     // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
@@ -87,11 +94,13 @@ export function useBoxedDragHandlers({
     // from it that sit on it.
     const ids =
       mode === 'move'
-        ? withSheetCharts(
-            d.activeTab.elements,
-            withMindSubtrees(
+        ? unlocked(
+            withSheetCharts(
               d.activeTab.elements,
-              containerContents(d.activeTab.elements, baseIds),
+              withMindSubtrees(
+                d.activeTab.elements,
+                containerContents(d.activeTab.elements, baseIds),
+              ),
             ),
           )
         : baseIds;

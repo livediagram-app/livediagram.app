@@ -3,6 +3,7 @@
 // are looked up by the caller.
 
 import type { ChangesetCounts } from '@livediagram/api-schema';
+import { oneLine } from '../output/one-line';
 
 export type RoomEvent =
   | { kind: 'comment'; tabId: string; elementId: string; authorName: string; text: string }
@@ -162,12 +163,12 @@ export function watchLines(event: RoomEvent, names: Names): string[] {
       const { added, changed, removed } = event.counts;
       const summary = event.summary ? ` ${quoted(event.summary)}` : '';
       return [
-        `changeset ${event.id} by ${event.author}:${summary} (+${added} ~${changed} -${removed})`,
+        `changeset ${event.id} by ${oneLine(event.author)}:${summary} (+${added} ~${changed} -${removed})`,
       ];
     }
     case 'comment':
       return [
-        `comment on ${names.refOf(event.tabId, event.elementId)} by ${event.authorName}: ${quoted(event.text)}`,
+        `comment on ${names.refOf(event.tabId, event.elementId)} by ${oneLine(event.authorName)}: ${quoted(event.text)}`,
       ];
     case 'element':
       return [`element ${names.refOf(event.tabId, event.elementId)} ${event.change}`];

@@ -32,6 +32,9 @@ export function useSelectionEditing(opts: {
   // Read when an edit runs (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   isReadOnly: boolean;
+  // The active tab is locked: every save is refused, so no label editor opens to take typing it would
+  // throw away.
+  tabLocked?: boolean;
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): never selectable.
   layerInertIds: Set<string>;
   // Smart layer naming (docs/specs/006-document/layers.md): called with every committed label so a
@@ -107,8 +110,8 @@ export function useSelectionEditing(opts: {
   } = set;
 
   const beginEdit = (elementId: string) => {
-    // Viewers may select to inspect, but never enter text-edit mode.
-    if (isReadOnly) return;
+    // Viewers may select to inspect, but never enter text-edit mode; nor anyone on a locked tab.
+    if (isReadOnly || opts.tabLocked) return;
     // Another participant has it selected — don't let two people edit it.
     if (lockedByOther(elementId)) return;
     if (formatSourceId !== null) return;
@@ -234,7 +237,7 @@ export function useSelectionEditing(opts: {
   const cancelEdit = () => setEditingId(null);
 
   const typeIntoSelected = (elementId: string, char: string): boolean => {
-    if (isReadOnly) return false;
+    if (isReadOnly || opts.tabLocked) return false;
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
