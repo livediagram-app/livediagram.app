@@ -157,17 +157,3 @@ export function findPads(
   }
   return found;
 }
-
-export const PAD_CALIBRATION = {
-  PAD_MAX_ASPECT,
-  PAD_MIN_FILL,
-  PAD_MAX_SIZE,
-  PAD_SIZE_RATIO,
-  PAD_REACH,
-  PAD_MIN_NOTES,
-  SAME_BOX_IOU,
-  MAX_KEPT_OVERLAP,
-  FUSED_MIN_ASPECT,
-  FUSED_MAX_NOTES,
-  FUSED_SIZE_RATIO,
-} as const;

@@ -352,17 +352,3 @@ export function isDarkGrain(image: ImageBuffer, box: Box): boolean {
     roughnessOf(image, box) > DARK_GRAIN_ROUGHNESS
   );
 }
-
-export const TEXTURE_CALIBRATION = {
-  INTERIOR_INSET,
-  INK_LUMA_RATIO,
-  INK_MARGIN_PX,
-  LBP_DEADBAND,
-  EDGE_STRIP,
-  SPREAD_INSET,
-  BLANK_SPREAD_RATIO,
-  MIN_WRITTEN_SPREAD,
-  BLANK_EDGE_CONTRAST,
-  DARK_GRAIN_BRIGHTNESS,
-  DARK_GRAIN_ROUGHNESS,
-} as const;

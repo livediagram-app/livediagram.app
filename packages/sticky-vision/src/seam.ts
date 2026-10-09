@@ -217,15 +217,3 @@ export function cutAtSeam(
     ),
   );
 }
-
-export const SEAM_CALIBRATION = {
-  SEAM_MIN_DEPTH,
-  SEAM_MIN_PIECE,
-  SEAM_MIN_SPAN,
-  SEAM_MAX_TILT,
-  STEP_MIN_SPAN,
-  INK_BELOW_PAPER,
-  SEAM_INSET,
-  SEAM_MIN_PAPER,
-  SEAM_MAX_DEPTH,
-} as const;

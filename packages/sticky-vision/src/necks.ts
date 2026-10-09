@@ -184,10 +184,3 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
   }
   return [...pieces.values()];
 }
-
-export const NECK_CALIBRATION = {
-  NECK_ERODE_FRACTION,
-  NECK_MIN_CORE,
-  NECK_REGROW,
-  NECK_FRINGE_FREE,
-} as const;

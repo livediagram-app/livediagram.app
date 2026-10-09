@@ -16,9 +16,6 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage"
   },
-  "dependencies": {
-    "@livediagram/api-schema": "workspace:*"
-  },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",

@@ -112,8 +112,6 @@ export type ArticleBlock =
   | ArticlePageBreakBlock
   | ArticleZoneBlock;
 
-export type ArticleBlockType = ArticleBlock['type'];
-
 export type ArticleLookId = 'clean' | 'classic' | 'report' | 'notebook' | 'bold';
 export const ARTICLE_LOOK_IDS: readonly ArticleLookId[] = [
   'clean',

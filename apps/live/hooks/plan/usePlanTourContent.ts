@@ -179,5 +179,3 @@ export function usePlanTourContent(opts: {
       (setupRef.current && exampleStatus(setupRef.current, column)) ?? null,
   };
 }
-
-export type PlanTourContentSlice = ReturnType<typeof usePlanTourContent>;

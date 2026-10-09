@@ -64,7 +64,6 @@ export const WORKBENCH_MESSAGE_TYPES = [
   'livediagram:theme',
   'livediagram:ended',
 ] as const;
-export type WorkbenchMessageType = (typeof WORKBENCH_MESSAGE_TYPES)[number];
 
 // Which side is parsing: the page reads `to-page` messages, a workbench `to-workbench` ones. A known
 // type travelling the other way is not one this side takes, so it reads as ignored.

@@ -38,8 +38,6 @@ export type DefaultSkip = { key: PlacementDefaultKey; reason: DefaultSkipReason 
 export type PlacementDecision =
   { via: 'explicit' | 'root' } | { via: 'default'; key: PlacementDefaultKey };
 
-export type PlacementVia = PlacementDecision['via'];
-
 /** What one folder step answers: a placement, a refusal, or null to pass to the next step. */
 export type FolderStepAnswer =
   | ({ ok: true; placement: DocumentPlacement } & PlacementDecision)

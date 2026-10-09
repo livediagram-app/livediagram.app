@@ -15,7 +15,6 @@ import { setWorkbenchConfinement } from './api/workbench-confinement';
 import {
   autoRebindArrowsEnabled,
   fetchUserPreferences,
-  isRecentExcluded,
   RECENT_EXCLUDED_LIMIT,
   toggleRecentExcluded,
   PREFERENCES_CHANGED_EVENT,
@@ -318,15 +317,6 @@ describe('writeUserPreferences quota / failure handling', () => {
 
 // Exclude from Recent (docs/specs/013-workspace/hide-from-recent.md).
 describe('recent exclusions', () => {
-  it('treats a missing list as nothing excluded', () => {
-    expect(isRecentExcluded({}, 'd1')).toBe(false);
-    expect(isRecentExcluded({ recentExcludedIds: [] }, 'd1')).toBe(false);
-  });
-
-  it('reports an excluded document', () => {
-    expect(isRecentExcluded({ recentExcludedIds: ['d1', 'd2'] }, 'd2')).toBe(true);
-  });
-
   it('toggles on, then back off', () => {
     const on = toggleRecentExcluded({}, 'd1');
     expect(on).toEqual(['d1']);

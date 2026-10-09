@@ -273,7 +273,6 @@ export const CHANGESET_ERROR_CODES = [
   'use_changesets',
   'invalid_name',
 ] as const;
-export type ChangesetErrorCode = (typeof CHANGESET_ERROR_CODES)[number];
 
 // ---------------------------------------------------------------------
 // The room op

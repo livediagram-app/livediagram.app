@@ -675,8 +675,6 @@ export function cardIsFaceDown(
   return setup.hideWriting && item.createdBy.id !== viewerId;
 }
 
-export type BoardSetupRejection = 'setup_invalid' | 'columns_invalid' | 'column_invalid';
-
 // Validates a stored set-up; normalises it (drops a duplicate status, unknown
 // card fields) so a set-up written by an agent never breaks a board.
 export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {

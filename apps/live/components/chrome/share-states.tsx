@@ -58,10 +58,6 @@ export const SHARE_STATE_META: Record<
   },
 };
 
-// Legend read order: the default first, then the progressively-wider
-// audiences, with Local only last as the deliberate opt-out.
-export const LEGEND_ORDER: ShareState[] = ['private', 'shared', 'team', 'community', 'offline'];
-
 // The pill's rendered height, pinned: its caps label is trimmed to cap height, so padding alone would
 // shrink it (docs/specs/004-interface-design/optical-alignment.md).
 export const STATE_CHIP_HEIGHT_PX = 19;

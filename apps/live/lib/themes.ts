@@ -46,7 +46,6 @@ export type {
   ThemeDefinition,
   ThemeCategory,
   ShapeColorPreset,
-  TablePreset,
 } from '@livediagram/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names

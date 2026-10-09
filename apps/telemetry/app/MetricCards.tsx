@@ -20,7 +20,7 @@ import {
 import type { ViewKey } from './view-keys';
 import { previousSpanLabel, windowDays, windowHighlightFrom } from './windows';
 
-export type { Metric, MetricGroup, MetricStack } from './metric-series';
+export type { Metric, MetricGroup } from './metric-series';
 import type { MetricGroup } from './metric-series';
 
 // Curated metrics rendered as cards: the selected-window count + a 30-day

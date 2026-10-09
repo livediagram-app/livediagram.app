@@ -122,8 +122,6 @@ export {
   snapLeadingAxis,
   snapModeOf,
   unionResizeMember,
-  type ResizeAxis,
-  type ResizeSnapMode,
   type ShapeBounds,
 } from './resize-geometry';
 

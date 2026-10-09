@@ -96,7 +96,6 @@ export const WORKBENCH_ERROR_CODES = [
   'pairing_answered',
   'pairing_expired',
 ] as const;
-export type WorkbenchErrorCode = (typeof WORKBENCH_ERROR_CODES)[number];
 
 // ---------------------------------------------------------------------
 // Wire types (blueprint "Wire types")

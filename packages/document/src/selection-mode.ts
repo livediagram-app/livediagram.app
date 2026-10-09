@@ -134,15 +134,6 @@ export const DEFAULT_VOTE_DOTS = 3;
 // a hand-written API payload gets the same treatment as the menu's own input.
 export const TIMER_MINUTES_RANGE = { min: 1, max: 120 } as const;
 
-/**
- * The lengths offered on the Timer element's own menu (docs/specs/012-collaboration/session-button.md).
- *
- * Presets rather than a number field: this menu sits on a 64px-tall element on
- * the canvas, and the lengths people actually run a session at are a short
- * list. The full range stays available from the element's right-click menu,
- * where there is room for a proper input.
- */
-export const TIMER_MINUTE_PRESETS = [1, 2, 3, 5, 10, 15, 20, 30] as const;
 export const VOTE_DOTS_RANGE = { min: 1, max: 10 } as const;
 
 // The answer shape a poll button takes when it carries none. `choice` rather

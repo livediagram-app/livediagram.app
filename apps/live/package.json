@@ -55,7 +55,6 @@
     "prosemirror-keymap": "^1.2.3",
     "prosemirror-model": "^1.25.12",
     "prosemirror-state": "^1.4.4",
-    "prosemirror-transform": "^1.12.2",
     "prosemirror-view": "^1.42.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

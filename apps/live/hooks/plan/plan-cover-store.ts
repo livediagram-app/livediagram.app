@@ -19,10 +19,6 @@ export type PlanCover = {
 let cover: PlanCover = { fillTabId: null, fillTabKind: null, tabElementCount: 0 };
 const listeners = new Set<() => void>();
 
-export function getPlanCover(): PlanCover {
-  return cover;
-}
-
 // Publishes the open tab's cover; listeners hear only a real change.
 export function setPlanCover(next: PlanCover): void {
   if (

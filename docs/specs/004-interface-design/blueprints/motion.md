@@ -180,7 +180,6 @@ Canvas and content durations above the ceiling move into their stylesheets, unch
   adds the class instead of writing the transition inline. Like the old inline value, it stays on
   the row.
 - The `HeroIllustration` card dim (500ms) becomes `.hero-card-dim` in `hero-animations.css`.
-- The `ShowcaseStagger` scene dim (500ms) becomes `.scene` in `ShowcaseStagger.module.css`.
 
 ### `canvas-motion.css`
 

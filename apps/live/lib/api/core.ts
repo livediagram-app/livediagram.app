@@ -31,7 +31,6 @@ export {
   setWorkbenchConfinement,
   subscribeWorkbenchSessionRefused,
   WorkbenchConfinedError,
-  type WorkbenchConfinement,
 } from './workbench-confinement';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
 // apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').

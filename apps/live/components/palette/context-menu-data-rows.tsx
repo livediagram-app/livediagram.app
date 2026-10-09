@@ -218,10 +218,6 @@ export const DataMenuGlyph = lucideGlyph(lucideChartPie, MENU_ICON_PX);
 // Bars on axes: the "Chart" (display options) category glyph.
 export const ChartMenuGlyph = lucideGlyph(lucideChartColumn, MENU_ICON_PX);
 
-// Pie / line chart data editors live in their own module; re-exported here
-// so the context-menu row imports stay a single source.
-export { LineDataSummary, PieDataEditor } from './context-menu-data-editors';
-
 // Pie slice animation tiles (docs/specs/009-elements/pie-chart.md): None + the chart animations, then Speed
 // + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
 export function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
