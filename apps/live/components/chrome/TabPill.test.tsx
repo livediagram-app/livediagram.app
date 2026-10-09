@@ -80,8 +80,9 @@ describe('TabPill opening-mode icon', () => {
     expect(button.querySelector('svg')!.innerHTML).toBe(expected);
   });
 
-  it("follows an editor's own switch on the tab over its opening mode", () => {
-    const expected = render(<MarkerIcon size={12} />).container.querySelector('svg')!.innerHTML;
+  // docs/specs/007-editor/editor-modes.md "Where the mode lives": nothing is remembered per person.
+  it("shows the tab's own mode, never one an earlier editor remembered in this browser", () => {
+    const expected = render(<FlowchartIcon size={12} />).container.querySelector('svg')!.innerHTML;
     cleanup();
     localStorage.setItem('livediagram:v2:editor-mode:pill-switched', 'draw');
     render(

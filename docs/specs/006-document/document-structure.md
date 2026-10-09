@@ -87,10 +87,10 @@ type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind; // 'diagram' | 'event-storming' (docs/specs/021-event-storming/event-storming.md); absent = 'diagram'
-  // The editor mode the tab opens in for someone who has not switched on it
-  // (docs/specs/007-editor/editor-modes.md); absent = 'diagram'. A stored kind 'whiteboard' reads as
+  // The tab's editor mode, the same for everyone on it, which it also opens in
+  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); absent = 'diagram'. A stored kind 'whiteboard' reads as
   // kind 'diagram' with opensIn 'draw'.
-  opensIn?: EditorMode; // 'diagram' | 'draw'
+  opensIn?: EditorMode; // 'diagram' | 'draw' | 'illustrate' | 'plan'
   // The tab's bound source (docs/specs/027-repositories/diagram-sources.md): its format and whether it may hold
   // residue; absent = not bound. The source's path lives in the repository, never here.
   source?: { format: SourceFormat; compatibility: 'relaxed' | 'strict' };

@@ -1,37 +1,32 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { OpensInMenuSection } from './OpensInMenuSection';
+import { TabModeMenuSection } from './TabModeMenuSection';
 
 afterEach(() => {
   cleanup();
 });
 
-function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']> = {}) {
+function setup(over: Partial<Parameters<typeof TabModeMenuSection>[0]['choice']> = {}) {
   const onChange = vi.fn();
   const onToggle = vi.fn();
   render(
     // As the Tab control menu holds it (docs/specs/004-interface-design/menus.md).
     <div role="dialog" aria-label="Tab menu">
-      <OpensInMenuSection
-        choice={{ mode: 'draw', onChange, disabled: false, ...over }}
-        open
-        onToggle={onToggle}
-      />
+      <TabModeMenuSection choice={{ mode: 'draw', onChange, ...over }} open onToggle={onToggle} />
     </div>,
   );
   return { onChange, onToggle };
 }
 
-const choices = () =>
-  within(screen.getByRole('group', { name: 'Opens in' })).getAllByRole('button');
+const choices = () => within(screen.getByRole('group', { name: 'Mode' })).getAllByRole('button');
 
-// docs/specs/007-editor/editor-modes.md "Opens in": every editor mode as a one-of-a-set choice, a
+// docs/specs/007-editor/editor-modes.md "Where the mode lives" (the tab menu's Mode): every editor mode as a one-of-a-set choice, a
 // toggle button in the Tab control menu (docs/specs/004-interface-design/menus.md, D55).
-describe('OpensInMenuSection', () => {
-  it('lists every editor mode from the catalogue, the opening one checked', () => {
+describe('TabModeMenuSection', () => {
+  it("lists every editor mode from the catalogue, the tab's one checked", () => {
     setup();
-    const group = screen.getByRole('group', { name: 'Opens in' });
+    const group = screen.getByRole('group', { name: 'Mode' });
     expect(group).toBeTruthy();
     const items = choices();
     expect(items.map((i) => i.textContent)).toEqual([
@@ -48,29 +43,21 @@ describe('OpensInMenuSection', () => {
     ]);
   });
 
-  it('sets the opening mode on a choice', () => {
+  it('switches the tab on a choice', () => {
     const { onChange } = setup();
     fireEvent.click(screen.getByRole('button', { name: /Diagram/ }));
     expect(onChange).toHaveBeenCalledWith('diagram');
   });
 
-  it('passes the mode already chosen through, so it can switch the chooser back to it', () => {
+  it('does nothing for the mode already chosen', () => {
     const { onChange } = setup();
     fireEvent.click(screen.getByRole('button', { name: /^Draw/ }));
-    expect(onChange).toHaveBeenCalledWith('draw');
-  });
-
-  it('greys every choice out on a locked tab', () => {
-    const { onChange } = setup({ disabled: true });
-    const diagram = screen.getByRole('button', { name: /Diagram/ });
-    expect(diagram.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(diagram);
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('opens and closes as one of the menu’s categories', () => {
     const { onToggle } = setup();
-    fireEvent.click(screen.getByRole('button', { name: /Opens in/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Mode/i }));
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
 });

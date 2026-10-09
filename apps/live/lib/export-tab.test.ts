@@ -9,7 +9,7 @@ import {
   tabToMarkdownText,
   type ExportedTabEnvelope,
 } from '@livediagram/document';
-import { exportTabAsSvg, renderTabToSvg } from './export-tab';
+import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
 import { encodeStrokePoints, layOutIllustratePages } from '@livediagram/document';
 
@@ -378,5 +378,16 @@ describe('an article page export cuts a drawing off at its zone', () => {
     const svg = renderTabToSvg(t, { page });
     expect(svg).toContain('<clipPath id="lvd-zc-poke">');
     expect(svg).toContain('clip-path="url(#lvd-zc-poke)"');
+  });
+});
+
+// A Fit to Content page reaches 19200 px (docs/specs/007-editor/illustrate-pages.md "Sizes"): its
+// image is drawn at 2x only while that stays inside the largest canvas every browser draws.
+describe('exportScale', () => {
+  it('keeps 2x for an ordinary page, and lowers it so no side passes the canvas limit', () => {
+    expect(exportScale(2, 1123, 794)).toBe(2);
+    expect(exportScale(2, 19200, 1000) * 19200).toBe(MAX_EXPORT_CANVAS_SIDE);
+    expect(exportScale(2, 500, 12000) * 12000).toBe(MAX_EXPORT_CANVAS_SIDE);
+    expect(exportScale(2, 0, 0)).toBe(2);
   });
 });

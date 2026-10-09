@@ -17,6 +17,7 @@ function harness(tab: Tab) {
   let tabs = [tab];
   const onGoTo = vi.fn();
   const onLayoutPlaced = vi.fn();
+  const toastInfo = vi.fn();
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);
   });
@@ -28,8 +29,9 @@ function harness(tab: Tab) {
       commitTabs,
       onGoTo,
       onLayoutPlaced,
+      toastInfo,
     });
-  return { edits, tab: () => tabs[0]!, commitTabs, onGoTo, onLayoutPlaced };
+  return { edits, tab: () => tabs[0]!, commitTabs, onGoTo, onLayoutPlaced, toastInfo };
 }
 
 const twoPages = (): Tab =>
@@ -386,5 +388,64 @@ describe('locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a p
     h.edits().setOrientation('d1', 'landscape');
     h.edits().removePage?.('d1');
     expect(h.tab()).toBe(before);
+  });
+});
+
+// docs/specs/007-editor/illustrate-pages.md "Sizes", "Split Into Pages".
+describe('Fit to Content page edits', () => {
+  const fitTab = (elements: Element[]): Tab =>
+    ({
+      id: 't',
+      name: 'T',
+      elements,
+      pages: [
+        {
+          id: 'f',
+          orientation: 'landscape',
+          size: 'fit',
+          fit: { width: 3000, height: 1000 },
+          kind: 'infographic',
+        },
+      ],
+    }) as unknown as Tab;
+
+  it('never gives a page Fit to Content, and leaves its sides behind when sized away', () => {
+    const plain = harness(twoPages());
+    plain.edits().setSize('page-1', 'fit');
+    expect(plain.commitTabs).not.toHaveBeenCalled();
+    const h = harness(fitTab([box('a', 0)]));
+    h.edits().setSize('f', 'a3');
+    const page = illustratePagesOf(h.tab())[0]!;
+    expect(page.size).toBe('a3');
+    expect('fit' in page).toBe(false);
+  });
+
+  it('splits a page into a page per group, says so and goes to the first', () => {
+    const h = harness(fitTab([box('a', -1200), box('b', 1200)]));
+    h.edits().splitPage('f');
+    const pages = illustratePagesOf(h.tab());
+    expect(pages).toHaveLength(2);
+    expect(h.toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
+    expect(h.onGoTo).toHaveBeenLastCalledWith(pages[0]!.id);
+  });
+
+  it('says there is nothing to split on a page that is one group', () => {
+    const h = harness(fitTab([box('a', 0), box('b', 40)]));
+    h.edits().splitPage('f');
+    expect(illustratePagesOf(h.tab())).toHaveLength(1);
+    expect(h.toastInfo).toHaveBeenCalledWith('This page is one group: nothing to split.');
+    expect(h.onGoTo).not.toHaveBeenCalled();
+  });
+
+  it('refuses to split a locked page', () => {
+    const tab = fitTab([box('a', -1200), box('b', 1200)]);
+    const locked = {
+      ...tab,
+      pages: [{ ...(tab.pages![0] as object), locked: true }],
+    } as unknown as Tab;
+    const h = harness(locked);
+    h.edits().splitPage('f');
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(h.toastInfo).not.toHaveBeenCalled();
   });
 });

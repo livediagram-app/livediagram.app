@@ -284,9 +284,9 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
-  // The editor mode a general tab OPENS in (docs/specs/007-editor/editor-modes.md "Where the mode
-  // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
-  // (read via `opensInOf`); switching never changes it.
+  // The tab's editor mode, the same for everyone on it and the mode it opens in
+  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
+  // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
   opensIn?: EditorMode;
   // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
@@ -379,6 +379,7 @@ export {
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
 export * from './illustrate-page';
+export * from './illustrate-page-fit';
 export * from './page-lock';
 export * from './logo-page';
 export * from './element-mirror';
@@ -387,6 +388,7 @@ export * from './logo-guide-snap';
 export * from './wordmark';
 export * from './illustrate-page-content';
 export * from './illustrate-paginate';
+export * from './editor-mode-switch';
 export * from './article-flow';
 export * from './article-flow-ops';
 export * from './article-pages';

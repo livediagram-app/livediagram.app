@@ -27,7 +27,7 @@ import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
-import { OpensInMenuSection, type OpensInChoice } from './OpensInMenuSection';
+import { TabModeMenuSection, type TabModeChoice } from './TabModeMenuSection';
 import {
   AddTabToDocumentDialog,
   AddTabToFolderDialog,
@@ -59,7 +59,7 @@ export function PortalMenu({
   onCopyTo,
   onToggleLock,
   locked,
-  opensIn,
+  modeChoice,
   planTab = false,
   selfId,
   voteSelfId,
@@ -90,8 +90,8 @@ export function PortalMenu({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // The Opens in choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
-  opensIn?: OpensInChoice;
+  // The tab's Mode choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
+  modeChoice?: TabModeChoice;
   // A Plan tab: Add to Document is off, its cards belong to this document's items.
   planTab?: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
@@ -450,7 +450,7 @@ export function PortalMenu({
               />
             </MenuTileGrid>
           </MenuAccordionSection>
-          {opensIn ? <OpensInMenuSection choice={opensIn} {...sectionProps('opens-in')} /> : null}
+          {modeChoice ? <TabModeMenuSection choice={modeChoice} {...sectionProps('mode')} /> : null}
           {/* ── Look & Feel / Font / Cleanup band — see
             TabCanvasMenuSections. Rendered whenever canvas actions are
             available, which is both entry points (canvas right-click AND

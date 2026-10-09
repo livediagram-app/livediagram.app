@@ -11,9 +11,14 @@ import {
   illustratePagesOf,
   layOutIllustratePages,
   nextIllustratePageId,
+  pageDimensions,
+  pageHasOrientation,
+  pageLabel,
+  rowAnchorOf,
   withIllustratePages,
   type IllustratePage,
 } from './illustrate-page';
+import { FIT_PAGE_MAX_SIDE, FIT_PAGE_MIN_SIDE } from './illustrate-page-fit';
 import type { Element } from './index';
 
 // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages").
@@ -190,5 +195,88 @@ describe('page kinds', () => {
     const stored = [P('x'), D('d1', 'doc'), D('d2', 'doc')];
     const read = illustratePagesOf({ pages: stored });
     expect(read).toEqual(stored);
+  });
+});
+
+// docs/specs/007-editor/illustrate-pages.md "A page", "Sizes": Fit to Content and the row anchor.
+describe('Fit to Content pages', () => {
+  const fit = (extra: Record<string, unknown> = {}) => ({
+    id: 'f',
+    orientation: 'landscape',
+    size: 'fit',
+    fit: { width: 2400.4, height: 1300 },
+    ...extra,
+  });
+
+  it('reads its own sides, rounded, and lays out at them', () => {
+    const [page] = illustratePagesOf({ pages: [fit()] });
+    expect(page).toMatchObject({ size: 'fit', fit: { width: 2400, height: 1300 } });
+    expect(pageDimensions(page!)).toEqual({ width: 2400, height: 1300 });
+    expect(layOutIllustratePages([page!])[0]!.rect).toEqual({
+      x: -1200,
+      y: -650,
+      width: 2400,
+      height: 1300,
+    });
+  });
+
+  it('clamps its sides to the limits', () => {
+    const [page] = illustratePagesOf({ pages: [fit({ fit: { width: 99_999, height: 10 } })] });
+    expect(page!.fit).toEqual({ width: FIT_PAGE_MAX_SIDE, height: FIT_PAGE_MIN_SIDE });
+  });
+
+  it('reads as A4 without valid sides, or on an article page', () => {
+    for (const sides of [undefined, { width: 0, height: 10 }, { width: 'x', height: 1 }, 5]) {
+      const [page] = illustratePagesOf({ pages: [fit({ fit: sides })] });
+      expect(page!.size).toBeUndefined();
+      expect(page!.fit).toBeUndefined();
+    }
+    const [doc] = illustratePagesOf({ pages: [fit({ kind: 'article', flow: 'd' })] });
+    expect(doc!.size).toBeUndefined();
+  });
+
+  it('keeps an explicit infographic kind', () => {
+    const [page] = illustratePagesOf({ pages: [fit({ kind: 'infographic' })] });
+    expect(page).toMatchObject({ size: 'fit', kind: 'infographic' });
+  });
+
+  it('has no orientation and says Fit to Content', () => {
+    const [page] = illustratePagesOf({ pages: [fit()] });
+    expect(pageHasOrientation(page!)).toBe(false);
+    expect(pageLabel(page!, 0, 1)).toBe('Fit to Content · Infographic');
+  });
+});
+
+describe('the row anchor', () => {
+  it('centres the first page on it, the rest following in the row', () => {
+    const pages = illustratePagesOf({
+      pages: [P('a'), { ...P('b'), rowAt: { x: 1000.6, y: -40 } }],
+    });
+    const laid = layOutIllustratePages(pages);
+    expect(laid[0]!.rect.x + laid[0]!.rect.width / 2).toBe(1001);
+    expect(laid[0]!.rect.y + laid[0]!.rect.height / 2).toBe(-40);
+    expect(laid[1]!.rect.x).toBe(laid[0]!.rect.x + laid[0]!.rect.width + ILLUSTRATE_PAGE_GAP);
+  });
+
+  it('counts only the first page carrying one, and ignores a malformed one', () => {
+    const pages = illustratePagesOf({
+      pages: [
+        { ...P('a'), rowAt: { x: 'no', y: 0 } },
+        { ...P('b'), rowAt: { x: 10, y: 20 } },
+        { ...P('c'), rowAt: { x: 99, y: 99 } },
+      ],
+    });
+    expect(pages.map((p) => p.rowAt)).toEqual([undefined, { x: 10, y: 20 }, undefined]);
+    expect(rowAnchorOf(pages)).toEqual({ x: 10, y: 20 });
+    expect(rowAnchorOf([P('z')])).toEqual({ x: 0, y: 0 });
+  });
+
+  it('stays put when the page carrying it is deleted', () => {
+    const tab = {
+      elements: [] as Element[],
+      pages: [{ ...P('a'), rowAt: { x: 500, y: 500 } }, P('b')],
+    };
+    const out = withIllustratePages(tab, [P('b')]);
+    expect(out.pages[0]!.rowAt).toEqual({ x: 500, y: 500 });
   });
 });

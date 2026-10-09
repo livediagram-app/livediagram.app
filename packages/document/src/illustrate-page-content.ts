@@ -299,8 +299,10 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
   ids: ReadonlySet<string>,
   pageId: string,
-  // Centre the content on the page even when it already fits (laying content out into pages).
-  { centre = false }: { centre?: boolean } = {},
+  // `centre`: centre the content on the page even when it already fits (Split Into Pages).
+  // `keepSize`: never scale it, whatever the page's room (docs/specs/007-editor/
+  // illustrate-pages.md "Into pages").
+  { centre = false, keepSize = false }: { centre?: boolean; keepSize?: boolean } = {},
 ): T {
   const page = layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === pageId);
   if (!page || ids.size === 0) return tab;
@@ -327,7 +329,9 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
   const m = pageMargin(page);
   const roomW = page.rect.width - 2 * m;
   const roomH = page.rect.height - 2 * m;
-  const s = Math.min(1, roomW / Math.max(1, maxX - minX), roomH / Math.max(1, maxY - minY));
+  const s = keepSize
+    ? 1
+    : Math.min(1, roomW / Math.max(1, maxX - minX), roomH / Math.max(1, maxY - minY));
   const cx = page.rect.x + page.rect.width / 2;
   const cy = page.rect.y + page.rect.height / 2;
   // The content's centre lands on the page's (scaled about it); unscaled content keeps its place

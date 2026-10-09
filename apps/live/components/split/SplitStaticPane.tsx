@@ -6,7 +6,7 @@ import { isTextEditFocused } from '@livediagram/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
-import { openedMode, readRememberedMode, resolveEditorMode } from '@/lib/editor-mode-store';
+import { resolveEditorMode } from '@/lib/editor-mode-store';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@/lib/split-pane-view';
@@ -50,14 +50,9 @@ export function SplitStaticPane({
   const svg = useTabSvg(loaded ? tab : undefined);
   const empty = loaded && tab.elements.length === 0;
 
-  // The paper and pattern the editor would paint for this tab, in the mode it opens in here.
+  // The paper and pattern the editor would paint for this tab, in its mode.
   const backdrop = useMemo(() => {
-    const { mode } = resolveEditorMode({
-      tab,
-      remembered: readRememberedMode(tab.id),
-      opened: openedMode(tab.id),
-      canEdit: true,
-    });
+    const { mode } = resolveEditorMode({ tab, canEdit: true });
     return resolveViewBackdrop(
       tab,
       { mode, drawPattern: readDrawPattern(userPreferences) },

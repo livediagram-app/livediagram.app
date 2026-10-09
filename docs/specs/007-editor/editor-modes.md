@@ -43,8 +43,8 @@ where it is and changes only how the next mark is made.
   - Directly beside the menu (hamburger) button, in its card at the top left
     ([Toolbar layout](toolbar-layout.md)), icon-only.
   - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
-    button alone. A phone switches mode from the tab menu's **Opens in** (below), which switches
-    the chooser too; Shift+D needs a keyboard. The tour's Diagram & Draw step is skipped there.
+    button alone. A phone switches mode from the tab menu's **Mode** (below); Shift+D needs a
+    keyboard. The tour's Diagram & Draw step is skipped there.
   - It stays up in Draw mode, so the switch never moves when the mode
     changes.
   - Not in the tab bar or the Explorer.
@@ -62,11 +62,12 @@ where it is and changes only how the next mark is made.
   - The same for everyone, power user mode or not.
 - **One mode chosen:** Diagram, Draw, Illustrate or Plan.
   Exactly one is active.
-- **Switching is instant and lossless:** no dialog, no reload, no change to the
-  document; the selection is kept, an in-progress gesture or text edit is
-  finished first, and the canvas viewport does not move.
-- **Where it is offered:** on general tabs, to anyone who can edit. A view-role
-  visitor sees no switch and sees the tab in its opening mode.
+- **Switching is instant and lossless:** no dialog, no reload, and no element changes (the tab's
+  mode is the one field it writes, with what the mode brings: "Where the mode lives"); the
+  selection is kept, an in-progress gesture or text edit is finished first, and the canvas
+  viewport does not move.
+- **Where it is offered:** on general, unlocked tabs, to anyone who can edit. A view-role
+  visitor, and everyone on a locked tab, sees no switch and sees the tab in its mode.
 - **Not on event-storming boards:** the tab kind keeps its own tools and
   notation, and shows no switch.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
@@ -79,45 +80,50 @@ where it is and changes only how the next mark is made.
 
 ## Where the mode lives
 
-- **Per person, per tab.** Each person chooses their own editor mode on each
-  tab; switching changes nothing for anyone else. Two collaborators may work
-  on the same tab in different modes at once.
-- **The tab says what it opens in.** A general tab stores the mode it
-  **opens in** (`Tab.opensIn`, `diagram` when absent). A person who has not
-  switched on that tab sees it in that mode; the Whiteboard template, Quick
+- **The mode is the tab's, the same for everyone.** A general tab stores its editor mode
+  (`Tab.opensIn`, `diagram` when absent; the field keeps its stored name). Everyone on the tab
+  works in that mode at once: a view that differed from person to person would be inconsistent.
+- **Switching is a tab edit.** The switch, Shift+D, the tab menu's **Mode** choices and a sheet's
+  **Switch to Plan** ([Sheet](../029-sheets/sheet.md)), used by an editor on a general, unlocked tab, set the tab's mode: **one tab edit** (one undo step,
+  synced to everyone). Everything the switch brings with it lands in the same edit: entering
+  Illustrate puts a board that does not fit its first page onto a page made around it
+  ([Illustrate pages](illustrate-pages.md) "Into pages"), and leaving Illustrate with **Turn Into
+  Pages** turns the articles into Page elements ([Article pages](article-pages.md#leaving-illustrate)).
+- **Undo switches back.** Undo after a switch puts the tab back exactly as it was, in the mode it
+  was in, for everyone; Redo switches again. Undoing further back past a switch returns the tab to
+  that earlier mode too.
+- **Everyone follows a switch.** When the tab's mode changes under someone (a collaborator's
+  switch, their undo or redo), their view switches at once:
+  - a text edit in progress is kept, so nothing typed is lost; a gesture in progress (a drag, a
+    stroke) is finished first, as a switch of one's own finishes it;
+  - a toast says who switched: "<Name> switched this tab to <Mode>." ("Someone" when the room
+    gives no name); no toast for one's own switch, undo or redo.
+- **Who can switch:** an editor on a general tab. A view-role visitor and everyone on a locked tab
+  follow the tab's mode and see no switch (and no Mode choices). An event-storming board is
+  always Diagram and shows no switch.
+- **The tab says what it opens in** because its mode is stored: a tab opens in its mode for
+  everyone, including a person opening it for the first time. The Whiteboard template, Quick
   Start entry and whiteboard imports set it to `draw`.
-- **A switch is remembered** for that person and tab, in this browser, and
-  wins over the tab's opening mode from then on.
-- **An editor's switch moves the opening mode with it**, so a tab's **Opens in** always matches
-  the mode its editors last worked in: on a general, unlocked tab, a switch by someone who may edit
-  also sets `Tab.opensIn` (a consequence of the switch, with no undo step of its own), synced to
-  everyone. Nobody else's current mode changes (each person's mode on the tab is pinned once it
-  opens). A visitor's switch, a locked tab and an event-storming board leave it be.
+- **Nothing is remembered per person.** A mode chosen before this change and kept in a browser
+  (`livediagram:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
+  left in place and ignored.
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
   is in, a new document or a tab added from the tab bar (or Quick Start)
   opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
-  (its `opensIn` is Plan, for everyone) with no Quick Start, showing Plan's own **Start Planning**
+  (its mode is Plan, for everyone) with no Quick Start, showing Plan's own **Start Planning**
   picker ([Plan mode](../026-plan/plan-mode.md#starting-a-board)), whose **Open Quick Start** button
   brings the Quick Start back for another kind of tab. Only the template chosen for it changes that: the
-  **Whiteboard** opens in Draw (switching its maker there too), an
-  **Event Storming** board is always Diagram, and every other template,
-  Blank included, opens in Diagram. An import that sets its own opening
-  mode wins.
-- **Opens in:** the tab menu holds an **Opens in** submenu for editors,
-  listing every editor mode (Diagram, Draw, Illustrate, Plan) as a radio choice with the
-  current one checked. Choosing one sets `Tab.opensIn` for everyone and
-  switches the chooser's own mode on that tab to it (remembered like any
-  switch), so the choice visibly lands; nobody else's current mode changes.
-  Choosing the already-checked mode still switches the chooser to it. The
-  submenu lists modes from one catalogue, so a further mode joins it as one
-  entry. Not offered on event-storming boards; greyed out on a locked tab.
-- **The tab pill shows your mode on it.** Each tab pill leads with the icon
-  of the mode this person works in on that tab (the same glyph the mode
-  switch and the Opens in choices use), resolved as the canvas resolves it:
-  their remembered switch, else the tab's opening mode. It is tinted with the
-  tab's theme accent. The switch, Shift+D and Opens in all update it at
-  once; a visitor who cannot edit sees the opening mode. An event-storming
-  board is always Diagram, so it shows the Diagram icon.
+  **Whiteboard** opens in Draw, an **Event Storming** board is always Diagram, and every other
+  template, Blank included, opens in Diagram. An import that sets its own mode wins.
+- **Mode in the tab menu:** the tab menu holds a **Mode** submenu for editors, listing every
+  editor mode (Diagram, Draw, Illustrate, Plan) as a radio choice with the tab's mode checked.
+  Choosing one switches the tab, exactly as the switch does (one tab edit, one undo step).
+  Choosing the checked mode does nothing. It is a phone's way to switch. The submenu lists modes
+  from one catalogue, so a further mode joins it as one entry. Not offered on event-storming
+  boards, to a visitor, or on a locked tab.
+- **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
+  glyph the mode switch and the Mode choices use), tinted with the tab's theme accent. An
+  event-storming board is always Diagram, so it shows the Diagram icon.
 
 ## One look
 
@@ -190,7 +196,7 @@ element in the same colour.
   ([Plan mode](../026-plan/plan-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
   Illustrate a page with a little chart above two lines of writing (its two
-  page kinds), Plan a board of three columns with a raised card; the same glyph on the switch, Opens in and the tab pill.
+  page kinds), Plan a board of three columns with a raised card; the same glyph on the switch, the tab menu's Mode and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
@@ -293,12 +299,14 @@ Visualisations, Content and Tools) and opens on Cards
 
 Illustrate mode draws **pages** on the canvas, in a row, like artboards in
 a design tool. What a page is and offers (sizes, backgrounds, layouts, page
-actions, snapping, export, laying content out into pages, page slides) is
+actions, snapping, export, putting content onto a page, page slides) is
 [Illustrate pages](illustrate-pages.md); this section is the basics.
 
 - **The pages** are sheets of paper (white in light chrome, slate-900 in dark)
-  with a soft shadow, under every element. The first is centred on the canvas
-  origin; each further page sits **96** px (`ILLUSTRATE_PAGE_GAP`) to the right
+  with a soft shadow, under every element. The first is centred on the row
+  anchor (`IllustratePage.rowAt`, the canvas origin when absent; [Illustrate
+  pages](illustrate-pages.md) "A page"), so a board put onto a page keeps its
+  place; each further page sits **96** px (`ILLUSTRATE_PAGE_GAP`) to the right
   of the one before, every page centred on the row's horizontal axis.
   - A page is **A4** unless it has a size of its own: at 96 px per inch,
     **794 x 1123** in portrait, **1123 x 794** in landscape (`A4_SHORT_SIDE`,
@@ -378,9 +386,9 @@ something on it asks first:
 
 ## Every mode, always offered
 
-Every mode of the catalogue is offered to everyone: the mode switch, Opens in,
+Every mode of the catalogue is offered to everyone: the mode switch, the tab menu's Mode,
 Shift+D and the template picker's mode filter always list all four, and a tab
-always opens in the mode it is stored or remembered in.
+always opens in its stored mode.
 
 Illustrate and Plan each had a switch in **Settings › Experimental** while they
 were new. Both graduated on 2026-10-06, and the **Experimental** category went
@@ -403,9 +411,10 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeIllustrate` / `ModePlan`, fired by
-  the switch before the mode applies.
-- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInIllustrate` / `OpensInPlan`, fired
-  by Opens in.
+  the switch, Shift+D and the tab menu's Mode before the mode applies (never by a collaborator's
+  switch arriving, an undo or a redo).
+- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInIllustrate` / `OpensInPlan` were
+  fired by the retired Opens in submenu; the tab menu's Mode fires the switch's events instead.
 - `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by a page's
   orientation in Illustrate mode, and `PageAdded` / `PageRemoved` by its add
   button and Delete Page.
@@ -422,7 +431,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 ## Naming in the interface
 
 - The help article **Editor Modes** (`/help/canvas/editor-modes/`) explains all four modes, the
-  switch and Opens in, and links to each mode's own article.
+  switch and the tab menu's Mode, and links to each mode's own article.
 - The mode is **Draw** on the switch and in Settings, where it names the
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
@@ -433,7 +442,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
   Whiteboard", for the activity a person comes for.
 - **Illustrate** was called **Infographic** while its pages were all
   infographics. Every stored trace of the old name reads as Illustrate:
-  `opensIn: 'infographic'`, a remembered mode, a recorded creation intent and
+  `opensIn: 'infographic'`, a recorded creation intent and
   a create's intent (`parseEditorMode`), a default-folder key
   `mode:infographic` (`parsePlacementDefaultKey`; clearing the default clears
   both names). Nothing stored is rewritten. The `infographicModeEnabled`

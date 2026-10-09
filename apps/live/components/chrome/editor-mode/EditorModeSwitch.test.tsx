@@ -4,6 +4,7 @@
 // chip, the same for everyone, reading the editor's resolved mode from EditorModeProvider;
 // nothing where no switch is offered.
 
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -209,14 +210,19 @@ describe('EditorModeSwitch slot', () => {
 
 // The switch reads the editor's own resolution (useEditorMode), as EditorView provides it.
 describe('EditorModeSwitch in the editor', () => {
-  // The mode store caches per tab id, so every test works on a tab of its own.
   let seq = 0;
   const freshTab = (over: Partial<Tab> = {}): Tab => {
     seq += 1;
     return { id: `sw${seq}`, name: 'Tab', elements: [], ...over };
   };
-  function Host({ tab, canEdit = true }: { tab: Tab; canEdit?: boolean }) {
-    const editorMode = useEditorMode(tab, { canEdit });
+  // The tab held as the editor holds it: a switch commits onto it and re-renders.
+  function Host({ tab: initial, canEdit = true }: { tab: Tab; canEdit?: boolean }) {
+    const [tabs, setTabs] = useState([initial]);
+    const editorMode = useEditorMode(tabs[0], {
+      canEdit,
+      commitTabs: (map) => setTabs((ts) => map(ts)),
+      toastInfo: () => {},
+    });
     return (
       <EditorModeProvider value={editorMode}>
         <EditorModeSwitch />
@@ -224,7 +230,7 @@ describe('EditorModeSwitch in the editor', () => {
     );
   }
 
-  it('shows the tab in its opening mode, and switches from the menu', () => {
+  it("shows the tab's mode, and switches the tab from the menu", () => {
     render(<Host tab={freshTab({ opensIn: 'draw' })} />);
     expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
     fireEvent.click(chip());

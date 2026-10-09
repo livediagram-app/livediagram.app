@@ -1,12 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { ModeSwitchScene } from '@/components/illustrations/editor-mode-switch';
-import { OpensInScene, LeaveIllustrateScene } from '@/components/illustrations/editor-modes';
+import { TabModeMenuScene, LeaveIllustrateScene } from '@/components/illustrations/editor-modes';
 
 export const metadata = helpMetadata({
   title: 'Editor Modes',
   description:
-    'Work on any tab in Diagram, Draw, Illustrate or Plan mode: what each mode is for, how to switch with the mode switch or Shift+D, how Opens in works, and what stays the same when you switch.',
+    'Work on any tab in Diagram, Draw, Illustrate or Plan mode: what each mode is for, how to switch with the mode switch, Shift+D or the tab menu, why everyone on a tab shares its mode, and what stays the same when you switch.',
   path: '/help/canvas/editor-modes/',
 });
 
@@ -47,34 +47,36 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
 
 **Shift+D** moves to the next mode from anywhere on the canvas: Diagram, then Draw, Illustrate, Plan and back to Diagram. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
 
-## Your Mode and Opens In
+## One Mode for Everyone
 
-- **Your mode is yours.** It is remembered for you, for each tab, in this browser. Switching changes nothing for anyone else, so two people can work on the same tab in different modes at once and still see each other's changes live.
-- **The tab pill shows your mode.** Each tab in the tab bar starts with the icon of the mode you work in on that tab, the same icon the switch uses.
-- **Each tab opens in one mode** for anyone who has not switched on it yet. That is the tab's **Opens in**, Diagram unless something set it otherwise.
-- **Your switch moves Opens in too**, when you can edit the tab. So a tab opens in the mode its editors last worked in. People already on the tab stay in the mode they are in.
-- **To set it directly**, open the tab menu (the **⋯** on the tab, or right-click the tab), open **Opens in** and choose **Diagram**, **Draw**, **Illustrate** or **Plan**. Each choice says what the mode is for. It sets the mode for everyone arriving later and switches you to it too. On a [locked tab](/help/tabs/locking-tabs/) the choices are greyed out, and switching modes there leaves Opens in as it is.
+- **The mode belongs to the tab.** Everyone on a tab works in the same mode at once, so what you see always matches what your collaborators see.
+- **Switching switches everyone.** When you switch a tab's mode, everyone on it follows straight away, and a message tells them who switched ("Ada switched this tab to Draw."). Anything they were typing is kept.
+- **Undo switches back.** Switching is one step in your [undo history](/help/canvas/undo/): **Undo** puts the tab back in the mode it was in, exactly as it was, for everyone, and **Redo** switches again.
+- **The tab pill shows the tab's mode.** Each tab in the tab bar starts with the icon of its mode, the same icon the switch uses.
+- **A tab opens in its mode**, for everyone, Diagram unless something set it otherwise.
+- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab), open **Mode** and choose **Diagram**, **Draw**, **Illustrate** or **Plan**. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
 
-<Figure caption="The tab menu's Opens in, open on the four modes with a dot on the tab's current one; the tab pill leads with the same icon.">
-  <OpensInScene />
+<Figure caption="The tab menu's Mode, open on the four modes with a dot on the tab's current one; the tab pill leads with the same icon.">
+  <TabModeMenuScene />
 </Figure>
 
 - **New documents and new tabs open in Diagram**, whatever mode you are in, unless the template you pick opens somewhere else: **Blank Whiteboard** opens in Draw, **Blank Illustration** in Illustrate and **Blank Plan** in Plan.
-- In the Explorer, the **Opens in** filter finds documents by the mode they were made to open in. See [Filters](/help/explorer/filters/).
+- In the Explorer, the **Opens in** filter finds documents by the mode they were created to open in. See [Filters](/help/explorer/filters/).
 
 ## On a Phone
 
-A phone has no mode switch: the top row belongs to the palette's strip, and Shift+D needs a keyboard. To change mode, open the tab menu (the **⋯** on the tab), open **Opens in** and choose a mode. That switches you there as well, and sets the mode the tab opens in for everyone. On a phone every mode starts on the [Hand](/help/selection-modes/hand/) tool, so a drag moves the canvas.
+A phone has no mode switch: the top row belongs to the palette's strip, and Shift+D needs a keyboard. To change mode, open the tab menu (the **⋯** on the tab), open **Mode** and choose a mode. That switches the tab for everyone, as the switch does. On a phone every mode starts on the [Hand](/help/selection-modes/hand/) tool, so a drag moves the canvas.
 
 ## Who Can Switch
 
-- **Editors** of a general tab get the switch, Shift+D and Opens in.
-- **People who can only view** a tab see it in the mode it opens in, with no switch, and Shift+D does nothing.
-- **Event Storming boards** have no modes: they keep their own tools and notation, show no switch and have no Opens in.
+- **Editors** of a general tab get the switch, Shift+D and the tab menu's Mode.
+- **People who can only view** a tab follow its mode, with no switch, and Shift+D does nothing.
+- On a [locked tab](/help/tabs/locking-tabs/) nobody can switch: the tab stays in its mode until it is unlocked.
+- **Event Storming boards** have no modes: they keep their own tools and notation, show no switch and have no Mode.
 
 ## What Switching Keeps
 
-Switching is instant, with no reload and no change to the document.
+Switching is instant, with no reload, and nothing on the tab moves.
 
 - **Everything on the tab stays**, in the same place and the same colours, for everyone. A board from Plan mode is an element like any other in Diagram mode, and a pen stroke is a stroke in every mode.
 - **Your selection and your view stay**: the canvas does not move, and a text edit or a drag in progress is finished first.
@@ -85,7 +87,7 @@ Switching is instant, with no reload and no change to the document.
 
 ## Leaving Illustrate
 
-Diagram, Draw and Plan modes do not show pages, so when you can edit a tab that has something on it, switching out of Illustrate (with the switch or Shift+D) asks first:
+Diagram, Draw and Plan modes do not show pages, so when you can edit a tab that has something on it, switching out of Illustrate (with the switch, Shift+D or the tab menu's Mode) asks first:
 
 - **A tab with content but no articles** shows a small card beside the switch: **Switch to Diagram?** (or Draw, or Plan). What you change in the other mode may not fit back onto your pages when you return. Press **Switch** to go, or **Cancel** (or Escape) to stay.
 - **A tab with articles** asks **Turn Articles Into Pages?**: **Turn Into Pages**, **Keep as Articles** or **Cancel**. See [Writing Articles](/help/canvas/illustrate/articles/#exporting-presenting-and-leaving).
@@ -94,7 +96,7 @@ Diagram, Draw and Plan modes do not show pages, so when you can edit a tab that 
   <LeaveIllustrateScene />
 </Figure>
 
-An empty tab, a locked tab and someone who can only view switch straight away. Choosing a mode from **Opens in** switches without asking.
+An empty tab switches straight away.
 
 Leaving **Plan** never asks: boards and cards stay on the tab as they are, and their cards work again when you come back to Plan.
 

@@ -1,11 +1,12 @@
 // The pages Illustrate mode draws on the canvas (docs/specs/007-editor/editor-modes.md "The
 // pages", docs/specs/007-editor/illustrate-pages.md): sheets in a row, each its own size
 // (A4 unless it says otherwise), orientation, background and name. The first is centred on the
-// canvas origin and each further one sits a gap to the right of the one before. The pages are the
+// row anchor (the canvas origin unless a page carries one) and each further one sits a gap to the right of the one before. The pages are the
 // tab's (`Tab.pages`), so everyone lays out on the same ones; the sheets themselves are a view,
 // never elements. A tab from before multiple pages carries one `pageOrientation` instead, read as
 // a single page.
 import { isBoxed, type Element, type Tab } from './index';
+import { parsePageSides, parseRowAt, type PageSides, type RowAt } from './illustrate-page-fit';
 
 export type PageOrientation = 'portrait' | 'landscape';
 
@@ -24,7 +25,16 @@ export const MAX_ILLUSTRATE_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/illustrate-pages.md "Sizes"): its short and long side.
 export type PageSizeId =
-  'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide' | 'slide' | 'slide-classic' | 'logo';
+  | 'a4'
+  | 'letter'
+  | 'a3'
+  | 'square'
+  | 'social'
+  | 'wide'
+  | 'slide'
+  | 'slide-classic'
+  | 'logo'
+  | 'fit';
 
 // A logo page's artboard (docs/specs/007-editor/logo-pages.md "A logo page"): the common
 // app-icon master, square.
@@ -45,6 +55,9 @@ export const PAGE_SIZES: Readonly<
       landscapeOnly?: true;
       // The logo artboard: offered by logo pages alone.
       logoOnly?: true;
+      // Fit to Content: its sides are the page's own (`IllustratePage.fit`); short and long here
+      // are only what a page in it without them is read as (A4).
+      fitOnly?: true;
     }
   >
 > = {
@@ -79,6 +92,13 @@ export const PAGE_SIZES: Readonly<
     portrait: '1024 x 1024',
     landscape: '1024 x 1024',
     logoOnly: true,
+  },
+  fit: {
+    short: A4_SHORT_SIDE,
+    long: A4_LONG_SIDE,
+    portrait: 'Fit to Content',
+    landscape: 'Fit to Content',
+    fitOnly: true,
   },
 };
 
@@ -134,6 +154,12 @@ export type IllustratePage = {
   orientation: PageOrientation;
   // Absent is A4.
   size?: PageSizeId;
+  // A Fit to Content page's own sides, whole canvas px; present exactly when `size` is 'fit'.
+  fit?: PageSides;
+  // The row anchor (docs/specs/007-editor/illustrate-pages.md "A page"): where the first page's
+  // centre sits, whole canvas px. A property of the row, carried by one page (any one); absent on
+  // every page is the canvas origin.
+  rowAt?: RowAt;
   // Absent is the plain paper.
   background?: PageBackground;
   // Absent shows the page's place ("Page 2").
@@ -197,6 +223,12 @@ function parseBackground(v: unknown): PageBackground | undefined {
 /** A stored page, or undefined when it has no valid id or orientation. Its optional fields keep
  *  what is valid and drop the rest. */
 function parsePage(v: unknown): IllustratePage | undefined {
+  const page = parsePageFields(v);
+  const rowAt = page && parseRowAt((v as Record<string, unknown>).rowAt);
+  return page && rowAt ? { ...page, rowAt } : page;
+}
+
+function parsePageFields(v: unknown): IllustratePage | undefined {
   const p = v as Record<string, unknown> | null;
   if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !isPageOrientation(p.orientation))
     return undefined;
@@ -247,12 +279,19 @@ function parsePage(v: unknown): IllustratePage | undefined {
       ...lock,
     };
   }
-  // The artboard is the logo kind's alone: any other page stored in it is read as A4.
-  const ownSize = isPageSizeId(p.size) && p.size !== 'a4' && !PAGE_SIZES[p.size].logoOnly;
+  // The artboard is the logo kind's alone: any other page stored in it is read as A4. Fit to
+  // Content is an infographic page's, and only with its sides.
+  const fit = p.size === 'fit' && kindFields.kind !== 'article' ? parsePageSides(p.fit) : undefined;
+  const ownSize =
+    isPageSizeId(p.size) &&
+    p.size !== 'a4' &&
+    !PAGE_SIZES[p.size].logoOnly &&
+    (p.size !== 'fit' || fit !== undefined);
   return {
     id: p.id,
     orientation: p.orientation,
     ...(ownSize ? { size: p.size as PageSizeId } : {}),
+    ...(ownSize && fit ? { fit } : {}),
     ...(background ? { background } : {}),
     ...(name ? { name } : {}),
     ...kindFields,
@@ -339,6 +378,24 @@ function withArticlesTogether(pages: IllustratePage[]): IllustratePage[] {
   return out;
 }
 
+/** Pages with the row anchor on the first page found carrying it, dropped from any other. Same
+ *  array back when at most one carries it. */
+function withOneRowAnchor(pages: IllustratePage[]): IllustratePage[] {
+  if (pages.filter((p) => p.rowAt).length <= 1) return pages;
+  const first = pages.findIndex((p) => p.rowAt);
+  return pages.map((p, i) => {
+    if (i === first || !p.rowAt) return p;
+    const { rowAt: _drop, ...rest } = p;
+    void _drop;
+    return rest;
+  });
+}
+
+/** The row anchor the pages carry: the first page's centre (the canvas origin when none does). */
+export function rowAnchorOf(pages: readonly Pick<IllustratePage, 'rowAt'>[]): RowAt {
+  return pages.find((p) => p.rowAt)?.rowAt ?? { x: 0, y: 0 };
+}
+
 /** The tab's pages, in order: its stored ones, or one page in its legacy orientation (portrait
  *  unless it said landscape). Never empty; malformed entries, and a repeat of an id already seen,
  *  are skipped. */
@@ -353,17 +410,19 @@ export function illustratePagesOf(
         return true;
       })
     : [];
-  if (stored.length > 0) return withArticlesTogether(stored.slice(0, MAX_ILLUSTRATE_PAGES));
+  if (stored.length > 0)
+    return withArticlesTogether(withOneRowAnchor(stored.slice(0, MAX_ILLUSTRATE_PAGES)));
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
   return [{ id: FIRST_PAGE_ID, orientation }];
 }
 
 /** A page's width and height in canvas px: its size's sides, the long one upright in portrait.
  *  A square page is the same either way; a slide size is always landscape. */
-export function pageDimensions(page: Pick<IllustratePage, 'orientation' | 'size'>): {
+export function pageDimensions(page: Pick<IllustratePage, 'orientation' | 'size' | 'fit'>): {
   width: number;
   height: number;
 } {
+  if (page.size === 'fit' && page.fit) return { width: page.fit.width, height: page.fit.height };
   const { short, long, landscapeOnly } = PAGE_SIZES[page.size ?? 'a4'];
   return page.orientation === 'portrait' && !landscapeOnly
     ? { width: short, height: long }
@@ -372,8 +431,8 @@ export function pageDimensions(page: Pick<IllustratePage, 'orientation' | 'size'
 
 /** Whether a page has an orientation to choose (a square page has none, nor a slide size). */
 export function pageHasOrientation(page: Pick<IllustratePage, 'size'>): boolean {
-  const { short, long, landscapeOnly } = PAGE_SIZES[page.size ?? 'a4'];
-  return short !== long && !landscapeOnly;
+  const { short, long, landscapeOnly, fitOnly } = PAGE_SIZES[page.size ?? 'a4'];
+  return short !== long && !landscapeOnly && !fitOnly;
 }
 
 /** The size's name as this page shows it ("A4", "Slide (16:9)"). */
@@ -412,7 +471,7 @@ const PAGE_KIND_LABEL: Record<PageKind, string> = {
 };
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */
-export function pageMargin(page: Pick<IllustratePage, 'orientation' | 'size'>): number {
+export function pageMargin(page: Pick<IllustratePage, 'orientation' | 'size' | 'fit'>): number {
   const { width, height } = pageDimensions(page);
   const fraction = page.size === 'logo' ? LOGO_SAFE_FRACTION : PAGE_MARGIN_FRACTION;
   return Math.round(Math.min(width, height) * fraction);
@@ -424,11 +483,12 @@ export const PAGE_MARGIN_FRACTION = 0.07;
 /** Where each page sits: the first centred on the origin, each further one a gap to the right,
  *  every page centred on the row's horizontal axis (y = 0). */
 export function layOutIllustratePages(pages: readonly IllustratePage[]): LaidOutPage[] {
+  const at = rowAnchorOf(pages);
   let x = 0;
   return pages.map((page, index) => {
     const { width, height } = pageDimensions(page);
-    if (index === 0) x = -width / 2;
-    const rect = { x, y: -height / 2, width, height };
+    if (index === 0) x = at.x - width / 2;
+    const rect = { x, y: at.y - height / 2, width, height };
     x += width + ILLUSTRATE_PAGE_GAP;
     return { ...page, index, rect };
   });
@@ -472,6 +532,17 @@ export function nextIllustratePageId(pages: readonly IllustratePage[]): string {
   return id;
 }
 
+/** `next` carrying the row anchor `current` carries: handed to its first page when the page that
+ *  carried it is gone, so the row stays where it is. Same array back when nothing is lost. */
+function withRowAnchorKept(
+  current: readonly IllustratePage[],
+  next: readonly IllustratePage[],
+): readonly IllustratePage[] {
+  const at = current.find((p) => p.rowAt)?.rowAt;
+  if (!at || next.length === 0 || next.some((p) => p.rowAt)) return next;
+  return [{ ...next[0]!, rowAt: at }, ...next.slice(1)];
+}
+
 /**
  * The tab with its pages replaced by `next`, every element moving with its page: an element whose
  * centre lies on a page that `next` keeps moves by however far that page moved (a page before it
@@ -480,9 +551,11 @@ export function nextIllustratePageId(pages: readonly IllustratePage[]): string {
  */
 export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
-  next: readonly IllustratePage[],
+  nextPages: readonly IllustratePage[],
 ): T & { pages: IllustratePage[] } {
-  const before = layOutIllustratePages(illustratePagesOf(tab));
+  const current = illustratePagesOf(tab);
+  const next = withRowAnchorKept(current, nextPages);
+  const before = layOutIllustratePages(current);
   const after = new Map(layOutIllustratePages(next).map((p) => [p.id, p.rect]));
   const shift = (point: { x: number; y: number }): { dx: number; dy: number } | null => {
     const page = illustratePageAt(before, point);

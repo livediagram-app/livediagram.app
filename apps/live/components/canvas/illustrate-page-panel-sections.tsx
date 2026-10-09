@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import {
   PAGE_SIZES,
+  pageDimensions,
   pageHasOrientation,
   pageKindOf,
   pageSizesFor,
@@ -38,16 +39,15 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   slide: { label: 'Slide', hint: 'Slide (16:9), always landscape' },
   'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
   logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
+  fit: { label: 'Fit', hint: 'Sized around the board it was made for' },
 };
 
-// A size drawn to scale in a 28 px box, in the page's current orientation.
-function SizeGlyph({ size, orientation }: { size: PageSizeId; orientation: PageOrientation }) {
-  const { short, long, landscapeOnly } = PAGE_SIZES[size];
-  const scale = 24 / long;
-  const [w, h] =
-    orientation === 'portrait' && !landscapeOnly
-      ? [short * scale, long * scale]
-      : [long * scale, short * scale];
+// A size drawn to scale in a 28 px box, in the page's current orientation (Fit to Content in
+// the page's own sides).
+function SizeGlyph({ size, page }: { size: PageSizeId; page: IllustratePage }) {
+  const sides = pageDimensions({ ...page, size });
+  const scale = 24 / Math.max(sides.width, sides.height);
+  const [w, h] = [sides.width * scale, sides.height * scale];
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden>
       <rect
@@ -81,8 +81,10 @@ export function SizeSection({
 }) {
   const current = page.size ?? 'a4';
   // A slide page offers only the slide sizes; the tiles sit four to a row. A logo page has its
-  // one artboard, so no choice to show.
-  const sizes = pageSizesFor(pageKindOf(page));
+  // one artboard, so no choice to show. Fit to Content is offered only on a page already in it,
+  // first (docs/specs/007-editor/illustrate-pages.md "Sizes").
+  const kindSizes = pageSizesFor(pageKindOf(page));
+  const sizes: readonly PageSizeId[] = current === 'fit' ? ['fit', ...kindSizes] : kindSizes;
   if (sizes.length < 2) return null;
   return (
     <PanelSection title="Size">
@@ -99,7 +101,7 @@ export function SizeSection({
               onClick={() => onSize(id)}
               className={tileClass(current === id)}
             >
-              <SizeGlyph size={id} orientation={page.orientation} />
+              <SizeGlyph size={id} page={page} />
               {SIZE_TILE[id].label}
             </button>
           </Tooltip>

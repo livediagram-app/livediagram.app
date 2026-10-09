@@ -7,7 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
-import type { QaNote, Tab } from '@livediagram/document';
+import type { EditorMode, QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
   type AgentPresence,
@@ -34,6 +34,7 @@ import {
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
+import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { shareLinkOpEffect } from './share-link-ops';
@@ -151,6 +152,10 @@ export function useRoomConnection(opts: {
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
+  // A peer switched a tab's editor mode (docs/specs/007-editor/editor-modes.md "Where the mode
+  // lives"): already applied with the op; told so the editor can say who switched. `name` is the
+  // peer's presence name, null when the room has not given one.
+  receivePeerModeSwitch?: (name: string | null, tabId: string, mode: EditorMode) => void;
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
@@ -216,6 +221,7 @@ export function useRoomConnection(opts: {
     receivePlanPresence,
     receiveSheets,
     receiveSheetPresence,
+    receivePeerModeSwitch,
     onRoomJoined,
   } = opts;
 
@@ -247,6 +253,8 @@ export function useRoomConnection(opts: {
   }, [picture]);
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
+  // Each peer's presence name, to say who switched a tab's mode.
+  const nameByPresenceRef = useRef<Map<string, string>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
@@ -269,6 +277,7 @@ export function useRoomConnection(opts: {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
+      nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
       setLivePresence(
         participants.map((p) => ({
           id: p.id,
@@ -397,6 +406,11 @@ export function useRoomConnection(opts: {
         endPeerDragPreview(from);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
         foldRemoteOpIntoBaseline(saveBaseline, op);
+        const switched = peerModeSwitchOf(op);
+        if (switched) {
+          const name = nameByPresenceRef.current.get(from) ?? null;
+          receivePeerModeSwitch?.(name, switched.tabId, switched.mode);
+        }
         // In the same batch as the tabs update, so the render that shows the op also counts it.
         countAppliedOp();
       } else if (op.kind === 'select') {

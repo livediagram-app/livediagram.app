@@ -545,7 +545,8 @@ A Sheet can fill its tab for good, exactly as a board can ([Fill Tab](../026-pla
 - In Diagram, Illustrate and Draw a Sheet element is an element like any other: drawn with its header and grid
   (its values, formats, frozen rows and merges, scrolled to the top left), live as cells change, and selected,
   moved, resized, copied, styled and deleted as any element. Its grid does not take the pointer or the keys; a
-  double-click on it says "Switch to Plan to edit this sheet", with a **Switch to Plan** button.
+  double-click on it says "Switch to Plan to edit this sheet", with a **Switch to Plan** button, which switches
+  the tab to Plan for everyone on it ([Editor modes](../007-editor/editor-modes.md) "Where the mode lives").
 - A Sheet element is never added to another document by a tab's **Add to Document**, as a board's tab is not.
 
 ## Copying a Sheet element

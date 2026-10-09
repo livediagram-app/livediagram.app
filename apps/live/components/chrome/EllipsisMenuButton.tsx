@@ -5,7 +5,7 @@ import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
-import type { OpensInChoice } from './OpensInMenuSection';
+import type { TabModeChoice } from './TabModeMenuSection';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
@@ -30,7 +30,7 @@ export function EllipsisMenuButton({
   onCopyTo,
   onToggleLock,
   onDelete,
-  opensIn,
+  modeChoice,
   planTab,
   selfId,
   facilitatedBy,
@@ -79,7 +79,7 @@ export function EllipsisMenuButton({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
-  opensIn?: OpensInChoice;
+  modeChoice?: TabModeChoice;
   planTab?: boolean;
 } & SessionToolsProps) {
   // In state, so the menu anchors to the button on the render that opens it.
@@ -112,7 +112,7 @@ export function EllipsisMenuButton({
             onCopyTo={onCopyTo}
             onToggleLock={onToggleLock}
             locked={locked}
-            opensIn={opensIn}
+            modeChoice={modeChoice}
             planTab={planTab}
             selfId={selfId}
             otherDocuments={otherDocuments}

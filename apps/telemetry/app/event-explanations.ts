@@ -669,9 +669,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Changed|OpensInDiagram':
-    'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInDraw':
-    'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
   'Tab|Changed|ArticleAdded': 'Someone added a new article to an Illustrate tab.',
   'Tab|Changed|SlidePageAdded': 'Someone added a slide page to an Illustrate tab.',
@@ -737,12 +737,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageDuplicated': 'Someone duplicated an Illustrate page with its content.',
   'Tab|Changed|PageMoved': 'Someone moved an Illustrate page left or right in its row.',
   'Tab|Changed|PagesLaidOut':
-    "A tab's content was laid out into Illustrate pages as it entered Illustrate mode.",
+    'Someone split a Fit to Content Illustrate page into one page per group of its content.',
+  'Tab|Changed|PageFitToContent':
+    "A tab's board was put onto an Illustrate page made around it, nothing moved, as it entered Illustrate mode.",
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
   'Tab|Changed|OpensInIllustrate':
-    'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
-    'Someone set a tab to open in Plan mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':

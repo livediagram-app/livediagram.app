@@ -4,55 +4,47 @@ import type { ReactNode } from 'react';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 
-// "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
-// of the editor mode a general tab opens in, for everyone. Every mode of the catalogue is a one-of-a-set
-// choice, so a further mode joins here without a change to this file. Choosing one also switches
-// the chooser's own mode, so the already-checked choice still passes through (it switches back). The host leaves `choice` out where it is not offered (an event-storming
-// board, a visitor who cannot edit).
+// "Mode" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice of
+// the tab's editor mode, the same for everyone. Choosing one switches the tab, exactly as the mode
+// switch does, and is a phone's way to switch. Every mode of the catalogue is a one-of-a-set choice,
+// so a further mode joins here without a change to this file. The host leaves `choice` out where it
+// is not offered (an event-storming board, a visitor who cannot edit, a locked tab).
 
-export type OpensInChoice = {
+export type TabModeChoice = {
   mode: EditorMode;
   onChange: (mode: EditorMode) => void;
-  // A locked tab keeps its opening mode: the choices show, greyed.
-  disabled: boolean;
 };
 
-export function OpensInMenuSection({
+export function TabModeMenuSection({
   choice,
   open,
   onToggle,
 }: {
-  choice: OpensInChoice;
+  choice: TabModeChoice;
   open: boolean;
   onToggle: () => void;
 }) {
   const Current = EDITOR_MODE_ICONS[choice.mode];
   return (
     <MenuAccordionSection
-      title="Opens in"
+      title="Mode"
       icon={<Current className="h-3.5 w-3.5" />}
       open={open}
       onToggle={onToggle}
       flush
     >
-      <div role="group" aria-label="Opens in" className="flex flex-col">
+      <div role="group" aria-label="Mode" className="flex flex-col">
         {EDITOR_MODE_CATALOGUE.map(({ id, label, description }) => {
           const Icon = EDITOR_MODE_ICONS[id];
           const checked = id === choice.mode;
           return (
-            <OpensInChoiceRow
+            <TabModeChoiceRow
               key={id}
               checked={checked}
-              disabled={choice.disabled}
               onClick={() => {
-                if (choice.disabled) return;
-                choice.onChange(id);
+                if (!checked) choice.onChange(id);
               }}
-              className={`flex w-full items-start gap-2.5 px-3 py-1.5 text-left transition ${
-                choice.disabled
-                  ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
-                  : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className="flex w-full cursor-pointer items-start gap-2.5 px-3 py-1.5 text-left text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <span className="mt-0.5 flex w-4 shrink-0 items-center justify-center">
                 <Icon className="h-4 w-4" />
@@ -69,7 +61,7 @@ export function OpensInMenuSection({
                   checked ? 'bg-brand-600 dark:bg-brand-400' : 'bg-transparent'
                 }`}
               />
-            </OpensInChoiceRow>
+            </TabModeChoiceRow>
           );
         })}
       </div>
@@ -79,26 +71,23 @@ export function OpensInMenuSection({
 
 // One mode: inside the Tab control menu a toggle button (aria-pressed, D55), as every one-of-a-set
 // tile there is; inside a command menu it would be a menuitemradio.
-function OpensInChoiceRow({
+function TabModeChoiceRow({
   checked,
-  disabled,
   onClick,
   className,
   children,
 }: {
   checked: boolean;
-  disabled: boolean;
   onClick: () => void;
   className: string;
   children: ReactNode;
 }) {
-  const { inCommandMenu, itemProps } = useMenuItemProps({ checked, radio: true, disabled });
+  const { inCommandMenu, itemProps } = useMenuItemProps({ checked, radio: true });
   return (
     <button
       type="button"
       {...itemProps}
       aria-pressed={inCommandMenu ? undefined : checked}
-      aria-disabled={disabled || undefined}
       onClick={onClick}
       className={className}
     >

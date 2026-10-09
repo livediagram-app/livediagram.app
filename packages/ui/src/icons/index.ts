@@ -18,6 +18,7 @@ export {
   PlusIcon,
   RefreshIcon,
   SideBySideIcon,
+  SplitPagesIcon,
   TrashIcon,
 } from './actions';
 export {

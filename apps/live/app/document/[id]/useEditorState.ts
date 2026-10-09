@@ -75,13 +75,14 @@ import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf } from '@livediagram/document';
-import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
+import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { useLogoEditor } from '@/hooks/editor/useLogoEditor';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useTabModeMenu } from '@/hooks/editor/useTabModeMenu';
+import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
@@ -1182,6 +1183,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
     receiveFacilitator: facilitator.receiveFacilitator,
     receiveSelectionReleased,
+    // Everyone follows a collaborator's switch of the tab's mode; the one on this tab is said.
+    receivePeerModeSwitch: (name, tabId, mode) => {
+      if (tabId === activeId) toast.info(peerModeSwitchMessage(name, mode));
+    },
     readFacilitatorToken: facilitator.readFacilitatorToken,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
@@ -1275,19 +1280,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
-  // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
-  // tool and rule gate keys on it, never on what the tab is.
-  const rawEditorMode = useEditorMode(activeTab, { canEdit });
+  // The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md): every
+  // tool and rule gate keys on it, never on what the tab is. A switch is one tab edit.
+  const rawEditorMode = useEditorMode(activeTab, {
+    canEdit,
+    commitTabs,
+    toastInfo: toast.info,
+  });
   useAssignRef(sheetsModeRef, rawEditorMode.setMode);
-  // An editor's switch also moves the tab's Opens in, so the two never disagree.
-  const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
   // Plan asks nothing: a board outside Plan is an element like any other
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(switchedMode, {
+  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(rawEditorMode, {
     tab: activeTab,
     canEdit,
-    commitTabs,
   });
   const drawMode = editorMode.mode === 'draw';
   // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Eraser and Format
@@ -1864,14 +1870,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in, which
-  // also switches the chooser's own mode on the active tab.
-  const tabOpensIn = useTabOpensIn({
-    tabs,
+  // The tab menu's Mode (docs/specs/007-editor/editor-modes.md): the tab's mode, switched as the
+  // mode switch switches it (the active tab through the same questions on leaving Illustrate).
+  const tabModeMenu = useTabModeMenu({
     canEdit: !isReadOnly,
     commitTabs,
     activeId,
-    switchMode: rawEditorMode.setMode,
+    switchActive: editorMode.setMode,
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
@@ -1931,8 +1936,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
   });
-  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody but the chooser.
-  usePinTabOpening(activeTab, activeTabLoadState === 'ready');
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.
   // Folding the flags into one guard means every mutation helper
@@ -3533,7 +3536,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A page slide presenting outside Illustrate draws its article's writing from these.
     presentArticles: articles,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
-    opensInFor: tabOpensIn.choiceFor,
+    modeChoiceFor: tabModeMenu.choiceFor,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).

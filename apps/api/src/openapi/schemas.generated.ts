@@ -6205,6 +6205,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "background": {
         "$ref": "#/components/schemas/PageBackground"
       },
+      "fit": {
+        "$ref": "#/components/schemas/PageSides"
+      },
       "flow": {
         "type": "string"
       },
@@ -6223,6 +6226,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "orientation": {
         "$ref": "#/components/schemas/PageOrientation"
+      },
+      "rowAt": {
+        "$ref": "#/components/schemas/RowAt"
       },
       "size": {
         "$ref": "#/components/schemas/PageSizeId"
@@ -8500,6 +8506,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageSides": {
+    "additionalProperties": false,
+    "properties": {
+      "height": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
   "PageSizeId": {
     "enum": [
       "a4",
@@ -8510,7 +8532,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wide",
       "slide",
       "slide-classic",
-      "logo"
+      "logo",
+      "fit"
     ],
     "type": "string"
   },
@@ -9783,6 +9806,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "color",
       "at"
+    ],
+    "type": "object"
+  },
+  "RowAt": {
+    "additionalProperties": false,
+    "properties": {
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "x",
+      "y"
     ],
     "type": "object"
   },
