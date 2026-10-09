@@ -161,10 +161,10 @@ The work is to make that pattern a product:
 
 | File                                               | Change                                                                                    |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `components/providers/SelfHostAuthProvider.tsx`    | New: sign-in UI + token storage + refresh, exposing the same state `ClerkBridge` consumes |
+| `components/providers/SelfHostAuthBridge.tsx`      | New: sign-in UI + token storage + refresh, exposing the same state `ClerkBridge` consumes |
 | `components/providers/ClerkProvider.tsx`           | Render the self-host provider when the deployment is self-hosted                          |
 | `components/providers/deferred-auth.tsx`           | Same, for the deferred path                                                               |
-| `lib/clerk-config.ts`                              | A third mode beside `clerkEnabled` and `e2eAuthEnabled`                                   |
+| `lib/self-host-auth.ts`                            | New: how a deployment is asked whether it is self-hosted, at runtime                      |
 | `app/sign-in/page.tsx`, `app/get-started/page.tsx` | Reach the provider's flow (67 of the 521 call sites)                                      |
 
 The remaining 77 files read the bridged state (`isSignedIn`, `getToken()`, `signOut()`, the person's name and picture) and are **not touched**. `packages/ui` has no Clerk dependency beyond a publishable-key validator.
