@@ -17,7 +17,7 @@
 // silently no-op'd.
 
 import { useEffect } from 'react';
-import { isInMenuSurface } from '@livediagram/ui';
+import { isInMenuSurface, isPressableControl } from '@livediagram/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {
@@ -431,6 +431,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     // A focused menu row is pressed by Space, not tapped into a label edit.
     const isTypingTarget = (t: EventTarget | null) =>
       isInMenuSurface(t) ||
+      // A keyboard-focused button or box: Space presses it (isPressableControl), never edits a label.
+      isPressableControl(t) ||
       t instanceof HTMLInputElement ||
       t instanceof HTMLTextAreaElement ||
       (t instanceof HTMLElement && t.isContentEditable);
@@ -459,6 +461,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (live.isReadOnly) return;
       if (live.editingId !== null) return;
       if (isTypingTarget(e.target)) return;
+      // A dialog over the canvas owns Space: never a label edit on the shape behind it.
+      if (anyModalOpen()) return;
       // Only act on single-element selections: multi-select Space
       // has no well-defined "which element gets the label edit"
       // answer, so leave the pan modifier as the only behaviour

@@ -34,12 +34,12 @@ import {
   listTeamMembers,
   listTeamsByUser,
   handTeamWorkToHeir,
-  removeTeamMember,
+  removeTeamMemberKeepingAdmin,
   setTeamInviteLink,
   teamHasEmail,
   TEAM_INVITE_LINK_TTL_MS,
   updateTeam,
-  updateTeamMemberRole,
+  updateTeamMemberRoleKeepingAdmin,
 } from '../db';
 import {
   badRequest,
@@ -389,7 +389,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         if ((await countTeamAdmins(env, teamId)) <= 1) return conflict('last_admin');
       }
       if (role !== member.role) {
-        await updateTeamMemberRole(env, member.id, role as TeamRole);
+        if (!(await updateTeamMemberRoleKeepingAdmin(env, member.id, role as TeamRole)))
+          return conflict('last_admin');
         ctx.waitUntil?.(
           recordRoleChanged(
             env,
@@ -426,7 +427,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       if (member.status === 'joined' && member.userId) {
         await handTeamWorkToHeir(env, teamId, member.userId);
       }
-      await removeTeamMember(env, member.id);
+      // Guarded in the write, so a concurrent change (two admins removing each other, one leaving while
+      // removed) never leaves the team no joined admin. Their work moved first on purpose: a refused removal
+      // has only handed it to another member, where a removal before the move could leave it with them.
+      if (!(await removeTeamMemberKeepingAdmin(env, member.id))) return conflict('last_admin');
       // Their open sessions on the team's documents end too, or a removed member would keep
       // reading (and editing) live until they disconnect (docs/specs/013-workspace/team-shared-documents.md).
       if (member.status === 'joined' && member.userId) {

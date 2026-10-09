@@ -189,6 +189,16 @@ describe('landInk', () => {
     expect(isValidElement(el)).toBe(true);
   });
 
+  it('holds a scaled-up highlighter to the widest pen the validator takes', () => {
+    const el = landInk(
+      ink({ highlighter: true, stroke: { colour: { hex: '#f08c00' }, widthPx: 150 } }),
+      'i',
+      createLandContext(),
+    );
+    expect(el).toMatchObject({ penWidth: 100 });
+    expect(isValidElement(el)).toBe(true);
+  });
+
   it('samples a stroke longer than the freehand limit', () => {
     const points = Array.from({ length: MAX_FREEHAND_POINTS + 50 }, (_, i) => ({ x: i, y: i % 7 }));
     const ctx = createLandContext();
@@ -268,6 +278,22 @@ describe('landLine', () => {
 });
 
 describe('landPath', () => {
+  it('keeps a closed line through two points and back as a valid path', () => {
+    const el = landPath(
+      line({
+        closed: true,
+        points: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      }),
+      'id',
+      createLandContext(),
+    );
+    expect(isValidElement(el)).toBe(true);
+  });
+
   it('keeps corners as corners', () => {
     const el = landPath(line(), 'id', createLandContext());
     expect(isValidElement(el)).toBe(true);

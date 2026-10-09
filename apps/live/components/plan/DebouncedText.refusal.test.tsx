@@ -19,6 +19,17 @@ describe('a debounced text field', () => {
     expect(box.value).toBe('Old');
   });
 
+  it('saves typing still waiting on the debounce when the field goes (Escape closing its card)', () => {
+    const onSave = vi.fn(async () => true);
+    const { unmount } = render(
+      <DebouncedText id="t" label="Title" value="Old" disabled={false} onSave={onSave} />,
+    );
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Typed fast' } });
+    expect(onSave).not.toHaveBeenCalled();
+    unmount();
+    expect(onSave).toHaveBeenCalledWith('Typed fast');
+  });
+
   it('keeps a save that lands', async () => {
     render(
       <DebouncedText id="t" label="Title" value="Old" disabled={false} onSave={async () => true} />,

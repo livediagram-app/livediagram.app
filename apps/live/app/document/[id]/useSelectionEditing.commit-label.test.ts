@@ -9,13 +9,15 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({ measureDrawnText: () =>
 // docs/specs/008-canvas/canvas-and-palette.md "Rich text labels": a label is saved without
 // whitespace at either end, so neither the display nor the editor shows a dangling line.
 
-function setup(el: Element) {
+function setup(el: Element, tabLocked = false) {
   let elements: Element[] = [el];
+  const setEditingId = vi.fn();
   const tab = { id: 't', name: 'Tab 1', elements } as Tab;
   const { result } = renderHook(() =>
     useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
+      tabLocked,
       layerInertIds: new Set(),
       adoptLayerName: vi.fn(),
       formatSourceId: null,
@@ -33,7 +35,7 @@ function setup(el: Element) {
       set: {
         setFormatSourceId: vi.fn(),
         setSelectedId: vi.fn(),
-        setEditingId: vi.fn(),
+        setEditingId,
         setEditCursorAtEnd: vi.fn(),
         setMultiSelectedIds: vi.fn(),
         setDocumentName: vi.fn(),
@@ -42,6 +44,7 @@ function setup(el: Element) {
     }),
   );
   return {
+    setEditingId,
     editing: result.current,
     saved: () => elements[0] as Element & { label?: string; richText?: unknown },
   };
@@ -78,5 +81,19 @@ describe('commitLabel', () => {
     expect(s.saved().label).toBe('Yes');
     s.editing.commitLabel('a', '\n ');
     expect('label' in s.saved()).toBe(false);
+  });
+});
+
+// A locked tab refuses every save: no label editor opens to take typing it would throw away.
+describe('on a locked tab', () => {
+  it('opens no label editor, by double-click, Space or typing', () => {
+    const square = createShape('square', 0, 0);
+    const s = setup(square, true);
+    s.editing.beginEdit(square.id);
+    expect(s.editing.typeIntoSelected(square.id, 'a')).toBe(false);
+    expect(s.setEditingId).not.toHaveBeenCalled();
+    const open = setup(square);
+    open.editing.beginEdit(square.id);
+    expect(open.setEditingId).toHaveBeenCalledWith(square.id);
   });
 });

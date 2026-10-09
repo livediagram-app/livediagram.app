@@ -1338,6 +1338,9 @@ A shape can be **locked** to prevent accidental movement or resizing.
   - **Cannot be resized** — the corner and edge resize handles **are hidden entirely** while locked, so they can't be grabbed.
   - **Cannot be deleted** — the popover's Delete button is disabled while locked, the keyboard Delete / Backspace skips it, and a multi-select Delete keeps locked members while removing the rest. The arrow cascade also leaves a locked arrow in place. Unlock first to delete.
   - Can still be **labelled** (double-click) — locking protects position and existence, not content.
+  - Holds wherever the change comes from: a multi-selection (Select All included) dragged, resized or nudged with
+    the arrow keys moves its other members and leaves a locked one where it is, a frame or lane carries none, and a
+    typed size or rotation leaves it unchanged.
 - A small **lock indicator** badge sits in the shape's top-left corner whenever it's locked, so the state is visible even when the shape is not selected.
 - Locked state lives on the element: `locked?: boolean` (defaults to `false` / `undefined`).
 

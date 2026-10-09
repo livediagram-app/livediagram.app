@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook } from '@testing-library/react';
 import { useEditorKeyboardShortcuts } from './useEditorKeyboardShortcuts';
+import { modalClosed, modalOpened } from '@/lib/modal-guard';
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
@@ -407,5 +408,32 @@ describe('a covered canvas', () => {
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('ArrowLeft');
     expect(onNudgeSelection).toHaveBeenCalled();
+  });
+});
+
+// Space taps a label edit on the selected shape, unless a dialog is open over the canvas: then Space is
+// the dialog's (pressing its toggle), never an edit on the shape behind it.
+describe('Space tap', () => {
+  const tap = () => {
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { code: 'Space', key: ' ', bubbles: true }),
+    );
+    document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space', key: ' ', bubbles: true }));
+  };
+
+  it('edits the selected shape, but not while a dialog is open', () => {
+    const onBeginEditSelected = vi.fn();
+    const { bag } = deps({ onBeginEditSelected });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    tap();
+    expect(onBeginEditSelected).toHaveBeenCalledWith('a');
+    onBeginEditSelected.mockClear();
+    modalOpened();
+    try {
+      tap();
+    } finally {
+      modalClosed();
+    }
+    expect(onBeginEditSelected).not.toHaveBeenCalled();
   });
 });

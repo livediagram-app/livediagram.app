@@ -91,6 +91,23 @@ describe('PresentationOverlay', () => {
     expect(screen.getByText('1 / 2', { exact: false })).toBeTruthy();
   });
 
+  it('leaves Enter to a keyboard-focused control of the deck, and advances on it elsewhere', () => {
+    render(<Deck />);
+    const control = screen.getAllByRole('button')[0]!;
+    const matches = Element.prototype.matches;
+    // jsdom has no focus modality: answer `:focus-visible` for the control as a browser does after a Tab.
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (this: Element, sel) {
+      return sel === ':focus-visible' ? this === control : matches.call(this, sel);
+    });
+    act(() => {
+      control.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    expect(screen.getByText('1 / 2', { exact: false })).toBeTruthy();
+    press('Enter');
+    expect(screen.getByText('2 / 2', { exact: false })).toBeTruthy();
+    vi.restoreAllMocks();
+  });
+
   it('exits on Escape, and arms the laser on L', () => {
     const onExit = vi.fn();
     const onSetCanvasTool = vi.fn();

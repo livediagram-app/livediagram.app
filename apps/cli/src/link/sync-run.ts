@@ -170,7 +170,8 @@ async function writeAct(
   }
   const path = acting.moved.get(action.documentId) ?? action.path!;
   await acting.tree.write(path, mirrorFileText(file));
-  await acting.tree.write(outlinePathOf(path), outlineOf(file));
+  if (!(await acting.tree.writeGenerated(outlinePathOf(path), outlineOf(file))))
+    ctx.log(`kept ${outlinePathOf(path)}: not generated`);
   const revs = revsOf(file.livediagramSync.tabs);
   for (const tab of file.document.tabs)
     ctx.log(`wrote ${action.documentId} ${tab.id} rev ${revs[tab.id]}`);
@@ -200,7 +201,7 @@ async function inStepAct(acting: Acting, action: Extract<SyncAction, { kind: 'no
     const path = acting.moved.get(action.documentId) ?? tracked.path;
     // Rewritten only when missing, so CLIs of different versions never rewrite each other's outlines (RL12).
     if ((await acting.tree.read(outlinePathOf(path))) === null)
-      await acting.tree.write(outlinePathOf(path), outlineOf(tracked.file));
+      await acting.tree.writeGenerated(outlinePathOf(path), outlineOf(tracked.file));
     const revs = revsOf(tracked.file.livediagramSync.tabs);
     acting.mirrors.set(action.documentId, { path, tabs: tracked.file.document.tabs, revs });
     record(acting, action.documentId, action.name, revs);
@@ -364,9 +365,12 @@ async function pass(options: PassOptions, stateDir: string): Promise<PassResult>
         names: new Map(plan.names),
       }),
     });
-    if (text !== previous) {
+    // An INDEX.md a person wrote is theirs: never rewritten (writeGenerated), and not reported as changed.
+    const ours = previous === null || previous.startsWith(GENERATED_LINE_START);
+    if (!ours) ctx.log(`kept ${INDEX_FILE_NAME}: not generated`);
+    else if (text !== previous) {
       lines.push(`~ ${pathOf(INDEX_FILE_NAME)}`);
-      if (!dryRun) await tree.write(INDEX_FILE_NAME, text);
+      if (!dryRun) await tree.writeGenerated(INDEX_FILE_NAME, text);
     }
   }
   lines.push(totalsLine(totals));

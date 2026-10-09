@@ -18,6 +18,7 @@
 
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
+import { isPressableControl } from '@livediagram/ui';
 import { itemTitle } from '@livediagram/items';
 import { usePlan } from '@/components/plan/PlanContext';
 
@@ -145,10 +146,10 @@ export function PresentationOverlay({
   // a timer they had forgotten about.
   useEffect(() => {
     const seconds = config.autoAdvanceSeconds;
-    if (seconds <= 0 || atEnd || notesOpen || settingsOpen || detail) return;
+    if (seconds <= 0 || atEnd || notesOpen || settingsOpen || jumpOpen || detail) return;
     const id = window.setTimeout(() => go(at + 1), seconds * 1000);
     return () => window.clearTimeout(id);
-  }, [at, atEnd, config.autoAdvanceSeconds, detail, go, notesOpen, settingsOpen]);
+  }, [at, atEnd, config.autoAdvanceSeconds, detail, go, jumpOpen, notesOpen, settingsOpen]);
 
   // Browser fullscreen where available. Best-effort: it needs a user gesture
   // and can be refused, and the overlay is already full-viewport either way,
@@ -271,6 +272,9 @@ export function PresentationOverlay({
       setJumpOpen((v) => !v);
       return;
     }
+    // Enter and Space on a keyboard-focused control of the deck (a row of the jump list, a setting, Close)
+    // press that control, as they do anywhere: only elsewhere do they advance.
+    if ((key === ' ' || key === 'Enter') && isPressableControl(e.target)) return;
     if (key === 'ArrowRight' || key === ' ' || key === 'PageDown' || key === 'Enter') {
       handled();
       go(at + 1);

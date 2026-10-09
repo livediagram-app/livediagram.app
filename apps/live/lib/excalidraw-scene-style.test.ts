@@ -204,6 +204,11 @@ describe('sceneTextOf', () => {
     });
   });
 
+  it('reads a text that is not a string as none', () => {
+    const t = { ...b.text('hi'), text: 42, originalText: undefined } as never;
+    expect(sceneTextOf(t, new SceneNotes()).text).toBe('');
+  });
+
   it('applies element opacity as colour alpha', () => {
     const t = b.text('hi', { opacity: 25 });
     expect(sceneTextOf(t, new SceneNotes()).colour).toEqual({ hex: '#1e1e1e', alpha: 0.25 });

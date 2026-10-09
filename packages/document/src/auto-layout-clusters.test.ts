@@ -56,6 +56,22 @@ describe('layoutClusteredGraph', () => {
     expect(isValidTab({ id: 't', name: 'T', elements: els })).toBe(true);
   });
 
+  it('reads a cluster id given twice as one frame holding both blocks, never throwing', () => {
+    const graph: DiagramGraph = {
+      nodes: ['a', 'b', 'c'].map((id) => ({ id, label: id })),
+      edges: [{ from: 'a', to: 'b' }],
+      clusters: [
+        { id: 'S', members: ['a'] },
+        { id: 'S', members: ['b'] },
+      ],
+    };
+    const els = layoutClusteredGraph(graph, { makeEdgeId: makeIds() });
+    expect(els.filter((e) => e.id === 'S')).toHaveLength(1);
+    const frame = byId(els, 'S');
+    for (const id of ['a', 'b']) expect(contains(frame, byId(els, id))).toBe(true);
+    expect(isValidTab({ id: 't', name: 'T', elements: els })).toBe(true);
+  });
+
   it('keeps self-loops when the graph has clusters (parity with the plain path)', () => {
     const graph: DiagramGraph = {
       nodes: ['a', 'b', 'loop'].map((id) => ({ id, label: id })),

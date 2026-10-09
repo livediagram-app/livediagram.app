@@ -4,6 +4,7 @@ import {
   arrowLabelAnchor,
   arrowLabelFontSize,
   endpointPosition,
+  isValidElement,
   type ArrowElement,
 } from '@livediagram/document';
 import { DRAWIO_CAPTION_WIDTH_SLACK } from './edges';
@@ -205,6 +206,16 @@ describe('edge heads and stroke', () => {
       { kind: 'arrowhead-approximated', count: 1 },
     ]);
     expect(convert(boxA + boxB + edge('endArrow=none;')).arrow.arrowEnds).toBe('none');
+  });
+
+  it('reads a label of nothing but line breaks as no label, so the arrow saves', () => {
+    const { arrow } = convert(
+      boxA +
+        boxB +
+        `<mxCell id="e" value="&#xa;" style="endArrow=classic;" edge="1" parent="1" source="a" target="b"><mxGeometry relative="1" as="geometry"/></mxCell>`,
+    );
+    expect(arrow.label).toBeUndefined();
+    expect(isValidElement(arrow)).toBe(true);
   });
 
   it('keeps an invisible edge invisible', () => {

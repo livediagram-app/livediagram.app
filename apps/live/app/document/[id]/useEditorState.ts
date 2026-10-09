@@ -3160,6 +3160,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useSelectionEditing({
     readSelection,
     isReadOnly,
+    tabLocked: activeTabLocked,
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,

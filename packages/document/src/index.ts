@@ -559,6 +559,7 @@ export * from './table';
 // Runtime structural validation for Element + Tab (the trust-boundary guard
 // the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
+export * from './savable';
 
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';

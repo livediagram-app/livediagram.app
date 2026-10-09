@@ -27,12 +27,12 @@ const { db } = vi.hoisted(() => ({
     listFoldersByTeam: vi.fn(),
     listTeamMembers: vi.fn(),
     listTeamsByUser: vi.fn(),
-    removeTeamMember: vi.fn(),
+    removeTeamMemberKeepingAdmin: vi.fn(async () => true),
     handTeamWorkToHeir: vi.fn(),
     setTeamInviteLink: vi.fn(),
     teamHasEmail: vi.fn(),
     updateTeam: vi.fn(),
-    updateTeamMemberRole: vi.fn(),
+    updateTeamMemberRoleKeepingAdmin: vi.fn(async () => true),
     // The route imports this constant from '../db'; the mock replaces
     // the whole module, so provide it as a value (one week in ms).
     TEAM_INVITE_LINK_TTL_MS: 7 * 24 * 60 * 60 * 1000,
@@ -105,6 +105,9 @@ function member(overrides: Partial<TeamMember> = {}): TeamMember {
 beforeEach(() => {
   // `db` also holds a non-fn constant (TEAM_INVITE_LINK_TTL_MS) now.
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
+  // The guarded writes land unless a case says another admin changed first.
+  db.removeTeamMemberKeepingAdmin.mockResolvedValue(true);
+  db.updateTeamMemberRoleKeepingAdmin.mockResolvedValue(true);
 });
 
 describe('handleTeams Clerk-only gate (docs/specs/013-workspace/teams.md)', () => {
@@ -472,7 +475,7 @@ describe('PUT /api/teams/:id/members/:memberId (role change)', () => {
       makeCtx('PUT', '/api/teams/t1/members/m2', { body: { role: 'admin' } }),
     );
     expect(res.status).toBe(200);
-    expect(db.updateTeamMemberRole).toHaveBeenCalledWith({}, 'm2', 'admin');
+    expect(db.updateTeamMemberRoleKeepingAdmin).toHaveBeenCalledWith({}, 'm2', 'admin');
   });
 
   it('409 last_admin when demoting the only admin', async () => {
@@ -483,7 +486,7 @@ describe('PUT /api/teams/:id/members/:memberId (role change)', () => {
     );
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ error: 'last_admin' });
-    expect(db.updateTeamMemberRole).not.toHaveBeenCalled();
+    expect(db.updateTeamMemberRoleKeepingAdmin).not.toHaveBeenCalled();
   });
 
   it('404 when the member row belongs to a different team', async () => {
@@ -500,12 +503,22 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     db.getTeam.mockResolvedValue(team);
   });
 
+  it('is a 409 last_admin when another admin changed first and the guarded write refuses', async () => {
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'admin' }));
+    db.countTeamAdmins.mockResolvedValue(2);
+    db.removeTeamMemberKeepingAdmin.mockResolvedValue(false);
+    const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'last_admin' });
+  });
+
   it('admin removes another member', async () => {
     db.getMembership.mockResolvedValue(member());
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
     const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
     expect(res.status).toBe(204);
-    expect(db.removeTeamMember).toHaveBeenCalledWith({}, 'm2');
+    expect(db.removeTeamMemberKeepingAdmin).toHaveBeenCalledWith({}, 'm2');
   });
 
   it("hands a removed member's team work to the team before the row goes", async () => {
@@ -516,7 +529,7 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
     expect(db.handTeamWorkToHeir).toHaveBeenCalledWith({}, 't1', 'user-2');
     expect(db.handTeamWorkToHeir.mock.invocationCallOrder[0]!).toBeLessThan(
-      db.removeTeamMember.mock.invocationCallOrder[0]!,
+      db.removeTeamMemberKeepingAdmin.mock.invocationCallOrder[0]!,
     );
   });
 
@@ -552,7 +565,7 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
     const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
     expect(res.status).toBe(403);
-    expect(db.removeTeamMember).not.toHaveBeenCalled();
+    expect(db.removeTeamMemberKeepingAdmin).not.toHaveBeenCalled();
   });
 
   it('409 last_admin when the only admin tries to leave', async () => {

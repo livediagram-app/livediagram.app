@@ -17,11 +17,13 @@ function setup(
   level: 'none' | 'index' | 'files',
   docs: HostDoc[],
   more: Record<string, string> = {},
+  links: Record<string, string> = {},
 ) {
   const host = linkHost(docs, folders);
   const io = fakeIo({
     env: { LIVEDIAGRAM_TOKEN: TOKEN },
     routes: [host.route],
+    links,
     files: {
       '/work/livediagram.toml': `[covers]\nfolder = "games"\n[mirror]\nlevel = "${level}"\n`,
       ...more,
@@ -68,6 +70,26 @@ describe('sync at files', () => {
     const before = new Map([...io.fileMap].map(([k, v]) => [k, v.data]));
     expect(await sync(io)).toMatchObject({ code: 0, out: '2 in step\n' });
     for (const path of [MIRROR, OUTLINE, INDEX]) expect(file(io, path)).toBe(before.get(path));
+  });
+
+  it('never writes generated Markdown over a file a person wrote, INDEX.md included', async () => {
+    const mine = '# My notes\nHand written.\n';
+    const { io } = setup('files', [home()], { [OUTLINE]: mine, [INDEX]: mine });
+    const { code, out } = await sync(io);
+    expect(code).toBe(0);
+    expect(file(io, OUTLINE)).toBe(mine);
+    expect(file(io, INDEX)).toBe(mine);
+    expect(out).not.toContain('INDEX.md');
+    // The mirror file itself is still written.
+    expect(file(io, MIRROR)).toContain('Home screen box');
+  });
+
+  it('refuses to write through a folder that links outside the mirror directory', async () => {
+    const { io } = setup('files', [home()], {}, { '/work/diagrams/screens': '/elsewhere/screens' });
+    const { code, err } = await sync(io);
+    expect(code).not.toBe(0);
+    expect(err).toContain('symbolic link');
+    expect(file(io, MIRROR)).toBeUndefined();
   });
 
   it('writes a behind document at its stable path, naming a path a rename would change', async () => {

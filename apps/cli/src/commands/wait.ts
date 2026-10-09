@@ -10,6 +10,7 @@ import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { classifyRoomOp, onTab, type RoomEvent } from '../room/room-events';
 import { openRoomStream } from '../room/room-stream';
+import { oneLine } from '../output/one-line';
 
 export const WAIT_SETTLE_MS = 2_000;
 
@@ -38,7 +39,9 @@ async function commentLines(
   const thread = threads.find((t) => t.tabId === event.tabId && t.elementId === event.elementId);
   return thread
     ? threadListingLines(thread)
-    : [`comment on ${event.elementId} by ${event.authorName}: ${quoted(event.text)}`];
+    : [
+        `comment on ${oneLine(event.elementId)} by ${oneLine(event.authorName)}: ${quoted(event.text)}`,
+      ];
 }
 
 // `tab "<name>" changed · rev <a>→<b> · diff: …`, `<a>` the latest read copy's revision; without one, the hint

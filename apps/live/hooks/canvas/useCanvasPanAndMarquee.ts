@@ -5,6 +5,8 @@ import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@liv
 import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isPressableControl } from '@livediagram/ui';
+import { anyModalOpen } from '@/lib/modal-guard';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
 // component file stays focused on JSX + per-element wiring. The
@@ -115,6 +117,9 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
     const down = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
       if (isTypingTarget(e.target)) return;
+      // Space presses a focused button or ticks a box (and belongs to an open dialog): never taken for
+      // the pan, which would also stop the control from working.
+      if (isPressableControl(e.target) || anyModalOpen()) return;
       // Stop the page from scroll-jumping while space is held over
       // the canvas. Doesn't affect inputs because we return above
       // for those.
@@ -127,11 +132,19 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       spaceHeldRef.current = false;
       setSpaceHeld(false);
     };
+    // Space released while the window was not focused never reaches `up`: let go on blur, or pan mode
+    // would stay stuck on.
+    const release = () => {
+      spaceHeldRef.current = false;
+      setSpaceHeld(false);
+    };
     document.addEventListener('keydown', down);
     document.addEventListener('keyup', up);
+    window.addEventListener('blur', release);
     return () => {
       document.removeEventListener('keydown', down);
       document.removeEventListener('keyup', up);
+      window.removeEventListener('blur', release);
     };
   }, []);
 

@@ -105,7 +105,8 @@ export function useShapeStyleSetters({
     if (!selectedId) return;
     commit((els) =>
       els.map((el) => {
-        if (el.id !== selectedId || !isBoxed(el)) return el;
+        // A locked element is never resized (docs/specs/008-canvas/canvas-and-palette.md "Locking").
+        if (el.id !== selectedId || !isBoxed(el) || el.locked === true) return el;
         const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
         const ratio = el.height > 0 ? el.width / el.height : 1;
         let width = size.width ?? el.width;
@@ -135,7 +136,11 @@ export function useShapeStyleSetters({
   const setRotationSelected = (deg: number) => {
     const { selectedId } = readSelection();
     if (!selectedId) return;
-    commit((els) => els.map((el) => (el.id === selectedId ? applyRotationToEl(el, deg) : el)));
+    commit((els) =>
+      els.map((el) =>
+        el.id === selectedId && el.locked !== true ? applyRotationToEl(el, deg) : el,
+      ),
+    );
     track('Element', 'Changed', 'Rotation');
   };
 

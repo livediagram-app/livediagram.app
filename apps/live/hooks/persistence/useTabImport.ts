@@ -11,6 +11,7 @@ import {
   freshCopyFields,
   relinkCopiedCharts,
   remapElementRefs,
+  savableElements,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -115,8 +116,13 @@ export function useTabImport({
   // Goes through `commitTabs` so the whole replace is a single undo
   // step (the warning in the Import dialog promises this). Selection /
   // edit state is cleared so nothing dangles over the new content.
-  const replaceActiveTabContent = (imported: Tab) => {
+  const replaceActiveTabContent = (raw: Tab) => {
     setImportError(null);
+    // Only what the api will save lands (docs/specs/020-import-export/board-import.md "What lands"): an
+    // element the validator refuses would make every later save of this tab fail.
+    const { elements, dropped } = savableElements(raw.elements);
+    if (dropped > 0) debugLog('[import] dropped unsavable elements', { dropped });
+    const imported = { ...raw, elements };
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
     setSelectedId(null);
     setEditingId(null);
