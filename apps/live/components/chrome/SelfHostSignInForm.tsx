@@ -77,7 +77,10 @@ export function SelfHostSignInForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ provider, callbackURL: destination }),
       });
-      const body = (await res.json().catch(() => null)) as { url?: string; message?: string } | null;
+      const body = (await res.json().catch(() => null)) as {
+        url?: string;
+        message?: string;
+      } | null;
       if (!res.ok || !body?.url) {
         setSocialLoading('');
         setError(body?.message ?? 'Could not start that sign-in.');

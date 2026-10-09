@@ -17,7 +17,12 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { clerkBundled, clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
+import {
+  clerkBundled,
+  clerkEnabled,
+  clerkPublishableKey,
+  e2eAuthEnabled,
+} from '@/lib/clerk-config';
 import { useSelfHostAuth } from '@/lib/self-host-auth';
 import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from './deferred-auth';
 

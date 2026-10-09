@@ -128,7 +128,10 @@ export function createStaticSite(options: StaticSiteOptions) {
 
     // A real file — a chunk under /_next, a font, a favicon — served as it is. Both apps
     // are tried, because the root of one holds assets the other's pages reference.
-    const asset = read(target.app, target.route) ?? read('live', target.route) ?? read('marketing', target.route);
+    const asset =
+      read(target.app, target.route) ??
+      read('live', target.route) ??
+      read('marketing', target.route);
     if (asset) return asset;
 
     // A path that names a file IS a file: if it is missing, say so. Falling back to a

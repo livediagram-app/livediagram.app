@@ -84,7 +84,10 @@ export async function startServer(options: ServerOptions = {}): Promise<StartedS
       fetch: async (request) => {
         const path = new URL(request.url).pathname;
         if (path === '/api/auth-methods') {
-          return Response.json({ methods: authMethods }, { headers: { 'cache-control': 'no-store' } });
+          return Response.json(
+            { methods: authMethods },
+            { headers: { 'cache-control': 'no-store' } },
+          );
         }
         if (auth && path.startsWith('/api/auth/')) return auth.handler(request);
         const page = await serveStatic?.(request);

@@ -38,7 +38,9 @@ let cachedMethods: Promise<string[]> | null = null;
  */
 export function detectAuthMethods(): Promise<string[]> {
   cachedMethods ??= fetch('/api/auth-methods', { headers: { accept: 'application/json' } })
-    .then(async (res) => (res.ok ? (((await res.json()) as { methods?: string[] }).methods ?? []) : []))
+    .then(async (res) =>
+      res.ok ? (((await res.json()) as { methods?: string[] }).methods ?? []) : [],
+    )
     .catch(() => []);
   return cachedMethods;
 }
