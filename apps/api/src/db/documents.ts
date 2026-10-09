@@ -35,7 +35,7 @@ type DocumentRow = {
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
-  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
   item_types: string | null;
   saved_at: number;
   created_at: number;
@@ -314,8 +314,8 @@ export async function setDocumentPresentation(
 }
 
 // Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
-// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null restores the
-// built-in types.
+// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
+// default types.
 export async function setDocumentItemTypes(
   env: Env,
   id: string,

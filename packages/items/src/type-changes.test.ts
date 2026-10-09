@@ -186,19 +186,43 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     });
   });
 
-  it('restores the built-ins, keeping the document’s own types; none left goes back to null', () => {
+  // docs/specs/026-plan/plan-agents.md "Changing card types": Add Default Types adds what is missing, changes nothing.
+  it('adds the default types the document lacks, after its own, changing none it has', () => {
     const edited = ok(
-      applyCardTypeChanges(withBug, [{ op: 'delete', type: 'note' }], statuses),
+      applyCardTypeChanges(
+        withBug,
+        [
+          { op: 'delete', type: 'note' },
+          { op: 'set', type: 'task', name: 'Chore' },
+        ],
+        statuses,
+      ),
     ).catalogue;
-    const kept = ok(applyCardTypeChanges(edited, [{ op: 'restore_built_ins' }], statuses));
-    expect(kept.catalogue!.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
+    const added = ok(applyCardTypeChanges(edited, [{ op: 'add_default_types' }], statuses));
+    expect(added.catalogue!.types.map((t) => t.id)).toEqual([
+      'project',
+      'task',
+      'idea',
+      'action',
+      'bug',
+      'note',
+    ]);
+    expect(added.catalogue!.types.find((t) => t.id === 'task')!.label).toBe('Chore');
+    expect(added.applied).toEqual(['+ Note (note)']);
+    // Its older name does the same.
+    expect(ok(applyCardTypeChanges(edited, [{ op: 'restore_built_ins' }], statuses))).toEqual(
+      added,
+    );
+  });
+
+  it('stores nothing for a document whose card types are not chosen, unless something else changes', () => {
     expect(
-      ok(applyCardTypeChanges(null, [{ op: 'restore_built_ins' }], statuses)).catalogue,
+      ok(applyCardTypeChanges(null, [{ op: 'add_default_types' }], statuses)).catalogue,
     ).toBeNull();
     const after = ok(
       applyCardTypeChanges(
         null,
-        [{ op: 'restore_built_ins' }, { op: 'add', name: 'Risk' }],
+        [{ op: 'add_default_types' }, { op: 'add', name: 'Risk' }],
         statuses,
       ),
     );

@@ -146,7 +146,10 @@ export function ToolbarStripRail({
     if (railRef.current) railRef.current.scrollLeft = 0;
     const el = contentRef.current;
     if (!el) return;
-    const measure = () => setWidth(el.scrollWidth);
+    // Its layout width, not scrollWidth: scrollWidth counts transformed overflow, so a measure taken while
+    // tiles slide to new slots (fewer card types, a reorder) caught them mid-slide and the rail kept that
+    // wider width, with a gap after the last tile, once they settled (nothing resizes when a slide ends).
+    const measure = () => setWidth(el.offsetWidth);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);

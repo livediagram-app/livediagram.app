@@ -64,7 +64,7 @@ by it, and putting a change back (a restore from the Trash, an undo or redo) is 
 
 ## Item types
 
-Five built-in types, each with a glyph, an accent colour and the fields it offers in the item panel:
+The five **default types** ([Item types](item-types.md#the-type-catalogue)), each with a glyph, an accent colour and the fields it offers in the item panel:
 
 | Type    | Accent | For                                    | Offers                                                                                   |
 | ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -83,9 +83,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   can add it in the type editor. See [Colour](#colour).
 - **Parent** (a Card field linking to Projects, item-types.md "Card fields") sits right under Status and Assignee
   on a Task: what a piece of work belongs to is read alongside who has it.
-- Every built-in type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A document whose
+- Every ready-made type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A document whose
   own catalogue predates it adds it in the type editor, like any built-in field.
-- A bug is a Task labelled `bug`.
+- A bug is a card of the Bug type a Sprint or Bug Triage board brings.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
 ## Colour

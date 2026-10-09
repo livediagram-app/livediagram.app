@@ -9,8 +9,14 @@ import {
   type DocumentResponse,
   type TabResponse,
 } from '@livediagram/api-schema';
-import { placeBoard, resolveType, type BoardRequest } from '@livediagram/items';
+import {
+  READY_MADE_CARD_TYPES,
+  placeBoard,
+  resolveType,
+  type BoardRequest,
+} from '@livediagram/items';
 import { apiRefusalOf } from './api-refusal';
+import { bringBoardCardTypes } from './brought-types';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
 
@@ -29,6 +35,8 @@ export type AddBoardResult =
       columns: { name: string; status: string }[];
       // The card types it shows and takes, by name.
       takes: string[] | 'every type';
+      // The card types the document gained with it (a Bug Triage board's Bug), by name.
+      brought: string[];
       changesetId: string | null;
       rev: number | null;
     }
@@ -78,6 +86,20 @@ export async function addBoard(
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(body),
     });
+    const brought = await bringBoardCardTypes(api, documentId, [placed.board], {
+      stored: document.itemTypes ?? null,
+      hasCards: state.items.length > 0,
+    });
+    // Named as the document names them, else as the ready-made type it just gained (a board's types are always one
+    // or the other).
+    const known = [...state.plan.types, ...READY_MADE_CARD_TYPES];
+    const labels = (ids: readonly string[]) =>
+      ids.flatMap((id) =>
+        known
+          .filter((t) => t.id === id)
+          .slice(0, 1)
+          .map((t) => t.label),
+      );
     return {
       ok: true,
       tabId,
@@ -85,10 +107,9 @@ export async function addBoard(
       title: placed.board.planBoard.title,
       columns: placed.board.planBoard.columns.map((c) => ({ name: c.name, status: c.status })),
       takes: placed.board.planBoard.addTypes
-        ? placed.board.planBoard.addTypes.map(
-            (id) => state.plan.types.find((t) => t.id === id)?.label ?? id,
-          )
+        ? labels(placed.board.planBoard.addTypes)
         : 'every type',
+      brought: labels(brought),
       changesetId: answer.changeset?.id ?? null,
       rev: answer.changeset?.rev ?? null,
     };

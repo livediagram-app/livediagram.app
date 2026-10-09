@@ -102,7 +102,8 @@ export const addBoardShape = {
     .optional()
     .describe(
       'The card types it shows and takes, by name or id. Absent: the preset’s (todo takes Actions, roadmap ' +
-        'Projects...; the answer says), or every type for columns by name.',
+        'Projects, sprint Stories, Tasks and Bugs...; the answer says), or every type for columns by name. A ' +
+        'preset’s Bug or Story the document lacks is added to its card types.',
     ),
 };
 
@@ -198,7 +199,14 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     ),
   }),
   z.object({
-    op: z.literal('restore_built_ins'),
+    op: z
+      .literal('add_default_types')
+      .describe(
+        'Adds any of Project, Task, Note, Idea and Action the document lacks; changes none it has.',
+      ),
+  }),
+  z.object({
+    op: z.literal('restore_built_ins').describe('The older name of add_default_types.'),
   }),
 ]);
 
@@ -299,6 +307,12 @@ export const addBoardOutput = {
   takes: z
     .union([z.array(z.string()), z.literal('every type')])
     .describe('The card types it shows: a card of another type is saved but no board shows it.'),
+  brought: z
+    .array(z.string())
+    .describe(
+      'Card types the board brought into the document, by name (a bug-triage board brings Bug when the ' +
+        'document lacks it); empty when it had them all.',
+    ),
   changesetId: z.string().nullable().describe('The changeset that added it (revertible).'),
   rev: z.number().nullable().describe('The tab revision after it.'),
   url,

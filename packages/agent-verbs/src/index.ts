@@ -75,6 +75,7 @@ export {
   type ChangeBoardInput,
   type ChangeBoardResult,
   applyItemChanges,
+  bringBoardCardTypes,
   changeCardTypes,
   FIELD_HINT,
   NO_BOARD_HINT,

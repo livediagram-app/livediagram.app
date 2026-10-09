@@ -94,6 +94,8 @@ function api(
     [`/documents/${D}`]: {
       document: {
         id: D,
+        // The catalogue the plan above reads (chosen: it has Bug).
+        itemTypes: { version: 1, types: (plan as { types?: unknown }).types },
         tabs: [
           { id: 't1', name: 'Board', orderIndex: 0 },
           { id: 't2', name: 'Other', orderIndex: 1 },
@@ -339,6 +341,24 @@ describe('addBoard', () => {
     expect(body.base.rev).toBe(7);
     expect(body.operations[0]!.element.x).toBeGreaterThan(100);
     expect(body.operations[0]!.element.planBoard.addTypes).toEqual(['bug']);
+    // The document has Bug already: nothing is brought, nothing more is written.
+    expect(r.brought).toEqual([]);
+    expect(seen).toHaveLength(1);
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Adding a board": a preset brings the types the document lacks.
+  it('brings the preset’s card types the document lacks, saved once after the board', async () => {
+    const { api: a, seen } = api();
+    const r = await addBoard(a, D, { preset: 'sprint' }, 'mcp');
+    if (!r.ok) throw new Error(r.message);
+    expect(r.takes).toEqual(['Story', 'Task', 'Bug']);
+    expect(r.brought).toEqual(['Story']);
+    expect(seen.map((s) => `${s.method} ${s.path}`)).toEqual([
+      `POST /documents/${D}/tabs/t1/changesets`,
+      `PUT /documents/${D}/item-types`,
+    ]);
+    const saved = (seen[1]!.body as { itemTypes: { types: { id: string }[] } }).itemTypes;
+    expect(saved.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug', 'story']);
   });
 
   it('takes a tab, and refuses an unknown tab, type or preset', async () => {
@@ -620,7 +640,9 @@ describe('every branch of the engine', () => {
       ),
     );
     const todo = await addBoard(noAction, D, { preset: 'todo' }, 'mcp');
-    expect(todo.ok && todo.takes).toEqual(['action']);
+    // The document lacked Action: the board brings it, named as it is made.
+    expect(todo.ok && todo.takes).toEqual(['Action']);
+    expect(todo.ok && todo.brought).toEqual(['Action']);
     const { api: down } = api({
       [`/documents/${D}/tabs/t1/changesets`]: () => new Response('', { status: 503 }),
     });

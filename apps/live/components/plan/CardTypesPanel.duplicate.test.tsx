@@ -26,7 +26,7 @@ function panel(over: Record<string, unknown> = {}) {
       canEdit: true,
       items: new Map(),
       editType: vi.fn(),
-      itemTypes: { catalogue: null, restoreBuiltIns: vi.fn() },
+      itemTypes: { catalogue: null, addDefaultTypes: vi.fn() },
     },
     over,
   );

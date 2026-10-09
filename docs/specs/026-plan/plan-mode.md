@@ -129,11 +129,18 @@ elements a team plans beside its boards come in Content and Tools:
 - A **board tile** places a Plan board with that preset's set-up: a column takes the status the tab already has of
   its name, and any other column a status of its own, so it starts empty
   ([Plan board](plan-board.md#the-board-set-up), "One name, one status").
-- **A preset brings its card types**: a Bug Triage board takes **Bug** cards (and Tasks), a Sprint board
-  **Story** cards (and Tasks and Actions). Placing one adds each such type the document lacks (by id) to its card
-  types, as one change: Bug (red, the bug glyph) and Story (violet, the story glyph), each with a Task's fields.
-  Only a board that appears while the document is open adds them (placed by this person, a template or a
-  collaborator); the boards a document opens with never do, so a type someone deleted stays deleted.
+- **Each preset takes the card types its work is made of**: Kanban takes Tasks and Actions; To-do List,
+  Actions; Sprint, Stories, Tasks and Bugs; Retro, Notes and Ideas; Roadmap, Projects; Bug Triage, Bugs; Week,
+  Tasks, Actions and Notes. Blank asks in Setup Board; Archive and All Cards show cards by what they are.
+- **A preset brings its card types**, all of them [ready-made types](plan-templates.md#ready-made-card-types)
+  (Bug: red, the bug glyph; Story: violet, the story glyph); a Blank board brings the five default types. In a
+  document whose card types are not chosen yet and that has no cards, the first board chooses them: a Kanban
+  board's document has Task and Action only ([Item types](item-types.md#the-type-catalogue)). Otherwise placing
+  the board adds each type it brings that the document lacks (by id), as one change. Only a board
+  that appears while the document is open adds them (placed by this person, a template or a collaborator); the
+  boards a document opens with never do, so a type someone deleted stays deleted. A template's tabs bring theirs
+  as they are made, on every path ([Plan templates](plan-templates.md#card-types-a-template-uses)), and an agent's
+  `add_board` brings its preset's.
 - A **card tile** never puts anything on the canvas. Dragged and dropped (or pressed, then placed) into a board's
   column, it makes a new item of that type there (titled "New task", "New bug"...), at the drop point between
   cards and in the row it lands in (taking the row's field, its type kept); it opens at once in its panel, its title selected to be named ([Open an item](plan-board.md)).

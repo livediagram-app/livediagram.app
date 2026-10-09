@@ -8,11 +8,12 @@ views and facilitation tools are ready, and the team adds its own work.
 
 ## Domain language
 
-| Term              | Means                                                                                     | Not         |
-| ----------------- | ----------------------------------------------------------------------------------------- | ----------- |
-| **template tab**  | One tab a template makes, named by the template (Roadmap, Backlog...)                     | page, sheet |
-| **hand-off**      | A status two boards of a template share, so a card leaving one board arrives on the other | link, sync  |
-| **dashboard tab** | A template tab of plan views and no board, reading every card                             | report tab  |
+| Term                | Means                                                                                      | Not                        |
+| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
+| **template tab**    | One tab a template makes, named by the template (Roadmap, Backlog...)                      | page, sheet                |
+| **hand-off**        | A status two boards of a template share, so a card leaving one board arrives on the other  | link, sync                 |
+| **dashboard tab**   | A template tab of plan views and no board, reading every card                              | report tab                 |
+| **ready-made type** | A card type defined in code that a board brings into the document when it is made (a Role) | preset type, built-in type |
 
 ## How a template with tabs is made
 
@@ -53,10 +54,61 @@ views and facilitation tools are ready, and the team adds its own work.
 - A **dashboard tab** has no board: a row of metrics over a two-by-two grid of charts.
 - Every board is wide enough that each column fits at its narrowest without scrolling sideways.
 
+## Card types a template uses
+
+- **Every board takes only the card types its work is made of.** A board of a template names its card types
+  (its **Card Types**), never "every type": a Pipeline takes Candidates, a Retro Notes and Ideas. The palette's
+  card tiles a tab's boards would not take are greyed out ([Plan mode](plan-mode.md#the-palette)).
+- **A template uses only the card types its work is made of.** Where none of the five default types fits the
+  work, the template uses a card type of its own, with the fields that work needs: a Role, a Candidate, an
+  Objective. Every card type a board can bring is a **ready-made type**: one catalogue in code
+  (`READY_MADE_CARD_TYPES`, below), shared by the templates and the board presets, so two templates that need the
+  same kind of card (Kanban's requests, Feedback's) bring the same type.
+- **A template's boards choose the document's card types.** A document made from a template has exactly the
+  ready-made types its boards take, in the order they name them, and no others: a Hiring Pipeline has Role,
+  Candidate and Onboarding Task, never a Project or a Note
+  ([Item types](item-types.md#the-type-catalogue)). Added to a document that already has card types or cards
+  (Quick Start on a new tab), its boards add each type they take that the document lacks, after the ones it has.
+  Either way it is one change, on every path that makes the tabs: the New Document wizard (the document is created
+  with them), Quick Start (every tab it adds, not only the one it lands on), and agents (the MCP's
+  `create_document` and `add_tab`, the api's seeded create). A document that already has a type of that id keeps
+  its own. The [Plan mode](plan-mode.md#the-palette) rule holds: only a board being made brings types, so a type
+  someone deleted stays deleted.
+- **Hand-offs carry the type**: a board receiving a hand-off takes every type the board handing off takes, so a
+  card moved on is shown where it lands.
+- **A board laid out by a field takes only types that have it**: a row per role takes Candidates (each names its
+  Role), never a type that would always fall in the "No Role" row.
+- **A board of dated cards has a Gantt chart of them under it**: the chart's card types are the board's
+  (`types` on the view), not only Projects.
+- **A ready-made type's Default State** is a state name ([Item types](item-types.md#an-item-type)): for the ten
+  below, the first column of the board it is made for.
+
+### Ready-made card types
+
+The five default types (Project, Task, Note, Idea, Action: [Items](items.md#item-types)) and these ten. Colours from
+the Plan palette. Every type also offers Comments, last. Card fields link to the type named. "On the card" is what
+its Detailed cards add Under the Title.
+
+| Type            | Id                | Glyph     | Colour           | Fields                                                                                                                                                                                                      | On the card     | Default State  |
+| --------------- | ----------------- | --------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------- |
+| Bug             | `bug`             | bug       | red `#dc2626`    | A Task's (Parent among them), then **Steps to Reproduce** (Long Text) and **Environment** (Text)                                                                                                            |                 | New            |
+| Story           | `story`           | story     | violet `#7c3aed` | A Task's                                                                                                                                                                                                    |                 | Backlog        |
+| Request         | `request`         | inbox     | orange `#ea580c` | Description, Status, Assignee, Priority, Votes, Labels; **Requested By** (Text)                                                                                                                             | Requested By    | New            |
+| Content         | `content`         | megaphone | pink `#db2777`   | Description, Status, Assignee, Votes, Labels, Due, Checklist; **Channel** (Choice: Blog, Newsletter, Social, Video, Podcast), **Link** (Link)                                                               | Channel         | Ideas          |
+| Role            | `role`            | briefcase | cyan `#0891b2`   | Description, Status, Assignee (the hiring manager), Priority, Colour, Start, Due, Labels; **Team** (Text), **Location** (Text), **Employment** (Choice: Full-time, Part-time, Contract, Internship)         | Team            | Opening Soon   |
+| Candidate       | `candidate`       | user-plus | pink `#db2777`   | Description, Status, Assignee (who looks after them), Labels, Due (the next step), Checklist; **Role** (Card: Role), **Source** (Choice: Referral, Job Board, Inbound, Agency, Sourced), **Profile** (Link) |                 | Applied        |
+| Onboarding Task | `onboarding-task` | checklist | green `#16a34a`  | Description, Status, Assignee, Due, Checklist; **New Starter** (Card: Candidate)                                                                                                                            |                 | Before Day One |
+| Objective       | `objective`       | target    | amber `#d97706`  | Description, Status, Assignee, Priority, Colour, Start, Due, Labels                                                                                                                                         |                 | Draft          |
+| Key Result      | `key-result`      | trend     | teal `#0d9488`   | Description, Status, Assignee, Due, Checklist; **Objective** (Card: Objective), **Baseline**, **Target**, **Current** (Numbers)                                                                             | Current, Target | Not Started    |
+| Launch Check    | `launch-check`    | flag      | green `#16a34a`  | Description, Status, Assignee, Priority; **Workstream** (Card: Project)                                                                                                                                     | Workstream      | Not Checked    |
+
+- A Role and an Objective offer Start and Due, so the Gantt chart draws them; a Candidate's Role, a Key Result's
+  Objective and an Onboarding Task's New Starter are what their boards lay their rows by.
+
 ## The templates
 
-Colours: **green** `#16a34a`, **amber** `#d97706`, **red** `#dc2626`. Card types are the built-in ones
-([Item types](item-types.md)). A hand-off is marked ⇄.
+Colours: **green** `#16a34a`, **amber** `#d97706`, **red** `#dc2626`. A board's card types are named in its row,
+each a [ready-made type](#ready-made-card-types); the document has those and no others. A hand-off is marked ⇄.
 
 ### Blank Plan
 
@@ -68,15 +120,15 @@ The mode's blank, as Blank Diagram is Diagram's.
 
 Projects on a roadmap and a timeline, broken into tasks, run in sprints and walked every day.
 
-| Tab           | Holds                                                                                                                                                                     |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Gantt Chart under it. How this works                                                  |
-| Backlog       | Board **Backlog**: Backlog, Ready, This Sprint ⇄; a row per project; Tasks; estimates and priority                                                                        |
-| Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; points. Cards by Field and Priority by Status under it    |
-| Daily Standup | Board **Daily Standup**: In Progress ⇄, Blocked ⇄, In Review ⇄, Done ⇄; a row per person; Compact cards. How we run it, a 15 minute timer and a picker for who goes first |
+| Tab           | Holds                                                                                                                                                                                              |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Roadmap       | Board **Roadmap**: Now, Next, Later, Shipped (done); Projects; start and due dates. Gantt Chart under it. How this works                                                                           |
+| Backlog       | Board **Backlog**: Backlog, Ready, This Sprint ⇄; a row per project; Stories, Tasks and Bugs; estimates and priority                                                                               |
+| Sprint        | Board **Sprint**: This Sprint ⇄, In Progress (WIP 3) ⇄, Blocked (red) ⇄, In Review ⇄, Done ⇄; a row per person; Stories, Tasks and Bugs; points. Cards by Field and Priority by Status under it    |
+| Daily Standup | Board **Daily Standup**: In Progress ⇄, Blocked ⇄, In Review ⇄, Done ⇄; a row per person; Stories, Tasks and Bugs; Compact cards. How we run it, a 15 minute timer and a picker for who goes first |
 
 - How this works: add a Project for each piece of work on Roadmap and give it dates (the Gantt draws them);
-  break it into Tasks on Backlog, each under its project; move what the team takes on to This Sprint; walk
+  break it into Stories, Tasks and Bugs on Backlog, each under its project; move what the team takes on to This Sprint; walk
   Daily Standup each morning.
 
 ### Kanban Board
@@ -84,21 +136,21 @@ Projects on a roadmap and a timeline, broken into tasks, run in sprints and walk
 Continuous flow: requests come in, are accepted onto the board, and flow to Done under WIP limits. It stays in
 the Kanban boards family.
 
-| Tab      | Holds                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Board    | Board **Kanban**: Backlog ⇄, To Do, In Progress (WIP 3), Review (WIP 2), Done                                                              |
-| Requests | Board **Requests**: New, Needs Info (amber), Backlog ⇄ (green: accepted, it lands on the Board), Declined; Tasks and Ideas. How this works |
-| Flow     | Dashboard: Item Count, Completion, Stale Cards, Unassigned; Cards by Field, Priority by Status, Due Calendar                               |
+| Tab      | Holds                                                                                                                               |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Board    | Board **Kanban**: Backlog ⇄, To Do, In Progress (WIP 3), Review (WIP 2), Done; Tasks and Requests                                   |
+| Requests | Board **Requests**: New, Needs Info (amber), Backlog ⇄ (green: accepted, it lands on the Board), Declined; Requests. How this works |
+| Flow     | Dashboard: Item Count, Completion, Stale Cards, Unassigned; Cards by Field, Priority by Status, Due Calendar                        |
 
 ### Bug Tracker
 
 Bugs triaged by priority, then fixed, reviewed and released.
 
-| Tab    | Holds                                                                                                                                   |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Triage | Board **Triage**: New, Needs Info (amber), Confirmed ⇄, Won't Fix, Duplicate (no done column); a row per priority; Tasks. How we triage |
-| Fixing | Board **Fixing**: Confirmed ⇄, Fixing (WIP 4), In Review, Fixed (done), Released; a row per person                                      |
-| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status, Cards by Field, Due Calendar                            |
+| Tab    | Holds                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Triage | Board **Triage**: New, Needs Info (amber), Confirmed ⇄, Won't Fix, Duplicate (no done column); a row per priority; Bugs. How we triage |
+| Fixing | Board **Fixing**: Confirmed ⇄, Fixing (WIP 4), In Review, Fixed (done), Released; a row per person; Bugs                               |
+| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status, Cards by Field, Due Calendar                           |
 
 - How we triage: Urgent is broken for everyone (fix now), High blocks someone, Medium has a workaround, Low is
   polish; give each confirmed bug an owner.
@@ -135,43 +187,47 @@ A person's (or a small team's) week, fed from an inbox, with what is due on a ca
 
 Ideas voted on and approved, produced through review to published, and every publish date on a calendar.
 
-| Tab        | Holds                                                                                                                                        |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Ideas; a **Vote** button (5 dots each)                                              |
-| Production | Board **Production**: Approved ⇄, Drafting, In Review, Scheduled, Published (done); Tasks and Ideas; labels and due dates (the publish date) |
-| Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Cards by Field                                                                     |
+| Tab        | Holds                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ideas      | Board **Ideas**: Ideas, Shortlisted, Approved ⇄, Parked; Content; a **Vote** button (5 dots each)                                              |
+| Production | Board **Production**: Approved ⇄, Drafting, In Review, Scheduled, Published (done); Content and Tasks; labels and due dates (the publish date) |
+| Calendar   | Dashboard: Due Soon, Completion, People; Due Calendar and Cards by Field                                                                       |
 
 ### Hiring Pipeline
 
 Open roles, the candidates for each, and the new starter's first month.
 
-| Tab        | Holds                                                                                                                              |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Roles      | Board **Roles**: Opening Soon, Open, Offer Out, Filled (done); Projects (one per role); start and due dates. Gantt Chart under it  |
-| Pipeline   | Board **Pipeline**: Applied, Screen, Interview, Offer, Hired (done), Not Progressing; a row per role; Tasks and Notes; stale cards |
-| Onboarding | Board **Onboarding**: Before Day One, First Week, First Month, Done (done); a row per person; Tasks and Actions; due dates         |
+| Tab        | Holds                                                                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Roles      | Board **Roles**: Opening Soon, Open, Offer Out, Filled (done); Roles; start and due dates. Gantt Chart of the Roles under it                 |
+| Pipeline   | Board **Pipeline**: Applied, Screen, Interview, Offer, Hired (done), Not Progressing; a row per role (Role); Candidates; stale cards         |
+| Onboarding | Board **Onboarding**: Before Day One, First Week, First Month, Done (done); a row per new starter (New Starter); Onboarding Tasks; due dates |
+
+- How it fits: each Role is a card on Roles; each Candidate names their Role, so the Pipeline lays a row per role,
+  and a Role's panel lists its candidates (Linked as Role, with **New Candidate**); once hired, a Candidate is the
+  New Starter their Onboarding Tasks name, a row each.
 
 ### OKRs
 
 Objectives for the period and the key results that measure them, checked in on each week.
 
-| Tab         | Holds                                                                                                                                                                                         |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Projects (one per objective); start and due dates. Gantt Chart under it                                                      |
-| Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective; Tasks; checklist progress. Cards by Field under it. How we check in |
+| Tab         | Holds                                                                                                                                                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Objectives; start and due dates. Gantt Chart of the Objectives under it                                                                        |
+| Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective (Objective); Key Results; checklist progress. Cards by Field under it. How we check in |
 
-- How we check in: each week, move every key result to the column it is in and say why in a comment; anything
-  At Risk or Off Track gets an Action.
+- How we check in: each week, update every key result's Current, move it to the column it is in and say why in a comment; anything
+  At Risk or Off Track gets its next steps on its checklist.
 
 ### Product Launch
 
 Workstreams on a timeline, a checklist per workstream, and the go/no-go on launch day.
 
-| Tab        | Holds                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Timeline   | Board **Workstreams**: Planned, In Progress, Ready, Launched (done); Projects (one per workstream). Gantt Chart under it  |
-| Checklist  | Board **Checklist**: To Do, Doing, Blocked (red), Done (done); a row per workstream; Tasks and Actions; due dates         |
-| Launch Day | Board **Go / No-Go**: Not Checked, Go (green), No-Go (red); Tasks; a row per person. How we call it and a 30 minute timer |
+| Tab        | Holds                                                                                                                             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Timeline   | Board **Workstreams**: Planned, In Progress, Ready, Launched (done); Projects (one per workstream). Gantt Chart under it          |
+| Checklist  | Board **Checklist**: To Do, Doing, Blocked (red), Done (done); a row per workstream (Parent); Tasks; due dates                    |
+| Launch Day | Board **Go / No-Go**: Not Checked, Go (green), No-Go (red); Launch Checks; a row per person. How we call it and a 30 minute timer |
 
 - How we call it: each owner checks their item and moves it to Go or No-Go; any No-Go is talked through; launch
   when every card is Go.
@@ -180,12 +236,12 @@ Workstreams on a timeline, a checklist per workstream, and the go/no-go on launc
 
 Requests from users, voted on and reviewed, and the ones planned followed to shipped.
 
-| Tab      | Holds                                                                                                                 |
-| -------- | --------------------------------------------------------------------------------------------------------------------- |
-| Feedback | Board **Feedback**: New, Under Review, Planned ⇄, Not Planned; Ideas; a **Vote** button (3 dots each). How this works |
-| Delivery | Board **Delivery**: Planned ⇄, Building, Shipped (done); Ideas and Tasks; a row per person                            |
+| Tab      | Holds                                                                                                                    |
+| -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Feedback | Board **Feedback**: New, Under Review, Planned ⇄, Not Planned; Requests; a **Vote** button (3 dots each). How this works |
+| Delivery | Board **Delivery**: Planned ⇄, Building, Shipped (done); Requests and Tasks; a row per person                            |
 
-- How this works: add each request as an Idea; vote on what matters; review the top voted each week; Planned
+- How this works: add each request as a Request; vote on what matters; review the top voted each week; Planned
   moves it to Delivery.
 
 ## Telemetry

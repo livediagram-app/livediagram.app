@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, projectBoard, type Item } from '@livediagram/items';
+import { presetSetup, projectBoard, type Item, type PlanBoardSetup } from '@livediagram/items';
 import {
   boardItems,
   boardPeople,
@@ -32,7 +32,8 @@ function item(fields: Item['fields'], type = 'task'): Item {
 }
 
 describe('widget stats', () => {
-  const setup = presetSetup('kanban');
+  // A board taking Notes too, so a Note counts beside the Tasks.
+  const setup: PlanBoardSetup = { ...presetSetup('kanban'), addTypes: ['task', 'action', 'note'] };
   const items = [
     item({ title: 'a', status: 'todo', assignee: SAM }),
     item({ title: 'b', status: 'todo', assignee: ALI }, 'note'),

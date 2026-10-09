@@ -52,6 +52,8 @@ export type PlanTabSpec = {
   board?: BoardSpec;
   metrics?: readonly MetricKind[];
   charts?: readonly PlanVisualisation[];
+  // The Gantt chart's card types: the dated cards of the board above it (absent: Projects, the chart's own default).
+  ganttTypes?: readonly string[];
   rail?: readonly RailItem[];
 };
 
@@ -73,8 +75,13 @@ const W6 = 1520;
 const WORK: CardField[] = ['key', 'type', 'assignee', 'priority', 'labels', 'checklist'];
 const PROJECT: CardField[] = ['key', 'assignee', 'priority', 'labels', 'start', 'due'];
 
-// A board of Project cards that the Gantt under it draws (Roadmap, Roles, Objectives, Workstreams).
-function projectBoard(title: string, columns: PlanColumn[], doneColumnId: string): BoardSpec {
+// A board of dated cards that the Gantt under it draws (Roadmap and Workstreams: Projects; Roles; Objectives).
+function datedBoard(
+  title: string,
+  columns: PlanColumn[],
+  doneColumnId: string,
+  type = 'project',
+): BoardSpec {
   return {
     preset: 'blank',
     title,
@@ -85,7 +92,7 @@ function projectBoard(title: string, columns: PlanColumn[], doneColumnId: string
       doneColumnId,
       swimlaneBy: 'none',
       cardFields: PROJECT,
-      addTypes: ['project'],
+      addTypes: [type],
       widgets: ['progress', 'due', 'filter'],
     },
   };
@@ -100,6 +107,8 @@ const DOING = col('doing', 'In Progress', { wipLimit: 3 });
 const BLOCKED = col('blocked', 'Blocked', { color: RED });
 const REVIEW = col('review', 'In Review');
 const DONE = col('done', 'Done');
+// What a sprint is made of, on every board it passes through (a hand-off carries the type).
+const SPRINT_TYPES = ['story', 'task', 'bug'];
 
 export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly PlanTabSpec[]>> = {
   // One tab, so it keeps the name the caller gives a new tab, and empty: the tab shows Plan's own Start with a
@@ -109,7 +118,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
   'project-planner': [
     {
       name: 'Roadmap',
-      board: projectBoard(
+      board: datedBoard(
         'Roadmap',
         [col('now', 'Now'), col('next', 'Next'), col('later', 'Later'), col('shipped', 'Shipped')],
         'shipped',
@@ -120,7 +129,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           kind: 'sticky',
           text: steps('How this works', [
             'Add a Project for each piece of work, with start and due dates',
-            'Break it into Tasks on Backlog, each under its project',
+            'Break it into Stories, Tasks and Bugs on Backlog, each under its project',
             'Move what the team takes on to This Sprint',
             'Walk Daily Standup each morning',
           ]),
@@ -139,7 +148,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'field',
           swimlaneField: 'parent',
           cardFields: ['key', 'type', 'assignee', 'priority', 'estimate', 'labels'],
-          addTypes: ['task'],
+          addTypes: SPRINT_TYPES,
           widgets: ['count', 'priorities', 'filter'],
         },
       },
@@ -151,7 +160,11 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         title: 'Sprint',
         width: W5,
         height: 720,
-        setup: { columns: [SPRINT, DOING, BLOCKED, REVIEW, DONE], doneColumnId: 'done' },
+        setup: {
+          columns: [SPRINT, DOING, BLOCKED, REVIEW, DONE],
+          doneColumnId: 'done',
+          addTypes: SPRINT_TYPES,
+        },
       },
       charts: ['workload', 'priority-matrix'],
     },
@@ -168,7 +181,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'assignee',
           cardSize: 'compact',
           cardFields: ['key', 'type', 'priority', 'due'],
-          addTypes: ['task', 'action'],
+          addTypes: SPRINT_TYPES,
           widgets: ['stale', 'due', 'filter'],
         },
       },
@@ -205,6 +218,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('review', 'Review', { wipLimit: 2 }),
             col('done', 'Done'),
           ],
+          // Its own work, and the Requests accepted onto it.
+          addTypes: ['task', 'request'],
         },
       },
     },
@@ -224,8 +239,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('declined', 'Declined'),
           ],
           swimlaneBy: 'none',
-          cardFields: ['key', 'type', 'assignee', 'priority', 'labels'],
-          addTypes: ['task', 'idea'],
+          cardFields: ['key', 'assignee', 'priority', 'labels'],
+          addTypes: ['request'],
           widgets: ['count', 'unassigned', 'filter'],
         },
       },
@@ -300,7 +315,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           doneColumnId: 'fixed',
           swimlaneBy: 'assignee',
           cardFields: ['key', 'priority', 'labels', 'due'],
-          addTypes: ['task'],
+          addTypes: ['bug'],
           widgets: ['progress', 'unassigned', 'filter'],
         },
       },
@@ -443,7 +458,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           ],
           swimlaneBy: 'none',
           cardFields: ['assignee', 'labels', 'votes'],
-          addTypes: ['idea'],
+          addTypes: ['content'],
           widgets: ['top-voted'],
         },
       },
@@ -468,7 +483,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           doneColumnId: 'published',
           swimlaneBy: 'none',
           cardFields: ['key', 'type', 'assignee', 'labels', 'due'],
-          addTypes: ['task', 'idea'],
+          addTypes: ['content', 'task'],
           widgets: ['progress', 'due', 'filter'],
         },
       },
@@ -479,7 +494,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
   'hiring-pipeline': [
     {
       name: 'Roles',
-      board: projectBoard(
+      board: datedBoard(
         'Roles',
         [
           col('role-planned', 'Opening Soon'),
@@ -488,8 +503,10 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           col('role-filled', 'Filled'),
         ],
         'role-filled',
+        'role',
       ),
       charts: ['gantt'],
+      ganttTypes: ['role'],
     },
     {
       name: 'Pipeline',
@@ -508,10 +525,11 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('not-progressing', 'Not Progressing'),
           ],
           doneColumnId: 'hired',
+          // A row per role: each Candidate names theirs.
           swimlaneBy: 'field',
-          swimlaneField: 'parent',
+          swimlaneField: 'f-role',
           cardFields: ['assignee', 'labels', 'due'],
-          addTypes: ['task', 'note'],
+          addTypes: ['candidate'],
           widgets: ['count', 'stale', 'filter'],
         },
       },
@@ -531,9 +549,11 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('onboarded', 'Done'),
           ],
           doneColumnId: 'onboarded',
-          swimlaneBy: 'assignee',
-          cardFields: ['key', 'type', 'due', 'checklist'],
-          addTypes: ['task', 'action'],
+          // A row per new starter: each Onboarding Task names theirs.
+          swimlaneBy: 'field',
+          swimlaneField: 'f-new-starter',
+          cardFields: ['key', 'assignee', 'due', 'checklist'],
+          addTypes: ['onboarding-task'],
           widgets: ['progress', 'due', 'filter'],
         },
       },
@@ -543,7 +563,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
   okrs: [
     {
       name: 'Objectives',
-      board: projectBoard(
+      board: datedBoard(
         'Objectives',
         [
           col('okr-draft', 'Draft'),
@@ -552,8 +572,10 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           col('okr-missed', 'Missed'),
         ],
         'okr-achieved',
+        'objective',
       ),
       charts: ['gantt'],
+      ganttTypes: ['objective'],
     },
     {
       name: 'Key Results',
@@ -571,10 +593,11 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('kr-done', 'Done'),
           ],
           doneColumnId: 'kr-done',
+          // A row per objective: each Key Result names its own.
           swimlaneBy: 'field',
-          swimlaneField: 'parent',
-          cardFields: ['key', 'assignee', 'due', 'checklist'],
-          addTypes: ['task', 'action'],
+          swimlaneField: 'f-objective',
+          cardFields: ['key', 'type', 'assignee', 'due', 'checklist'],
+          addTypes: ['key-result'],
           widgets: ['progress', 'due', 'stale'],
         },
       },
@@ -583,9 +606,9 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         {
           kind: 'sticky',
           text: steps('How we check in', [
-            'Each week, move every key result to where it stands',
+            'Each week, update every key result’s Current and move it to where it stands',
             'Say why in a comment',
-            'Anything At Risk or Off Track gets an Action',
+            'Anything At Risk or Off Track gets its next steps on its checklist',
           ]),
         },
       ],
@@ -595,7 +618,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
   'product-launch': [
     {
       name: 'Timeline',
-      board: projectBoard(
+      board: datedBoard(
         'Workstreams',
         [
           col('ws-planned', 'Planned'),
@@ -625,7 +648,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'field',
           swimlaneField: 'parent',
           cardFields: [...WORK, 'due'],
-          addTypes: ['task', 'action'],
+          // Tasks, each under its workstream (Parent), a row each.
+          addTypes: ['task'],
           widgets: ['progress', 'due', 'unassigned'],
         },
       },
@@ -646,7 +670,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           swimlaneBy: 'assignee',
           cardSize: 'compact',
           cardFields: ['key', 'priority'],
-          addTypes: ['task'],
+          addTypes: ['launch-check'],
           widgets: ['count', 'unassigned'],
         },
       },
@@ -683,7 +707,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           ],
           swimlaneBy: 'none',
           cardFields: ['labels', 'votes'],
-          addTypes: ['idea'],
+          addTypes: ['request'],
           widgets: ['top-voted', 'types', 'filter'],
         },
       },
@@ -691,7 +715,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         {
           kind: 'sticky',
           text: steps('How this works', [
-            'Add each request as an Idea',
+            'Add each request as a Request',
             'Press Vote, and vote on what matters',
             'Review the top voted each week',
             'Planned moves it to Delivery',
@@ -716,7 +740,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           doneColumnId: 'fb-shipped',
           swimlaneBy: 'assignee',
           cardFields: ['key', 'type', 'labels', 'votes', 'due'],
-          addTypes: ['idea', 'task'],
+          addTypes: ['request', 'task'],
           widgets: ['progress', 'filter'],
         },
       },

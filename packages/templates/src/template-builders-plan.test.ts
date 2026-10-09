@@ -1,4 +1,5 @@
 import {
+  READY_MADE_CARD_TYPES,
   PLAN_BOARD_PRESET_IDS,
   isPlanViewId,
   normaliseBoardSetup,
@@ -141,12 +142,74 @@ describe('plan templates', () => {
     expect(boardSetup(archive!.board!).archive).toBe(true);
   });
 
-  it('puts a Gantt under every board of Project cards', () => {
+  it('puts a Gantt of the board’s cards under every board of dated cards', () => {
+    const dated = new Set(['project', 'role', 'objective']);
     for (const { spec, label } of everyTab()) {
       if (!spec.board) continue;
-      const projectsOnly = boardSetup(spec.board).addTypes?.join() === 'project';
-      expect(spec.charts?.includes('gantt') ?? false, label).toBe(projectsOnly);
+      const types = boardSetup(spec.board).addTypes ?? [];
+      const ofDated = types.length === 1 && dated.has(types[0]!);
+      expect(spec.charts?.includes('gantt') ?? false, label).toBe(ofDated);
+      if (!ofDated) continue;
+      const gantt = buildPlanTab(spec, 0, 0).find(
+        (el) => el.type === 'shape' && el.shape === 'plan-view' && el.planView?.view === 'gantt',
+      );
+      const shown = gantt?.type === 'shape' ? gantt.planView?.types : undefined;
+      // A Gantt with no types draws Projects, its own default.
+      expect(shown ?? ['project'], label).toEqual(types);
     }
+  });
+
+  it('names the card types of every board, each built in or brought', () => {
+    const known = new Set(READY_MADE_CARD_TYPES.map((t) => t.id));
+    for (const { spec, label } of everyTab()) {
+      if (!spec.board) continue;
+      const setup = boardSetup(spec.board);
+      if (setup.archive) continue;
+      expect(setup.addTypes?.length, label).toBeGreaterThan(0);
+      for (const t of setup.addTypes!) expect(known.has(t), `${label} ${t}`).toBe(true);
+    }
+  });
+
+  it('lays rows by a field only every type the board takes has', () => {
+    const types = READY_MADE_CARD_TYPES;
+    for (const { spec, label } of everyTab()) {
+      if (!spec.board) continue;
+      const setup = boardSetup(spec.board);
+      if (setup.swimlaneBy !== 'field') continue;
+      for (const id of setup.addTypes ?? [])
+        expect(types.find((t) => t.id === id)!.fields, `${label} ${id}`).toContain(
+          setup.swimlaneField,
+        );
+    }
+  });
+
+  it('carries every card handed off onto the board it lands on', () => {
+    const takes = (kind: (typeof PLAN_TEMPLATE_KINDS)[number], tab: string) =>
+      boardSetup(PLAN_TEMPLATE_TABS[kind].find((t) => t.name === tab)!.board!).addTypes ?? [];
+    const handOffs: [(typeof PLAN_TEMPLATE_KINDS)[number], string, string][] = [
+      ['project-planner', 'Backlog', 'Sprint'],
+      ['project-planner', 'Sprint', 'Daily Standup'],
+      ['project-planner', 'Daily Standup', 'Sprint'],
+      ['kanban', 'Requests', 'Board'],
+      ['bug-triage', 'Triage', 'Fixing'],
+      ['content-calendar', 'Ideas', 'Production'],
+      ['feedback-board', 'Feedback', 'Delivery'],
+    ];
+    for (const [kind, from, to] of handOffs)
+      for (const t of takes(kind, from))
+        expect(takes(kind, to), `${kind} ${from}›${to}`).toContain(t);
+  });
+
+  it('gives each template the card types its work is made of', () => {
+    const takes = (kind: (typeof PLAN_TEMPLATE_KINDS)[number]) =>
+      PLAN_TEMPLATE_TABS[kind].flatMap((t) => (t.board ? [boardSetup(t.board).addTypes] : []));
+    expect(takes('hiring-pipeline')).toEqual([['role'], ['candidate'], ['onboarding-task']]);
+    expect(takes('okrs')).toEqual([['objective'], ['key-result']]);
+    expect(takes('bug-triage')).toEqual([['bug'], ['bug']]);
+    expect(takes('kanban')).toEqual([['task', 'request'], ['request']]);
+    expect(takes('feedback-board')).toEqual([['request'], ['request', 'task']]);
+    expect(takes('content-calendar')).toEqual([['content'], ['content', 'task']]);
+    expect(takes('product-launch')).toEqual([['project'], ['task'], ['launch-check']]);
   });
 
   it('lays a tab out without overlaps, every view a real one, centred on the point', () => {

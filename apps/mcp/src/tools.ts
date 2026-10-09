@@ -38,7 +38,8 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from './env';
-import { fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { bringBoardCardTypes, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
   deepLink,
   errorResult,
@@ -110,6 +111,9 @@ export function registerTools(server: McpServer, env: Env): void {
     const tabs: Tab[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
+    // Every template tab's elements: their Plan boards bring their card types
+    // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
+    const templateElements: Tab['elements'] = [];
     for (const t of inputTabs) {
       const tabId = crypto.randomUUID();
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
@@ -125,14 +129,14 @@ export function registerTools(server: McpServer, env: Env): void {
         if (tabs.length === 0) firstTemplate = kind;
         // A template of several tabs adds them all, the first named as given
         // (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").
-        tabs.push(
-          ...buildTemplateTabs(
-            { id: tabId, name: t.name },
-            kind,
-            () => crypto.randomUUID(),
-            args.theme,
-          ),
+        const made = buildTemplateTabs(
+          { id: tabId, name: t.name },
+          kind,
+          () => crypto.randomUUID(),
+          args.theme,
         );
+        tabs.push(...made);
+        for (const m of made) templateElements.push(...m.elements);
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -164,6 +168,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
     // server files the document in the user's default folder for it, when they have one.
     const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
+    const itemTypes = catalogueWithBoardTypes(null, templateElements);
     const { document: created } = await apiJson<{ document?: LiveDoc }>(env, token, '/documents', {
       method: 'POST',
       // markUsed only when the model gave one: absent, the making counts (the api's default).
@@ -173,6 +178,7 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs,
         source: 'mcp',
         intent,
+        ...(itemTypes ? { itemTypes } : {}),
         ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
       }),
     });
@@ -247,6 +253,9 @@ export function registerTools(server: McpServer, env: Env): void {
       token,
       `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
+    // A Plan template's boards bring their card types (docs/specs/026-plan/plan-agents.md "Adding a board").
+    if (args.template)
+      await bringBoardCardTypes(clientFor(env, token), args.documentId, tab.elements);
     return imageResult(
       {
         documentId: args.documentId,

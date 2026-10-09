@@ -203,7 +203,7 @@ export function elementTileSections({
     (t) =>
       visible(t) &&
       !hereIds.has(t.id) &&
-      // A document's own card types replace the built-in ones in Plan: a built-in type it
+      // A document's own card types replace the default ones in Plan: a default type it
       // dropped is not "elsewhere", it is gone.
       !(planCardTiles && t.section === 'plan-cards'),
   );

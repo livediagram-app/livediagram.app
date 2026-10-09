@@ -46,7 +46,7 @@ import type { ImportImageReport } from './import-images';
 import type { BoardSceneReport } from './board-scene/report';
 
 // The Plan items a tab export carries (docs/specs/026-plan/items.md "Copies and exports"), and its stored type
-// catalogue (null: the built-in types).
+// catalogue (null: the default types).
 export type ImportedPlanItems = { items: Item[]; itemTypes: ItemTypeCatalogue | null };
 
 type ImportResult = { ok: true; tab: Tab; plan?: ImportedPlanItems } | { ok: false; error: string };
