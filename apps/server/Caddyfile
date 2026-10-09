@@ -1,0 +1,34 @@
+# TLS, and a proxy. Nothing else.
+#
+# The routing table — which path belongs to which app, the /live asset prefix, the
+# single placeholder page every /document/<id> resolves to — lives in the app
+# process (apps/server/src/static.ts), because it is the application's rule and the
+# hosted deployment keeps it in code too. Restating it here would give it two
+# sources of truth.
+#
+# SITE_ADDRESS drives automatic HTTPS: set it to a domain and Caddy obtains a
+# certificate; leave it as :80 for a local or LAN deployment.
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# The api, the rooms, the identity provider and the built sites: one process.
+	reverse_proxy app:8787
+
+	# A self-host on a LAN usually speaks plain HTTP; these keep the browser's
+	# stricter defaults from breaking the editor there.
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
+
+# The MCP process, on its own origin (docs/specs/016-platform/blueprints/self-hosted-runtime.md,
+# "Static apps and routing"). A client reaches it at http://mcp.localhost:<port>/mcp by
+# default; an operator with a domain sets MCP_SITE_ADDRESS and gets a certificate for it.
+{$MCP_SITE_ADDRESS} {
+	encode zstd gzip
+
+	reverse_proxy mcp:8788
+}

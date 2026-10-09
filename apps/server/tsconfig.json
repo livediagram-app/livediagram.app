@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `DOM` for the Web-standard types the api worker is written against
+    // (`Request`, `Response`, `ReadableStream`); `node` for the process APIs the
+    // runtime is built on. Both runtimes compile the same application code
+    // (docs/specs/016-platform/self-hosted-runtime.md).
+    // Same floor as the api worker, and for the same reason: this package
+    // compiles that worker's source, whose globals (`ExecutionContext`,
+    // `D1Database`, `HTMLRewriter`, and the Web-standard `Request`/`Response`/
+    // `caches` it uses) come from @cloudflare/workers-types. Adding `DOM` here
+    // would fight those definitions, so it is deliberately absent — the process
+    // APIs come from `node` instead.
+    "types": ["@cloudflare/workers-types", "node"],
+    "lib": ["ES2024"],
+    "target": "ES2024",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,15 @@
+**/node_modules
+**/.next
+**/.next-*
+**/out
+**/dist
+**/.turbo
+**/coverage
+**/.wrangler
+**/test-results
+**/playwright-report
+**/.git
+**/data
+**/data-static
+plans
+docs

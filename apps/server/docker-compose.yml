@@ -1,0 +1,118 @@
+# The self-hosted stack (docs/specs/016-platform/blueprints/self-hosted-runtime.md,
+# "Delivery").
+#
+#   cp .env.example .env      # then set BETTER_AUTH_SECRET
+#   docker compose up -d
+#
+# Everything an operator owns lives in the ./data bind mount: one SQLite file, the
+# image bytes, and the snapshots the backup job writes beside them.
+
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+      # `runtime` bakes the five static exports in; `app` leaves them out, for a
+      # deployment that serves a build from the host or only wants the api.
+      target: ${APP_TARGET:-runtime}
+    environment:
+      PORT: 8787
+      HOST: 0.0.0.0
+      DATABASE_PATH: /data/livediagram.sqlite
+      OBJECTS_DIR: /data/objects
+      # The origin people reach, which is what Better Auth signs against.
+      BETTER_AUTH_URL: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env (openssl rand -base64 32)}
+      # Where the built sites live INSIDE the container. With APP_TARGET=app, mount a
+      # build at this path (see the volume below); with the default runtime target they
+      # are already at /app/static and this only has to agree with the image.
+      STATIC_ROOT: ${STATIC_ROOT:-/app/static}
+      # Optional providers. Unset means "not offered": the sign-in page asks the server
+      # which are available and shows only those.
+      AUTH_FEISHU_APP_ID: ${AUTH_FEISHU_APP_ID:-}
+      AUTH_FEISHU_APP_SECRET: ${AUTH_FEISHU_APP_SECRET:-}
+      AUTH_GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_CLIENT_ID:-}
+      AUTH_GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_CLIENT_SECRET:-}
+      # Uncomment to require sign-in for AI calls, or to run telemetry:
+      # TELEMETRY_ENABLED: 'true'
+      # AI_REQUIRE_CLERK: 'true'
+    volumes:
+      - ./data:/data
+      # Optional: serve a static build produced on the host. Pair with APP_TARGET=app
+      # and STATIC_ROOT=/srv — this is what a local run of the checkout looks like, and
+      # it skips building five Next.js apps inside the image.
+      - ./data-static:/srv:ro
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:8787/api/capabilities').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # The MCP tools and their OAuth server: the same image, a second entry point
+  # (docs/specs/016-platform/self-hosted-runtime.md, "MCP process"). It needs its own
+  # origin, because an MCP client asks for the OAuth discovery documents at
+  # `/.well-known/` on THIS process's host, not the app's.
+  mcp:
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+      target: ${APP_TARGET:-runtime}
+    command: ['node', 'mcp-dist/node.mjs']
+    environment:
+      PORT: 8788
+      HOST: 0.0.0.0
+      # The MCP's OAuth state is its own: its own file beside the app's, so one
+      # process writes each.
+      MCP_DATABASE_PATH: /data/mcp.sqlite
+      # The api, as this process reaches it: the app service, on this network.
+      MCP_API_ORIGIN: http://app:8787
+      # The page the consent step redirects to, on the origin people use.
+      CONSENT_BASE_URL: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      # Optional and inert when unset: telemetry only, exactly as on the api.
+      INTERNAL_EVENTS_KEY: ${INTERNAL_EVENTS_KEY:-}
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:8788/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - '${HTTP_PORT:-8080}:80'
+      - '${HTTPS_PORT:-8443}:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      # Where the MCP process answers. Its own origin: see the mcp service above.
+      MCP_SITE_ADDRESS: ${MCP_SITE_ADDRESS:-http://mcp.localhost}
+    depends_on:
+      app:
+        condition: service_healthy
+      mcp:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
