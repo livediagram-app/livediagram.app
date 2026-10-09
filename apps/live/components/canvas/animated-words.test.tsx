@@ -17,6 +17,9 @@ const html = (text: string, anim: Parameters<typeof planTextAnimation>[1]) => {
   return renderToStaticMarkup(<>{renderUnits(text, plan, { next: 0 })}</>);
 };
 const units = (markup: string) => (markup.match(/class="lvd-tx-unit"/g) ?? []).length;
+// The visible text of rendered markup: everything outside the tags. Split
+// rather than replace, so it reads as text extraction, not sanitising.
+const textOf = (markup: string) => markup.split(/<[^>]*>/).join('');
 
 describe('planTextAnimation (granularity)', () => {
   it('splits letter animations into letters, ignoring spaces', () => {
@@ -79,7 +82,7 @@ describe('renderUnits', () => {
   it('keeps every unit aria-hidden and the words themselves in the text', () => {
     const markup = html('Hello world', 'typewriter');
     expect(units(markup)).toBe(10);
-    expect(markup.replace(/<[^>]+>/g, '')).toBe('Hello world');
+    expect(textOf(markup)).toBe('Hello world');
     // Letters sit in their word's group, which is the aria-hidden node.
     expect(markup.match(/class="lvd-tx-word" aria-hidden="true"/g)).toHaveLength(2);
     const words = html('Hello world', 'words');
@@ -118,7 +121,7 @@ describe('determinism', () => {
   it('puts stand-ins only in data attributes, never in the text', () => {
     const markup = html('Ab', 'scramble');
     expect(markup).toMatch(/data-a="."/);
-    expect(markup.replace(/<[^>]+>/g, '')).toBe('Ab');
+    expect(textOf(markup)).toBe('Ab');
   });
 });
 
