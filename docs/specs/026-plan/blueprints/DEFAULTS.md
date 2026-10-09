@@ -2,39 +2,48 @@
 
 One row per default applied where a spec is silent or qualitative.
 
-| #   | Blueprint     | Spec silence                                       | Default applied                                                          |
-| --- | ------------- | -------------------------------------------------- | ------------------------------------------------------------------------ |
-| D1  | item-store    | Rank alphabet                                      | Base-36 fractional keys, first key `i`                                   |
-| D2  | item-store    | Order of two items with the same rank              | By key, ascending                                                        |
-| D3  | item-store    | Who may restore a deleted item's key               | Anyone with edit, only while the key is free and below the next key      |
-| D4  | item-store    | Undo of a field someone else changed since         | Writes the old value (last write wins), as canvas undo does              |
-| D5  | plan-board    | Board and card default sizes                       | 1120×640 board, 240×120 card                                             |
-| D6  | plan-board    | Default type of a typed title in Add a Card        | Task                                                                     |
-| D7  | plan-board    | Column minimum width                               | 220 px; narrower boards scroll columns sideways                          |
-| D8  | plan-board    | How item panel edits group for undo                | One step per field per 400 ms pause                                      |
-| D9  | plan-mode     | Where Boards and Cards sit                         | Plan's only categories, under a Plan band heading; opens on Cards        |
-| D10 | item-types    | A new type's starting look and fields              | Cyan, star glyph; Title, Status, Description, Assignee                   |
-| D11 | item-types    | Longest Choice option                              | 40 characters                                                            |
-| D12 | item-types    | Field reordering in the type editor                | ↑ and ↓ buttons per row (drag is for the panel's type rows)              |
-| D13 | plan-mode     | The gap a dragged palette card opens               | 56 px: the card does not exist yet, so it has no size to borrow          |
-| D14 | plan-board    | A board's corner radius with none set              | 12 px                                                                    |
-| D15 | plan-board    | Ink contrast before it is swapped                  | 4.5:1 against the fill                                                   |
-| D16 | plan-mode     | Where the card menu opens from the keyboard        | Under the card's left edge                                               |
-| D17 | board-widgets | Widget pill height                                 | 28 px, the header's control height                                       |
-| D18 | board-widgets | Distance before a press becomes a reorder          | 4 px                                                                     |
-| D19 | board-widgets | "Due soon" horizon                                 | 7 days, today included                                                   |
-| D20 | plan-board    | Wait before a description is saved                 | 800 ms after the last keystroke, and at once on blur or close            |
-| D21 | item-types    | A new tab's name                                   | "New Tab"                                                                |
-| D22 | board-widgets | Days without a change before a card is stale       | 14                                                                       |
-| D23 | board-widgets | What Set Done Column marks                         | The board's last column                                                  |
-| D24 | items         | Where archived cards go on an Archive board        | All in its one column, in rank order                                     |
-| D25 | plan-views    | Plan view default sizes                            | Metric 260×64, Gantt 880×420, other visualisations 720×400               |
-| D26 | plan-views    | Which statuses are not started, in progress        | A board's first column, then the columns before its done column          |
-| D27 | plan-views    | Gantt axis padding and tick spacing                | A week each side, 28 days at least; weeks up to 120 days, then months    |
-| D28 | plan-tour     | How long to wait for items before the card steps   | 3000 ms, then the card steps are skipped                                 |
-| D29 | plan-views    | Gantt names column when resized                    | 120 px at least, 60 % of the chart at most, 16 px a key step             |
-| D30 | plan-views    | Gantt swimlane header and empty lanes              | 24 px headers; a lane with no projects is left out                       |
-| D31 | plan-agents   | Where an agent's board goes on a tab               | Right of everything, 80 px gap, tops aligned; the origin on an empty tab |
-| D32 | plan-agents   | Which tab an agent's board goes on                 | The first tab with a board, else the first tab                           |
-| D33 | plan-agents   | A person named by an agent who is not assigned yet | `n-<slug>` id, a Plan swatch picked by a hash of the name                |
-| D34 | plan-agents   | Built-in field names agents may use besides ids    | Due Date, Start Date, Colour, Label, Assigned To, Owner                  |
+| #   | Blueprint     | Spec silence                                               | Default applied                                                                                                                     |
+| --- | ------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | item-store    | Rank alphabet                                              | Base-36 fractional keys, first key `i`                                                                                              |
+| D2  | item-store    | Order of two items with the same rank                      | By key, ascending                                                                                                                   |
+| D3  | item-store    | Who may restore a deleted item's key                       | Anyone with edit, only while the key is free and below the next key                                                                 |
+| D4  | item-store    | Undo of a field someone else changed since                 | Writes the old value (last write wins), as canvas undo does                                                                         |
+| D5  | plan-board    | Board and card default sizes                               | 1120×640 board (1120×880 while it has no columns: the Blank board), 240×120 card                                                    |
+| D6  | plan-board    | Default type of a typed title in Add a Card                | Task                                                                                                                                |
+| D7  | plan-board    | Column minimum width                                       | 220 px; narrower boards scroll columns sideways                                                                                     |
+| D8  | plan-board    | How item panel edits group for undo                        | One step per field per 400 ms pause                                                                                                 |
+| D9  | plan-mode     | Where Boards and Cards sit                                 | Plan's only categories, under a Plan band heading; opens on Cards                                                                   |
+| D10 | item-types    | A new type's starting look and fields                      | Cyan, star glyph; Title, Status, Description, Assignee                                                                              |
+| D11 | item-types    | Longest Choice option                                      | 40 characters                                                                                                                       |
+| D12 | item-types    | Field reordering in the type editor                        | ↑ and ↓ buttons per row (drag is for the panel's type rows)                                                                         |
+| D13 | plan-mode     | The gap a dragged palette card opens                       | 56 px: the card does not exist yet, so it has no size to borrow                                                                     |
+| D14 | plan-board    | A board's corner radius with none set                      | 12 px                                                                                                                               |
+| D15 | plan-board    | Ink contrast before it is swapped                          | 4.5:1 against the fill                                                                                                              |
+| D16 | plan-mode     | Where the card menu opens from the keyboard                | Under the card's left edge                                                                                                          |
+| D17 | board-widgets | Widget pill height                                         | 28 px, the header's control height                                                                                                  |
+| D18 | board-widgets | Distance before a press becomes a reorder                  | 4 px                                                                                                                                |
+| D19 | board-widgets | "Due soon" horizon                                         | 7 days, today included                                                                                                              |
+| D20 | plan-board    | Wait before a description is saved                         | 800 ms after the last keystroke, and at once on blur or close                                                                       |
+| D21 | item-types    | A new tab's name                                           | "New Tab"                                                                                                                           |
+| D22 | board-widgets | Days without a change before a card is stale               | 14                                                                                                                                  |
+| D23 | board-widgets | What Set Done Column marks                                 | The board's last column                                                                                                             |
+| D24 | items         | Where archived cards go on an Archive board                | All in its one column, in rank order                                                                                                |
+| D25 | plan-views    | Plan view default sizes                                    | Metric 260×64, Gantt 880×420, other visualisations 720×400                                                                          |
+| D26 | plan-views    | Which statuses are not started, in progress                | A board's first column, then the columns before its done column                                                                     |
+| D27 | plan-views    | Gantt axis padding and tick spacing                        | A week each side, 28 days at least; weeks up to 120 days, then months                                                               |
+| D28 | plan-tour     | How long to wait for items before the card steps           | 3000 ms, then the card steps are skipped                                                                                            |
+| D29 | plan-views    | Gantt names column when resized                            | 120 px at least, 60 % of the chart at most, 16 px a key step                                                                        |
+| D30 | plan-views    | Gantt swimlane header and empty lanes                      | 24 px headers; a lane with no projects is left out                                                                                  |
+| D31 | plan-agents   | Where an agent's board goes on a tab                       | Right of everything, 80 px gap, tops aligned; the origin on an empty tab                                                            |
+| D32 | plan-agents   | Which tab an agent's board goes on                         | The first tab with a board, else the first tab                                                                                      |
+| D33 | plan-agents   | A person named by an agent who is not assigned yet         | `n-<slug>` id, a Plan swatch picked by a hash of the name                                                                           |
+| D34 | plan-agents   | Built-in field names agents may use besides ids            | Due Date, Start Date, Colour, Label, Assigned To, Owner                                                                             |
+| D35 | plan-board    | How tall the picker's Existing Statuses list grows         | 14rem (`max-h-56`, about five rows), then it scrolls                                                                                |
+| D36 | plan-board    | Where a status only a card type knows reads from           | Its id in Title Case (`statusLabel`), as a status with no column reads                                                              |
+| D37 | plan-board    | Fill Tab's tile icons                                      | A small board on a dashed canvas (On Canvas); a board filling the frame (Fill Tab)                                                  |
+| D38 | plan-board    | Where a filled board sits against the editor's chrome      | Over the canvas, under the floating panels (`--z-panel` − 1); header and tab bar stay                                               |
+| D39 | plan-board    | How many columns a maximised board shows before it scrolls | 5 slots (`MAXIMISED_BOARD_SLOTS`, plan-board-columns.ts): the user's ask; a slot stays at least `PLAN_COLUMN_MIN_PX`                |
+| D40 | plan-board    | How deep a maximised board's drag edge zone reaches        | 56 px (`EDGE_SCROLL_ZONE_PX`), at most a quarter of the viewport: about a column's padding plus a card's edge                       |
+| D41 | plan-board    | How fast a maximised board scrolls at its edge             | 18 px a frame at the edge, a quadratic ramp in (`EDGE_SCROLL_MAX_PX`); 6 px a frame under reduced motion (`EDGE_SCROLL_REDUCED_PX`) |
+| D42 | plan-board    | What shows around a maximised board                        | The canvas's own background (`background: inherit` on the cover); the Map is hidden                                                 |
+| D43 | items         | How long a tab import waits for the item store             | 10 000 ms (`PLAN_IMPORT_READY_WAIT_MS`): the imported board starts the load, a fetch away; then its cards are reported as not added |

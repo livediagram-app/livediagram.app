@@ -5,15 +5,19 @@
 // the card type tiles a board's Card Types and a Gantt chart's Card Types both press.
 import type { ReactNode } from 'react';
 import {
+  CARD_SIZES,
   SWIMLANE_BY,
   laneFieldsOf,
   swimlaneGroupingsFor,
   type ItemTypeDef,
   type LaneField,
   type LaneFieldKind,
+  type CardSize,
   type SwimlaneBy,
 } from '@livediagram/items';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { OptionRows } from '@/components/plan/OptionRows';
+import type { PlanPalette } from '@/components/plan/plan-palette';
+import { CardSizeArt } from '@/components/plan/plan-tile-art';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
 import { SWIMLANE_LABELS } from '@/components/plan/board-setup-edits';
@@ -67,12 +71,14 @@ function laneGlyph(f: LaneField, types: readonly ItemTypeDef[]): string {
 }
 
 // The Swimlanes grid: built in, then any field the shown card types offer, in one grid (one grouping each).
-export function SwimlaneTiles({
+export function SwimlaneOptions({
   by,
   field,
   types,
   allTypes,
   noNone,
+  noStatus,
+  palette,
   onPick,
 }: {
   by: SwimlaneBy;
@@ -83,6 +89,11 @@ export function SwimlaneTiles({
   allTypes?: readonly ItemTypeDef[];
   // Leaves out None (Cards by Field always groups).
   noNone?: boolean;
+  // Leaves out Status: a board's columns are its statuses (every board but All Cards), so rows by status would
+  // repeat them (docs/specs/026-plan/plan-board.md "Swimlanes"). A Gantt chart keeps it.
+  noStatus?: boolean;
+  // The board's colours (Setup Board), else the menu's.
+  palette?: PlanPalette;
   // A built-in grouping (no field), or a field's id with `field`.
   onPick: (by: SwimlaneBy, field?: string) => void;
 }) {
@@ -92,39 +103,44 @@ export function SwimlaneTiles({
     const kept = laneFieldsOf(allTypes ?? types).find((f) => f.id === field);
     if (kept) lanes.push(kept);
   }
+  // What the shown types offer, and the grouping in use even when they no longer offer it; then the fields.
+  const built = SWIMLANE_BY.filter(
+    (s) =>
+      s !== 'field' &&
+      !(noNone && s === 'none') &&
+      !(noStatus && s === 'status') &&
+      (s === by || swimlaneGroupingsFor(types).includes(s)),
+  );
+  const FIELD = 'field:';
   return (
-    <MenuTileGrid cols={3} fitRows>
-      {/* What the shown types offer, and the grouping in use even when they no longer offer it. */}
-      {SWIMLANE_BY.filter(
-        (s) =>
-          s !== 'field' &&
-          !(noNone && s === 'none') &&
-          (s === by || swimlaneGroupingsFor(types).includes(s)),
-      ).map((s) => (
-        <MenuTile
-          key={s}
-          icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
-          label={SWIMLANE_LABELS[s]}
-          active={by === s}
-          onClick={() => onPick(s)}
-        />
-      ))}
-      {lanes.map((f) => (
-        <MenuTile
-          key={f.id}
-          icon={<PlanTypeGlyph glyph={laneGlyph(f, allTypes ?? types)} size={16} />}
-          label={f.label}
-          active={by === 'field' && field === f.id}
-          onClick={() => onPick('field', f.id)}
-        />
-      ))}
-    </MenuTileGrid>
+    <OptionRows
+      kind="single"
+      label="Group Rows By"
+      palette={palette}
+      className={palette ? '' : 'mx-3 my-1.5'}
+      selected={by === 'field' && field ? `${FIELD}${field}` : by}
+      rows={[
+        ...built.map((s) => ({
+          id: s,
+          label: SWIMLANE_LABELS[s],
+          icon: <PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />,
+        })),
+        ...lanes.map((f) => ({
+          id: `${FIELD}${f.id}`,
+          label: f.label,
+          icon: <PlanTypeGlyph glyph={laneGlyph(f, allTypes ?? types)} size={16} />,
+        })),
+      ]}
+      onPick={(id) =>
+        id.startsWith(FIELD) ? onPick('field', id.slice(FIELD.length)) : onPick(id as SwimlaneBy)
+      }
+    />
   );
 }
 
-// A tile per card type, pressed when `selected` holds it; a press toggles it, and the last one pressed cannot be
-// let go (at least one type stays on) unless `allowNone`. `onChange` gets the new list, in catalogue order.
-export function TypeToggleTiles({
+// A row per card type, ticked when `selected` holds it; a press toggles it, and the last one ticked cannot be let go
+// (at least one type stays on) unless `allowNone`. `onChange` gets the new list, in catalogue order.
+export function CardTypeOptions({
   types,
   selected,
   allowNone = false,
@@ -137,33 +153,29 @@ export function TypeToggleTiles({
   onChange: (next: string[]) => void;
 }) {
   return (
-    <MenuTileGrid cols={3} fitRows>
-      {types.map((t) => {
-        const on = selected.includes(t.id);
-        // At least one type stays on. The last one keeps its pressed look (a disabled tile is dimmed, which read
-        // as not selected); pressing it changes nothing.
+    <OptionRows
+      kind="multiple"
+      label="Card Types"
+      className="mx-3 my-1.5"
+      selected={selected}
+      rows={types.map((t) => ({
+        id: t.id,
+        label: t.label,
+        icon: (
+          <span className={ACCENT_TEXT} style={accentVars(t.color)}>
+            <PlanTypeGlyph glyph={t.glyph} size={16} />
+          </span>
+        ),
+      }))}
+      onPick={(id) => {
+        const on = selected.includes(id);
+        // At least one type stays on: pressing the last one changes nothing.
         const last =
-          !allowNone && on && selected.filter((id) => types.some((x) => x.id === id)).length <= 1;
-        return (
-          <MenuTile
-            key={t.id}
-            icon={
-              <span className={ACCENT_TEXT} style={accentVars(t.color)}>
-                <PlanTypeGlyph glyph={t.glyph} size={16} />
-              </span>
-            }
-            label={t.label}
-            active={on}
-            onClick={() => {
-              if (last) return;
-              onChange(
-                types.map((x) => x.id).filter((id) => (id === t.id ? !on : selected.includes(id))),
-              );
-            }}
-          />
-        );
-      })}
-    </MenuTileGrid>
+          !allowNone && on && selected.filter((x) => types.some((t) => t.id === x)).length <= 1;
+        if (last) return;
+        onChange(types.map((x) => x.id).filter((x) => (x === id ? !on : selected.includes(x))));
+      }}
+    />
   );
 }
 
@@ -182,5 +194,38 @@ export function InfoNote({ children }: { children: ReactNode }) {
       </span>
       <span>{children}</span>
     </p>
+  );
+}
+
+const SIZE_LABELS: Record<CardSize, string> = {
+  minimal: 'Minimal',
+  compact: 'Compact',
+  detailed: 'Detailed',
+};
+
+// A board's Card Size as three rows (absent is Detailed): its Card Layout and Setup Board's Layout step both set it.
+export function CardSizeOptions({
+  size,
+  palette,
+  onPick,
+}: {
+  size: CardSize | undefined;
+  palette?: PlanPalette;
+  onPick: (size: CardSize) => void;
+}) {
+  return (
+    <OptionRows
+      kind="single"
+      label="Card Size"
+      palette={palette}
+      className={palette ? '' : 'mx-3 my-1.5'}
+      selected={size ?? 'detailed'}
+      rows={CARD_SIZES.map((z) => ({
+        id: z,
+        label: SIZE_LABELS[z],
+        icon: <CardSizeArt size={z} />,
+      }))}
+      onPick={(z) => onPick(z as CardSize)}
+    />
   );
 }

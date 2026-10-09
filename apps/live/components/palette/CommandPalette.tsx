@@ -25,6 +25,7 @@ export function CommandPalette(props: CommandPaletteProps) {
       elevated
       title="Palette"
       dataTourId="palette"
+      layoutChrome
       position={position}
       defaultCorner="top-right"
       width="w-auto sm:w-64"

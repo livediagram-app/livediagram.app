@@ -5,6 +5,7 @@
 // view, so a zoom tick renders these and not the layer or the chrome around them. The components they
 // wrap stay pure renderers.
 
+import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 import type { ComponentProps } from 'react';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
@@ -30,10 +31,13 @@ export function ViewZoomControls(props: Omit<ComponentProps<typeof ZoomControls>
   return <ZoomControls {...props} zoom={useViewportOf(zoomOf)} />;
 }
 
-// The Map, its view box following the view (its picture is memoised and does not redraw for it).
+// The Map, its view box following the view (its picture is memoised and does not redraw for it). Hidden while a Plan
+// board or view covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"): there is no canvas to map.
 export function ViewMinimap(
   props: Omit<ComponentProps<typeof Minimap>, 'viewportZoom' | 'viewportOffset'>,
 ) {
   const view = useViewportOf(wholeView);
+  const covered = useCanvasCovered();
+  if (covered) return null;
   return <Minimap {...props} viewportZoom={view.zoom} viewportOffset={view.offset} />;
 }

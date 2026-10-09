@@ -2,7 +2,7 @@
 
 // The plan view element's body (docs/specs/026-plan/plan-views.md): a metric or a visualisation of
 // every live card, in the canvas theme's board colours. Each view is its own component; this picks one. A
-// visualisation can be maximised to fill the screen for this person alone (plan-views.md "Maximised view").
+// visualisation can be maximised to fill the canvas area for this person alone (plan-views.md "Maximised view").
 import { useMemo, useState } from 'react';
 import { PIE_PALETTE, type PlanViewRef, type ShapeElement } from '@livediagram/document';
 import {
@@ -116,7 +116,7 @@ export function PlanViewView({
     </ViewHeaderEnd.Provider>
   );
   // One stable tree whether maximised or not (MaximisableSlot), so the view keeps its state (a Gantt's scale,
-  // window and collapsed lanes) both ways; while it fills the screen, the canvas keeps its place, empty.
+  // window and collapsed lanes) both ways; while it fills the canvas area, the canvas keeps its place, empty.
   return (
     <MaximisableSlot
       id={element.id}

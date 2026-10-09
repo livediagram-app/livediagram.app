@@ -40,6 +40,7 @@ const SETUP_KEYS = new Set([
   // Boards no longer vote (a vote is the tab's session vote); kept so an older editor's patch still applies.
   'voting',
   'hideWriting',
+  'fillTab',
 ]);
 const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width']);
 // Bounds on one frame, well past any real board (PLAN_COLUMNS_MAX columns, a handful of fields).

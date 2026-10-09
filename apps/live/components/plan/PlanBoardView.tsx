@@ -21,6 +21,7 @@ import {
   normaliseBoardSetup,
   projectBoard,
   type Item,
+  type PlanBoardSetup,
   type QuickFilter,
   boardAddTypes,
   newItemId,
@@ -41,10 +42,12 @@ import {
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
 import { PlanSetupBoard } from './PlanSetupBoard';
-import { setUpBoard, setupFromBoard } from './setup-board';
+import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from './widgets/widget-stats';
-import { trackSetup } from './track-board-setup';
+import { trackFillTab, trackSetup } from './track-board-setup';
+import { boardColumnTemplate } from './plan-board-columns';
+import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardMoreMenu } from './BoardMoreMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
@@ -54,19 +57,14 @@ import { PlanBoardHeader } from './PlanBoardHeader';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
 import { planOwnColours, planPalette } from './plan-palette';
-import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
-import {
-  MaximisePlanButton,
-  MaximisableSlot,
-  useMaximisedPlanLifetime,
-} from './MaximisedPlanLayer';
+import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
+import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
 
 // Each column is at least this wide (blueprint DEFAULTS D7); a narrower board scrolls sideways.
 export { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
-import { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -116,11 +114,11 @@ export function PlanBoardView({
     () => (setup ? projectBoard(setup, items, quick, types, statusNames) : null),
     [setup, items, quick, types, statusNames],
   );
-  // The statuses a column can be made for: the boards' and any a card is in (docs/specs/026-plan/plan-board.md "The
-  // column picker").
+  // The statuses a column can be made for: the boards', any a card is in and the card types' Default States
+  // (docs/specs/026-plan/plan-board.md "The column picker").
   const pickable = useMemo(
-    () => pickableStatuses(statusNames ?? NO_STATUSES, items.values()),
-    [statusNames, items],
+    () => pickableStatuses(statusNames ?? NO_STATUSES, items.values(), types),
+    [statusNames, items, types],
   );
   // What the header's widgets count: the items the board shows, before the quick filter.
   const shownItems = useMemo(
@@ -134,7 +132,8 @@ export function PlanBoardView({
   );
   const canEdit = !!plan?.canEdit;
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
-  const maximised = useMaximisedPlanId() === element.id;
+  // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
+  const { maximised, filled } = useBoardMaximised(element.id, interactive);
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
   const cardVote =
@@ -145,13 +144,12 @@ export function PlanBoardView({
   const viewport = useViewportStoreIfAny();
   const phone = useIsMobileViewport();
   const frameColumn =
-    phone && interactive && !maximised && viewport
+    phone && interactive && !maximised && !filled && viewport
       ? (header: HTMLElement) => {
           const board = header.closest<HTMLElement>('[data-plan-board]');
           if (board) frameBoardColumn(header, board, element, viewport);
         }
       : null;
-  useMaximisedPlanLifetime(element.id, maximised, interactive);
 
   const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
     element,
@@ -211,6 +209,8 @@ export function PlanBoardView({
     [projection, collapsed],
   );
   usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null);
+  // Maximised (or filling its tab), a card dragged near the columns' left or right edge scrolls them sideways.
+  useEdgeAutoScroll(bodyRef, (maximised || filled) && (!!drag.drag || !!incoming));
 
   if (!setup || !projection) {
     return (
@@ -234,7 +234,7 @@ export function PlanBoardView({
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
-  // Setup Board asked for again from the board's Board Title (a board that has columns), for this person only.
+  // Setup Board asked for again from the board's Board Setup (a board that has columns), for this person only.
   const settingUp = canEdit && plan?.setupBoardId === element.id;
   // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
   // (docs/specs/026-plan/plan-board.md "Add New Card Type"); not offered once the catalogue is full.
@@ -278,10 +278,9 @@ export function PlanBoardView({
   };
 
   const dragging = drag.drag;
-  // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up").
-  const columnTemplate = setup.columns
-    .map((c) => `minmax(${PLAN_COLUMN_MIN_PX * (c.width ?? 1)}px, ${c.width ?? 1}fr)`)
-    .join(' ');
+  // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
+  // slots across while it covers the canvas, then it scrolls sideways.
+  const columnTemplate = boardColumnTemplate(setup.columns, maximised || filled);
 
   const board = (
     <div
@@ -341,7 +340,9 @@ export function PlanBoardView({
               {/* The board's settings, the same as its element menu's Board and Cards, for an editor. */}
               <BoardMoreMenu boardId={element.id} title={setup.title} />
               {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
-              <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
+              {filled ? null : (
+                <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
+              )}
             </>
           ) : null
         }
@@ -352,8 +353,8 @@ export function PlanBoardView({
         // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, the
         // board covers the canvas, so a finger on empty board scrolls the board itself; each card is touch-none
         // on its own, so a finger on one still picks it up.
-        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${
-          interactive ? (maximised ? 'touch-pan-x touch-pan-y' : 'touch-none') : ''
+        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${maximised || filled ? '@container' : ''} ${
+          interactive ? (maximised || filled ? 'touch-pan-x touch-pan-y' : 'touch-none') : ''
         }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
@@ -377,11 +378,20 @@ export function PlanBoardView({
             {...(plan && plan.types.length < ITEM_TYPES_MAX
               ? { onCreateType: () => plan.editType('new') }
               : {})}
-            onSetUp={(columns, typeIds) => {
-              const all = (plan?.types ?? []).map((t) => t.id);
-              plan?.updateBoard(element.id, setUpBoard(setup, columns, typeIds, all));
+            layout={setupLayoutOf(setup)}
+            onSetUp={(columns, typeIds, layout) => {
+              if (!plan) return;
+              const all = plan.types.map((t) => t.id);
+              const build = (from: PlanBoardSetup) =>
+                withSetupLayout(setUpBoard(from, columns, typeIds, all), layout);
+              const fillTab = layout.fillTab;
+              // Fill Tab turned on deletes the rest of the canvas in the same change (one undo step), built from the
+              // board as it is at that commit.
+              if (fillTab !== (setup.fillTab === true)) trackFillTab(fillTab);
+              if (fillTab && !setup.fillTab) plan.fillTab(element.id, build);
+              else plan.updateBoard(element.id, build(setup));
               trackSetup('BoardSetUp');
-              if (settingUp) plan?.openBoardSetup(null);
+              if (settingUp) plan.openBoardSetup(null);
             }}
           />
         ) : (
@@ -598,11 +608,12 @@ export function PlanBoardView({
     </div>
   );
   // One stable tree whether maximised or not (MaximisableSlot), so the board keeps its state both ways; while it
-  // fills the screen, the canvas keeps its place, empty.
+  // fills the canvas area (maximised or filling its tab), the canvas keeps its place, empty.
   return (
     <MaximisableSlot
       id={element.id}
       maximised={maximised}
+      fill={filled}
       placeholder={{
         backgroundColor: palette.surface,
         borderColor: palette.border,

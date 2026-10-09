@@ -4,7 +4,7 @@
 // opens this menu, as Illustrate's + opens "Add a page". It offers the card types the board shows,
 // each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
-// MenuTile grid, so arrow keys, Escape, focus return and an outside press behave as every other
+// option list (OptionRows), so arrow keys, Escape, focus return and an outside press behave as every other
 // menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
 // away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Add New Card Type under the
 // tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
@@ -13,7 +13,7 @@ import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { AddCardTypeButton } from './AddCardTypeButton';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { OptionRows } from './OptionRows';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -102,7 +102,7 @@ export function AddCardPopover({
   );
 }
 
-// The choices themselves, shared by the Add a Card menu and the Plan strip's New Card panel: a tile per card type
+// The choices themselves, shared by the Add a Card menu and the Plan strip's New Card panel: a row per card type
 // (its glyph on a tint of its colour, its name), then, given a way to make one, a full-width Add New Card Type.
 export function AddCardChoices({
   types,
@@ -117,23 +117,27 @@ export function AddCardChoices({
     <>
       {/* A board taking no types yet offers only Add New Card Type. */}
       {types.length === 0 ? null : (
-        <MenuTileGrid cols={3}>
-          {types.map((t) => (
-            <MenuTile
-              key={t.id}
-              label={t.label}
-              icon={
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
-                  style={accentVars(t.color)}
-                >
-                  <PlanTypeGlyph glyph={t.glyph} size={16} />
-                </span>
-              }
-              onClick={() => onAdd({ type: t.id, fields: { title: t.newTitle } })}
-            />
-          ))}
-        </MenuTileGrid>
+        <OptionRows
+          kind="action"
+          label="Card Types"
+          className="mx-1 my-1"
+          rows={types.map((t) => ({
+            id: t.id,
+            label: t.label,
+            icon: (
+              <span
+                className={`flex h-7 w-7 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+                style={accentVars(t.color)}
+              >
+                <PlanTypeGlyph glyph={t.glyph} size={15} />
+              </span>
+            ),
+          }))}
+          onPick={(id) => {
+            const t = types.find((x) => x.id === id);
+            if (t) onAdd({ type: t.id, fields: { title: t.newTitle } });
+          }}
+        />
       )}
       {onCreateType ? (
         <div className="mt-1.5 px-1 pb-1">

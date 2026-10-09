@@ -155,5 +155,54 @@ describe('statusBoardsOfSetups', () => {
     expect(out).toHaveLength(1);
     expect(out[0]!.title).toBe('Team Board');
     expect(out[0]!.statuses).toEqual(kanban.columns.map((c) => c.status));
+    expect(out[0]!.colours).toBeUndefined();
+  });
+
+  // docs/specs/026-plan/plan-board.md "The column picker": a status's swatch is its first board's column colour.
+  it('gives a status named like an object key no colour of its own', async () => {
+    const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = presetSetup('kanban');
+    const out = statusBoardsOfSetups([
+      { ...kanban, columns: [{ id: 'x', status: 'constructor', name: 'Constructor' }] },
+    ]);
+    expect(out[0]!.colours).toBeUndefined();
+  });
+
+  it('round-trips the colours through the signature as a Map', async () => {
+    const { usePlanStatuses } = await import('./usePlanStatusNames');
+    const { renderHook } = await import('@testing-library/react');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = presetSetup('kanban');
+    const [first, ...rest] = kanban.columns;
+    const tab = {
+      id: 't',
+      name: 'T',
+      elements: [
+        {
+          id: 'b',
+          type: 'shape',
+          shape: 'plan-board',
+          x: 0,
+          y: 0,
+          width: 10,
+          height: 10,
+          planBoard: { ...kanban, columns: [{ ...first!, color: '#2563eb' }, ...rest] },
+        },
+      ],
+    };
+    const { result } = renderHook(() => usePlanStatuses([tab] as never, 't', true));
+    expect(result.current.boards[0]!.colours?.get(first!.status)).toBe('#2563eb');
+  });
+
+  it('carries the colours its columns have, and only those', async () => {
+    const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = presetSetup('kanban');
+    const [first, ...rest] = kanban.columns;
+    const out = statusBoardsOfSetups([
+      { ...kanban, columns: [{ ...first!, color: '#2563eb' }, ...rest] },
+    ]);
+    expect(out[0]!.colours).toEqual(new Map([[first!.status, '#2563eb']]));
   });
 });

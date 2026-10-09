@@ -14,23 +14,11 @@ import {
   writeLeftover,
   type PlanTourContent,
 } from '@/lib/plan-tour';
+import { waitUntil } from '@/lib/wait-until';
 import type { PlanItems } from './usePlanItems';
 
 // How long the card steps wait for the item store before they are skipped (DEFAULTS D28).
 export const ITEMS_READY_WAIT_MS = 3000;
-const POLL_MS = 50;
-
-function waitUntil(done: () => boolean, timeoutMs: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const started = Date.now();
-    const tick = () => {
-      if (done()) return resolve(true);
-      if (Date.now() - started > timeoutMs) return resolve(false);
-      setTimeout(tick, POLL_MS);
-    };
-    tick();
-  });
-}
 
 // The Plan tour's tour content (docs/specs/026-plan/plan-tour.md "Tour content", blueprint plan-tour.md):
 // an example board and its example cards, placed, moved and taken away with no history (tickTabs and

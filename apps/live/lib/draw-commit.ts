@@ -3,6 +3,7 @@ import {
   freshBoardSetup,
   isPlanViewId,
   newItemId,
+  planBoardHeightFor,
   planBoardWidthFor,
   planViewSize,
 } from '@livediagram/items';
@@ -284,8 +285,22 @@ export function buildDrawnBoxed(
   // Shared with the live preview so the outline the user sizes against is the
   // box that lands — including the embed's 16:9 fit (docs/specs/009-elements/youtube-video.md).
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
-  const drawnWidth = fixedSize || isTap ? tapSize.width : dragBox.width;
-  const height = fixedSize || isTap ? tapSize.height : dragBox.height;
+  // A tapped-in board starts wide enough for its columns, and taller while it has none (planBoardHeightFor); its
+  // own size, so it centres on the tap. A board drawn to size keeps its size.
+  const boardTap =
+    isTap && intent.type === 'shape' && intent.kind === 'plan-board'
+      ? freshBoardSetup(intent.plan)
+      : null;
+  const drawnWidth = boardTap
+    ? planBoardWidthFor(boardTap)
+    : fixedSize || isTap
+      ? tapSize.width
+      : dragBox.width;
+  const height = boardTap
+    ? planBoardHeightFor(boardTap)
+    : fixedSize || isTap
+      ? tapSize.height
+      : dragBox.height;
   // A tapped sticker (docs/specs/010-palette/stickers.md) takes its flavour's aspect rather than the
   // per-kind default: emoji stickers are square, badge pills are wide, and
   // both are the one `sticker` kind, so the default-size table can't say it.
@@ -401,10 +416,6 @@ export function buildDrawnBoxed(
       ? {
           planBoard: freshBoardSetup(intent.plan, Math.random, statusColumnsOf(activeTab.elements)),
         }
-      : {}),
-    // A tapped-in board starts wide enough for its columns; a board drawn to size keeps its size.
-    ...(intent.type === 'shape' && intent.kind === 'plan-board' && isTap
-      ? { width: planBoardWidthFor(freshBoardSetup(intent.plan)) }
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-card'
       ? { planCard: { itemId: newItemId() } }

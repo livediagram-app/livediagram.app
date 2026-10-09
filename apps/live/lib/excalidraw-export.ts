@@ -22,7 +22,9 @@ import {
   type ArrowheadShape,
   type BoxedElement,
   type Tab,
+  type TabPlanData,
 } from '@livediagram/document';
+import { planBoardParts, planCardLabel, type PlanPart } from './excalidraw-export-plan';
 
 // The common Excalidraw element chassis. Excalidraw's restore() fills in
 // anything missing, but emitting the everyday fields keeps the file readable
@@ -73,9 +75,11 @@ const ARROWHEAD_OUT: Record<ArrowheadShape, string> = {
 };
 const rad = (deg: number | undefined): number => (deg ? (deg * Math.PI) / 180 : 0);
 
-export function tabToExcalidrawText(tab: Tab): string {
+// `plan`: the document's items, so Plan boards and cards export with their cards.
+export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
   const out: ExcalidrawOut[] = [];
   let seq = 0;
+  const background = tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
 
   // Bound-text label for a container element. The container's boundElements
   // entry is patched on by the caller.
@@ -187,7 +191,9 @@ export function tabToExcalidrawText(tab: Tab): string {
           // it exports as its URL — the only thing Excalidraw can hold.
           el.type === 'video'
           ? ((el.link?.kind === 'url' ? el.link.url : el.label) ?? undefined)
-          : el.label || undefined;
+          : el.type === 'shape' && el.shape === 'plan-card'
+            ? planCardLabel(el, plan)
+            : el.label || undefined;
 
     if (el.type === 'text') {
       const color = el.textColor ?? defaultTextColor(el);
@@ -226,6 +232,52 @@ export function tabToExcalidrawText(tab: Tab): string {
     } else {
       out.push(container);
     }
+    // A Plan board's title, columns and cards over its frame.
+    if (el.type === 'shape' && el.shape === 'plan-board') {
+      for (const part of planBoardParts(el, plan, background)) out.push(...planPartOut(el, part));
+    }
+  }
+
+  // One board part as Excalidraw elements: a free text, or a rectangle with its bound label.
+  function planPartOut(board: BoxedElement, part: PlanPart): ExcalidrawOut[] {
+    const host = { ...board, id: part.id, rotation: undefined, textSize: 'sm' as const };
+    const common = {
+      x: part.x,
+      y: part.y,
+      width: part.width,
+      height: part.height,
+      strokeWidth: 1,
+      strokeStyle: 'solid',
+    };
+    if (part.kind === 'text') {
+      return [
+        chassis(host, seq++, {
+          ...common,
+          type: 'text',
+          strokeColor: part.ink,
+          backgroundColor: 'transparent',
+          text: part.label,
+          originalText: part.label,
+          fontSize: FONT_SIZE_PX.sm,
+          fontFamily: 2,
+          textAlign: 'left',
+          verticalAlign: 'top',
+          containerId: null,
+          lineHeight: 1.25,
+        }),
+      ];
+    }
+    const rect = chassis(host, seq++, {
+      ...common,
+      type: 'rectangle',
+      strokeColor: part.stroke,
+      backgroundColor: part.fill,
+      roundness: { type: 3 },
+    });
+    if (!part.label) return [rect];
+    const label = labelElement(host, part.label, part, part.ink);
+    rect.boundElements = [{ id: label.id, type: 'text' }];
+    return [rect, label];
   }
 
   // Arrows after the boxes (paint order), with bindings for pinned ends.
@@ -318,7 +370,7 @@ export function tabToExcalidrawText(tab: Tab): string {
       elements: out,
       appState: {
         gridSize: null,
-        viewBackgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+        viewBackgroundColor: background,
       },
       files: {},
     },

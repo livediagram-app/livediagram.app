@@ -22,7 +22,7 @@ import {
   viewShownTypes,
   readPlanViewSettings,
 } from '@livediagram/items';
-import { InfoNote, SwimlaneTiles, TypeToggleTiles } from './plan-menu-parts';
+import { InfoNote, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
@@ -56,7 +56,7 @@ export function PlanViewMenuSection({
         {...sectionProps('plan-view-types')}
       >
         <ViewTypesNote needs={viewNeeds(view)} />
-        <TypeToggleTiles
+        <CardTypeOptions
           types={eligible}
           selected={chosen.filter((id) => eligibleIds.has(id))}
           onChange={(picked) => {
@@ -83,7 +83,7 @@ export function PlanViewMenuSection({
           {...sectionProps('plan-view-grouping')}
         >
           <InfoNote>The field this chart gives a bar to each value of.</InfoNote>
-          <SwimlaneTiles
+          <SwimlaneOptions
             by={grouping.by}
             field={grouping.field}
             types={shown}
@@ -108,7 +108,7 @@ export function PlanViewMenuSection({
           icon={<PlanIcon size={16} />}
           {...sectionProps('plan-view-swimlanes')}
         >
-          <SwimlaneTiles
+          <SwimlaneOptions
             by={settings.swimlaneBy ?? 'none'}
             field={settings.swimlaneField}
             types={shown}

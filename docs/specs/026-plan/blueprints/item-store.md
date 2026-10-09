@@ -27,6 +27,8 @@ src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store)
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
+src/board-status-picks.ts the column picker's statuses: pickableStatuses(names, items, types), missingStatuses(setup,
+                     names), missingBoardStatuses(setup, names, { items, types, boards }) (cards, boards, colour)
 src/views.ts         itemSummary, itemAccessibleName: one-line text for agents and announcements
 src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, storeAsCreates
 src/presets.ts       PLAN_BOARD_PRESETS, presetSetup, presetSetupOrBlank
@@ -345,6 +347,23 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 - Sync to cloud sends `storeAsCreates(items)` (column order kept, votes carried); Take offline fetches the store
   first and aborts without it; Duplicate copies it (cloud: the create body; offline: the new record); the Drive
   mirror's `DocumentEnvelope.document.items` (optional, so the file stays version 1).
+- Tab JSON export: `tabToJsonText(tab, plan?)` (`@livediagram/document`, `export-tab-text.ts`) adds
+  `ExportedTabEnvelope.items` from `tabExportItems(tab, items)` (`export-tab-plan.ts`: `itemIdsShownOnTab`, the Trash
+  dropped, `votes` and `comments` stripped from `fields`, key order) and `itemTypes` (the stored catalogue, only with
+  items). `TabPlanData = { items, types, catalogue }` is what every text export takes; the Export dialog builds it
+  from `usePlan()` once per item or type change and memoises the open format's text.
+- Tab JSON import: `parseImportedTab` reads `items` through `isItemLike` (shared with `parseDocumentEnvelope`) and
+  `itemTypes` through `readItemTypeCatalogue`, as `ImportResult.plan`. `useTabImport` lands the tab, then calls
+  `importPlanItems` (`hooks/plan/usePlanTabImport.ts`): `planTabItemsImport(incoming, catalogue, existing, types)`
+  (`@livediagram/items`, `tab-import.ts`) returns the file's types its fresh items use and the document lacks, the
+  fresh items as `storeAsCreates` without `key`, and the skipped count; `itemTypes.addTypes(types)` then one undoable
+  `write({ kind: 'create', creates })`. A refused write returns `failed: creates.length`, reported as the `Plan Cards`
+  failure line (`planCardsFailure`) on the import's report. Logged as `[plan-tab-import]`.
+- Markdown export: `tabPlanMarkdown(tab, plan)` appends `## Plan Boards` (`### title`, `#### Column · count`,
+  `- #key Title (Type)` per card, `_No cards._` for an empty column) and `## Plan Cards`, shapes in y then x order.
+- Board layout: `planBoardLayout(el, items, types)` (`plan-board-layout.ts`) places the columns and the cards that
+  fit; `svgPlanBoard` and the Excalidraw export (`apps/live/lib/excalidraw-export-plan.ts`, `planBoardParts`,
+  `planCardLabel`) both read it.
 
 ## Undo
 
@@ -405,24 +424,27 @@ include `fields` or comment text.
 
 ## Testing
 
-| Rule                                           | Test                                                                                             |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                              |
-| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                  |
-| apply functions                                | `apply.test.ts`                                                                                  |
-| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                  |
-| Tab-scoped set                                 | `tab-items.test.ts`                                                                              |
-| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                        |
-| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                |
-| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                               |
-| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                                                 |
-| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                       |
-| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                    |
-| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                      |
-| Thread ops, item writes, redaction, restore    | `packages/document/src/item-comments.test.ts`                                                    |
-| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                |
-| Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts` |
-| Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                |
+| Rule                                           | Test                                                                                                                                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                   |
+| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                                                                                                       |
+| apply functions                                | `apply.test.ts`                                                                                                                                                                       |
+| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                       |
+| Tab-scoped set                                 | `tab-items.test.ts`                                                                                                                                                                   |
+| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                             |
+| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                     |
+| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                    |
+| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                                                                                                                                      |
+| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                            |
+| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                                                                                                         |
+| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                           |
+| Thread ops, item writes, redaction, restore    | `packages/document/src/item-comments.test.ts`                                                                                                                                         |
+| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                     |
+| Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts`                                                                                      |
+| Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                                                                                                     |
+| Tab export: items, catalogue, Markdown, layout | `packages/document/src/export-tab-plan.test.ts`, `apps/live/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
+| Tab import: parse, plan, land, report          | `apps/live/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/live/hooks/plan/usePlanTabImport.test.ts`, `apps/live/hooks/persistence/useTabImport.plan.test.ts` |
+| Excalidraw board and card                      | `apps/live/lib/excalidraw-export-plan.test.ts`                                                                                                                                        |
 
 ## Constants and configuration
 

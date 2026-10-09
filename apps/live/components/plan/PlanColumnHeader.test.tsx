@@ -77,7 +77,7 @@ describe('a column’s settings', () => {
     const setup = presetSetup('kanban');
     render(<Board initial={setup} statusNames={new Map([['shipped~x1', 'Shipped']])} />);
     openAdd(setup);
-    fireEvent.click(screen.getByRole('button', { name: 'Shipped' }));
+    fireEvent.click(screen.getByRole('option', { name: /Shipped/ }));
     expect(
       screen.getByRole('button', { name: 'Shipped column settings' }).getAttribute('aria-expanded'),
     ).toBe('true');

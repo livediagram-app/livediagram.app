@@ -54,7 +54,7 @@ function show(overrides: Record<string, unknown>) {
 }
 
 describe('PlanBoardMenuSections', () => {
-  it('is one Board flyout holding Board Title, Board Swimlanes, Supported Cards and Card Layout', () => {
+  it('is one Board flyout holding Board Setup, Swimlanes, Supported Cards and Card Layout', () => {
     show({ types: ITEM_TYPES });
     expect(
       [...document.querySelectorAll('[data-flyout]')].map((f) => f.getAttribute('data-flyout')),
@@ -64,7 +64,7 @@ describe('PlanBoardMenuSections', () => {
         .getAllByRole('button', { expanded: true })
         .concat(screen.getAllByRole('button', { expanded: false }))
         .map((b) => b.textContent),
-    ).toEqual(['Board Title', 'Board Swimlanes', 'Supported Cards', 'Card Layout']);
+    ).toEqual(['Board Setup', 'Swimlanes', 'Supported Cards', 'Card Layout']);
   });
 
   it('keeps Add to Slides off the title (it is in the board’s own ⋯ menu)', () => {
@@ -94,12 +94,28 @@ describe('Swimlanes by a field', () => {
   it('offers a tile per field, and lanes the board by the one pressed', () => {
     const updateBoard = vi.fn();
     showBody(PlanSwimlaneSettings, { types, updateBoard });
-    fireEvent.click(screen.getByRole('button', { name: 'Customer' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Customer' }));
     expect(updateBoard).toHaveBeenCalledWith(
       'board',
       expect.objectContaining({ swimlaneBy: 'field', swimlaneField: 'f-customer' }),
     );
-    expect(screen.getByRole('button', { name: 'Labels' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Labels' })).toBeTruthy();
+  });
+
+  // "Swimlanes": a board's columns are its statuses, so Status is offered only on an All Cards board.
+  it('never offers Status on a board of status columns, but does on All Cards', () => {
+    showBody(PlanSwimlaneSettings, { types });
+    expect(screen.getByRole('radio', { name: 'None' })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: 'Status' })).toBeNull();
+    cleanup();
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types });
+    render(
+      <PlanSwimlaneSettings
+        element={{ ...board, planBoard: presetSetup('all-cards') } as ShapeElement}
+      />,
+    );
+    expect(screen.getByRole('radio', { name: 'Status' })).toBeTruthy();
   });
 
   it('drops the field when a plain swimlane is chosen', () => {
@@ -112,7 +128,7 @@ describe('Swimlanes by a field', () => {
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types });
     render(<PlanSwimlaneSettings element={laned} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Assignee' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Assignee' }));
     const next = updateBoard.mock.calls[0]![1];
     expect(next.swimlaneBy).toBe('assignee');
     expect(next.swimlaneField).toBeUndefined();
@@ -130,7 +146,7 @@ describe('Card Types', () => {
     expect(screen.queryByText('New Cards Can Be')).toBeNull();
     // Kanban shows Task, Action and Note: pressing Project shows Projects too.
     // The first Project tile is the type's (the Show on Cards group has a Project field tile too).
-    fireEvent.click(screen.getAllByRole('button', { name: 'Project' })[0]!);
+    fireEvent.click(screen.getAllByRole('checkbox', { name: 'Project' })[0]!);
     expect(updateBoard.mock.calls[0]![1].addTypes).toContain('project');
   });
 });
@@ -149,8 +165,8 @@ describe('Card Types after a type is deleted', () => {
     Object.assign(plan, { canEdit: true, updateBoard, announce: vi.fn(), types: ITEM_TYPES });
     render(<PlanSupportedCardsSettings element={stale} />);
     // The Card Types tiles come first (a card field such as Project shares a name).
-    const tile = (name: string) => screen.getAllByRole('button', { name })[0]!;
-    for (const t of ITEM_TYPES) expect(tile(t.label).getAttribute('aria-pressed')).toBe('true');
+    const tile = (name: string) => screen.getAllByRole('checkbox', { name })[0]!;
+    for (const t of ITEM_TYPES) expect(tile(t.label).getAttribute('aria-checked')).toBe('true');
     fireEvent.click(tile('Note'));
     expect(updateBoard.mock.calls[0]![1].addTypes).toEqual(
       ITEM_TYPES.map((t) => t.id).filter((id) => id !== 'note'),
@@ -171,7 +187,7 @@ describe('the board menu’s sections', () => {
   });
 });
 
-// docs/specs/026-plan/plan-board.md "Setup Board": run again from a board's Board Title.
+// docs/specs/026-plan/plan-board.md "Setup Board": run again from a board's Board Setup.
 describe('Setup Board under the title', () => {
   it('reopens the setup screen on the board and closes what holds it', async () => {
     const { PlanBoardSettings } = await import('./PlanBoardMenuSection');

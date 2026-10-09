@@ -70,6 +70,31 @@ describe('usePlanSlice', () => {
     expect(commits).toEqual(['b']);
   });
 
+  it("sets a Plan card's own settings, and leaves every other element alone", () => {
+    let applied: Element[] = [];
+    const card = { id: 'card', type: 'shape', shape: 'plan-card', planCard: { itemId: 'a' } };
+    const other = { id: 'other', type: 'shape', shape: 'square' };
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems,
+        itemTypes,
+        editorMode: 'plan' as const,
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: (map: (els: Element[]) => Element[]) => {
+          applied = map([card, other] as never);
+        },
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    result.current.context.updateCard('card', { itemId: 'a', size: 'minimal' });
+    expect(applied).toEqual([{ ...card, planCard: { itemId: 'a', size: 'minimal' } }, other]);
+  });
+
   it('hands a board to the latest slide callback, and offers none without a deck', () => {
     const added: string[] = [];
     const base = {

@@ -207,6 +207,16 @@ export function paletteCategoriesFor(
     .map(resolve);
 }
 
+/**
+ * The palette while a Plan board covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md
+ * "Maximised board"): only Plan's Cards, whatever the mode, since a card is the one thing that lands on the board.
+ * The category the person had stays chosen underneath and comes back when the board is restored.
+ */
+export const COVERED_PALETTE_CATEGORY = 'plan-cards';
+export function coveredPaletteCategories(): ResolvedPaletteCategory[] {
+  return paletteCategoriesFor('plan').filter((c) => c.id === COVERED_PALETTE_CATEGORY);
+}
+
 /** Whether a mode's palette offers category `id` (on an ordinary tab). */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
   return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);

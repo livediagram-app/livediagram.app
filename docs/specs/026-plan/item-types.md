@@ -225,12 +225,12 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 ## Editing a type
 
 - **Add Type** and a row's edit open the **type editor**, a wide modal (60 rem, as the card panel; a sheet rising
-  from the bottom on a phone) in four **tabs** under its title (one underline that slides to the chosen tab): **General**, **Fields**, **States** and **Display** (the tab's own word for the statuses
+  from the bottom on a phone) in three **tabs** under its title (one underline that slides to the chosen tab): **Configuration**, **States** and **Display** (the tab's own word for the statuses
   a type uses; boards, cards and filters still say Status). Its title names the type as saved, "Edit {Name} Card
   Type" ("Edit Note Card Type"), or "New Card Type" for a new one. It opens
-  on General. Arrow keys, Home and End move between the tabs. A tab holding what stops Save carries a small red
-  dot (a clashing name is General's; a tab or custom field problem is Fields'; a missing name is not flagged, since
-  a new type starts without one), and the problem is
+  on Configuration, new or edited alike. Arrow keys, Home and End move between the tabs. A tab holding what stops Save carries a small red
+  dot (a clashing name, a tab problem or a custom field problem is Configuration's; a left-out status problem is
+  States'; a missing name is not flagged, since a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
   Cancel.
@@ -238,18 +238,26 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     or started on its own. It uses the shared tour (the step card, Back, Next and Skip, the ring around what it
     points at with room to breathe, drawn over the editor), and each step opens the editor tab it is about and points at a real
     control, which stays usable: the person types the name, picks a colour or adds a field while the step is up, and
-    their edits stay in the draft. The steps: **Name It, Then Give It a Look** (the General tab's Name, Colour and Glyph together, the
-    caret put in Name), **Lay Out Its Fields** (the Fields tab's layout), **Choose Its States** (the States tab),
+    their edits stay in the draft. The steps: **Name It, Then Give It a Look** (the Configuration tab's General
+    section: Name, Colour and Glyph together, the caret put in Name), **Lay Out Its Fields** (the Configuration tab's
+    Fields section, scrolled into view), **Choose Its States** (the States tab),
     **Arrange the Card** (the Display tab), then **Save It** (Save), and a closing card with a link to the Card Types article.
     While it runs, Escape belongs to the tour (it never closes the editor). Telemetry: `UI` · `Started` ·
     `CardTypeTour`, and `UI` · `Ended` · `CardTypeTourCompleted` or `CardTypeTourSkipped`. Every
     button carries an icon: Save a tick, Cancel and the cross a cross, Delete a bin, Duplicate the copy
     icon, Back a left chevron, Add Field, Add Tab and Add Custom Field a plus.
-  - **General**: **Name**, one field holding the glyph and the name (no Glyph row of its own): at its start the chosen
+  - **Configuration**: one scrolling panel of two sections: **General**, then **Fields**, set off by a rule. General
+    opens the panel without a visible heading (its Name and Colour say what it is; the heading is kept for screen
+    readers and the tour); Fields shows its heading (Title Case, a size above the row labels). Each holds every
+    control and check described for it below.
+  - **General** (a section of Configuration): **Name**, one field holding the glyph and the name (no Glyph row of its own): at its start the chosen
     glyph on a tint of the type's colour with a small chevron (named "Glyph: {Name}"), then the name typed after it,
     the field no wider than a 32-character name needs; and **Colour** (the twelve swatches, then **+** for a custom
     colour, which opens the custom colour picker in place (as in [Draw](../023-draw-mode/draw-mode.md)); a custom
-    colour in force shows as a picked swatch before the +). The glyph opens a popover under it (above it when there is no room below), drawn over the editor so its
+    colour in force shows as a picked swatch before the +). On desktop (768 px and up) Name and Colour share one
+    row, Name on the left and Colour to its right, their labels on one line and the swatches centred on the name
+    field's height; the name field gives up width before the swatches wrap, and the custom colour picker opens below the swatches without moving Name. On a phone they stack, Name above
+    Colour. The glyph opens a popover under it (above it when there is no room below), drawn over the editor so its
     scrolling body never clips it: **Search
     glyphs** (focused on open) and, on the same row, a **Glyph category** menu (**All glyphs**, then the eight
     categories: **Work**, **People**, **Communication**, **Planning**, **Ideas and Notes**, **Status and Signals**,
@@ -258,7 +266,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     shows All glyphs), by a glyph's name and a few keywords each ("money" finds Coin and Wallet); with no match it says "No
     glyphs match “…”.". A pick closes the popover and hands focus back to the button, as do Escape (the editor
     stays open) and a press outside. One radio group, each tile named "{Name} glyph", the chosen one pressed as before.
-  - **Fields**: the Fields and Tabs list below. **States**: the type's statuses (below).
+  - **Fields** (a section of Configuration, after General): a line saying "Laid out as the card's panel shows them.
+    Add, move or rename to change it.", then the Fields and Tabs list below. **States**: the type's statuses (below).
   - **Fields and Tabs**: one list laid out as the card's panel shows the fields, in groups. On desktop (768 px and
     up) it is two columns as the card's panel: On the Card, then the tabs and Add Tab, on the left, and Details in an
     18 rem column on the right; on a phone, one column in the order below.

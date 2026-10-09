@@ -62,7 +62,8 @@ function isTab(value: unknown): value is EnvelopeTab {
   return typeof t.id === 'string' && typeof t.name === 'string' && Array.isArray(t.elements);
 }
 
-function isItemLike(value: unknown): value is Item {
+// Shared with the per-tab JSON import, which reads a tab export's items the same way.
+export function isItemLike(value: unknown): value is Item {
   if (!value || typeof value !== 'object') return false;
   const i = value as Record<string, unknown>;
   return (

@@ -3,8 +3,8 @@
 // Setup Board's two steps (docs/specs/026-plan/plan-board.md "Setup Board"): the card types the board is for, then
 // its columns (existing statuses to pick, new ones to name, in order). Drawn in the board's own colours.
 import { useId, useState } from 'react';
-import type { ItemTypeDef } from '@livediagram/items';
-import { CheckIcon, CountBadge, PlusIcon } from '@livediagram/ui';
+import { missingBoardStatuses, type ItemTypeDef } from '@livediagram/items';
+import { CountBadge, PlusIcon } from '@livediagram/ui';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 import { matchStatus } from './column-status-picks';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -13,6 +13,8 @@ import { columnFromName, setupColumnKey, type SetupColumn } from './setup-board'
 import { usePlan } from './PlanContext';
 import { SetupColumnList } from './SetupColumnList';
 import { AddCardTypeButton } from './AddCardTypeButton';
+import { OptionRows } from './OptionRows';
+import { StatusSwatch, cardCount, usedOn } from './ExistingStatusList';
 
 const HEADING = 'text-[11px] font-semibold uppercase tracking-wider';
 
@@ -25,16 +27,14 @@ const boardVars = (palette: PlanPalette) =>
     '--ink': palette.text,
     '--fill': palette.card,
   }) as React.CSSProperties;
-// A bordered button in the board's colours: an existing state's tile, and Add.
+// A bordered button in the board's colours: Add.
 const BOARD_BUTTON =
   'flex cursor-pointer items-center gap-1 border border-[var(--line)] bg-[var(--fill)] font-medium text-[var(--ink)] transition hover:border-brand-400 hover:bg-brand-50/60 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-brand-500/10 dark:hover:text-brand-300';
-// An existing state to add, a tile as the card types are.
-const STATE_TILE = `${BOARD_BUTTON} gap-2.5 rounded-xl px-2.5 py-2 text-left`;
 const ADD_BUTTON = `${BOARD_BUTTON} rounded-lg px-3 text-[13px]`;
 const LINK =
   'cursor-pointer rounded px-1.5 py-0.5 text-[12px] font-medium text-brand-700 transition hover:bg-brand-50 disabled:cursor-default disabled:opacity-40 dark:text-brand-300 dark:hover:bg-brand-500/10';
 
-// Step 1: a tile per card type, pressed when the board takes it.
+// Step 1: a row per card type, ticked when the board takes it.
 export function SetupTypesStep({
   types,
   chosen,
@@ -75,53 +75,28 @@ export function SetupTypesStep({
           </button>
         </div>
       </div>
-      <div role="group" aria-label="Card types" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {types.map((t) => {
-          const on = chosen.includes(t.id);
-          return (
-            <button
-              key={t.id}
-              type="button"
-              aria-pressed={on}
-              onClick={() =>
-                onChange(
-                  types.map((x) => x.id).filter((id) => (id === t.id ? !on : chosen.includes(id))),
-                )
-              }
-              className={`relative flex cursor-pointer items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 text-left text-[13px] font-medium transition ${
-                on
-                  ? 'border-brand-500 shadow-sm dark:border-brand-400'
-                  : 'border-transparent opacity-80 hover:opacity-100'
-              }`}
-              style={{
-                backgroundColor: palette.card,
-                color: palette.text,
-                ...(on ? {} : { borderColor: palette.cardBorder }),
-              }}
+      <OptionRows
+        kind="multiple"
+        label="Card Types"
+        palette={palette}
+        selected={chosen}
+        rows={types.map((t) => ({
+          id: t.id,
+          label: t.label,
+          icon: (
+            <span
+              className={`flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_TINT} ${ACCENT_TEXT}`}
+              style={accentVars(t.color)}
             >
-              <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${ACCENT_TINT} ${ACCENT_TEXT}`}
-                style={accentVars(t.color)}
-              >
-                <PlanTypeGlyph glyph={t.glyph} size={16} />
-              </span>
-              {/* The whole name, wrapping to two lines rather than cut short. */}
-              <span className="line-clamp-2 min-w-0 flex-1 leading-tight [overflow-wrap:anywhere]">
-                {t.label}
-              </span>
-              <span
-                aria-hidden
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition ${
-                  on ? 'bg-brand-500 text-white dark:bg-brand-600' : 'border'
-                }`}
-                style={on ? undefined : { borderColor: palette.cardBorder }}
-              >
-                {on ? <CheckIcon size={10} /> : null}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              <PlanTypeGlyph glyph={t.glyph} size={15} />
+            </span>
+          ),
+        }))}
+        onPick={(id) => {
+          const on = chosen.includes(id);
+          onChange(types.map((x) => x.id).filter((x) => (x === id ? !on : chosen.includes(x))));
+        }}
+      />
       {onCreateType ? <AddCardTypeButton onClick={onCreateType} palette={palette} /> : null}
       <p className="text-[12px] tabular-nums" style={{ color: palette.muted }}>
         {chosen.length === 0
@@ -138,12 +113,15 @@ export function SetupTypesStep({
 export function SetupColumnsStep({
   chosen,
   statusNames,
+  typeIds,
   max,
   palette,
   onChange,
 }: {
   chosen: readonly SetupColumn[];
   statusNames: ReadonlyMap<string, string>;
+  // The card types chosen in step 1: an existing state's card count counts only these.
+  typeIds?: readonly string[];
   // The most columns a board holds.
   max: number;
   palette: PlanPalette;
@@ -151,20 +129,25 @@ export function SetupColumnsStep({
 }) {
   const inputId = useId();
   const [name, setName] = useState('');
-  const chosenKeys = new Set(chosen.map(setupColumnKey));
-  const existing = [...statusNames]
-    .map(([status, label]) => ({ kind: 'existing' as const, status, name: label }))
-    .filter((c) => !chosenKeys.has(setupColumnKey(c)));
+  const plan = usePlan();
+  // The states the board does not have yet, as the column picker lists them (missingBoardStatuses): the same order,
+  // card counts, boards and colours.
+  const existing = missingBoardStatuses(
+    {
+      columns: chosen.map((c) => ({
+        id: setupColumnKey(c),
+        status: c.kind === 'existing' ? c.status : '',
+        name: c.name,
+      })),
+      ...(typeIds ? { addTypes: [...typeIds] } : {}),
+    },
+    statusNames,
+    { items: plan?.items?.values() ?? [], types: plan?.types, boards: plan?.statusBoards },
+  );
   const full = chosen.length >= max;
   const typed = columnFromName(name, chosen, statusNames);
   const reuses = name.trim() ? matchStatus(name, { columns: [] }, statusNames) : null;
   const add = (c: SetupColumn) => !full && onChange([...chosen, c]);
-  // The boards that show a state, by their titles as they are now.
-  const statusBoards = usePlan()?.statusBoards;
-  const boardsOf = (status: string) =>
-    (statusBoards ?? [])
-      .filter((b) => b.statuses.includes(status))
-      .map((b) => b.title || 'Untitled Board');
   const submit = () => {
     if (!typed || full) return;
     add(typed);
@@ -255,46 +238,50 @@ export function SetupColumnsStep({
                 type="button"
                 className={LINK}
                 disabled={full}
-                onClick={() => onChange([...chosen, ...existing].slice(0, max))}
+                onClick={() =>
+                  onChange(
+                    [
+                      ...chosen,
+                      ...existing.map((c) => ({
+                        kind: 'existing' as const,
+                        status: c.status,
+                        name: c.name,
+                      })),
+                    ].slice(0, max),
+                  )
+                }
               >
                 Add All
               </button>
             ) : null}
           </div>
-          {/* A tile per state, as the card types are: a plus, its name, and the boards that use it. */}
-          <div
-            role="group"
-            aria-label="Existing states"
-            className="grid grid-cols-1 gap-2 sm:grid-cols-2"
-          >
-            {existing.map((c) => {
-              const where = boardsOf(c.status);
-              return (
-                <button
-                  key={c.status}
-                  type="button"
-                  disabled={full}
-                  onClick={() => add(c)}
-                  aria-label={`Add ${c.name}`}
-                  className={STATE_TILE}
-                  style={boardVars(palette)}
+          {/* A row per state, as the column picker shows it: its colour, its name, the boards that use it and its
+              cards. */}
+          <OptionRows
+            kind="action"
+            label="Existing States"
+            palette={palette}
+            rows={existing.map((c) => ({
+              id: c.status,
+              label: c.name,
+              ariaLabel: `Add ${c.name}`,
+              disabled: full,
+              detail: usedOn(c),
+              icon: <StatusSwatch colour={c.colour} />,
+              trailing: (
+                <span
+                  className="shrink-0 text-[11px] tabular-nums"
+                  style={{ color: palette.muted }}
                 >
-                  <span
-                    aria-hidden
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
-                  >
-                    <PlusIcon size={12} />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[13px] font-semibold">{c.name}</span>
-                    <span className="truncate text-[11px] font-normal text-[var(--muted)]">
-                      {where.length ? `On ${where.join(', ')}` : 'Only cards are in it'}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  {cardCount(c.cards)}
+                </span>
+              ),
+            }))}
+            onPick={(status) => {
+              const c = existing.find((x) => x.status === status);
+              if (c) add({ kind: 'existing', status: c.status, name: c.name });
+            }}
+          />
         </div>
       ) : null}
     </div>

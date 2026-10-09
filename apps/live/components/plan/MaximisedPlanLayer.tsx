@@ -1,13 +1,14 @@
 'use client';
 
 // A maximised Plan element (docs/specs/026-plan/plan-board.md "Maximised board", plan-views.md "Maximised view"):
-// a board's or a visualisation's body drawn over the whole canvas, for this person only. The body is always
+// a board's or a visualisation's body drawn over the canvas area, under the editor's chrome, for this person only. The body is always
 // rendered through a portal into one host element of its own (MaximisableSlot), and only that host moves: into its
 // slot on the canvas, or into the overlay's box while maximised. So maximising and restoring never remount the body
 // (a Gantt keeps its scale, window and collapsed lanes; a drag in flight survives), and PlanContext and the canvas
 // surface still reach it. While maximised, its presses stop at the slot so the canvas never selects or moves the
 // element underneath.
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -27,9 +28,64 @@ import {
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
+import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
+import type { LayerInsets } from '@/lib/canvas-layer-insets';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
+
+// A maximised or tab-filling element is drawn over the canvas area (the canvas's own `main`), over its content, inset
+// clear of the chrome laid over the canvas (the Toolbar layout's top row, side panels, the zoom controls:
+// useCanvasLayerInsets), with the header, tab bar and footer outside `main`: docs/specs/026-plan/plan-board.md
+// "Maximised board", "Fill Tab". Under the panels too, should one be dragged over it.
+export const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
+
+// The cover over the whole canvas area while a Plan element is maximised or fills its tab: painted with the canvas's
+// background so nothing under it shows, and it takes every press,
+// double-click, right-click and wheel on the canvas around the element (the margins its insets leave), so nothing
+// under it is selected, moved, marqueed, drawn on, panned or zoomed; the chrome above it (panels, toolbar, the
+// bottom controls) stays reachable. `data-canvas-cover` also tells the canvas's capture-phase handler to stand down
+// for a press inside it (useCanvasSurfaceGestures). The element sits in it at its insets, `marker` naming which.
+export function CanvasCover({
+  insets,
+  marker,
+  children,
+}: {
+  insets: LayerInsets;
+  marker: Record<string, string>;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      data-canvas-cover=""
+      className={`absolute inset-0 ${CANVAS_LAYER_Z}`}
+      // An opaque backdrop: the canvas's own background (colour and pattern, from the canvas `main` it sits in), so
+      // nothing on the canvas shows through around the element, yet it still reads as the canvas.
+      style={{ background: 'inherit' }}
+      onPointerDown={stop}
+      onDoubleClick={stop}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onWheel={stop}
+    >
+      <div {...marker} className="absolute p-2 sm:p-3" style={insets}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref
+// callback, and the element once found (null until then).
+function useCanvasRoot(): [(node: HTMLElement | null) => void, HTMLElement | null] {
+  const [canvas, setCanvas] = useState<HTMLElement | null>(null);
+  const mark = useCallback((node: HTMLElement | null) => {
+    if (node) setCanvas(node.closest<HTMLElement>('[data-canvas-a11y-root]') ?? document.body);
+  }, []);
+  return [mark, canvas];
+}
 
 // The element grows to the screen, or shrinks back to its place, over the dialogs' `long` token (MOTION_MS.long,
 // the chrome ceiling in docs/specs/004-interface-design/motion.md) with the dialogs' own ease,
@@ -105,12 +161,16 @@ const HOST_CLASS = 'absolute inset-0';
 export function MaximisableSlot({
   id,
   maximised,
+  fill = false,
   placeholder,
   onMaximisedSize,
   children,
 }: {
   id: string;
   maximised: boolean;
+  // Filling its tab (docs/specs/026-plan/plan-board.md "Fill Tab"): drawn over the canvas area, under the editor's
+  // chrome, at once (no grow), rather than over the whole screen. Takes `maximised`'s place.
+  fill?: boolean;
   placeholder: CSSProperties;
   onMaximisedSize?: (size: { width: number; height: number } | null) => void;
   children: ReactNode;
@@ -123,10 +183,11 @@ export function MaximisableSlot({
   });
   const slotRef = useRef<HTMLDivElement>(null);
   // On the canvas: the host back in its slot (the overlay puts it in its box while maximised).
+  const over = maximised || fill;
   useLayoutEffect(() => {
     const slot = slotRef.current;
-    if (!maximised && host && slot && host.parentElement !== slot) slot.appendChild(host);
-  }, [maximised, host]);
+    if (!over && host && slot && host.parentElement !== slot) slot.appendChild(host);
+  }, [over, host]);
   useEffect(() => () => host?.remove(), [host]);
   if (!host) return <>{children}</>;
   return (
@@ -134,16 +195,18 @@ export function MaximisableSlot({
       ref={slotRef}
       data-plan-slot={id}
       className={HOST_CLASS}
-      style={maximised ? placeholder : undefined}
+      style={over ? placeholder : undefined}
       // The body's presses reach this slot through the portal: while maximised they stop here, so the canvas
       // element underneath is never selected, moved or menu'd from the overlay.
-      onPointerDown={maximised ? stop : undefined}
-      onDoubleClick={maximised ? stop : undefined}
-      onContextMenu={maximised ? stop : undefined}
-      onWheel={maximised ? stop : undefined}
+      onPointerDown={over ? stop : undefined}
+      onDoubleClick={over ? stop : undefined}
+      onContextMenu={over ? stop : undefined}
+      onWheel={over ? stop : undefined}
     >
       {createPortal(children, host)}
-      {maximised ? (
+      {fill ? (
+        <FilledTabLayer host={host} />
+      ) : maximised ? (
         <MaximisedPlanLayer
           id={id}
           host={host}
@@ -237,8 +300,8 @@ export function closeBox(box: HTMLElement, id: string, host: HTMLElement): () =>
   };
 }
 
-// The overlay a maximised element's host moves into: full screen, grown from the element's place on open and
-// shrunk back to it on restore.
+// The overlay a maximised element's host moves into: the canvas area (CANVAS_LAYER_Z), grown from the element's place
+// on open and shrunk back to it on restore. The editor's chrome (header, tab bar, footer, palette, panels) stays.
 export function MaximisedPlanLayer({
   id,
   host,
@@ -250,6 +313,9 @@ export function MaximisedPlanLayer({
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const closing = useMaximisedPlanClosing();
+  const [mark, canvas] = useCanvasRoot();
+  // Clear of the chrome over the canvas: the top row, side panels, the zoom controls.
+  const insets = useCanvasLayerInsets(canvas);
 
   // One phase at a time, opening or closing, in one effect: when restoring begins (or the layer goes), the opening's
   // cleanup cancels its pending reveal and settle (timers and listener) without running them, so an opening still
@@ -259,7 +325,7 @@ export function MaximisedPlanLayer({
     const box = boxRef.current;
     if (!box) return;
     return closing ? closeBox(box, id, host) : openBox(box, id, host);
-  }, [closing, id, host]);
+  }, [closing, id, host, canvas]);
 
   // The box's laid-out size (untransformed, so the open animation never shows in it), for a view to fit.
   useEffect(() => {
@@ -274,21 +340,50 @@ export function MaximisedPlanLayer({
       ro.disconnect();
       onSize(null);
     };
-  }, [onSize]);
+  }, [onSize, canvas]);
 
   if (typeof document === 'undefined') return null;
-  return createPortal(
-    <div
-      data-maximised-board
-      className="fixed inset-0 z-[var(--z-overlay)] p-2 sm:p-3"
-      onPointerDown={stop}
-      onDoubleClick={stop}
-      onContextMenu={stop}
-      onWheel={stop}
-    >
-      <div ref={boxRef} className="relative h-full w-full origin-top-left will-change-transform" />
-    </div>,
-    document.body,
+  return (
+    <>
+      <span hidden ref={mark} />
+      {canvas
+        ? createPortal(
+            <CanvasCover insets={insets} marker={{ 'data-maximised-board': '' }}>
+              <div
+                ref={boxRef}
+                className="relative h-full w-full origin-top-left will-change-transform"
+              />
+            </CanvasCover>,
+            canvas,
+          )
+        : null}
+    </>
+  );
+}
+
+// The layer a board filling its tab moves its host into: the canvas area, as a maximised element's, at once (no
+// grow). Presses stop here, as on a maximised board.
+export function FilledTabLayer({ host }: { host: HTMLElement }) {
+  const [mark, canvas] = useCanvasRoot();
+  // Clear of the chrome over the canvas: the top row, side panels, the zoom controls.
+  const insets = useCanvasLayerInsets(canvas);
+  const boxRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    if (box && host.parentElement !== box) box.appendChild(host);
+  }, [canvas, host]);
+  return (
+    <>
+      <span hidden ref={mark} />
+      {canvas
+        ? createPortal(
+            <CanvasCover insets={insets} marker={{ 'data-fill-tab-board': '' }}>
+              <div ref={boxRef} className="relative h-full w-full" />
+            </CanvasCover>,
+            canvas,
+          )
+        : null}
+    </>
   );
 }
 

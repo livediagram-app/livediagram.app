@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PLAN_COLUMNS_MAX, type PlanBoardSetup } from '@livediagram/items';
-import { columnFromName, setUpBoard, type SetupColumn } from './setup-board';
+import { PLAN_COLUMNS_MAX, presetSetup, type PlanBoardSetup } from '@livediagram/items';
+import {
+  columnFromName,
+  setUpBoard,
+  setupLayoutOf,
+  withSetupLayout,
+  type SetupColumn,
+} from './setup-board';
 
 // docs/specs/026-plan/plan-board.md "Setup Board".
 const empty: PlanBoardSetup = {
@@ -95,5 +101,46 @@ describe('Setup Board on a board that has columns', () => {
     expect(next.columns[1]).toEqual(board.columns[0]);
     expect(next.doneColumnId).toBeUndefined();
     expect(next.addTypes).toEqual(['task', 'note']);
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Setup Board": the Layout step starts from the board, and writes back only what
+// differs from a board's defaults.
+describe('the Layout step', () => {
+  it('reads the board’s layout, and writing it back changes nothing', () => {
+    const kanban = presetSetup('kanban');
+    const layout = setupLayoutOf(kanban);
+    expect(layout).toEqual({ swimlaneBy: kanban.swimlaneBy, fillTab: false });
+    expect(withSetupLayout(kanban, layout)).toEqual(kanban);
+  });
+
+  it('sets the grouping, card size and Fill Tab, leaving the defaults absent', () => {
+    const kanban = presetSetup('kanban');
+    const out = withSetupLayout(kanban, {
+      swimlaneBy: 'field',
+      swimlaneField: 'labels',
+      cardSize: 'compact',
+      fillTab: true,
+    });
+    expect(out).toMatchObject({
+      swimlaneBy: 'field',
+      swimlaneField: 'labels',
+      cardSize: 'compact',
+      fillTab: true,
+    });
+    expect(setupLayoutOf(out)).toEqual({
+      swimlaneBy: 'field',
+      swimlaneField: 'labels',
+      cardSize: 'compact',
+      fillTab: true,
+    });
+    const back = withSetupLayout(out, { swimlaneBy: 'none', cardSize: 'detailed', fillTab: false });
+    expect(back).not.toHaveProperty('swimlaneField');
+    expect(back).not.toHaveProperty('cardSize');
+    expect(back).not.toHaveProperty('fillTab');
+    // A field grouping without a field is no grouping.
+    expect(withSetupLayout(kanban, { swimlaneBy: 'field', fillTab: false }).swimlaneBy).toBe(
+      'none',
+    );
   });
 });

@@ -163,6 +163,9 @@ export function useCanvasSurfaceGestures({
     // start a gesture at the click point and drop the pending shape
     // behind the panel. Bail before any canvas gesture starts.
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+    // A maximised or tab-filling Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"):
+    // a press on it, or on the cover around it, is the board's or nothing, never a canvas gesture.
+    if ((e.target as Element | null)?.closest?.('[data-canvas-cover]')) return;
     // Same for anything rendered through a PORTAL — the palette's category
     // dropdown, a context menu, a dialog. React routes events through the
     // component tree rather than the DOM tree, so a click inside a portal whose

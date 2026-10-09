@@ -23,6 +23,7 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import {
   EDIT_KEYS,
   runModShortcut,
+  coveredKeyRole,
   VIEW_TOOL_KEYS,
   WHITEBOARD_EDIT_KEYS,
   WHITEBOARD_VIEW_KEYS,
@@ -152,6 +153,26 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key;
       const lower = key.toLowerCase();
+
+      // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
+      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
+      // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
+      if (live.canvasCovered?.()) {
+        if (inText) return;
+        const role = coveredKeyRole(e);
+        if (role === 'swallow') e.preventDefault();
+        if (role !== 'run') return;
+        if (mod) {
+          runModShortcut(e, live);
+          return;
+        }
+        if (key !== 'Escape') {
+          e.preventDefault();
+          if (lower === 'z') live.onToggleZen();
+          else live.onCycleEditorMode?.();
+          return;
+        }
+      }
 
       // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
       // Tab adds a child, Enter a sibling, both off the selected mind node.

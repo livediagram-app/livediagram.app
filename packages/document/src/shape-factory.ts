@@ -127,8 +127,11 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // default table is per-kind and a badge and an emoji are one kind.
   sticker: { width: 104, height: 104 },
   // Plan board (docs/specs/026-plan/blueprints/DEFAULTS.md D5): room for five 220px columns and a
-  // header; a Plan card is one card face at a board column's width.
-  'plan-board': { width: 1120, height: 640 },
+  // header; made Blank (no columns yet), so it starts at the empty board's height (planBoardHeightFor).
+  // A literal, not PLAN_BOARD_EMPTY_HEIGHT_PX: this table is read while the module graph is still loading,
+  // where the imported constant can be uninitialised; plan-shapes.test.ts keeps the two equal.
+  // A Plan card is one card face at a board column's width.
+  'plan-board': { width: 1120, height: 880 },
   'plan-card': { width: 240, height: 120 },
   // A plan view's own size comes from its view (planViewSize); this is a visualisation's.
   'plan-view': { width: 720, height: 400 },

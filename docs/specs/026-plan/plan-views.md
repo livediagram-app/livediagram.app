@@ -85,11 +85,11 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 ### Maximised view
 
 - A visualisation can be maximised like a board ([Maximised board](plan-board.md#maximised-board)): in Plan mode
-  its header ends with **Maximise View** (a maximise icon, with a tooltip). Maximised, it fills the screen with
-  zen mode's chrome; everything in it works as on the canvas (the Gantt's scale, scrolling and date drags, the
+  its header ends with **Maximise View** (a maximise icon, with a tooltip). Maximised, it fills the canvas area,
+  the editor's chrome staying as the person has it (as a maximised board does); everything in it works as on the canvas (the Gantt's scale, scrolling and date drags, the
   calendar's months, opening a card). **Restore View** in the same place, or **Escape** when no dialog is open,
   puts it back.
-- Maximised, the view lays itself out at the screen's size (the Gantt's names column limit and axis labels, the
+- Maximised, the view lays itself out at the canvas area's size (the Gantt's names column limit and axis labels, the
   calendar's fit), not the element's; restored, at the element's again. Maximising and restoring keep its state:
   the Gantt's scale, window and collapsed lanes, and a drag in progress, carry over.
 - It is the person's own view: nothing is saved or sent, the element keeps its size and place, and it ends on its

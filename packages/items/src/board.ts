@@ -112,6 +112,9 @@ export interface PlanBoardSetup {
   // The header's widgets in order (docs/specs/026-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
   hideWriting: boolean;
+  // Fill Tab (docs/specs/026-plan/plan-board.md "Fill Tab"): the board fills its tab for everyone, every time the tab
+  // is shown, and the rest of the canvas cannot be used. Absent is off.
+  fillTab?: boolean;
 }
 
 // The Due Soon widget's narrowing: due from `from` (absent: any earlier day) to `to`, not done.
@@ -311,6 +314,16 @@ export function planBoardWidthFor(setup: Pick<PlanBoardSetup, 'columns'>): numbe
     PLAN_BOARD_MIN_WIDTH_PX,
     slots * PLAN_COLUMN_MIN_PX + gaps + PLAN_BOARD_SIDE_PAD_PX * 2 + 8,
   );
+}
+
+// A board's starting height (docs/specs/026-plan/blueprints/DEFAULTS.md D5): 640 px fits about seven cards a
+// column. A board with no columns yet (the Blank board, waiting for Setup Board) starts at 880 px, about ten, as
+// its columns are still to come and an empty frame reads better tall.
+export const PLAN_BOARD_HEIGHT_PX = 640;
+export const PLAN_BOARD_EMPTY_HEIGHT_PX = 880;
+
+export function planBoardHeightFor(setup: Pick<PlanBoardSetup, 'columns'>): number {
+  return setup.columns.length === 0 ? PLAN_BOARD_EMPTY_HEIGHT_PX : PLAN_BOARD_HEIGHT_PX;
 }
 
 // The add types a board names: type ids, each once, at most 32.
@@ -719,6 +732,10 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
       ? laneField
       : undefined;
   if (swimlaneBy === 'field' && !swimlaneField) swimlaneBy = 'none';
+  // A board's columns are its statuses, so rows by status would repeat them: only an All Cards board (one column,
+  // every status) groups by status (docs/specs/026-plan/plan-board.md "Swimlanes"). Another board stored grouping by
+  // status reads as no grouping.
+  if (swimlaneBy === 'status' && input['allCards'] !== true) swimlaneBy = 'none';
   const cardFields = Array.isArray(input['cardFields'])
     ? CARD_FIELDS.filter((f) => (input['cardFields'] as unknown[]).includes(f))
     : [...DEFAULT_CARD_FIELDS];
@@ -741,6 +758,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
       ? { cardSize: input['cardSize'] }
       : {}),
     hideWriting: input['hideWriting'] === true,
+    ...(input['fillTab'] === true ? { fillTab: true } : {}),
   };
 }
 

@@ -66,6 +66,27 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(false);
   });
 
+  // docs/specs/026-plan/plan-board.md "Maximised board", "Fill Tab": a board drawn over the canvas covers it, so no
+  // selection chrome floats there, alone or in a multi-selection; the selection itself stands.
+  it('shows no toolbar, popover or plus while a Plan board covers the canvas', () => {
+    const board = box('b', { shape: 'plan-board' });
+    const one = derive({ elements: [board, box('a')], selectedId: 'b', canvasCovered: true });
+    expect(one.selected).toBe(board);
+    expect(one.showPopover).toBe(false);
+    expect(one.showPlus).toBe(false);
+    const other = derive({ elements: [board, box('a')], selectedId: 'a', canvasCovered: true });
+    expect(other.showPopover).toBe(false);
+    expect(other.showPlus).toBe(false);
+    const all = derive({
+      elements: [board, box('a')],
+      selectedId: 'b',
+      multiSelectedIds: new Set(['a', 'b']),
+      canvasCovered: true,
+    });
+    expect(all.showMultiToolbar).toBe(false);
+    expect(derive({ elements: [board], selectedId: 'b' }).showPopover).toBe(true);
+  });
+
   // docs/specs/026-plan/plan-board.md: a board's cards are its content, not nodes to chain from.
   it('shows no quick-connect pluses on a Plan board or Plan card', () => {
     for (const shape of ['plan-board', 'plan-card'] as const) {

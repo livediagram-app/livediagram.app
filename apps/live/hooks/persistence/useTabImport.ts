@@ -12,7 +12,8 @@ import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
-import type { ImportOutcome } from '@/lib/import-tab';
+import type { ImportedPlanItems, ImportOutcome } from '@/lib/import-tab';
+import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
@@ -66,7 +67,17 @@ type TabImportDeps = {
   requestFit: () => void;
   // Replaces the active tab with a board scene (useBoardSceneImport): the Excalidraw format's commit.
   importScene: (scene: BoardScene, onProgress?: ImportProgressListener) => Promise<ImportOutcome>;
+  // Adds a JSON export's Plan items to the document (usePlanTabImport, docs/specs/026-plan/items.md).
+  importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
+
+// The import report's line when the store refused a file's cards.
+export function planCardsFailure(failed: number): { title: string; message: string } {
+  return {
+    title: 'Plan Cards',
+    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this document. The tab was imported without them.`,
+  };
+}
 
 export function useTabImport({
   tabs,
@@ -82,6 +93,7 @@ export function useTabImport({
   setImportError,
   requestFit,
   importScene,
+  importPlanItems,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -232,6 +244,11 @@ export function useTabImport({
     if (!result.ok) return { status: 'error', error: result.error };
     replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
     track('Tab', 'Imported', 'JSON');
+    // The tab's boards and cards draw from the document's items: the file's come in after the tab.
+    const landed = result.plan ? await importPlanItems(result.plan) : null;
+    if (landed && landed.failed > 0) {
+      return { status: 'done', failures: [planCardsFailure(landed.failed)] };
+    }
     return { status: 'done' };
   };
 

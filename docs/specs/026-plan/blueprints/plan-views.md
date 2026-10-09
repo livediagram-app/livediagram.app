@@ -97,7 +97,7 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
   `ganttModel(items, phases, now, types)` keeps live
   cards of those types; children still by `parent`. A row's colour is its own `itemColourOf`, else its type's
   colour (`typeIn`), lifted by `accentOn`. Header "Gantt Chart", count `N cards`, empty "No cards of these types
-  yet.". Set from `PlanViewMenuSection`'s Card Types row (`TypeToggleTiles`, plan-menu-parts.tsx, shared with the
+  yet.". Set from `PlanViewMenuSection`'s Card Types row (`CardTypeOptions`, plan-menu-parts.tsx, shared with the
   board's Card Types), which drops the setting when it is exactly Project, tracking
   `('Plan', 'Changed', 'GanttTypes')`.
 - Gantt date drags: `ganttDayShift(model, dx, axisPx)` rounds pixels to whole days over the axis width;

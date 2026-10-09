@@ -787,6 +787,14 @@ export const PLAN_MAXIMISED = chart(
   },
 );
 
+export const PLAN_FILL_TAB = chart(
+  'Plan',
+  'Toggled',
+  'Boards Filling a Tab',
+  'A board set to fill its tab for everyone (the rest of its canvas deleted), or put back on the canvas.',
+  { types: ['FillTabOn', 'FillTabOff'], rising: 'neutral' },
+);
+
 export const PLAN_CARD_TYPES_DUPLICATED = chart(
   'Plan',
   'Duplicated',
@@ -822,6 +830,7 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_REMOVED,
     PLAN_FLAGS,
     PLAN_MAXIMISED,
+    PLAN_FILL_TAB,
     PLAN_SETUP_CHANGED,
     PLAN_CARD_TYPES_DUPLICATED,
     PLAN_REVEALED,

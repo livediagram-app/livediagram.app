@@ -52,14 +52,17 @@ export function PlanModal(props: ShellProps) {
 export function SheetRow({
   label,
   htmlFor,
+  className,
   children,
 }: {
   label: string;
   htmlFor?: string;
+  // Extra classes for the row (a grid placement, say), after its own bottom margin.
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="mb-3">
+    <div className={className ? `mb-3 ${className}` : 'mb-3'}>
       <label
         htmlFor={htmlFor}
         className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"

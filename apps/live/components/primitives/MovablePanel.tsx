@@ -60,6 +60,7 @@ export function MovablePanel({
   onDockDrag,
   onDockDragEnd,
   dataTourId,
+  layoutChrome = false,
   children,
 }: MovablePanelProps) {
   const minimalChrome = useMinimalChrome();
@@ -298,6 +299,7 @@ export function MovablePanel({
       ref={ref}
       data-floating-panel=""
       data-tour-id={dataTourId}
+      data-layout-chrome={layoutChrome ? '' : undefined}
       // Marks the panel as opacity-controlled: globals.css applies the
       // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to
       // opaque on hover / focus. The popover branch above carries it too.

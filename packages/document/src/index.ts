@@ -473,6 +473,8 @@ export * from './item-comments';
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';
+export * from './export-tab-plan';
+export * from './plan-board-layout';
 export * from './comment-mentions';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';

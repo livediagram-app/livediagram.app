@@ -182,5 +182,9 @@ export type MovablePanelProps = {
   // and popover) so tour steps can find the panel
   // whatever the layout.
   dataTourId?: string;
+  // Part of the editor's layout (the Explorer, the Palette), not a panel opened for a moment (the Trash, a
+  // card search): a maximised or tab-filling Plan board stands beside it (lib/canvas-layer-insets.ts), while a passing
+  // panel floats over the board and never moves it. Marked `data-layout-chrome`.
+  layoutChrome?: boolean;
   children: ReactNode;
 };
