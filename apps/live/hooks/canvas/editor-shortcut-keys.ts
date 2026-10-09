@@ -246,6 +246,13 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
 // editor-page listens for paste directly so it can route images from the
 // system clipboard to image-upload, falling back to the in-app element
 // clipboard when no system content is present.
+// Whether text outside any input is highlighted on the page (inputs handle their own copy before this).
+function hasPageTextSelection(): boolean {
+  if (typeof window === 'undefined') return false;
+  const sel = window.getSelection();
+  return !!sel && !sel.isCollapsed && sel.toString().trim() !== '';
+}
+
 export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDeps): boolean {
   const key = e.key;
   const lower = key.toLowerCase();
@@ -292,6 +299,9 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     return true;
   }
   if (lower === 'c') {
+    // Text selected on the page (a comment, a share link, a panel) is the browser's to copy: the
+    // canvas copy would copy nothing, or the selected elements instead of what was highlighted.
+    if (hasPageTextSelection()) return false;
     e.preventDefault();
     live.copySelection();
     return true;

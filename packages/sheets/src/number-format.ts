@@ -44,9 +44,19 @@ function df(locale: string, opts: Intl.DateTimeFormatOptions): Intl.DateTimeForm
   return f;
 }
 
-function utcDate(serial: number): Date {
+// The serial's moment, or null past what a Date holds (a phone number in a Date column): formatting
+// an invalid Date throws.
+function utcDate(serial: number): Date | null {
+  if (!Number.isFinite(serial)) return null;
   const p = dateFromSerial(serial);
-  return new Date(Date.UTC(p.y, p.m - 1, p.d, p.h, p.min, p.s));
+  const d = new Date(Date.UTC(p.y, p.m - 1, p.d, p.h, p.min, p.s));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// A date part's text, or the number as Automatic draws it when it is no date.
+function dateText(n: number, locale: string, opts: Intl.DateTimeFormatOptions): string {
+  const d = utcDate(n);
+  return d ? df(locale, opts).format(d) : autoNumber(n, locale);
 }
 
 function decimals(format: CellFormat | undefined, fallback: number): number {
@@ -97,23 +107,23 @@ export function formatNumber(n: number, format: CellFormat | undefined, locale: 
       return `${m!.replace('.', decimal)}E${exp < 0 ? '-' : '+'}${pad2(Math.abs(exp))}`;
     }
     case 'date':
-      return df(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(utcDate(n));
+      return dateText(n, locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
     case 'time':
-      return df(locale, {
+      return dateText(n, locale, {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
         hourCycle: 'h23',
-      }).format(utcDate(n));
+      });
     case 'datetime':
-      return df(locale, {
+      return dateText(n, locale, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
         hourCycle: 'h23',
-      }).format(utcDate(n));
+      });
     case 'duration': {
       const total = Math.round(Math.abs(n) * 86_400);
       const h = Math.floor(total / 3600);

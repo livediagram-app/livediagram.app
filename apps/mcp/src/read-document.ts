@@ -109,7 +109,7 @@ export async function readDocument(
       name: document.name,
       tab: { id: tab.id, name: tab.name, rev: tab.rev, elements: tab.elements },
       tabs,
-      url: deepLink(document.id),
+      url: deepLink(env, document.id),
     });
     if (!args.image) return result;
     return { ...result, content: [...result.content, await tabPreview(tab, auth)] };
@@ -135,7 +135,7 @@ export async function readDocument(
     name: document.name,
     tab: { id: tabId, name: summary.name, rev, view },
     tabs,
-    url: deepLink(document.id),
+    url: deepLink(env, document.id),
   });
   if (plain === null) return result;
   return { ...result, content: [...result.content, await tabPreview(plain.tab, auth)] };

@@ -161,7 +161,13 @@ export function createTelemetryEmitter(opts: {
         // keepalive fetch instead, which is the same "outlive the page"
         // guarantee by another route. No requeue on this path either way —
         // we're unloading, so there's no later to retry in.
-        if (navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))) return;
+        // A beacon that throws (a browser refusing the Blob's type for a cross-origin api) falls
+        // through to the fetch too, rather than losing the batch to the catch below.
+        try {
+          if (navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))) return;
+        } catch {
+          // Fall through to the keepalive fetch.
+        }
       }
       // `keepalive` lets the POST outlive a navigation the same way a
       // beacon would, for the timer-driven flush path.

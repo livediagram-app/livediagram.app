@@ -6,6 +6,7 @@ import { displayValue } from './number-format';
 import { layoutIndex, posRangeOf } from './layout';
 import { cellKey, type FilterCondition } from './sheet';
 import { isError, type Scalar } from './formula/values';
+import { INPUT_MAX, SHEET_ROWS_MAX } from './limits';
 import type { Workbook } from './engine/workbook';
 
 export const CONDITION_OPS: readonly NonNullable<FilterCondition['op']>[] = [
@@ -28,6 +29,25 @@ export const CONDITION_OPS: readonly NonNullable<FilterCondition['op']>[] = [
   'neq',
 ];
 
+const CONDITION_KEYS = new Set(['values', 'op', 'a', 'b']);
+const shortText = (v: unknown) => typeof v === 'string' && v.length <= INPUT_MAX;
+
+/** Whether `v` is a filter condition as a write may store one: its listed values (strings, at most
+ *  a sheet's rows), a known operator and its operands (short strings), nothing else. Every viewer
+ *  draws a stored condition, so a malformed one would break the sheet for all of them. */
+export function isFilterCondition(v: unknown): v is FilterCondition {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+  const c = v as Record<string, unknown>;
+  if (!Object.keys(c).every((k) => CONDITION_KEYS.has(k))) return false;
+  if (
+    c.values !== undefined &&
+    !(Array.isArray(c.values) && c.values.length <= SHEET_ROWS_MAX && c.values.every(shortText))
+  )
+    return false;
+  if (c.op !== undefined && !(CONDITION_OPS as readonly unknown[]).includes(c.op)) return false;
+  return (c.a === undefined || shortText(c.a)) && (c.b === undefined || shortText(c.b));
+}
+
 function asNumber(text: string | undefined, locale: string): number | null {
   if (text === undefined) return null;
   const n = parsePlainNumber(text);
@@ -41,8 +61,10 @@ export function conditionMatches(
   value: Scalar,
   shown: string,
   locale: string,
+  // `cond.values` as a set, built once per filter rather than scanned per row.
+  valueSet?: ReadonlySet<string>,
 ): boolean {
-  if (cond.values && !cond.values.includes(shown)) return false;
+  if (cond.values && !(valueSet ? valueSet.has(shown) : cond.values.includes(shown))) return false;
   if (!cond.op) return true;
   const empty = value === null || value === '';
   const text = shown.toLowerCase();
@@ -102,16 +124,22 @@ export function filteredOutRows(wb: Workbook, sheetId: string): Set<string> {
   const box = posRangeOf(sheet.layout, filter);
   if (!box) return out;
   const ix = layoutIndex(sheet.layout);
+  // A condition stored before writes were checked may be malformed (isFilterCondition): it filters
+  // nothing, rather than breaking the sheet for every viewer. Checked once here, not per row.
   const conds = Object.entries(filter.conds)
     .map(([col, cond]) => ({ c: ix.colPos.get(col), col, cond }))
-    .filter((x): x is { c: number; col: string; cond: FilterCondition } => x.c !== undefined);
+    .filter(
+      (x): x is { c: number; col: string; cond: FilterCondition } =>
+        x.c !== undefined && isFilterCondition(x.cond),
+    )
+    .map((x) => ({ ...x, values: x.cond.values ? new Set(x.cond.values) : undefined }));
   if (conds.length === 0) return out;
   for (let r = box.r1 + 1; r <= box.r2; r++) {
     const rowId = sheet.layout.rows[r]!;
-    for (const { c, col, cond } of conds) {
+    for (const { c, col, cond, values } of conds) {
       const v = wb.value(sheetId, r, c);
       const shown = displayValue(v, sheet.cells.get(cellKey(rowId, col))?.format, wb.locale).text;
-      if (!conditionMatches(cond, isError(v) ? v : (v as Scalar), shown, wb.locale)) {
+      if (!conditionMatches(cond, isError(v) ? v : (v as Scalar), shown, wb.locale, values)) {
         out.add(rowId);
         break;
       }

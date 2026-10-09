@@ -99,8 +99,11 @@ import {
   missingDocument,
   requireOwner,
   shareCodeOf,
+  sharePasswordOf,
   type RouteContext,
+  readBody,
 } from './context';
+import { sharePasswordOk } from '../auth/share-access';
 
 export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
@@ -113,7 +116,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       return json({ documents: liveDocs });
     }
     if (request.method === 'POST') {
-      const body = (await request.json()) as Omit<Partial<DocumentDTO>, 'tabs'> & {
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as Omit<Partial<DocumentDTO>, 'tabs'> & {
         tabs?: Tab[];
         intent?: unknown;
         markUsed?: unknown;
@@ -402,7 +407,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // per-document folder; `tabIds` is the legacy folder-less shape,
       // still accepted for older clients. All optional, at least one
       // must be present.
-      const body = (await request.json()) as {
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as {
         name?: string;
         tabIds?: string[];
         tabs?: { id: string; folder?: string | null }[];
@@ -515,7 +522,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       } | null = await gateGrant(ctx, id, source.ownerId, source.teamId, COMMUNITY_CONTENT);
       if (!scope) {
         const sharedRow = (await listSharedWith(env, owner)).find((s) => s.id === id);
-        if (sharedRow) scope = { tabScope: sharedRow.tabId };
+        // A past visit is no way round the document's share password
+        // (docs/specs/013-workspace/share-password.md): it must be given here as on every share-link read.
+        if (sharedRow && (await sharePasswordOk(env, id, sharePasswordOf(request))))
+          scope = { tabScope: sharedRow.tabId };
       }
       if (!scope) return forbidden();
       const body = (await request.json().catch(() => ({}) as { name?: unknown })) as {
@@ -535,6 +545,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         newName,
         scope.tabScope,
         scope.community === true,
+        // Anyone but the owner copies the comments as the tab read serves them to them.
+        owner === source.ownerId ? null : owner,
       );
       if (!copy) return notFound();
       // A copy through a Community post's link counts toward its copy count, once per person

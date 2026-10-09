@@ -121,6 +121,23 @@ describe('the device page', () => {
     for (let i = 0; i < 30; i++) await app.request('/oauth/device/session/BBBB-BBBB', {}, env);
     expect((await app.request('/oauth/device/session/BBBB-BBBB', {}, env)).status).toBe(429);
   });
+
+  it('caps completions and denials on the same budget, so user codes cannot be sprayed', async () => {
+    for (let i = 0; i < 30; i++)
+      await app.request('/oauth/device/complete', json({ userCode: 'BBBB-BBBB', token: 't' }), env);
+    expect(
+      (
+        await app.request(
+          '/oauth/device/complete',
+          json({ userCode: 'BBBB-BBBB', token: 't' }),
+          env,
+        )
+      ).status,
+    ).toBe(429);
+    expect(
+      (await app.request('/oauth/device/deny', json({ userCode: 'BBBB-BBBB' }), env)).status,
+    ).toBe(429);
+  });
 });
 
 describe('polling', () => {

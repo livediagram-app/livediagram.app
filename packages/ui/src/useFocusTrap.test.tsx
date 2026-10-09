@@ -67,6 +67,26 @@ describe('useFocusTrap', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
+  it('wraps past a last control taken out of the Tab order (tabindex -1)', () => {
+    function Roving() {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <button type="button">First</button>
+          <button type="button">Last</button>
+          <button type="button" tabIndex={-1}>
+            Roving
+          </button>
+        </div>
+      );
+    }
+    render(<Roving />);
+    screen.getByRole('button', { name: 'Last' }).focus();
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'First' }));
+  });
+
   it('leaves focus where the user has since put it', () => {
     function Closer() {
       const [open, setOpen] = useState(false);

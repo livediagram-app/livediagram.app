@@ -93,6 +93,9 @@ const { getDocumentThumbnailSvg, getDocumentTabImageSvg } = vi.hoisted(() => ({
   getDocumentTabImageSvg: vi.fn(),
 }));
 vi.mock('../thumbnail', () => ({ getDocumentThumbnailSvg, getDocumentTabImageSvg }));
+// The share password (docs/specs/013-workspace/share-password.md): met unless a case says otherwise.
+const { sharePasswordOk } = vi.hoisted(() => ({ sharePasswordOk: vi.fn(async () => true) }));
+vi.mock('../auth/share-access', () => ({ sharePasswordOk }));
 
 import type { RouteContext } from './context';
 import { handleDocuments } from './documents';
@@ -222,6 +225,19 @@ describe('handleDocuments owner-only paths (DELETE /documents/:id)', () => {
     expect(res.status).toBe(204);
     expect(db.trashDocument).toHaveBeenCalledWith({}, 'd1', expect.any(Number));
     expect(db.deleteDocument).not.toHaveBeenCalled();
+  });
+});
+
+describe('a body that is not a JSON object', () => {
+  it('is a 400 on the metadata PUT and the whole-tab autosave, never a 500', async () => {
+    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
+    canEditDocument.mockResolvedValue(true);
+    for (const path of ['/api/documents/d1', '/api/documents/d1/tabs/t1']) {
+      const notJson = makeTestRouteContext('PUT', path, { owner: 'owner-1', rawBody: '{nope' });
+      expect((await handleDocuments(notJson)).status).toBe(400);
+      const nul = makeTestRouteContext('PUT', path, { owner: 'owner-1', rawBody: 'null' });
+      expect((await handleDocuments(nul)).status).toBe(400);
+    }
   });
 });
 
@@ -807,12 +823,49 @@ describe('a tab-scoped visitor', () => {
     );
     expect(res.status).toBe(201);
     expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
+    // A visitor's copy carries no one else's comment author ids.
+    expect(db.copyDocument.mock.calls[0]?.at(7)).toBe('visitor-1');
+  });
+
+  it('refuses a Shared-with-you copy without the share password', async () => {
+    resolveDocumentGrant.mockResolvedValue(null);
+    db.listSharedWith.mockResolvedValue([{ id: 'd1', tabId: null }]);
+    sharePasswordOk.mockResolvedValueOnce(false);
+    const res = await handleDocuments(
+      makeCtx('POST', '/api/documents/d1/copy', { owner: 'visitor-1', body: {} }),
+    );
+    expect(res.status).toBe(403);
+    expect(db.copyDocument).not.toHaveBeenCalled();
   });
 });
 
 describe('deleting a tab (docs/specs/013-workspace/tab-scoped-share-links.md)', () => {
+  const withTabs = (...ids: string[]) =>
+    ({ ...fakeDocument('owner-1'), tabs: ids.map((id) => ({ id })) }) as unknown as DocumentDTO;
+
+  it('refuses a tab the document does not have, and the last tab for a token', async () => {
+    canEditDocument.mockResolvedValue(true);
+    db.getDocument.mockResolvedValue(withTabs('t1', 't2'));
+    expect((await handleDocuments(makeCtx('DELETE', '/api/documents/d1/tabs/nope'))).status).toBe(
+      404,
+    );
+    db.getDocument.mockResolvedValue(withTabs('t1'));
+    const agent = makeTestRouteContext('DELETE', '/api/documents/d1/tabs/t1', {
+      owner: 'owner-1',
+      token: { id: 'tok' },
+    });
+    const res = await handleDocuments(agent);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'last_tab' });
+    expect(db.deleteTabRow).not.toHaveBeenCalled();
+    // The editor's own delete races its save of the new tab: let through.
+    expect((await handleDocuments(makeCtx('DELETE', '/api/documents/d1/tabs/t1'))).status).toBe(
+      204,
+    );
+  });
+
   it('takes the links scoped to it along', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
+    db.getDocument.mockResolvedValue(withTabs('t1', 't2'));
     canEditDocument.mockResolvedValue(true);
     db.deleteShareLinksForTab.mockResolvedValue(['AAAA2222']);
     const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1/tabs/t2'));

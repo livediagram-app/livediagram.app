@@ -64,6 +64,31 @@ describe('production dispatch (service bindings)', () => {
     expect(help.urls).toEqual(['https://livediagram.app/canvas/themes/']);
   });
 
+  it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
+    const { env } = makeEnv();
+    const redirecting = (location: string) =>
+      ({
+        fetch: () =>
+          Promise.resolve(new Response(null, { status: 307, headers: { Location: location } })),
+      }) as unknown as Fetcher;
+    const res = await dispatch('/help/explorer/folders', {
+      ...env,
+      HELP: redirecting('/explorer/folders/'),
+    });
+    expect(res.status).toBe(307);
+    expect(res.headers.get('Location')).toBe('/help/explorer/folders/');
+    const post = await dispatch('/community/post?id=X', {
+      ...env,
+      COMMUNITY: redirecting('/post/?id=X'),
+    });
+    expect(post.headers.get('Location')).toBe('/community/post/?id=X');
+    // An absolute one, or one already under the prefix, is left as it is.
+    const abs = await dispatch('/help/x', { ...env, HELP: redirecting('https://elsewhere.test/') });
+    expect(abs.headers.get('Location')).toBe('https://elsewhere.test/');
+    const kept = await dispatch('/help/x', { ...env, HELP: redirecting('/help/y/') });
+    expect(kept.headers.get('Location')).toBe('/help/y/');
+  });
+
   it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
     const { env, community, marketing } = makeEnv();
     await dispatch('/community/post/?id=ABCDEFGH23', env);

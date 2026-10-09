@@ -381,6 +381,7 @@ export * from './editor-mode';
 export * from './illustrate-page';
 export * from './illustrate-page-fit';
 export * from './page-lock';
+export * from './page-of';
 export * from './logo-page';
 export * from './element-mirror';
 export * from './element-symmetry';

@@ -45,6 +45,26 @@ export type GraphInput = {
 const CLAUSE_START =
   /\s(?:which|that|who|whom|whose|where|when|for|to|with|by|holding|sending|serving|served|handling|storing|running|using|used|responsible)\s/i;
 
+// Whether `s` is at most `max` characters (code points, as names count them in truncateName: an
+// emoji is one, never two). Stops counting past `max`, so a long label costs no more than a short one.
+function fitsIn(s: string, max: number): boolean {
+  if (s.length <= max) return true;
+  let n = 0;
+  for (const _ of s) if (++n > max) return false;
+  return true;
+}
+
+// The first `k` characters of `s`, never ending on half a surrogate pair.
+function firstChars(s: string, k: number): string {
+  let out = '';
+  let n = 0;
+  for (const ch of s) {
+    if (n++ >= k) break;
+    out += ch;
+  }
+  return out;
+}
+
 // A label within `max` characters. When it runs over, bracketed asides go
 // first ("Web client (React SPA served from the CDN)" is "Web client"); then
 // the heading is the noun phrase before the first clause word, if there is one
@@ -56,15 +76,16 @@ const CLAUSE_START =
 // brackets or punctuation.
 export function capLabel(text: string, max = GRAPH_LABEL_MAX): { label: string; cut: boolean } {
   const whole = text.replace(/\s+/g, ' ').trim();
-  if (whole.length <= max) return { label: whole, cut: false };
+  if (fitsIn(whole, max)) return { label: whole, cut: false };
   const clean = withoutAsides(whole).trim() || whole;
-  if (clean.length <= max) return { label: clean, cut: true };
+  if (fitsIn(clean, max)) return { label: clean, cut: true };
   const clause = CLAUSE_START.exec(clean);
   if (clause) {
     const head = trimTrailingPunctuation(clean.slice(0, clause.index));
-    if (head.length <= max && head.includes(' ')) return { label: head, cut: true };
+    if (fitsIn(head, max) && head.includes(' ')) return { label: head, cut: true };
   }
-  const room = clean.slice(0, max - 1);
+  // Cut by characters, so a surrogate pair is never split into a lone half.
+  const room = firstChars(clean, max - 1);
   const space = room.lastIndexOf(' ');
   const head = space > max * 0.5 ? room.slice(0, space) : room;
   return { label: `${trimTrailingPunctuation(head)}…`, cut: true };

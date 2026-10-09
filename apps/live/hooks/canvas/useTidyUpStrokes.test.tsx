@@ -46,6 +46,26 @@ describe('useTidyUpStrokes', () => {
     expect(b).toBe(box);
   });
 
+  it('tracks the tidy even when the commit runs its updater later', async () => {
+    const { track } = await import('@/lib/telemetry');
+    vi.mocked(track).mockClear();
+    const commit = vi.fn();
+    const tab = { id: 't', elements: [line('a')] } as unknown as Tab;
+    const { result } = renderHook(() =>
+      useTidyUpStrokes({
+        activeTab: tab,
+        currentSelectionIds: () => new Set(['a']),
+        commit,
+        readOnly: false,
+      }),
+    );
+    act(() => result.current.tidyUpSelected());
+    expect(track).toHaveBeenCalledWith('Element', 'Changed', 'StrokesTidiedUp');
+    // The deferred updater still swaps the line for its tidied path.
+    const [a] = (commit.mock.calls[0]![0] as (e: Element[]) => Element[])([line('a')]);
+    expect(a).toMatchObject({ id: 'a', type: 'path' });
+  });
+
   it('has nothing to do without a drawn line, or when read-only', () => {
     expect(setup([box], ['b']).result.current.canTidyUp()).toBe(false);
     const ro = setup([line('a')], ['a'], true);

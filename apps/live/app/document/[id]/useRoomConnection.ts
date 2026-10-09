@@ -92,6 +92,10 @@ export function useRoomConnection(opts: {
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
+  // for a tab still waiting on its first fetch is left to that fetch.
+  loadedTabIdsRef: MutableRefObject<Set<string>>;
+  markTabLoaded: (id: string) => void;
   setLivePresence: Dispatch<SetStateAction<Participant[]>>;
   setLiveAgents: Dispatch<SetStateAction<AgentPresence[]>>;
   setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
@@ -193,6 +197,8 @@ export function useRoomConnection(opts: {
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
+    loadedTabIdsRef,
+    markTabLoaded,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
@@ -402,6 +408,11 @@ export function useRoomConnection(opts: {
         // change is known to be the peer's and is never saved or broadcast
         // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
         if (op.kind === 'document-meta') setDocumentName(op.name);
+        // A tab not fetched yet is a placeholder: an element added to it would make it look edited, so
+        // its fetch would be thrown away and the next save would write the placeholder over the real
+        // tab. Its fetch brings the element. A whole tab from a peer is its content: loaded.
+        if (op.kind === 'el' && !loadedTabIdsRef.current.has(op.tabId)) return;
+        if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
@@ -658,6 +669,8 @@ export function useRoomConnection(opts: {
           // it). A share-link visitor's id just won't match, and their
           // role comes from the code.
           ownerId: self.id,
+          // Each reconnect needs its own ticket: the upgrade spends the one it admits.
+          mintTicket: () => apiCreateRoomTicket(self.id, documentId, shareCode),
         },
         roomReadFacilitatorToken,
       );

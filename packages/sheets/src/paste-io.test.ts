@@ -328,6 +328,12 @@ describe('find, filter and render', () => {
     expect([...filteredOutRows(b.wb, 'nope')]).toEqual([]);
     apply(b, s.id, { kind: 'layout', changes: [{ k: 'filterCond', col: c[1]!, cond: null }] });
     expect(filteredOutRows(b.wb, s.id).size).toBe(0);
+    // A malformed condition stored before writes were checked filters nothing, never throwing.
+    apply(b, s.id, {
+      kind: 'layout',
+      changes: [{ k: 'filterCond', col: c[0]!, cond: { values: 5, a: 7 } as never }],
+    });
+    expect(filteredOutRows(b.wb, s.id).size).toBe(0);
   });
   it.each([
     [{ values: ['a'] }, 'a', 'a', true],

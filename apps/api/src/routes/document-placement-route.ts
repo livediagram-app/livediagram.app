@@ -18,7 +18,13 @@ import {
   recordTeamDocumentAdded,
   recordTeamDocumentRemoved,
 } from '../timeline';
-import { missingDocument, ownsDocument, requireOwner, type RouteContext } from './context';
+import {
+  missingDocument,
+  ownsDocument,
+  requireOwner,
+  type RouteContext,
+  readBody,
+} from './context';
 
 // Returns null when the request isn't the placement route.
 export async function handleDocumentPlacement(ctx: RouteContext): Promise<Response | null> {
@@ -47,7 +53,9 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       if (owner instanceof Response) return owner;
       const existing = await getDocument(env, id);
       if (!existing) return missingDocument(ctx, id);
-      const body = (await request.json()) as { folderId?: string | null; teamId?: string | null };
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as { folderId?: string | null; teamId?: string | null };
       const folderId = body.folderId ?? null;
       const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
       // `ownsDocument`, not a bare id compare: a TEAM document's owner id is a

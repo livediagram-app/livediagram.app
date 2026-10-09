@@ -29,6 +29,7 @@ import { posRangeOf } from './layout';
 import { applySheetWrite, type CellChange, type SheetWrite } from './store';
 import { applyLayoutChange, type LayoutChange } from './store-layout';
 import { rangeNameProblem } from './range-names';
+import { isFilterCondition } from './filter';
 import {
   NOBODY,
   type Cell,
@@ -284,14 +285,20 @@ function layoutChangeProblem(ch: LayoutChange, layout: SheetLayout): Validation 
       return idRangeOk(ch.range) ? OK : no('merge_invalid');
     case 'merges':
       return Array.isArray(ch.merges) && ch.merges.every(idRangeOk) ? OK : no('merge_invalid');
-    case 'filter':
+    case 'filter': {
       if (ch.filter === null) return OK;
-      return idRangeOk(ch.filter) && typeof ch.filter.conds === 'object' && ch.filter.conds !== null
+      const conds: unknown = ch.filter.conds;
+      return idRangeOk(ch.filter) &&
+        typeof conds === 'object' &&
+        conds !== null &&
+        !Array.isArray(conds) &&
+        Object.keys(conds).length <= SHEET_COLS_MAX &&
+        Object.entries(conds).every(([col, cond]) => isAxisId(col) && isFilterCondition(cond))
         ? OK
         : no('filter_invalid');
+    }
     case 'filterCond':
-      return isAxisId(ch.col) &&
-        (ch.cond === null || (typeof ch.cond === 'object' && ch.cond !== null))
+      return isAxisId(ch.col) && (ch.cond === null || isFilterCondition(ch.cond))
         ? OK
         : no('filter_invalid');
     default:
@@ -358,6 +365,9 @@ export function validateWrite(sheet: Sheet, write: SheetWrite): Validation {
     after.layout.cols.length > sheet.layout.cols.length ||
     (after.layout.merges?.length ?? 0) > (sheet.layout.merges?.length ?? 0) ||
     write.kind === 'cells';
+  // A sheet always has a cell: a write that deletes every row or column (two people each deleting
+  // half) is refused whether or not it grew anything.
+  if (after.layout.rows.length === 0 || after.layout.cols.length === 0) return no('write_invalid');
   return grew ? sheetProblem(after) : OK;
 }
 

@@ -74,8 +74,9 @@ export function deref(v: EvalValue, f: Frame): Value {
   if (r.r1 === r.r2 && r.c1 === r.c2) return f.cell(r.sheetId, r.r1, r.c1);
   const n = rangeCells(r);
   if (n > RANGE_CELLS_MAX) return err('#NUM!', 'This range is too large to read at once');
-  if (!f.spend(n)) return err('#NUM!', 'This sheet is too large to recalculate at once');
+  // Noted first: a cell cut short by the budget still hears when its range changes.
   f.noteRange(r);
+  if (!f.spend(n)) return err('#NUM!', 'This sheet is too large to recalculate at once');
   const rows: Value[][] = [];
   for (let i = r.r1; i <= r.r2; i++) {
     const row: Value[] = [];

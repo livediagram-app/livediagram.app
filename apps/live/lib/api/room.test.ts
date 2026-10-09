@@ -164,7 +164,9 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     readyState = 0;
     sent: { kind: string; op?: { kind: string } }[] = [];
     private listeners: Record<string, ((e: { data?: string }) => void)[]> = {};
-    constructor() {
+    url: string;
+    constructor(url = '') {
+      this.url = url;
       FakeSocket.all.push(this);
     }
     addEventListener(type: string, fn: (e: { data?: string }) => void) {
@@ -218,6 +220,38 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(second.sent.slice(2).map((m) => (m.op as unknown as { delta: number }).delta)).toEqual([
       1, -1,
     ]);
+  });
+
+  it('reconnects with a freshly minted ticket, since the room spends each one it admits', async () => {
+    const mintTicket = vi.fn(async () => 'second');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', mintTicket },
+    );
+    const first = FakeSocket.all[0]!;
+    expect(first.url).toContain('t=first');
+    first.fire('open');
+    first.fire('close');
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).toHaveBeenCalledOnce();
+    expect(FakeSocket.all[1]!.url).toContain('t=second');
+  });
+
+  it('mints nothing for a session that came in without a ticket', async () => {
+    const mintTicket = vi.fn(async () => 'x');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ownerId: 'me', mintTicket },
+    );
+    FakeSocket.all[0]!.fire('open');
+    FakeSocket.all[0]!.fire('close');
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).not.toHaveBeenCalled();
+    expect(FakeSocket.all).toHaveLength(2);
   });
 
   it("never sends a comment's author id", () => {

@@ -16,7 +16,7 @@ import {
 } from '../db';
 import type { FolderDTO } from '../types';
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
-import { requireOwner, type RouteContext } from './context';
+import { requireOwner, type RouteContext, readBody } from './context';
 import { MAX_NAME_LEN } from '../limits';
 import { recordFolderCreated, recordFolderDeleted } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
@@ -53,7 +53,9 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       return json({ folders });
     }
     if (request.method === 'POST') {
-      const body = (await request.json()) as {
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as {
         id?: string;
         name?: string;
         parentId?: string | null;
@@ -92,7 +94,9 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
     if (!existing) return notFound();
     if (!(await canManageFolder(ctx, existing, owner))) return forbidden();
     if (request.method === 'PUT') {
-      const body = (await request.json()) as {
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as {
         name?: string;
         parentId?: string | null;
       };

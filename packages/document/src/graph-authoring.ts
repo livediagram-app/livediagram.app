@@ -142,7 +142,8 @@ export function labelBoxSize(
 // An entity node: title-aligned top-left (the title otherwise sits centred over
 // the rows), wide enough for its longest row, tall enough for every row.
 function entityNode(n: GraphNode, raw: EntityField[]): Element {
-  const clip = (t: string) => t.slice(0, ENTITY_MAX_TEXT);
+  // Within the validator's budget (UTF-16 units), never ending on half an emoji.
+  const clip = (t: string) => t.slice(0, ENTITY_MAX_TEXT).replace(/[\uD800-\uDBFF]$/, '');
   const fields = raw
     .slice(0, ENTITY_MAX_FIELDS)
     .map((f) => ({ name: clip(f.name), ...(f.type ? { type: clip(f.type) } : {}) }));

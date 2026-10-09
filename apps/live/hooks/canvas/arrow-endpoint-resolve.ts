@@ -1,7 +1,10 @@
 import {
   alignmentGuides,
   arrowSnapPoints,
+  crossesPages,
   endpointPosition,
+  pageIdAt,
+  pageIdOf,
   snapToAlignment,
   snapToAnchor,
   snapToArrowPoint,
@@ -9,6 +12,7 @@ import {
   type ArrowElement,
   type Element,
   type Endpoint,
+  type LaidOutPage,
 } from '@livediagram/document';
 import {
   ALIGN_SNAP_THRESHOLD,
@@ -19,6 +23,32 @@ import {
 } from '@/lib/canvas';
 import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
+
+// What an arrow's dragged end may join (docs/specs/007-editor/illustrate-pages.md "Arrows stay on
+// one page"): with pages, only what is on its other end's page or on none. Boxes are filtered by
+// their centre (cheap, every frame); an arrow's page is resolved only when one is hit (`joins`).
+function reachableFrom(
+  elements: Element[],
+  arrowId: string,
+  end: ArrowEnd,
+  pages: readonly LaidOutPage[] | null | undefined,
+): { elements: Element[]; joins: (id: string) => boolean } {
+  const all = { elements, joins: () => true };
+  if (!pages || pages.length < 2) return all;
+  const arrow = elements.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
+  if (!arrow) return all;
+  const home = pageIdAt(endpointPosition(arrow[end === 'from' ? 'to' : 'from'], elements), pages);
+  if (home === null) return all;
+  return {
+    elements: elements.filter(
+      (el) => !('x' in el && 'width' in el) || !crossesPages(home, pageIdOf(el, elements, pages)),
+    ),
+    joins: (id) => {
+      const el = elements.find((e) => e.id === id);
+      return !el || !crossesPages(home, pageIdOf(el, elements, pages));
+    },
+  };
+}
 
 // Resolve one arrow-endpoint drag frame (docs/specs/008-canvas/canvas-and-palette.md arrows + docs/specs/008-canvas/arrow-to-arrow.md
 // arrow-to-arrow): pin to an element anchor if the cursor is close,
@@ -39,6 +69,7 @@ export function resolveArrowEndpointDrag({
   end,
   noSnap,
   guidesOn,
+  pages,
 }: {
   cursor: { x: number; y: number };
   elements: Element[];
@@ -50,6 +81,9 @@ export function resolveArrowEndpointDrag({
   // The user's alignment-guides preference (guides only; snapping to the
   // other endpoint still applies).
   guidesOn: boolean;
+  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"):
+  // the end joins nothing on a page other than its other end's. Absent outside Illustrate.
+  pages?: readonly LaidOutPage[] | null;
 }): {
   endpoint: Endpoint;
   guides: AlignmentGuide[];
@@ -61,19 +95,22 @@ export function resolveArrowEndpointDrag({
   // Element anchor wins over angle / alignment snap: pinning to
   // another shape is the strongest constraint and the most desirable
   // outcome when both are plausible.
-  const anchorSnap = snapToAnchor(cursor, elements, SNAP_THRESHOLD);
+  const reach = reachableFrom(elements, arrowId, end, pages);
+  const anchorSnap = snapToAnchor(cursor, reach.elements, SNAP_THRESHOLD);
   // No element anchor nearby → look for a nearby arrow line to connect to
   // (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL distance shows the line's snap dots as you approach;
   // the tighter SNAP distance actually connects. Element anchors win.
-  const arrowHit = anchorSnap
+  const nearArrow = anchorSnap
     ? null
     : snapToArrowPoint(cursor, elements, ARROW_SNAP_REVEAL_PX, arrowId);
+  // An arrow on another page is passed over (its page resolved only for the one found).
+  const arrowHit = nearArrow && reach.joins(nearArrow.arrowId) ? nearArrow : null;
   const arrowSnap = arrowHit && arrowHit.dist <= ARROW_SNAP_THRESHOLD_PX ? arrowHit : null;
   // Reveal the connection points of nearby shapes + arrows so the user can
   // see where the endpoint will snap, highlighting the active one.
   const snapTargets = computeSnapTargets(
     cursor,
-    elements,
+    reach.elements,
     anchorSnap?.elementId ?? null,
     anchorSnap?.anchor ?? null,
   );

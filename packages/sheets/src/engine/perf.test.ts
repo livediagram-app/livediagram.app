@@ -2,6 +2,7 @@
 // allow: 50,000 filled cells, 20,000 of them formulas. CI machines are slower and shared, so the asserted budget
 // is a multiple of the laptop target.
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { Workbook } from './workbook';
 import { cellKey, type Sheet } from '../sheet';
 import { compileFormula } from '../formula/stored';
@@ -54,10 +55,13 @@ describe('performance', () => {
   it('works out every cell of a 50,000-cell sheet, then a one-cell change, within budget', () => {
     const sheet = bigSheet();
     expect(sheet.cells.size).toBe(50_000);
-    let t = performance.now();
-    const wb = new Workbook({ sheets: [sheet], locale: 'en' });
-    for (let r = 0; r < 10_000; r++) for (let c = 0; c < 5; c++) wb.value(sheet.id, r, c);
-    const full = performance.now() - t;
+    // CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock budget also
+    // counted the time spent waiting for a core.
+    let wb!: Workbook;
+    const full = cpuMsOf(() => {
+      wb = new Workbook({ sheets: [sheet], locale: 'en' });
+      for (let r = 0; r < 10_000; r++) for (let c = 0; c < 5; c++) wb.value(sheet.id, r, c);
+    });
     expect(wb.value(sheet.id, 9_999, 4)).toBe(10_000);
 
     // Change C5000: half the chain (5,000 cells) depends on it.
@@ -65,19 +69,21 @@ describe('performance', () => {
     const cells = new Map(sheet.cells);
     cells.set(key, { input: { n: 2 } });
     const next = { ...sheet, cells };
-    t = performance.now();
-    wb.updateSheet(next, [key]);
-    expect(wb.value(sheet.id, 9_999, 4)).toBe(10_001);
-    const change = performance.now() - t;
+    let after: unknown;
+    const change = cpuMsOf(() => {
+      wb.updateSheet(next, [key]);
+      after = wb.value(sheet.id, 9_999, 4);
+    });
+    expect(after).toBe(10_001);
 
     // A change nothing reads.
     const lone = cellKey('r100', 'c1');
     const cells2 = new Map(next.cells);
     cells2.set(lone, { input: { n: 7 } });
-    t = performance.now();
-    wb.updateSheet({ ...next, cells: cells2 }, [lone]);
-    wb.value(sheet.id, 100, 3);
-    const small = performance.now() - t;
+    const small = cpuMsOf(() => {
+      wb.updateSheet({ ...next, cells: cells2 }, [lone]);
+      wb.value(sheet.id, 100, 3);
+    });
 
     console.info(
       `[sheets perf] full ${full.toFixed(0)} ms, chain change ${change.toFixed(1)} ms, local change ${small.toFixed(2)} ms`,

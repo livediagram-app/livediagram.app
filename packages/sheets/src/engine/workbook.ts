@@ -75,6 +75,9 @@ export class Workbook {
   private readonly stack: string[] = [];
   private depth = 0;
   private reads = 0;
+  // Formulas worked out after one read ran past RECALC_READS_MAX: their value is that read's
+  // "too large" error, not their own, so the next read works them out afresh.
+  private readonly overBudget = new Set<string>();
   // Raised on every change, so views know to read again.
   version = 0;
   truncated = false;
@@ -145,13 +148,25 @@ export class Workbook {
   value(sheetId: string, r: number, c: number): Value {
     for (;;) {
       try {
-        if (this.depth === 0) this.reads = 0;
+        if (this.depth === 0) this.startRead();
         return scalarCell(this.cellValue(sheetId, r, c, null));
       } catch (e) {
         if (!(e instanceof Deep)) throw e;
         this.settle(e.id);
       }
     }
+  }
+
+  // A fresh top-level read: its own budget, and the formulas the last one cut short forgotten.
+  private startRead(): void {
+    this.reads = 0;
+    if (this.overBudget.size === 0) return;
+    for (const id of this.overBudget) {
+      this.vals.delete(id);
+      // A spill it claimed goes with it, and its sheet's spills are worked out again.
+      if (this.releaseClaim(id)) this.spillersReady.delete(id.slice(0, id.indexOf('|')));
+    }
+    this.overBudget.clear();
   }
 
   // The whole array a formula gives (its spill), or its value.
@@ -252,7 +267,16 @@ export class Workbook {
         pending.pop();
       } catch (e) {
         if (!(e instanceof Deep)) throw e;
-        if (pending.includes(e.id)) throw new Error('sheets: unsettled chain', { cause: e });
+        const from = pending.indexOf(e.id);
+        if (from >= 0) {
+          // A chain deeper than DEPTH_MAX that comes back to a cell already restarted is a loop the
+          // stack cannot see whole: each of its restarted cells is a circular reference. Their
+          // dependencies were noted before the restart, so an edit breaking the loop still reaches them.
+          const loop = pending.splice(from);
+          const value = err('#REF!', `Circular reference: ${this.describeLoop(loop, e.id)}`);
+          for (const cell of loop) this.vals.set(cell, value);
+          continue;
+        }
         pending.push(e.id);
       }
     }
@@ -354,6 +378,7 @@ export class Workbook {
     }
     if (isArray(value)) value = this.claim(id, sheet, row, col, value);
     this.vals.set(id, value);
+    if (this.reads > RECALC_READS_MAX) this.overBudget.add(id);
     return value;
   }
 
@@ -507,6 +532,7 @@ export class Workbook {
     this.extents.clear();
     this.ctxs.clear();
     this.spillersReady.clear();
+    this.overBudget.clear();
     this.truncated = false;
     this.reindexAll();
   }

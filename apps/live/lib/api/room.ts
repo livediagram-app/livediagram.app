@@ -76,6 +76,14 @@ type RoomAuthOptions = {
   ticket?: string | null;
 };
 
+// connectRoom's options: the auth legs, and how to mint a fresh ticket for a reconnect.
+type RoomConnectOptions = RoomAuthOptions & {
+  // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent
+  // the first one again was refused, and a team member or signed-in owner lost the room for the rest
+  // of the session. Called before each reconnect of a session that used a ticket.
+  mintTicket?: () => Promise<string | null>;
+};
+
 // Build the room WebSocket auth query string. Browsers can't set custom
 // headers on a WebSocket upgrade, so these ride on the query string; the
 // api worker reads them, resolves role, and forwards an X-Verified-Role
@@ -146,7 +154,7 @@ export function connectRoom(
   // room keeps it only for an account session.
   initialParticipant: RoomSelf,
   handlers: RoomHandlers,
-  options: RoomAuthOptions = {},
+  options: RoomConnectOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
   // taken while this socket is open, and the token we present has to be the
   // one we hold NOW (docs/specs/012-collaboration/facilitator.md).
@@ -163,11 +171,16 @@ export function connectRoom(
   // Auth identifiers ride on the query string (see roomQueryString). The
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
-  const qs = roomQueryString(
-    { ...options, ownerSig: options.ownerId ? getGuestSelfSig() : null },
-    getSessionSharePassword(),
-  );
-  const url = wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
+  let ticket = options.ticket ?? null;
+  // A session admitted by a ticket keeps minting one per reconnect, even after a mint that failed.
+  const usesTicket = ticket !== null && !!options.mintTicket;
+  const urlNow = () => {
+    const qs = roomQueryString(
+      { ...options, ticket, ownerSig: options.ownerId ? getGuestSelfSig() : null },
+      getSessionSharePassword(),
+    );
+    return wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
+  };
 
   let ws: WebSocket;
   let closed = false; // the caller called close() — never reconnect after that
@@ -214,7 +227,7 @@ export function connectRoom(
   };
 
   const open = () => {
-    ws = new WebSocket(url);
+    ws = new WebSocket(urlNow());
     // This socket, as opposed to `opened` (any session so far).
     let socketOpened = false;
     ws.addEventListener('open', () => {
@@ -315,8 +328,17 @@ export function connectRoom(
       }
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
       attempts++;
-      reconnectTimer = setTimeout(open, delay);
+      reconnectTimer = setTimeout(() => void reopen(), delay);
     });
+  };
+  // A reconnect: with a fresh ticket when the session rode one (a spent ticket is refused).
+  const reopen = async () => {
+    reconnectTimer = null;
+    if (usesTicket) {
+      ticket = await options.mintTicket!();
+      if (closed) return;
+    }
+    open();
   };
   open();
 

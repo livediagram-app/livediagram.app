@@ -37,17 +37,16 @@ export function useTidyUpStrokes({
     const ids = currentSelectionIds();
     if (tidyableSelection(activeTab.elements, ids).length === 0) return;
     const align = guides?.() ?? null;
-    let tidied = 0;
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.locked === true || !isTidyable(el)) return el;
-        const path = tidyUpStroke(el as BoxedElement, align);
-        if (!path) return el;
-        tidied += 1;
-        return path;
-      }),
-    );
-    if (tidied > 0) track('Element', 'Changed', 'StrokesTidiedUp');
+    // Tidied here, before the commit, so the count is known when it is tracked (a commit's
+    // updater may run later, at render).
+    const paths = new Map<string, Element>();
+    for (const el of tidyableSelection(activeTab.elements, ids)) {
+      const path = tidyUpStroke(el, align);
+      if (path) paths.set(el.id, path);
+    }
+    if (paths.size === 0) return;
+    commit((els) => els.map((el) => paths.get(el.id) ?? el));
+    track('Element', 'Changed', 'StrokesTidiedUp');
   };
 
   return { canTidyUp, tidyUpSelected };

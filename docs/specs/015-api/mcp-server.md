@@ -646,10 +646,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name                  | Where                          | Absent means                                                                                                                                                            |
-| --------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own                                            |
-| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) |
+| Name                  | Where                          | Absent means                                                                                                                                                                     |
+| --------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
+| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))          |
 
 `INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
 **service binding**, which carries no `CF-Connecting-IP` — so the api's

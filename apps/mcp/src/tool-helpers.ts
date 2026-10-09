@@ -23,12 +23,18 @@ export type ToolResult = {
   isError?: boolean;
 };
 
-export const deepLink = (id: string) => `https://livediagram.app/document/${id}`;
+// The live app this MCP server belongs to: its own host on staging and on a self-host
+// (CONSENT_BASE_URL, as the consent and device pages use), livediagram.app otherwise.
+export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
+  env.CONSENT_BASE_URL ?? 'https://livediagram.app';
+
+export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
+  `${appBase(env)}/document/${id}`;
 
 // A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /document/shared?s=<code>
 // and the app resolves the code to the document + granted role.
-export const shareUrl = (code: string) =>
-  `https://livediagram.app/document/shared?s=${encodeURIComponent(code)}`;
+export const shareUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
+  `${appBase(env)}/document/shared?s=${encodeURIComponent(code)}`;
 
 export function requireToken(extra: Extra): string {
   const token = extra.authInfo?.token;

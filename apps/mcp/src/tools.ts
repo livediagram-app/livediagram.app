@@ -90,7 +90,7 @@ export function registerTools(server: McpServer, env: Env): void {
       fetchTeamLibraries(clientFor(env, token)),
     ]);
     const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
-      (d) => ({ ...d, url: deepLink(d.id) }),
+      (d) => ({ ...d, url: deepLink(env, d.id) }),
     );
     return textResult({ count: matched.length, documents: matched });
   });
@@ -195,7 +195,7 @@ export function registerTools(server: McpServer, env: Env): void {
         tabCount: tabs.length,
         tabIds,
         folder: await createdFolderLabel(env, token, created),
-        url: deepLink(id),
+        url: deepLink(env, id),
         lint,
       },
       tabs[0]!,
@@ -264,7 +264,7 @@ export function registerTools(server: McpServer, env: Env): void {
         documentId: args.documentId,
         tabId,
         name: tab.name,
-        url: deepLink(args.documentId),
+        url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
         text: answer.text,
@@ -323,7 +323,7 @@ export function registerTools(server: McpServer, env: Env): void {
         id: args.documentId,
         documentId: args.documentId,
         tabId,
-        url: deepLink(args.documentId),
+        url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
         text: answer.text,
@@ -348,10 +348,10 @@ export function registerTools(server: McpServer, env: Env): void {
       { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
     );
     return textResult({
-      url: shareUrl(link.code),
+      url: shareUrl(env, link.code),
       role: link.role,
       expiresAt: link.expiresAt,
-      documentUrl: deepLink(args.documentId),
+      documentUrl: deepLink(env, args.documentId),
     });
   });
 
@@ -378,7 +378,7 @@ export function registerTools(server: McpServer, env: Env): void {
       renamed: 'document',
       id: liveDoc.id,
       name: liveDoc.name,
-      url: deepLink(liveDoc.id),
+      url: deepLink(env, liveDoc.id),
     });
   });
 
@@ -441,7 +441,7 @@ export function registerTools(server: McpServer, env: Env): void {
         restored: 'document',
         id: liveDoc?.id ?? args.documentId,
         name: liveDoc?.name ?? null,
-        url: deepLink(liveDoc?.id ?? args.documentId),
+        url: deepLink(env, liveDoc?.id ?? args.documentId),
       });
     } catch (err) {
       // Not in the Trash, or not the user's to restore: model-correctable.
@@ -463,8 +463,10 @@ export function deleteRefusal(status: number, tab: boolean): string {
     return tab
       ? 'No such tab in this document: read_document lists its tabs.'
       : 'No such document, or it is not yours: find_documents lists them.';
+  if (tab && status === 409)
+    return 'A document must keep at least one tab: you cannot delete the last one.';
   return tab
-    ? 'A document must keep at least one tab: you cannot delete the last one.'
+    ? `The api refused it (${status}): check the document and tab ids.`
     : 'Check the document id and that you own it.';
 }
 
