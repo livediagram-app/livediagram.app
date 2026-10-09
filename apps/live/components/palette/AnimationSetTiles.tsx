@@ -28,6 +28,7 @@ import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
 export function AnimationSetTiles({
   set,
   current,
+  legacy = false,
   speed,
   repeat,
   onSet,
@@ -39,6 +40,9 @@ export function AnimationSetTiles({
   set: AnimationSetId;
   // The stored value, which may be a kept value the set no longer offers.
   current: string | null;
+  // `current` is a text element's legacy body animation: always the kept tile, even when the set
+  // has a value of that name (a different motion).
+  legacy?: boolean;
   speed: AnimationSpeed;
   repeat: boolean;
   onSet: (v: string | null) => void;
@@ -51,30 +55,35 @@ export function AnimationSetTiles({
   useRevertOnUnmount(onPreviewEnd ?? NOOP);
   // Captured at open like the Speed gate, so hovering (which previews into the live tab) never
   // adds or removes the kept tile under the pointer; a real pick of anything else drops it.
-  const [kept, setKept] = useState(() => keptAnimation(set, current));
+  const [kept, setKept] = useState<string | undefined>(() =>
+    legacy && current ? current : keptAnimation(set, current),
+  );
   const { showSpeed, handleSet: gateSet } = useSpeedRowGate(current, onSet);
+  // A set tile's pick drops the kept tile; the kept tile is what plays already, so it writes nothing.
   const handleSet = (v: string | null) => {
-    if (v !== kept) setKept(undefined);
+    setKept(undefined);
     gateSet(v);
   };
-  const values: (string | null)[] = [
-    ...withNone(ANIMATION_SET_VALUES[set]),
-    ...(kept ? [kept] : []),
+  const tiles: { v: string | null; isKept: boolean }[] = [
+    ...withNone(ANIMATION_SET_VALUES[set]).map((v) => ({ v, isKept: false })),
+    ...(kept ? [{ v: kept, isKept: true }] : []),
   ];
   return (
     <>
       <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-        {values.map((v) => {
-          // A kept value is an old Shape value: it previews as one.
-          const shown = v === kept ? 'shape' : set;
+        {tiles.map(({ v, isKept }) => {
+          // A kept value is an old Shape value: it previews as one. A legacy one named like a set
+          // value (Glow) has no live preview: previewing it would play the set's own.
+          const shown = isKept ? 'shape' : set;
+          const previews = onPreview && !(isKept && legacy);
           return (
             <AnimationPreviewTile
-              key={v ?? 'none'}
-              active={current === v}
+              key={isKept ? 'kept' : (v ?? 'none')}
+              active={current === v && isKept === (kept === v)}
               label={v ? animationLabel(v) : 'None'}
               frame={previewFrame(shown, v)}
-              onClick={() => handleSet(v)}
-              onPreview={onPreview ? () => onPreview(v) : undefined}
+              onClick={isKept ? NOOP : () => handleSet(v)}
+              onPreview={previews ? () => onPreview(v) : undefined}
               onPreviewEnd={onPreviewEnd}
             >
               <AnimationSetPreview set={shown} value={v} />

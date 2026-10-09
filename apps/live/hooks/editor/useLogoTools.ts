@@ -33,6 +33,7 @@ import {
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { GuideSnap } from '@/lib/logo-guide-snapping';
 import {
+  logoPageGuidesKey,
   readLogoPageGuides,
   withLogoPageGuides,
   type LogoPageGuides,
@@ -136,6 +137,14 @@ export function useLogoTools({
   // anywhere: a page turned on starts from them.
   const [pageMirror, setPageMirror] = useState<ReadonlyMap<string, MirrorSettings>>(NO_PAGES);
   const [lastMirror, setLastMirror] = useState<MirrorSettings>(DEFAULT_MIRROR);
+  // Mirror is held while the tab is open: page ids repeat across tabs (each tab's first is
+  // 'page-1'), so moving to another tab lets go of every page's mirror.
+  const [mirrorTabId, setMirrorTabId] = useState(activeTab.id);
+  if (mirrorTabId !== activeTab.id) {
+    setMirrorTabId(activeTab.id);
+    setMirrorPages(NO_PAGES);
+    setPageMirror(NO_PAGES);
+  }
   useAssignRef(mirrorRef, readOnly ? NO_PAGES : mirrorPages);
   const mirrorOn = useCallback((pageId: string) => mirrorPages.has(pageId), [mirrorPages]);
   const mirrorSettings = useCallback(
@@ -145,9 +154,10 @@ export function useLogoTools({
   // A page's own Show Guides, else the Logo Guides setting.
   const guidesDefault = prefs.logoGuides !== false;
   const [pageGuides, setPageGuides] = useState<LogoPageGuides>(readLogoPageGuides);
+  const tabId = activeTab.id;
   const guidesOn = useCallback(
-    (pageId: string) => pageGuides[pageId] ?? guidesDefault,
-    [pageGuides, guidesDefault],
+    (pageId: string) => pageGuides[logoPageGuidesKey(tabId, pageId)] ?? guidesDefault,
+    [pageGuides, guidesDefault, tabId],
   );
   const guideParts = useMemo(() => readLogoGuideParts(prefs), [prefs]);
   const guideStrength = readLogoGuideStrength(prefs);
@@ -169,10 +179,13 @@ export function useLogoTools({
   );
 
   // Each switch tracks before it changes, so an off still reaches the wire.
-  const setGuides = useCallback((pageId: string, on: boolean) => {
-    track('UI', 'Toggled', on ? 'LogoGuidesOn' : 'LogoGuidesOff');
-    setPageGuides((current) => withLogoPageGuides(current, pageId, on));
-  }, []);
+  const setGuides = useCallback(
+    (pageId: string, on: boolean) => {
+      track('UI', 'Toggled', on ? 'LogoGuidesOn' : 'LogoGuidesOff');
+      setPageGuides((current) => withLogoPageGuides(current, logoPageGuidesKey(tabId, pageId), on));
+    },
+    [tabId],
+  );
   const setMirror = useCallback(
     (pageId: string, on: boolean) => {
       track('UI', 'Toggled', on ? 'LogoMirrorOn' : 'LogoMirrorOff');

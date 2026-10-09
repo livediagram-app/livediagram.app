@@ -31,12 +31,15 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   that takes every type (Blank) and an Archive or All Cards board bring nothing else.
 - **After that, boards add what is missing**: a board made in a document whose card types are chosen (or that has
   cards) adds each ready-made type it brings that the document lacks (by id), after the ones it has; a Blank board
-  brings any of the five default types the document lacks. A document that has a type of that id keeps its own.
+  brings any of the five default types the document lacks. A document that has a type of that id, or of that
+  name (one renamed "Task"), keeps its own and gains nothing for it. A Blank board made first leaves the document
+  reading as the default types, and they count as chosen: a later board adds what is missing.
 - Any change (a board choosing them, a type added, edited or deleted) stores the **whole catalogue** with the
   document. From then on the stored catalogue is the document's, whole; later releases do not change it.
 - **Add Default Types** adds any of the five default types the document lacks, as they are defined, after its
-  types, as one change (one undo step): it never changes or removes a type the document has. It shows only while
-  the document lacks one. Pressing it first asks, in a confirmation popover beside the button (as the type
+  types, as one change (one undo step): it never changes or removes a type the document has. A default whose name
+  a type already has is not added, and only as many as fit under the cap are: the popover names exactly those. It
+  shows only while the document lacks one it can add. Pressing it first asks, in a confirmation popover beside the button (as the type
   editor's Delete does), naming the types it will add: "Add Project, Note and Idea to this document's card types?
   They go after the ones you have, and nothing you have changes." (the list joined with commas and "and", "Add
   Project to..." for one), with **Add Types** and **Cancel**. Enter confirms and Escape cancels, returning focus to

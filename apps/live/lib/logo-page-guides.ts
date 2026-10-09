@@ -8,6 +8,10 @@ const STORAGE_KEY = 'livediagram:v2:logo-page-guides';
 /** How many pages' choices are kept (about 10 KB of local storage at most). */
 export const LOGO_PAGE_GUIDES_MAX = 200;
 
+/** A page's entry: its tab's id with its own, since page ids repeat across tabs and documents
+ *  (every tab's first page is 'page-1'). */
+export const logoPageGuidesKey = (tabId: string, pageId: string) => `${tabId}:${pageId}`;
+
 export type LogoPageGuides = Readonly<Record<string, boolean>>;
 
 export function readLogoPageGuides(): LogoPageGuides {
@@ -26,7 +30,7 @@ export function readLogoPageGuides(): LogoPageGuides {
   }
 }
 
-/** The choices with page `id` set to `on` (moved to the most recent), saved. */
+/** The choices with entry `id` (logoPageGuidesKey) set to `on` (moved to the most recent), saved. */
 export function withLogoPageGuides(
   current: LogoPageGuides,
   id: string,

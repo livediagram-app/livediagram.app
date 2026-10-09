@@ -38,6 +38,8 @@ describe('animation set writes', () => {
     expect('animation' in next).toBe(false);
     expect('animationSpeed' in next).toBe(false);
     expect('animationRepeat' in next).toBe(false);
+    // The Speed chosen for the legacy animation (in the Text section) carries over.
+    expect(next.textAnimationSpeed).toBe('fast');
   });
 
   it('None removes the field rather than storing undefined', () => {
@@ -88,8 +90,15 @@ describe('animation set writes', () => {
       value: 'peel',
       speed: undefined,
       repeat: false,
+      legacy: false,
     });
-    expect(setAnimationState([text], 'text')?.value).toBe('trace');
+    expect(setAnimationState([text], 'text')).toMatchObject({ value: 'trace', legacy: true });
+    const glow = {
+      ...createText(0, 0),
+      animation: 'glow' as const,
+      textAnimation: 'wave' as const,
+    };
+    expect(setAnimationState([glow], 'text')).toMatchObject({ value: 'wave', legacy: false });
     expect(setAnimationState([image], 'text')).toBeUndefined();
   });
 });

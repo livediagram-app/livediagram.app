@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   DEFAULT_MIRROR,
   encodeStrokePoints,
+  isValidElement,
   layOutIllustratePages,
   newLogoPage,
   type BoxedElement,
@@ -123,5 +124,21 @@ describe('mergeWithTwin', () => {
     expect(isTidyable(ink!)).toBe(true);
     const [red] = withTwinsAdded([], [marker({ penColour: 'red' })], pages) as PathElement[];
     expect(red!.penColour).toBe('red');
+  });
+
+  it('keeps a marker tap and its twin apart, never a one-node path', () => {
+    const tap: FreehandElement = {
+      id: 'm',
+      type: 'freehand',
+      x: -300,
+      y: 0,
+      width: 6,
+      height: 6,
+      closed: false,
+      penWidth: 6,
+      packedPoints: encodeStrokePoints([{ nx: 0.5, ny: 0.5 }]),
+    };
+    const out = withTwinsAdded([], [tap], pages);
+    for (const el of out) expect(isValidElement(el)).toBe(true);
   });
 });

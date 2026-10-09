@@ -47,7 +47,8 @@ export function mergeWithTwins(
 ): BoxedElement | null {
   const all = [el, ...twins];
   const lines = all.map(lineContours);
-  if (lines.every((l): l is PathAnchor[][] => l !== null)) {
+  // A path contour needs two anchors or more; a marker's tap (one point) keeps its twins apart.
+  if (lines.every((l): l is PathAnchor[][] => l !== null && l.every((c) => c.length >= 2))) {
     return pathOfContours(
       { id: el.id, type: 'path', closed: false, ...lineStyle(el) },
       lines.flat(),

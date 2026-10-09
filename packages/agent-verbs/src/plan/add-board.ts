@@ -11,6 +11,7 @@ import {
 } from '@livediagram/api-schema';
 import {
   READY_MADE_CARD_TYPES,
+  hasBlankBoard,
   placeBoard,
   resolveType,
   type BoardRequest,
@@ -89,6 +90,7 @@ export async function addBoard(
     const brought = await bringBoardCardTypes(api, documentId, [placed.board], {
       stored: document.itemTypes ?? null,
       hasCards: state.items.length > 0,
+      hadBlank: hasBlankBoard(tab.elements),
     });
     // Named as the document names them, else as the ready-made type it just gained (a board's types are always one
     // or the other).

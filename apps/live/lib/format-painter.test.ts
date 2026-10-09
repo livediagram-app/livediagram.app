@@ -457,6 +457,18 @@ describe('fitPaintToTarget', () => {
     expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
   });
 
+  it('clears a text element’s legacy body animation when a Text animation is painted on', () => {
+    const target = {
+      ...createText(0, 0),
+      animation: 'bounce' as const,
+      animationSpeed: 'fast' as const,
+    };
+    const out = fitPaintToTarget(shape, target, paintableBoxedFields(shape));
+    expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
+    expect('animation' in out && out.animation === undefined).toBe(true);
+    expect('animationSpeed' in out && out.animationSpeed === undefined).toBe(true);
+  });
+
   it('drops a Text animation onto an element without words', () => {
     const icon = createShape('icon', 0, 0);
     const out = fitPaintToTarget(shape, icon, paintableBoxedFields(shape));

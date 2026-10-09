@@ -235,7 +235,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         templateElements,
         (seedItemCreates?.length ?? 0) > 0,
       );
-      if (brought) {
+      // Checked as a catalogue the item-types route takes; one that would break a rule (its size) keeps the given one.
+      if (brought && !validateItemTypeCatalogue(brought).ok) {
+        console.warn('[item-types] brought invalid', { documentId: body.id });
+      } else if (brought) {
         console.info('[item-types] brought', {
           documentId: body.id,
           chosen: itemTypes === null,

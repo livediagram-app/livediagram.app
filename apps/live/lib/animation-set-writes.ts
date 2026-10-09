@@ -50,9 +50,18 @@ export function withSetAnimation(el: Element, set: AnimationSetId, value: string
   // writing it would store an invalid value and drop the one that is playing.
   if (value !== null && !isAnimationInSet(set, value)) return el;
   const f = fieldsOf(set);
+  // The legacy trio goes; a Speed chosen for it (in the Text section) carries over to the pick.
+  const rec = el as unknown as Record<string, unknown>;
   const legacy =
     set === 'text' && el.type === 'text'
-      ? { animation: undefined, animationSpeed: undefined, animationRepeat: undefined }
+      ? {
+          animation: undefined,
+          animationSpeed: undefined,
+          animationRepeat: undefined,
+          ...(value !== null && playsLegacy(el) && rec.textAnimationSpeed === undefined
+            ? { textAnimationSpeed: rec.animationSpeed }
+            : {}),
+        }
       : {};
   return patch(el, { [f.value]: value ?? undefined, ...legacy });
 }
@@ -87,11 +96,15 @@ export function withoutAnimations(el: Element): Element {
   return patch(el, { animation: undefined, textAnimation: undefined });
 }
 
-/** What a category reads: the first member's value, Speed and Repeat. */
+/** What a category reads: the first member's value, Speed and Repeat, and whether the value is a
+ *  text element's legacy body animation (shown as the kept tile even where the Text set has a value
+ *  of that name, as Glow: they are different motions). */
 export function setAnimationState(
   elements: readonly Element[],
   set: AnimationSetId,
-): { value: string | null; speed: AnimationSpeed | undefined; repeat: boolean } | undefined {
+):
+  | { value: string | null; speed: AnimationSpeed | undefined; repeat: boolean; legacy: boolean }
+  | undefined {
   const first = elements.find((el) => inAnimationSet(set, el));
   if (!first) return undefined;
   const f = fieldsFor(set, first);
@@ -103,6 +116,7 @@ export function setAnimationState(
   return {
     value: value ?? null,
     speed: rec[f.speed] as AnimationSpeed | undefined,
+    legacy: set === 'text' && playsLegacy(first),
     repeat: f === TEXT ? setRepeats('text', rec[f.repeat]) : setRepeats('shape', rec[f.repeat]),
   };
 }

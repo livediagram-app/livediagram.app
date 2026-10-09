@@ -48,6 +48,14 @@ describe('usePresetCardTypes', () => {
     expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['task', 'action']);
   });
 
+  it('adds only what is missing after a Blank board, never dropping the default types', () => {
+    const { rerender, base, saveCatalogue } = setup();
+    rerender({ ...base, tabs: [tab([board('a', 'blank')])] });
+    expect(saveCatalogue).not.toHaveBeenCalled();
+    rerender({ ...base, tabs: [tab([board('a', 'blank'), board('b', 'bug-triage')])] });
+    expect(ids(saveCatalogue.mock.lastCall![0])).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
+  });
+
   it('adds only what is missing once the document has cards, and nothing for a Blank board', () => {
     const { rerender, base, saveCatalogue } = setup({ hasCards: true });
     rerender({ ...base, tabs: [tab([board('a', 'blank')])] });

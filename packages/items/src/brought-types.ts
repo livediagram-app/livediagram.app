@@ -264,25 +264,31 @@ export type ReadyMadeCardTypeId = ItemTypeId | (typeof BROUGHT)[number]['id'];
 
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);
 
-// The ready-made types named (ids, in order) that the document lacks, each once.
+// The ready-made types named (ids, in order) that the document lacks, each once. One whose name a type of the
+// document already has (one renamed "Task", say) is left out: names are unique within a catalogue.
 export function broughtTypesToAdd(
   named: readonly string[] | undefined,
   types: readonly ItemTypeDef[],
 ): ItemTypeDef[] {
   const have = new Set(types.map((t) => t.id));
+  const labels = new Set(types.map((t) => t.label.toLowerCase()));
   const out: ItemTypeDef[] = [];
   for (const id of named ?? []) {
     const t = READY_MADE_CARD_TYPES.find((b) => b.id === id);
-    if (!t || have.has(id)) continue;
+    if (!t || have.has(id) || labels.has(t.label.toLowerCase())) continue;
     have.add(id);
+    labels.add(t.label.toLowerCase());
     out.push(t);
   }
   return out;
 }
 
-// The default types the document lacks (Add Default Types), in their order.
+// The default types the document lacks (Add Default Types), in their order, as many as there is room for.
 export function defaultTypesToAdd(types: readonly ItemTypeDef[]): ItemTypeDef[] {
-  return broughtTypesToAdd(DEFAULT_TYPE_IDS, types);
+  return broughtTypesToAdd(DEFAULT_TYPE_IDS, types).slice(
+    0,
+    Math.max(0, ITEM_TYPES_MAX - types.length),
+  );
 }
 
 type BoardLike = { type?: unknown; shape?: unknown; planBoard?: unknown };
@@ -301,6 +307,16 @@ export function boardTypeIdsOf(elements: readonly BoardLike[]): string[] {
   return named;
 }
 
+// Whether a board among `elements` takes every type (Blank): made first, it chose the default types while storing
+// nothing, so a later board is not among the first and only adds what is missing.
+export function hasBlankBoard(elements: readonly BoardLike[]): boolean {
+  return elements.some((el) => {
+    if (el.type !== 'shape' || el.shape !== 'plan-board') return false;
+    const setup = normaliseBoardSetup(el.planBoard);
+    return !!setup && !setup.archive && !setup.allCards && setup.addTypes === undefined;
+  });
+}
+
 // The ready-made types the Plan boards among `elements` bring that the document lacks, in board order.
 export function boardTypesToAdd(
   elements: readonly BoardLike[],
@@ -314,16 +330,20 @@ const sameIds = (a: readonly ItemTypeDef[], b: readonly ItemTypeDef[]) =>
 
 // The catalogue a document holds once the boards among `elements` are made in it (docs/specs/026-plan/item-types.md
 // "The type catalogue"), or null when that is what it holds already.
-// - Not chosen yet (`stored` null) and no cards (`hasCards` false): the first boards choose its card types, exactly
-//   the ones they bring. Bringing just the five default types is what it reads as already: null.
+// - Not chosen yet (`stored` null), no cards (`hasCards` false) and no Blank board already there (`hadBlank` false,
+//   hasBlankBoard): the first boards choose its card types, exactly the ones they bring. Bringing just the five
+//   default types is what it reads as already: null.
+// - A Blank board already there chose the default types (storing nothing): a later board adds what it lacks, as
+//   below.
 // - Otherwise: `stored` (or the default types) with the types the boards bring that it lacks after them, at most
 //   ITEM_TYPES_MAX in all.
 export function catalogueWithBoardTypes(
   stored: ItemTypeCatalogue | null,
   elements: readonly BoardLike[],
   hasCards = false,
+  hadBlank = false,
 ): ItemTypeCatalogue | null {
-  if (stored === null && !hasCards) {
+  if (stored === null && !hasCards && !hadBlank) {
     const chosen = broughtTypesToAdd(boardTypeIdsOf(elements), []).slice(0, ITEM_TYPES_MAX);
     if (chosen.length === 0 || sameIds(chosen, ITEM_TYPES)) return null;
     return { version: ITEM_TYPE_CATALOGUE_VERSION, types: chosen };

@@ -21,6 +21,8 @@ type BoardLike = Parameters<typeof catalogueWithBoardTypes>[1][number];
 export interface KnownCardTypes {
   stored: ItemTypeCatalogue | null;
   hasCards: boolean;
+  // Whether a Blank board was already there (it chose the default types, storing nothing): hasBlankBoard.
+  hadBlank?: boolean;
 }
 
 async function readKnown(api: ApiClient, documentId: string): Promise<KnownCardTypes> {
@@ -55,15 +57,15 @@ export async function bringBoardCardTypes(
   known?: KnownCardTypes,
 ): Promise<string[]> {
   if (boardTypeIdsOf(elements).length === 0) return [];
-  const { stored, hasCards } = known ?? (await readKnown(api, documentId));
-  const next = catalogueWithBoardTypes(stored, elements, hasCards);
+  const { stored, hasCards, hadBlank = false } = known ?? (await readKnown(api, documentId));
+  const next = catalogueWithBoardTypes(stored, elements, hasCards, hadBlank);
   const ok = next !== null && (await saved(api, documentId, next));
-  return ok ? gained({ stored, hasCards }, next) : [];
+  return ok ? gained({ stored, hasCards, hadBlank }, next) : [];
 }
 
 // The ids the document gained. A fresh document's card types were chosen whole: every one is the board's.
-function gained({ stored, hasCards }: KnownCardTypes, next: ItemTypeCatalogue): string[] {
-  if (stored === null && !hasCards) return next.types.map((t) => t.id);
+function gained({ stored, hasCards, hadBlank }: KnownCardTypes, next: ItemTypeCatalogue): string[] {
+  if (stored === null && !hasCards && !hadBlank) return next.types.map((t) => t.id);
   const had = new Set(typesOf(stored).map((t) => t.id));
   return next.types.filter((t) => !had.has(t.id)).map((t) => t.id);
 }
