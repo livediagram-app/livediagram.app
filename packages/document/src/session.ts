@@ -190,6 +190,7 @@ const NON_VOTABLE_SHAPES = new Set([
   // (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards").
   'plan-board',
   'plan-view',
+  'plan-sheet',
 ]);
 
 // The key a Plan card's dots go under in `votes`: one per card, however many boards or card elements show it.

@@ -51,7 +51,7 @@ export function PaletteToolRow({
     if (highlighted) rowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [highlighted]);
 
-  const onClick = onPress ?? tileHandler(def, actions);
+  const onClick = onPress ?? tileHandler(def, actions, pendingDraw);
   const dragStart = tileDragStart(def.action);
   return (
     <button

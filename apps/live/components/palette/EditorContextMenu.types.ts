@@ -178,6 +178,8 @@ export type EditorContextMenuProps = {
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
+  // A chart drawn from a sheet range: make it an ordinary chart, keeping its last read.
+  onUnlinkChart: () => void;
   // Line chart (docs/specs/009-elements/pie-chart.md): open the data modal for the given element (the 2-D
   // grid is too wide for the menu, which just summarises the series).
   onEditLineData: (elementId: string) => void;

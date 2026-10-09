@@ -19,6 +19,8 @@
 // message instead of pasting nonsense.
 
 import { isValidElement, migrateIncomingElements, type Element } from '@livediagram/document';
+import type { SheetJson } from '@livediagram/sheets';
+import { sheetsForClipboard, stashSheetSeeds } from './sheet-seeds';
 
 // 2: freehand points are packed (docs/specs/006-document/stroke-points.md); an older editor
 // refuses a version 2 payload rather than pasting strokes it cannot draw.
@@ -40,6 +42,9 @@ export type ClipboardEnvelope = {
   kind: typeof CLIPBOARD_KIND;
   copiedAt: number;
   elements: Element[];
+  // The sheets of copied Sheet elements (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). Optional and
+  // additive, so the version stays 2.
+  sheets?: SheetJson[];
 };
 
 // Fields that carry WHO did something rather than WHAT the element is. They are
@@ -73,13 +78,35 @@ export function stripIdentity(el: Element): Element {
 
 /** The clipboard text for a selection. */
 export function serialiseElements(elements: Element[]): string {
+  const sheetIds = elements.flatMap((el) =>
+    el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId
+      ? [el.planSheet.copyOf ?? el.planSheet.sheetId]
+      : [],
+  );
+  const sheets = sheetsForClipboard(sheetIds);
   const envelope: ClipboardEnvelope = {
     schemaVersion: CLIPBOARD_SCHEMA_VERSION,
     kind: CLIPBOARD_KIND,
     copiedAt: Date.now(),
     elements: elements.map(stripIdentity),
+    ...(sheets.length ? { sheets } : {}),
   };
-  return JSON.stringify(envelope);
+  const text = JSON.stringify(envelope);
+  // Sheets past the clipboard's size travel without their cells (the copy is then made only within the document).
+  return text.length > MAX_CLIPBOARD_BYTES && sheets.length
+    ? JSON.stringify({ ...envelope, sheets: undefined })
+    : text;
+}
+
+// The sheets a pasted payload carried, stashed for the pasted Sheets (lib/sheet-seeds.ts).
+export function takeSheetSeeds(text: string | null | undefined): void {
+  if (!text || !text.includes('"sheets"') || text.length > MAX_CLIPBOARD_BYTES) return;
+  try {
+    const env = JSON.parse(text) as Partial<ClipboardEnvelope>;
+    if (env.kind === CLIPBOARD_KIND && Array.isArray(env.sheets)) stashSheetSeeds(env.sheets);
+  } catch {
+    // Not ours, or broken: nothing to stash.
+  }
 }
 
 /**

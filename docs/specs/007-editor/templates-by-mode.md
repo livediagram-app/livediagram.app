@@ -72,7 +72,7 @@ Popular opens with one blank per mode, in mode order:
 | Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                                          |
 | Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                                  |
 | Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
-| Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start with a Board.                            |
+| Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.

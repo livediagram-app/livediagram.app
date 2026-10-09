@@ -1,6 +1,7 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
   containerContents,
+  withSheetCharts,
   anchorOutward,
   anchorPosition,
   isBoxed,
@@ -82,10 +83,17 @@ export function useBoxedDragHandlers({
     // resize re-sizes the section outline and leaves its contents put.
     //
     // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
-    // the same way: a branch is one idea, and its points follow its heading.
+    // the same way: a branch is one idea, and its points follow its heading. A Sheet carries the charts drawn
+    // from it that sit on it.
     const ids =
       mode === 'move'
-        ? withMindSubtrees(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds))
+        ? withSheetCharts(
+            d.activeTab.elements,
+            withMindSubtrees(
+              d.activeTab.elements,
+              containerContents(d.activeTab.elements, baseIds),
+            ),
+          )
         : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();

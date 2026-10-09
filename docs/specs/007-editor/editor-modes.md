@@ -96,7 +96,7 @@ where it is and changes only how the next mark is made.
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
   is in, a new document or a tab added from the tab bar (or Quick Start)
   opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
-  (its `opensIn` is Plan, for everyone) with no Quick Start, showing Plan's own **Start with a Board**
+  (its `opensIn` is Plan, for everyone) with no Quick Start, showing Plan's own **Start Planning**
   picker ([Plan mode](../026-plan/plan-mode.md#starting-a-board)), whose **Open Quick Start** button
   brings the Quick Start back for another kind of tab. Only the template chosen for it changes that: the
   **Whiteboard** opens in Draw (switching its maker there too), an

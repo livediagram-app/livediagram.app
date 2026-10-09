@@ -90,6 +90,12 @@ Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a d
 `ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
 context-menu category. New chart kinds reuse it under the same Data palette category.
 
+## Charts drawn from a sheet
+
+A chart may carry `chartSource` (a sheet and a range of it): its data is then read live from that Sheet's cells and
+the element's own data is the last read ([Sheet charts](../029-sheets/sheet.md#charts)). Its Data menu offers
+**Unlink From Sheet** in place of the data editor.
+
 ## Chart palettes
 
 Without a chart-level palette, saying "this chart is greys" would mean opening

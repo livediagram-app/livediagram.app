@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe('Tooltip', () => {
-  it('names the control after a 1 s hover, as an inverse pill', () => {
+  it('names the control after a 500 ms hover, as an inverse pill', () => {
     render(
       <Tooltip label="Zoom in">
         <button type="button" aria-label="Zoom in" />

@@ -4,7 +4,7 @@
 export type HintKind = 'tooltip' | 'hover-card';
 
 // A pointer resting this long on a control is asking what it is called.
-export const TOOLTIP_OPEN_DELAY_MS = 1000;
+export const TOOLTIP_OPEN_DELAY_MS = 500;
 // After a tooltip closes, the next one skips its delay for this long.
 export const TOOLTIP_WARMUP_MS = 500;
 // Time the pointer has to cross the gap from the control onto the hint.

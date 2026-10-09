@@ -7,11 +7,11 @@ Status: shipped
 Three kinds of floating content sit beside a control. Each has one name, and the name means one thing
 in code, copy and specs.
 
-| Concept        | Carries                                  | Opens                                                  | Interactive |
-| -------------- | ---------------------------------------- | ------------------------------------------------------ | ----------- |
-| **Tooltip**    | The control's name, and nothing else     | After a **1 s** hover; **instantly** on keyboard focus | No          |
-| **Hover card** | A bold title over a one-line description | **Instantly** on hover and on keyboard focus           | No          |
-| **Popover**    | Controls: menus, pickers, forms          | On click or tap                                        | Yes         |
+| Concept        | Carries                                  | Opens                                                     | Interactive |
+| -------------- | ---------------------------------------- | --------------------------------------------------------- | ----------- |
+| **Tooltip**    | The control's name, and nothing else     | After a **500 ms** hover; **instantly** on keyboard focus | No          |
+| **Hover card** | A bold title over a one-line description | **Instantly** on hover and on keyboard focus              | No          |
+| **Popover**    | Controls: menus, pickers, forms          | On click or tap                                           | Yes         |
 
 Tooltips and hover cards are the two kinds of **hint**: content that appears because a control was
 hovered or focused, and that goes away when it no longer is. A popover is not a hint. It opens because
@@ -32,11 +32,11 @@ A control has at most one hint. If a hover card is present, it carries the name 
 
 ## Tooltip
 
-- **Opens after a 1 s hover.** A pointer passing over a toolbar on its way somewhere else does not
+- **Opens after a 500 ms hover.** A pointer passing over a toolbar on its way somewhere else does not
   light it up. A pointer resting on a control is asking what it is.
 - **Warm-up.** Once a tooltip has opened, the next one opens at once while the pointer moves along a
   row of controls, for as long as it arrives within **500 ms** of the last tooltip closing. Scanning a
-  toolbar reads each name without paying the second each time.
+  toolbar reads each name without paying the wait each time.
 - **Opens instantly on keyboard focus.** Focus that is not keyboard-visible (a click, a dialog
   focusing its first control) does not open it.
 - **The name only**, on one line where it fits, in the interface's small text. It may wrap; it never
@@ -93,7 +93,7 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
 - **Placement.** Above the control by preference; below, right or left when there is no room, kept
   inside the viewport. The pointer tracks the control's centre when the hint slides to stay on screen.
 - **Motion.** A hint fades in as a small fade (see [Motion](./motion.md)), and not at all under reduced
-  motion. The 1 s wait before a tooltip is an intent timer, not motion, and does not count against the
+  motion. The 500 ms wait before a tooltip is an intent timer, not motion, and does not count against the
   motion budget.
 - **Dark-aware.** Both follow the app's appearance, not the operating system's native tooltip style.
 - **Dark mode uses the dark chrome's colours.** In dark mode a hint is never a lighter card on the

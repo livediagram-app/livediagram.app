@@ -11,5 +11,7 @@ export const CATEGORY_BANDS: Record<number, string> = {
   3: 'Dynamic',
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"), listed first in
   // that mode, straight after Popular.
-  4: 'Plan',
+  4: 'Boards & Cards',
+  // Plan mode's Sheets (docs/specs/029-sheets/sheet.md "Placing a sheet"), after Boards & Cards.
+  5: 'Spreadsheets',
 };

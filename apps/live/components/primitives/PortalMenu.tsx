@@ -25,6 +25,8 @@ type PortalMenuBase = {
   placement?: PortalMenuPlacement;
   onClose: () => void;
   children: ReactNode;
+  // A wider menu for rows that carry a line under their name (the Sheet's function menus): 20rem, not 14.
+  wide?: boolean;
 };
 
 // A command menu (the default) or, when it holds a control, a control menu
@@ -57,6 +59,7 @@ function CommandPortalMenu({
   children,
   label,
   initialFocus,
+  wide,
 }: PortalMenuBase & { label?: string; initialFocus?: MenuInitialFocus }) {
   const { attach, element, tree, surfaceProps } = useMenu({
     onClose,
@@ -72,6 +75,7 @@ function CommandPortalMenu({
       attach={attach}
       tree={tree}
       surfaceProps={surfaceProps}
+      wide={wide}
     >
       {children}
     </PortalMenuFrame>
@@ -84,6 +88,7 @@ function ControlPortalMenu({
   onClose,
   children,
   label,
+  wide,
 }: PortalMenuBase & { label: string }) {
   const { attach, element, tree, surfaceProps } = useControlMenu({
     onClose,
@@ -98,6 +103,7 @@ function ControlPortalMenu({
       attach={attach}
       tree={tree}
       surfaceProps={surfaceProps}
+      wide={wide}
     >
       {children}
     </PortalMenuFrame>
@@ -110,6 +116,7 @@ function PortalMenuFrame({
   attach,
   tree,
   surfaceProps,
+  wide = false,
   children,
 }: {
   at: { left: number; top: number } | null;
@@ -117,6 +124,7 @@ function PortalMenuFrame({
   attach: (el: HTMLElement | null) => void;
   tree: MenuTree;
   surfaceProps: object;
+  wide?: boolean | undefined;
   children: ReactNode;
 }) {
   if (!at) return null;
@@ -126,7 +134,7 @@ function PortalMenuFrame({
         <div
           ref={attach}
           {...surfaceProps}
-          className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
+          className={`fixed z-[var(--z-popover)] flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
           style={{ left: at.left, top: at.top, transform: PLACEMENT_TRANSFORM[placement] }}
         >
           {children}

@@ -108,6 +108,7 @@ export type PaletteTileSection =
   | 'plan-visualisations'
   // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
   | 'logo'
+  | 'plan-sheets'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to

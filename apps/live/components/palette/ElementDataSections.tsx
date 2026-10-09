@@ -77,6 +77,7 @@ import {
   LegendDataEditor,
   MindFlowTiles,
   LineDataSummary,
+  LinkedChartData,
   PieDataEditor,
   ProgressAnimTiles,
   ProgressRow,
@@ -92,6 +93,12 @@ import { useContextMenuScaffold } from './useContextMenuScaffold';
 // Plan pays nothing for it.
 const PlanBoardMenuSections = dynamic(
   () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSections),
+  { ssr: false },
+);
+
+// A Sheet's settings flyout (docs/specs/029-sheets/sheet.md "Sheet Settings"), loaded with the sheet chunk.
+const SheetMenuSection = dynamic(
+  () => import('@/components/sheets/SheetMenuSection').then((m) => m.SheetMenuSection),
   { ssr: false },
 );
 
@@ -233,6 +240,14 @@ export function ElementDataSections({
           />
         </>
       ) : null}
+      {/* A Sheet's settings: the cog's sections, as a board's Board flyout. */}
+      {shapeTarget?.shape === 'plan-sheet' ? (
+        <SheetMenuSection
+          element={shapeTarget}
+          flyoutProps={flyoutProps('plan-sheet')}
+          onClose={props.onClose}
+        />
+      ) : null}
       {shapeTarget?.shape === 'plan-card' && shapeTarget.planCard ? (
         <PlanCardMenuSection
           element={shapeTarget}
@@ -320,7 +335,9 @@ export function ElementDataSections({
               icon={<DataMenuGlyph />}
               {...sectionProps('pie-data')}
             >
-              {isLine ? (
+              {shapeTarget?.chartSource ? (
+                <LinkedChartData onUnlink={props.onUnlinkChart} />
+              ) : isLine ? (
                 <LineDataSummary
                   palette={chartFallbackPalette}
                   series={

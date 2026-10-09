@@ -80,6 +80,9 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'plan-card': 'card ticket task story bug epic issue item todo note idea action risk jira trello',
   'plan-view':
     'gantt timeline calendar due dates workload capacity status breakdown donut chart dashboard report widget priority matrix',
+  // The Sheet (docs/specs/029-sheets/sheet.md).
+  'plan-sheet':
+    'spreadsheet sheet excel google sheets table grid cells formula budget csv numbers calculate',
 };
 
 /** A tile's search keywords: for a shape, its kind's synonyms; for any other tile, its label and

@@ -594,6 +594,7 @@ export * from './poll';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
+export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';

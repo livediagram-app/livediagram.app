@@ -36,4 +36,14 @@ describe('remintElementIds', () => {
     ]);
     expect(out.map((e) => e.type)).toEqual(['arrow', 'shape']);
   });
+
+  it('links a chart to the copy of its Sheet', () => {
+    const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
+    const [sheet, chart] = remintElementIds([
+      shape('s', { shape: 'plan-sheet', planSheet: { sheetId: 'sheet0001' } }),
+      shape('c', { shape: 'bar-chart', chartSource: { sheetId: 'sheet0001', range } }),
+    ]) as ShapeElement[];
+    expect(sheet!.planSheet!.sheetId).not.toBe('sheet0001');
+    expect(chart!.chartSource).toEqual({ sheetId: sheet!.planSheet!.sheetId, range });
+  });
 });

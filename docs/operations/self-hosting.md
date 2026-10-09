@@ -260,6 +260,10 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
 - Migration `0077_workbench.sql` creates the four workbench tables; it runs with the others.
 
+## Sheets
+
+Plan-mode Sheets ([Sheet store](../specs/029-sheets/sheet-store.md)) need no setup: migration `0078_sheets.sql` creates the `sheets` and `sheet_cells` tables and runs with the others, and the worker's existing daily scheduled run removes sheets that no Sheet element shows any more.
+
 ## Google Drive mirror (optional, needs Clerk)
 
 Signed-in users can mirror My documents to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.

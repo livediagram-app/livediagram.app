@@ -9,13 +9,14 @@ import { useSyncExternalStore } from 'react';
 import { getMaximisedPlanId, getMaximisedPlanKind, subscribeMaximisedPlan } from './maximised-plan';
 
 export type PlanCover = {
-  // The board filling the open tab, or null.
-  fillTabBoardId: string | null;
+  // The board or Sheet filling the open tab, or null, and which it is.
+  fillTabId: string | null;
+  fillTabKind: 'Board' | 'Sheet' | null;
   // How many elements the open tab holds (Setup Board's Fill Tab warning).
   tabElementCount: number;
 };
 
-let cover: PlanCover = { fillTabBoardId: null, tabElementCount: 0 };
+let cover: PlanCover = { fillTabId: null, fillTabKind: null, tabElementCount: 0 };
 const listeners = new Set<() => void>();
 
 export function getPlanCover(): PlanCover {
@@ -25,7 +26,8 @@ export function getPlanCover(): PlanCover {
 // Publishes the open tab's cover; listeners hear only a real change.
 export function setPlanCover(next: PlanCover): void {
   if (
-    next.fillTabBoardId === cover.fillTabBoardId &&
+    next.fillTabId === cover.fillTabId &&
+    next.fillTabKind === cover.fillTabKind &&
     next.tabElementCount === cover.tabElementCount
   )
     return;
@@ -42,15 +44,15 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
-// Anything covers the canvas: a board or view maximised, or a board filling the tab. Read at a key press too.
+// Anything covers the canvas: a board, view or Sheet maximised, or a board or Sheet filling the tab. Read at a key press too.
 export function isCanvasCovered(): boolean {
-  return getMaximisedPlanId() !== null || cover.fillTabBoardId !== null;
+  return getMaximisedPlanId() !== null || cover.fillTabId !== null;
 }
 
 // A board covers it (maximised or filling the tab), not a view: what the palette narrows to Cards for, since cards
 // land only on a board.
 export function isBoardCovering(): boolean {
-  return getMaximisedPlanKind() === 'Board' || cover.fillTabBoardId !== null;
+  return getMaximisedPlanKind() === 'Board' || cover.fillTabKind === 'Board';
 }
 
 const serverFalse = () => false;
@@ -62,9 +64,9 @@ export function useBoardCovering(): boolean {
   return useSyncExternalStore(subscribe, isBoardCovering, serverFalse);
 }
 
-// The board filling the open tab is `id`.
+// The board or Sheet filling the open tab is `id`.
 export function useFillsTab(id: string): boolean {
-  return useSyncExternalStore(subscribe, () => cover.fillTabBoardId === id, serverFalse);
+  return useSyncExternalStore(subscribe, () => cover.fillTabId === id, serverFalse);
 }
 
 const zero = () => 0;

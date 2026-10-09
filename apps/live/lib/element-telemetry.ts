@@ -79,6 +79,7 @@ const SHAPE_TOKENS: Record<string, string> = {
   'plan-card': 'PlanCard',
   // Plan view (docs/specs/026-plan/plan-views.md "Telemetry"), never the view kind.
   'plan-view': 'PlanView',
+  'plan-sheet': 'PlanSheet',
 };
 
 // The Element token for a shape kind. Every path that reports a shape (the

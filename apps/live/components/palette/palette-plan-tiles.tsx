@@ -12,6 +12,7 @@ import { BoardWidgetArt, PlanBoardTileArt, PlanCardTileArt } from '@/components/
 import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { PLAN_VIEW_TILES } from './palette-plan-view-tiles';
+import { PLAN_SHEET_TILES } from './palette-plan-sheet-tiles';
 
 const GLYPH_PX = 18;
 // The one larger tile step (docs/specs/004-interface-design/iconography.md): a Plan card tile is a picture of a card with its type's glyph on the face, drawn bigger to
@@ -19,7 +20,7 @@ const GLYPH_PX = 18;
 export const CARD_TILE_GLYPH_PX = 26;
 
 // The boards the palette offers, in the order they are reached for, with what each is for. One list for the palette's
-// Boards and Start with a Board; All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
+// Boards and Start Planning; All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
 export const PLAN_BOARD_TILES: {
   preset: PlanBoardPresetId;
   caption: string;
@@ -104,6 +105,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
   })),
   // Metrics and visualisations (docs/specs/026-plan/plan-views.md): plan views placed on the canvas.
   ...PLAN_VIEW_TILES,
+  ...PLAN_SHEET_TILES,
 ];
 
 // A card tile for an item type (docs/specs/026-plan/item-types.md "Where types show"): the built-in

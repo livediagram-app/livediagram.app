@@ -16,6 +16,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:^",
+    "@livediagram/sheets": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@mdx-js/loader": "^3.1.0",

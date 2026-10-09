@@ -96,7 +96,9 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // The Plan board, card and view (docs/specs/026-plan/plan-board.md, plan-views.md) paint their own surfaces.
     kind !== 'plan-board' &&
     kind !== 'plan-card' &&
-    kind !== 'plan-view'
+    kind !== 'plan-view' &&
+    // The Sheet (docs/specs/029-sheets/sheet.md) paints its own grid.
+    kind !== 'plan-sheet'
   );
 }
 

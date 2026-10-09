@@ -4,6 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { ownColours } from './behaviour-skin';
@@ -117,6 +118,8 @@ export type BoxedExportOptions = {
   items?: ReadonlyMap<string, Item>;
   // The document's item types (docs/specs/026-plan/item-types.md); the built-in ones without them.
   itemTypes?: readonly ItemTypeDef[];
+  // Sheet windows by sheet id (docs/specs/029-sheets/sheet.md "Exports and images").
+  sheets?: ReadonlyMap<string, SheetRenderModel>;
 };
 
 // The face a label paints in: the author's own choice, else the notation's
@@ -384,7 +387,8 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
       el.shape === 'checklist' ||
       el.shape === 'plan-board' ||
       el.shape === 'plan-card' ||
-      el.shape === 'plan-view')
+      el.shape === 'plan-view' ||
+      el.shape === 'plan-sheet')
   )
     return false;
   return !selfLabelled(el);

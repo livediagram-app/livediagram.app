@@ -36,6 +36,7 @@
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
+    "@livediagram/sheets": "workspace:*",
     "@livediagram/sticky-model": "workspace:*",
     "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",

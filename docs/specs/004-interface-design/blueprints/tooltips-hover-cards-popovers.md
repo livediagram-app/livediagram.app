@@ -235,7 +235,7 @@ surface.
 
 | Rule (spec)                                 | Test                                                               |
 | ------------------------------------------- | ------------------------------------------------------------------ |
-| Tooltip opens after 1 s hover               | `Tooltip.test.tsx` (fake timers); e2e `hints.spec.ts` palette tile |
+| Tooltip opens after 500 ms hover            | `Tooltip.test.tsx` (fake timers); e2e `hints.spec.ts` palette tile |
 | Tooltip opens at once on keyboard focus     | `Tooltip.test.tsx`; e2e palette tile via Tab                       |
 | Mouse focus opens nothing                   | `useHint.test.tsx`                                                 |
 | Warm-up                                     | `hint-registry.test.ts`; `Tooltip.test.tsx` second trigger         |

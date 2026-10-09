@@ -570,6 +570,12 @@ document"**; everything else stays put.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
+- **The family:** a loading Sheet shows its sibling `SheetBuildAnimation`
+  ([Sheet](../029-sheets/sheet.md#the-sheet-element), "Loading"), the same
+  cursor, timing and colours typing data into a small table, with the same
+  label and bar. The two share `build-animation-kit` (the ease, the cursor,
+  the loop's phase) and the bar is the shared `LoadingSweep`, so they stay
+  alike.
 
 Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's

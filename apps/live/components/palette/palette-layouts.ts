@@ -167,6 +167,7 @@ const PLAN: PaletteLayout = {
     { id: 'plan-widgets' },
     { id: 'plan-metrics' },
     { id: 'plan-visualisations' },
+    { id: 'plan-sheets' },
     { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
     {
       id: 'plan-tools',

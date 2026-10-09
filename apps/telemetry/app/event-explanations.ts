@@ -622,6 +622,31 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
+  'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
+  'Sheet|Opened|Settings':
+    "Someone opened a Sheet's settings cog (title, data, view, cell sizes, freeze and totals).",
+  'Sheet|Created|Blank': 'Someone set up a new Sheet from Setup Sheet as a blank grid.',
+  'Sheet|Created|Budget': 'Someone set up a new Sheet from the Budget layout.',
+  'Sheet|Created|Tracker': 'Someone set up a new Sheet from the Tracker layout.',
+  'Sheet|Created|Timesheet': 'Someone set up a new Sheet from the Timesheet layout.',
+  'Sheet|Created|Contacts': 'Someone set up a new Sheet from the Contacts layout.',
+  'Sheet|Created|Cards': 'Someone set up a new Sheet with their Plan cards as rows.',
+  'Sheet|Created|Csv':
+    'Someone chose Import CSV in Setup Sheet (Imported · Csv counts the file actually read; the picker can be cancelled).',
+  'Sheet|Created|Chart':
+    "Someone made a chart from a Sheet's cells (a bar, line or pie chart, live from the range).",
+  'Sheet|Imported|Csv':
+    'Someone filled a Sheet from a CSV file: Import CSV, or a CSV file dropped on the canvas in Plan mode.',
+  'Sheet|Exported|Csv': "Someone downloaded a Sheet's cells as a CSV file.",
+  'Plan|Toggled|SheetFillTabOn':
+    'Someone set a Sheet to fill its tab for everyone, deleting the rest of that canvas (undo brings it back).',
+  'Plan|Toggled|SheetFillTabOff': 'Someone put a Sheet that filled its tab back on the canvas.',
+  'Plan|Toggled|SheetMaximised': 'Someone maximised a Sheet to fill the canvas.',
+  'Plan|Toggled|BoardFocused':
+    "Someone pressed a board's Focus, gliding the view to fit it (or out to the whole tab when already fitted).",
+  'Plan|Toggled|SheetFocused':
+    "Someone pressed a Sheet's Focus, gliding the view to fit it (or out to the whole tab when already fitted).",
+  'Plan|Toggled|SheetRestored': 'Someone put a maximised Sheet back in its place on the canvas.',
   'Search|Opened|': 'The global search panel was opened.',
   'Search|Searched|':
     'A query was typed into search. Counted once per session, not on every keystroke.',
@@ -1494,7 +1519,17 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
   'Plan|Removed': 'Someone took a filter off a Card Search view.',
   'Plan|Toggled':
-    'Someone flagged a card for attention or took its flag off, or maximised a board or view or restored it (the value says which).',
+    'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',
+  'Sheet|Changed':
+    'Someone changed a Sheet (a spreadsheet tab on a Plan tab): the value says what kind of change (a cell, a formula, formatting, rows, a sort, a paste, ...), never what was typed.',
+  'Sheet|Opened': 'Someone opened a panel on a Sheet (the value says which: Find or Settings).',
+  'Sheet|Created':
+    'Someone set up a new Sheet (the value says how it started) or made a chart from its cells (Chart).',
+  'Sheet|Imported': 'Someone filled a Sheet from a file (the value says which kind: Csv).',
+  'Sheet|Exported':
+    "Someone downloaded a Sheet's cells as a file (the value says which kind: Csv).",
+  'Sheet|Used':
+    'Someone saved a Sheet formula using a function for the first time in that formula (the value is the function name, from the fixed list).',
   'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',
   'Plan|Opened':
     'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',

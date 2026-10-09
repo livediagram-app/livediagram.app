@@ -135,6 +135,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'plan-card': { width: 240, height: 120 },
   // A plan view's own size comes from its view (planViewSize); this is a visualisation's.
   'plan-view': { width: 720, height: 400 },
+  // A Sheet (docs/specs/029-sheets/sheet.md "Placing a sheet"): about nine columns by eighteen rows.
+  'plan-sheet': { width: 960, height: 560 },
   // Progress bar: a wide, short pill. Progress ring: a square donut
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
@@ -568,6 +570,8 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
   // Plan view: Status Breakdown unless its caller names the view.
   if (kind === 'plan-view') return { ...base, planView: { view: 'workload' } };
+  // Sheet: its caller makes the sheet in the store and names it.
+  if (kind === 'plan-sheet') return { ...base, planSheet: { sheetId: '' } };
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the starting content each one shows on drop,
   // so a new one reads as what it is. Colours come from the caller
   // (createComponent maps the theme); without one the renderer's fallbacks

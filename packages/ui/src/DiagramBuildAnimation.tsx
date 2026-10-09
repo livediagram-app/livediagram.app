@@ -1,6 +1,15 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
+import { useRef } from 'react';
+import {
+  BuildCursor,
+  cursorFadeKeyframes,
+  cursorKeyframes,
+  ease,
+  glideStops,
+  useLoopPhase,
+  type Point,
+} from './build-animation-kit';
 
 // Decorative "someone is drawing a diagram" loop: a collaborator cursor
 // labelled "You" places a card, drags a connector that draws under it to
@@ -32,7 +41,6 @@ const NODES: Node[] = [
   { id: 'n3', x: 108, y: 116, color: '#10b981', pop: 54 },
 ];
 
-type Point = [number, number];
 type Edge = {
   id: string;
   from: string;
@@ -104,23 +112,13 @@ const pathD = ({ p: [a, b, c, d] }: Edge) =>
 // lower-right quarter, so the card reads as placed by the cursor.
 const grip = (n: Node): Point => [n.x + W * 0.62, n.y + H * 0.6];
 
-const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
-const r1 = (v: number) => Math.round(v * 10) / 10;
-
 // The cursor's path as dense keyframe stops: eased glides between gestures,
 // and while a connector draws, samples of that connector's own curve at the
 // same pace as its dash, so the tip stays glued to the line being drawn.
-function cursorStops(): string {
+function cursorStops(): [number, Point][] {
   const stops: [number, Point][] = [];
-  const glide = (t0: number, t1: number, from: Point, to: Point) => {
-    for (let i = 0; i <= 8; i++) {
-      const e = ease(i / 8);
-      stops.push([
-        t0 + (t1 - t0) * (i / 8),
-        [from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e],
-      ]);
-    }
-  };
+  const glide = (t0: number, t1: number, from: Point, to: Point) =>
+    glideStops(stops, t0, t1, from, to);
   const ride = (edge: Edge) => {
     const [t0, t1] = edge.draw;
     for (let i = 0; i <= 12; i++) {
@@ -141,9 +139,7 @@ function cursorStops(): string {
   ride(e3);
   glide(79, 88, e3.p[3], rest);
   stops.push([100, rest]);
-  return stops
-    .map(([t, [x, y]]) => `  ${r1(t)}% { transform: translate(${r1(x)}px, ${r1(y)}px); }`)
-    .join('\n');
+  return stops;
 }
 
 function nodeFrames(n: Node): string {
@@ -185,12 +181,6 @@ const PULSE_FRAMES = `@keyframes ldb-pulse {
   ${PULSE[1]}%, 100% { opacity: 0; stroke-dashoffset: -1; }
 }`;
 
-const CURSOR_FADE = `@keyframes ldb-cursor-fade {
-  0% { opacity: 0; }
-  3%, 84% { opacity: 1; }
-  89%, 100% { opacity: 0; }
-}`;
-
 const anim = (name: string, timing = 'linear') =>
   `animation: ${name} ${DURATION_MS}ms ${timing} var(--ldb-delay, 0ms) infinite;`;
 
@@ -211,36 +201,14 @@ ${EDGES.map((e) => `  .ldb-${e.id}-line { ${anim(`ldb-${e.id}-line`, 'ease-in-ou
 ${NODES.map(nodeFrames).join('\n')}
 ${EDGES.map(edgeFrames).join('\n')}
 ${PULSE_FRAMES}
-${CURSOR_FADE}
-@keyframes ldb-cursor-move {
-${cursorStops()}
-}
+${cursorFadeKeyframes('ldb-cursor-fade')}
+${cursorKeyframes('ldb-cursor-move', cursorStops())}
 }`;
-
-// The loop's phase is measured from when the drawing first started in this
-// document, so a remount (the /new creating stage giving way to the editor's
-// own load, see the spec's in-place handoff) continues the drawing instead of
-// restarting. A prerendered copy (the quiet landing's, painted from the HTML)
-// is already animating before any script runs, so the first mount reads its
-// phase from that running animation rather than taking "now" as the start:
-// otherwise the copy that replaces it jumped back to the loop's beginning,
-// reading as a second loader.
-let epoch: number | null = null;
 
 export function DiagramBuildAnimation({ className = 'max-w-[240px]' }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    const now = performance.now();
-    if (epoch === null) {
-      const running = el?.getAnimations?.({ subtree: true })[0]?.currentTime;
-      const elapsed = typeof running === 'number' ? running : 0;
-      epoch = now - elapsed;
-      // This copy IS the running drawing: its own delay already matches the phase.
-      if (elapsed > 0) return;
-    }
-    el?.style.setProperty('--ldb-delay', `${-((now - epoch) % DURATION_MS)}ms`);
-  }, []);
+  // The /new creating stage gives way to the editor's own load in place: the drawing continues, never restarts.
+  useLoopPhase(ref, 'diagram', DURATION_MS, '--ldb-delay');
 
   return (
     <div ref={ref} className={`mx-auto w-full ${className}`}>
@@ -367,38 +335,7 @@ export function DiagramBuildAnimation({ className = 'max-w-[240px]' }: { classNa
           </g>
         ))}
 
-        {/* The collaborator cursor. The outer group carries the path, the
-            inner one the fade, so the two keyframe sets stay independent. */}
-        <g className="ldb-cursor-move" aria-hidden="true">
-          <g className="ldb-cursor">
-            <path
-              d="M0 0 L0 15.5 L4.2 11.6 L7.2 18.2 L10 17 L7.1 10.6 L12.6 10.4 Z"
-              className="fill-brand-500 dark:fill-brand-400"
-              stroke="white"
-              strokeWidth={1.25}
-              strokeLinejoin="round"
-            />
-            <rect
-              x={11}
-              y={17}
-              width={28}
-              height={15}
-              rx={7.5}
-              className="fill-brand-500 dark:fill-brand-400"
-            />
-            <text
-              x={25}
-              y={27.6}
-              textAnchor="middle"
-              fontSize={9}
-              fontWeight={600}
-              fill="white"
-              fontFamily="ui-sans-serif, system-ui, sans-serif"
-            >
-              You
-            </text>
-          </g>
-        </g>
+        <BuildCursor moveClass="ldb-cursor-move" fadeClass="ldb-cursor" />
       </svg>
       <style>{CSS}</style>
     </div>

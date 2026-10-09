@@ -1,7 +1,7 @@
 'use client';
 
 // Whether a document needs its items (docs/specs/026-plan/plan-mode.md "Cost"): a document with no Plan
-// board, card or view on the open tab, no card slide in its deck, and no tab opening in Plan, never fetches them, so a plain diagram
+// board, card, view or Sheet (whose card functions read them, docs/specs/029-sheets/formulas.md) on the open tab, no card slide in its deck, and no tab opening in Plan, never fetches them, so a plain diagram
 // pays nothing for Plan. Once needed it stays needed for the session (latched), so moving to a tab
 // without Plan content keeps the items it already holds.
 import { useState } from 'react';
@@ -15,7 +15,10 @@ export function hasPlanContent(
     elements.some(
       (el) =>
         el.type === 'shape' &&
-        (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view'),
+        (el.shape === 'plan-board' ||
+          el.shape === 'plan-card' ||
+          el.shape === 'plan-view' ||
+          el.shape === 'plan-sheet'),
     ) || !!presentation?.includes('"itemId"')
   );
 }

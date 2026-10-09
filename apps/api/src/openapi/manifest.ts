@@ -32,6 +32,13 @@ interface QueryParam {
   description: string;
 }
 
+const SHEET_TAB_QUERY: QueryParam = {
+  name: 'tabId',
+  required: false,
+  description:
+    "The tab a tab-scoped link reaches (required on one); a GET's tabId also narrows to that tab's sheets.",
+};
+
 const ITEM_TAB_QUERY: QueryParam = {
   name: 'tabId',
   required: false,
@@ -696,6 +703,62 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [ITEM_TAB_QUERY],
     responseSchema: 'PlanResponse',
     statuses: [200, 401, 403, 404, 405, 410],
+  },
+  // The sheet store (docs/specs/029-sheets/sheet-store.md). A caller on a tab-scoped link adds ?tabId=.
+  {
+    method: 'GET',
+    path: '/documents/{id}/sheets',
+    segment: 'documents',
+    tag: 'Sheets',
+    summary:
+      "The document's sheets, cells included: a tab's (tabId), named ones (ids, comma-separated, up to 50), or all. A tab-scoped link gets its tab's only.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [
+      SHEET_TAB_QUERY,
+      { name: 'ids', required: false, description: 'Sheet ids, comma-separated, up to 50.' },
+    ],
+    responseSchema: 'SheetsResponse',
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/sheets',
+    segment: 'documents',
+    tag: 'Sheets',
+    summary:
+      "Make a sheet on a tab: blank, filled (a layout and up to 5,000 cells), or a copy of another of the document's sheets (copyOf). Titles are unique on a tab. Needs edit access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [SHEET_TAB_QUERY],
+    requestSchema: 'SheetCreateRequest',
+    responseSchema: 'SheetResponse',
+    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/sheets/{sheetId}',
+    segment: 'documents',
+    tag: 'Sheets',
+    summary: 'Delete a sheet and its cells.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [SHEET_TAB_QUERY],
+    statuses: [204, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/sheets/{sheetId}/writes',
+    segment: 'documents',
+    tag: 'Sheets',
+    summary:
+      'Change a sheet: cells (inputs and format keys, by row and column id), its layout (insert, delete, move, order, size, hide, freeze, merge, filter) or its title. Answers the write as it landed, the new rev and the stored cells it touched.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [SHEET_TAB_QUERY],
+    requestSchema: 'SheetWriteRequest',
+    responseSchema: 'SheetWriteResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   // The item store (docs/specs/026-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
   {

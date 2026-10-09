@@ -1,7 +1,12 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/document';
 import { COMPONENT_SIZE } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
+import {
+  ES_BOARD_LAYER_ID,
+  PLAN_SHEET_ID_PATTERN,
+  eventStormingLayers,
+} from '@livediagram/document';
+import { takePlacedSheet } from './sheet-seeds';
 import {
   buildDrawnArrow,
   buildDressedDrawnArrow,
@@ -442,5 +447,27 @@ describe('buildDrawnBoxed', () => {
       width: 200,
       height: 100,
     });
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Placing a sheet": a drawn or tapped Sheet names a new sheet the Sheet then makes.
+describe('buildDrawnBoxed for a Sheet', () => {
+  it('names a new sheet, placed and waiting to be made', () => {
+    const out = buildDrawnBoxed(
+      { type: 'shape', kind: 'plan-sheet' },
+      100,
+      100,
+      100,
+      100,
+      null,
+      tab(),
+    ) as {
+      shape: string;
+      planSheet: { sheetId: string };
+    };
+    expect(out.shape).toBe('plan-sheet');
+    expect(out.planSheet.sheetId).toMatch(PLAN_SHEET_ID_PATTERN);
+    expect(takePlacedSheet(out.planSheet.sheetId)).toEqual({});
+    expect(takePlacedSheet(out.planSheet.sheetId)).toBeNull();
   });
 });

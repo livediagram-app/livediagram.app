@@ -34,7 +34,7 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **The board's ⋯ menu**: left of the cog, for a document with a slide deck, a **⋯** ("More for {Title}") opening
   the board's actions as icon-left rows: **Add to Slides** (the board as a slide; announces "Board added to the
   slides").
-- **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) left of Maximise,
+- **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after Maximise,
   for someone who may edit. It opens a popover under it holding the same four sub-sections as the element menu's Board
   (**Board Setup**, **Swimlanes**, **Supported Cards**, **Card Layout**), each under a heading that opens it,
   one at a time (Board Setup when it opens; opening one closes the other); it scrolls when taller than the window. A press
@@ -469,6 +469,19 @@ Left as they are: the board preset gallery (PlanBoardPicker: large visual previe
 a three-way segmented control, not a list of options), and the palette's Plan tiles (cards and views to drag onto the
 canvas, part of the palette's catalogue, not a setting).
 
+## Focus
+
+- A board's header (and a Sheet's, [Sheet](../029-sheets/sheet.md#header)) holds **Focus** (a scan-eye glyph, with a
+  tooltip "Focus Board" / "Focus Sheet") left of Maximise (the header ends Focus, Maximise, then the cog), for anyone in Plan mode, not while it is maximised or fills
+  its tab. Pressed, the view glides (about 420 ms, eased; at once under reduced motion) to fit the element with the
+  fit-to-screen margin, zooming in no further than 150%. Pressed again while the view already fits it, it glides out
+  to fit everything on the tab. The view is the person's own, never saved or sent. Anything else moving the view
+  while it glides (a wheel, a pinch, a pan, another fit) takes over: the glide stops where it is.
+- A board, visualisation or Sheet this person adds (placed from the palette, dropped, drawn to size, picked in Start
+  Planning) glides into view the same way (on a phone too, in place of the scroll that reveals other new elements).
+  A peer's add, an undo or a tab switch does not move the view.
+- Telemetry: `Plan · Toggled · BoardFocused` / `SheetFocused`.
+
 ## Maximised board
 
 A board can be maximised to work on it without the rest of the canvas around it.
@@ -542,7 +555,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
 ## Fill Tab
 
 A board can be set to **fill its tab**: the tab becomes the board, for everyone, every time the tab is shown. Named
-**Fill Tab** (what it does to the tab, in two words, beside Maximise, which is one person's view for a moment).
+**Fill Tab** (what it does to the tab, in two words, beside Maximise, which is one person's view for a moment). A
+Sheet fills its tab by the same rules, set from its Sheet Settings ([Fill Tab](../029-sheets/sheet.md#fill-tab)).
 
 - **Stored on the board** (`fillTab: true` on its set-up; absent is off), so it syncs to collaborators, survives a
   reload and is undone like any board edit.
@@ -574,8 +588,8 @@ A board can be set to **fill its tab**: the tab becomes the board, for everyone,
 - **Turning it off** (the On Canvas row, or the wizard run again) puts the board back on the canvas, where it was,
   and the normal Maximise/Restore comes back. A person who had the board maximised when Fill Tab came on is
   released from the maximise at once.
-- **Two boards set to fill one tab** (an agent's or a collaborator's write, a paste): the first in canvas order
-  (element order) fills it; the others stay under it, unseen.
+- **Two boards (or Sheets) set to fill one tab** (an agent's or a collaborator's write, a paste): the first in canvas
+  order (element order) fills it; the others stay under it, unseen.
 - **Elements added while it is on** (a collaborator or their agent, a palette shape dropped on the board; this person's own paste and tool keys stand down)
   are **hidden, not blocked**: they are kept in the tab under the board, unseen and unreachable, until Fill Tab is
   turned off, and they count among the elements deleted if it is turned on again. Blocking would need every add

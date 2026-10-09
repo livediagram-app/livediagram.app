@@ -57,6 +57,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Cli: 'Commands agents and scripts ran with the livediagram command line, by command.',
   Plan: 'Plan boards: items made, moved, opened, voted on and deleted, and board set-up and reveal.',
+  Sheet:
+    'Sheets, the spreadsheet tabs on Plan tabs: changes by kind, functions used, Find, and CSV in and out. Never what was typed.',
   Agent:
     "Agents changing documents through changesets: applied, refused because something changed since the agent read it or a person had it selected, and reverted, by where they came from (MCP, CLI, API, or the editor's Undo). Never what changed.",
   Community:
@@ -125,6 +127,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
   Plan: '#2563eb',
+  // Green, the spreadsheet's own.
+  Sheet: '#16a34a',
   // Pink, the heart on a Community card.
   Community: '#db2777',
   Email: '#0d9488',

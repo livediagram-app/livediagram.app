@@ -4,8 +4,10 @@
 // shapes down with it. They are render-free and unit-tested now; everything
 // that genuinely needs a rasteriser lives here.
 
-import type { ItemsResponse } from '@livediagram/api-schema';
+import type { ItemsResponse, SheetsResponse } from '@livediagram/api-schema';
+import { renderModelsForTab, sheetFramesOf } from '@livediagram/sheets';
 import {
+  cardSourceOf,
   readItemTypeCatalogue,
   typesOf,
   type Item,
@@ -13,7 +15,7 @@ import {
   type ItemTypeDef,
 } from '@livediagram/items';
 import { embedTabImages } from '@livediagram/api-schema';
-import { renderElementsToSvg, type Tab } from '@livediagram/document';
+import { renderElementsToSvg, type SheetRenderModel, type Tab } from '@livediagram/document';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
@@ -58,30 +60,58 @@ async function buildImageResolver(
 // render placeholders for image elements (the pre-embedding behaviour).
 export type ImageBlock = { type: 'image'; data: string; mimeType: string };
 
-// A Plan board's or card's items (docs/specs/026-plan/plan-board.md), so a preview draws their cards;
-// none when the tab has no Plan shape, or the document is not named.
+// A Plan board's or card's items (docs/specs/026-plan/plan-board.md), and a Sheet's window of cells
+// (docs/specs/029-sheets/sheet.md "Exports and images"), so a preview draws them; none when the tab has neither, or
+// the document is not named. Each read is best-effort: a preview without it still draws.
 async function planContentFor(
   tab: Tab,
   auth: { env: Env; token: string; documentId?: string } | undefined,
-): Promise<{ items?: ReadonlyMap<string, Item>; itemTypes?: readonly ItemTypeDef[] }> {
+): Promise<{
+  items?: ReadonlyMap<string, Item>;
+  itemTypes?: readonly ItemTypeDef[];
+  sheets?: ReadonlyMap<string, SheetRenderModel>;
+}> {
   const plan = tab.elements.some(
     (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
   );
-  if (!plan || !auth?.documentId) return {};
+  const frames = sheetFramesOf(tab.elements as never);
+  if ((!plan && frames.length === 0) || !auth?.documentId) return {};
   const path = `/documents/${encodeURIComponent(auth.documentId)}`;
+  const ids = [...new Set(frames.map((f) => f.sheetId))].slice(0, 50);
+  const sheets = ids.length
+    ? await apiJson<SheetsResponse>(
+        auth.env,
+        auth.token,
+        `${path}/sheets?ids=${ids.join(',')}`,
+      ).catch(() => null)
+    : null;
+  const sheetCards = !!sheets?.sheets.some((s) =>
+    s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
+  );
   // The items, and the document's item types so custom types keep their colours
-  // (docs/specs/026-plan/item-types.md). Each is best-effort: a preview without them still draws.
-  const [items, doc] = await Promise.all([
-    apiJson<ItemsResponse>(auth.env, auth.token, `${path}/items`).catch(() => null),
-    apiJson<{ document?: { itemTypes?: ItemTypeCatalogue | null } }>(
-      auth.env,
-      auth.token,
-      path,
-    ).catch(() => null),
-  ]);
+  // (docs/specs/026-plan/item-types.md).
+  const [items, doc] =
+    plan || sheetCards
+      ? await Promise.all([
+          apiJson<ItemsResponse>(auth.env, auth.token, `${path}/items`).catch(() => null),
+          apiJson<{ document?: { itemTypes?: ItemTypeCatalogue | null } }>(
+            auth.env,
+            auth.token,
+            path,
+          ).catch(() => null),
+        ])
+      : [null, null];
+  const itemTypes = typesOf(readItemTypeCatalogue(doc?.document?.itemTypes ?? null));
   return {
     ...(items ? { items: new Map(items.items.map((i) => [i.id, i])) } : {}),
-    itemTypes: typesOf(readItemTypeCatalogue(doc?.document?.itemTypes ?? null)),
+    ...(plan ? { itemTypes } : {}),
+    ...(sheets
+      ? {
+          sheets: renderModelsForTab(sheets.sheets, frames, {
+            cards: sheetCards && items ? cardSourceOf(items.items, itemTypes) : null,
+          }),
+        }
+      : {}),
   };
 }
 

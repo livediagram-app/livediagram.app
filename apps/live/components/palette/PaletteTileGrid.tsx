@@ -58,14 +58,25 @@ export type PaletteTileActions = {
   addTechIcon: (iconId: string) => void;
   // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
   beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
+  // Puts the armed tool down (its tile pressed again).
+  cancelDraw?: () => void;
   // Whether image uploads are available (the editor supplied onAddImage);
   // gates the `needsImage` tiles exactly as the Tools / Components tabs
   // always have.
   hasImage: boolean;
 };
 
-export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
+// A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A marker keeps its press, which opens its settings.
+export function tileHandler(
+  def: PaletteTileDef,
+  actions: PaletteTileActions,
+  pendingDraw?: PendingDraw | null,
+): () => void {
   const a = def.action;
+  if (a.type !== 'marker' && actions.cancelDraw && tileActive(def, pendingDraw)) {
+    return actions.cancelDraw;
+  }
   switch (a.type) {
     case 'shape':
       // The creation-time choice rides along, so "Add poll" places a poll and
@@ -244,7 +255,7 @@ function TileButton({
   onPress?: () => void;
 }) {
   const a = def.action;
-  const onClick = onPress ?? tileHandler(def, actions);
+  const onClick = onPress ?? tileHandler(def, actions, pendingDraw);
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);

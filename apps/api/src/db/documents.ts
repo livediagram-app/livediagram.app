@@ -9,6 +9,7 @@ import {
   type TabItemElement,
 } from '@livediagram/items';
 import { copyItemsStatements, listItems } from './items';
+import { copySheetsStatements } from './sheets';
 import { remapTabLinks, type Element } from '@livediagram/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
@@ -558,7 +559,9 @@ export async function copyDocument(
     await copiedItemIds(env, sourceId, rows, onlyTabId),
     redactForCommunity,
   );
-  await env.DB.batch([...inserts, ...itemCopies]);
+  // The sheets of the copied tabs, each under its tab's new id (docs/specs/029-sheets/sheet-store.md "Copies").
+  const sheetCopies = copySheetsStatements(env, sourceId, newId, tabIdMap, now);
+  await env.DB.batch([...inserts, ...itemCopies, ...sheetCopies]);
   return await getDocument(env, newId);
 }
 

@@ -1,12 +1,13 @@
 // The maximised Plan element (docs/specs/026-plan/plan-board.md "Maximised board", plan-views.md "Maximised
-// view"): which board or visualisation, if any, this person has filling the canvas area (the editor's header, tab
-// bar, footer, palette and panels stay; no zen chrome). A view for them alone: a module store, never synced, saved
-// or undone. A board filling its tab (plan-board.md "Fill Tab") is not this: it is the board's own setting.
+// view", docs/specs/029-sheets/sheet.md "Maximised"): which board, visualisation or sheet, if any, this person has
+// filling the canvas area (the editor's header, tab bar, footer, palette and panels stay; no zen chrome). A view for
+// them alone: a module store, never synced, saved or undone. A board filling its tab (plan-board.md "Fill Tab") is
+// not this: it is the board's own setting.
 import { useSyncExternalStore } from 'react';
 import { track } from '@/lib/telemetry';
 
 // What is maximised, which names its telemetry (BoardMaximised, ViewRestored...).
-export type MaximisedKind = 'Board' | 'View';
+export type MaximisedKind = 'Board' | 'View' | 'Sheet';
 
 let current: { id: string; kind: MaximisedKind } | null = null;
 // Restoring: the element shrinks back to its place (MaximisedPlanLayer) before it stops being maximised.

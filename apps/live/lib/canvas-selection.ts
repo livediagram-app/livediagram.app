@@ -176,7 +176,8 @@ export function deriveCanvasSelection(input: {
       selected.type === 'shape' &&
       (selected.shape === 'plan-board' ||
         selected.shape === 'plan-card' ||
-        selected.shape === 'plan-view')
+        selected.shape === 'plan-view' ||
+        selected.shape === 'plan-sheet')
     ) &&
     editingId !== selected.id &&
     !isPaintMode &&

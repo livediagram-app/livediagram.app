@@ -56,6 +56,20 @@ describe('opForScope (what a scoped session receives)', () => {
     });
   });
 
+  it('delivers a sheet write only to sessions on its tab', () => {
+    const op = { kind: 'sheets', sheetId: 's1', tabId: SCOPE, rev: 3 };
+    expect(opForScope(op, SCOPE)).toBe(op);
+    expect(opForScope({ ...op, tabId: 'elsewhere' }, SCOPE)).toBeNull();
+    const presence = {
+      kind: 'sheet-presence',
+      tabId: 'elsewhere',
+      sheetId: 's1',
+      ranges: null,
+      editing: false,
+    };
+    expect(opForScope(presence, SCOPE)).toBeNull();
+  });
+
   it('delivers item writes to a scoped session without their items', () => {
     const op = { kind: 'items', upserts: [{ id: 'i1' }], removed: ['i2'], rev: 7 };
     expect(opForScope(op, null)).toBe(op);

@@ -70,6 +70,7 @@ export type {
   LinkCardElement,
   VideoElement,
   PlanCardRef,
+  PlanSheetRef,
   PlanViewRef,
 } from './element-types';
 
@@ -369,7 +370,12 @@ export type Tab = {
 
 // --- Type guards -----------------------------------------------------------
 
-export { takesTypedLabel } from './element-types';
+export {
+  isPlanSheetRef,
+  newPlanSheetId,
+  PLAN_SHEET_ID_PATTERN,
+  takesTypedLabel,
+} from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
 export * from './illustrate-page';
@@ -490,6 +496,7 @@ export * from './entity-geometry';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
+export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
@@ -566,6 +573,7 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure

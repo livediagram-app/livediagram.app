@@ -112,7 +112,7 @@ each a [ready-made type](#ready-made-card-types); the document has those and no 
 
 ### Blank Plan
 
-One tab (named as any new tab is), empty: no board, so the tab shows Plan's **Start with a Board** picker
+One tab (named as any new tab is), empty: no board, so the tab shows Plan's **Start Planning** picker
 ([Plan mode](plan-mode.md#starting-a-board)), where the person picks the board that fits (or opens the Quick Start).
 The mode's blank, as Blank Diagram is Diagram's.
 

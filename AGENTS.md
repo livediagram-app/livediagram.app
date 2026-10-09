@@ -210,6 +210,7 @@ packages/
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
+  sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import

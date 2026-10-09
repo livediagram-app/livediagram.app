@@ -1,3 +1,4 @@
+import { Button } from '@livediagram/ui';
 import { type ReactNode } from 'react';
 import {
   CHECKLIST_MAX_ITEMS,
@@ -212,6 +213,21 @@ export function LineDataSummary({
       >
         Edit data
       </button>
+    </div>
+  );
+}
+
+// A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is the sheet's, edited
+// there, so the Data category says so and offers Unlink, which keeps the last read as an ordinary chart's data.
+export function LinkedChartData({ onUnlink }: { onUnlink: () => void }) {
+  return (
+    <div className="px-2 py-1.5">
+      <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-300">
+        Drawn live from a Sheet&apos;s cells. Change the cells to change the chart.
+      </p>
+      <Button variant="secondary" size="xs" className="mt-1.5 w-full" onClick={onUnlink}>
+        Unlink From Sheet
+      </Button>
     </div>
   );
 }

@@ -377,7 +377,7 @@ export function PlanClusterScene() {
   );
 }
 
-/** The Start with a Board picker an empty Plan tab shows: a tile per board type, each a small picture. */
+/** The Start Planning picker an empty Plan tab shows: a tile per board type, each a small picture. */
 export function PlanBoardPickerScene() {
   const tiles: { name: string; cols: number; rows?: boolean }[] = [
     { name: 'Blank', cols: 0 },
@@ -401,7 +401,7 @@ export function PlanBoardPickerScene() {
         strokeWidth={2}
       />
       <Label x={210} y={32} size={14} weight={700} tone="strong" anchor="middle">
-        Start with a Board
+        Start Planning
       </Label>
       {tiles.map((t, i) => {
         const col = i % 4;

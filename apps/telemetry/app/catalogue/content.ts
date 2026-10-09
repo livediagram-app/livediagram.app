@@ -1,7 +1,7 @@
 // What gets made: documents, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
+import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livediagram/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
@@ -784,17 +784,32 @@ export const PLAN_MAXIMISED = chart(
   'Boards Maximised',
   'A board or a view maximised to fill the screen from its header, or restored to the canvas.',
   {
-    types: ['BoardMaximised', 'ViewMaximised', 'BoardRestored', 'ViewRestored'],
+    types: [
+      'BoardMaximised',
+      'ViewMaximised',
+      'SheetMaximised',
+      'BoardRestored',
+      'ViewRestored',
+      'SheetRestored',
+    ],
     rising: 'neutral',
   },
+);
+
+export const PLAN_FOCUSED = chart(
+  'Plan',
+  'Toggled',
+  'Boards and Sheets Focused',
+  "A board's or a Sheet's Focus pressed in its header: the view glides to fit it (or, pressed again, the whole tab).",
+  { types: ['BoardFocused', 'SheetFocused'], rising: 'neutral' },
 );
 
 export const PLAN_FILL_TAB = chart(
   'Plan',
   'Toggled',
-  'Boards Filling a Tab',
-  'A board set to fill its tab for everyone (the rest of its canvas deleted), or put back on the canvas.',
-  { types: ['FillTabOn', 'FillTabOff'], rising: 'neutral' },
+  'Boards and Sheets Filling a Tab',
+  'A board or Sheet set to fill its tab for everyone (the rest of its canvas deleted), or put back on the canvas.',
+  { types: ['FillTabOn', 'FillTabOff', 'SheetFillTabOn', 'SheetFillTabOff'], rising: 'neutral' },
 );
 
 export const PLAN_CARD_TYPES_DUPLICATED = chart(
@@ -819,6 +834,68 @@ export const PLAN_REVEALED = chart(
   'Reveal pressed on a board hiding writing, turning every card face up.',
 );
 
+export const SHEET_CHANGES = chart(
+  'Sheet',
+  'Changed',
+  'Sheet Changes',
+  'A change to a Sheet: a cell or formula saved, formatting, rows or columns, a sort, filter, paste or fill. One per change, never what was typed.',
+  { types: [...SHEET_CHANGE_KINDS] },
+);
+
+export const SHEET_FUNCTIONS = chart(
+  'Sheet',
+  'Used',
+  'Sheet Functions Used',
+  'A function used in a Sheet formula for the first time in that formula, by name.',
+);
+
+export const SHEET_FIND = chart(
+  'Sheet',
+  'Opened',
+  'Sheet Panels Opened',
+  "Find, or a Sheet's settings cog, opened on a Sheet.",
+  { types: ['Find', 'Settings'] },
+);
+
+export const SHEET_CREATED = chart(
+  'Sheet',
+  'Created',
+  'Sheets Set Up and Charts Made',
+  'A Sheet set up from Setup Sheet (by how it started), or a chart made from its cells.',
+  { types: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv', 'Chart'] },
+);
+
+export const SHEET_CSV_IMPORTED = chart(
+  'Sheet',
+  'Imported',
+  'Sheets From CSV',
+  'A Sheet filled from a CSV file: Import CSV, or a CSV dropped on the canvas in Plan mode.',
+  { types: ['Csv'] },
+);
+
+export const SHEET_CSV_EXPORTED = chart(
+  'Sheet',
+  'Exported',
+  'Sheets Downloaded as CSV',
+  "A Sheet's cells downloaded as a CSV file.",
+  { types: ['Csv'] },
+);
+
+export const SHEETS: MetricStack = {
+  stack: true,
+  title: 'Sheets',
+  blurb:
+    'Work in Sheets, the spreadsheet tabs on Plan tabs: setup, changes, functions, charts, panels and CSV.',
+  members: [
+    SHEET_CREATED,
+    SHEET_CHANGES,
+    SHEET_FUNCTIONS,
+    SHEET_FIND,
+    SHEET_CSV_IMPORTED,
+    SHEET_CSV_EXPORTED,
+  ],
+};
+
 export const PLAN_BOARDS: MetricStack = {
   stack: true,
   title: 'Plan boards',
@@ -832,6 +909,7 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_REMOVED,
     PLAN_FLAGS,
     PLAN_MAXIMISED,
+    PLAN_FOCUSED,
     PLAN_FILL_TAB,
     PLAN_SETUP_CHANGED,
     PLAN_CARD_TYPES_DUPLICATED,

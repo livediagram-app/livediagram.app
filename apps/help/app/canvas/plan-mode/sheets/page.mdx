@@ -1,0 +1,142 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Sheets',
+  description:
+    'Sheets in livediagram Plan mode: a spreadsheet tab on the canvas with cells, formulas, number formats, borders, merges, freeze, sort, filter, find and replace, CSV import and export, and Plan card functions.',
+  path: '/help/canvas/plan-mode/sheets/',
+});
+
+<ArticleLayout
+  title="Sheets"
+  description="A spreadsheet tab on the canvas: cells, formulas, formatting, sort and filter, next to your boards."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+A **Sheet** is one spreadsheet tab, the kind you know from Google Sheets or Excel, placed on a [Plan mode](/help/canvas/plan-mode/) tab beside your boards. Its formulas can read the other sheets on the tab and count or add up your [cards](/help/canvas/plan-mode/cards/).
+
+## Place a Sheet
+
+In Plan mode, open the palette's **Sheet** category (under **Spreadsheets**) and press **Sheet**, then click the canvas (or drag it out to the size you want). A new sheet has 100 rows by 26 columns, and is called **Sheet 1** (or the next free number on the tab).
+
+You can also drop a `.csv` or `.tsv` file on the canvas in Plan mode: it becomes a Sheet named after the file, filled with its rows.
+
+A Sheet moves by its header and resizes by its handles, like a board. Its colours follow the tab's theme. Outside Plan mode it is drawn like any other element, live as its cells change; double-click it to **Switch to Plan** and edit it.
+
+## Setup Sheet
+
+A new Sheet opens on **Setup Sheet**, a few quick steps:
+
+1. **Start From**: a **Blank** grid, a ready-made **Budget**, **Tracker**, **Timesheet** or **Contacts** layout, your **Plan Cards** as rows, or **Import CSV**. For Plan Cards, the next steps narrow the cards with the same search and filters as the Cards panel, then choose the columns from the fields those cards have (Number, Title, Type and State are always there). The rows stay linked to the cards, both ways:
+
+- Change a card anywhere and its row updates.
+- Edit a row and it waits as a draft, tinted, with **Save Card** (✓, or **Add Card** on a new row) and **Cancel Changes** (✕) in its **Controls** cell at the end of the table. **Save Card** writes the row to its card; **Cancel Changes** puts it back.
+- Clearing a **Title**, **State** or **Type** cell doesn't clear it on the card: a card always has them, so it keeps its value and the row shows it again.
+- Every card row has **Open Card** at the right of its title.
+- **Type**, **State**, **Priority**, **Assignee** and choice fields have a dropdown arrow in the selected cell to pick from; **Due** and **Start** pick a date.
+- Type in the row under the table (or a row you insert inside it) and press **Add Card** to make it a new card.
+- Delete a row and its card moves to the Trash, where you can restore it.
+
+2. **Style**: **Header**, **Banded**, **Boxed**, **Minimal** or **Plain**, whether to **Freeze Header Row**, and a **Cell Size**.
+
+Press **Create Sheet**, or **Start Blank** to skip it. Everything can change later from the cog.
+
+## Cells and Formulas
+
+- Click a cell and type. **Enter** saves and moves down, **Tab** moves right, **Escape** throws the edit away. After a run of Tabs, Enter goes back to the column you started in, one row down.
+- What you type is read the way a spreadsheet reads it: `12` is a number, `12%` a percent, `£12` currency, `8/10/2026` a date, `true` a true or false, and a leading `'` keeps it as text.
+- Start with `=` for a formula: `=SUM(A1:A10)`, `=IF(B2>100,"Over","OK")`. While you write one, click a cell (or drag across a range) to put its reference in; each reference is coloured, with its cells outlined to match. **F4** cycles `A1`, `$A$1`, `A$1` and `$A1`.
+- Typing a function name lists the matching functions; inside its brackets a hint shows what it takes. The toolbar's **Functions** category also lists every function, a menu per family (Maths, Statistics, Lookup and the rest), each with what it takes and what it does: pick one to start it in the selected cell, or, with several cells selected, to total them in the cell below. See [Sheet Functions](/help/canvas/plan-mode/sheet-functions/) for every function.
+- Read another sheet on the tab by clicking its cells while you write, or by typing its name: `='Budget'!B4`.
+- A formula that can't be read isn't saved: the part that can't be read is underlined, with a line saying why.
+
+## Move Around a Sheet
+
+Scroll as usual, or drag the cells around: with the middle mouse button, the right button, or the left button while you hold Space. A right-click that doesn't move still opens the menu. On a touch screen, drag with one finger; a tap still selects a cell, and two fingers zoom the canvas.
+
+## Select, Copy and Fill
+
+- Drag (or Shift and click) to select a range; Ctrl (⌘ on a Mac) and click adds another range. Click a column letter or a row number to select it, or the corner for everything.
+- For a selection of numbers, the bar at the bottom shows its **Sum**, **Average** and **Count**. Press it to choose what it shows, **Min** and **Max** included.
+- **Copy** and **Paste** work with Google Sheets, Excel, documents and emails: rows and columns, values and simple formats come across. A formula pasted elsewhere in the sheet keeps pointing at the same relative cells. Paste values only with Ctrl+Shift+V (⌘⇧V), or from **Paste Special** in a cell's right-click menu. **Paste** from the right-click menu asks your browser to let the page read the clipboard the first time; Ctrl+V (⌘V) never needs to ask.
+- Drag the small square at the selection's corner (the **fill handle**) to fill: one value is copied, `1, 2` continues as `3, 4`, `Item 1` as `Item 2`, `Jan` as `Feb`. Double-click it to fill down as far as the column beside it goes.
+
+## Named Ranges
+
+Give a cell or a range a name, so a formula reads it by name and keeps reading the same cells however far you fill it: select the cells, type a name such as `TaxRate` in the name box (left of **fx**), and press Enter. Then `=B2*TaxRate` works in any row. Typing a name there later selects its cells. Names start with a letter or `_`, can't look like a cell reference (`AB12`), and are listed in **Sheet Settings** › **Named Ranges**, where you can go to one or remove it. A formula can also use a name from another sheet on the same tab, as long as only one sheet has it.
+
+## Rows and Columns
+
+Right-click a column letter or row number to insert, delete, clear or hide, fit it to its contents, set its exact size with **Resize…**, or sort by a column. Drag a header's edge to resize it, or drag selected headers to move them. Right-click a cell for Cut, Copy and Paste along the menu's top, and its categories below: **Insert** and **Delete** (rows, columns, or cells that shift their neighbours), **Paste Special**, **Clear**, **Cells** (Sort Range… and Merge Cells) and **Chart**. Formulas follow their cells: inserting, deleting, moving or sorting rows never breaks them.
+
+Below the last row, **Add** puts more rows at the bottom (100 at a time, or the number you type).
+
+## Formatting
+
+The toolbar (shown in Plan mode to people who can edit) starts with a category switcher: **Text**, **Cells**, **Numbers**, **Data**, **Charts** and **Functions**, each showing just its own buttons. Together they set bold, italic, underline, strikethrough, text and fill colour, **Font Size** (step it with − and +, or type a size), borders, alignment (a button each for left, centre and right, and for top, middle and bottom), merging and wrapping, number formats (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text) and decimals. When the Sheet is narrow, the toolbar folds the buttons that don't fit into **More**.
+
+## Charts
+
+Select some cells, then pick **Charts** in the Sheet's toolbar and choose **Bar Chart**, **Line Chart** or **Pie Chart** (or right-click the cells and open **Chart**). Select a single cell to chart the whole table it sits in.
+
+The first row names the series and the first column labels the bars, slices or points. The chart floats over the Sheet and moves with it. Drag it off onto the canvas to place it anywhere: it stays live either way, so changing the cells changes the chart. To edit a chart's data by hand instead, open its **Data** menu and choose **Unlink From Sheet**.
+
+## Sheet Settings
+
+The cog in the Sheet's header opens **Sheet Settings** (the same sections are under **Sheet** when you right-click the Sheet):
+
+- **Sheet Setup**: rename the sheet, import or download a CSV, set up an empty sheet again with **Setup Sheet**, or start it over with **Clear Sheet** (every cell, format and setting goes, and Setup Sheet shows again).
+- **Sheet Options**: turn the gridlines, and the row numbers and column letters, on or off for everyone, and choose whether the Sheet sits **On Canvas** or fills the tab ([Fill Tab](#fill-tab)).
+- **Cells**: the width of new columns and height of new rows; ones you sized yourself keep their size.
+- **Freeze**: how many rows and columns stay put.
+- **Calculations**: which totals (Sum, Average, Count, Min, Max) show under a selection of numbers. The totals are your own choice.
+
+## Freeze, Sort, Filter and Find
+
+- **Freeze** keeps the first rows or columns in place while the rest scrolls. You can also drag the thick line on the row or column headers to freeze more or less.
+- **Sort A to Z** or **Z to A** sorts the sheet's rows by a column, keeping frozen header rows in place. **Sort Range…** sorts just the selection, by several columns, with **Data has a header row**.
+- **Filter** puts a button on each header cell: filter by values (a searchable list with counts) or by a condition (contains, greater than, between, date is before, and more). Filtered rows are hidden for everyone.
+- **Find** (Ctrl+F, ⌘F) searches values, and formulas too if you ask, and highlights every match. **Find and Replace** (Ctrl+H, or ⌘⇧H on a Mac) replaces in what was typed; **Replace All** is one step to undo.
+
+## Focus
+
+Press **Focus** (left of Maximise in the Sheet's header) to glide the view so the Sheet fits the screen. Press it again to zoom back out to the whole tab.
+
+## Maximise
+
+Press **Maximise Sheet** in the header, before the cog, to fill the canvas with the sheet, toolbar and formula bar included. **Restore Sheet** or **Escape** puts it back. Escape first closes Find or ends an edit, so a second Escape restores. Maximising is just for you: nobody else's view changes.
+
+## Fill Tab
+
+To make a Sheet the whole tab, open **Sheet Settings**, then **Sheet Options**, and choose **Fill Tab**. The Sheet then fills the tab for everyone, in every mode. Anything else on the tab is deleted (you're asked first), as one step you can undo. Choose **On Canvas** to put it back on the canvas.
+
+## CSV
+
+From the Sheet's **Sheet Settings** (the cog in its header), **Download CSV** saves `<title>.csv` with each value as shown. **Import CSV…** reads a `.csv` or `.tsv` file in: on a sheet that already has cells, choose **Replace Sheet** or **Insert at Selection**.
+
+## Together
+
+Everyone on the document sees each change as it is made, and each person's selection is outlined in their colour with their name. Two people typing in different cells never overwrite each other. Sheet changes join the canvas's **Undo** and **Redo**.
+
+## Keyboard
+
+| Keys                      | Does                                            |
+| ------------------------- | ----------------------------------------------- |
+| Arrows, Shift + arrows    | Move, or grow the selection                     |
+| Ctrl/⌘ + arrows           | Jump to the edge of the filled run              |
+| Ctrl/⌘ + Home, End        | A1, or the last filled cell                     |
+| Ctrl/⌘ + A                | The filled run around you, then the whole sheet |
+| Enter, F2                 | Edit the cell                                   |
+| Alt + Enter (⌥ Enter)     | A new line inside the cell                      |
+| Ctrl + Enter              | Type into every selected cell                   |
+| Delete, Backspace         | Clear what was typed (formats stay)             |
+| Ctrl/⌘ + D, R             | Fill down, fill right                           |
+| Ctrl/⌘ + B, I, U          | Bold, italic, underline                         |
+| Ctrl/⌘ + ;                | Today's date                                    |
+| Ctrl/⌘ + Shift + 1, 4, 5  | Number, Currency, Percent                       |
+| Ctrl/⌘ + F; Ctrl + H, ⌘⇧H | Find; Find and Replace                          |
+| Escape                    | Leave the grid                                  |
+
+</ArticleLayout>

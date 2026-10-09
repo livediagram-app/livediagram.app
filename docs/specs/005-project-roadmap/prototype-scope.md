@@ -33,6 +33,10 @@ The editor is real:
   with `@name #label !priority ~points`, an item panel, voting and hide-writing for retros, presence on cards, one undo
   timeline with the canvas, ten Plan templates (boards set up for their use, with no cards), and item verbs for the CLI and MCP
   ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
+- **Sheets** ([Sheet](../029-sheets/sheet.md)): a Plan-mode spreadsheet tab on the canvas, kept in its own D1 store:
+  cells, 157 functions (reading other sheets on the tab and Plan cards), number formats, borders, merges,
+  freeze, sort, filter, find and replace, copy and paste with Google Sheets and Excel, CSV in and out, live for
+  everyone with one undo timeline, maximised like a board, and sheet tools for the CLI and MCP.
 - **Snap colours**: on a whiteboard, one option converts every custom colour into the board's stock colours, so an imported or hand-coloured board adapts to light and dark like everything drawn in stock colours ([Draw mode](../023-draw-mode/draw-mode.md#snap-colours)).
 - **Packed pen strokes**: every freehand stroke is stored as one compact binary block of points and pressures, so a board of thousands of strokes fits its tab; an editor left open across a format change asks calmly to be reloaded. See [Stroke points](../006-document/stroke-points.md) and [New version prompt](../016-platform/new-version-prompt.md).
 - **Corners that scale down**: a corner preset is drawn at most a quarter of a shape's shorter side, so a small rounded square stays a rounded square ([Corner radius](../008-canvas/corner-radius.md)).

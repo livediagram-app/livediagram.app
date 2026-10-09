@@ -105,6 +105,18 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Change Card Types',
     'Adding, editing or deleting a document’s card types.',
   ),
+  mcpTool('ListSheets', 'List Sheets', 'Listing a document’s sheets.'),
+  mcpTool(
+    'ReadSheet',
+    'Read Sheet',
+    'Reading a sheet’s cells by A1, with their worked-out values.',
+  ),
+  mcpTool(
+    'ChangeSheet',
+    'Change Sheet',
+    'Setting, clearing or formatting cells, or changing a sheet’s rows and columns.',
+  ),
+  mcpTool('AddSheet', 'Add Sheet', 'Putting a new Sheet on a tab, blank or from rows or CSV.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

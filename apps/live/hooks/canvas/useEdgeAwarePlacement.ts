@@ -6,6 +6,18 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 type XY = { x: number; y: number };
 type Bounds = { x: number; y: number; width: number; height: number };
 
+// Whether a box overlaps any floating chrome over the canvas (`data-floating-panel`: the palette, panels, the
+// top-centre toolbar), other than one it sits in.
+export function overlapsChrome(r: DOMRect, self: Element): boolean {
+  for (const el of document.querySelectorAll('[data-floating-panel]')) {
+    if (el.contains(self)) continue;
+    const b = el.getBoundingClientRect();
+    if (b.width === 0 || b.height === 0) continue;
+    if (r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top) return true;
+  }
+  return false;
+}
+
 // Positions a floating box that hovers above (or below, when there's no room)
 // a canvas-space `bounds`, nudging it back inside the viewport when it would
 // overflow an edge. Shared by FloatingToolbar + SelectionPopover so the subtle
@@ -61,12 +73,14 @@ export function useEdgeAwarePlacement(
       ? host.getBoundingClientRect()
       : { top: 0, bottom: window.innerHeight, left: 0, right: window.innerWidth };
     if (!flippedRef.current) {
-      if (placeAbove && rect.top < area.top + EDGE) {
+      // The floating chrome over the canvas (the palette, the panels) counts as an edge too: a box that would
+      // sit on it flips to the selection's other side, as it does at the header.
+      if (placeAbove && (rect.top < area.top + EDGE || overlapsChrome(rect, node))) {
         flippedRef.current = true;
         setPlaceAbove(false);
         return;
       }
-      if (!placeAbove && rect.bottom > area.bottom - EDGE) {
+      if (!placeAbove && (rect.bottom > area.bottom - EDGE || overlapsChrome(rect, node))) {
         flippedRef.current = true;
         setPlaceAbove(true);
         return;

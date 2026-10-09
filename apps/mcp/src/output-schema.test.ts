@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { ITEM_TYPES } from '@livediagram/items';
+import {
+  applySheetWrite,
+  emptySheet,
+  NOBODY,
+  sheetFromJson,
+  sheetToJson,
+  Workbook,
+  writeRows,
+  type SheetJson,
+  type SheetWrite,
+} from '@livediagram/sheets';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts). The
 // stub keeps the structured result, which is what this suite checks.
 vi.mock('./image-result', () => ({
@@ -40,7 +51,31 @@ const BOARD_ELEMENT = {
     hideWriting: false,
   },
 };
-const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [BOARD_ELEMENT] };
+// A filled sheet, framed by a Sheet element on the tab, for the sheet tools.
+function filledSheet(): SheetJson {
+  const blank = emptySheet({ id: 'sheet_costs1', tabId: 't1', title: 'Costs' });
+  const rows = [
+    ['Item', 'Cost'],
+    ['Rent', 1200],
+    ['Total', '=SUM(B2:B2)'],
+  ];
+  const made = writeRows(new Workbook({ sheets: [blank], locale: 'en-GB' }), blank.id, 'A1', rows);
+  if (!made.ok) throw new Error(made.error);
+  const sheet = applySheetWrite(blank, made.write, { now: 0, by: NOBODY }).sheet;
+  return sheetToJson({ ...sheet, layout: { ...sheet.layout, frozenRows: 1, merges: [] } });
+}
+const SHEET = filledSheet();
+const SHEET_ELEMENT = {
+  id: 'sh1',
+  type: 'shape',
+  shape: 'plan-sheet',
+  x: 900,
+  y: 0,
+  width: 960,
+  height: 560,
+  planSheet: { sheetId: SHEET.id },
+};
+const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [BOARD_ELEMENT, SHEET_ELEMENT] };
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
 const CHANGESET = {
   dryRun: false,
@@ -113,6 +148,15 @@ async function api(request: Request): Promise<Response> {
     return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/sheets'))
+    return request.method === 'POST'
+      ? json({ sheet: { ...SHEET, id: ((await request.json()) as { id: string }).id, cells: [] } })
+      : json({ sheets: [SHEET] });
+  if (path.endsWith('/writes')) {
+    const { write } = (await request.json()) as { write: SheetWrite };
+    const applied = applySheetWrite(sheetFromJson(SHEET), write, { now: 0, by: NOBODY }).applied;
+    return json({ applied, rev: 2, cells: [] });
+  }
   if (path === '/trash') {
     return json({
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
@@ -214,6 +258,27 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
         { op: 'delete', type: 'Bug' },
       ],
     },
+  },
+  { tool: 'list_sheets', output: 'listSheetsOutput', args: { documentId: 'd1' } },
+  { tool: 'read_sheet', output: 'readSheetOutput', args: { documentId: 'd1', sheet: 'Costs' } },
+  {
+    tool: 'change_sheet',
+    output: 'changeSheetOutput',
+    args: {
+      documentId: 'd1',
+      sheet: 'Costs',
+      changes: [
+        { op: 'set', at: 'C1', rows: [['Yearly'], ['=B2*12']] },
+        { op: 'format', range: 'A1:C1', format: { bold: true } },
+        { op: 'insert_rows', at: 2 },
+        { op: 'freeze', rows: 1 },
+      ],
+    },
+  },
+  {
+    tool: 'add_sheet',
+    output: 'addSheetOutput',
+    args: { documentId: 'd1', title: 'Costs', csv: 'a,b\n1,2' },
   },
 ];
 

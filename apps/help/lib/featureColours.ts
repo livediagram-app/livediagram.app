@@ -30,6 +30,8 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   cards: '#0d9488',
   'card-types': '#0891b2',
   'plan-tour': '#0284c7',
+  sheets: '#16a34a',
+  'sheet-functions': '#059669',
   illustrate: '#e11d48',
   'infographic-layouts': '#db2777',
   'logo-pages': '#0891b2',

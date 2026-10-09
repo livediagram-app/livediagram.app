@@ -28,6 +28,7 @@ import {
   LogoTabIcon,
 } from './palette-tab-icons';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
+import { SheetArt } from '@/components/sheets/sheet-art';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -40,7 +41,7 @@ import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
  *
  * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic, 4 Plan; Plan mode lists its band first).
+ * 1 Structure, 2 Decorate, 3 Dynamic, 4 Boards & Cards, 5 Spreadsheets; Plan mode lists its bands first).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -107,9 +108,18 @@ export const PALETTE_CATEGORIES: {
     icon: <PlanViewArt view="gantt" size={18} />,
   },
   {
+    // The Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab on the canvas.
+    id: 'plan-sheets',
+    label: 'Sheet',
+    group: 5,
+    description:
+      'A spreadsheet tab: cells, formulas, formatting, sort and filter, worked on like a board.',
+    icon: <SheetArt size={18} />,
+  },
+  {
     // The other elements a team plans beside its boards (docs/specs/026-plan/plan-mode.md "The palette"),
     // the same tiles as their home categories. Offered in Plan mode only, and not card-backed, so they sit
-    // under the Common and Dynamic headings rather than Plan's.
+    // under the Common heading rather than Boards & Cards.
     id: 'plan-content',
     label: 'Content',
     group: 0,
@@ -119,7 +129,7 @@ export const PALETTE_CATEGORIES: {
   {
     id: 'plan-tools',
     label: 'Tools',
-    group: 3,
+    group: 0,
     description:
       'Facilitation for the team: temperature, estimates, an idea box, a picker and timers.',
     icon: <BehaviourTabIcon />,

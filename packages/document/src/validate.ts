@@ -174,6 +174,7 @@ export const SHAPE_KINDS = new Set<string>([
   'plan-board',
   'plan-card',
   'plan-view',
+  'plan-sheet',
 ]);
 
 // Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /

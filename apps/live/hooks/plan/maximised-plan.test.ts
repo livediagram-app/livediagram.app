@@ -124,4 +124,26 @@ describe('its lifetime', () => {
     expect(escapeRestores({ key: 'Escape', defaultPrevented: true })).toBe(false);
     expect(escapeRestores({ key: 'Enter', defaultPrevented: false })).toBe(false);
   });
+
+  it('leaves Escape to whatever inside the element uses it (a Sheet edit, its Find bar)', () => {
+    const owner = document.createElement('div');
+    owner.setAttribute('data-keeps-escape', '');
+    const input = document.createElement('input');
+    owner.append(input);
+    document.body.append(owner);
+    expect(escapeRestores({ key: 'Escape', defaultPrevented: false, target: input })).toBe(false);
+    expect(escapeRestores({ key: 'Escape', defaultPrevented: false, target: document.body })).toBe(
+      true,
+    );
+    owner.remove();
+  });
+
+  it('leaves Escape to an open menu, which closes first', () => {
+    const menu = document.createElement('div');
+    menu.setAttribute('data-menu-surface', 'control');
+    document.body.append(menu);
+    expect(escapeRestores({ key: 'Escape', defaultPrevented: false })).toBe(false);
+    menu.remove();
+    expect(escapeRestores({ key: 'Escape', defaultPrevented: false })).toBe(true);
+  });
 });

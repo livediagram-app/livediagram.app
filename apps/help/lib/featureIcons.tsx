@@ -418,6 +418,22 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 16h2.5M17 16h2.5" />
     </Glyph>
   ),
+  // A grid with a header row and one highlighted cell: a spreadsheet tab.
+  sheets: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <path d="M2.5 8.5h19M2.5 13h19M2.5 16.5h19M8 4v16M14.5 4v16" />
+      <rect x="8.6" y="13.6" width="5.3" height="2.3" rx="0.4" />
+    </Glyph>
+  ),
+  // The function sign over a pair of brackets: what a formula calls.
+  'sheet-functions': (
+    <Glyph>
+      <path d="M11 4.5c-1.6 0-2.4 1-2.7 2.6L6.6 19.5" />
+      <path d="M5.5 10h5.5" />
+      <path d="M15 9.5c-1.2 1.2-1.8 2.6-1.8 4.5s.6 3.3 1.8 4.5M19 9.5c1.2 1.2 1.8 2.6 1.8 4.5s-.6 3.3-1.8 4.5" />
+    </Glyph>
+  ),
   // A page with a title and a bar chart: the poster an infographic becomes.
   illustrate: (
     <Glyph>

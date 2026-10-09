@@ -340,9 +340,20 @@ The single-element **Avatar** (a circular image) lives in the **Tools** tab besi
 
 **Images.** The Hero (and the Avatar) carry an image that starts as an **empty placeholder** the user fills by **double-clicking it**; we deliberately do **not** auto-open the picker on drop. The Hero's caption card is inset rather than covering the whole image precisely so the image stays double-clickable, and any image can gain or lose the card from its menu (**Caption Card** under Image). The image-bearing items (Hero, Avatar) are **hidden when image upload is unavailable** (no R2 / view-role — same gate as the Image tool). The Header's logo is its inline icon (drop an icon on it) or the brand's initial, so it needs no image. A `BorderRadius` value **`full`** backs the circular avatar, and `ImageElement.objectFit` (`'cover' | 'contain'`, default `contain`) lets the hero and avatar fill their box rather than letterbox.
 
+### Screens inside an element
+
+A screen an element shows in place of its body (Setup Board, Setup Sheet, a Sheet loading) zooms with the canvas,
+so zoomed out it shrinks with its element and never blocks the view. Zoomed in it grows only to **1.25 times** its
+own size (`SCREEN_SCALE_MAX`, `ScaleCapped`), then holds there, centred in the element, so it never reads as
+comically large. The scale is measured as drawn, so a maximised element (drawn at screen size) is unaffected.
+
 ### Placement on add
 
 **Almost everything in the palette draws.** Picking a tile arms the combined tap-or-drag gesture — see [Adding elements](#adding-elements--tap-to-drop-or-drag-to-draw) — where a tap drops the element at the tap point and a drag sizes it. That covers shapes, text, sticky, **table**, **image**, **link card**, **every embed** (YouTube / Vimeo / Loom / Figma / Google Docs / website), arrow, icons, Technology marks, stickers, **every Component**, and **Avatar**.
+
+**Pressed again, a tile puts its tool down.** A tile whose tool is armed (pressed, highlighted) disarms it when
+pressed again, as Escape does, back to the canvas's own tool; a Draw-mode marker is the exception, since pressing
+an armed marker opens its settings.
 
 **Annotation is the one exception**, and places at the **centre of the visible canvas viewport** (accounting for pan), auto-selected. A note marker is a fixed 44×44 glyph ([Annotations](../009-elements/annotations.md)) — there is no box to size, so a draw gesture would only ask the user for a dimension it then ignores.
 
@@ -519,7 +530,7 @@ type Element = ShapeElement | ArrowElement;
 
 ## Shape primitives
 
-Twenty-one general-purpose and device shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger (65 members today) because every later family of element reused the shape type rather than inventing its own: the structural elements (`page`, `mind-node`, `lane`, `entity`), the web components (`banner`, `callout`, `stat-row`, `process`, `site-header`, [The Action Panel](../009-elements/web-components-and-no-groups.md)), the Behaviour and Collaborate controls (`mode-button`, `portal`, `session-button`, `reveal`, `picker`, `reaction-pad`, `chair`, `estimate`, `temperature`, `idea-box`, `qa-board`, `agenda`, `decision`, `roll-call`, `comment-pin`, `action-card`, `done-check`, `quiz`), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`), `icon` / `sticker`, the [Plan board and Plan card](../026-plan/plan-board.md) (`plan-board`, `plan-card`), and the [plan view](../026-plan/plan-views.md) (`plan-view`). Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `actor`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`), the `frame` container, and seven UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`)) landed alongside / after the wireframe templates and are documented under **Devices tab** in the Palette section above. The canonical list is `ShapeKind` in `@livediagram/document` (declared in `src/shape-kind.ts`); the test in `apps/live/lib/templates.test.ts` pins shape coverage indirectly via the template catalogue.
+Twenty-one general-purpose and device shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger (66 members today) because every later family of element reused the shape type rather than inventing its own: the structural elements (`page`, `mind-node`, `lane`, `entity`), the web components (`banner`, `callout`, `stat-row`, `process`, `site-header`, [The Action Panel](../009-elements/web-components-and-no-groups.md)), the Behaviour and Collaborate controls (`mode-button`, `portal`, `session-button`, `reveal`, `picker`, `reaction-pad`, `chair`, `estimate`, `temperature`, `idea-box`, `qa-board`, `agenda`, `decision`, `roll-call`, `comment-pin`, `action-card`, `done-check`, `quiz`), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`), `icon` / `sticker`, the [Plan board and Plan card](../026-plan/plan-board.md) (`plan-board`, `plan-card`), the [plan view](../026-plan/plan-views.md) (`plan-view`), and the [Sheet](../029-sheets/sheet.md) (`plan-sheet`). Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `actor`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`), the `frame` container, and seven UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`)) landed alongside / after the wireframe templates and are documented under **Devices tab** in the Palette section above. The canonical list is `ShapeKind` in `@livediagram/document` (declared in `src/shape-kind.ts`); the test in `apps/live/lib/templates.test.ts` pins shape coverage indirectly via the template catalogue.
 
 | Kind            | Rendering                                                                                                                                                                                                                          | Aspect lock |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -878,7 +889,7 @@ Opening and tab switches used to pop every element in. On the 1,000-element refe
 
 When a shape is selected, a small **popover menu** appears next to it with action buttons (icon-only).
 
-- **Position:** above the shape if there is room between the shape and the canvas top edge; otherwise below it. Horizontally centred on the shape.
+- **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape.
 - **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
 - The popover follows the shape during drag/resize — its position is derived from the shape's current bounds.
 - Clicking inside the popover never deselects.
@@ -1285,7 +1296,7 @@ Setting or clearing a link applies to **all members of the current selection** (
 Every palette tile and selection-popover button carries a hint, as defined in
 [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md):
 
-- A tile with a **caption** carries a **Tooltip** with its full name, after a 1 s hover or at once on
+- A tile with a **caption** carries a **Tooltip** with its full name, after a 500 ms hover or at once on
   keyboard focus. The caption may be shortened; the tooltip never is.
 - A caption-less tile or icon button that needs explaining carries a **hover card**: the bold name
   over one sentence saying what the action does.

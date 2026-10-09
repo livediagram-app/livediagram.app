@@ -6,6 +6,7 @@ import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
+import type { SheetsRoomOp } from './sheets';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -125,6 +126,9 @@ export const PRESENCE_OP_KINDS = [
   // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
   // logged, from any session (a viewer reads items too).
   'plan-presence',
+  // Someone's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"): outlined in their colour.
+  // Ephemeral, never logged, from any session (a viewer selects too).
+  'sheet-presence',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -186,6 +190,9 @@ export const SYSTEM_OP_KINDS = [
   'changeset',
   'items',
   'item-types',
+  // `sheets` (docs/specs/029-sheets/sheet-store.md "Live for everyone"): sheet writes the api made. Sheets change
+  // only through the api, so a forged one would show people cells nobody wrote.
+  'sheets',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -528,6 +535,14 @@ export type RoomOp =
   // The card the sender is dragging or reading on a Plan board (docs/specs/026-plan/plan-board.md), or
   // none (itemId null). Presence: relayed as is, never stored.
   | { kind: 'plan-presence'; tabId: string; itemId: string | null; state?: 'drag' | 'view' }
+  // The sender's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"), by ids, or none.
+  | {
+      kind: 'sheet-presence';
+      tabId: string;
+      sheetId: string;
+      ranges: { r1: string; c1: string; r2: string; c2: string }[] | null;
+      editing: boolean;
+    }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no
@@ -603,6 +618,9 @@ export type RoomOp =
   | ItemsRoomOp
   // A document's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
   | ItemTypesRoomOp
+  // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
+  // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
+  | SheetsRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

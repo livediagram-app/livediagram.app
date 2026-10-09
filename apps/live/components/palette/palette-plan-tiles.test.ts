@@ -32,10 +32,10 @@ describe('the board tiles', () => {
     expect(boards.indexOf('plan:board-todo')).toBe(boards.indexOf('plan:board-kanban') + 1);
   });
 
-  it('end with All Cards: in the presets, the palette and Start with a Board', () => {
+  it('end with All Cards: in the presets, the palette and Start Planning', () => {
     expect(PLAN_BOARD_PRESET_IDS.at(-1)).toBe('all-cards');
     expect(boards.at(-1)).toBe('plan:board-all-cards');
-    // Start with a Board is this list without Archive.
+    // Start Planning is this list without Archive.
     const picker = PLAN_BOARD_TILES.filter((t) => t.preset !== 'archive').map((t) => t.preset);
     expect(picker.at(-1)).toBe('all-cards');
   });

@@ -50,7 +50,9 @@ edge-auto-scroll.ts      (hooks/plan) `edgeScrollStep` (quadratic ramp in the ed
                          incoming))` follows window pointermove and steps `scrollLeft` once a frame while in a zone
 plan-board-columns.ts    the board's column tracks: `minmax(220px·w, w fr)` on the canvas; maximised or filled,
                          `minmax(max(floor, calc((100cqw − 48px) / 5 · w + (w − 1)·12px)), w fr)` in an `@container` body
-fill-tab.ts              Fill Tab's pure parts (which board fills the tab, what turning it on deletes, the copy)
+fill-tab.ts              Fill Tab's pure parts (which board or Sheet fills the tab, what turning it on deletes,
+                         the copy)
+FocusElementButton.tsx   Focus in a board's or Sheet's header (Focus, below)
 SetupFillTabOption.tsx   Setup Board's Fill Tab switch row and its deletion warning (in SetupLayoutStep)
 SetupLayoutStep.tsx      Setup Board's step 3, Layout: SwimlaneOptions and CardSizeOptions (shared with the menu,
                          plan-menu-parts.tsx), then SetupFillTabOption; state is a `SetupLayout` (setup-board.ts
@@ -221,25 +223,28 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   pointerdown, double-click, context-menu and wheel) holding the element at its insets; `useCanvasSurfaceGestures`'
   capture handler bails for a target inside `[data-canvas-cover]`, and `useEditorKeyboardShortcuts`, while `canvasCovered()`,
   sorts each key by `coveredKeyRole` (run: undo/redo/search/zen/mode/Escape; swallow: Cmd+D/A/Shift+L, z-order, zoom,
-  prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabBoardId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
-fillTabBoardId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardCovering()`, swaps its categories for
+  prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
+fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardCovering()`, swaps its categories for
   `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `ToolbarPalette` shows the first offered
   category while the chosen one is not offered, keeping the choice) to `deriveCanvasSelection`, which then shows no popover, plus or multi-selection toolbar.
 - **Fill Tab** (`setup.fillTab: true`, normalised exactly-true by `normaliseBoardSetup`, carried by
-  `planBoardPatch` as a set-up key): `fill-tab.ts` (pure) gives `fillTabBoardIdOf(elements)` (the first board, in
-  element order, whose raw `planBoard.fillTab === true`), `fillTabOthers(elements, id)` (`{ count, locked }`),
+  `planBoardPatch` as a set-up key): `fill-tab.ts` (pure) gives `fillTabElementOf(elements)` (`{ id, kind: FillTabKind }`
+  or null: the first board whose raw `planBoard.fillTab === true`, or Sheet whose `planSheet.fillTab === true`, in
+  element order; [Sheet element blueprint](../../029-sheets/blueprints/sheet-element.md#fill-tab)),
+  `fillTabSheetElements(elements, id)` / `unfillSheetElements(elements, id)` (a Sheet's Fill Tab on, the rest gone /
+  off), `fillTabOthers(elements, id)` (`{ count, locked }`),
   `fillTabElements(elements, id, update)` (the board alone, its set-up `update`d from the one it holds at the commit,
   Fill Tab on), `withFillTab(setup, on)` and the copy (`fillTabWarning`, `fillTabConfirm`).
-- **The Plan cover** (`apps/live/hooks/plan/plan-cover-store.ts`, a module store like `maximised-plan.ts`): `{ fillTabBoardId,
+- **The Plan cover** (`apps/live/hooks/plan/plan-cover-store.ts`, a module store like `maximised-plan.ts`): `{ fillTabId, fillTabKind,
 tabElementCount }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
-  `fillTabBoardIdOf(activeTab.elements)`, and returns `canvasCovered` for the keyboard and `readTabElements` for the
+  `fillTabElementOf(activeTab.elements)`, and returns `canvasCovered` for the keyboard and `readTabElements` for the
   Plan slice). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
-  (maximised or filled: selection chrome, the Map), `useBoardCovering` (a maximised board, not a view, or filled: the
-  palette), `useFillsTab(id)` (a board), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
+  (maximised or filled: selection chrome, the Map), `useBoardCovering` (a maximised board, not a view, or a filling board: the
+  palette), `useFillsTab(id)` (a board or Sheet), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
   one covered check, read at a key press too. Neither value is on `PlanContext`, so adding or moving an element never
   changes the context (guarded by `plan-cover-store.test.tsx`: 40 element adds, 0 re-renders).
 - **Fill Tab's actions** on `PlanContext` (`usePlanFillTab`, stable callbacks): `tabOthers(id)` (read at a press) and
-  `fillTab(id, update)` (one `commit`, so one undo step). `PlanBoardView` calls `useBoardMaximised(id, interactive)`:
+  `fillTab(id, update)` (one `commit`, so one undo step); `fillTabSheet(sheetElementId, on)` likewise for a Sheet. `PlanBoardView` calls `useBoardMaximised(id, interactive)`:
   `filled` from `useFillsTab(id)`; a store maximise on it is released (`releasePlanElement`, no telemetry) and the
   lifetime hook (Escape) runs only for a store maximise. A filled board hides `MaximisePlanButton` and passes `fill` to
   `MaximisableSlot`, which moves the host into `FilledTabLayer` (the same `CanvasCover` as the maximised layer, at the
@@ -258,6 +263,21 @@ withFillTab(current, true))`; off: `trackFillTab(false)` → `updateBoard`. The 
 - **Presence**: room presence op `plan-presence` `{ tabId, itemId | null, state: 'drag' | 'view' }`, sent on a
   change of what is held (drag start and end, the item panel opening or closing), never stored; peers render a
   ring and first name on that card, a drag outranking a read.
+
+- **Focus** ([spec](../plan-board.md#focus)): `FocusElementButton` (`bounds`, `kind: 'Board' | 'Sheet'`, palette;
+  "Focus Board" / "Focus Sheet", a scan-eye glyph with the shared Tooltip) sits left of Maximise; not drawn while
+  maximised or filled, or outside an editor's canvas (`useCanvasFocus()` is null). Pressed it sends `Plan · Toggled ·
+BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `useEditorState` →
+  `focusOn(bounds, FOCUS_ZOOM_MAX)` (`hooks/canvas/useEditorViewport.ts`), handed down by `CanvasFocusProvider`
+  (`hooks/canvas/useCanvasFocus.tsx`, in `EditorView`). `focusOn` fits the element with the fit-to-screen margin;
+  when the view already fits it (zoom within 0.01, offset within 2 px) it fits every boxed element on the tab instead.
+  `glideTo(zoom, offset)` eases the offset linearly and the zoom geometrically (cubic in-out) over `FIT_GLIDE_MS`, at
+  once under reduced motion; each frame checks the view is still what it last set, so anything else moving it (a
+  wheel, a pinch, a pan, another fit) stops the glide where it is. `fitToBounds` and unmount stop it too.
+- **Focus on add**: `useFocusNewPlanElement({ tabId, elements, selectedId, focus })` (`hooks/plan`, called from
+  `useEditorState`) focuses a board, view or Sheet that appears on the same tab and is this person's selection (their
+  own add); a tab switch, a peer's add or an undo (not selected) do not. `isFocusedOnAdd(el)` makes the phone's
+  scroll-into-view of a new element (`useEditorViewport`) skip those kinds: one glide, not two.
 
 ## Presentation and UX
 
@@ -320,7 +340,7 @@ withFillTab(current, true))`; off: `trackFillTab(false)` → `updateBoard`. The 
 | Picker: typed text matches no row         | "No existing status matches" line; Add Column   |
 | Fill Tab: two boards set to fill          | The first in element order fills; others hidden |
 | Fill Tab: element added while on          | Kept under the board, hidden; counted next time |
-| Fill Tab: board deleted                   | `fillTabBoardIdOf` is null; canvas is back      |
+| Fill Tab: board deleted                   | `fillTabElementOf` is null; canvas is back      |
 | Item moved by someone else during my drag | My drop still applies (last write wins)         |
 
 ## Observability
@@ -388,6 +408,8 @@ ColumnAdded | ColumnAddedExisting`.
 | `ITEM_TRAIL_MAX`         | 8               | Spec; bounds the trail's memory; 2–20                            |
 | `ITEM_TRAIL_SHOWN`       | 3               | Earlier crumbs that fit a 60rem header                           |
 | `ITEM_TRAIL_SHOWN_PHONE` | 1               | Spec                                                             |
+| `FIT_GLIDE_MS`           | 420             | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`       |
+| `FOCUS_ZOOM_MAX`         | 1.5             | Spec (150%); `useEditorState.ts`                                 |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

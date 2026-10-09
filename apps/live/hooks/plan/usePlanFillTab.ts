@@ -7,7 +7,12 @@
 import { useCallback, useMemo } from 'react';
 import type { Element } from '@livediagram/document';
 import type { PlanBoardSetup } from '@livediagram/items';
-import { fillTabElements, fillTabOthers } from '@/components/plan/fill-tab';
+import {
+  fillTabElements,
+  fillTabOthers,
+  fillTabSheetElements,
+  unfillSheetElements,
+} from '@/components/plan/fill-tab';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 export type PlanFillTab = {
@@ -17,6 +22,9 @@ export type PlanFillTab = {
   // Fill Tab on for the board, its set-up `update`d from the one it holds at the commit: everything else on the tab
   // is deleted in the same change.
   fillTab: (boardId: string, update: (current: PlanBoardSetup) => PlanBoardSetup) => void;
+  // A Sheet filling its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), everything else deleted in the same change;
+  // or back on the canvas.
+  fillTabSheet: (sheetElementId: string, on: boolean) => void;
 };
 
 export function usePlanFillTab({
@@ -37,5 +45,10 @@ export function usePlanFillTab({
       commit((els) => fillTabElements(els, boardId, update)),
     [commit],
   );
-  return useMemo(() => ({ tabOthers, fillTab }), [tabOthers, fillTab]);
+  const fillTabSheet = useCallback(
+    (id: string, on: boolean) =>
+      commit((els) => (on ? fillTabSheetElements(els, id) : unfillSheetElements(els, id))),
+    [commit],
+  );
+  return useMemo(() => ({ tabOthers, fillTab, fillTabSheet }), [tabOthers, fillTab, fillTabSheet]);
 }

@@ -49,6 +49,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
 import { placedTextBox } from '@/lib/text-hug';
 import { boardShape } from '@/lib/whiteboard-tool';
+import { placeNewSheet } from '@/lib/sheet-seeds';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -419,6 +420,11 @@ export function buildDrawnBoxed(
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-card'
       ? { planCard: { itemId: newItemId() } }
+      : {}),
+    // A Sheet names a new sheet, which the Sheet makes in the sheet store as it first draws
+    // (docs/specs/029-sheets/sheet.md "Placing a sheet").
+    ...(intent.type === 'shape' && intent.kind === 'plan-sheet'
+      ? { planSheet: placeNewSheet() }
       : {}),
     // A plan view takes its tile's view (docs/specs/026-plan/plan-views.md), tapped in at that view's size.
     ...(intent.type === 'shape' && intent.kind === 'plan-view' && isPlanViewId(intent.plan)

@@ -75,6 +75,7 @@ export function usePaletteCatalogue({
   onBeginFreehand,
   onBeginHighlighter,
   onBeginMarker,
+  onCancelDraw,
   onBeginShapePen,
   onBeginPolygon,
   onBeginPath,
@@ -189,6 +190,7 @@ export function usePaletteCatalogue({
       addComponent,
       addIcon,
       addTechIcon,
+      cancelDraw: onCancelDraw,
       hasImage: !!onAddImage,
     },
     () => {

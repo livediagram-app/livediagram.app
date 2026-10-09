@@ -77,6 +77,9 @@ importers:
       '@livediagram/items':
         specifier: workspace:*
         version: link:../../packages/items
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../../packages/sheets
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -269,6 +272,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:^
         version: link:../../packages/icons
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../../packages/sheets
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -378,6 +384,9 @@ importers:
       '@livediagram/items':
         specifier: workspace:*
         version: link:../../packages/items
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../../packages/sheets
       '@livediagram/sticky-model':
         specifier: workspace:*
         version: link:../../packages/sticky-model
@@ -617,6 +626,9 @@ importers:
       '@livediagram/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../../packages/sheets
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -787,6 +799,9 @@ importers:
       '@livediagram/items':
         specifier: workspace:*
         version: link:../items
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../sheets
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -849,6 +864,9 @@ importers:
       '@livediagram/items':
         specifier: workspace:*
         version: link:../items
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../sheets
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -1219,6 +1237,33 @@ importers:
       '@resvg/resvg-wasm':
         specifier: ^2.6.2
         version: 2.6.2
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.3
+        version: 26.6.3
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      eslint:
+        specifier: ^10.11.0
+        version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
+
+  packages/sheets:
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*

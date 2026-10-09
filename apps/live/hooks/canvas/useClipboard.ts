@@ -38,6 +38,7 @@ import {
   articlePasteIsCanvas,
   parseElementsPayload,
   serialiseElements,
+  takeSheetSeeds,
   stripIdentity,
 } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
@@ -435,6 +436,7 @@ export function useClipboard(deps: ClipboardDeps) {
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
+        takeSheetSeeds(text);
         e.preventDefault();
         pasteRef.current.pasteFromClipboard(fromOs);
         return;
@@ -485,6 +487,7 @@ export function useClipboard(deps: ClipboardDeps) {
       }
       const elements = parseElementsPayload(e.clipboardData?.getData('text/plain'));
       if (!elements) return;
+      takeSheetSeeds(e.clipboardData?.getData('text/plain'));
       e.preventDefault();
       e.stopPropagation();
       setEditingId(null);

@@ -9,34 +9,20 @@
 import { useMemo, useState } from 'react';
 import {
   CARD_FIELDS,
-  CARD_SEARCH_FILTERS_MAX,
   findCards,
   isOffBoard,
-  searchCards,
-  searchFields,
-  searchFilterLabel,
-  searchValues,
-  type CardSearchFilter,
-  type SwimlaneBy,
   typeIn,
   itemTitle,
   type BoardStatusTypes,
   type CardFinderShow,
+  type Item,
 } from '@livediagram/items';
-import {
-  CloseIcon,
-  CountBadge,
-  EmptyState,
-  PlanCardsIcon,
-  Tooltip,
-  TrashIcon,
-} from '@livediagram/ui';
+import { CountBadge, EmptyState, PlanCardsIcon, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { SearchInput } from '@/components/primitives/SearchInput';
-import { usePlan } from './PlanContext';
-import { AddFilterPicker } from './AddFilterPicker';
-import { planPalette } from './plan-palette';
+import { usePlan, type PlanContextValue } from './PlanContext';
+import { CardSearchControls, useCardSearch } from './CardSearchControls';
+import { planPalette, type PlanPalette } from './plan-palette';
 import { PlanCardFace } from './PlanCardFace';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
@@ -44,9 +30,6 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 const CARD_FINDER_ROWS_MAX = 200;
 
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
-
-const filterKey = (f: { by: SwimlaneBy; field?: string | undefined }) =>
-  f.by === 'field' ? `field:${f.field}` : f.by;
 
 const SHOWS: { id: CardFinderShow; label: string }[] = [
   { id: 'all', label: 'All Cards' },
@@ -69,10 +52,7 @@ export function CardFinderPanel({
   const plan = usePlan();
   // The cards' colours, as the boards on this canvas draw them.
   const palette = planPalette(useCanvasSurface());
-  const [query, setQuery] = useState('');
   const [show, setShow] = useState<CardFinderShow>('all');
-  // Field filters (a state, an assignee, a priority...), the person's own as the types are.
-  const [filters, setFilters] = useState<readonly CardSearchFilter[]>([]);
   // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
   const [finePointer] = useState(
     () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches,
@@ -83,16 +63,48 @@ export function CardFinderPanel({
     [plan?.items, boardStatuses],
   );
   if (!plan) return null;
-  const typeLabel = (id: string) => typeIn(plan.types, id).label;
-  // The live cards the field filters keep (Card Type among them): what the counts and the list read.
-  const ofTypes = filters.length ? searchCards(live, filters, plan.types, plan.statusNames) : live;
+  return (
+    <CardFinderBody
+      plan={plan}
+      live={live}
+      show={show}
+      setShow={setShow}
+      boardStatuses={boardStatuses}
+      finePointer={finePointer}
+      palette={palette}
+      popoverAnchor={popoverAnchor}
+      onPopoverClose={onPopoverClose}
+    />
+  );
+}
+
+function CardFinderBody({
+  plan,
+  live,
+  show,
+  setShow,
+  boardStatuses,
+  finePointer,
+  palette,
+  popoverAnchor,
+  onPopoverClose,
+}: {
+  plan: PlanContextValue;
+  live: Item[];
+  show: CardFinderShow;
+  setShow: (s: CardFinderShow) => void;
+  boardStatuses: BoardStatusTypes;
+  finePointer: boolean;
+  palette: PlanPalette;
+  popoverAnchor?: DockAnchor;
+  onPopoverClose: () => void;
+}) {
+  const search = useCardSearch(plan, live, { show, boardStatuses });
+  const { filtered: ofTypes, found, query, filters } = search;
   const counts = {
     all: ofTypes.length,
     'off-board': ofTypes.filter((it) => isOffBoard(it, boardStatuses)).length,
   };
-  const found = findCards(ofTypes, { query, show, boardStatuses, typeLabel });
-  // What Add Filter offers (docs/specs/026-plan/items.md "Finding a card"), as Card Search does: Card Type among them.
-  const filterFields = searchFields(found, filters, plan.types);
   return (
     <MovablePanel
       title="Cards"
@@ -109,96 +121,37 @@ export function CardFinderPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2.5 px-3 pb-3">
-        <div className="flex">
-          <SearchInput
-            autoFocus={finePointer}
-            ariaLabel="Search cards"
-            placeholder="Search by #, title, description or type"
-            value={query}
-            onChange={setQuery}
-            onKeyDown={(e) => e.stopPropagation()}
-            clearAriaLabel="Clear the card search"
-            clearDescription="Clear the card search query."
-          />
-        </div>
-        <div
-          role="radiogroup"
-          aria-label="Which cards"
-          className="flex gap-1 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
-        >
-          {SHOWS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              role="radio"
-              aria-checked={show === s.id}
-              onClick={() => setShow(s.id)}
-              className={`flex ${s.id === 'all' ? 'min-w-0 flex-1' : 'shrink-0 whitespace-nowrap px-4'} items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition ${
-                show === s.id
-                  ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100'
-                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
-              }`}
-            >
-              {s.label}
-              <CountBadge
-                size="md"
-                background={s.id === 'off-board' && counts[s.id] ? '#d9770626' : '#64748b26'}
-                color={s.id === 'off-board' && counts[s.id] ? '#b45309' : '#64748b'}
+        <CardSearchControls plan={plan} live={live} search={search} autoFocus={finePointer}>
+          <div
+            role="radiogroup"
+            aria-label="Which cards"
+            className="flex gap-1 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+          >
+            {SHOWS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                role="radio"
+                aria-checked={show === s.id}
+                onClick={() => setShow(s.id)}
+                className={`flex ${s.id === 'all' ? 'min-w-0 flex-1' : 'shrink-0 whitespace-nowrap px-4'} items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition ${
+                  show === s.id
+                    ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+                }`}
               >
-                {counts[s.id]}
-              </CountBadge>
-            </button>
-          ))}
-        </div>
-        {/* Field filters: chips, each with a cross, and Add Filter (a field, then a value with its count). */}
-        <div role="group" aria-label="Filters" className="flex flex-wrap items-center gap-1.5">
-          {filters.map((f, i) => {
-            const label = searchFilterLabel(f, plan.items.values(), plan.types, plan.statusNames);
-            return (
-              <span
-                key={`${f.by}:${f.field ?? ''}:${f.key}`}
-                className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pl-2.5 pr-1 text-[12px] text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/10 dark:text-brand-100 dark:ring-brand-500/30"
-              >
-                <span className="font-medium">{label.field}:</span>
-                <span>{label.value}</span>
-                <button
-                  type="button"
-                  aria-label={`Remove ${label.field}: ${label.value}`}
-                  className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition hover:bg-brand-100 dark:hover:bg-brand-500/20"
-                  onClick={() => setFilters(filters.filter((_, j) => j !== i))}
+                {s.label}
+                <CountBadge
+                  size="md"
+                  background={s.id === 'off-board' && counts[s.id] ? '#d9770626' : '#64748b26'}
+                  color={s.id === 'off-board' && counts[s.id] ? '#b45309' : '#64748b'}
                 >
-                  <CloseIcon size={10} />
-                </button>
-              </span>
-            );
-          })}
-          {filters.length < CARD_SEARCH_FILTERS_MAX && filterFields.length > 0 ? (
-            <AddFilterPicker
-              fields={filterFields.map((f) => ({ id: filterKey(f), label: f.label }))}
-              valuesOf={(id) => {
-                const f = filterFields.find((x) => filterKey(x) === id);
-                return f ? searchValues(found, f, plan.types, plan.statusNames, live) : [];
-              }}
-              onPick={(id, key) => {
-                const f = filterFields.find((x) => filterKey(x) === id);
-                if (f)
-                  setFilters([
-                    ...filters,
-                    { by: f.by, ...(f.field ? { field: f.field } : {}), key },
-                  ]);
-              }}
-            />
-          ) : null}
-          {filters.length > 0 ? (
-            <button
-              type="button"
-              className="ml-auto cursor-pointer rounded-md px-1.5 py-0.5 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              onClick={() => setFilters([])}
-            >
-              Clear Filters
-            </button>
-          ) : null}
-        </div>
+                  {counts[s.id]}
+                </CountBadge>
+              </button>
+            ))}
+          </div>
+        </CardSearchControls>
         {found.length === 0 ? (
           // The shared empty state, as the Trash's, filling the list's fixed height.
           <div className={`flex ${LIST_HEIGHT} flex-col [&>div]:flex-1`}>
@@ -276,7 +229,7 @@ export function emptyCopy(
   if (filters > 0)
     return {
       title: 'No cards match these filters',
-      description: 'Remove a filter, or Clear Filters, to see more.',
+      description: 'Remove a filter, or clear the search, to see more.',
     };
   return { title: 'Every card is on a board', description: 'None of them sits off a board here.' };
 }
