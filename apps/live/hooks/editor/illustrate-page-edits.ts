@@ -14,8 +14,9 @@ import {
   newLogoPage,
   newSlidePage,
   pageHasOrientation,
+  pageKindOf,
+  pageSizesFor,
   pageUnits,
-  SLIDE_PAGE_SIZE_IDS,
   withArticleAdded,
   withPageKindChosen,
   withArticleDuplicated,
@@ -147,10 +148,11 @@ export function illustratePageEdits({
   const isLocked = (pageId: string) => page(pageId)?.locked === true;
   // A locked page takes no edit of its own (its name, size, turn, paint, layout, kind or delete).
   // An article's pages change together (a turn, a size, its paint, a delete): any of them locked
-  // refuses the edit for all.
-  const refusedLocked = (pageId: string, edit: string) => {
+  // refuses those for all. A page's own edits (its name) reach only the page itself, so another
+  // page's lock never holds them (`shared: false`).
+  const refusedLocked = (pageId: string, edit: string, shared = true) => {
     const target = page(pageId);
-    const reach = target?.flow ? current.filter((p) => p.flow === target.flow) : [target];
+    const reach = shared && target?.flow ? current.filter((p) => p.flow === target.flow) : [target];
     if (!reach.some((p) => p?.locked === true)) return false;
     debugLog('[illustrate-page] refused: page locked', { tabId, pageId, edit });
     return true;
@@ -167,7 +169,8 @@ export function illustratePageEdits({
   };
   const startBlank = (pageId: string) => {
     const target = page(pageId);
-    if (!target || target.startedBlank === true || refusedLocked(pageId, 'start blank')) return;
+    if (!target || target.startedBlank === true || refusedLocked(pageId, 'start blank', false))
+      return;
     patchPage(pageId, (p) => ({ ...p, startedBlank: true }));
     debugLog('[illustrate-page] started blank', { tabId, pageId });
   };
@@ -216,18 +219,20 @@ export function illustratePageEdits({
     onGoTo(pageId);
     debugLog('[illustrate-page] orientation set', { tabId, pageId, orientation: next });
   };
-  // A slide page takes only a slide size; a logo page keeps its artboard, the artboard being
-  // the logo kind's alone.
+  // A page takes only the sizes its kind offers (pageSizesFor): a slide page a slide size, an
+  // article a paper or screen size, a logo page keeps its artboard, the artboard being the logo
+  // kind's alone.
   const setSize = (pageId: string, size: PageSizeId) => {
     if (refusedLocked(pageId, 'size')) return;
     const target = page(pageId);
-    if ((target?.size ?? 'a4') === size) return;
-    if (target?.kind === 'slide' && !SLIDE_PAGE_SIZE_IDS.includes(size)) {
-      debugLog('[illustrate-page] size refused: not a slide size', { tabId, pageId, size });
-      return;
-    }
-    if (target?.kind === 'logo' || size === 'logo') {
-      debugLog('[illustrate-page] size refused: the logo artboard', { tabId, pageId, size });
+    if (!target || (target.size ?? 'a4') === size) return;
+    if (size !== 'fit' && !pageSizesFor(pageKindOf(target)).includes(size)) {
+      debugLog('[illustrate-page] size refused: not offered for the kind', {
+        tabId,
+        pageId,
+        size,
+        kind: pageKindOf(target),
+      });
       return;
     }
     // Fit to Content's sides come from content: no page chooses it (docs/specs/007-editor/
@@ -247,7 +252,7 @@ export function illustratePageEdits({
     debugLog('[illustrate-page] size set', { tabId, pageId, size });
   };
   const rename = (pageId: string, raw: string) => {
-    if (refusedLocked(pageId, 'name')) return;
+    if (refusedLocked(pageId, 'name', false)) return;
     const name = raw.trim().slice(0, PAGE_NAME_MAX);
     if ((page(pageId)?.name ?? '') === name) return;
     track('Tab', 'Changed', 'PageRenamed');
@@ -352,13 +357,11 @@ export function illustratePageEdits({
       const model = [...ps]
         .reverse()
         .find((p) => !p.flow && p.kind !== 'slide' && p.kind !== 'logo');
+      // Fit to Content's sides are its own page's: a new page made after one is A4.
+      const size = model?.size === 'fit' ? undefined : model?.size;
       return [
         ...ps,
-        {
-          id,
-          orientation: model?.orientation ?? 'portrait',
-          ...(model?.size ? { size: model.size } : {}),
-        },
+        { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) },
       ];
     });
     onGoTo(id);
@@ -423,6 +426,14 @@ export function illustratePageEdits({
   // first. One tab edit.
   const splitPage = (pageId: string) => {
     if (refusedLocked(pageId, 'split')) return;
+    // At the page limit a split has no room for a second page.
+    if (current.length >= MAX_ILLUSTRATE_PAGES) {
+      toastInfo(
+        `A tab holds at most ${MAX_ILLUSTRATE_PAGES} pages: delete one to split this page.`,
+      );
+      debugLog('[illustrate-page] split refused: page limit', { tabId, pageId });
+      return;
+    }
     // Read inside the commit (it runs at once), as Duplicate reads its copy's id.
     let made = 0;
     let first: string | undefined;

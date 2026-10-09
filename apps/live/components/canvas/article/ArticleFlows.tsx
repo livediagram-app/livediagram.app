@@ -38,6 +38,7 @@ import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 import { useObjectDropCaret } from './useObjectDropCaret';
 import { useTouchPagePan } from './useTouchPagePan';
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
+import { lockedArticleFlows } from '@/lib/article/article-lock';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import type { Selection } from '@/lib/selection-store';
@@ -84,6 +85,13 @@ export function ArticleFlows({
     }
     return out;
   }, [row]);
+  // An article with a locked page is read-only (docs/specs/007-editor/illustrate-pages.md
+  // "Locking a page"): no toolbar, zone bar or floating-object bar is offered for it.
+  const held = useMemo(() => lockedArticleFlows(row), [row]);
+  const openByFlow = useMemo(() => {
+    if (held.size === 0) return byFlow;
+    return new Map([...byFlow].filter(([flow]) => !held.has(flow)));
+  }, [byFlow, held]);
   const active = useActiveArticle();
   // Derived once per change of what they read (the writing, the selection, the board), never per
   // canvas render: `flows` keeps its identity while the writing does (articlesOf's cache).
@@ -93,12 +101,14 @@ export function ArticleFlows({
   const zoneFlow = active?.handle.flow ?? null;
   const target = useMemo(
     () =>
-      editable && flows ? zoneTarget(byFlow, flows, zoneId, zoneFlow, selectedIds, elements) : null,
-    [editable, flows, byFlow, zoneId, zoneFlow, selectedIds, elements],
+      editable && flows
+        ? zoneTarget(openByFlow, flows, zoneId, zoneFlow, selectedIds, elements)
+        : null,
+    [editable, flows, openByFlow, zoneId, zoneFlow, selectedIds, elements],
   );
   const articlePages = useMemo(
-    () => row.flatMap((p) => (p.flow ? [{ id: p.id, flow: p.flow }] : [])),
-    [row],
+    () => row.flatMap((p) => (p.flow && !held.has(p.flow) ? [{ id: p.id, flow: p.flow }] : [])),
+    [row, held],
   );
   const zoneDrag = useZoneDrag({
     zoom,
@@ -107,8 +117,10 @@ export function ArticleFlows({
   });
   const floating = useMemo(
     () =>
-      editable && flows && !target ? floatingTarget(byFlow, flows, selectedIds, elements) : null,
-    [editable, flows, target, byFlow, selectedIds, elements],
+      editable && flows && !target
+        ? floatingTarget(openByFlow, flows, selectedIds, elements)
+        : null,
+    [editable, flows, target, openByFlow, selectedIds, elements],
   );
   // A drawing zone cuts off what of its drawing pokes past its edge; what is being moved shows
   // whole until it lands (it may be leaving the zone).
@@ -141,10 +153,7 @@ export function ArticleFlows({
     pagesOf: (flow) => byFlow.get(flow),
   });
   if (!articles || byFlow.size === 0) return null;
-  // An article with a locked page is read-only (docs/specs/007-editor/illustrate-pages.md
-  // "Locking a page").
-  const writable = (pages: readonly { locked?: true }[]) =>
-    articles.editable && !pages.some((p) => p.locked === true);
+  const writable = (flow: string) => articles.editable && !held.has(flow);
   return (
     <>
       {/* Cut off at the shown sheets' edges, as the elements are (IllustratePageClip): writing that
@@ -160,7 +169,7 @@ export function ArticleFlows({
         {articles.editable && interactive
           ? [...byFlow].flatMap(([flow, pages]) =>
               pages
-                .filter((p) => writable(pages) && view.pages.some((shown) => shown.id === p.id))
+                .filter((p) => writable(flow) && view.pages.some((shown) => shown.id === p.id))
                 .map((p) => (
                   <div
                     key={p.id}
@@ -200,7 +209,7 @@ export function ArticleFlows({
                 pages={pages}
                 atPageLimit={row.length >= MAX_ILLUSTRATE_PAGES}
                 doc={doc}
-                editable={writable(pages)}
+                editable={writable(flow)}
                 interactive={interactive}
                 zoom={zoom}
                 ink={inkOf(
@@ -273,6 +282,7 @@ export function ArticleFlows({
           onAlign={(align) => articles.zoneAction(target.flow, target.zone.id, { align })}
           onRemove={() => articles.zoneAction(target.flow, target.zone.id, { remove: true })}
           onMoveStart={(e) => zoneDrag.start(e, target.flow, target.zone, target.rect)}
+          onMoveStep={(by) => articles.moveZone(target.flow, target.zone.id, { by })}
         />
       ) : null}
       {floating && !target && !zoneDrag.drag ? (

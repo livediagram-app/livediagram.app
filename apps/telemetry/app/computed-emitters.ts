@@ -288,6 +288,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: ELEMENT_WHY,
   },
   'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
+  // article from the page toolbar's Insert or the slash menu.
+  'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
+    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+  },
+  'apps/live/components/canvas/article/ArticleEditor.tsx Element·Added': {
+    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+  },
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,

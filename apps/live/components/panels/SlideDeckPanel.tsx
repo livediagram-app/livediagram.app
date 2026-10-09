@@ -228,7 +228,7 @@ function SlideRow({
                 ? 'Card'
                 : 'Card deleted'
               : slide.pageId
-                ? (pageName ?? 'Page')
+                ? (pageName ?? 'Page deleted')
                 : slide.elementIds.length === 1
                   ? '1 element'
                   : `${slide.elementIds.length} elements`}
@@ -276,6 +276,7 @@ export function SlideDeckPanel({
     openSlideInEditor,
     runnable,
     thumbs,
+    pageLabels,
     newSlideFromSelection,
     newPageSlide,
     addSelectionToSlide,
@@ -419,8 +420,14 @@ export function SlideDeckPanel({
       <div className="flex max-h-[26rem] flex-col gap-2 px-2 pb-2">
         {deck.slides.length === 0 ? (
           <p className="px-1 py-3 text-center text-[11px] leading-snug text-slate-400 dark:text-slate-400">
-            No slides yet. Select what you want on the first slide, then press{' '}
-            <span className="font-medium text-slate-500 dark:text-slate-300">New slide</span>.
+            {/* Each way in names the button it has: an Illustrate tab adds a page at a time. */}
+            {pages
+              ? 'No slides yet. Pick a page, then press'
+              : 'No slides yet. Select what you want on the first slide, then press'}{' '}
+            <span className="font-medium text-slate-500 dark:text-slate-300">
+              {pages ? 'Add as slide' : 'New slide'}
+            </span>
+            .
           </p>
         ) : (
           <div className="flex max-h-52 flex-col gap-1 overflow-y-auto overflow-x-hidden py-px">
@@ -431,11 +438,8 @@ export function SlideDeckPanel({
                   slide={slide}
                   index={i}
                   tabName={tabNames.get(slide.tabId)}
-                  pageName={
-                    slide.pageId && slide.tabId === activeTabId
-                      ? pages?.find((p) => p.id === slide.pageId)?.label
-                      : undefined
-                  }
+                  // From the slide's own tab's pages, so a slide on another tab names its page too.
+                  pageName={pageLabels.get(slide.id) ?? undefined}
                   isOpen={slide.id === openSlideId}
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
@@ -571,9 +575,13 @@ export function SlideDeckPanel({
       {confirmDelete && deleting ? (
         <ConfirmPopover
           anchor={confirmDelete.anchor}
-          message={`Delete “${slideName(deleting, deck.slides.indexOf(deleting))}”? The ${
-            deleting.elementIds.length === 1 ? 'element stays' : 'elements stay'
-          } on the canvas.`}
+          message={`Delete “${slideName(deleting, deck.slides.indexOf(deleting))}”? ${
+            deleting.pageId
+              ? 'The page stays.'
+              : deleting.elementIds.length === 1
+                ? 'The element stays on the canvas.'
+                : 'The elements stay on the canvas.'
+          }`}
           confirmLabel="Delete slide"
           onConfirm={() => {
             deleteSlide(confirmDelete.id);

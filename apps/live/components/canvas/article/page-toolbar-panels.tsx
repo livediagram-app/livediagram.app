@@ -129,7 +129,7 @@ export function StylePanel({
   onStyle: (style: ArticleParagraphStyle | 'code') => void;
 }) {
   return (
-    <div role="menu" aria-label="Text style" className="flex flex-col">
+    <div role="menu" aria-label="Text Style" className="flex flex-col">
       {STYLE_OPTIONS.map((s) => (
         <MenuRow
           key={s.id}
@@ -197,9 +197,9 @@ export function ListPanel({
 }
 
 const ALIGN_OPTIONS: { id: ArticleAlign; label: string; keys: string }[] = [
-  { id: 'left', label: 'Align left', keys: 'Mod-Shift-l' },
-  { id: 'center', label: 'Align centre', keys: 'Mod-Shift-e' },
-  { id: 'right', label: 'Align right', keys: 'Mod-Shift-r' },
+  { id: 'left', label: 'Align Left', keys: 'Mod-Shift-l' },
+  { id: 'center', label: 'Align Centre', keys: 'Mod-Shift-e' },
+  { id: 'right', label: 'Align Right', keys: 'Mod-Shift-r' },
   { id: 'justify', label: 'Justify', keys: 'Mod-Shift-j' },
 ];
 
@@ -328,7 +328,7 @@ export function MorePanel({
   onAction: (action: MoreAction) => void;
 }) {
   return (
-    <div role="menu" aria-label="More formatting" className="flex flex-col">
+    <div role="menu" aria-label="More Formatting" className="flex flex-col">
       <Row
         label="Strikethrough"
         icon={<PanelIcons.strike />}

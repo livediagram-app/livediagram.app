@@ -106,6 +106,23 @@ export function toggleList(kind: ArticleListKind): Command {
   };
 }
 
+/** The selected to-do items ticked, or all unticked when every one already is (⌘Enter, the
+ *  keyboard's way to tick a box). False when the selection holds no to-do item, so the key falls
+ *  through. */
+export const toggleTodoChecked: Command = (state, dispatch) => {
+  const todos = selectedBlocks(state).filter(
+    ({ node }) => node.type === LIST && node.attrs.list === 'todo',
+  );
+  if (todos.length === 0) return false;
+  if (dispatch) {
+    const checked = !todos.every(({ node }) => node.attrs.checked === true);
+    const tr = state.tr;
+    for (const { pos } of todos) tr.setNodeAttribute(pos, 'checked', checked);
+    dispatch(tr);
+  }
+  return true;
+};
+
 /** List items a level in (`by` 1) or out (-1); out of level 0 a list item becomes text. */
 export function shiftLevel(by: 1 | -1): Command {
   return (state, dispatch) => {

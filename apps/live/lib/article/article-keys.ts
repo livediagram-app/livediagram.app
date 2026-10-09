@@ -24,6 +24,7 @@ import {
   toggleItalic,
   toggleList,
   toggleStrike,
+  toggleTodoChecked,
   toggleUnderline,
 } from './article-commands';
 
@@ -157,6 +158,7 @@ export function articleKeymap(host: {
       'Mod-Shift-7': toggleList('numbered'),
       'Mod-Shift-8': toggleList('bullet'),
       'Mod-Shift-9': toggleList('todo'),
+      'Mod-Enter': toggleTodoChecked,
       'Mod-Shift-l': setAlign('left'),
       'Mod-Shift-e': setAlign('center'),
       'Mod-Shift-r': setAlign('right'),

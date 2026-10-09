@@ -13,6 +13,7 @@ import {
   nextIllustratePageId,
   pageDimensions,
   pageMargin,
+  PAGE_NAME_MAX,
   withIllustratePages,
   type IllustratePage,
 } from './illustrate-page';
@@ -181,7 +182,14 @@ export function withContentOnAPage<T extends Pick<Tab, 'elements'>>(
       box.b <= r.y + r.height + 1;
     if (fits) return null;
   } else {
-    if (stored.some((p) => p.flow || p.locked)) return null;
+    // Only pages nobody has made anything of are replaced: a page with a kind of its own (an
+    // article, a slide, a logo), a name, a paint or a lock is kept, and the content stays where it is.
+    if (
+      stored.some(
+        (p) => p.flow || p.locked || (p.kind && p.kind !== 'infographic') || p.name || p.background,
+      )
+    )
+      return null;
     const index = elementIndexFor(tab.elements);
     const onAPage = tab.elements.some((el) =>
       illustratePageAt(laid, elementAnchorPoint(el, index)),
@@ -217,15 +225,27 @@ export function withPageSplit<T extends Pick<Tab, 'elements'>>(
   const clusters = contentClusters(content);
   if (clusters.length < 2) return null;
   const room = Math.min(MAX_ILLUSTRATE_PAGES - (pages.length - 1), PAGINATE_MAX_PAGES);
+  if (room < 2) return null;
   const capped =
     clusters.length <= room
       ? clusters
       : [...clusters.slice(0, room - 1), clusters.slice(room - 1).flat()];
+  // Each new page keeps the split page's paint (its content was re-inked for it) and its name,
+  // numbered after the first ("Overview", "Overview 2", ...).
   const added: IllustratePage[] = [];
-  for (const group of capped) {
+  capped.forEach((group, i) => {
     const box = contentBox(tab, new Set(group))!;
-    added.push(pageAround(box, nextIllustratePageId([...pages, ...added])));
-  }
+    const name = target.name
+      ? i === 0
+        ? target.name
+        : `${target.name.slice(0, PAGE_NAME_MAX - 4)} ${i + 1}`
+      : undefined;
+    added.push({
+      ...pageAround(box, nextIllustratePageId([...pages, ...added])),
+      ...(target.background ? { background: target.background } : {}),
+      ...(name ? { name } : {}),
+    });
+  });
   // The new pages take the split page's place first: its content stays put (its page is gone) while
   // the pages after move along with theirs, and the row anchor stays (withIllustratePages). Then
   // each cluster is moved onto its page, centred, at its own size.

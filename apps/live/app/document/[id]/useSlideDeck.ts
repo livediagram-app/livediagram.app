@@ -22,6 +22,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   EMPTY_DECK,
   firstDeck,
+  illustratePagesOf,
+  pageLabel,
   parseStoredPresentation,
   presentableSlides,
   storePresentation,
@@ -46,6 +48,28 @@ const DECK_SAVE_DEBOUNCE_MS = 900;
 
 export type SlideDeckState = ReturnType<typeof useSlideDeck>;
 
+/**
+ * Every page slide's page label, read from the slide's OWN tab's pages so a slide on another tab
+ * still names its page; null when that page (or its tab) no longer exists. Labelled as the page
+ * picker labels them, so the row and the picker agree.
+ */
+export function pageSlideLabels(deck: Deck, tabs: readonly Tab[]): Map<string, string | null> {
+  const out = new Map<string, string | null>();
+  const pagesByTab = new Map<string, ReturnType<typeof illustratePagesOf>>();
+  for (const slide of deck.slides) {
+    if (!slide.pageId) continue;
+    let pages = pagesByTab.get(slide.tabId);
+    if (!pages) {
+      const tab = tabs.find((t) => t.id === slide.tabId);
+      pages = tab ? illustratePagesOf(tab) : [];
+      pagesByTab.set(slide.tabId, pages);
+    }
+    const at = pages.findIndex((p) => p.id === slide.pageId);
+    out.set(slide.id, at < 0 ? null : pageLabel(pages[at]!, at, Math.max(2, pages.length)));
+  }
+  return out;
+}
+
 export function useSlideDeck({
   tabs,
   activeTabId,
@@ -57,6 +81,7 @@ export function useSlideDeck({
   saveDeck,
   loadAllTabs,
   plan,
+  framePage,
 }: {
   tabs: Tab[];
   activeTabId: string;
@@ -72,6 +97,9 @@ export function useSlideDeck({
   loadAllTabs?: () => Promise<unknown>;
   /** The document's items and types, for a Plan board's thumbnail. */
   plan?: ThumbnailPlan;
+  /** Frames an Illustrate page of a tab in the view (as its label's press does), once that tab is
+   *  the active one. Absent where nothing frames pages. */
+  framePage?: (tabId: string, pageId: string) => void;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
   // Which slide the PANEL has open. Separate from the presentation's own
@@ -148,6 +176,8 @@ export function useSlideDeck({
   const runnable = useMemo(() => presentableSlides(deck, tabs), [deck, tabs]);
   // Row previews, from the same headless renderer the Layers panel uses.
   const thumbs = useSlideThumbnails(deck, tabs, plan);
+  // Each page slide's page, named from its own tab (null once the page is gone).
+  const pageLabels = useMemo(() => pageSlideLabels(deck, tabs), [deck, tabs]);
 
   // --- Editing verbs --------------------------------------------------------
 
@@ -330,6 +360,7 @@ export function useSlideDeck({
   const duplicateSlide = useCallback(
     (slideId: string) => {
       if (isReadOnly) return;
+      const original = deckRef.current.slides.find((s) => s.id === slideId);
       commitDeck((prev) => {
         const at = prev.slides.findIndex((s) => s.id === slideId);
         const source = prev.slides[at];
@@ -339,9 +370,12 @@ export function useSlideDeck({
         slides.splice(at + 1, 0, copy);
         return { slides };
       });
-      track('UI', 'Added', 'Slide');
+      // Literal types, so the telemetry dashboard's emitter scan reads each one.
+      if (original?.pageId) track('UI', 'Added', 'PageSlide');
+      else if (original?.itemId) track('UI', 'Added', 'ItemSlide');
+      else if (original) track('UI', 'Added', 'Slide');
     },
-    [commitDeck, isReadOnly],
+    [commitDeck, deckRef, isReadOnly],
   );
 
   /** Move a slide to another position in the deck. Order is the deck's own. */
@@ -367,17 +401,23 @@ export function useSlideDeck({
 
   /**
    * Open a slide in the panel: switch to its tab and select its members, so
-   * you can see what is on it without presenting.
+   * you can see what is on it without presenting. A page slide frames its page
+   * instead, as the page's own label does: the page is what is on it.
    */
   const openSlideInEditor = useCallback(
     (slideId: string) => {
       setOpenSlideId(slideId);
       const slide = deck.slides.find((s) => s.id === slideId);
       if (!slide) return;
-      if (tabs.some((t) => t.id === slide.tabId) && slide.tabId !== activeTabId) {
+      const tabExists = tabs.some((t) => t.id === slide.tabId);
+      if (tabExists && slide.tabId !== activeTabId) {
         setActiveId(slide.tabId);
       }
-      if (slide.elementIds.length === 1) {
+      if (slide.pageId) {
+        setSelectedId(null);
+        setMultiSelectedIds(new Set());
+        if (tabExists) framePage?.(slide.tabId, slide.pageId);
+      } else if (slide.elementIds.length === 1) {
         setSelectedId(slide.elementIds[0]!);
         setMultiSelectedIds(new Set());
       } else {
@@ -385,7 +425,7 @@ export function useSlideDeck({
         setMultiSelectedIds(new Set(slide.elementIds));
       }
     },
-    [activeTabId, deck.slides, setActiveId, setMultiSelectedIds, setSelectedId, tabs],
+    [activeTabId, deck.slides, framePage, setActiveId, setMultiSelectedIds, setSelectedId, tabs],
   );
 
   // --- Presenting -----------------------------------------------------------
@@ -423,6 +463,7 @@ export function useSlideDeck({
     openSlideInEditor,
     runnable,
     thumbs,
+    pageLabels,
     newSlideFromSelection,
     newPageSlide,
     newItemSlide,

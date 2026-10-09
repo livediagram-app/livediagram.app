@@ -19,6 +19,7 @@ import {
   PAGE_NAME_MAX,
   newLogoPage,
   newSlidePage,
+  pageSizesFor,
   withIllustratePages,
   type IllustratePage,
   type PageKind,
@@ -294,8 +295,13 @@ export function withPageKindChosen<T extends PagesTab>(
       },
     ]);
   }
+  // An article takes only the paper and screen sizes: a page in any other (the 16:9 slide the
+  // unchosen page could be set to) becomes A4.
+  const { size, fit: _sides, ...rest } = page;
+  void _sides;
+  const keepSize = size && pageSizesFor('article').includes(size) ? { size } : {};
   return withArticleFlow(
-    withIllustratePages(tab, [{ ...page, kind: 'article', flow }]),
+    withIllustratePages(tab, [{ ...rest, ...keepSize, kind: 'article', flow }]),
     flow,
     newArticleFlow(),
   );

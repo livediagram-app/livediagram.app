@@ -235,7 +235,7 @@ function LayoutTile({
   );
 }
 
-/** Start a page from a layout: the picker, Key stats chosen, and the page it fills. */
+/** Start a page from a layout: the picker, Key Stats chosen, and the page it fills. */
 export function InfographicLayoutArt() {
   return (
     <Frame canvas>
@@ -295,7 +295,7 @@ export function InfographicLayoutArt() {
                 2026 IN NUMBERS
               </text>
               <text x="124" y="24" fontSize="6.4" fontWeight="800" className={INK} fill="#1e293b">
-                Key stats
+                Key Stats
               </text>
             </g>
             {[

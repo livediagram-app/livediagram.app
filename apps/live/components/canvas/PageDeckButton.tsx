@@ -25,8 +25,8 @@ export function PageDeckButton({ pageId, deck }: { pageId: string; deck: PageDec
       <Tooltip label={label}>
         <button
           type="button"
+          // Its name says what a press does, so no aria-pressed as well.
           aria-label={label}
-          {...(slide ? { 'aria-pressed': !slide.hidden } : {})}
           data-page-deck-button={slide ? (slide.hidden ? 'hidden' : 'shown') : 'add'}
           onClick={() => (slide ? deck.toggleHidden(slide.id) : deck.add(pageId))}
           className={`flex h-6 w-6 items-center justify-center rounded-md transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${

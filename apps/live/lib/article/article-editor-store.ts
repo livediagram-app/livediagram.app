@@ -9,6 +9,9 @@ import type { Command } from 'prosemirror-state';
 import type { Node as PMNode } from 'prosemirror-model';
 import type { ArticleSelectionState } from './article-commands';
 
+// Where a zone is moved to: the block boundary nearest a canvas point, or one block up or down.
+export type ZoneMoveTo = { x: number; y: number } | { by: -1 | 1 };
+
 export type ArticleEditorHandle = {
   flow: string;
   // Runs a command on the writing, keeping the caret in it.
@@ -59,11 +62,12 @@ export type ArticleEditorHandle = {
     near: { x: number; y: number },
     skipId: string | null,
   ) => { pos: number; caret: { x: number; y: number; width: number } } | null;
-  // A zone moved to the block boundary nearest a canvas point, the writing so far taken as
-  // written; where it landed, as insertZone says. Null when it would not move.
+  // A zone moved to the block boundary nearest a canvas point (a drag), or one block up or down
+  // (`by`, the grip's arrow keys), the writing so far taken as written; where it landed, as
+  // insertZone says. Null when it would not move.
   moveZone: (
     id: string,
-    near: { x: number; y: number },
+    near: ZoneMoveTo,
   ) => {
     id: string;
     blocks: import('@livediagram/document').ArticleBlock[];

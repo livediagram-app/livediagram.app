@@ -8,8 +8,7 @@ import {
   PAGE_SIZES,
   pageDimensions,
   pageHasOrientation,
-  pageKindOf,
-  pageSizesFor,
+  pageSizeChoices,
   type IllustratePage,
   type PageOrientation,
   type PageSizeId,
@@ -82,9 +81,8 @@ export function SizeSection({
   const current = page.size ?? 'a4';
   // A slide page offers only the slide sizes; the tiles sit four to a row. A logo page has its
   // one artboard, so no choice to show. Fit to Content is offered only on a page already in it,
-  // first (docs/specs/007-editor/illustrate-pages.md "Sizes").
-  const kindSizes = pageSizesFor(pageKindOf(page));
-  const sizes: readonly PageSizeId[] = current === 'fit' ? ['fit', ...kindSizes] : kindSizes;
+  // first, and no two tiles share a shape (docs/specs/007-editor/illustrate-pages.md "Sizes").
+  const sizes = pageSizeChoices(page);
   if (sizes.length < 2) return null;
   return (
     <PanelSection title="Size">

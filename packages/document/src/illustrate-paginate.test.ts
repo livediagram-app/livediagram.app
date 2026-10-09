@@ -148,6 +148,30 @@ describe('withContentOnAPage', () => {
     ).toBeNull();
   });
 
+  it('never replaces a page someone made something of: a slide, a logo, a name, a paint', () => {
+    const stray = [box('s', 9000, 9000, 40, 40)];
+    const kept: IllustratePage[] = [
+      { id: 's', orientation: 'landscape', kind: 'slide', size: 'slide' },
+      { id: 'g', orientation: 'portrait', kind: 'logo', size: 'logo' },
+      { id: 'n', orientation: 'portrait', name: 'Cover' },
+      {
+        id: 'b',
+        orientation: 'portrait',
+        background: { fill: { kind: 'solid', color: '#0f172a' } },
+      },
+    ];
+    for (const page of kept) {
+      expect(withContentOnAPage({ elements: stray, pages: [page] })).toBeNull();
+    }
+    // An infographic page chosen but otherwise untouched is still replaced.
+    expect(
+      withContentOnAPage({
+        elements: stray,
+        pages: [{ id: 'i', orientation: 'portrait', kind: 'infographic' }],
+      }),
+    ).not.toBeNull();
+  });
+
   it('counts a lone straight line on a page as on it', () => {
     const line = {
       id: 'rule',
@@ -235,6 +259,29 @@ describe('withPageSplit', () => {
     const out = withPageSplit(tab, tab.pages[0]!.id)!;
     expect(out.pages).toHaveLength(20);
     insideItsPage(out);
+  });
+
+  it("keeps the split page's paint and name on every new page, numbered after the first", () => {
+    const tab = board();
+    const fill = { kind: 'solid' as const, color: '#0f172a' };
+    const named = {
+      ...tab,
+      pages: [
+        { ...tab.pages[0]!, name: 'Overview', background: { fill, pattern: 'dots' as const } },
+      ],
+    };
+    const out = withPageSplit(named, tab.pages[0]!.id)!;
+    expect(out.pages.map((p) => p.name)).toEqual(['Overview', 'Overview 2']);
+    for (const p of out.pages) expect(p.background).toEqual({ fill, pattern: 'dots' });
+  });
+
+  it('refuses at the page limit, where a split has no room for a second page', () => {
+    const tab = board();
+    const rest = Array.from({ length: MAX_ILLUSTRATE_PAGES - 1 }, (_, i) => ({
+      id: `p${i}`,
+      orientation: 'portrait' as const,
+    }));
+    expect(withPageSplit({ ...tab, pages: [...tab.pages, ...rest] }, tab.pages[0]!.id)).toBeNull();
   });
 
   it('never passes the page limit', () => {

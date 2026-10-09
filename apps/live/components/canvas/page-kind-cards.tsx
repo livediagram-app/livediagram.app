@@ -4,9 +4,30 @@
 // miniature of the page above its name and a line on what it is for. Shared by the add-a-page
 // popover and the first page's own choice.
 import type { PageKind } from '@livediagram/document';
-import type { Ref } from 'react';
+import type { KeyboardEvent, Ref } from 'react';
 
 export type PageKindChoice = { kind: PageKind; name: string; line: string };
+
+// The cards sit two by two.
+const KIND_COLUMNS = 2;
+
+/** Arrow keys between the cards (the popover and the first page's choice alike): Left / Right
+ *  step one card, Up / Down a row of the two-by-two grid, wrapping. */
+export function moveBetweenKindCards(
+  e: KeyboardEvent<HTMLElement>,
+  cards: readonly (HTMLButtonElement | null)[],
+) {
+  const step = (
+    { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -KIND_COLUMNS, ArrowDown: KIND_COLUMNS } as Record<
+      string,
+      number
+    >
+  )[e.key];
+  if (step === undefined) return;
+  e.preventDefault();
+  const at = cards.findIndex((c) => c === document.activeElement);
+  cards[(at + step + PAGE_KINDS.length) % PAGE_KINDS.length]?.focus();
+}
 
 export const PAGE_KINDS: readonly PageKindChoice[] = [
   {

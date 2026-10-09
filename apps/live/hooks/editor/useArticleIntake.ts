@@ -39,6 +39,7 @@ import {
 } from '@/lib/article/article-editor-store';
 import { useElementGestureActive } from '@/lib/canvas-gesture';
 import { articleTextWidth } from '@/lib/article/article-flow-geometry';
+import { lockedArticleFlows } from '@/lib/article/article-lock';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -86,6 +87,10 @@ export function useArticleIntake({
     if (was.tabId !== tabId || !on || !editable || !pages) return;
     if (!local) return;
     if (was.elements === activeTab.elements && was.articles === activeTab.articles) return;
+    // An article with a locked page is held as it is (docs/specs/007-editor/illustrate-pages.md
+    // "Locking a page"): nothing goes into its writing, none of its zones move or refit. Asked
+    // before the editors are touched, since an insert or a move changes the writing at once.
+    const held = lockedArticleFlows(illustratePagesOf(activeTab));
 
     // Objects dragged off their zones onto their own article: the writing moves their zones there.
     // Only an edit that moved elements can drag one out (a typing commit changes the writing alone).
@@ -95,12 +100,15 @@ export function useArticleIntake({
         : objectsDraggedOut(
             { ...activeTab, elements: was.elements, articles: was.articles },
             activeTab,
-          ).map((d) => ({ ...d, res: articleHandleOf(d.flow)?.moveZone(d.zoneId, d.at) ?? null }));
+          )
+            .filter((d) => !held.has(d.flow))
+            .map((d) => ({ ...d, res: articleHandleOf(d.flow)?.moveZone(d.zoneId, d.at) ?? null }));
     const docsBefore = articlesOf({ articles: was.articles });
     const docsNow = articlesOf(activeTab);
     // Zones that left the writing in this edit.
     const goneZones = new Map<string, ArticleZoneBlock[]>();
     for (const [flow, before] of Object.entries(docsBefore)) {
+      if (held.has(flow)) continue;
       const now = new Set((docsNow[flow]?.blocks ?? []).map((b) => b.id));
       const gone = before.blocks.filter(
         (b): b is ArticleZoneBlock =>
@@ -125,6 +133,11 @@ export function useArticleIntake({
     for (const [flow, ids] of loose) {
       const handle = articleHandleOf(flow);
       const doc = docsNow[flow];
+      if (held.has(flow)) {
+        // Dropped on an unlocked page of a held article: it stays where it is, a loose element.
+        debugLog('[article] intake refused (locked)', { tabId, flow });
+        continue;
+      }
       if (!handle || !doc) continue;
       const els = activeTab.elements.filter((e) => ids.includes(e.id));
       const plan = zonePlanFor(els, activeTab.elements, textWidthOf(pages, flow, doc));
@@ -202,8 +215,9 @@ export function useArticleIntake({
           });
         }
         const laid = layOutIllustratePages(illustratePagesOf(next));
+        const heldNow = lockedArticleFlows(illustratePagesOf(next));
         for (const [flow, doc] of Object.entries(articlesOf(next)))
-          next = withZonesFitted(next, flow, textWidthOf(laid, flow, doc));
+          if (!heldNow.has(flow)) next = withZonesFitted(next, flow, textWidthOf(laid, flow, doc));
         return next;
       });
       // Nothing to settle: the same tabs back, so the tick changes nothing.

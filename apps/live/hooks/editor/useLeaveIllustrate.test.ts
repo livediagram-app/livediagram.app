@@ -15,9 +15,18 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // Only flow `a` has an open editor: what is typed there is taken into the pages.
 const typed: ArticleBlock[] = [{ id: 'p', type: 'paragraph', runs: [{ text: 'Typed now' }] }];
+const takeBlocks = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/article/article-editor-store', () => ({
   articleHandleOf: (flow: string) =>
-    flow === 'a' ? { takeBlocks: () => typed, blocksByPage: () => [['p']] } : undefined,
+    flow === 'a'
+      ? {
+          takeBlocks: () => {
+            takeBlocks();
+            return typed;
+          },
+          blocksByPage: () => [['p']],
+        }
+      : undefined,
 }));
 
 // Leaving Illustrate (docs/specs/007-editor/editor-modes.md "Leaving Illustrate"): articles ask
@@ -139,5 +148,46 @@ describe('leaving Illustrate', () => {
     act(() => result.current.leave.keep());
     expect(rawSet).toHaveBeenCalledWith('draw');
     expect(result.current.leave.pending).toBeNull();
+  });
+
+  // docs/specs/007-editor/article-pages.md "Leaving Illustrate": a lock holds an article as it is.
+  it('asks only the lighter question when every article has a locked page', () => {
+    const { result } = setup(
+      tab({
+        pages: [{ id: 'pa', orientation: 'portrait', kind: 'article', flow: 'a', locked: true }],
+        articles: { a: { blocks: [] } },
+      } as Partial<Tab>),
+    );
+    act(() => result.current.editorMode.setMode('draw'));
+    expect(result.current.leave.pending).toBeNull();
+    expect(result.current.leave.confirming).toBe('draw');
+  });
+
+  it("turns only the unlocked articles into pages, and never takes a locked one's writing", () => {
+    takeBlocks.mockClear();
+    const t = tab({
+      pages: [
+        { id: 'pa', orientation: 'portrait', kind: 'article', flow: 'a', locked: true },
+        { id: 'pb', orientation: 'portrait', kind: 'article', flow: 'b' },
+      ],
+      articles: {
+        a: { blocks: [{ id: 'k', type: 'paragraph', runs: [{ text: 'Held' }] }] },
+        b: { blocks: [{ id: 'q', type: 'paragraph', runs: [{ text: 'Saved' }] }] },
+      },
+    } as Partial<Tab>);
+    const { result, rawSet } = setup(t);
+    act(() => result.current.editorMode.setMode('diagram'));
+    expect(result.current.leave.pending).toBe('diagram');
+    act(() => result.current.leave.convert());
+    expect(takeBlocks).not.toHaveBeenCalled();
+    const out = rawSet.mock.calls[0]![1]!(t);
+    expect(Object.keys(articlesOf(out))).toEqual(['a']);
+    expect(articlesOf(out).a!.blocks[0]).toMatchObject({ id: 'k' });
+    const made = out.elements.filter(
+      (e): e is ShapeElement => e.type === 'shape' && e.shape === 'page',
+    );
+    expect(made).toHaveLength(1);
+    expect(JSON.stringify(made)).toContain('Saved');
+    expect(JSON.stringify(made)).not.toContain('Held');
   });
 });

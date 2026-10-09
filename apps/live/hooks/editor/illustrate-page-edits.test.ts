@@ -389,6 +389,36 @@ describe('locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a p
     h.edits().removePage?.('d1');
     expect(h.tab()).toBe(before);
   });
+
+  it("renames an unlocked page of an article another of whose pages is locked: a name is a page's own", () => {
+    const h = harness({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [
+        { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f', locked: true },
+        { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f' },
+      ],
+      articles: { f: { blocks: [] } },
+    } as unknown as Tab);
+    h.edits().rename('d2', 'Part two');
+    expect(illustratePagesOf(h.tab())[1]!.name).toBe('Part two');
+    h.edits().rename('d1', 'Part one');
+    expect(illustratePagesOf(h.tab())[0]!.name).toBeUndefined();
+  });
+
+  it('gives a page only the sizes its kind offers', () => {
+    const h = harness({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' }],
+      articles: { f: { blocks: [] } },
+    } as unknown as Tab);
+    h.edits().setSize('d1', 'slide');
+    h.edits().setSize('d1', 'slide-classic');
+    expect(h.commitTabs).not.toHaveBeenCalled();
+  });
 });
 
 // docs/specs/007-editor/illustrate-pages.md "Sizes", "Split Into Pages".
@@ -435,6 +465,25 @@ describe('Fit to Content page edits', () => {
     expect(illustratePagesOf(h.tab())).toHaveLength(1);
     expect(h.toastInfo).toHaveBeenCalledWith('This page is one group: nothing to split.');
     expect(h.onGoTo).not.toHaveBeenCalled();
+  });
+
+  it('adds an A4 page after a Fit to Content page, its sides being that page alone', () => {
+    const h = harness(fitTab([box('a', 0)]));
+    h.edits().addPage!('infographic');
+    const added = illustratePagesOf(h.tab())[1]!;
+    expect(added.size).toBeUndefined();
+    expect('fit' in added).toBe(false);
+  });
+
+  it('says so at the page limit rather than splitting into one page', () => {
+    const tab = fitTab([box('a', -1200), box('b', 1200)]);
+    const rest = Array.from({ length: 99 }, (_, i) => ({ id: `p${i}`, orientation: 'portrait' }));
+    const h = harness({ ...tab, pages: [...tab.pages!, ...rest] } as unknown as Tab);
+    h.edits().splitPage('f');
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(h.toastInfo).toHaveBeenCalledWith(
+      'A tab holds at most 100 pages: delete one to split this page.',
+    );
   });
 
   it('refuses to split a locked page', () => {

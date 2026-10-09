@@ -6,62 +6,62 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 
 ## Domain and naming
 
-| Term                        | Identifier                                                                                                                                                                                                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page                        | `IllustratePage` (`{ id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow? }`), `packages/document/src/illustrate-page.ts`                                                                                                                       |
-| Fit to Content sides        | `PageSides` (`{ width, height }`), `parsePageSides`, `clampPageSide`, `FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`, `packages/document/src/illustrate-page-fit.ts`                                                                                                    |
-| Row anchor                  | `RowAt` (`{ x, y }`), `parseRowAt` (`illustrate-page-fit.ts`); `rowAnchorOf(pages)`, `withOneRowAnchor` and `withRowAnchorKept` (private), `illustrate-page.ts`                                                                                                   |
-| Page kind                   | `PageKind` (`'infographic' \| 'article' \| 'slide'`); `pageKindOf(page)` (absent reads infographic), `isArticlePage(page)`, `newSlidePage(id, size?)`                                                                                                             |
-| The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, flow)`, `packages/document/src/article-pages.ts`                                                                                                                      |
-| Units of the row            | `PageUnit` (`{ pageIds, flow? }`), `pageUnits`, `withUnitMoved` (`article-pages.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                                                                                                                                    |
-| A flow's pages together     | `withArticlesTogether(pages)`, private to `illustrate-page.ts`, run by `illustratePagesOf`                                                                                                                                                                        |
-| A page laid out             | `LaidOutPage` (`IllustratePage & { index, rect: PageRect }`)                                                                                                                                                                                                      |
-| Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide' \| 'slide' \| 'slide-classic' \| 'logo' \| 'fit'`), `PAGE_SIZES` (`landscapeOnly` on the slide sizes, `fitOnly` on `fit`), `PAGE_SIZE_IDS`, `SLIDE_PAGE_SIZE_IDS`, `pageSizesFor(kind)` |
-| Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                                                                                                                |
-| Page background             | `PageBackground` (`{ fill?: PageFill; pattern?: PagePattern }`)                                                                                                                                                                                                   |
-| Fill                        | `PageFill` (`{ kind: 'solid'; color }` \| `{ kind: 'gradient'; from; to; angle }`)                                                                                                                                                                                |
-| Pattern                     | `PagePattern` (`'dots' \| 'grid' \| 'lines'`), `PAGE_PATTERNS`                                                                                                                                                                                                    |
-| The tab's pages             | `illustratePagesOf(tab)` (never empty), `layOutIllustratePages(pages)`                                                                                                                                                                                            |
-| A page's measures           | `pageDimensions`, `pageSizeLabel`, `pageLabel(page, index, count)`, `pageMargin`                                                                                                                                                                                  |
-| Page edit carrying content  | `withIllustratePages(tab, next)`                                                                                                                                                                                                                                  |
-| What is on a page           | `elementAnchorPoint`, `elementIdsOnPage`, `packages/document/src/illustrate-page-content.ts`                                                                                                                                                                      |
-| Duplicate / replace content | `withDuplicatedPage`, `withPageContentReplaced`                                                                                                                                                                                                                   |
-| Page surface                | `pageFillTone`, `pageSurface`, `pageIsDark`, `elementPageSurfaces`                                                                                                                                                                                                |
-| Re-inking                   | `legibleOn(color, tone)`, `withPageInkFor(tab, pageId, background)`                                                                                                                                                                                               |
-| Re-fit                      | `withContentFittedToPage(tab, ids, pageId, { centre?, keepSize? })`                                                                                                                                                                                               |
-| Snap boxes                  | `illustratePageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                                                                                                                                                       |
-| Into pages                  | `contentClusters`, `pageAround(box, id)`, `withContentOnAPage(tab)`, `withPageSplit(tab, pageId)`, `packages/document/src/illustrate-paginate.ts`; `IllustratePageEdits.splitPage`; `SplitPagesIcon` (`packages/ui/src/icons/actions.tsx`)                        |
-| Page layout                 | `PageLayoutId`, `PageLayout`, `PAGE_LAYOUTS` (`page-layouts.ts`); `SlideLayoutId`, `SLIDE_LAYOUTS`, `SLIDE_LAYOUT_CATEGORIES` (`slide-layouts.ts`); `layoutCatalogueFor(kind)`, `pageLayoutById` (`layout-catalogue.ts`), all `packages/templates/src/`           |
-| Layout kit                  | `kit(box)`, `Kit`, `heading`, `verticalSteps`, `LayoutBox`, `page-layout-kit.ts`                                                                                                                                                                                  |
-| Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                                                                                                                                                   |
-| More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts`                                                                                        |
-| Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                                                                                                          |
-| A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                                                                                                             |
-| Background catalogue        | `PAGE_COLOUR_GROUPS` (`page-background-custom.tsx`), `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                |
-| Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                                                                                                                  |
-| The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                                                                                                       |
-| Page edits                  | `IllustratePageEdits`, `illustratePageEdits`, `apps/live/hooks/editor/illustrate-page-edits.ts`                                                                                                                                                                   |
-| Sheets and title bars       | `IllustratePages` (`PageCog`, `LayoutInvite`, `ReorderMarker`, `AddPageButton`), `apps/live/components/canvas/IllustratePages.tsx`                                                                                                                                |
-| Add a page                  | `AddPagePopover` (`AddPagePopover.tsx`); `PAGE_KINDS`, `PageKindChoice`, `PageKindCard` (`page-kind-cards.tsx`)                                                                                                                                                   |
-| The strip's +               | `AddPageStripButton` (`components/palette/AddPageStripButton.tsx`), `ToolbarPalette` `onAddPage`                                                                                                                                                                  |
-| First page's choice card    | `FirstPageChoice` (`components/canvas/FirstPageChoice.tsx`)                                                                                                                                                                                                       |
-| Page navigator              | `PageNavigator` (`components/canvas/PageNavigator.tsx`)                                                                                                                                                                                                           |
-| Page panel                  | `IllustratePagePanel` (`PagePanelTab` `'page' \| 'layouts' \| 'style' \| 'text'`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                                                                         |
-| Background hover preview    | `setPageBackgroundPreview`, `usePageBackgroundPreview`, `previewedBackground`, `withPreviewedBackgrounds`, `apps/live/lib/page-background-preview.ts`                                                                                                             |
-| Theme accent                | `themeAccent(theme)`, `illustrate-page-paint.ts`; `IllustratePagesView.themeAccent`                                                                                                                                                                               |
-| Panel sections              | `SizeSection`, `OrientationSection` (`illustrate-page-panel-sections.tsx`), `BackgroundSection` (`page-background-section.tsx`)                                                                                                                                   |
-| Layouts section             | `LayoutsSection` (state: `category` open or null for the overview, `pending`), `infographic-page-layouts-section.tsx`; tile art `LayoutThumb`                                                                                                                     |
-| Layout hover preview        | `InfographicLayoutPreview`; `IllustratePagesView.layoutPreview`                                                                                                                                                                                                   |
-| Page clip                   | `IllustratePageClip` (`hiddenPageId`), `pagesClipPath`                                                                                                                                                                                                            |
-| Per-element surface         | `PageSurfacesProvider`, `useElementSurface(id)`, `CanvasSurfaceContext.tsx`                                                                                                                                                                                       |
-| Reorder drag                | `usePageReorderDrag`, `reorderSlot`, `PageReorder` (`{ pageId, pageIds, slot }`), `apps/live/hooks/canvas/usePageReorderDrag.ts`                                                                                                                                  |
-| Something in view           | `useOffscreenContent(elements, offset, zoom, mainRef, pages)`, `apps/live/hooks/canvas/useOffscreenContent.ts`                                                                                                                                                    |
-| Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                                                                                                                 |
-| Export pages                | `PageScope`, `PageExportFormat`, `DEFAULT_PAGE_SCOPE`, `exportPages`, `exportPageLabel`, `zipEntryName`, `sanitizeFilename` (`apps/live/lib/export-pages.ts`); `writeZip`, `crc32` (`apps/live/lib/zip-writer.ts`)                                                |
-| Export page row             | `ExportPagePicker` (scope + page); `ImageExportPanel` `pagePicker`; `ILLUSTRATE_FORMATS`, `ILLUSTRATE_CARD_COPY` (`ExportTabDialog.tsx`)                                                                                                                          |
-| Import formats              | `ImportTabDialog` `formats` (`['json']` in Illustrate mode, from `EditorTabDialogs`)                                                                                                                                                                              |
-| Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                                                                                                               |
-| Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                  |
+| Term                        | Identifier                                                                                                                                                                                                                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Page                        | `IllustratePage` (`{ id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow? }`), `packages/document/src/illustrate-page.ts`                                                                                                                                                |
+| Fit to Content sides        | `PageSides` (`{ width, height }`), `parsePageSides`, `clampPageSide`, `FIT_PAGE_MIN_SIDE`, `FIT_PAGE_MAX_SIDE`, `packages/document/src/illustrate-page-fit.ts`                                                                                                                             |
+| Row anchor                  | `RowAt` (`{ x, y }`), `parseRowAt` (`illustrate-page-fit.ts`); `rowAnchorOf(pages)`, `withOneRowAnchor` and `withRowAnchorKept` (private), `illustrate-page.ts`                                                                                                                            |
+| Page kind                   | `PageKind` (`'infographic' \| 'article' \| 'slide'`); `pageKindOf(page)` (absent reads infographic), `isArticlePage(page)`, `newSlidePage(id, size?)`                                                                                                                                      |
+| The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, flow)`, `packages/document/src/article-pages.ts`                                                                                                                                               |
+| Units of the row            | `PageUnit` (`{ pageIds, flow? }`), `pageUnits`, `withUnitMoved` (`article-pages.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                                                                                                                                                             |
+| A flow's pages together     | `withArticlesTogether(pages)`, private to `illustrate-page.ts`, run by `illustratePagesOf`                                                                                                                                                                                                 |
+| A page laid out             | `LaidOutPage` (`IllustratePage & { index, rect: PageRect }`)                                                                                                                                                                                                                               |
+| Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide' \| 'slide' \| 'slide-classic' \| 'logo' \| 'fit'`), `PAGE_SIZES` (`landscapeOnly` on the slide sizes, `fitOnly` on `fit`), `PAGE_SIZE_IDS`, `SLIDE_PAGE_SIZE_IDS`, `pageSizesFor(kind)`, `pageSizeChoices(page)` |
+| Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                                                                                                                                         |
+| Page background             | `PageBackground` (`{ fill?: PageFill; pattern?: PagePattern }`)                                                                                                                                                                                                                            |
+| Fill                        | `PageFill` (`{ kind: 'solid'; color }` \| `{ kind: 'gradient'; from; to; angle }`)                                                                                                                                                                                                         |
+| Pattern                     | `PagePattern` (`'dots' \| 'grid' \| 'lines'`), `PAGE_PATTERNS`                                                                                                                                                                                                                             |
+| The tab's pages             | `illustratePagesOf(tab)` (never empty), `layOutIllustratePages(pages)`                                                                                                                                                                                                                     |
+| A page's measures           | `pageDimensions`, `pageSizeLabel`, `pageLabel(page, index, count)`, `pageMargin`                                                                                                                                                                                                           |
+| Page edit carrying content  | `withIllustratePages(tab, next)`                                                                                                                                                                                                                                                           |
+| What is on a page           | `elementAnchorPoint`, `elementIdsOnPage`, `packages/document/src/illustrate-page-content.ts`                                                                                                                                                                                               |
+| Duplicate / replace content | `withDuplicatedPage`, `withPageContentReplaced`                                                                                                                                                                                                                                            |
+| Page surface                | `pageFillTone`, `pageSurface`, `pageIsDark`, `elementPageSurfaces`                                                                                                                                                                                                                         |
+| Re-inking                   | `legibleOn(color, tone)`, `withPageInkFor(tab, pageId, background)`                                                                                                                                                                                                                        |
+| Re-fit                      | `withContentFittedToPage(tab, ids, pageId, { centre?, keepSize? })`                                                                                                                                                                                                                        |
+| Snap boxes                  | `illustratePageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                                                                                                                                                                                |
+| Into pages                  | `contentClusters`, `pageAround(box, id)`, `withContentOnAPage(tab)`, `withPageSplit(tab, pageId)`, `packages/document/src/illustrate-paginate.ts`; `IllustratePageEdits.splitPage`; `SplitPagesIcon` (`packages/ui/src/icons/actions.tsx`)                                                 |
+| Page layout                 | `PageLayoutId`, `PageLayout`, `PAGE_LAYOUTS` (`page-layouts.ts`); `SlideLayoutId`, `SLIDE_LAYOUTS`, `SLIDE_LAYOUT_CATEGORIES` (`slide-layouts.ts`); `layoutCatalogueFor(kind)`, `pageLayoutById` (`layout-catalogue.ts`), all `packages/templates/src/`                                    |
+| Layout kit                  | `kit(box)`, `Kit`, `heading`, `verticalSteps`, `LayoutBox`, `page-layout-kit.ts`                                                                                                                                                                                                           |
+| Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                                                                                                                                                                            |
+| More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts`                                                                                                                 |
+| Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                                                                                                                                   |
+| A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                                                                                                                                      |
+| Background catalogue        | `PAGE_COLOUR_GROUPS` (`page-background-custom.tsx`), `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                                         |
+| Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                                                                                                                                           |
+| The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                                                                                                                                |
+| Page edits                  | `IllustratePageEdits`, `illustratePageEdits`, `apps/live/hooks/editor/illustrate-page-edits.ts`                                                                                                                                                                                            |
+| Sheets and title bars       | `IllustratePages` (`PageCog`, `LayoutInvite`, `ReorderMarker`, `AddPageButton`), `apps/live/components/canvas/IllustratePages.tsx`                                                                                                                                                         |
+| Add a page                  | `AddPagePopover` (`AddPagePopover.tsx`); `PAGE_KINDS`, `PageKindChoice`, `PageKindCard` (`page-kind-cards.tsx`)                                                                                                                                                                            |
+| The strip's +               | `AddPageStripButton` (`components/palette/AddPageStripButton.tsx`), `ToolbarPalette` `onAddPage`                                                                                                                                                                                           |
+| First page's choice card    | `FirstPageChoice` (`components/canvas/FirstPageChoice.tsx`)                                                                                                                                                                                                                                |
+| Page navigator              | `PageNavigator` (`components/canvas/PageNavigator.tsx`)                                                                                                                                                                                                                                    |
+| Page panel                  | `IllustratePagePanel` (`PagePanelTab` `'page' \| 'layouts' \| 'style' \| 'text'`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                                                                                                  |
+| Background hover preview    | `setPageBackgroundPreview`, `usePageBackgroundPreview`, `previewedBackground`, `withPreviewedBackgrounds`, `apps/live/lib/page-background-preview.ts`                                                                                                                                      |
+| Theme accent                | `themeAccent(theme)`, `illustrate-page-paint.ts`; `IllustratePagesView.themeAccent`                                                                                                                                                                                                        |
+| Panel sections              | `SizeSection`, `OrientationSection` (`illustrate-page-panel-sections.tsx`), `BackgroundSection` (`page-background-section.tsx`)                                                                                                                                                            |
+| Layouts section             | `LayoutsSection` (state: `category` open or null for the overview, `pending`), `infographic-page-layouts-section.tsx`; tile art `LayoutThumb`                                                                                                                                              |
+| Layout hover preview        | `InfographicLayoutPreview`; `IllustratePagesView.layoutPreview`                                                                                                                                                                                                                            |
+| Page clip                   | `IllustratePageClip` (`hiddenPageId`), `pagesClipPath`                                                                                                                                                                                                                                     |
+| Per-element surface         | `PageSurfacesProvider`, `useElementSurface(id)`, `CanvasSurfaceContext.tsx`                                                                                                                                                                                                                |
+| Reorder drag                | `usePageReorderDrag`, `reorderSlot`, `PageReorder` (`{ pageId, pageIds, slot }`), `apps/live/hooks/canvas/usePageReorderDrag.ts`                                                                                                                                                           |
+| Something in view           | `useOffscreenContent(elements, offset, zoom, mainRef, pages)`, `apps/live/hooks/canvas/useOffscreenContent.ts`                                                                                                                                                                             |
+| Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                                                                                                                                          |
+| Export pages                | `PageScope`, `PageExportFormat`, `DEFAULT_PAGE_SCOPE`, `exportPages`, `exportPageLabel`, `zipEntryName`, `sanitizeFilename` (`apps/live/lib/export-pages.ts`); `writeZip`, `crc32` (`apps/live/lib/zip-writer.ts`)                                                                         |
+| Export page row             | `ExportPagePicker` (scope + page); `ImageExportPanel` `pagePicker`; `ILLUSTRATE_FORMATS`, `ILLUSTRATE_CARD_COPY` (`ExportTabDialog.tsx`)                                                                                                                                                   |
+| Import formats              | `ImportTabDialog` `formats` (`['json']` in Illustrate mode, from `EditorTabDialogs`)                                                                                                                                                                                                       |
+| Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                                                                                                                                        |
+| Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                                           |
 
 "Page" in code and specs; "sheet" only for the drawn view of one. "Layout" is what goes onto one
 page; "template" stays the whole-tab starting point.
@@ -178,7 +178,7 @@ reaches them all.
 - `movePageTo(id, unitIndex)`, `movePage(id, ±1)`, `canMove(id, ±1)`: over units (`pageUnits`: a
   page, or a whole article), `withUnitMoved`; content follows its page.
 - `addPage(kind)` (absent at the limit): `'infographic'` takes the last infographic page's size and
-  orientation (else A4 portrait), `nextIllustratePageId(current)`; `'article'` uses
+  orientation (else A4 portrait; a `'fit'` model gives no `size`, A4), `nextIllustratePageId(current)`; `'article'` uses
   `withArticleAdded` with the last page's size and orientation when it is a paper size (A4, US
   Letter, A3), else A4 portrait, and a `nextArticleFlowId`; then `onCreated(id)` (and
   `onArticleCreated(flow)`).
@@ -213,7 +213,8 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
   - No `pages` stored: null when the box lies inside the first page (1 px slack); else one page
     `pageAround(box)` with `rowAt` the box's centre (rounded). Elements are returned as they are
     (same array); `pageOrientation` dropped.
-  - `pages` stored: null when any page is an article page or locked, or any element's anchor point
+  - `pages` stored: null when any page has been made something of (a `flow`, `locked`, a `kind`
+    other than `'infographic'`, a `name` or a `background`), or any element's anchor point
     (`elementAnchorPoint` over `elementIndexFor`, linear) is on a page; else the stored pages are
     replaced by that one page.
   - Run inside an editor's switch (`withEditorModeSwitched`, [Editor modes blueprint](editor-modes.md)
@@ -224,8 +225,10 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
     `track('Tab', 'Changed', 'PageFitToContent')`; log `[illustrate-page] content put onto a page`.
 - `withPageSplit(tab, pageId)` (Split Into Pages): null unless the page exists, is `'fit'` and
   unlocked, and its content (`elementIdsOnPage`) makes 2 or more clusters. Room =
-  `min(MAX_ILLUSTRATE_PAGES - (pages - 1), PAGINATE_MAX_PAGES)`; clusters past the room merge into
-  the last. Each cluster gets `pageAround(its box, nextIllustratePageId)`; the new pages replace the
+  `min(MAX_ILLUSTRATE_PAGES - (pages - 1), PAGINATE_MAX_PAGES)`, null under 2; clusters past the
+  room merge into the last. Each cluster gets `pageAround(its box, nextIllustratePageId)` with the
+  split page's `background` and its `name` (the first as is, the rest `"<name> <n>"`, the name cut to
+  `PAGE_NAME_MAX - 4` first); the new pages replace the
   page in the row through `withIllustratePages` (the split page's content stays put, later pages
   move with theirs, the anchor is kept), then each cluster goes onto its page with
   `withContentFittedToPage(..., { centre: true, keepSize: true })`: moved, never scaled.
@@ -233,10 +236,14 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
   edge, O(n²) on the split page's content, run once per press); reading order by rows
   (`top < row's first bottom`) then x.
 - `splitPage(id)` (`illustrate-page-edits.ts`): refused on a locked page (log `refused: page
-locked`); null from `withPageSplit`: toast "This page is one group: nothing to split.", log
+locked`); at `MAX_ILLUSTRATE_PAGES` refused with the toast "A tab holds at most 100 pages: delete
+  one to split this page." (log `split refused: page limit`); null from `withPageSplit`: toast "This page is one group: nothing to split.", log
   `split: one group`; else `PagesLaidOut`, toast "Split into n pages. Undo puts it back.", the view
   goes to the first new page, log `page split`.
-- `setSize(id, 'fit')` is refused (log `size refused: fit to content`).
+- `setSize(id, 'fit')` is refused (log `size refused: fit to content`), as is any size outside
+  `pageSizesFor(pageKindOf(page))` (log `size refused: not offered for the kind`).
+- `refusedLocked(id, edit, shared = true)`: with `shared`, any locked page of the page's article
+  refuses; `rename` and `startBlank` pass `shared: false` (the page's own lock only).
 
 ### Surfaces and ink
 
@@ -271,11 +278,13 @@ locked`); null from `withPageSplit`: toast "This page is one group: nothing to s
   pruning).
 - Edits (`illustrate-page-edits.ts`): `isLocked`, `setLocked` (`Tab · Changed · PageLocked /
 PageUnlocked`, tracked before the change); rename, orientation, size, background, layout, kind
-  and delete are refused for a locked page, or any page of its article
+  and delete are refused for a locked page, or (all but rename) any page of its article
   (`[illustrate-page] refused: page locked`). `useArticles.onLayout` leaves a flow with a locked
   page as it is.
-- UI: `PageLockButton` (`components/canvas/PageLockButton.tsx`) before the cog, its room
-  `pageLockRoom(locked, !mobile)`; a locked page shows no layout invite, card or kind choice. The
+- UI: `PageLockButton` (`components/canvas/PageLockButton.tsx`) before the cog, named for its
+  press ("Lock page" / "Unlock page", no `aria-pressed`), its room `pageLockRoom(locked, !mobile)`;
+  the title bar's fixed room (cog, lock, deck button, logo buttons) is taken before the invite
+  chooses its wide or icon form; a locked page shows no layout invite, card or kind choice. The
   panel (`IllustratePagePanel`) shows a `role="status"` notice and renders its name and sections
   `inert` at 50% opacity; Delete page is disabled. `ArticleFlows` makes a flow with a locked page
   read-only (`editable` false, no paper press).
@@ -318,7 +327,7 @@ kind` radiogroup (the segmented control: `theme` while `themePresets` is non-emp
   (`hiddenPageId`); `InfographicLayoutPreview` draws `svgBoxed` / `svgArrow` markup of
   `buildPageLayout` over the sheet. While Replace is pending, leaving the grid restores the
   pending layout's preview. Cleared on apply and on unmount (through a latest-callback ref).
-- Reorder: `usePageReorderDrag` on the label: pointer capture; with two or more units, past
+- Reorder: `usePageReorderDrag` on the label (`cursor-grab` only while `pageUnits(pages).length > 1`): pointer capture; with two or more units, past
   `DRAG_THRESHOLD` sideways it is a drag (`reorder = { pageId, pageIds, slot }`, `pageIds` the
   unit's pages, all dimmed); release calls `movePageTo(id, slot)`; the following click is
   swallowed (`endsDrag`); Escape cancels. `reorderSlot` = count of other units (`laidOutUnits`)
@@ -334,7 +343,8 @@ kind` radiogroup (the segmented control: `theme` while `themePresets` is non-emp
   while `onAddPage` is passed, i.e. Illustrate mode with `addPage`) both open `AddPagePopover`:
   desktop a `Portal`led card under the anchor, centred on it, kept in the window (above it when
   there is no room below), first card focused; phone a `BottomSheet`. Arrow keys cycle the cards
-  (`PAGE_KINDS` order, wrapping); a card `onClose(false)` then `onAdd(kind)`; Escape closes and
+  (`moveBetweenKindCards` in `page-kind-cards.tsx`, shared with `FirstPageChoice`: Left / Right one
+  card, Up / Down a row, wrapping); a card `onClose(false)` then `onAdd(kind)`; Escape closes and
   refocuses the +; an outside press closes (the + trigger whitelisted).
 - **First page's choice**: `IllustratePages` renders `FirstPageChoice` on a page when `edit`, not
   `bare`, and `offersPageKindChoice(pages, page.id, edit.contentCount(page.id))`; the layout
@@ -391,12 +401,13 @@ slide sets `presentingPageId`; `EditorCanvasHost` passes the view with only that
 prepend the page's `backgroundSvg`.
 
 - **Deck button**: `PageDeckButton` (`apps/live/components/canvas/PageDeckButton.tsx`) between the
-  layout invite and `PageCog`, on `kind === 'slide'` pages, for an editor, not on a phone; the label
-  room loses `DECK_ROOM` (28 px). It reads `view.deck: PageDeckControls` (`slideOf(pageId)`, `add`,
+  layout invite and `PageCog`, on `kind === 'slide'` pages and on any other page the deck has a
+  slide of (`view.deck.slideOf(page.id)`), for an editor, not on a phone; the label room (and the
+  invite's) loses `DECK_ROOM` (28 px). It reads `view.deck: PageDeckControls` (`slideOf(pageId)`, `add`,
   `toggleHidden`), built by `pageDeckControls(deck, tabId, canEdit, { newPageSlide,
 toggleSlideHidden })` (`apps/live/lib/page-deck-controls.ts`) and memoised into the view in
   `useEditorState`. States (`data-page-deck-button`): `add` (SlideDeckIcon, "Add to slide deck"),
-  `shown` (EyeIcon, `aria-pressed`, "Hide from the presentation"), `hidden` (EyeOffIcon, dimmed,
+  `shown` (EyeIcon, "Hide from the presentation"; no `aria-pressed`, the name says the press), `hidden` (EyeOffIcon, dimmed,
   "Show in the presentation").
 - **Full screen**: `slideFitOptions(slide, config)` (`lib/presentation-config.ts`) gives a page
   slide `{ maxZoom, padding: 0 }`; `fitToBounds` passes `padding` to `computeFitToScreen` (default
@@ -411,9 +422,11 @@ toggleSlideHidden })` (`apps/live/lib/page-deck-controls.ts`) and memoised into 
 - `withPageKindChosen(tab, id, 'slide', flow)` stores `newSlidePage(id)` keeping name and
   background. `addPage('slide')` appends `newSlidePage(id, lastSlide?.size)`; `addPage('infographic')`
   models on the last page that is neither an article's nor a slide.
-- `setOrientation` is refused on a page without an orientation; `setSize` refuses a non-slide size
-  on a slide page; both log `[illustrate-page] … refused`.
-- `SizeSection` lists `pageSizesFor(pageKindOf(page))` four to a row; `LayoutBrowser` reads
+- `setOrientation` is refused on a page without an orientation; `setSize` refuses a size the kind
+  does not offer; both log `[illustrate-page] … refused`.
+- `SizeSection` lists `pageSizeChoices(page)` four to a row (the kind's sizes, `'fit'` first on a
+  Fit to Content page, and on a landscape page only one of `'wide'` / `'slide'`, the two being one
+  shape: `'wide'` while the page is in it, else `'slide'`); `LayoutBrowser` reads
   `layoutCatalogueFor(pageKindOf(page))`.
 - `PAGE_KINDS` holds three cards (grid of three; the popover and first-page card are 420 px).
 - Telemetry: `KIND_CHOSEN_EVENT` (`PageKindSlide`) and `KIND_ADDED_EVENT` (`SlidePageAdded`).
@@ -500,14 +513,15 @@ as it grows."), each over its miniature; the strip +'s HoverCard **Add page**, "
 article page after the last."; the first page's card **What Is This Page For?**, "Choose now: a
 page keeps its kind once you start."; the navigator **Previous page**, "n of m", **Next page**;
 the panel's tabs **Page** / **Layouts** (an article page **Page** / **Style** / **Text**), sections **Size**,
-**Orientation**, **Background**, **Pattern**, **Start from a layout**; the confirm **Replace this
+**Orientation**, **Background**, **Pattern**, **Start From a Layout**; the confirm **Replace this
 page's content?**, "The n elements on it make way for <layout>. Undo brings them back.",
 **Cancel** / **Replace**; actions **Duplicate page**, **Move page left**, **Move page right**,
 **Delete page**; the invite **Start from a layout**; the export row **All pages** / **One page** with the outcome line ("n pages, one PDF.", "A .zip of n PNG files, one per page.", "A one-page PDF.", "One PNG."), the subtitle "Pick a format to export the pages."; the slide picker
 **Add as slide**; the size tile **Fit** (tooltip "Sized around the board it was made for"), the
 action **Split Into Pages**; the toasts "Put onto a page that fits it. Undo switches back to
 <Mode>.", "Put onto a page that fits it. Undo takes the page away.",
-"Split into n pages. Undo puts it back.", "This page is one group: nothing to split."
+"Split into n pages. Undo puts it back.", "This page is one group: nothing to split.", "A tab holds
+at most 100 pages: delete one to split this page."
 
 ## Accessibility
 
@@ -519,7 +533,7 @@ action **Split Into Pages**; the toasts "Put onto a page that fits it. Undo swit
 - The page label is a button named by its text (a HoverCard describes the press); the invite and
   Slides buttons are named; Tooltips repeat names only.
 - The + (both): `aria-haspopup="dialog"`, `aria-expanded`, named **Add page**; the popover
-  `role="dialog"` named "Add a page" around a `role="group"`; cards are buttons (name and line as
+  `role="dialog"` named "Add a Page" around a `role="group"`; cards are buttons (name and line as
   text), arrow keys cycle, Escape returns focus to the +.
 - The first page's card `role="group"` named "What is this page for?"; the navigator
   `role="navigation"` named "Page n of m", its arrows named and disabled at the ends.

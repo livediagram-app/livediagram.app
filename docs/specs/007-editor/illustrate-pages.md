@@ -40,7 +40,7 @@ afterwards (the one exception: the first page's own choice, below):
 
 **Adding a page**: the **+** after the last page (centred in the gap after it, or, zoomed out so
 far that the gap is narrower than the button, kept 12 screen px clear of the page) opens a small
-popover, **Add a page**, offering
+popover, **Add a Page**, offering
 four cards, two by two, each a miniature of the kind and a line under its name:
 
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
@@ -48,8 +48,9 @@ four cards, two by two, each a miniature of the kind and a line under its name:
 - **Slide**: "A slide for a deck: widescreen, ready to present."
 - **Logo**: "A square artboard for a logo, with guides and drawing tools."
 
-Arrow keys move between them, Enter or a press chooses, Escape or an outside press closes. A new
-infographic page takes the last infographic page's size and orientation (else A4 portrait); a new
+Arrow keys move between them (here and in the first page's choice below), Enter or a press chooses, Escape or an outside press closes. A new
+infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
+its orientation after a Fit to Content page, whose sides are that page's alone); a new
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
 slide's size (else 16:9), landscape; a new logo page is the 1024 x 1024 artboard. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. The Toolbar
@@ -59,11 +60,12 @@ row's own **+** adds a page.
 
 A tab entering Illustrate mode with no pages stored starts with one page, its kind unchosen.
 
-**The first page's choice**: while a tab's only page is unchosen and empty, it offers the two kinds
+**The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
 **What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same four
 cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
-choice goes; **Article** makes it the first page of a new article, the caret in its title;
+choice goes; **Article** makes it the first page of a new article, the caret in its title (a page set to a size
+an article does not offer, the 16:9 Slide, becomes A4);
 **Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting;
 **Logo** turns it into the artboard (`kind: 'logo'`), its logo layouts inviting. One
 edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
@@ -79,9 +81,9 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   than the window.
 - Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
-  and **Layouts** (a slide page's Layouts are the slide layouts; an article page: **Page** and
-  **Style**, [Article pages](article-pages.md) "Article style"; a logo page: **Page**, **Layouts**
-  and **Logo**, [Logo pages](logo-pages.md) "The page panel"), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
+  and **Layouts** (a slide page's Layouts are the slide layouts; an article page: **Page**,
+  **Style** and **Text**, [Article pages](article-pages.md) "Article style"; a logo page: **Page**
+  and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md) "The page panel"), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
   (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
   the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
@@ -103,7 +105,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
 
 ## A page
 
-`IllustratePage = { id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow? }`. Every
+`IllustratePage = { id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow?, locked?, startedBlank? }`. Every
 field after `orientation` is optional and absent on a page that never set it:
 
 - `size` absent is **A4**. `fit` (`{ width, height }`, whole canvas px) is present exactly on a page
@@ -116,6 +118,8 @@ field after `orientation` is optional and absent on a page that never set it:
   stays where it is.
 - `background` absent is the **paper**: white in light chrome, slate-900 in dark, as before.
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
+- `locked` is present (`true`) exactly on a locked page ("Locking a page"); `startedBlank` is
+  present (`true`) once its in-page layout card was hidden for good.
 - `kind` absent is **infographic**; `flow` is present exactly on an article page (its article's
   id). A stored article page without a flow is read as an article of its own (its id as the
   flow); a stored infographic or slide page with a flow drops it.
@@ -154,7 +158,10 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   Portrait / Landscape choice, a page in one is always drawn landscape, and a turn is refused. An
   infographic page keeps whatever orientation it had, so turning it back to a paper size restores
   it; a slide page's is always landscape.
-- The size tiles sit four to a row.
+- The size tiles sit four to a row, and no two are the same shape: turned landscape, the Story
+  (9:16) is the 16:9 Slide, so a landscape infographic page offers the **Slide** tile in its place
+  (or keeps **Story** while the page is in it, without Slide).
+- A page is only ever given a size its kind offers; any other is refused.
 - **Fit to Content** (`fit`) is the page made around a board that does not fit a paper size ("Into
   pages"): its sides are its own (`IllustratePage.fit`), the content's bounds plus the page margin
   all round, so nothing on it is scaled. Each side is clamped to **200** to **19200** px
@@ -181,7 +188,8 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 
 ## Backgrounds
 
-Every page kind (infographic, article, slide and logo) is painted the same way. The page panel's
+Every page kind (infographic, article, slide and logo) is painted the same way, except that a logo
+page takes no pattern ([Logo pages](logo-pages.md) "A logo page"). The page panel's
 **Background** section sorts its fills into **categories**, a segmented control at its top:
 **Theme** (shown while the tab's theme offers backgrounds), **Solid** and **Gradient**. It opens on
 the category of the page's current fill (a theme preset's on Theme, any other gradient's on
@@ -235,10 +243,10 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
 - **Thirty-one layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
-  1. **Title page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
+  1. **Title Page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
      placeholder (below on a tall page, to the right on a wide one) and a footer line.
-  2. **Big number**: one huge figure, its caption, a paragraph, a progress bar and a source line.
-  3. **Key stats**: two stat rows of three figures, a trend line where the page has room, and a
+  2. **Big Number**: one huge figure, its caption, a paragraph, a progress bar and a source line.
+  3. **Key Stats**: two stat rows of three figures, a trend line where the page has room, and a
      Takeaway callout.
   4. **Process**: four steps. Tall: numbered discs down the page joined by arrows, a name and note
      beside each. Wide: a process strip, a note under each step and a "Why it works" callout.
@@ -246,43 +254,43 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
      timeline rail with a name and note under each point, and a stat row.
   6. **Comparison**: two columns (Before / After), each a heading over three points with icons,
      and a "The verdict" callout.
-  7. **Chart story**: a captioned bar chart, a progress ring, three takeaways with icons and a
+  7. **Chart Story**: a captioned bar chart, a progress ring, three takeaways with icons and a
      source line.
-  8. **Top tips**: five tips, each an icon beside a line.
+  8. **Top Tips**: five tips, each an icon beside a line.
   9. **Quote**: a large quotation mark, the quote in large type and the attribution (a round
      photo, a name and a role) under it.
   10. **Team**: six people, each a round photo, a name and a role, three across (two on a page
       clearly taller than wide).
-  11. **Facts grid**: six cards, each an icon, a figure and a caption, three across (two on a tall
+  11. **Facts Grid**: six cards, each an icon, a figure and a caption, three across (two on a tall
       page).
   12. **Checklist**: six items, a ticked circle for each done one and an empty ring for the rest,
       then "n of 6 done" and a progress bar.
   13. **Event**: "You're invited", a title, an image, when and where (icon rows) and a "Save your
       spot" banner.
-  14. **Section divider**: a big section number, an accent rule, a title and a line, centred
+  14. **Section Divider**: a big section number, an accent rule, a title and a line, centred
       down the page.
   15. **Poster**: a large image (top, or the left on a wide page), a bold headline, a line and a
       footer.
-  16. **Survey results**: a pie chart of the answers with its legend, three headline figures (a
+  16. **Survey Results**: a pie chart of the answers with its legend, three headline figures (a
       stat row, or stacked beside the chart on a wide page) and a source line.
-  17. **Progress report**: four goals, each a name, its percentage and a progress bar, and an
+  17. **Progress Report**: four goals, each a name, its percentage and a progress bar, and an
       "Updated" line.
   18. **Roadmap**: Now, Next and Later columns, three item cards each.
   19. **Agenda**: six timed items, each a title and a note (two columns of three on a page not
       clearly taller than wide).
-  20. **Questions and answers**: four questions in bold, each with its answer.
+  20. **Questions and Answers**: four questions in bold, each with its answer.
   21. **Profile**: a round photo, a name, a role, a short bio and a stat row of three facts.
-  22. **Pros and cons**: a heading, then Pros (ticks, green) and Cons (crosses, rose) side by side,
+  22. **Pros and Cons**: a heading, then Pros (ticks, green) and Cons (crosses, rose) side by side,
       four each, and a "Weighing it up" callout.
-  23. **Before and after**: Before and After panels, each an image placeholder over three points,
+  23. **Before and After**: Before and After panels, each an image placeholder over three points,
       an arrow between them (down the page when tall), and the change in one figure.
-  24. **Feature matrix**: three options across, five features down, a tick or a dash in each cell,
+  24. **Feature Matrix**: three options across, five features down, a tick or a dash in each cell,
       the recommended option's column highlighted.
   25. **Announcement**: a "New" badge, a large headline, a line, an image placeholder and a call to
       action button.
-  26. **Did you know?**: an icon in a large disc, "Did you know?", one surprising fact set large,
+  26. **Did You Know?**: an icon in a large disc, "Did you know?", one surprising fact set large,
       and a source line.
-  27. **Save the date**: "Save the date", the date in a calendar tile, the event's name, where, and
+  27. **Save the Date**: "Save the date", the date in a calendar tile, the event's name, where, and
       a "More soon" line.
   28. **Pictogram**: a figure set large ("7 in 10") over a grid of ten person icons, seven filled,
       and a caption.
@@ -292,11 +300,11 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
   31. **Funnel**: four stages narrowing down the page, each a band with its name and count, and the
       conversion between them.
 - **Categories**: the picker groups the layouts as /new groups templates, one category at a time:
-  **Covers** (Title page, Quote, Event, Section divider, Poster), **Data** (Big number, Key stats,
-  Chart story, Facts grid, Survey results, Progress report, Pictogram, Ranking), **Steps and
+  **Covers** (Title Page, Quote, Event, Section Divider, Poster), **Data** (Big Number, Key Stats,
+  Chart Story, Facts Grid, Survey Results, Progress Report, Pictogram, Ranking), **Steps and
   Time** (Process, Timeline, Checklist, Roadmap, Agenda, Cycle, Funnel), **Compare** (Comparison,
-  Pros and cons, Before and after, Feature matrix), **People and Ideas** (Top tips, Team,
-  Questions and answers, Profile) and **Social** (Announcement, Did you know?, Save the date). The Layouts tab opens on the categories, each a card fronted
+  Pros and Cons, Before and After, Feature Matrix), **People and Ideas** (Top Tips, Team,
+  Questions and Answers, Profile) and **Social** (Announcement, Did You Know?, Save the Date). The Layouts tab opens on the categories, each a card fronted
   by its first two layouts fanned, with its count; a card opens its layouts, with an **All
   layouts / <category>** row to go back.
 - **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
@@ -317,12 +325,14 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
   selected) and the panel closes, so the finished page reads clean.
 - **An empty page invites a layout**: a "Start from a layout" button sits in the page's title bar
   beside the cog, only while the page is empty, and opens the panel on Layouts (the cog opens it on
-  Page). It shows its words on a wide screen when the title bar has room, else just its icon (and
-  its tooltip); when the page is too small on screen even for that, it hides, as the label does.
+  Page). It shows its words on a wide screen when the title bar has room for them beside its other
+  buttons (the lock, the deck button, a logo page's own) and the label, else just its icon (and its
+  tooltip); when the page is too small on screen even for that, it hides, as the label does. The
+  panel's Layouts tab is headed **Start From a Layout**, as the in-page card is.
 - **An empty infographic page shows its layouts inside itself**: while an infographic page is
   empty, on a tab the viewer can edit, a **Start From a Layout** card sits centred on the page,
   held at one screen size like the first page's kind choice, with the panel's Layouts in it: the
-  categories (Covers, Data, Steps and Time, People and Ideas, each with its count), then a
+  categories (Covers, Data, Steps and Time, Compare, People and Ideas, Social, each with its count), then a
   category's layouts with a way back. Pressing a layout places it (the page is empty, so at once,
   as one undo step); there is no hover preview here, since drawn over the page it would cover the
   card's own tiles. The card goes as
@@ -351,18 +361,18 @@ category's layouts, the same Replace question, hover previews and wireframe tile
 built for a landscape slide's content box (16:9 or 4:3), in the tab's theme, with type sized to
 be read across a room:
 
-- **Openers**: **Title slide** (a large title, a subtitle, an accent rule, and the presenter and
-  date at the foot), **Section header** (a big section number, an accent rule, the section's title
+- **Openers**: **Title Slide** (a large title, a subtitle, an accent rule, and the presenter and
+  date at the foot), **Section Header** (a big section number, an accent rule, the section's title
   and a line), and **Agenda** (the infographic Agenda).
-- **Content**: **Title and bullets** (a title over five bullet points, each a dot beside a line),
-  **Two columns** (a title over two columns, each a heading and three bullet points), **Image and
-  text** (an image filling the left half, a title, a line and three bullet points to its right),
+- **Content**: **Title and Bullets** (a title over five bullet points, each a dot beside a line),
+  **Two Columns** (a title over two columns, each a heading and three bullet points), **Image and
+  Text** (an image filling the left half, a title, a line and three bullet points to its right),
   **Statement** (an accent rule, one sentence set very large, centred, and a line under it) and **Quote** (the
   infographic Quote).
-- **Data**: **Big number**, **Key stats**, **Chart story** and **Comparison** (the infographic
+- **Data**: **Big Number**, **Key Stats**, **Chart Story** and **Comparison** (the infographic
   ones, side by side).
 - **Steps and Time**: **Process**, **Timeline** and **Roadmap** (the infographic ones).
-- **Closers**: **Thank you** (a large "Thank you", "Questions?", and a contact line) and **Team**
+- **Closers**: **Thank You** (a large "Thank you", "Questions?", and a contact line) and **Team**
   (the infographic Team).
 
 Seventeen in all; a slide layout reused from the infographics is the same layout (same id, same
@@ -381,7 +391,8 @@ article**, **Move article left / right**, **Delete article**.
 - **Move left** / **Move right**: swaps the page with its neighbour (a whole article counts as one
   neighbour); both sides' content moves with them. Disabled at the row's ends.
 - **Delete page**: removes the page **and everything on it** (arrows pinned to it too); the pages
-  after it close the gap. Offered while there is more than one page.
+  after it close the gap. Offered while the row holds more than one unit (a page, or a whole
+  article).
 - **Split Into Pages** (a Fit to Content page only): splits the page into one page per cluster of
   its content, nothing scaled ("Into pages" › "Split Into Pages"). Its icon button sits first in
   the action row, tooltip **Split Into Pages**.
@@ -433,7 +444,8 @@ is while the rest of the tab is worked on.
     (a duplicate is unlocked).
   - **An article page**: locking any page of an article makes the article's writing read-only,
     holds its page count and zones as they are, and refuses the edits its pages share (turning,
-    size, background, delete) from any of its pages.
+    size, background, delete) from any of its pages. A page's name stays its own: another page's
+    lock never holds it.
 - **What a lock does not do**: pages around it can still be added, moved or deleted (its content
   moves with it as pages close up or open around it), and the tab's theme still applies to it.
   The lock is Illustrate mode's, on the active tab's edits made here: in Diagram or Draw mode a
@@ -449,7 +461,8 @@ is while the rest of the tab is worked on.
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
   each element inked for its page.
 - **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
-  editor with two or more pages; the label shows a grab cursor). A marker bar in the gap shows
+  editor with two or more units, a page or a whole article; only then the label shows a grab
+  cursor). A marker bar in the gap shows
   where the page will land (after every other page whose centre is left of the dragged page's) and
   the dragged sheet dims; release moves it there with its content, one edit. Escape cancels. An
   article page's label drags its whole article, every sheet dimming; no slot falls inside an
@@ -496,6 +509,10 @@ In Illustrate mode the Export dialog exports **pages**, not the tab's content bo
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
 - The Isometric and Background pattern options are not offered: a page is its own background and
   is never tilted.
+- The Hidden layers option is not offered: Illustrate mode has no Layers, so a hidden layer's
+  elements stay out of the export as they stay off its canvas.
+- The preview is the download: a logo page's PNG and SVG preview show its see-through paper over a
+  checkerboard, as the Logo Kit's preview does.
 - Outside Illustrate mode, export is unchanged.
 
 ## Import
@@ -508,8 +525,8 @@ pages). Mermaid, Markdown, Excalidraw and draw.io are diagram formats and are no
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLocked`, `PageUnlocked`,
-`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`, `PageKindInfographic` / `PageKindArticle` / `PageKindSlide`
-(the first page's own choice);
+`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`, `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
+`PageKindLogo` (the first page's own choice);
 `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF` (one page) and
 `IllustratePNGPages / IllustrateSVGPages / IllustratePDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
@@ -532,8 +549,10 @@ its page is put onto a page made to fit it instead.
     - **No pages stored**, and content that does **not fit inside the first page**: one page is
       made **around all of the content, where it is**. The row anchor (`rowAt`) is the content's
       centre, so the page sits over the content and nothing moves.
-    - **Pages stored**, none of them an article page or locked, and **no element on any page**:
-      the stored pages are replaced by one page made around the content, as above.
+    - **Pages stored**, none of them made anything of (no article, slide or logo page, no name, no
+      background, no lock), and **no element on any page**: the stored pages are replaced by one
+      page made around the content, as above. Pages someone has set up are kept, the content left
+      in the surround.
     - Otherwise nothing happens: content left in the surround stays where it is.
 - **The page made around content** is an infographic page, landscape when the content is more than
   1.1 times wider than tall (`LANDSCAPE_RATIO`), portrait otherwise. It is **A4** when the content
@@ -557,9 +576,13 @@ separate pages. It is explicit: never run on entering the mode.
   the row's first cluster's bottom), each row left to right.
 - The page is replaced, in its place in the row, by **one page per cluster**, each made around its
   cluster as above (A4 or Fit to Content, landscape or portrait) with the cluster **moved** onto it,
-  centred, **never scaled**. The pages after it move along with their content.
+  centred, **never scaled**. Each new page keeps the split page's background and its name (the
+  first as it was, the rest numbered: "Overview", "Overview 2", ...). The pages after it move along
+  with their content.
 - At most 20 pages (`PAGINATE_MAX_PAGES`), and never past `MAX_ILLUSTRATE_PAGES`: clusters past the
-  last share it (its page made around them together).
+  last share it (its page made around them together). At the page limit there is no room for a
+  second page: nothing changes and a toast says "A tab holds at most 100 pages: delete one to split
+  this page."
 - With one cluster there is nothing to split: the page is left as it is and a toast says "This
   page is one group: nothing to split."
 - It is **one edit**. A toast: "Split into n pages. Undo puts it back." Telemetry:
@@ -568,20 +591,30 @@ separate pages. It is explicit: never run on entering the mode.
 ## Slides
 
 - In Illustrate mode the Slide Deck panel adds slides **a page at a time**: a page picker (each
-  page by its label) and **Add as slide**, in place of "Select elements to make a slide".
+  page by its label) and **Add as slide**, in place of "Select elements to make a slide". An empty
+  deck says "No slides yet. Pick a page, then press **Add as slide**."
 - A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
   resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
-  follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`; its
-  thumbnail is the page on its background. A page deleted leaves its slide empty (shown, fixable),
-  as an element slide's deleted elements do.
+  follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`, the
+  label read from the slide's own tab (so a slide on another tab names its page too), or
+  `<tab> · Page deleted` once the page is gone; its thumbnail is the page on its background, its
+  elements inked for the page's surface as the export inks them. A page deleted leaves its slide
+  empty (shown, fixable), as an element slide's deleted elements do.
+- Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
+  Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
+  says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
 - **A slide page's deck button**: beside its cog (left of it), for an editor on a desktop, a slide
   page shows its place in the deck. While the deck has no slide of the page (on this tab) it is
   **Add to slide deck** (the Slide Deck icon), which adds the page slide at the deck's end, as Add
   as slide does. Once the deck has one it is an eye that toggles that slide's visibility in the
-  presentation: **Hide from the presentation** (an open eye, pressed) or **Show in the
+  presentation: **Hide from the presentation** (an open eye) or **Show in the
   presentation** (a crossed eye, dimmed), the same as the slide's Visibility in the Slide Deck.
   Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
 SlideShown`).
+- **Any other page in the deck shows its eye too**: an infographic, article or logo page offers no
+  Add to slide deck in its title bar (the Slide Deck's page picker adds it), but once the deck has a
+  slide of it, the same eye sits beside its cog, so wherever a page is presented its visibility is
+  one press away.
 - **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
   screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 slide
   fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.

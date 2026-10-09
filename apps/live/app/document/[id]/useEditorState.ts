@@ -1472,8 +1472,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     () => ({ items: planItems.items, types: itemTypes.types }),
     [planItems.items, itemTypes.types],
   );
+  // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
+  const framePageRef = useRef<((pageId: string) => void) | null>(null);
   const slideDeck = useSlideDeck({
     tabs,
+    framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
     plan: slideThumbnailPlan,
     activeTabId: activeId,
     setActiveId,
@@ -1902,6 +1905,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     toastInfo: toast.info,
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
+    framePageRef,
   });
   // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
   const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);

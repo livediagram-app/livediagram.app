@@ -15,7 +15,7 @@ describe('PageLockButton', () => {
     cleanup();
     render(<PageLockButton locked labelled onToggle={vi.fn()} />);
     const b = screen.getByRole('button', { name: 'Unlock page' });
-    expect(b.getAttribute('aria-pressed')).toBe('true');
+    expect(b.hasAttribute('aria-pressed')).toBe(false);
     expect(b.textContent).toContain('Locked');
     expect(pageLockRoom(true, true)).toBeGreaterThan(pageLockRoom(true, false));
   });

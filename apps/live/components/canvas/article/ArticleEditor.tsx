@@ -69,6 +69,8 @@ import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import { articlePasteProps } from '@/lib/article/article-paste';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@/lib/debug-log';
+import { track } from '@/lib/telemetry';
+import { slashInsertEvent } from '@/lib/article/article-telemetry';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
@@ -197,15 +199,20 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     removeSlashQuery(view);
     setSlash(null);
     const a = item.action;
-    if (a.kind === 'style') setBlockStyle(a.style)(view.state, view.dispatch, view);
-    else if (a.kind === 'list') toggleList(a.list)(view.state, view.dispatch, view);
+    let done = false;
+    if (a.kind === 'style') done = setBlockStyle(a.style)(view.state, view.dispatch, view);
+    else if (a.kind === 'list') done = toggleList(a.list)(view.state, view.dispatch, view);
     else if (a.kind === 'block')
-      insertBlocksAfterCaret(
+      done = insertBlocksAfterCaret(
         a.block === 'divider'
           ? [articleSchema.nodes.divider!.create()]
           : [articleSchema.nodes.page_break!.create(), articleSchema.nodes.paragraph!.create()],
       )(view.state, view.dispatch, view);
     else latest.current.onInsert(latest.current.flow, a.what);
+    // A block put in from the menu counts as the toolbar's Insert does, once it went in; an
+    // object insert is counted by its host (useArticles) once it lands.
+    const event = done ? slashInsertEvent(a) : null;
+    if (event) track('Element', 'Added', event);
     view.focus();
   };
   const pickSlashRef = useRef(pickSlash);
@@ -275,7 +282,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
       notes.push({ id, index: place.index, y: place.y, height: r.height / z });
     });
-    const local = Date.now() - lastLocal.current < WRITER_WINDOW_MS || view.hasFocus();
+    // Only the writer of a change settles its consequences (docs/specs/007-editor/article-pages.md
+    // "Collaboration"): a change made here (typing, or a claimLayout from a zone, style or page
+    // edit) within the window. Focus alone is not writing: two people with the caret in the same
+    // article would both add a page for one of them's overflow.
+    const local = Date.now() - lastLocal.current < WRITER_WINDOW_MS;
     p.onLayout({ flow: p.flow, pagesNeeded, zones, notes, local });
     // The first layout (and the one after web fonts land) is news to the Map and the thumbnails.
     if (!announced.current) {
@@ -425,10 +436,13 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           'aria-multiline': 'true',
           'aria-label': 'Article text',
           spellcheck: 'true',
+          // The open slash menu: the writing points at it and its highlighted option. A textbox
+          // takes no aria-expanded (ARIA 1.2), so the popup is announced by aria-haspopup and the
+          // active option alone.
           ...(slashLive.current.open
             ? {
                 'aria-controls': SLASH_MENU_ID,
-                'aria-expanded': 'true',
+                'aria-haspopup': 'listbox',
                 'aria-activedescendant': slashOptionId(
                   Math.min(slashLive.current.index, slashLive.current.items.length - 1),
                 ),
