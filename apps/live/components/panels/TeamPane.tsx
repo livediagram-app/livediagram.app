@@ -16,6 +16,7 @@ import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog'
 import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
 import { TeamTimeline } from './ScopedTimeline';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { LIST_CARD } from '@/components/primitives/surface-classes';
 
 // Right-pane team view for the Explorer (docs/specs/013-workspace/teams.md): one calm card —
 // header (organisation + member count + an overflow menu for the
@@ -130,7 +131,7 @@ export function TeamPane({
 
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className={LIST_CARD}>
         <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
           {Array.from({ length: 3 }).map((_, i) => (
             <li key={i} className="flex items-center gap-3 px-4 py-3">
@@ -194,7 +195,7 @@ export function TeamPane({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className={LIST_CARD}>
         {/* ---------- Header: context line + overflow menu ---------- */}
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/40">
           <p className="min-w-0 truncate text-xs text-slate-500 dark:text-slate-400">{headline}</p>

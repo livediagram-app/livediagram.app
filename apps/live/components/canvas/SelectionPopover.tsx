@@ -12,6 +12,7 @@ import {
 } from '@/components/canvas/selection-popover-icons';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
+import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -310,7 +311,7 @@ export function SelectionPopover({
 }
 
 function Divider() {
-  return <div aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
+  return <div aria-hidden className={TOOLBAR_DIVIDER} />;
 }
 
 function PopoverButton({

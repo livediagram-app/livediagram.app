@@ -36,6 +36,7 @@ import {
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { pathEditKey } from '@/lib/path-edit-keys';
 import { debugLog } from '@/lib/debug-log';
+import { isTypingTarget } from '@/lib/typing-target';
 
 type Point = { x: number; y: number };
 
@@ -356,7 +357,7 @@ export function usePathEditGesture({
   // Keys, in the capture phase while a path is in edit mode.
   const onKey = useEffectEvent((e: KeyboardEvent) => {
     const el = element;
-    if (!el || isTyping(e.target)) return;
+    if (!el || isTypingTarget(e.target)) return;
     // On the edit toolbar its buttons keep Tab, Enter and Space; Escape still leaves.
     const onBar = (e.target as HTMLElement | null)?.closest?.('[data-canvas-toolbar]');
     if (onBar && e.key !== 'Escape') return;
@@ -422,7 +423,7 @@ export function usePathEditGesture({
   // Enter with one path selected opens its edit mode, from the keyboard.
   const onEnter = useEffectEvent((e: KeyboardEvent) => {
     if (e.key !== 'Enter' || !selectedPathId || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (isTyping(e.target) || e.defaultPrevented) return;
+    if (isTypingTarget(e.target) || e.defaultPrevented) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     onBeginEdit(selectedPathId);
@@ -477,13 +478,4 @@ export function usePathEditGesture({
     guides: element ? guides : null,
     beginEditPress,
   };
-}
-
-function isTyping(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement ||
-    (target instanceof HTMLElement && target.isContentEditable)
-  );
 }

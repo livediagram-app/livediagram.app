@@ -30,6 +30,7 @@ import {
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@/lib/typing-target';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -141,11 +142,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const target = e.target as Element | null;
       // <select> included: a letter press there is the browser's
       // type-ahead, not a canvas shortcut.
-      const inText =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement ||
-        (target instanceof HTMLElement && target.isContentEditable);
+      const inText = isTypingTarget(target);
       // Any text input gets a wide berth, except for read-only
       // checks: even Delete / Backspace bail BEFORE preventDefault
       // when read-only so the browser's default behaviour for

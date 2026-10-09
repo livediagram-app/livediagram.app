@@ -10,7 +10,7 @@ import {
   endpointPosition,
   type ElementIndex,
 } from './geometry';
-import type { Point } from './geometry-primitives';
+import { pointDistance, type Point } from './geometry-primitives';
 
 // THE AUTO-REBIND (docs/specs/008-canvas/arrow-anchors.md "Auto-rebind").
 //
@@ -30,8 +30,6 @@ export const CLOSENESS_TIE_PX = 0.5;
 
 // Pinned ends per element per anchor: what "another arrow holds it" reads.
 type HeldAnchors = Map<ElementId, Map<Anchor, number>>;
-
-const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 
 // Considered: an end pinned to a moved element, not a self-loop, and not an
 // arrow whose two pinned ends moved together (it translated rigidly).
@@ -82,7 +80,11 @@ function pickCandidate(
   const previous = anchorPosition(el, current);
   const scored = candidates.map((anchor) => {
     const at = anchorPosition(el, anchor);
-    return { anchor, toOther: dist(at, reference), toPrevious: dist(at, previous) };
+    return {
+      anchor,
+      toOther: pointDistance(at, reference),
+      toPrevious: pointDistance(at, previous),
+    };
   });
   scored.sort((a, b) =>
     Math.abs(a.toOther - b.toOther) <= CLOSENESS_TIE_PX

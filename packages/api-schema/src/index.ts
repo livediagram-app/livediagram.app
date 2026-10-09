@@ -499,7 +499,7 @@ export { sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
+export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).

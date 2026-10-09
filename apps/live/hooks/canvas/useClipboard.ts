@@ -53,6 +53,7 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@/lib/typing-target';
 
 type ImageDescriptor = {
   id: string;
@@ -333,13 +334,7 @@ export function useClipboard(deps: ClipboardDeps) {
         target instanceof HTMLElement &&
         !!target.closest('[data-article-flow]') &&
         articlePasteIsCanvas(e.clipboardData ?? null);
-      if (
-        !intoArticle &&
-        (target instanceof HTMLInputElement ||
-          target instanceof HTMLTextAreaElement ||
-          target instanceof HTMLSelectElement ||
-          (target instanceof HTMLElement && target.isContentEditable))
-      ) {
+      if (!intoArticle && isTypingTarget(target)) {
         return;
       }
       if (isReadOnly) return;

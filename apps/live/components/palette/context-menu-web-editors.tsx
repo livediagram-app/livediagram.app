@@ -14,20 +14,17 @@ import {
 } from '@livediagram/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
 
 // The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
 // checklist's and the entity's: a stat row's cards, a process's steps and a
 // header's links. The canvas edits each row's WORDS in place; this is where
 // rows are added, removed and reordered, bounded to each kind's min and max.
 
-const cellInput =
-  'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
 const rowButton =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
 const removeButton =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
-const addButton =
-  'mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15';
 
 function move<T>(list: T[], from: number, to: number): T[] {
   if (to < 0 || to >= list.length) return list;
@@ -102,7 +99,7 @@ export function StatsEditor({
         {rows.map((st, i) => (
           <div key={i} className="flex items-center gap-1">
             <input
-              className={`${cellInput} w-[4.5rem]`}
+              className={`${MENU_CELL_INPUT} w-[4.5rem]`}
               value={st.value}
               placeholder="value"
               aria-label={`Stat ${i + 1} value`}
@@ -111,7 +108,7 @@ export function StatsEditor({
               onBlur={() => onChange(rows)}
             />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={st.caption}
               placeholder="caption"
               aria-label={`Stat ${i + 1} caption`}
@@ -134,7 +131,7 @@ export function StatsEditor({
         type="button"
         disabled={rows.length >= STATS_MAX}
         onClick={() => onChange([...rows, { value: '0', caption: 'Metric' }])}
-        className={addButton}
+        className={MENU_ADD_ROW_BUTTON}
       >
         Add Stat
       </button>
@@ -166,7 +163,7 @@ export function TextRowsEditor({
         {rows.map((text, i) => (
           <div key={i} className="flex items-center gap-1">
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={text}
               placeholder={noun}
               aria-label={`${noun} ${i + 1}`}
@@ -189,7 +186,7 @@ export function TextRowsEditor({
         type="button"
         disabled={rows.length >= max}
         onClick={() => onChange([...rows, nextRow(rows.length)])}
-        className={addButton}
+        className={MENU_ADD_ROW_BUTTON}
       >
         {addLabel}
       </button>

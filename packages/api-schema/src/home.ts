@@ -4,13 +4,12 @@
 // refusals live here once.
 
 import { utcDay } from './within-reach';
+import { DAY_MS } from '@livediagram/items';
 
 /** N of Jump back in's Within reach set: 4 most used and 4 recent (spec). */
 export const HOME_WITHIN_REACH_PER_ROW = 4;
 /** How many UTC days back, today included, a use day counts towards most used (spec). */
 export const WITHIN_REACH_USE_WINDOW_DAYS = 90;
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** UTC midnight of the use window's first day: 89 days before today. */
 export function windowStartOf(now: number): number {

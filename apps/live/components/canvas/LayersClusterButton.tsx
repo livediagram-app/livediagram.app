@@ -2,6 +2,7 @@
 
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { HoverCard } from '@livediagram/ui';
+import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 
 // The Layers button in the bottom-right cluster (docs/specs/006-document/layers.md). It opens the
 // panel as a popover hanging ABOVE it (`onTogglePopover`, handed the button
@@ -27,7 +28,7 @@ export function LayersClusterButton({
       className={`flex h-11 w-11 items-center justify-center transition ${
         popoverOpen
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+          : CLUSTER_CONTROL_REST
       }`}
     >
       <LayersStackIcon />
@@ -40,7 +41,7 @@ export function LayersClusterButton({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={CLUSTER_STRIP}
     >
       {/* No hover card while open: it would sit over the panel it names. */}
       {popoverOpen ? (

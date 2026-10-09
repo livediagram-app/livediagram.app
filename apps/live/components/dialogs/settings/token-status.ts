@@ -2,8 +2,8 @@
 // a token's status, how far through its six months it is, and the dates and
 // relative times its card shows. No React, so every rule is unit-tested.
 import type { ApiToken } from '@livediagram/api-schema';
+import { DAY_MS } from '@livediagram/items';
 
-export const DAY_MS = 86_400_000;
 // "Expires soon" inside this window: two weeks is enough notice to rotate.
 const EXPIRES_SOON_MS = 14 * DAY_MS;
 // A token used this recently gets the green "in use" dot.

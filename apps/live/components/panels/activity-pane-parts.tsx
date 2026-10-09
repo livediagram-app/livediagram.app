@@ -30,6 +30,7 @@ import { cardDeepLinkHref, collabDeepLinkHref } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
+import { LIST_CARD } from '@/components/primitives/surface-classes';
 
 // One titled card-list. The container matches the List view's so the
 // page reads as an Explorer section rather than a panel that escaped
@@ -49,7 +50,7 @@ export function ActivitySection({
         {title}
         <CountBadge count={count} />
       </h2>
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className={LIST_CARD}>
         <ul className="lvd-cascade divide-y divide-slate-100 dark:divide-slate-700/60">
           {children}
         </ul>

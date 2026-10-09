@@ -24,6 +24,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
+  pointDistance,
 } from '@livediagram/document';
 
 export type Pt = { x: number; y: number };
@@ -60,8 +61,6 @@ function wave(seed: number, s: number): number {
   );
 }
 
-const dist = (a: Pt, b: Pt) => Math.hypot(b.x - a.x, b.y - a.y);
-
 // The polyline resampled every STEP px (its corners kept), each point tagged with its distance
 // along the line.
 function resample(points: readonly Pt[]): (Pt & { s: number })[] {
@@ -71,7 +70,7 @@ function resample(points: readonly Pt[]): (Pt & { s: number })[] {
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1]!;
     const b = points[i]!;
-    const len = dist(a, b);
+    const len = pointDistance(a, b);
     const n = Math.max(1, Math.round(len / STEP));
     for (let k = 1; k <= n; k++) {
       const t = k / n;
@@ -119,7 +118,7 @@ export function drawn(points: readonly Pt[], seed: number, pen: Pen = {}): Freeh
 // A straight line that bows slightly, as a ruler-free hand does.
 export function bowLine(a: Pt, b: Pt, bow = 0): Pt[] {
   const n = 8;
-  const len = dist(a, b) || 1;
+  const len = pointDistance(a, b) || 1;
   const nx = -(b.y - a.y) / len;
   const ny = (b.x - a.x) / len;
   return Array.from({ length: n + 1 }, (_, i) => {
@@ -207,7 +206,7 @@ export function cloudPath(
   for (let k = 0; k < bumps; k++) {
     const a = on(k);
     const b = on(k + 1);
-    const half = dist(a, b) / 2;
+    const half = pointDistance(a, b) / 2;
     const ux = (b.x - a.x) / (2 * half);
     const uy = (b.y - a.y) / (2 * half);
     // Outward: away from the cloud's centre.
@@ -254,7 +253,7 @@ export function bannerPaths(x: number, y: number, w: number, h: number): Pt[][] 
 
 // An arrow: a gently bent shaft from `a` to `b` and its open head, as two strokes.
 export function arrowPaths(a: Pt, b: Pt, bend = 0.15, head = 16): Pt[][] {
-  const len = dist(a, b) || 1;
+  const len = pointDistance(a, b) || 1;
   const mx = (a.x + b.x) / 2 - ((b.y - a.y) / len) * len * bend;
   const my = (a.y + b.y) / 2 + ((b.x - a.x) / len) * len * bend;
   const shaft = Array.from({ length: 13 }, (_, i) => {

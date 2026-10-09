@@ -7,6 +7,7 @@ import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isPressableControl } from '@livediagram/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
+import { isTypingTarget } from '@/lib/typing-target';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
 // component file stays focused on JSX + per-element wiring. The
@@ -110,13 +111,9 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   const spaceHeldRef = useRef(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
   useEffect(() => {
-    const isTypingTarget = (t: EventTarget | null) =>
-      t instanceof HTMLInputElement ||
-      t instanceof HTMLTextAreaElement ||
-      (t instanceof HTMLElement && t.isContentEditable);
     const down = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
-      if (isTypingTarget(e.target)) return;
+      if (isTypingTarget(e.target, { select: false })) return;
       // Space presses a focused button or ticks a box (and belongs to an open dialog): never taken for
       // the pan, which would also stop the control from working.
       if (isPressableControl(e.target) || anyModalOpen()) return;

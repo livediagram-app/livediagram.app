@@ -40,6 +40,7 @@ import {
 } from './CustomThemeShapeColours';
 import { BackBar } from '@/components/primitives/BackBar';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
+import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 
 export type CustomThemeDraft = { name: string; definition: CustomThemeDefinition };
 
@@ -279,7 +280,7 @@ export function CustomThemeBuilder({
             value={def.backgroundOpacity ?? 1}
             onChange={(e) => patch({ backgroundOpacity: parseFloat(e.target.value) })}
             aria-label="Pattern opacity"
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+            className={RANGE_SLIDER}
           />
         </div>
       </ExpandRow>

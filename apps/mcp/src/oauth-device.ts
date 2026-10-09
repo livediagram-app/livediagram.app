@@ -5,7 +5,7 @@
 
 import { appBase } from './tool-helpers';
 import {
-  bytesToBase64Url,
+  randomBase64Url,
   DEVICE_CODE_TTL_S,
   DEVICE_POLL_INTERVAL_S,
   DEVICE_SLOW_DOWN_S,
@@ -94,7 +94,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
     if (!client) return c.json({ error: 'invalid_client' }, 400);
     if (await overLimit(c.env, 'device-start', ipOf(c), START_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
-    const deviceCode = bytesToBase64Url(randomBytes(32));
+    const deviceCode = randomBase64Url(32);
     const userCode = newUserCode(randomBytes);
     const record: DeviceRecord = {
       clientId,

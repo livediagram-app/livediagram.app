@@ -1,8 +1,7 @@
+import { DAY_MS } from '@livediagram/items';
 // The Trash (docs/specs/013-workspace/trash.md): a deleted document waits 30
 // days before it is purged. One clock for the api's daily purge, the Trash
 // view's "days left" and the Offline Mode local Trash.
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 // How long a document stays restorable. Operator decision; changing it changes
 // what the Trash view and the help article promise.
