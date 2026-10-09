@@ -440,6 +440,24 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  'apps/live/hooks/editor/useLogoTools.ts UI·Toggled': {
+    values: [
+      'LogoGuidesOn',
+      'LogoGuidesOff',
+      'LogoMirrorOn',
+      'LogoMirrorOff',
+      ...['CentreLines', 'Diagonals', 'SafeArea', 'Circles', 'Square', 'Grid'].flatMap((p) => [
+        `LogoGuide${p}On`,
+        `LogoGuide${p}Off`,
+      ]),
+    ],
+  },
+  'apps/live/hooks/editor/useLogoTools.ts UI·Changed': {
+    values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
+  },
+  'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
+    values: ['TextTracking', 'TextWeight', 'TextCase', 'TextArc'],
+  },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },

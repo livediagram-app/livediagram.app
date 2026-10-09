@@ -70,6 +70,7 @@ export function usePathDrawGesture({
   activeTabId,
   onCommitPath,
   onStartPath,
+  snapPoint,
 }: {
   pendingDraw: PendingDraw | null;
   elements: readonly Element[];
@@ -80,6 +81,9 @@ export function usePathDrawGesture({
   onCommitPath: (commit: PathCommit) => void;
   // A new path's first node: the path that landed before it is no longer the selection.
   onStartPath?: () => void;
+  // Where a click lands instead, when something is near enough to snap to (a logo page's shown
+  // guides, docs/specs/007-editor/logo-pages.md "Construction guides"); null to place as pressed.
+  snapPoint?: (p: Point) => Point | null;
 }) {
   const armed = pendingDraw?.type === 'path';
   const [draft, setDraftState] = useState<PathDraft | null>(null);
@@ -116,6 +120,9 @@ export function usePathDrawGesture({
     const rect = wrapperRef.current?.getBoundingClientRect();
     return rect ? pointerToCanvas(clientX, clientY, rect, zoomRef.current) : null;
   };
+  const snapRef = useLatest(snapPoint);
+  // A point a click would place a node at: onto what it snaps to, if anything.
+  const snapped = (p: Point): Point => snapRef.current?.(p) ?? p;
 
   const land = (closed: boolean) => {
     const d = draftRef.current;
@@ -210,8 +217,10 @@ export function usePathDrawGesture({
   /** A primary press with the Path tool in hand. True when it claimed the press. */
   const beginPathPress = (e: React.PointerEvent): boolean => {
     if (!armed || e.button !== 0 || spaceRef.current) return false;
-    const p = toCanvas(e.clientX, e.clientY);
-    if (!p) return false;
+    const raw = toCanvas(e.clientX, e.clientY);
+    if (!raw) return false;
+    // The edit pointer picks what is under it; a node is placed where it snaps.
+    const p = e.ctrlKey || e.metaKey ? raw : snapped(raw);
     const d = draftRef.current;
     const now = performance.now();
     const touch = e.pointerType === 'touch';
@@ -328,7 +337,7 @@ export function usePathDrawGesture({
     const onMove = (e: PointerEvent) => {
       const p = toCanvas(e.clientX, e.clientY);
       if (!p) return;
-      latest = { p, shift: e.shiftKey };
+      latest = { p: snapped(p), shift: e.shiftKey };
       if (raf !== null) return;
       raf = window.requestAnimationFrame(() => {
         raf = null;

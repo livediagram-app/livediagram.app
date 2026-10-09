@@ -1,6 +1,6 @@
 'use client';
 
-// The three kinds of page as cards (docs/specs/007-editor/illustrate-pages.md "Page kinds"): a
+// The four kinds of page as cards (docs/specs/007-editor/illustrate-pages.md "Page kinds"): a
 // miniature of the page above its name and a line on what it is for. Shared by the add-a-page
 // popover and the first page's own choice.
 import type { PageKind } from '@livediagram/document';
@@ -23,6 +23,11 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     kind: 'slide',
     name: 'Slide',
     line: 'A slide for a deck: widescreen, ready to present.',
+  },
+  {
+    kind: 'logo',
+    name: 'Logo',
+    line: 'A square artboard for a logo, with guides and drawing tools.',
   },
 ];
 
@@ -47,6 +52,8 @@ export function PageKindCard({
           <ArticleMiniature />
         ) : choice.kind === 'slide' ? (
           <SlideMiniature />
+        ) : choice.kind === 'logo' ? (
+          <LogoMiniature />
         ) : (
           <InfographicMiniature />
         )}
@@ -175,6 +182,32 @@ function SlideMiniature() {
         height="32"
         rx="2"
         className="fill-brand-100 dark:fill-brand-500/25"
+      />
+    </svg>
+  );
+}
+
+// A square artboard: faint construction guides (centre lines, a keyline circle) behind a mark.
+function LogoMiniature() {
+  const guide = 'stroke-sky-400/60 dark:stroke-sky-300/50';
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden className="drop-shadow-sm">
+      <rect width="64" height="64" rx="3" className="fill-white dark:fill-slate-700" />
+      <g fill="none" strokeWidth="0.6" className={guide}>
+        <line x1="32" y1="2" x2="32" y2="62" />
+        <line x1="2" y1="32" x2="62" y2="32" />
+        <circle cx="32" cy="32" r="25.6" />
+        <rect x="6.4" y="6.4" width="51.2" height="51.2" strokeDasharray="2 1.5" />
+      </g>
+      <circle cx="32" cy="27" r="11" className="fill-brand-500" />
+      <circle cx="32" cy="27" r="5" className="fill-white dark:fill-slate-700" />
+      <rect
+        x="18"
+        y="43"
+        width="28"
+        height="4"
+        rx="2"
+        className="fill-slate-700 dark:fill-slate-200"
       />
     </svg>
   );

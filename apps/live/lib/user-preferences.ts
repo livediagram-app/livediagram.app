@@ -121,6 +121,14 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
+  // Construction guides on a logo page (docs/specs/007-editor/logo-pages.md "Construction guides"):
+  // its centre lines, keylines, safe area and grid, and snapping to its keylines. Missing /
+  // undefined === on, the default; `false` hides them (and the keyline snaps with them).
+  logoGuides?: boolean;
+  // Which construction guides a logo page hides (docs/specs/007-editor/logo-pages.md), and how
+  // strongly the rest show. Read through lib/logo-guide-prefs.ts; absent is every part, Medium.
+  logoGuidesHidden?: string[];
+  logoGuideStrength?: 'faint' | 'medium' | 'strong';
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS

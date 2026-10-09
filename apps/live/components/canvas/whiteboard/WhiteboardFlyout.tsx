@@ -88,6 +88,7 @@ export function WhiteboardFlyout({
   takeFocus = true,
   restoreFocus = false,
   hideTitle = false,
+  scope = '[data-whiteboard-dock]',
   children,
 }: {
   id: string;
@@ -110,6 +111,8 @@ export function WhiteboardFlyout({
   // A flyout whose sections carry their own headings shows no title (it keeps
   // `label` as its accessible name).
   hideTitle?: boolean;
+  // The toolbar its opener sits in: the whiteboard dock, or a logo page's toolbars.
+  scope?: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -119,7 +122,7 @@ export function WhiteboardFlyout({
   const [place, setPlace] = useState<Place | null>(null);
   useLayoutEffect(() => {
     const node = ref.current;
-    const wrapEl = document.querySelector<HTMLElement>('[data-whiteboard-dock]');
+    const wrapEl = document.querySelector<HTMLElement>(scope);
     const opener = wrapEl?.querySelector<HTMLElement>(`[data-dock-item="${anchor}"]`);
     if (!node || !wrapEl || !opener) return;
     const wrap = wrapEl.getBoundingClientRect();
@@ -131,7 +134,7 @@ export function WhiteboardFlyout({
       top: at.top,
       tip: { edge: below ? 'top' : 'bottom', offset: at.tipLeft },
     });
-  }, [anchor, placement, revision]);
+  }, [anchor, placement, revision, scope]);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;

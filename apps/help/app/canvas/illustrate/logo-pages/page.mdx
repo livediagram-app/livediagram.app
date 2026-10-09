@@ -1,0 +1,97 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Logo Pages',
+  description:
+    'Design a logo on a square artboard: start from one of twenty-five logo layouts, build on construction guides, draw with mirror symmetry, set wordmark type, combine shapes into one mark and export a logo kit.',
+  path: '/help/canvas/illustrate/logo-pages/',
+});
+
+<ArticleLayout
+  title="Logo Pages"
+  description="A square artboard with the tools a logo needs: guides, mirror, wordmarks, combining shapes and a logo kit."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: 'Illustrate Mode', slug: 'illustrate' }}
+  subArticles={getSubArticles('illustrate').filter((a) => a.slug !== 'logo-pages')}
+>
+
+A **logo page** is a kind of page in [Illustrate mode](/help/canvas/illustrate/): a square **artboard**, 1024 x 1024 pixels, to design a logo on. You build it from ordinary elements (shapes, icons, text, paths and strokes), with a few tools made for logos on top.
+
+## Adding a Logo Page
+
+- Press the **+** after the last page and choose **Logo**, or choose **Logo** when a new tab's first page asks **What Is This Page For?**
+- A logo page is always the artboard: it has no other size and no portrait or landscape. It takes a **Background** like any page, but no pattern.
+- Its margin is its **safe area**, 10% in from each edge: keep the mark inside it so it never touches the edge of an icon or an avatar.
+
+## Drawing Your Mark
+
+While your tab has a logo page, the palette has a **Logo** category, and it opens there when you add a logo page or click into one. It holds the tools a mark is drawn with: the **Pen** (click for corners, drag for curves), the **Freehand pencil**, **Text**, a **Square**, **Circle** and **Diamond**, and your three markers from Draw mode. Pick a tool and drag on the artboard to draw; it puts itself down afterwards. Press a marker again while you hold it to change its colour and width.
+
+Beside the page's cog sit **Mirror** and **Guides**, plus **Tidy Up** (the wand) when you have a drawing selected. Each works on that page only.
+
+To start from nothing rather than a layout, press **Blank Logo** at the foot of the layout card. The card won't come back on that page; its layouts are still in the page's cog panel, on **Layouts**.
+
+Drew something a bit wobbly? Select it and press **Tidy Up**: hand-drawn lines become straight segments, nearly level or upright lines become exactly so, corners and straight runs near a guide or grid line line up with it, and a loop whose ends meet closes into a shape. One **Undo** brings the drawing back.
+
+A good way to start: draw a few overlapping shapes, select them, and **Combine** them into one mark. Then add the name with **Text** and set its **Wordmark** type.
+
+## Starting From a Layout
+
+An empty logo page offers its layouts inside itself (and **Start from a layout** in its title bar), and the cog's **Layouts** tab offers the same: **twenty-five logo layouts** in four categories, each a complete mark to make your own.
+
+- **Lockups**: an icon with the name, above, beside, below or inside a pill.
+- **Wordmarks**: the name is the mark: large, in two lines, in spaced capitals, a monogram, or with an accent.
+- **Emblems**: the name inside or round a shape: a badge, a seal, a stamp, a hexagon, a diamond.
+- **Marks**: a symbol alone, several of them made of shapes ready to combine.
+
+Each placeholder reads **Brand** and **Your tagline here**: double-click to type your own.
+
+## Construction Guides
+
+Guides sit over the artwork to build a balanced mark on: centre lines, diagonals, the safe area, a keyline circle and an inner circle, a keyline square, and an 8 x 8 grid. Moving or resizing an element snaps to the inner circle and the keyline square as well as the page's edges, centre and safe area. While guides show, a **Pen** click and the start and end of a pencil or marker stroke land on a guide near them, preferring where guides cross.
+
+- Press **Guides** beside the page's cog: **Show Guides** at the top turns them on or off for that page (each page remembers its own), the tiles under it choose which guides show, and **Strength** sets them **Faint**, **Medium** or **Strong**.
+- **Logo Guides** in **Settings** sets whether a page you haven't chosen for shows them.
+- The parts and strength are also in **Settings**, under **Editor**, then **Illustrate**. They are yours: collaborators see their own.
+- Guides never export, and they hide in Zen mode and while presenting.
+
+## Mirror
+
+- Press **Mirror** beside the page's cog and switch on **Mirror While Drawing**. While it is on, what you draw on that page (a stroke, a path, a shape) is repeated as you draw. One **Undo** removes the lot.
+- Pick an **Axis**: **Vertical** reflects left to right, **Horizontal** top to bottom, **Both** four ways, and **Radial** turns your drawing round the page centre, with **Copies** from 3 to 8 (handy for emblems, stars and petals).
+- With **Merge Into One** on, a drawing and its copies become one element when you let go; switch it off to keep each copy separate.
+- The axes show as solid lines over the guides. Each page keeps its own settings while the tab is open.
+- **Mirror Copy** (in the element menu or the command palette) reflects what you have selected, text and images included.
+- Twins are ordinary elements: editing one leaves the other as it is.
+
+## Wordmark Type
+
+Select a text on a logo page, right-click, and open **Text**, then **Wordmark**:
+
+- **Tracking**: the space between letters, tighter or looser.
+- **Weight**: **Regular**, **Medium** or **Bold**.
+- **Case**: **As Typed**, **Capitals** or **Lower Case**; what you typed is kept.
+- **Arc**: bends the text along a circle, up or down, all the way round at 360. **Flat** straightens it. Arched text is one line.
+
+Hovering a choice previews it; sliders preview as they move and are one **Undo** when you let go.
+
+## Combining Shapes
+
+Select two or more shapes, paths or strokes on the same logo page and press **Combine** in the selection toolbar (also in the selection menu and the command palette):
+
+- **Unite**: everything any of them covers.
+- **Subtract**: the bottom shape, less the ones above it.
+- **Intersect**: only where they all overlap.
+- **Exclude**: everything except where they overlap.
+
+The result is one path in the bottom shape's place and colours, holes and all. If nothing is left (shapes that don't overlap, say), nothing changes and a message says so. A combined shape moves, resizes and restyles as one; its points are not edited one by one.
+
+## Exporting
+
+- A logo page on plain paper exports **see-through** as a PNG or SVG, so it sits over anything. Its PDF page stays white, and a background you chose is kept.
+- **Logo Kit** downloads everything in one .zip: `logo.svg`, PNGs from 16 to 1024 pixels, and `favicon.ico`. Find it in **Export**: the **Logo Kit** card shows while the tab has a logo page, and asks which one when there are several.
+
+</ArticleLayout>

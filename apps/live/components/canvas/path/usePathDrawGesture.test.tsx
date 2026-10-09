@@ -33,7 +33,11 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-function setup(elements: Element[] = [], zoom = 1) {
+function setup(
+  elements: Element[] = [],
+  zoom = 1,
+  snapPoint?: (p: { x: number; y: number }) => { x: number; y: number } | null,
+) {
   const wrapper = document.createElement('div');
   // Canvas px = client px at zoom 1: the wrapper sits at the origin.
   wrapper.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
@@ -49,6 +53,7 @@ function setup(elements: Element[] = [], zoom = 1) {
         activeTabId: p.tab,
         onCommitPath: (c) => commits.push(c),
         onStartPath,
+        snapPoint,
       }),
     { initialProps: { pendingDraw: PATH as PendingDraw | null, tab: 't' } },
   );
@@ -118,6 +123,17 @@ function setup(elements: Element[] = [], zoom = 1) {
 }
 
 describe('usePathDrawGesture', () => {
+  it('places a node where the press snaps to (a logo page guide), the edit pointer as pressed', () => {
+    // Everything within 10 px of x = 50 lands on it.
+    const s = setup([], 1, (p) => (Math.abs(p.x - 50) <= 10 ? { x: 50, y: p.y } : null));
+    s.click(56, 20);
+    s.click(200, 20);
+    expect(s.hook.result.current.draft!.anchors.map((a) => [a.x, a.y])).toEqual([
+      [50, 20],
+      [200, 20],
+    ]);
+  });
+
   it('places corner nodes with clicks and lands an open path on Enter, the tool still in hand', () => {
     const s = setup();
     s.click(0, 0);

@@ -60,6 +60,12 @@ export function measureTextHug(
     node.style.fontFamily = fontFamily ?? '';
     node.style.width = fixed ? `${width}px` : 'max-content';
     node.style.maxWidth = `${width}px`;
+    // Wordmark type (docs/specs/007-editor/logo-pages.md): tracked, weighted and cased text hugs
+    // the width it draws at. Reset every time: the measurer is shared.
+    node.style.letterSpacing = el.letterSpacing ? `${el.letterSpacing}em` : '';
+    node.style.fontWeight = String(el.fontWeight ?? 500);
+    node.style.textTransform =
+      el.textCase === 'upper' ? 'uppercase' : el.textCase === 'lower' ? 'lowercase' : '';
     if (Array.isArray(content)) {
       node.replaceChildren(
         ...content.map((run) => {

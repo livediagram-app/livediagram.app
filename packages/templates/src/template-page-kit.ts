@@ -5,6 +5,7 @@
 // built in page coordinates and ignore the centre every other template is built around.
 import {
   layOutIllustratePages,
+  newLogoPage,
   newSlidePage,
   pageMargin,
   type IllustratePage,
@@ -45,6 +46,19 @@ export function templateSlidePage(
   return {
     ...newSlidePage(`page-${n}`, size),
     ...(background ? { background } : {}),
+    name,
+  };
+}
+
+/** A template's logo page (docs/specs/007-editor/logo-pages.md): the 1024 artboard, named. */
+export function templateLogoPage(
+  n: number,
+  name: string,
+  background?: PageBackground,
+): IllustratePage {
+  return {
+    ...newLogoPage(`page-${n}`),
+    ...(background?.fill ? { background: { fill: background.fill } } : {}),
     name,
   };
 }

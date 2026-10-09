@@ -141,6 +141,10 @@ export function ArticleFlows({
     pagesOf: (flow) => byFlow.get(flow),
   });
   if (!articles || byFlow.size === 0) return null;
+  // An article with a locked page is read-only (docs/specs/007-editor/illustrate-pages.md
+  // "Locking a page").
+  const writable = (pages: readonly { locked?: true }[]) =>
+    articles.editable && !pages.some((p) => p.locked === true);
   return (
     <>
       {/* Cut off at the shown sheets' edges, as the elements are (IllustratePageClip): writing that
@@ -156,7 +160,7 @@ export function ArticleFlows({
         {articles.editable && interactive
           ? [...byFlow].flatMap(([flow, pages]) =>
               pages
-                .filter((p) => view.pages.some((shown) => shown.id === p.id))
+                .filter((p) => writable(pages) && view.pages.some((shown) => shown.id === p.id))
                 .map((p) => (
                   <div
                     key={p.id}
@@ -196,7 +200,7 @@ export function ArticleFlows({
                 pages={pages}
                 atPageLimit={row.length >= MAX_ILLUSTRATE_PAGES}
                 doc={doc}
-                editable={articles.editable}
+                editable={writable(pages)}
                 interactive={interactive}
                 zoom={zoom}
                 ink={inkOf(

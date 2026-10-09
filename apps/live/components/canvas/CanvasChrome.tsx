@@ -1,3 +1,4 @@
+import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES } from '@livediagram/document';
@@ -303,6 +304,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     penPoints,
     snapGuides,
     snapTargets,
+    whiteboard: props.editorMode === 'draw',
   });
 
   // Draw mode trades the palette, the strip and the theme controls for its
@@ -485,6 +487,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
         pendingDraw={pendingDraw}
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
+        mirrorPages={
+          props.illustratePages
+            ? mirroredLogoPages(props.illustratePages.pages, props.illustratePages.logo)
+            : null
+        }
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />
@@ -527,6 +534,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           esBoard={props.esBoard}
           esBoardControls={props.esBoardControls}
+          logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           onAddPage={props.illustratePages?.edit?.addPage}

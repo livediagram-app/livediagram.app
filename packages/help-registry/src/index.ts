@@ -1373,7 +1373,7 @@ export const articles: Article[] = [
     description:
       'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
     keywords:
-      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave',
+      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1384,6 +1384,17 @@ export const articles: Article[] = [
       'Twenty-one ready-made pages in four categories, previewed on your page as you hover.',
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'logo-pages',
+    title: 'Logo Pages',
+    description:
+      'Design a logo on a square artboard with guides, mirror, wordmarks, combined shapes and a logo kit.',
+    keywords:
+      'logo logos brand branding mark wordmark lettermark monogram icon favicon app icon avatar artboard guides keyline grid safe area symmetry mirror reflect flip radial rotational kaleidoscope four way horizontal vertical axis copies merge combine boolean union unite subtract intersect exclude merge shapes tracking letter spacing kerning arc curved text circle text badge emblem logo kit export png svg ico transparent',
     category: 'Canvas',
     categorySlug: 'canvas/illustrate',
     parentSlug: 'illustrate',

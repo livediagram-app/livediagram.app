@@ -21,7 +21,13 @@
 
 import type { RunBoolKey } from '@livediagram/document';
 import { useMindLabelKeys } from '@/components/canvas/useMindLabelKeys';
-import { ALIGN_ITEMS, labelTypographyClass, TEXT_ALIGN } from '@/components/canvas/label-style';
+import {
+  ALIGN_ITEMS,
+  labelTypographyClass,
+  TEXT_ALIGN,
+  wordmarkTextCss,
+  wordmarkTextStyle,
+} from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { listStyleOfText } from '@/components/rich-text/block-type';
@@ -85,6 +91,7 @@ export function RichTextEditor({
     onCommit,
     onCancel,
   });
+  const wordmark = wordmarkTextStyle(element);
   // Mind map (docs/specs/009-elements/mind-node.md): a no-op for every other element, and outside the
   // editor canvas (share view, embed, exports) where there is no grower.
   const { onMindKeyDown } = useMindLabelKeys({
@@ -225,9 +232,17 @@ export function RichTextEditor({
           fontSize: `${basePx}px`,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
+          // Wordmark type (docs/specs/007-editor/logo-pages.md): the tracking, weight and case the
+          // committed label wears, so editing never shifts the text.
+          ...wordmarkTextCss(wordmark),
           // Same capitals the committed label wears (docs/specs/021-event-storming/event-storming.md): the typed
           // text is stored as written, it just reads as the note will.
-          textTransform: uppercase ? 'uppercase' : undefined,
+          textTransform:
+            uppercase || wordmark.uppercase
+              ? 'uppercase'
+              : wordmark.lowercase
+                ? 'lowercase'
+                : undefined,
         }}
         // Same typography rule as the display label (label-style): a
         // mismatch here shifts the text the instant editing starts.

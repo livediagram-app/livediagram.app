@@ -27,6 +27,8 @@ import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
+import { wordmarkTextStyle } from './label-style';
+import { WordmarkArcLabel } from './WordmarkArcLabel';
 
 export function renderLabel(
   element: BoxedElement,
@@ -78,13 +80,15 @@ export function renderLabel(
   // same flag, or the note would change case on double-click.
   const caps = isEventStormingNote(element);
 
+  const wordmark = wordmarkTextStyle(element);
   const textStyle = {
     bold: element.textBold,
     italic: element.textItalic,
     underline: element.textUnderline,
     strikethrough: element.textStrikethrough,
     fontFamily,
-    uppercase: caps,
+    ...wordmark,
+    uppercase: caps || wordmark.uppercase,
   };
 
   const richText = (element as { richText?: TextRun[] }).richText;
@@ -146,6 +150,21 @@ export function renderLabel(
     );
   }
 
+  // Arched wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): one line along an
+  // arc, drawn as an SVG face. Editing shows it flat (above); the arc returns on commit.
+  if (element.type === 'text' && element.textArc) {
+    if (!label) return null;
+    return (
+      <WordmarkArcLabel
+        element={element}
+        text={label}
+        padding={padding}
+        fontFamily={fontFamily}
+        style={textStyle}
+      />
+    );
+  }
+
   // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): once a label carries non-trivial
   // runs, render them as styled spans regardless of size (the `scale`
   // auto-fit opt-out). Empty / single override-free runs fall through to
@@ -163,6 +182,7 @@ export function renderLabel(
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
+        wordmark={wordmark}
         animClass={labelAnimClass}
       />
     );

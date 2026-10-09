@@ -538,6 +538,16 @@ export type TextElement = {
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
   // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
   textScale?: number;
+  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
+  // is. Tracking: em added between letters, -0.2 to 1; absent is none.
+  letterSpacing?: number;
+  // The weight it paints in; wins over `textBold` while set. Absent follows `textBold`.
+  fontWeight?: 400 | 500 | 700;
+  // Shown in capitals or lower case; the label keeps what was typed. Absent is as typed.
+  textCase?: 'upper' | 'lower';
+  // Bends the text along a circle, -360 to 360 degrees: positive bows up, negative down. Absent is
+  // flat. Arched text is one line.
+  textArc?: number;
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -1013,6 +1023,11 @@ export type PathElement = {
   height: number;
   nodes: PathNode[];
   closed: boolean;
+  // Further contours after `nodes`, closed or open as the path is (docs/specs/007-editor/
+  // logo-pages.md "Combine", "Mirror"): a combined shape's islands and holes, filled even-odd, or a
+  // mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
+  // edited one by one.
+  subpaths?: PathNode[][];
   fillColor?: string;
   strokeColor?: string;
   // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted

@@ -229,3 +229,39 @@ export function themeBackgroundPresets(
   );
   return out;
 }
+
+/** The Background section's categories (docs/specs/007-editor/illustrate-pages.md "Backgrounds"). */
+export type BackgroundCategory = 'theme' | 'solid' | 'gradient';
+
+/** The category a page's fill belongs to: a theme preset's Theme, any other gradient's Gradient,
+ *  else Solid (the paper and every solid colour). */
+export function backgroundCategoryOf(
+  fill: PageFill | undefined,
+  themePresets: readonly ThemeBackgroundPreset[],
+): BackgroundCategory {
+  if (fill && themePresets.some((t) => sameFill(fill, t.fill))) return 'theme';
+  return fill?.kind === 'gradient' ? 'gradient' : 'solid';
+}
+
+/** Whether the fill is a gradient no preset (of the catalogue or the theme) names: a custom one. */
+export function isCustomGradient(
+  fill: PageFill | undefined,
+  themePresets: readonly ThemeBackgroundPreset[],
+): boolean {
+  return (
+    fill?.kind === 'gradient' &&
+    !PAGE_GRADIENT_PRESETS.some((g) => sameFill(fill, gradientFill(g))) &&
+    !themePresets.some((t) => sameFill(fill, t.fill))
+  );
+}
+
+// The custom gradient on the plain paper: Sky to Lavender.
+const CUSTOM_GRADIENT_START = { from: '#e0f2fe', to: '#ede9fe' };
+
+/** Where a new custom gradient starts: the page's current gradient, else its solid colour to a
+ *  deepened version of it, else Sky to Lavender, at the presets' angle. */
+export function customGradientSeed(fill: PageFill | undefined): PageFill {
+  if (fill?.kind === 'gradient') return fill;
+  if (fill?.kind === 'solid') return gradientFill({ from: fill.color, to: shade(fill.color, 0.3) });
+  return gradientFill(CUSTOM_GRADIENT_START);
+}

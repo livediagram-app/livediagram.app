@@ -88,6 +88,9 @@ export type ImageExportOpts = {
   // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
   // backdrop do not apply.
   page?: LaidOutPage;
+  // A logo page's plain paper left see-through (docs/specs/007-editor/logo-pages.md "Export"):
+  // PNG and SVG pass it, PDF never does.
+  transparentPaper?: boolean;
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
@@ -188,7 +191,10 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
   const frame = opts.page
-    ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
+    ? pageExportFrame(opts.page, {
+        ruling: pageRulingOf(tab, opts.page),
+        transparentPaper: opts.transparentPaper,
+      })
     : null;
   // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
@@ -237,7 +243,7 @@ export async function renderTabToCanvas(
   // elements rather than pale ones.
   const surface = frame ? frame.surface : canvasSurface(bgColor);
   ctx.fillStyle = frame ? EXPORT_PAPER : bgColor;
-  ctx.fillRect(0, 0, w / scale, h / scale);
+  if (!frame?.transparent) ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (frame) {
     const { x, y, w: fw, h: fh } = frame.bounds;
@@ -467,7 +473,10 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page
-    ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
+    ? pageExportFrame(opts.page, {
+        ruling: pageRulingOf(tab, opts.page),
+        transparentPaper: opts.transparentPaper,
+      })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);

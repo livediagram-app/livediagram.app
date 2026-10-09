@@ -3,8 +3,8 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
-  pathAnchors,
-  pathD,
+  isCompoundPath,
+  pathElementD,
   type PathElement,
 } from '@livediagram/document';
 import { FREEHAND_SVG_CLASS, StrokeHitPath } from '@/components/canvas/boxed-element-overlays';
@@ -29,7 +29,9 @@ export function PathSvg({
 }) {
   const w = Math.max(element.width, 1);
   const h = Math.max(element.height, 1);
-  const d = pathD(pathAnchors(element, { x: 0, y: 0 }), element.closed);
+  // Every contour; a combined shape's holes show through (docs/specs/007-editor/logo-pages.md).
+  const d = pathElementD(element, { x: 0, y: 0 });
+  const fillRule = isCompoundPath(element) ? 'evenodd' : undefined;
   const width = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
   const dash = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const filled = element.closed && fill !== 'transparent';
@@ -43,6 +45,7 @@ export function PathSvg({
       <path
         d={d}
         fill={filled ? fill : 'none'}
+        fillRule={fillRule}
         stroke={stroke}
         strokeWidth={width}
         strokeDasharray={dash ?? undefined}
@@ -54,6 +57,7 @@ export function PathSvg({
           penWidth={hitPenWidth}
           d={d}
           fill={filled ? 'transparent' : 'none'}
+          fillRule={fillRule}
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{ pointerEvents: filled ? 'all' : 'stroke' }}

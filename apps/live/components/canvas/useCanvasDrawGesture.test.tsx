@@ -36,6 +36,7 @@ function setup(initial: Partial<Props> = {}, elements: Element[] = []) {
         onCommitFreehand: p.onCommitFreehand,
         stampAt: null,
         showStamp: vi.fn(),
+        whiteboard: false,
       }),
     {
       initialProps: {

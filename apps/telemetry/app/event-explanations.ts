@@ -350,6 +350,64 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextFormat':
     "Someone applied rich-text formatting, such as bold, a colour, a list, a heading, or a link, to part of an element's label.",
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
+  'Tab|Changed|LogoPageAdded': 'Someone added a logo page to an Illustrate tab.',
+  'Tab|Changed|PageKindLogo': "Someone chose Logo for a new Illustrate tab's first page.",
+  'Element|Changed|ShapesUnited': 'Someone united shapes on a logo page into one.',
+  'Element|Changed|StrokesTidiedUp':
+    'Someone tidied up hand-drawn lines on a logo page, making them straight.',
+  'Element|Changed|ShapesSubtracted':
+    'Someone subtracted shapes from the bottom one on a logo page.',
+  'Element|Changed|ShapesIntersected': 'Someone kept only where shapes overlap on a logo page.',
+  'Element|Changed|ShapesExcluded':
+    'Someone combined shapes on a logo page, leaving out where they overlap.',
+  'Element|Changed|MirrorCopy':
+    "Someone reflected the selection across a logo page's centre line (Mirror Copy).",
+  'Element|Changed|TextTracking':
+    'Someone changed the spacing between letters of a text on a logo page.',
+  'Element|Changed|TextWeight': 'Someone set the weight of a text on a logo page.',
+  'Element|Changed|TextCase':
+    'Someone set a text on a logo page in capitals, lower case or as typed.',
+  'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
+  'Element|Created|MirrorTwin':
+    'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
+  'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
+  'UI|Toggled|LogoGuidesOff': "Someone hid a logo page's construction guides.",
+  'UI|Toggled|LogoMirrorOn': 'Someone turned on Mirror While Drawing on a logo page.',
+  'UI|Toggled|LogoMirrorOff': 'Someone turned off Mirror While Drawing on a logo page.',
+  'UI|Changed|LogoMirrorAxisVertical':
+    'Someone set a logo page to mirror across its vertical centre line.',
+  'UI|Changed|LogoMirrorAxisHorizontal':
+    'Someone set a logo page to mirror across its horizontal centre line.',
+  'UI|Changed|LogoMirrorAxisBoth':
+    'Someone set a logo page to mirror across both centre lines (four ways).',
+  'UI|Changed|LogoMirrorAxisRadial':
+    'Someone set a logo page to mirror radially, turning each drawing round the centre.',
+  'UI|Changed|LogoMirrorMergeOn':
+    "Someone turned on Merge Into One for a logo page's mirror, joining each drawing and its copies.",
+  'UI|Changed|LogoMirrorMergeOff':
+    "Someone turned off Merge Into One for a logo page's mirror, keeping each copy its own element.",
+  'UI|Changed|LogoMirrorCopies3': "Someone set a logo page's radial mirror to 3 copies.",
+  'UI|Changed|LogoMirrorCopies4': "Someone set a logo page's radial mirror to 4 copies.",
+  'UI|Changed|LogoMirrorCopies5': "Someone set a logo page's radial mirror to 5 copies.",
+  'UI|Changed|LogoMirrorCopies6': "Someone set a logo page's radial mirror to 6 copies.",
+  'UI|Changed|LogoMirrorCopies8': "Someone set a logo page's radial mirror to 8 copies.",
+  'Document|Exported|LogoKit':
+    'Someone downloaded a logo kit: an SVG, PNGs and a favicon of a logo page.',
+  'UI|Toggled|LogoGuideCentreLinesOn': "Someone showed the logo guides' centre lines.",
+  'UI|Toggled|LogoGuideCentreLinesOff': "Someone hid the logo guides' centre lines.",
+  'UI|Toggled|LogoGuideDiagonalsOn': "Someone showed the logo guides' diagonals.",
+  'UI|Toggled|LogoGuideDiagonalsOff': "Someone hid the logo guides' diagonals.",
+  'UI|Toggled|LogoGuideSafeAreaOn': "Someone showed the logo guides' safe area.",
+  'UI|Toggled|LogoGuideSafeAreaOff': "Someone hid the logo guides' safe area.",
+  'UI|Toggled|LogoGuideCirclesOn': "Someone showed the logo guides' circles.",
+  'UI|Toggled|LogoGuideCirclesOff': "Someone hid the logo guides' circles.",
+  'UI|Toggled|LogoGuideSquareOn': "Someone showed the logo guides' square.",
+  'UI|Toggled|LogoGuideSquareOff': "Someone hid the logo guides' square.",
+  'UI|Toggled|LogoGuideGridOn': "Someone showed the logo guides' grid.",
+  'UI|Toggled|LogoGuideGridOff': "Someone hid the logo guides' grid.",
+  'UI|Changed|LogoGuideStrengthFaint': 'Someone set logo guides to Faint.',
+  'UI|Changed|LogoGuideStrengthMedium': 'Someone set logo guides to Medium.',
+  'UI|Changed|LogoGuideStrengthStrong': 'Someone set logo guides to Strong.',
   'Element|Changed|TimelineRail': "Someone changed a Timeline Rail element's number of points.",
   'Element|Copied|': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted|': 'An element was removed from the canvas.',
@@ -633,6 +691,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
   'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+  'Tab|Changed|PageLocked':
+    'Someone locked an Illustrate page, so it and what is on it stay as they are.',
+  'Tab|Changed|PageUnlocked': 'Someone unlocked an Illustrate page.',
   'Tab|Changed|PageRenamed': 'Someone renamed an Illustrate page.',
   'Tab|Changed|PageDuplicated': 'Someone duplicated an Illustrate page with its content.',
   'Tab|Changed|PageMoved': 'Someone moved an Illustrate page left or right in its row.',
@@ -846,6 +907,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
   'UI|Closed|EmptyPageLayouts':
     'Someone hid the Start From a Layout card on an empty infographic page.',
+  'UI|Closed|EmptyPageLayoutsBlank':
+    'Someone chose Blank Logo on an empty logo page, so its Start From a Layout card stays away on that page.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
@@ -1184,6 +1247,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timing|Measured':
     'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
+  'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
   'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
   'Draw|Selected':
     'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
@@ -1220,6 +1284,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
   'Document|Created': 'A brand-new document was created.',
   'Document|Deleted': 'A document was deleted.',
+  'Document|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
   'Document|Duplicated': 'A document was duplicated into a new one.',
   'Document|Joined':
     'Someone came into a document through a share link. Counted once per person per document, not on every revisit.',

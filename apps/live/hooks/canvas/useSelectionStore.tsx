@@ -20,6 +20,11 @@ export function SelectionStoreProvider({
   return <SelectionStoreContext.Provider value={store}>{children}</SelectionStoreContext.Provider>;
 }
 
+/** Whether a selection store is provided (a component that can do without one checks first). */
+export function useHasSelectionStore(): boolean {
+  return useContext(SelectionStoreContext) !== null;
+}
+
 export function useSelectionStore(): SelectionStore {
   const store = useContext(SelectionStoreContext);
   if (!store) throw new Error('SelectionStoreMissing: [selection] store missing');

@@ -1,36 +1,20 @@
 'use client';
 
-// The page panel's sections (docs/specs/007-editor/illustrate-pages.md "Sizes", "Backgrounds"):
-// size tiles, the orientation switch and the background swatches. Each hover previews on the page
+// The page panel's sections (docs/specs/007-editor/illustrate-pages.md "Sizes"): size tiles and
+// the orientation switch (the Background section is page-background-section.tsx). Each hover previews on the page
 // itself (`onPreview`), and a press commits; leaving the section drops the preview.
-import { useEffect, useRef, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
-  PAGE_PATTERNS,
   PAGE_SIZES,
   pageHasOrientation,
   pageKindOf,
   pageSizesFor,
-  pageIsDark,
   type IllustratePage,
-  type PageBackground,
-  type PageFill,
   type PageOrientation,
-  type PagePattern,
   type PageSizeId,
 } from '@livediagram/document';
-import { ACTIVE_SEGMENT, CheckIcon, Glyph, SEGMENT_TRACK, Tooltip } from '@livediagram/ui';
+import { ACTIVE_SEGMENT, Glyph, SEGMENT_TRACK, Tooltip } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
-import {
-  fillCss,
-  gradientFill,
-  PAGE_GRADIENT_PRESETS,
-  PAGE_PATTERN_LABEL,
-  PAGE_SOLID_PRESETS,
-  pageSheetStyle,
-  sameFill,
-  type ThemeBackgroundPreset,
-} from '@/lib/illustrate-page-paint';
-import { hexish } from '@/components/palette/palette-controls';
 
 export function PanelSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -53,6 +37,7 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   wide: { label: 'Story', hint: 'Story (9:16), or a wide 16:9 page turned landscape' },
   slide: { label: 'Slide', hint: 'Slide (16:9), always landscape' },
   'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
+  logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
 };
 
 // A size drawn to scale in a 28 px box, in the page's current orientation.
@@ -80,7 +65,7 @@ function SizeGlyph({ size, orientation }: { size: PageSizeId; orientation: PageO
   );
 }
 
-const tileClass = (active: boolean) =>
+export const tileClass = (active: boolean) =>
   `flex flex-col items-center gap-0.5 rounded-md px-1 py-1.5 text-[11px] font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
     active
       ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/40'
@@ -95,11 +80,14 @@ export function SizeSection({
   onSize: (size: PageSizeId) => void;
 }) {
   const current = page.size ?? 'a4';
-  // A slide page offers only the slide sizes; the tiles sit four to a row.
+  // A slide page offers only the slide sizes; the tiles sit four to a row. A logo page has its
+  // one artboard, so no choice to show.
+  const sizes = pageSizesFor(pageKindOf(page));
+  if (sizes.length < 2) return null;
   return (
     <PanelSection title="Size">
       <div role="radiogroup" aria-label="Page size" className="grid grid-cols-4 gap-1">
-        {pageSizesFor(pageKindOf(page)).map((id) => (
+        {sizes.map((id) => (
           <Tooltip key={id} label={SIZE_TILE[id].hint}>
             <button
               type="button"
@@ -175,229 +163,3 @@ export function OrientationSection({
 }
 
 // One round swatch. The paper swatch is drawn as the paper (white, or slate in dark chrome).
-function Swatch({
-  label,
-  background,
-  active,
-  onPick,
-  onPreview,
-  children,
-}: {
-  label: string;
-  background: string | null;
-  active: boolean;
-  onPick: () => void;
-  onPreview: () => void;
-  children?: ReactNode;
-}) {
-  return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={active}
-        aria-label={label}
-        onClick={onPick}
-        onPointerEnter={onPreview}
-        onFocus={onPreview}
-        className={`relative flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-          background ? '' : 'bg-white dark:bg-slate-900'
-        } ${active ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''}`}
-        style={background ? { background } : undefined}
-      >
-        <span className="text-optical-centre">{children}</span>
-      </button>
-    </Tooltip>
-  );
-}
-
-function SwatchCheck({ fill }: { fill: PageFill | undefined }) {
-  const dark = pageIsDark({ background: { fill } });
-  return <CheckIcon className={`h-3.5 w-3.5 ${dark ? 'text-white' : 'text-slate-800'}`} />;
-}
-
-const PATTERN_PREVIEW: Record<PagePattern | 'none', PageBackground> = {
-  none: {},
-  dots: { pattern: 'dots' },
-  grid: { pattern: 'grid' },
-  lines: { pattern: 'lines' },
-};
-
-export function BackgroundSection({
-  page,
-  themePresets,
-  onBackground,
-  onPreview,
-}: {
-  page: IllustratePage;
-  // The tab theme's own backgrounds (themeBackgroundPresets), offered first.
-  themePresets: readonly ThemeBackgroundPreset[];
-  onBackground: (patch: Partial<PageBackground>) => void;
-  onPreview: (patch: Partial<PageBackground> | null) => void;
-}) {
-  const fill = page.background?.fill;
-  const pattern = page.background?.pattern;
-  const solidPicked = PAGE_SOLID_PRESETS.some((s) =>
-    sameFill(fill, s.color ? { kind: 'solid', color: s.color } : undefined),
-  );
-  const gradientPicked = PAGE_GRADIENT_PRESETS.some((g) => sameFill(fill, gradientFill(g)));
-  const themePicked = themePresets.some((t) => sameFill(fill, t.fill));
-  const custom = fill?.kind === 'solid' && !solidPicked && !themePicked ? fill.color : null;
-  return (
-    <div onPointerLeave={() => onPreview(null)} onBlur={() => onPreview(null)}>
-      <PanelSection title="Background">
-        {themePresets.length ? (
-          <div
-            role="radiogroup"
-            aria-label="Theme backgrounds"
-            className="mb-2 grid grid-cols-7 gap-1.5 border-b border-slate-100 pb-2 dark:border-slate-800"
-          >
-            {themePresets.map((t) => {
-              const on = sameFill(fill, t.fill);
-              return (
-                <Swatch
-                  key={t.id}
-                  label={t.label}
-                  background={fillCss(t.fill)}
-                  active={on}
-                  onPick={() => onBackground({ fill: t.fill })}
-                  onPreview={() => onPreview({ fill: t.fill })}
-                >
-                  {on ? <SwatchCheck fill={t.fill} /> : null}
-                </Swatch>
-              );
-            })}
-          </div>
-        ) : null}
-        <div role="radiogroup" aria-label="Background colour" className="grid grid-cols-7 gap-1.5">
-          {PAGE_SOLID_PRESETS.map((s) => {
-            const presetFill: PageFill | undefined = s.color
-              ? { kind: 'solid', color: s.color }
-              : undefined;
-            const on = sameFill(fill, presetFill);
-            return (
-              <Swatch
-                key={s.id}
-                label={s.label}
-                background={s.color}
-                active={on}
-                onPick={() => onBackground({ fill: presetFill })}
-                onPreview={() => onPreview({ fill: presetFill })}
-              >
-                {on ? <SwatchCheck fill={presetFill} /> : null}
-              </Swatch>
-            );
-          })}
-          <Tooltip label={custom ? `Custom ${custom}` : 'Custom colour'}>
-            <label
-              className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-              }`}
-              style={{
-                background:
-                  custom ??
-                  'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)',
-              }}
-            >
-              <CustomColourInput
-                // A new value is a new input: its native change listener attaches to that one.
-                key={hexish(custom ?? '#ffffff')}
-                value={hexish(custom ?? '#ffffff')}
-                onPreview={(color) => onPreview({ fill: { kind: 'solid', color } })}
-                onCommit={(color) => onBackground({ fill: { kind: 'solid', color } })}
-              />
-            </label>
-          </Tooltip>
-        </div>
-        <div
-          role="radiogroup"
-          aria-label="Background gradient"
-          className="mt-2 grid grid-cols-7 gap-1.5"
-        >
-          {PAGE_GRADIENT_PRESETS.map((g) => {
-            const gFill = gradientFill(g);
-            const on = gradientPicked && sameFill(fill, gFill);
-            return (
-              <Swatch
-                key={g.id}
-                label={g.label}
-                background={fillCss(gFill)}
-                active={on}
-                onPick={() => onBackground({ fill: gFill })}
-                onPreview={() => onPreview({ fill: gFill })}
-              >
-                {on ? <SwatchCheck fill={gFill} /> : null}
-              </Swatch>
-            );
-          })}
-        </div>
-      </PanelSection>
-      <PanelSection title="Pattern">
-        <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
-          {(['none', ...PAGE_PATTERNS] as const).map((p) => {
-            const on = (pattern ?? 'none') === p;
-            const value = p === 'none' ? undefined : p;
-            return (
-              <button
-                key={p}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                onClick={() => onBackground({ pattern: value })}
-                onPointerEnter={() => onPreview({ pattern: value })}
-                onFocus={() => onPreview({ pattern: value })}
-                className={tileClass(on)}
-              >
-                <span
-                  aria-hidden
-                  className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
-                  style={{
-                    ...pageSheetStyle(PATTERN_PREVIEW[p]),
-                    backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
-                  }}
-                />
-                {PAGE_PATTERN_LABEL[p]}
-              </button>
-            );
-          })}
-        </div>
-      </PanelSection>
-    </div>
-  );
-}
-
-// The system colour picker: previews as the colour is dragged (`input`), commits once when the
-// picker settles (the native `change`, which React's onChange does not wait for), so a drag is one
-// edit, not one per tick.
-function CustomColourInput({
-  value,
-  onPreview,
-  onCommit,
-}: {
-  value: string;
-  onPreview: (color: string) => void;
-  onCommit: (color: string) => void;
-}) {
-  const input = useRef<HTMLInputElement>(null);
-  const commit = useRef(onCommit);
-  useEffect(() => {
-    commit.current = onCommit;
-  });
-  useEffect(() => {
-    const el = input.current;
-    if (!el) return;
-    const onChange = () => commit.current(el.value);
-    el.addEventListener('change', onChange);
-    return () => el.removeEventListener('change', onChange);
-  }, []);
-  return (
-    <input
-      ref={input}
-      type="color"
-      aria-label="Custom background colour"
-      defaultValue={value}
-      onInput={(e) => onPreview(e.currentTarget.value)}
-      className="absolute h-0 w-0 opacity-0"
-    />
-  );
-}

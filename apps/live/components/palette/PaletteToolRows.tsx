@@ -20,12 +20,15 @@ import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
 import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 
-function PaletteToolRow({
+export function PaletteToolRow({
   def,
   actions,
   pendingDraw,
   id,
   highlighted = false,
+  onPress,
+  anchor,
+  expanded,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
@@ -34,6 +37,11 @@ function PaletteToolRow({
   // The keyboard-walked row (docs/specs/010-palette/palette-top-level-categories.md). Distinct from `armed`, which means a
   // draw gesture is queued: this is only "the arrow keys are pointing here".
   highlighted?: boolean;
+  // A press of the row's own (a marker held, pressed again, opens its flyout), else the tile's.
+  onPress?: () => void;
+  // The row as a flyout's opener: its `data-dock-item`, and whether the flyout is open.
+  anchor?: string;
+  expanded?: boolean;
 }) {
   const armed = tileActive(def, pendingDraw);
   const rowRef = useRef<HTMLButtonElement>(null);
@@ -43,7 +51,7 @@ function PaletteToolRow({
     if (highlighted) rowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [highlighted]);
 
-  const onClick = tileHandler(def, actions);
+  const onClick = onPress ?? tileHandler(def, actions);
   const dragStart = tileDragStart(def.action);
   return (
     <button
@@ -63,6 +71,8 @@ function PaletteToolRow({
       onDragEnd={() => setPaletteDragPreview(null)}
       aria-label={def.label}
       aria-pressed={armed}
+      data-dock-item={anchor}
+      aria-expanded={expanded}
       className={`flex w-full items-center gap-2.5 rounded-lg border py-1.5 pl-2 pr-2 text-left transition ${
         armed
           ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-950/40'

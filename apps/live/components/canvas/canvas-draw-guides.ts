@@ -7,7 +7,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { ARROW_SNAP_REVEAL_PX, ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
-import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
+import { isFreePenIntent, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
@@ -44,6 +44,9 @@ interface DrawGuideInputs {
   // produced; the in-progress draw's own guides/snaps are merged on top.
   snapGuides: AlignmentGuide[];
   snapTargets: SnapTarget[];
+  // Draw mode: a whiteboard pen draws freely, with no guides. Elsewhere a marker guides like the
+  // pencil. Absent counts as a whiteboard.
+  whiteboard?: boolean;
 }
 
 // Merge the active gesture's guides/snap-targets with the ones a draw-to-size
@@ -59,6 +62,7 @@ export function computeDrawGuides({
   penPoints,
   snapGuides,
   snapTargets,
+  whiteboard = true,
 }: DrawGuideInputs): { alignGuides: AlignmentGuide[]; allSnapTargets: SnapTarget[] } {
   // Alignment guides for the in-progress draw-to-size box, so the user
   // sees which neighbour edges / centres it latched onto — the same faint
@@ -91,7 +95,7 @@ export function computeDrawGuides({
   // press. Mutually exclusive with drawBoxGuides (hover is cleared once a
   // drag starts). The snapped dot itself renders below the guide overlay.
   // A whiteboard pen draws freely: none of the guides below.
-  const freePen = isWhiteboardPenIntent(pendingDraw);
+  const freePen = isFreePenIntent(pendingDraw, whiteboard);
   const drawHoverGuides =
     drawHover && !freePen
       ? alignmentGuides(

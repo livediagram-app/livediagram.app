@@ -11,6 +11,7 @@ import {
   MAX_ILLUSTRATE_PAGES,
   nextArticleFlowId,
   nextIllustratePageId,
+  newLogoPage,
   newSlidePage,
   pageHasOrientation,
   pageUnits,
@@ -72,6 +73,12 @@ export type IllustratePageEdits = {
   // A fill hovered in the panel: the page's own-coloured text, lines and icons drawn re-inked as
   // the press would re-ink them (a preview, writing nothing); null puts them back.
   previewInk: (preview: { pageId: string; patch: Partial<PageBackground> } | null) => void;
+  // Locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a page"): it, and what is
+  // on it, stay as they are. Every edit above refuses a locked page.
+  isLocked: (pageId: string) => boolean;
+  setLocked: (pageId: string, locked: boolean) => void;
+  // Blank chosen on the page's Start From a Layout card: the card is not offered there again.
+  startBlank: (pageId: string) => void;
 };
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -81,11 +88,13 @@ const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   infographic: 'PageKindInfographic',
   article: 'PageKindArticle',
   slide: 'PageKindSlide',
+  logo: 'PageKindLogo',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   infographic: 'PageAdded',
   article: 'ArticleAdded',
   slide: 'SlidePageAdded',
+  logo: 'LogoPageAdded',
 };
 
 export function illustratePageEdits({
@@ -93,7 +102,7 @@ export function illustratePageEdits({
   current,
   elements,
   commitTabs,
-  onCreated,
+  onGoTo,
   onArticleCreated,
   onLayoutPlaced,
   mayEdit = () => true,
@@ -108,8 +117,9 @@ export function illustratePageEdits({
   // (a view role) must not write its last typed name.
   mayEdit?: () => boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
-  // A new page (added or duplicated) by its id, so the view can go to it.
-  onCreated: (pageId: string) => void;
+  // The page the view should glide to: a new page (added or duplicated), or the page before a
+  // deleted one.
+  onGoTo: (pageId: string) => void;
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
 }): IllustratePageEdits {
@@ -127,6 +137,33 @@ export function illustratePageEdits({
   const patchPage = (pageId: string, patch: (p: IllustratePage) => IllustratePage) =>
     commitPages((ps) => ps.map((p) => (p.id === pageId ? patch(p) : p)));
   const page = (pageId: string) => current.find((p) => p.id === pageId);
+  const isLocked = (pageId: string) => page(pageId)?.locked === true;
+  // A locked page takes no edit of its own (its name, size, turn, paint, layout, kind or delete).
+  // An article's pages change together (a turn, a size, its paint, a delete): any of them locked
+  // refuses the edit for all.
+  const refusedLocked = (pageId: string, edit: string) => {
+    const target = page(pageId);
+    const reach = target?.flow ? current.filter((p) => p.flow === target.flow) : [target];
+    if (!reach.some((p) => p?.locked === true)) return false;
+    debugLog('[illustrate-page] refused: page locked', { tabId, pageId, edit });
+    return true;
+  };
+  const setLocked = (pageId: string, locked: boolean) => {
+    if (!page(pageId) || isLocked(pageId) === locked) return;
+    // Tracked before it changes, so an unlock still reaches the wire.
+    track('Tab', 'Changed', locked ? 'PageLocked' : 'PageUnlocked');
+    patchPage(pageId, (p) => {
+      const { locked: _drop, ...rest } = p;
+      return locked ? { ...rest, locked: true } : rest;
+    });
+    debugLog('[illustrate-page] lock set', { tabId, pageId, locked });
+  };
+  const startBlank = (pageId: string) => {
+    const target = page(pageId);
+    if (!target || target.startedBlank === true || refusedLocked(pageId, 'start blank')) return;
+    patchPage(pageId, (p) => ({ ...p, startedBlank: true }));
+    debugLog('[illustrate-page] started blank', { tabId, pageId });
+  };
   // The pages a page-wide change reaches: the page, or every page of its article.
   const sharing = (ps: readonly IllustratePage[], pageId: string): Set<string> => {
     const target = ps.find((p) => p.id === pageId);
@@ -158,6 +195,7 @@ export function illustratePageEdits({
 
   // A page in a slide size (every slide page) has no turn: it is landscape only.
   const setOrientation = (pageId: string, next: PageOrientation) => {
+    if (refusedLocked(pageId, 'orientation')) return;
     const target = page(pageId);
     if (!target || target.orientation === next) return;
     if (!pageHasOrientation(target)) {
@@ -167,14 +205,22 @@ export function illustratePageEdits({
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
     claimArticleLayout(pageId);
     reshapePage(pageId, (p) => ({ ...p, orientation: next }));
+    // The view frames the page itself, so a turned page is framed again in its new shape.
+    onGoTo(pageId);
     debugLog('[illustrate-page] orientation set', { tabId, pageId, orientation: next });
   };
-  // A slide page takes only a slide size.
+  // A slide page takes only a slide size; a logo page keeps its artboard, the artboard being
+  // the logo kind's alone.
   const setSize = (pageId: string, size: PageSizeId) => {
+    if (refusedLocked(pageId, 'size')) return;
     const target = page(pageId);
     if ((target?.size ?? 'a4') === size) return;
     if (target?.kind === 'slide' && !SLIDE_PAGE_SIZE_IDS.includes(size)) {
       debugLog('[illustrate-page] size refused: not a slide size', { tabId, pageId, size });
+      return;
+    }
+    if (target?.kind === 'logo' || size === 'logo') {
+      debugLog('[illustrate-page] size refused: the logo artboard', { tabId, pageId, size });
       return;
     }
     track('Tab', 'Changed', 'PageSize');
@@ -183,9 +229,11 @@ export function illustratePageEdits({
       const { size: _drop, ...rest } = p;
       return size === 'a4' ? rest : { ...rest, size };
     });
+    onGoTo(pageId);
     debugLog('[illustrate-page] size set', { tabId, pageId, size });
   };
   const rename = (pageId: string, raw: string) => {
+    if (refusedLocked(pageId, 'name')) return;
     const name = raw.trim().slice(0, PAGE_NAME_MAX);
     if ((page(pageId)?.name ?? '') === name) return;
     track('Tab', 'Changed', 'PageRenamed');
@@ -198,8 +246,14 @@ export function illustratePageEdits({
   // A new fill also re-inks the page's own-coloured text, lines and icons so they still read on it
   // (withPageInkFor), in the same edit.
   const setBackground = (pageId: string, patch: Partial<PageBackground>) => {
+    if (refusedLocked(pageId, 'background')) return;
     const target = page(pageId);
     if (!target) return;
+    // A logo page takes no pattern (docs/specs/007-editor/logo-pages.md "A logo page").
+    if (target.kind === 'logo' && 'pattern' in patch) {
+      debugLog('[illustrate-page] pattern refused: a logo page', { tabId, pageId });
+      return;
+    }
     // Re-picking what the page already wears is no edit (no undo step, no event).
     const was = target.background;
     const next = withBackgroundPatch(target, patch);
@@ -242,8 +296,9 @@ export function illustratePageEdits({
   // A new infographic page takes the last infographic page's size and orientation (else A4
   // portrait); a new document the last page's paper size and orientation when it is a paper size
   // (A4, US Letter, A3), else A4 portrait; a new slide the last slide's size (else 16:9),
-  // landscape. All on the plain paper.
+  // landscape; a new logo page the 1024 artboard. All on the plain paper.
   const choosePageKind = (pageId: string, kind: PageKind) => {
+    if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     const flow = nextArticleFlowId(new Set());
     commitTab((t) => withPageKindChosen(t, pageId, kind, flow));
@@ -268,7 +323,7 @@ export function illustratePageEdits({
           flow,
         ),
       );
-      onCreated(id);
+      onGoTo(id);
       onArticleCreated?.(flow);
       debugLog('[illustrate-page] article added', { tabId, flow, count: current.length + 1 });
       return;
@@ -279,7 +334,10 @@ export function illustratePageEdits({
         const lastSlide = [...ps].reverse().find((p) => p.kind === 'slide');
         return [...ps, newSlidePage(id, lastSlide?.size)];
       }
-      const model = [...ps].reverse().find((p) => !p.flow && p.kind !== 'slide');
+      if (kind === 'logo') return [...ps, newLogoPage(id)];
+      const model = [...ps]
+        .reverse()
+        .find((p) => !p.flow && p.kind !== 'slide' && p.kind !== 'logo');
       return [
         ...ps,
         {
@@ -289,7 +347,7 @@ export function illustratePageEdits({
         },
       ];
     });
-    onCreated(id);
+    onGoTo(id);
     debugLog('[illustrate-page] page added', { tabId, count: current.length + 1 });
   };
   const duplicatePage = (pageId: string) => {
@@ -304,7 +362,7 @@ export function illustratePageEdits({
         created = out?.pages.find((p) => p.flow === flow)?.id;
         return out;
       });
-      if (created) onCreated(created);
+      if (created) onGoTo(created);
       debugLog('[illustrate-page] article duplicated', { tabId, flow: target.flow });
       return;
     }
@@ -314,15 +372,22 @@ export function illustratePageEdits({
       if (ps.length >= MAX_ILLUSTRATE_PAGES || ps.some((p) => p.id === id)) return null;
       return withDuplicatedPage(t, pageId, id);
     });
-    onCreated(id);
+    onGoTo(id);
     debugLog('[illustrate-page] duplicated', { tabId, pageId });
   };
   // A deleted page takes its content with it; the pages after it close the gap. An article page
   // deletes its whole document, writing and all.
   const removePage = (pageId: string) => {
+    if (refusedLocked(pageId, 'delete')) return;
     const target = page(pageId);
     if (!target || units.length <= 1) return;
     track('Tab', 'Changed', 'PageRemoved');
+    // The view glides to the page before it (the next, when the first goes), so a delete never
+    // leaves an empty stretch of canvas in view (docs/specs/007-editor/illustrate-pages.md
+    // "Page actions").
+    const at = unitIndexOf(pageId);
+    const land = at > 0 ? units[at - 1]!.pageIds.at(-1) : units[at + 1]?.pageIds[0];
+    if (land) onGoTo(land);
     if (target.flow) {
       commitTab((t) => withArticleRemoved(t, target.flow!));
       debugLog('[illustrate-page] article removed', { tabId, flow: target.flow });
@@ -342,6 +407,7 @@ export function illustratePageEdits({
 
   // Laid out in the page's content box (the page less its margins), one tab edit.
   const applyLayout = (pageId: string, layoutId: PageLayoutId) => {
+    if (refusedLocked(pageId, 'layout')) return;
     track('Tab', 'Changed', 'PageLayout');
     commitTab((t) => {
       const page = layOutIllustratePages(illustratePagesOf(t)).find((p) => p.id === pageId);
@@ -396,5 +462,8 @@ export function illustratePageEdits({
     removePage: units.length > 1 ? removePage : undefined,
     applyLayout,
     contentCount,
+    isLocked,
+    setLocked,
+    startBlank,
   };
 }

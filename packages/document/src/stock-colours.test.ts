@@ -59,6 +59,27 @@ const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
 });
 
 describe('resolveStockColours', () => {
+  it("fills a pen stroke's area (a closed path with no outline) in its pen colour", () => {
+    const area = {
+      id: 'p',
+      type: 'path',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      closed: true,
+      nodes: [],
+      strokeWidth: 'none',
+      penColour: 'ink',
+    } as const;
+    expect(resolveStockColours(area as never, 'dark')).toMatchObject({
+      fillColor: penColourHex('ink', 'dark'),
+    });
+    // An outlined or open path keeps its fill as it is.
+    const outlined = resolveStockColours({ ...area, strokeWidth: 'thin' } as never, 'dark');
+    expect((outlined as { fillColor?: string }).fillColor).toBeUndefined();
+  });
+
   it('draws a named line colour in its version for the canvas surface', () => {
     const el = shape({ penColour: 'blue' });
     expect(resolveStockColours(el, 'light').strokeColor).toBe(penColourHex('blue', 'light'));

@@ -25,6 +25,7 @@ import {
   TechTabIcon,
   WriteTabIcon,
   EventStormingTabIcon,
+  LogoTabIcon,
 } from './palette-tab-icons';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 
@@ -145,6 +146,16 @@ export const PALETTE_CATEGORIES: {
     group: 0,
     description: 'The wordy elements: pages, text, sticky notes, and annotations.',
     icon: <WriteTabIcon />,
+  },
+  {
+    // Illustrate mode, while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
+    // palette").
+    id: 'logo',
+    label: 'Logo',
+    group: 0,
+    description:
+      'The tools a logo is made with: the pen, the pencil, text, the basic shapes and your markers.',
+    icon: <LogoTabIcon />,
   },
   {
     id: 'draw',

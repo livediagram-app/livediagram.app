@@ -59,15 +59,15 @@ describe('Illustrate pages', () => {
     expect(c!.index).toBe(2);
   });
 
-  it('frame the first page in either orientation with one square fit box', () => {
-    const box = illustratePageFitBox();
+  it('frame a page by the page itself, so it fills the screen whatever its shape', () => {
     for (const o of ['portrait', 'landscape'] as const) {
-      const r = layOutIllustratePages([P('a', o)])[0]!.rect;
-      expect(r.x).toBeGreaterThanOrEqual(box.x);
-      expect(r.y).toBeGreaterThanOrEqual(box.y);
-      expect(r.x + r.width).toBeLessThanOrEqual(box.x + box.width);
-      expect(r.y + r.height).toBeLessThanOrEqual(box.y + box.height);
+      const page = layOutIllustratePages([P('a', o)])[0]!;
+      expect(illustratePageFitBox(page)).toEqual(page.rect);
     }
+    // With no page, a square of an A4 long side at the origin.
+    const box = illustratePageFitBox();
+    expect(box.width).toBe(box.height);
+    expect(box.x + box.width / 2).toBe(0);
   });
 
   it('find the page under a point', () => {

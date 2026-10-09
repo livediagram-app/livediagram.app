@@ -76,6 +76,9 @@ export type PaletteProps = {
   // Board-level switches shown above the notation on one of those boards
   // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Omitted everywhere else.
   esBoardControls?: EsBoardControls;
+  // The tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo palette"): Illustrate's
+  // palette offers its Logo category.
+  logoPages?: boolean;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.
@@ -114,10 +117,13 @@ export type PaletteProps = {
   onBeginHighlighter: () => void;
   // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
   // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
+  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
+  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
   onBeginShapePen: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
+  onBeginPath: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

@@ -27,11 +27,8 @@ import type { IllustratePageEdits } from '@/hooks/editor/useIllustratePages';
 import type { ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
 import type { PageLayoutId } from '@livediagram/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
-import {
-  BackgroundSection,
-  OrientationSection,
-  SizeSection,
-} from './illustrate-page-panel-sections';
+import { OrientationSection, SizeSection } from './illustrate-page-panel-sections';
+import { BackgroundSection } from './page-background-section';
 
 const WIDTH = 304;
 const GAP = 6;
@@ -141,51 +138,67 @@ export function IllustratePagePanel({
     onPreview(patch ? { pageId: page.id, patch } : null);
   const placeLabel = `Page ${page.index + 1}`;
   const title = page.name ?? (count > 1 ? placeLabel : 'Page');
+  // A locked page's panel says so, its name and sections unavailable (docs/specs/007-editor/
+  // illustrate-pages.md "Locking a page"); moving and duplicating it still work.
+  const locked = page.locked === true;
   const body = (
     <>
-      <NameField
-        key={page.id}
-        name={page.name ?? ''}
-        placeholder={count > 1 ? placeLabel : 'Untitled page'}
-        onRename={(name) => edit.rename(page.id, name)}
-      />
-      <PanelTabs
-        tab={tab}
-        article={!!page.flow}
-        onTab={(next) => {
-          // Leaving Layouts takes its preview (a pending Replace's too) off the page.
-          if (next !== 'layouts') onLayoutPreview(null);
-          setTab(next);
-        }}
-      />
-      {tab === 'page' ? (
-        <>
-          <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
-          <OrientationSection page={page} onOrientation={(o) => edit.setOrientation(page.id, o)} />
-          <BackgroundSection
-            page={page}
-            themePresets={themeBackgrounds}
-            onBackground={(patch) => {
-              edit.setBackground(page.id, patch);
-              onPreview(null);
-            }}
-            onPreview={preview}
-          />
-        </>
-      ) : tab === 'style' || tab === 'text' ? (
-        (articleStyle?.(tab) ?? null)
-      ) : (
-        <LayoutsSection
-          page={page}
-          contentCount={edit.contentCount(page.id)}
-          onApply={(layout) => {
-            onLayoutPreview(null);
-            edit.applyLayout(page.id, layout);
-            onClose(false);
-          }}
-          onPreview={onLayoutPreview}
+      {locked ? (
+        <p
+          role="status"
+          className="mx-3 mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-500/15 dark:text-amber-100"
+        >
+          This page is locked. Unlock it beside the cog to change it.
+        </p>
+      ) : null}
+      <div inert={locked} className={locked ? 'opacity-50' : undefined}>
+        <NameField
+          key={page.id}
+          name={page.name ?? ''}
+          placeholder={count > 1 ? placeLabel : 'Untitled page'}
+          onRename={(name) => edit.rename(page.id, name)}
         />
-      )}
+        <PanelTabs
+          tab={tab}
+          kind={page.flow ? 'article' : 'other'}
+          onTab={(next) => {
+            // Leaving Layouts takes its preview (a pending Replace's too) off the page.
+            if (next !== 'layouts') onLayoutPreview(null);
+            setTab(next);
+          }}
+        />
+        {tab === 'page' ? (
+          <>
+            <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
+            <OrientationSection
+              page={page}
+              onOrientation={(o) => edit.setOrientation(page.id, o)}
+            />
+            <BackgroundSection
+              page={page}
+              themePresets={themeBackgrounds}
+              onBackground={(patch) => {
+                edit.setBackground(page.id, patch);
+                onPreview(null);
+              }}
+              onPreview={preview}
+            />
+          </>
+        ) : tab === 'style' || tab === 'text' ? (
+          (articleStyle?.(tab) ?? null)
+        ) : (
+          <LayoutsSection
+            page={page}
+            contentCount={edit.contentCount(page.id)}
+            onApply={(layout) => {
+              onLayoutPreview(null);
+              edit.applyLayout(page.id, layout);
+              onClose(false);
+            }}
+            onPreview={onLayoutPreview}
+          />
+        )}
+      </div>
       <PageActions page={page} edit={edit} onClose={() => onClose(false)} />
     </>
   );
@@ -232,28 +245,29 @@ export function IllustratePagePanel({
   );
 }
 
-// Page (its size and paint) or Layouts (what to start it with): the shared segmented control,
-// its highlight sliding between the two.
+// Page (its size and paint), then the kind's own tabs (Layouts, or an article's Style and Text):
+// the shared segmented control, its highlight sliding between them.
 function PanelTabs({
   tab,
-  article,
+  kind,
   onTab,
 }: {
   tab: PagePanelTab;
-  // An article page's tabs after Page are Style and Text; an infographic page's is Layouts.
-  article: boolean;
+  // An article page's tabs after Page are Style and Text; any other page's Layouts.
+  kind: 'article' | 'other';
   onTab: (t: PagePanelTab) => void;
 }) {
-  const tabs: [PagePanelTab, string][] = article
-    ? [
-        ['page', 'Page'],
-        ['style', 'Style'],
-        ['text', 'Text'],
-      ]
-    : [
-        ['page', 'Page'],
-        ['layouts', 'Layouts'],
-      ];
+  const tabs: [PagePanelTab, string][] =
+    kind === 'article'
+      ? [
+          ['page', 'Page'],
+          ['style', 'Style'],
+          ['text', 'Text'],
+        ]
+      : [
+          ['page', 'Page'],
+          ['layouts', 'Layouts'],
+        ];
   return (
     <div className="px-3 pt-2">
       <div
@@ -395,7 +409,7 @@ function PageActions({
       <ActionButton
         label={`Delete ${noun}`}
         onClick={
-          removePage
+          removePage && page.locked !== true
             ? () => {
                 onClose();
                 removePage(page.id);

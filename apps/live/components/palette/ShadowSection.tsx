@@ -8,6 +8,7 @@
 // and the multi-select Style flyout (MultiStyleSections), so both surfaces
 // stay pixel-identical.
 
+import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import {
   DEFAULT_SHADOW,
   SHADOW_LIMITS,
@@ -62,24 +63,14 @@ function ShadowSliderRow({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="px-3 py-1.5">
-      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">{label}</p>
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          aria-label={label}
-          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
-        />
-        <span className="w-10 text-right text-xs font-medium text-slate-700 dark:text-slate-200">
-          {value}
-          {unit}
-        </span>
-      </div>
-    </div>
+    <MenuSliderRow
+      label={label}
+      min={min}
+      max={max}
+      value={value}
+      display={`${value}${unit}`}
+      onChange={onChange}
+    />
   );
 }
 

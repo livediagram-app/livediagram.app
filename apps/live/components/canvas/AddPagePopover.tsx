@@ -1,7 +1,7 @@
 'use client';
 
 // "Add a page" (docs/specs/007-editor/illustrate-pages.md "Page kinds"): the + after the last page
-// opens this small popover offering the three kinds of page, each a card with a miniature of it and a
+// opens this small popover offering the four kinds of page, each a card with a miniature of it and a
 // line under its name. Arrow keys move between them, Enter or a press chooses, Escape or an outside
 // press closes. On a phone it is a bottom sheet.
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
@@ -13,6 +13,8 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import { PAGE_KINDS, PageKindCard } from './page-kind-cards';
 
 const WIDTH = 420;
+// The kind cards sit two to a row.
+const KIND_COLUMNS = 2;
 const GAP = 10;
 
 export function AddPagePopover({
@@ -55,7 +57,10 @@ export function AddPagePopover({
     if (!keys.includes(e.key)) return;
     e.preventDefault();
     const at = cards.current.findIndex((c) => c === document.activeElement);
-    const step = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 1;
+    // Left / Right step one card; Up / Down a row of the two-by-two grid.
+    const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -KIND_COLUMNS, ArrowDown: KIND_COLUMNS }[
+      e.key as 'ArrowLeft'
+    ];
     cards.current[(at + step + PAGE_KINDS.length) % PAGE_KINDS.length]?.focus();
   };
 
@@ -67,7 +72,7 @@ export function AddPagePopover({
       className={mobile ? 'flex flex-col gap-2 px-4 pb-3' : 'flex flex-col gap-2 p-3'}
     >
       <p className="px-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Add a Page</p>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {PAGE_KINDS.map((k, i) => (
           <PageKindCard
             key={k.kind}

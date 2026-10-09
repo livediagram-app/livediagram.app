@@ -61,6 +61,7 @@ type Props = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
+  | 'logoPages'
   | 'themeTint'
 > &
   PaletteAddHandlers & {

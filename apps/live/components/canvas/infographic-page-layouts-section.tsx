@@ -102,7 +102,7 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
             {openCategory.label}
           </button>
           <div
-            className="grid grid-cols-3 gap-1.5"
+            className="grid grid-cols-2 gap-2"
             onPointerLeave={() => onPreview(pending)}
             onBlur={() => onPreview(pending)}
           >
@@ -141,18 +141,18 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
                     in a clipped box of fixed height, so they never spill out of the card. */}
                 <span
                   aria-hidden
-                  className="relative flex h-20 w-full items-center justify-center overflow-hidden"
+                  className="relative flex h-28 w-full items-center justify-center overflow-hidden"
                 >
                   {members.slice(0, 2).map((l, i) => (
                     <span
                       key={l.id}
                       className="absolute flex"
                       style={{
-                        transform: `translateX(${i === 0 ? -10 : 10}px) rotate(${i === 0 ? -5 : 5}deg)`,
+                        transform: `translateX(${i === 0 ? -14 : 14}px) rotate(${i === 0 ? -5 : 5}deg)`,
                         zIndex: i === 0 ? 1 : 0,
                       }}
                     >
-                      <LayoutThumb layout={l.id} page={page} width={44} />
+                      <LayoutThumb layout={l.id} page={page} width={64} />
                     </span>
                   ))}
                 </span>

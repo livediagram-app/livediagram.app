@@ -34,6 +34,14 @@ import {
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
+import {
+  LOGO_GUIDE_PARTS,
+  readLogoGuideParts,
+  readLogoGuideStrength,
+  withLogoGuidePart,
+  type LogoGuidePart,
+  type LogoGuideStrength,
+} from '@/lib/logo-guide-prefs';
 import type { PlacementDefaultKey } from '@livediagram/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 import {
@@ -41,6 +49,26 @@ import {
   CLOUD_SYNC_SECTION,
   type CloudSyncProviderId,
 } from '@/lib/cloud-sync/providers';
+
+// One logo guide's row (docs/specs/007-editor/logo-pages.md "Construction guides"): shown or
+// hidden, in Settings > Editor > Illustrate as in the logo page's panel.
+function logoGuidePartRow(
+  part: LogoGuidePart,
+  row: Pick<SettingsToggleRowSpec, 'kind' | 'event'>,
+): SettingsToggleRowSpec {
+  const label = LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label;
+  return {
+    ...row,
+    key: `logoGuide-${part}`,
+    keywords: `logo guides ${label.toLowerCase()} construction`,
+    label: `Logo ${label}`,
+    description: `Shows the ${label.toLowerCase()} among a logo page's construction guides.`,
+    helpArticle: 'logoPages',
+    alsoIn: "a logo page's panel",
+    read: (p) => readLogoGuideParts(p).has(part),
+    write: (p, v) => withLogoGuidePart(p, part, v),
+  };
+}
 
 // The Settings dialog as DATA: the categories, and per category the rows
 // (docs/specs/007-editor/user-preferences.md). The dialog used to spell every row out as JSX inside one
@@ -468,6 +496,70 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
         event: { category: 'UI', changed: 'WhiteboardDockPosition' },
       },
+    ],
+  },
+  {
+    // Illustrate mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides").
+    id: 'illustrate',
+    label: 'Illustrate',
+    parent: 'editor',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'logoGuides',
+        keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
+        label: 'Logo Guides',
+        description:
+          "Shows a logo page's construction guides: centre lines, keyline circles and square, the safe area and a grid. The keylines snap while they show. A page you switch them on or off for keeps its own choice.",
+        helpArticle: 'logoPages',
+        alsoIn: "a logo page's panel",
+        read: (p) => p.logoGuides !== false,
+        write: (p, v) => ({ ...p, logoGuides: v }),
+        event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
+      },
+      {
+        kind: 'choice',
+        key: 'logoGuideStrength',
+        keywords: 'logo guides strength opacity faint strong contrast',
+        label: 'Logo Guide Strength',
+        description: "How strongly a logo page's construction guides show over the artwork.",
+        helpArticle: 'logoPages',
+        alsoIn: "a logo page's panel",
+        options: [
+          { id: 'faint', label: 'Faint' },
+          { id: 'medium', label: 'Medium' },
+          { id: 'strong', label: 'Strong' },
+        ],
+        read: readLogoGuideStrength,
+        write: (p, v) => ({ ...p, logoGuideStrength: v as LogoGuideStrength }),
+        event: { category: 'UI', changed: 'LogoGuideStrength' },
+      },
+      // One row per guide (docs/specs/007-editor/logo-pages.md "Construction guides"); each event
+      // written out, so the telemetry dashboard reads its tokens.
+      logoGuidePartRow('centre', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideCentreLinesOn', off: 'LogoGuideCentreLinesOff' },
+      }),
+      logoGuidePartRow('diagonals', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideDiagonalsOn', off: 'LogoGuideDiagonalsOff' },
+      }),
+      logoGuidePartRow('safe', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideSafeAreaOn', off: 'LogoGuideSafeAreaOff' },
+      }),
+      logoGuidePartRow('circles', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideCirclesOn', off: 'LogoGuideCirclesOff' },
+      }),
+      logoGuidePartRow('square', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideSquareOn', off: 'LogoGuideSquareOff' },
+      }),
+      logoGuidePartRow('grid', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' },
+      }),
     ],
   },
   {

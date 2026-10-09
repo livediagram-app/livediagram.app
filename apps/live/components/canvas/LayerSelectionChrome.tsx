@@ -5,7 +5,7 @@
 // the store, so a selection change re-renders this and not the element layer around it.
 
 import type { ComponentProps } from 'react';
-import type { Element } from '@livediagram/document';
+import { logoPageAt, type Element, type LaidOutPage } from '@livediagram/document';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { NextNoteButtons } from '@/components/canvas/NextNoteButtons';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
@@ -21,6 +21,14 @@ const singleId = (s: Selection) => s.selectedId;
 
 type PlusesProps = ComponentProps<typeof QuickConnectPluses>;
 
+/** Whether a selection's centre sits on a logo page: no quick-connect pluses there. */
+export function onLogoPage(
+  pages: readonly LaidOutPage[] | null | undefined,
+  b: { x: number; y: number; width: number; height: number },
+): boolean {
+  return !!pages && !!logoPageAt(pages, { x: b.x + b.width / 2, y: b.y + b.height / 2 });
+}
+
 export function LayerSelectionChrome({
   selectionInput,
   elements,
@@ -28,6 +36,7 @@ export function LayerSelectionChrome({
   nextNote,
   pluses,
   onBeginDrag,
+  pages,
 }: {
   selectionInput: CanvasSelectionInput;
   elements: Element[];
@@ -36,6 +45,9 @@ export function LayerSelectionChrome({
   nextNote: { blocked: boolean; onAdd: ComponentProps<typeof NextNoteButtons>['onAdd'] } | null;
   pluses: Omit<PlusesProps, 'selectedElement' | 'bounds' | 'zoom'>;
   onBeginDrag: ComponentProps<typeof UnionResizeHandles>['onBeginDrag'];
+  // The Illustrate pages: a selection on a logo page shows no quick-connect pluses
+  // (docs/specs/007-editor/logo-pages.md "A logo page"), a mark not a diagram.
+  pages?: readonly LaidOutPage[] | null;
 }) {
   const { selectionBounds, showPlus, showUnionResize, unionResizeBounds, unionResizePrimaryId } =
     useCanvasSelectionView(selectionInput);
@@ -58,7 +70,7 @@ export function LayerSelectionChrome({
         />
       ) : null}
 
-      {showPlus && selectionBounds ? (
+      {showPlus && selectionBounds && !onLogoPage(pages, selectionBounds) ? (
         <QuickConnectPluses
           {...pluses}
           selectedElement={selectedId ? elements.find((e) => e.id === selectedId) : undefined}

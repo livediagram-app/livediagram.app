@@ -24,7 +24,14 @@ export const MAX_ILLUSTRATE_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/illustrate-pages.md "Sizes"): its short and long side.
 export type PageSizeId =
-  'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide' | 'slide' | 'slide-classic';
+  'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide' | 'slide' | 'slide-classic' | 'logo';
+
+// A logo page's artboard (docs/specs/007-editor/logo-pages.md "A logo page"): the common
+// app-icon master, square.
+export const LOGO_SIDE = 1024;
+
+// A logo page's margin, its safe area, as a share of its side (docs/specs/007-editor/logo-pages.md).
+export const LOGO_SAFE_FRACTION = 0.1;
 
 export const PAGE_SIZES: Readonly<
   Record<
@@ -36,6 +43,8 @@ export const PAGE_SIZES: Readonly<
       landscape: string;
       // A slide size is landscape whatever the page's stored orientation, and offers no turn.
       landscapeOnly?: true;
+      // The logo artboard: offered by logo pages alone.
+      logoOnly?: true;
     }
   >
 > = {
@@ -64,6 +73,13 @@ export const PAGE_SIZES: Readonly<
     landscape: 'Classic slide (4:3)',
     landscapeOnly: true,
   },
+  logo: {
+    short: LOGO_SIDE,
+    long: LOGO_SIDE,
+    portrait: '1024 x 1024',
+    landscape: '1024 x 1024',
+    logoOnly: true,
+  },
 };
 
 export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
@@ -80,10 +96,15 @@ const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
   'wide',
 ];
 
-/** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, an
- *  article page the paper and screen ones, an infographic page those and the 16:9 slide. */
+// The one size a logo page takes (docs/specs/007-editor/logo-pages.md "A logo page").
+export const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
+
+/** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, a logo
+ *  page only the artboard, an article page the paper and screen ones, an infographic page those
+ *  and the 16:9 slide. */
 export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
+  if (kind === 'logo') return LOGO_PAGE_SIZE_IDS;
   if (kind === 'article') return PAPER_AND_SCREEN_SIZE_IDS;
   return [...PAPER_AND_SCREEN_SIZE_IDS, 'slide'];
 }
@@ -104,8 +125,9 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/illustrate-pages.md "Page
-// kinds"): an infographic page to lay out, an article page to write on, or a slide of a deck.
-export type PageKind = 'infographic' | 'article' | 'slide';
+// kinds"): an infographic page to lay out, an article page to write on, a slide of a deck, or a
+// logo's artboard.
+export type PageKind = 'infographic' | 'article' | 'slide' | 'logo';
 
 export type IllustratePage = {
   id: string;
@@ -118,10 +140,17 @@ export type IllustratePage = {
   name?: string;
   // Absent is an infographic page nobody has chosen yet (the first page offers the choice while
   // it is the only page and empty); 'infographic' once chosen; 'article' for an article page;
-  // 'slide' for a slide, always landscape in a slide size.
+  // 'slide' for a slide, always landscape in a slide size; 'logo' for a logo's artboard, always
+  // the `logo` size and never patterned.
   kind?: PageKind;
   // The article an article page belongs to (`Tab.articles[flow]`); present exactly on article pages.
   flow?: string;
+  // Locked (docs/specs/007-editor/illustrate-pages.md "Locking a page"): it and what is on it stay
+  // as they are. Absent is unlocked.
+  locked?: true;
+  // Started blank (Blank Logo on its Start From a Layout card): the card is not offered on it
+  // again; its panel's Layouts still are. Absent while it may be offered.
+  startedBlank?: true;
 };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
@@ -173,6 +202,10 @@ function parsePage(v: unknown): IllustratePage | undefined {
     return undefined;
   const background = parseBackground(p.background);
   const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
+  const lock = {
+    ...(p.locked === true ? { locked: true as const } : {}),
+    ...(p.startedBlank === true ? { startedBlank: true as const } : {}),
+  };
   // An article page without a readable flow is an article of its own.
   const kindFields =
     p.kind === 'article'
@@ -185,7 +218,9 @@ function parsePage(v: unknown): IllustratePage | undefined {
         ? { kind: 'infographic' as const }
         : p.kind === 'slide'
           ? { kind: 'slide' as const }
-          : {};
+          : p.kind === 'logo'
+            ? { kind: 'logo' as const }
+            : {};
   // A slide is landscape in a slide size, whatever was stored.
   if (kindFields.kind === 'slide') {
     const size = isPageSizeId(p.size) && SLIDE_PAGE_SIZE_IDS.includes(p.size) ? p.size : 'slide';
@@ -196,21 +231,46 @@ function parsePage(v: unknown): IllustratePage | undefined {
       ...(background ? { background } : {}),
       ...(name ? { name } : {}),
       kind: 'slide',
+      ...lock,
     };
   }
+  // A logo page is the artboard, never patterned (docs/specs/007-editor/logo-pages.md).
+  if (kindFields.kind === 'logo') {
+    const fill = background?.fill;
+    return {
+      id: p.id,
+      orientation: 'portrait',
+      size: 'logo',
+      ...(fill ? { background: { fill } } : {}),
+      ...(name ? { name } : {}),
+      kind: 'logo',
+      ...lock,
+    };
+  }
+  // The artboard is the logo kind's alone: any other page stored in it is read as A4.
+  const ownSize = isPageSizeId(p.size) && p.size !== 'a4' && !PAGE_SIZES[p.size].logoOnly;
   return {
     id: p.id,
     orientation: p.orientation,
-    ...(isPageSizeId(p.size) && p.size !== 'a4' ? { size: p.size } : {}),
+    ...(ownSize ? { size: p.size as PageSizeId } : {}),
     ...(background ? { background } : {}),
     ...(name ? { name } : {}),
     ...kindFields,
+    ...lock,
   };
 }
 
-/** The page's kind: an article or a slide page, or else an infographic page. */
+/** The page's kind: an article, a slide or a logo page, or else an infographic page. */
 export function pageKindOf(page: Pick<IllustratePage, 'kind'>): PageKind {
-  return page.kind === 'article' || page.kind === 'slide' ? page.kind : 'infographic';
+  return page.kind === 'article' || page.kind === 'slide' || page.kind === 'logo'
+    ? page.kind
+    : 'infographic';
+}
+
+/** A new logo page (docs/specs/007-editor/logo-pages.md "A logo page"): the 1024 artboard on
+ *  plain paper. */
+export function newLogoPage(id: string): IllustratePage {
+  return { id, orientation: 'portrait', size: 'logo', kind: 'logo' };
 }
 
 /** A new slide page (docs/specs/007-editor/illustrate-pages.md "Page kinds"): landscape, in the
@@ -348,12 +408,14 @@ const PAGE_KIND_LABEL: Record<PageKind, string> = {
   infographic: 'Infographic',
   article: 'Article',
   slide: 'Slide',
+  logo: 'Logo',
 };
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */
 export function pageMargin(page: Pick<IllustratePage, 'orientation' | 'size'>): number {
   const { width, height } = pageDimensions(page);
-  return Math.round(Math.min(width, height) * PAGE_MARGIN_FRACTION);
+  const fraction = page.size === 'logo' ? LOGO_SAFE_FRACTION : PAGE_MARGIN_FRACTION;
+  return Math.round(Math.min(width, height) * fraction);
 }
 
 // A page's margin as a share of its short side (docs/specs/007-editor/illustrate-pages.md).
@@ -372,9 +434,9 @@ export function layOutIllustratePages(pages: readonly IllustratePage[]): LaidOut
   });
 }
 
-/** The box the view fits to frame a page (the first by default): a square of its long side,
- *  centred on the page, so either orientation fits at the same zoom and turning it never moves the
- *  view. With no page, an A4 one at the origin. */
+/** The box the view fits to frame a page (the first by default): the page itself, so it fills the
+ *  screen whatever its shape (a landscape slide on a wide screen too). With no page, a square of
+ *  an A4 long side at the origin. */
 export function illustratePageFitBox(page?: Pick<LaidOutPage, 'rect'>): PageRect {
   if (!page) {
     return {
@@ -384,9 +446,7 @@ export function illustratePageFitBox(page?: Pick<LaidOutPage, 'rect'>): PageRect
       height: A4_LONG_SIDE,
     };
   }
-  const { x, y, width, height } = page.rect;
-  const side = Math.max(width, height);
-  return { x: x + width / 2 - side / 2, y: y + height / 2 - side / 2, width: side, height: side };
+  return page.rect;
 }
 
 function contains(r: PageRect, p: { x: number; y: number }): boolean {

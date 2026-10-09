@@ -188,6 +188,9 @@ export function useArticles(deps: {
       d.tickTabs((ts) => {
         const out = ts.map((t) => {
           if (t.id !== tabId || t.locked === true || !articlesOf(t)[layout.flow]) return t;
+          // A locked page holds the article as it is: no page added or dropped, no zone moved.
+          if (illustratePagesOf(t).some((p) => p.flow === layout.flow && p.locked === true))
+            return t;
           const paged = withArticlePageCount(t, layout.flow, layout.pagesNeeded);
           const settled = withNotesSettled(
             withZonesSettled(paged, layout.flow, layout.zones),

@@ -1,3 +1,5 @@
+import { CombineOpGlyph, CombineTiles } from '@/components/canvas/CombineMenu';
+import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import type { BoxedElement, Element, ShapeElement } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
@@ -12,7 +14,11 @@ import {
   RotationMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+  MenuActionRow,
+} from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
@@ -49,6 +55,32 @@ export function MultiPlacementSections({
   const morphIds = morphable.map((el) => el.id);
   return (
     <>
+      {/* Combine (docs/specs/007-editor/logo-pages.md "Combine"): shapes on a logo page into one. */}
+      {props.onCombine ? (
+        <MenuAccordionSection
+          title="Combine"
+          icon={<CombineOpGlyph op="unite" size={16} />}
+          {...sectionProps('m-combine')}
+        >
+          <CombineTiles
+            onCombine={(op) => {
+              onClose();
+              props.onCombine!(op);
+            }}
+          />
+        </MenuAccordionSection>
+      ) : null}
+      {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
+      {props.onMirrorCopy ? (
+        <MenuActionRow
+          icon={<MirrorCopyGlyph />}
+          label="Mirror Copy"
+          onClick={() => {
+            onClose();
+            props.onMirrorCopy!();
+          }}
+        />
+      ) : null}
       {/* Layer — front/back, opacity and (for boxed members) the
                   aspect-ratio lock, selection-wide, mirroring the single
                   menu's pinned-first Layer section. */}

@@ -184,14 +184,16 @@ function centreOf(el: Element): { x: number; y: number } | undefined {
 }
 
 describe('templates on pages', () => {
-  // A deck is built of slide pages; every other paged template of infographic pages. Either way
-  // a chosen kind, so the first page's kind choice is never offered.
+  // A deck is built of slide pages, the logo exploration's lockups of logo pages; every other paged
+  // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
+  // never offered.
   it.each(PAGED_KINDS)('%s: opens in Illustrate on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('illustrate');
     expect(o.pages?.length).toBeGreaterThan(0);
-    const want = kind === 'slide-deck' ? 'slide' : 'infographic';
-    expect(o.pages!.every((p) => p.kind === want)).toBe(true);
+    const want = (i: number) =>
+      kind === 'slide-deck' ? 'slide' : kind === 'logo-design' && i < 6 ? 'logo' : 'infographic';
+    expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });
 

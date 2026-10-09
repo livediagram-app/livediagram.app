@@ -42,6 +42,7 @@ export function whiteboardPenIntent(
     colour: pen.colour,
     width: pen.width,
     recognise,
+    penId: pen.id,
   };
 }
 

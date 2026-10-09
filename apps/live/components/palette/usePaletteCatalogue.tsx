@@ -16,6 +16,7 @@ import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
+import { useLogoMarkerTiles } from './PaletteLogoTab';
 import { coveredPaletteCategories, paletteCategoriesFor } from './palette-layouts';
 import { useBoardCovering } from '@/hooks/plan/plan-cover-store';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
@@ -40,6 +41,7 @@ type Deps = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
+  | 'logoPages'
   | 'onTileUsed'
 > &
   PaletteAddHandlers;
@@ -75,9 +77,11 @@ export function usePaletteCatalogue({
   onBeginMarker,
   onBeginShapePen,
   onBeginPolygon,
+  onBeginPath,
   pendingDraw,
   esBoard,
   esBoardControls,
+  logoPages,
   onTileUsed,
 }: Deps) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
@@ -137,9 +141,11 @@ export function usePaletteCatalogue({
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();
+  const beginMarker = (penId: WhiteboardPenId, once?: boolean) =>
+    armed(() => (once ? onBeginMarker(penId, true) : onBeginMarker(penId)))();
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
+  const beginPath = armed(onBeginPath);
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -171,6 +177,7 @@ export function usePaletteCatalogue({
       beginMarker,
       beginShapePen,
       beginPolygon,
+      beginPath,
       addArrow,
       addSticky,
       addTable,
@@ -227,12 +234,15 @@ export function usePaletteCatalogue({
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
   // A board covering the canvas (maximised or filling its tab), not a view: cards land only on a board.
   const boardCovering = useBoardCovering();
+  // Logo only while the tab has a logo page (docs/specs/007-editor/logo-pages.md), its markers
+  // added as tiles in this person's colours and widths (logoMarkerTiles).
+  const markers = useLogoMarkerTiles(!!logoPages);
   // While a Plan board covers the canvas, only Cards (coveredPaletteCategories); a maximised view keeps the palette.
   const categories = boardCovering
     ? coveredPaletteCategories()
-    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
-        (c) => hasLibraryShapes || c.id !== 'my-shapes',
-      );
+    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
+        .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
+        .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,

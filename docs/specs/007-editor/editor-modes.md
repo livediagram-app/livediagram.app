@@ -8,15 +8,15 @@ where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term                | Means                                                                                                                                                           |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                        |
-| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw`, `illustrate` or `plan` (`EditorMode`).                                                         |
-| **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                         |
-| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                          |
-| **Illustrate mode** | Pages on the canvas, of three kinds: infographic pages to lay out, article pages to write and slide pages to present ([Illustrate pages](illustrate-pages.md)). |
-| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                    |
-| **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                                              |
+| Term                | Means                                                                                                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                                                                                                                    |
+| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw`, `illustrate` or `plan` (`EditorMode`).                                                                                                                     |
+| **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                                                                                                     |
+| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                                                                                                      |
+| **Illustrate mode** | Pages on the canvas, of four kinds: infographic pages to lay out, article pages to write, slide pages to present and logo pages to design a logo on ([Illustrate pages](illustrate-pages.md), [Logo pages](logo-pages.md)). |
+| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                                                                                                                |
+| **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                                                                                                          |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
@@ -249,6 +249,7 @@ Docs, Website), keeping Image and Avatar.
 | -------------- | ------- | ---------- | ---- |
 | Popular        | yes     | yes        | no   |
 | Plan's seven   | no      | no         | yes  |
+| Logo           | no      | logo page  | no   |
 | Shapes         | yes     | yes        | no   |
 | My shapes      | yes     | yes        | no   |
 | Write          | yes     | yes        | no   |
@@ -263,6 +264,9 @@ Docs, Website), keeping Image and Avatar.
 | Media          | yes     | yes        | no   |
 | Data           | no      | yes        | no   |
 | Behaviours     | yes     | no         | no   |
+
+Illustrate offers **Logo** only while the tab has a logo page, and turns to it when one is added
+or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
 
 Plan offers only its own seven categories (Cards, Boards, Widgets, Metrics,
 Visualisations, Content and Tools) and opens on Cards
@@ -331,9 +335,10 @@ actions, snapping, export, laying content out into pages, page slides) is
 - **Turning, adding and deleting animate:** the sheets ease to their new places
   and shapes over 200 ms (none under reduced motion).
 - **Centred in the viewport:** entering Illustrate mode or opening a tab in it
-  fits a square of the long side around the first page
-  (`illustratePageFitBox(page)`), so either orientation fits at the same zoom and
-  turning it never moves the view. Where the Toolbar strip lies over
+  fits the first page itself (`illustratePageFitBox(page)`), and going to a page
+  (its label, the page navigator, a new page) fits that page, so whatever its shape
+  (a landscape slide on a wide screen too) it fills the view; turning or resizing a
+  page re-fits it. Where the Toolbar strip lies over
   the canvas's top edge, the page centres in the band below it
   (`computeFitBelow`).
 - **Only the pages are drawn on.** A draw, tap-to-place or double-click-to-add

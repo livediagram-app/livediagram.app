@@ -104,6 +104,7 @@ export const HELP_ARTICLES = {
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
+  logoPages: 'canvas/illustrate/logo-pages',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -371,6 +372,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   drawMode: {
     title: 'Learn about Draw mode',
     description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
+  },
+  logoPages: {
+    title: 'Learn about logo pages',
+    description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
   },
   livePresence: {
     title: 'Learn about live presence',

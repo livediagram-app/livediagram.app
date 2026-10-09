@@ -30,6 +30,7 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onBeginMarker',
   'onBeginShapePen',
   'onBeginPolygon',
+  'onBeginPath',
 ] as const satisfies readonly (keyof PaletteProps)[];
 
 export type PaletteAddHandlers = Pick<PaletteProps, (typeof PALETTE_ADD_HANDLER_KEYS)[number]>;

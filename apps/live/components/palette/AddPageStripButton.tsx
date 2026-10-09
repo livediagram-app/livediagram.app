@@ -20,7 +20,7 @@ export function AddPageStripButton({ onAdd }: { onAdd: (kind: PageKind) => void 
     <>
       <HoverCard
         title="Add page"
-        description="A new infographic, article or slide page after the last."
+        description="A new infographic, article, slide or logo page after the last."
       >
         <button
           ref={button}

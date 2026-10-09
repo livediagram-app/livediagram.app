@@ -14,6 +14,7 @@
 // grouping by `group` under the CATEGORY_BANDS headings.
 
 import dynamic from 'next/dynamic';
+import { PaletteLogoTab } from './PaletteLogoTab';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { PaletteMyShapesTab } from './PaletteMyShapesTab';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
@@ -148,6 +149,8 @@ export function paletteCategoryTabs(
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
         return <PaletteDrawTab {...tab} tiles={tiles} />;
+      case 'logo':
+        return <PaletteLogoTab {...tab} tiles={tiles} />;
       case 'devices':
         return <DevicePickerTab {...tab} tiles={tiles} />;
       case 'event-storming':

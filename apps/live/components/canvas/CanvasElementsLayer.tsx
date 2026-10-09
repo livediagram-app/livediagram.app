@@ -729,6 +729,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onAppendWebRow,
             }}
             onBeginDrag={onBeginDrag}
+            pages={props.illustratePages?.pages}
           />
         </SelectionGripsLayer>
       </SelectionGripsContext.Provider>

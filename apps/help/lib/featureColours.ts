@@ -32,6 +32,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'plan-tour': '#0284c7',
   illustrate: '#e11d48',
   'infographic-layouts': '#db2777',
+  'logo-pages': '#0891b2',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',
   'using-tabs': '#3b82f6',

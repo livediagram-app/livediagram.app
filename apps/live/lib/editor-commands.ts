@@ -8,6 +8,7 @@
 // context menu / toolbar / header calls), so behaviour + telemetry can't
 // drift between entry points.
 
+import type { CombineOp } from './combine/combine';
 import {
   AUTO_LAYOUT_CHOICES,
   AUTO_LAYOUT_STYLE_IDS,
@@ -40,6 +41,11 @@ export type CommandContext = {
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
+  // True when the selection is combinable shapes on one logo page
+  // (docs/specs/007-editor/logo-pages.md "Combine"). Gates the four Combine commands.
+  canCombine?: boolean;
+  // True when the selection has an element on a logo page to reflect (Mirror Copy).
+  canMirrorCopy?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation
@@ -89,6 +95,8 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
+  combine: (op: CombineOp) => void;
+  mirrorCopy: () => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;

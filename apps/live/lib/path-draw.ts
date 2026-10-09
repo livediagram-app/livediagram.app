@@ -3,6 +3,7 @@
 // key events into these steps; nothing here touches the DOM or the document.
 import {
   constrain45,
+  isCompoundPath,
   pathWorldAnchors,
   reversePath,
   type Element,
@@ -154,14 +155,17 @@ export function rubberBand(
   return { p0, c1: last.handleOut ?? p0, c2: p3, p3 };
 }
 
-/** Where a press can pick an open path up again: both ends of each open, unlocked, reachable path. */
+/** Where a press can pick an open path up again: both ends of each open, unlocked, reachable path
+ *  of one line (a path of several, a merged mirrored line, moves and restyles as a whole: its
+ *  points are not edited one by one, docs/specs/007-editor/logo-pages.md "Mirror"). */
 export function openPathEnds(
   elements: readonly Element[],
   inertIds: ReadonlySet<string>,
 ): PathEnd[] {
   const ends: PathEnd[] = [];
   for (const el of elements) {
-    if (el.type !== 'path' || el.closed || el.locked || inertIds.has(el.id)) continue;
+    if (el.type !== 'path' || el.closed || el.locked || isCompoundPath(el) || inertIds.has(el.id))
+      continue;
     const anchors = pathWorldAnchors(el);
     const first = anchors[0];
     const last = anchors[anchors.length - 1];
