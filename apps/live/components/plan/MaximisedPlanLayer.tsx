@@ -63,8 +63,19 @@ export function CanvasCover({
     announceHeaderBand();
     return announceHeaderBand;
   }, [banded]);
+  // The palette moves to the header's right end, before its controls (plan-board.md "The header holds the top row"):
+  // set on the canvas the strip sits in, so the strip itself never re-renders for it.
+  const coverRef = useRef<HTMLDivElement>(null);
+  const stripEnd = band?.stripEnd ?? null;
+  useLayoutEffect(() => {
+    const main = coverRef.current?.parentElement;
+    if (!main || stripEnd === null) return;
+    setStripEnd(main, stripEnd);
+    return () => clearStripEnd(main);
+  }, [stripEnd]);
   return (
     <div
+      ref={coverRef}
       data-canvas-cover=""
       className={`absolute inset-0 ${CANVAS_LAYER_Z}`}
       // An opaque backdrop: the canvas's own background (colour and pattern, from the canvas `main` it sits in), so
@@ -90,6 +101,20 @@ export function CanvasCover({
       </div>
     </div>
   );
+}
+
+// The strip's place in a header band, as the properties its root reads (ToolbarPalette): pressed to the right,
+// `stripEnd` screen px from the canvas's right edge, written in the strip's own px (its UI scale zooms it).
+export function setStripEnd(main: HTMLElement, stripEnd: number): void {
+  const strip = main.querySelector<HTMLElement>('[data-toolbar-palette]');
+  const zoom = strip ? parseFloat(getComputedStyle(strip).zoom) || 1 : 1;
+  main.style.setProperty('--plan-strip-align', 'flex-end');
+  main.style.setProperty('--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
+}
+
+export function clearStripEnd(main: HTMLElement): void {
+  main.style.removeProperty('--plan-strip-align');
+  main.style.removeProperty('--plan-strip-end');
 }
 
 // The header band as the CSS properties a maximised element's header reads (PLAN_BAND_*).

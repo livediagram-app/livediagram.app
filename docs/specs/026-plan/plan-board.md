@@ -508,11 +508,13 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - **The header holds the top row**: maximised (or filling its tab), a board, view or Sheet does not start below the
   Toolbar layout's top row; it starts at the top of the canvas area, and its header grows to that row's height
   (`HeaderBand`), so the menu button, the mode menu and the palette toolbar float inside the header instead of over
-  a strip of canvas above it. The header's own content keeps clear of them: its title, count and widgets start after
-  the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when narrow), and
-  its controls (the view's own, Maximise or Restore, the cog) sit at its right end beyond the palette. It is laid out
-  this way only when there is room: at least 140 px between the mode menu and the palette, and 280 px between the
-  palette and the element's right edge (a desktop or a wide tablet). Otherwise (a phone, where the menu sits in the
+  a strip of canvas above it. The palette leaves the centre for the header's right end, 12 px before its controls,
+  so the middle of the header is the title's and widgets'. Its controls (the view's own, Maximise or Restore, the cog,
+  the ⋯ menu) sit together in a rounded card at its right end, matching the menu box at the left: the element's
+  surface, its border and a soft shadow. The header's own content keeps clear of them: its title, count and widgets
+  start after the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when
+  narrow). It is laid out this way only when there is room: at least 140 px between the mode menu and the palette
+  with the palette at the right (a desktop or a wide tablet). Otherwise (a phone, where the menu sits in the
   palette's strip, or a narrow window) the element starts below the top row as before. The header follows the row
   as it changes (the palette's category switching its width, the window resizing). With no palette in the row (it is
   hidden, below, or the person may not edit) the header holds the menu alone, its content running on to its controls.

@@ -219,15 +219,24 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   `transitionend` on chrome, a window `resize`, or a child-list change under the canvas that adds or removes chrome
   (`touchesChrome`; the set is re-observed only when it differs; the strip's children are observed too, as its card
   changes width with the category). No key or press listener.
-  The hook returns `CanvasLayout = { insets, band }`. `headerBand(canvas, insets, menu, strip, nameWidth)` (the strip
-  measured as the union of `[data-toolbar-palette]`'s children, its root running the canvas width; `nameWidth` the
-  width of the menu box's `[data-menu-name-slot]`, `MENU_NAME_SLOT_SELECTOR`) returns `HeaderBand { height,
-left, mid }` in px from the element's box (inside the cover's `COVER_PAD_PX` 12) when the menu (and strip) are in the
-  top half, the canvas is at least `BAND_CANVAS_MIN_PX` 640 wide, the menu ends before the strip, and there are at least
-  `BAND_MID_MIN_PX` 140 between them (less `BAND_GAP_PX` 12 each side) and `BAND_RIGHT_MIN_PX` 280 after the strip; the
-  insets' top is then 0. The room is judged from the menu's right less `nameWidth`, `left` and `mid` from the menu box as
-  it is (`mid` floored at 0). With no strip (hidden or absent) it needs `BAND_MID_MIN_PX + BAND_RIGHT_MIN_PX` after the
-  menu, and `mid` runs to the element's right edge.
+  The hook returns `CanvasLayout = { insets, band }`. `headerBand(canvas, insets, menu, strip, nameWidth, endWidth)`
+  (the strip measured as the union of `[data-toolbar-palette]`'s children, only its width and height used; `nameWidth`
+  the menu box's `[data-menu-name-slot]`, `MENU_NAME_SLOT_SELECTOR`; `endWidth` the covering element's controls card,
+  `BAND_CONTROLS_SELECTOR` `[data-canvas-cover] [data-band-controls]`, `offsetWidth` plus its header's right padding,
+  `BAND_RIGHT_MIN_PX` 280 until measured) returns `HeaderBand { height, left, mid, stripEnd }` in px from the element's
+  box (inside the cover's `COVER_PAD_PX` 12) when the menu (and strip) are in the top half, the canvas is at least
+  `BAND_CANVAS_MIN_PX` 640 wide, the strip does not start before the menu (a phone), and, with the strip's right edge at
+  the element's right less `endWidth` and `BAND_GAP_PX` 12, at least `BAND_MID_MIN_PX` 140 is left between the menu
+  (judged without the name) and the strip, less `BAND_GAP_PX` each side; `mid` runs from the menu box as it is to the
+  strip (floored at 0), `stripEnd` is the strip's right edge from the canvas's right edge, and the insets' top is 0. Its
+  room never reads where the strip is now, so moving it cannot take the band away. `CanvasCover` sets
+  `--plan-strip-align: flex-end` and `--plan-strip-end` (`setStripEnd`: `stripEnd` over the strip's computed `zoom`) on
+  the canvas `main` it is portalled into while it has a band (`clearStripEnd` on going); `ToolbarPalette`'s root reads
+  them as `align-items` and `padding-right` (centre and 0 otherwise). `useCanvasLayerInsets` observes the controls card
+  too. **The controls card** (`apps/live/components/plan/band-controls.ts`): `BAND_CONTROLS_CLASS`
+  (`[[data-header-band]_&]:` rounded-xl, border, p-1, shadow-md) and `bandControlsProps(palette)` (`data-band-controls`,
+  `--band-card-bg` the palette's surface, `--band-card-line` its border) on `PlanBoardHeader`'s trailing group,
+  `SheetHeader`'s controls and `ViewFrame`'s aside.
   **The name in the menu box** (`apps/live/components/plan/menu-name-slot.tsx`): `ToolbarExplorerButton` (not inline,
   not a phone) renders `MenuNameSlot` (`data-menu-name-slot`, `max-w-[16rem]`, a hairline, `empty:hidden`), its node a
   module store (`setMenuNameSlot`, `useMenuNameSlot`). `CanvasCover` calls `announceHeaderBand()` when its band comes or

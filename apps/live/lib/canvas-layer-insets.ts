@@ -74,14 +74,15 @@ export function layerInsets(
 // top row leaves room beside it, the element starts at the canvas's top and its header grows to the row's height, the
 // menu and the palette strip floating inside it. In px from the element's box (inside the cover's padding): the
 // header's height, where its content starts (after the menu), and how wide that content may run (to the strip).
-export type HeaderBand = { height: number; left: number; mid: number };
+// `stripEnd`: how far the strip's right edge sits from the canvas's right edge, in screen px (the strip moves there).
+export type HeaderBand = { height: number; left: number; mid: number; stripEnd: number };
 
 // The cover's padding around the element on a desktop (CanvasCover's sm:p-3); a band is only laid out that wide.
 export const COVER_PAD_PX = 12;
 // The room the header's content keeps from the menu and the strip.
 export const BAND_GAP_PX = 12;
-// The least room the band needs: for a title (its widgets truncating) between the menu and the strip, and for the header's own
-// controls (a Gantt's scale and window, Restore, the cog) between the strip and the element's right edge.
+// The least room the band needs for a title (its widgets truncating) between the menu and the strip; and the room the
+// header's own controls (a Gantt's scale and window, Restore, the cog) are given before they are measured.
 export const BAND_MID_MIN_PX = 140;
 export const BAND_RIGHT_MIN_PX = 280;
 // Below this canvas width the cover's padding is a phone's (p-2) and the strip holds the menu: no band.
@@ -89,35 +90,38 @@ export const BAND_CANVAS_MIN_PX = 640;
 
 // The band for `canvas` with the menu and strip where they are, given the element's side insets; null when the menu
 // is missing, the menu or strip is not in the top row, or they leave too little room (the element then starts below
-// the row). No strip (the palette hidden or absent): the header holds the menu alone, its content running on to its
-// controls. `nameWidth` is the element's name riding in the menu box (docs/specs/026-plan/plan-board.md "The name
-// rides in the menu box"): the room is judged from the box without it, so the name coming or going never takes the
-// band away, while the content still starts after the box as it is.
+// the row). The strip moves to the header's right end, BAND_GAP_PX before the element's controls (`endWidth`: the
+// controls card and the header's right padding, BAND_RIGHT_MIN_PX until measured), so only its width and height count,
+// never where it is now: moving it cannot take the band away. No strip (the palette hidden or absent): the header holds
+// the menu alone. `nameWidth` is the element's name riding in the menu box (docs/specs/026-plan/plan-board.md "The
+// name rides in the menu box"): the room is judged from the box without it, so the name coming or going never takes
+// the band away, while the content still starts after the box as it is.
 export function headerBand(
   canvas: Box,
   insets: Pick<LayerInsets, 'left' | 'right'>,
   menu: Box | null,
   strip: Box | null,
   nameWidth = 0,
+  endWidth = BAND_RIGHT_MIN_PX,
 ): HeaderBand | null {
   if (!menu || canvas.right - canvas.left < BAND_CANVAS_MIN_PX) return null;
   const half = canvas.top + (canvas.bottom - canvas.top) / 2;
   const baseRight = menu.right - Math.max(0, nameWidth);
-  if (menu.top > half || (strip && (strip.top > half || baseRight > strip.left))) return null;
+  // A strip starting before the menu ends holds the menu (a phone).
+  if (menu.top > half || (strip && (strip.top > half || strip.left < menu.left))) return null;
   const left = canvas.left + insets.left + COVER_PAD_PX;
   const right = canvas.right - insets.right - COVER_PAD_PX;
   const top = canvas.top + COVER_PAD_PX;
   if (menu.left < left) return null;
-  if (strip) {
-    const room = strip.left - baseRight - 2 * BAND_GAP_PX;
-    if (room < BAND_MID_MIN_PX || right - strip.right - BAND_GAP_PX < BAND_RIGHT_MIN_PX)
-      return null;
-  } else if (right - baseRight - BAND_GAP_PX < BAND_MID_MIN_PX + BAND_RIGHT_MIN_PX) return null;
-  const end = strip ? strip.left - BAND_GAP_PX : right;
+  // Where the strip's right edge goes, and its left edge then.
+  const stripRight = right - Math.max(0, endWidth) - BAND_GAP_PX;
+  const end = strip ? stripRight - (strip.right - strip.left) : stripRight;
+  if (end - baseRight - 2 * BAND_GAP_PX < BAND_MID_MIN_PX) return null;
   return {
     height: Math.round(Math.max(menu.bottom, strip?.bottom ?? menu.bottom) - top),
     left: Math.round(menu.right - left + BAND_GAP_PX),
-    mid: Math.max(0, Math.round(end - menu.right - BAND_GAP_PX)),
+    mid: Math.max(0, Math.round(end - BAND_GAP_PX - menu.right - BAND_GAP_PX)),
+    stripEnd: Math.round(canvas.right - stripRight),
   };
 }
 
@@ -129,6 +133,8 @@ export const NO_LAYOUT: CanvasLayout = { insets: NO_INSETS, band: null };
 const STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
 // The menu box's slot for the element's name (MenuNameSlot).
 export const MENU_NAME_SLOT_SELECTOR = '[data-menu-name-slot]';
+// A covering element's header controls (band-controls.ts), the only ones measured.
+export const BAND_CONTROLS_SELECTOR = '[data-canvas-cover] [data-band-controls]';
 
 // The box round what `el` holds (its children that take up room), or null when it holds nothing shown.
 function unionOfChildren(el: HTMLElement): Box | null {
@@ -172,7 +178,23 @@ export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
   const nameWidth = name ? name.getBoundingClientRect().width : 0;
   // The strip's root runs the canvas's width to centre it: the strip is what it holds (on a phone, the menu too).
   const strip = shown(STRIP_SELECTOR);
-  const band = headerBand(area, insets, menu, strip ? unionOfChildren(strip) : null, nameWidth);
+  // The covering element's controls card (BAND_CONTROLS_SELECTOR) and its header's right padding: what the strip stops
+  // short of. offsetWidth, so a maximise's grow (a transform) does not shrink it.
+  const controls = canvas.querySelector<HTMLElement>(BAND_CONTROLS_SELECTOR);
+  const endWidth = controls
+    ? controls.offsetWidth +
+      (controls.parentElement
+        ? parseFloat(getComputedStyle(controls.parentElement).paddingRight) || 0
+        : 0)
+    : BAND_RIGHT_MIN_PX;
+  const band = headerBand(
+    area,
+    insets,
+    menu,
+    strip ? unionOfChildren(strip) : null,
+    nameWidth,
+    endWidth,
+  );
   return { insets: band ? { ...insets, top: 0 } : insets, band };
 }
 
@@ -184,7 +206,8 @@ export function sameLayout(a: CanvasLayout, b: CanvasLayout): boolean {
         !!b.band &&
         a.band.height === b.band.height &&
         a.band.left === b.band.left &&
-        a.band.mid === b.band.mid))
+        a.band.mid === b.band.mid &&
+        a.band.stripEnd === b.band.stripEnd))
   );
 }
 

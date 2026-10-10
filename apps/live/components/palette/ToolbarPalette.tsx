@@ -340,8 +340,14 @@ export function ToolbarPalette(props: Props) {
       // clicks through; the card and the popover take them.
       // Zoomed at the root, which still spans the canvas, so the card stays
       // centred; `top` is restated so the strip keeps its 12px from the top.
-      style={scale === 1 ? undefined : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }}
-      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] flex-col items-center [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
+      // In a maximised element's header band the strip moves to the header's right end (CanvasCover's setStripEnd
+      // sets the two properties on the canvas; centred otherwise, docs/specs/026-plan/plan-board.md).
+      style={{
+        ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
+        alignItems: 'var(--plan-strip-align, center)',
+        paddingRight: 'var(--plan-strip-end, 0px)',
+      }}
+      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();

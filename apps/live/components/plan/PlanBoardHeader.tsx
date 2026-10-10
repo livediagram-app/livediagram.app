@@ -23,6 +23,7 @@ import { BoardTitle } from './BoardTitle';
 import { InMenuBox } from './menu-name-slot';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
+import { BAND_CONTROLS_CLASS, bandControlsProps } from './band-controls';
 
 // The shared six-dot grip (the article zone bar's), a board's move handle.
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -180,7 +181,11 @@ export function PlanBoardHeader({
           />
         </div>
       </div>
-      <div className="ml-auto flex shrink-0 items-center gap-3">
+      {/* In a header band, a card like the menu box (band-controls.ts). */}
+      <div
+        {...bandControlsProps(palette)}
+        className={`ml-auto flex shrink-0 items-center gap-3 ${BAND_CONTROLS_CLASS}`}
+      >
         {loadFailed || (setup.hideWriting && canEdit) ? (
           <div className="flex shrink-0 items-center gap-2" onPointerDown={stop}>
             {loadFailed ? (

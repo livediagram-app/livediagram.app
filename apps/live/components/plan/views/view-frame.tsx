@@ -9,6 +9,7 @@ import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
 import { CountBadge, Tooltip } from '@livediagram/ui';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
+import { BAND_CONTROLS_CLASS, bandControlsProps } from '../band-controls';
 
 // The phase colours, the same on either surface: they read as status, not as theme.
 export const PHASE_COLOURS = {
@@ -117,7 +118,11 @@ export function ViewFrame({
           ) : null}
         </span>
         {aside || end ? (
-          <span className="ml-auto flex shrink-0 items-center gap-1">
+          // In a header band, a card like the menu box (band-controls.ts).
+          <span
+            {...bandControlsProps(palette)}
+            className={`ml-auto flex shrink-0 items-center gap-1 ${BAND_CONTROLS_CLASS}`}
+          >
             {aside}
             {end}
           </span>

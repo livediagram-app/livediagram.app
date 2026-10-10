@@ -17,6 +17,7 @@ import { FocusElementButton } from '@/components/plan/FocusElementButton';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '@/components/plan/menu-name-slot';
 import { track } from '@/lib/telemetry';
 import type { SheetActions } from './useSheetActions';
+import { BAND_CONTROLS_CLASS, bandControlsProps } from '@/components/plan/band-controls';
 
 export const HEADER_PX = 40;
 
@@ -107,7 +108,13 @@ export function SheetHeader({
       />
       <div className="flex-1" />
       {c.interactive ? (
-        <span className="flex items-center gap-1" onPointerDown={stop} onDoubleClick={stop}>
+        // In a header band, a card like the menu box (band-controls.ts).
+        <span
+          {...bandControlsProps(c.palette)}
+          className={`flex items-center gap-1 ${BAND_CONTROLS_CLASS}`}
+          onPointerDown={stop}
+          onDoubleClick={stop}
+        >
           {bounds && !c.maximised ? (
             <FocusElementButton bounds={bounds} kind="Sheet" palette={c.palette} />
           ) : null}
