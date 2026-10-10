@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { searchIcons } from './search';
+import { iconsLike, isIconId, searchIcons } from './search';
 import { matches, paletteRank } from './search-rank';
 
 describe('paletteRank', () => {
@@ -30,5 +30,16 @@ describe('searchIcons', () => {
     expect(all.length).toBeGreaterThan(10);
     expect(searchIcons('qqqqzzzz', 10)).toEqual({ icons: [], more: 0 });
     expect(searchIcons('lambda', 50).icons.some((i) => i.set === 'technology')).toBe(true);
+  });
+});
+
+describe('icon ids', () => {
+  it('knows the catalogues’ ids and suggests icons like one that is not', () => {
+    expect(isIconId('clock')).toBe(true);
+    expect(isIconId('flame')).toBe(false);
+    expect(iconsLike('flame').map((i) => i.id)).toContain('emoji-fire');
+    expect(iconsLike('alarm-clock', 2)).toHaveLength(2);
+    expect(iconsLike('---')).toEqual([]);
+    expect(iconsLike('qqqqzz')).toEqual([]);
   });
 });

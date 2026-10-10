@@ -47,10 +47,16 @@ describe('the pages view', () => {
       'tab tab-deck "Deck" · 1 element: 1 box · illustrate 4 pages: 1 slide, 1 logo, 2 article (view pages) · rev 7',
     );
     expect(lines[1]).toBe(
-      `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element: aaaa1111`,
+      `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
     );
-    expect(lines[2]).toMatch(/^page 2 page-logo · logo 1024 x 1024 · at .* · locked · empty$/);
-    expect(lines[3]).toMatch(/^page 3 page-art1 · article A4 · at .* · article art-1 · empty$/);
+    expect(lines[2]).toBe('  square aaaa1111');
+    expect(lines[1]).toBe(
+      `page 1 "Cover" page-cover · slide Slide (16:9) · at ${cover.x},${cover.y} 1920x1080 · 1 element`,
+    );
+    expect(lines[3]).toMatch(/^page 2 page-logo · logo 1024 x 1024 · at .* · locked · empty$/);
+    expect(lines[4]).toMatch(
+      /^page 3 page-art1 · article A4 · at .* · article art-1 · its writing below$/,
+    );
     expect(out.text).toContain(
       'article art-1 "Brief" · pages 3-4 · 3 blocks · 4 words · look report',
     );

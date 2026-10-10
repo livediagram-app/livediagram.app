@@ -990,6 +990,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates

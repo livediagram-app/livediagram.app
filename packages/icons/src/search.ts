@@ -44,3 +44,32 @@ export function searchIcons(query: string, limit: number): { icons: IconHit[]; m
     more: Math.max(0, ranked.length - limit),
   };
 }
+
+const KNOWN = new Set(CATALOGUE.map((i) => i.id));
+
+/** Whether an id names an icon of the line-art or Technology catalogues. */
+export function isIconId(id: string): boolean {
+  return KNOWN.has(id);
+}
+
+/** Icons like an id that is not one (`flame` → fire, `book-open` → book, ...): the id read as words,
+ *  then each word on its own, best first. For a refusal that teaches the next try. */
+export function iconsLike(id: string, limit = 6): IconHit[] {
+  const words = id
+    .toLowerCase()
+    .replace(/[-_.]+/g, ' ')
+    .trim()
+    .slice(0, ICON_QUERY_MAX);
+  if (!words) return [];
+  const seen = new Set<string>();
+  const out: IconHit[] = [];
+  for (const query of [words, ...words.split(' ').filter((w) => w.length > 2)]) {
+    for (const hit of searchIcons(query, limit).icons) {
+      if (seen.has(hit.id)) continue;
+      seen.add(hit.id);
+      out.push(hit);
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
+}

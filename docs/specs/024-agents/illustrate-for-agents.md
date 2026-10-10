@@ -35,8 +35,10 @@ The interface's words are kept: an agent writes an **article**, never a "documen
 ## Which tab
 
 - Both tools take an optional `tabId`. Absent, they act on the document's first tab in Illustrate mode
-  (`opensIn: 'illustrate'`), else its first tab.
-- A tab not in Illustrate mode is switched into it by the same edit, as the editor's mode switch does
+  (`opensIn: 'illustrate'`), else its first tab when that tab is empty (switching it loses nothing: a document
+  just made for pages). A document with neither is refused (`tab_needed`), saying to name a tab (which switches
+  it) or to `add_tab` with template `blank-illustration`: a diagram is never switched into Illustrate unasked.
+- A tab named that is not in Illustrate mode is switched into it by the same edit, as the editor's mode switch does
   (`withEditorModeSwitched`: content past the first page is put onto a page of its own). The answer says
   "Switched the tab to Illustrate".
 - An Event Storming tab is refused (`tab_kind`): it never changes mode.

@@ -15,6 +15,8 @@ import { articleGet, articleSet, pageLs, pageSet } from './illustrate';
 const ONE = 'tab-one-0000';
 const TWO = 'tab-two-0000';
 const tabPath = (id: string) => `/documents/${DOC_A}/tabs/${id}`;
+// A diagram with something on it: never switched unasked.
+const DRAWN = [{ id: 'box', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }];
 
 const ANSWER: IllustrateAnswer = {
   tab: { id: ONE, rev: 5 },
@@ -90,8 +92,19 @@ describe('which tab', () => {
     expect(await illustrateTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
   });
 
+  it('takes an empty first tab, a document just made for pages', async () => {
+    const { api } = setUp({
+      [TWO]: { id: TWO, elements: DRAWN },
+      [ONE]: { id: ONE, elements: [] },
+    });
+    expect(await illustrateTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
+  });
+
   it('refuses rather than switching a diagram unasked, in each door’s words', async () => {
-    const { api } = setUp({ [TWO]: { id: TWO, elements: [] }, [ONE]: { id: ONE, elements: [] } });
+    const { api } = setUp({
+      [TWO]: { id: TWO, elements: [] },
+      [ONE]: { id: ONE, elements: DRAWN },
+    });
     const mcp = await illustrateTabOf(api, DOC_A, undefined, 'mcp');
     expect(mcp).toMatchObject({ ok: false, code: 'tab_needed' });
     expect((mcp as { message: string }).message).toContain('add_tab');
@@ -179,7 +192,10 @@ describe('page ls and page set', () => {
   });
 
   it('refuses page ls with no Illustrate tab', async () => {
-    const { ctx } = setUp({ [TWO]: { id: TWO, elements: [] }, [ONE]: { id: ONE, elements: [] } });
+    const { ctx } = setUp({
+      [TWO]: { id: TWO, elements: DRAWN },
+      [ONE]: { id: ONE, elements: DRAWN },
+    });
     await expect(pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A }))).rejects.toBeInstanceOf(
       VerbRefusal,
     );

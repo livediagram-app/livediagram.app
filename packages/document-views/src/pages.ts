@@ -23,13 +23,16 @@ import { layoutCatalogueFor } from '@livediagram/templates';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
+import { outlineLine } from './outline';
 import { jsonString } from './text';
+import { depthFirst } from './tree';
 
 export type PagesOptions = { budget?: number; door?: ViewDoor };
 
 const PAGE = { one: 'page line', many: 'page lines' };
 const WRITING = { one: 'line of writing', many: 'lines of writing' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
+const ELEMENT = { one: 'element line', many: 'element lines' };
 
 const KIND_ORDER: readonly PageKind[] = ['infographic', 'slide', 'logo', 'article'];
 
@@ -78,9 +81,13 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
     layouts: layoutCatalogueFor(kind).layouts.map((l) => ({ id: l.id, label: l.label })),
   }));
 
+  // Every element in reading order, so a page's elements print as the outline does.
+  const reading = depthFirst(model.tree.roots);
   const lines: ViewLine[] = [];
   for (const p of pages) {
     const { x, y, width, height } = p.rect;
+    const on = new Set(p.refs);
+    const nodes = reading.filter((node) => on.has(model.refs.refOf(node.el.id)));
     const facts = [
       `${p.kind} ${sizeName(p.size, p.orientation)}`,
       `at ${x},${y} ${width}x${height}`,
@@ -88,13 +95,17 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       ...(p.locked ? ['locked'] : []),
       ...(p.flow ? [`article ${p.flow}`] : []),
       p.refs.length
-        ? `${p.refs.length} element${p.refs.length === 1 ? '' : 's'}: ${p.refs.join(' ')}`
-        : 'empty',
+        ? `${p.refs.length} element${p.refs.length === 1 ? '' : 's'}`
+        : p.flow
+          ? 'its writing below'
+          : 'empty',
     ];
     lines.push({
       text: `page ${p.place}${p.name ? ` ${jsonString(p.name)}` : ''} ${p.id} · ${facts.join(' · ')}`,
       noun: PAGE,
     });
+    // What is on it, one outline line each: the refs and text a layout's sample is replaced by.
+    for (const node of nodes) lines.push({ text: outlineLine(model, node, 1), noun: ELEMENT });
   }
   for (const a of articles) {
     const places =

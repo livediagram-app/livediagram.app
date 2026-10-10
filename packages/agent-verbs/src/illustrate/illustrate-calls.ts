@@ -52,7 +52,8 @@ const refusedBy = (err: unknown): IllustrateRefused => {
 };
 
 /** The tab an Illustrate call acts on: the one named, else the document's first tab in Illustrate
- *  mode. With none, a refusal that says how to get one, so a diagram is never switched unasked. */
+ *  mode, else its first tab when that is empty. With none, a refusal that says how to get one, so a
+ *  diagram is never switched unasked. */
 export async function illustrateTabOf(
   api: ApiClient,
   documentId: string,
@@ -65,10 +66,18 @@ export async function illustrateTabOf(
       return { tabId, tab };
     }
     const { document } = await api.json<DocumentResponse>(documentPath(documentId));
-    for (const summary of document.tabs.filter((t) => !t.outOfScope).slice(0, TAB_SEARCH_MAX)) {
+    let firstEmpty: { tabId: string; tab: Tab } | null = null;
+    const inOrder = document.tabs
+      .filter((t) => !t.outOfScope)
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .slice(0, TAB_SEARCH_MAX);
+    for (const [i, summary] of inOrder.entries()) {
       const { tab } = await api.json<TabResponse>(tabPath(documentId, summary.id));
       if (opensInOf(tab) === 'illustrate') return { tabId: summary.id, tab };
+      if (i === 0 && tab.elements.length === 0) firstEmpty = { tabId: summary.id, tab };
     }
+    // An empty first tab loses nothing by switching: a document just made for pages.
+    if (firstEmpty) return firstEmpty;
   } catch (err) {
     return refusedBy(err);
   }
