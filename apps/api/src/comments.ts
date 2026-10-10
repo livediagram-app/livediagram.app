@@ -41,6 +41,8 @@ export function rewriteCommentAuthors(
   const existingComments = new Map<
     string,
     {
+      text: string;
+      createdAt: number;
       authorName: string;
       authorColor: string;
       authorId?: string;
@@ -53,6 +55,8 @@ export function rewriteCommentAuthors(
     if (!thread?.comments) continue;
     for (const c of thread.comments) {
       existingComments.set(c.id, {
+        text: c.text,
+        createdAt: c.createdAt,
         authorName: c.authorName,
         authorColor: c.authorColor,
         authorId: c.authorId,
@@ -80,10 +84,14 @@ export function rewriteCommentAuthors(
         // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
         // someone else's mention after it was sent.
         const claimed = prior.authorId === undefined && c.authorId === writer.id;
+        // The words and the time lock the same way for anyone but the comment's author: an
+        // edit-role writer may delete someone else's comment, never put words in their mouth.
+        const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
         // The token id locks the same way (agent-presence I7): only the server stamps it.
         const { mentions: _sent, tokenId: _token, ...body } = c;
         return {
           ...body,
+          ...(own ? {} : { text: prior.text, createdAt: prior.createdAt }),
           authorName: prior.authorName,
           authorColor: prior.authorColor,
           authorId: claimed ? writer.id : prior.authorId,

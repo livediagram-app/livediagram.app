@@ -142,6 +142,36 @@ describe('rewriteCommentAuthors', () => {
     const [out] = rewriteCommentAuthors([next], [prev], writer) as [ShapeElement];
     expect(out.commentThread!.comments[0]!.authorId).toBe('owner-1');
   });
+
+  it("keeps the stored text and time of someone else's comment, whatever the body says", () => {
+    const prev = mkShape('a', [mkComment('c1', 'Orig', '#10b981', 'I agree', 'owner-1')]);
+    const forged = { ...mkComment('c1', 'Orig', '#10b981', 'I resign', 'owner-1'), createdAt: 99 };
+    const [out] = rewriteCommentAuthors([mkShape('a', [forged])], [prev], writer) as [ShapeElement];
+    expect(out.commentThread!.comments[0]).toMatchObject({ text: 'I agree', createdAt: 1 });
+    // An unattributed (room-credited) comment is locked the same way.
+    const unclaimed = mkShape('a', [mkComment('c2', 'Bea', '#f00', 'hello')]);
+    const [kept] = rewriteCommentAuthors(
+      [mkShape('a', [mkComment('c2', 'Bea', '#f00', 'goodbye')])],
+      [unclaimed],
+      writer,
+    ) as [ShapeElement];
+    expect(kept.commentThread!.comments[0]!.text).toBe('hello');
+  });
+
+  it("lets the writer's own comment carry the text their save sends", () => {
+    const prev = mkShape('a', [mkComment('c1', 'Me', '#000', 'draft', 'writer-id')]);
+    const next = mkShape('a', [mkComment('c1', 'Me', '#000', 'final', 'writer-id')]);
+    const [out] = rewriteCommentAuthors([next], [prev], writer) as [ShapeElement];
+    expect(out.commentThread!.comments[0]!.text).toBe('final');
+    // The claim of a room-credited comment is the author's own save too.
+    const unclaimed = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed')]);
+    const claim = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed!', 'writer-id')]);
+    const [claimed] = rewriteCommentAuthors([claim], [unclaimed], writer) as [ShapeElement];
+    expect(claimed.commentThread!.comments[0]).toMatchObject({
+      text: 'typed!',
+      authorId: 'writer-id',
+    });
+  });
 });
 
 describe('findCommentHost', () => {
