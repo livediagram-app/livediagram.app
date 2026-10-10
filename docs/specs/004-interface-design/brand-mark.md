@@ -57,9 +57,36 @@ wordmark in email follows the same split: `live` in brand blue, `diagram` in ink
 
 ## Size and motion
 
-The mark sits a size up from the wordmark text (28px beside the 18px header wordmark, 20px beside 16px), since a solid cube reads smaller than a line icon in the same box.
+The mark sits a size up from the wordmark text, since a solid cube reads smaller than a line icon
+in the same box, with a small gap between them:
 
-Hovering or keyboard-focusing a linked logo opens the prism: the faces drift apart along the cube's own axes (the lid up, the sides out on the isometric diagonals, the bottom fold down) over the micro duration, so the glass layers separate and their blended overlaps shift, then settle back when the pointer leaves. The faces may drift past the mark's box; nothing clips them. Reduced motion holds the cube still.
+| Size | Where                     | Mark | Wordmark | Gap  |
+| ---- | ------------------------- | ---- | -------- | ---- |
+| `sm` | The marketing hero's mock | 20px | 16px     | 8px  |
+| `md` | Site and editor headers   | 28px | 18px     | 10px |
+| `lg` | The site footer           | 40px | 24px     | 12px |
+
+Pointing at the logo, or reaching it by keyboard, opens and turns the prism in 3D:
+
+- The faces drift apart along the cube's axes (the lid up, the sides out, the bottom fold down)
+  over 700ms, easing out.
+- The open box turns slowly about its vertical axis, 60 degrees a second, easing up to pace, for
+  as long as the pointer stays. Each side's shading follows it round: a face turning from the
+  right to the left of the box crossfades from the rear-right to the front-left gradient.
+- On leaving, it closes and settles on the nearest quarter turn (the box looks the same every
+  quarter) over 450ms, carrying its spin into a small follow-through.
+- The wordmark's letters gleam once, left to right, over 900ms each time the pointer arrives
+  (white over light-mode ink, sky-300 over dark mode's near-white). Leaving early lets it finish.
+- Touch has no hover, so a tap never starts it. Reduced motion holds the mark and the wordmark
+  still.
+
+Its pace is listed in [Motion](./motion.md) beside the other hover stories.
+
+## Links
+
+The header and footer logos link to the homepage. A logo link to the page already open (the footer
+on the homepage, either logo there) scrolls back to the top, smoothly unless reduced motion is on,
+rather than reloading. A modified click (new tab or window) keeps the browser's behaviour.
 
 ## One source
 

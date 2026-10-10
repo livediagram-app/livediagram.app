@@ -12,6 +12,12 @@ const labels = [...footerNav.matchAll(/<a [^>]*>(?:<svg[\s\S]*?<\/svg>)?([^<]+)<
 );
 
 describe('SiteFooter', () => {
+  it('opens with the large logo, linking home', () => {
+    const brand = html.slice(0, html.indexOf('aria-label="Footer"'));
+    expect(brand).toMatch(/<a href="\/" class="[^"]*gap-3 text-2xl/);
+    expect(brand).toContain('size-10');
+  });
+
   it('links the security policy and third-party licences among the legal links', () => {
     expect(labels.slice(labels.indexOf('Terms'))).toEqual([
       'Terms',

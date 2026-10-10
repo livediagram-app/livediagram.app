@@ -1,4 +1,6 @@
-import { Fragment, useId, useMemo } from 'react';
+'use client';
+
+import { useId, useMemo, useRef, useState } from 'react';
 import {
   BRAND_DETAIL,
   BRAND_FACES,
@@ -8,8 +10,11 @@ import {
   type BrandMarkVariant,
 } from './brand-mark-geometry';
 import { prismPalette } from './brand-prism';
+import { prismFrame } from './brand-prism-motion';
+import { useBrandShimmer } from './useBrandShimmer';
+import { useBrandSpin, type BrandSpinTargets } from './useBrandSpin';
 
-type BrandSize = 'sm' | 'md';
+type BrandSize = 'sm' | 'md' | 'lg';
 
 type BrandProps = {
   href?: string;
@@ -26,9 +31,11 @@ type BrandProps = {
   wordmarkClassName?: string;
 };
 
+// Type size, and the gap between the mark and the wordmark at that size.
 const sizeClasses: Record<BrandSize, string> = {
-  sm: 'text-base font-semibold tracking-tight',
-  md: 'text-lg font-semibold tracking-tight',
+  sm: 'gap-2 text-base font-semibold tracking-tight',
+  md: 'gap-2.5 text-lg font-semibold tracking-tight',
+  lg: 'gap-3 text-2xl font-semibold tracking-tight',
 };
 
 // The cube is a solid, so it reads smaller than a line icon at the same box;
@@ -36,7 +43,33 @@ const sizeClasses: Record<BrandSize, string> = {
 const markClasses: Record<BrandSize, string> = {
   sm: 'size-5',
   md: 'size-7',
+  lg: 'size-10',
 };
+
+// The wordmark's one-off gleam: a highlight band clipped to the letters, white
+// over light-mode ink, sky-300 over dark mode's near-white (white would vanish).
+const SHIMMER_CLASS =
+  'pointer-events-none absolute inset-0 bg-clip-text text-transparent opacity-0 [--ldm-shine:rgba(255,255,255,0.9)] dark:[--ldm-shine:#7dd3fc]';
+const SHIMMER_STYLE: React.CSSProperties = {
+  backgroundImage:
+    'linear-gradient(105deg, transparent 38%, var(--ldm-shine) 50%, transparent 62%)',
+  backgroundSize: '300% 100%',
+  backgroundPosition: '100% 0',
+};
+
+// A logo link to the page already open scrolls back to its top instead of
+// reloading (the footer's on the homepage, the header's anywhere). Modified
+// clicks (new tab, new window) keep the browser's own behaviour.
+function scrollTopIfHere(e: React.MouseEvent<HTMLAnchorElement>) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+    return;
+  const target = new URL(e.currentTarget.href, window.location.href);
+  if (target.origin !== window.location.origin || target.pathname !== window.location.pathname)
+    return;
+  e.preventDefault();
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+}
 
 const COLOUR_TRANSITION = 'color var(--transition-duration-micro) ease-out';
 
@@ -47,14 +80,36 @@ export function Brand({
   accentColor,
   wordmarkClassName = '',
 }: BrandProps) {
+  // Pointing at the logo (or reaching it by keyboard) opens and turns the prism.
+  // Each start also counts a hover, which runs the wordmark's gleam once.
+  const [spinning, setSpinning] = useState(false);
+  const [hovers, setHovers] = useState(0);
+  const shimmer = useRef<HTMLSpanElement>(null);
+  useBrandShimmer(hovers, shimmer);
+  const start = () => {
+    if (spinning) return;
+    setSpinning(true);
+    setHovers((n) => n + 1);
+  };
+  const spinHandlers = {
+    onPointerEnter: (e: React.PointerEvent) => e.pointerType !== 'touch' && start(),
+    onPointerLeave: () => setSpinning(false),
+    onFocus: (e: React.FocusEvent<HTMLElement>) =>
+      e.currentTarget.matches(':focus-visible') && start(),
+    onBlur: () => setSpinning(false),
+  };
   const classes =
-    `group inline-flex items-center gap-2 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
+    `inline-flex items-center ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
   const content = (
     <>
-      <BrandMark className={`${markClasses[size]} shrink-0`} accentColor={accentColor} />
+      <BrandMark
+        className={`${markClasses[size]} shrink-0`}
+        accentColor={accentColor}
+        spinning={spinning}
+      />
       {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
           contrast audits skip it by this mark. */}
-      <span className={wordmarkClassName} data-logotype="">
+      <span className={`relative ${wordmarkClassName}`.trim()} data-logotype="">
         <span
           className={accentColor ? '' : 'text-brand-600 dark:text-sky-400'}
           style={
@@ -66,18 +121,25 @@ export function Brand({
           live
         </span>
         diagram
+        <span ref={shimmer} aria-hidden="true" className={SHIMMER_CLASS} style={SHIMMER_STYLE}>
+          <span>live</span>diagram
+        </span>
       </span>
     </>
   );
 
   if (href) {
     return (
-      <a href={href} className={classes}>
+      <a href={href} className={classes} onClick={scrollTopIfHere} {...spinHandlers}>
         {content}
       </a>
     );
   }
-  return <span className={classes}>{content}</span>;
+  return (
+    <span className={classes} {...spinHandlers}>
+      {content}
+    </span>
+  );
 }
 
 // Each stop carries its light and dark colour as custom properties and picks
@@ -85,63 +147,52 @@ export function Brand({
 const STOP_CLASS =
   '[stop-color:var(--ldm-l)] dark:[stop-color:var(--ldm-d)] transition-[stop-color] duration-micro ease-out motion-reduce:transition-none';
 const BLEND_CLASS = 'mix-blend-multiply dark:mix-blend-screen';
-// Hovering or focusing a linked logo opens the prism: the faces drift apart
-// along the cube's own axes (the lid up, the sides out on the 30 degree
-// isometric diagonals, the bottom fold down), so the glass layers separate and
-// their blended overlaps shift, then settle back. Transform only, so it stays
-// on the compositor; reduced motion holds the cube still.
-const FACE_MOTION = 'transition-transform duration-micro ease-out motion-reduce:transition-none';
-const FACE_HOVER: Record<BrandFace['key'], string> = {
-  top: `${FACE_MOTION} group-hover:[transform:translateY(-16px)] group-focus-visible:[transform:translateY(-16px)]`,
-  rearRight: `${FACE_MOTION} group-hover:[transform:translate(9px,5px)] group-focus-visible:[transform:translate(9px,5px)]`,
-  left: `${FACE_MOTION} group-hover:[transform:translate(-9px,5px)] group-focus-visible:[transform:translate(-9px,5px)]`,
-  bottom: `${FACE_MOTION} group-hover:[transform:translateY(10px)] group-focus-visible:[transform:translateY(10px)]`,
-};
+// The face layers' opacity per tone: in colour each layer shows as drawn; in
+// mono a side wears the artwork's left or right face opacity.
+const MONO_OPACITY = Object.fromEntries(BRAND_FACES.map((f) => [f.key, f.monoOpacity])) as Record<
+  BrandFace['key'],
+  number
+>;
+const LAYER_OPACITY = {
+  colour: { left: 1, right: 1 },
+  mono: { left: MONO_OPACITY.left, right: MONO_OPACITY.rearRight },
+} as const;
+
+// The resting pose: identical to the artwork's paths.
+const REST = prismFrame({ turn: 0, open: 0 });
 
 // The Living Prism (docs/specs/004-interface-design/brand-mark.md): a glass
 // cube over the brand palette, or tinted from `accentColor`, following the
 // page's light / dark scheme. `full` adds the inner diagram, sheen and pulse
 // for 48px and up. `tone="mono"` draws it in currentColor for a solid tile.
+// While `spinning`, the prism opens and turns in 3D (useBrandSpin).
 export function BrandMark({
   className,
   style,
   accentColor,
   variant = 'compact',
   tone = 'colour',
+  spinning = false,
 }: {
   className?: string;
   style?: React.CSSProperties;
   accentColor?: string;
   variant?: BrandMarkVariant;
   tone?: 'colour' | 'mono';
+  spinning?: boolean;
 }) {
   // Gradient ids are document-global, so each instance prefixes its own.
   const uid = `ldm${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const light = useMemo(() => prismPalette('light', accentColor), [accentColor]);
   const dark = useMemo(() => prismPalette('dark', accentColor), [accentColor]);
+  const targets = useRef<BrandSpinTargets>({ top: null, bottom: null, left: [], right: [] });
+  const layerOpacity = LAYER_OPACITY[tone];
+  useBrandSpin(spinning, targets, layerOpacity);
 
-  if (tone === 'mono') {
-    return (
-      <svg
-        viewBox={BRAND_MARK_VIEWBOX}
-        className={`overflow-visible ${className ?? ''}`.trim()}
-        style={style}
-        aria-hidden="true"
-      >
-        {BRAND_FACES.map((face) => (
-          <path
-            key={face.key}
-            d={face.d}
-            fill="currentColor"
-            opacity={face.monoOpacity}
-            className={FACE_HOVER[face.key]}
-          />
-        ))}
-      </svg>
-    );
-  }
-
-  const full = variant === 'full';
+  const mono = tone === 'mono';
+  const full = !mono && variant === 'full';
+  const fill = (gradient: string) => (mono ? 'currentColor' : `url(#${uid}-${gradient})`);
+  const blend = mono ? undefined : BLEND_CLASS;
   const { nodes, sheen, pulse } = BRAND_DETAIL;
   return (
     <svg
@@ -150,74 +201,107 @@ export function BrandMark({
       style={style}
       aria-hidden="true"
     >
-      <defs>
-        {BRAND_GRADIENTS.map(({ key, vector: v, stops }) => (
-          <linearGradient
-            key={key}
-            id={`${uid}-${key}`}
-            x1={`${v.x1}%`}
-            y1={`${v.y1}%`}
-            x2={`${v.x2}%`}
-            y2={`${v.y2}%`}
-          >
-            {stops.map(([stop, offset, opacity]) => (
-              <stop
-                key={offset}
-                offset={`${offset}%`}
-                stopOpacity={opacity}
-                className={STOP_CLASS}
-                style={{ '--ldm-l': light[stop], '--ldm-d': dark[stop] } as React.CSSProperties}
-              />
-            ))}
-          </linearGradient>
-        ))}
-        {full && (
-          <>
-            <linearGradient id={`${uid}-sheen`} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity={0.45} />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity={0.05} />
-            </linearGradient>
-            <filter id={`${uid}-glow`} x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </>
-        )}
-      </defs>
-      {BRAND_FACES.map((face, i) => (
-        <Fragment key={face.key}>
-          <path
-            d={face.d}
-            fill={`url(#${uid}-${face.gradient})`}
-            className={face.blend ? `${FACE_HOVER[face.key]} ${BLEND_CLASS}` : FACE_HOVER[face.key]}
-          />
-          {full && i === 1 && (
-            <g
-              opacity={nodes.opacity}
-              className="[--ldm-n:var(--ldm-nl)] dark:[--ldm-n:var(--ldm-nd)]"
-              style={
-                { '--ldm-nl': light.highlight, '--ldm-nd': dark.highlight } as React.CSSProperties
-              }
+      {!mono && (
+        <defs>
+          {BRAND_GRADIENTS.map(({ key, vector: v, stops }) => (
+            <linearGradient
+              key={key}
+              id={`${uid}-${key}`}
+              x1={`${v.x1}%`}
+              y1={`${v.y1}%`}
+              x2={`${v.x2}%`}
+              y2={`${v.y2}%`}
             >
-              <path
-                d={nodes.link}
-                fill="none"
-                style={{ stroke: 'var(--ldm-n)' }}
-                strokeWidth={2.5}
-                strokeDasharray="4 4"
-              />
-              {nodes.circles.map((c) => (
-                <circle
-                  key={c.cx}
-                  {...c}
-                  style={{ fill: 'var(--ldm-n)' }}
-                  filter={`url(#${uid}-glow)`}
+              {stops.map(([stop, offset, opacity]) => (
+                <stop
+                  key={offset}
+                  offset={`${offset}%`}
+                  stopOpacity={opacity}
+                  className={STOP_CLASS}
+                  style={{ '--ldm-l': light[stop], '--ldm-d': dark[stop] } as React.CSSProperties}
                 />
               ))}
-            </g>
+            </linearGradient>
+          ))}
+          {full && (
+            <>
+              <linearGradient id={`${uid}-sheen`} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity={0.05} />
+              </linearGradient>
+              <filter id={`${uid}-glow`} x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </>
           )}
-        </Fragment>
+        </defs>
+      )}
+      {/* Back to front, as the artwork: the lid, every side's right-lit layer,
+          the inner diagram, every side's left-lit layer, the bottom fold. */}
+      <path
+        ref={(el) => {
+          targets.current.top = el;
+        }}
+        d={REST.top}
+        fill={fill('backTop')}
+        opacity={mono ? MONO_OPACITY.top : undefined}
+      />
+      {REST.sides.map((side, i) => (
+        <path
+          key={`r${i}`}
+          ref={(el) => {
+            targets.current.right[i] = el;
+          }}
+          d={side.d}
+          fill={fill('backRight')}
+          opacity={side.right * layerOpacity.right}
+          className={blend}
+        />
       ))}
+      {full && (
+        <g
+          opacity={nodes.opacity}
+          className="[--ldm-n:var(--ldm-nl)] dark:[--ldm-n:var(--ldm-nd)]"
+          style={{ '--ldm-nl': light.highlight, '--ldm-nd': dark.highlight } as React.CSSProperties}
+        >
+          <path
+            d={nodes.link}
+            fill="none"
+            style={{ stroke: 'var(--ldm-n)' }}
+            strokeWidth={2.5}
+            strokeDasharray="4 4"
+          />
+          {nodes.circles.map((c) => (
+            <circle
+              key={c.cx}
+              {...c}
+              style={{ fill: 'var(--ldm-n)' }}
+              filter={`url(#${uid}-glow)`}
+            />
+          ))}
+        </g>
+      )}
+      {REST.sides.map((side, i) => (
+        <path
+          key={`l${i}`}
+          ref={(el) => {
+            targets.current.left[i] = el;
+          }}
+          d={side.d}
+          fill={fill('frontLeft')}
+          opacity={side.left * layerOpacity.left}
+        />
+      ))}
+      <path
+        ref={(el) => {
+          targets.current.bottom = el;
+        }}
+        d={REST.bottom}
+        fill={fill('frontBottom')}
+        opacity={mono ? MONO_OPACITY.bottom : undefined}
+        className={blend}
+      />
       {full &&
         sheen.map((s) => (
           <path

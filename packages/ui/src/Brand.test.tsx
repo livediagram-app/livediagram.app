@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Brand, BrandMark } from './Brand';
 import { PRISM_PALETTES, prismPalette } from './brand-prism';
 
@@ -15,8 +15,10 @@ const stops = (container: HTMLElement) =>
 describe('Brand', () => {
   it('marks its wordmark as a logotype', () => {
     const { container } = render(<Brand />);
-    const wordmark = container.querySelector('[data-logotype]');
-    expect(wordmark?.textContent).toBe('livediagram');
+    const wordmark = container.querySelector('[data-logotype]')!.cloneNode(true) as HTMLElement;
+    // The gleam overlay repeats the letters but is hidden from assistive tech.
+    wordmark.querySelector('[aria-hidden="true"]')?.remove();
+    expect(wordmark.textContent).toBe('livediagram');
   });
 
   it('accents "live", brand-600 in light and sky-400 in dark, with "diagram" in ink', () => {
@@ -74,9 +76,26 @@ describe('BrandMark', () => {
   it('draws one colour at per-face opacity in mono, for a solid tile', () => {
     const { container } = render(<BrandMark tone="mono" />);
     expect(container.querySelector('linearGradient')).toBeNull();
-    const paths = [...container.querySelectorAll('path')];
-    expect(paths.length).toBe(4);
-    for (const p of paths) expect(p.getAttribute('fill')).toBe('currentColor');
+    const shown = [...container.querySelectorAll('path')].filter(
+      (p) => p.getAttribute('d') && p.getAttribute('opacity') !== '0',
+    );
+    expect(shown.map((p) => p.getAttribute('opacity'))).toEqual(['0.45', '0.7', '0.9', '0.6']);
+    for (const p of shown) expect(p.getAttribute('fill')).toBe('currentColor');
+  });
+
+  it('rests on the artwork: the lid, the two front sides and the fold', () => {
+    const { container } = render(<BrandMark />);
+    const shown = [...container.querySelectorAll('path')].filter(
+      (p) => p.getAttribute('d') && p.getAttribute('opacity') !== '0',
+    );
+    expect(
+      shown.map((p) =>
+        p
+          .getAttribute('fill')!
+          .replace(/^url\(#[^-]+-/, '')
+          .replace(')', ''),
+      ),
+    ).toEqual(['backTop', 'backRight', 'frontLeft', 'frontBottom']);
   });
 
   it('is decorative', () => {
@@ -85,5 +104,123 @@ describe('BrandMark', () => {
         .container.querySelector('svg')
         ?.getAttribute('aria-hidden'),
     ).toBe('true');
+  });
+});
+
+describe('the hover turn', () => {
+  it('opens and turns the prism while pointed at, and settles home after', async () => {
+    const { act, fireEvent } = await import('@testing-library/react');
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false }) as never;
+    const { container } = render(<Brand href="/" />);
+    const top = () => container.querySelector('path')!.getAttribute('d');
+    const rest = top();
+    const step = (ms: number) =>
+      act(() => frames.splice(0).forEach((cb) => cb(performance.now() + ms)));
+
+    fireEvent.pointerEnter(container.querySelector('a')!, { pointerType: 'mouse' });
+    step(1000);
+    expect(top()).not.toBe(rest);
+
+    fireEvent.pointerLeave(container.querySelector('a')!);
+    step(0);
+    step(5000);
+    expect(top()).toBe(rest);
+    raf.mockRestore();
+  });
+
+  it('holds still under reduced motion', () => {
+    const raf = vi.spyOn(window, 'requestAnimationFrame');
+    window.matchMedia = vi.fn().mockReturnValue({ matches: true }) as never;
+    const { container } = render(<Brand href="/" />);
+    container
+      .querySelector('a')!
+      .dispatchEvent(new PointerEvent('pointerenter', { bubbles: true }));
+    expect(raf).not.toHaveBeenCalled();
+    raf.mockRestore();
+  });
+});
+
+describe('the wordmark gleam', () => {
+  it('sweeps once per hover, finishing even if the pointer leaves', async () => {
+    const { act, fireEvent } = await import('@testing-library/react');
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false }) as never;
+    const { container } = render(<Brand href="/" />);
+    const gleam = container.querySelector<HTMLElement>('[data-logotype] [aria-hidden="true"]')!;
+    const link = container.querySelector('a')!;
+    const step = (at: number) => act(() => frames.splice(0).forEach((cb) => cb(at)));
+
+    expect(gleam.style.opacity).toBe('');
+    fireEvent.pointerEnter(link, { pointerType: 'mouse' });
+    step(performance.now() + 300);
+    expect(gleam.style.opacity).toBe('1');
+    fireEvent.pointerLeave(link);
+    step(performance.now() + 5000);
+    expect(gleam.style.opacity).toBe('0');
+    expect(gleam.style.backgroundPosition).toBe('0% 0px');
+    vi.restoreAllMocks();
+  });
+
+  it('ignores touch, which has no hover', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    const raf = vi.spyOn(window, 'requestAnimationFrame');
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false }) as never;
+    const { container } = render(<Brand href="/" />);
+    fireEvent.pointerEnter(container.querySelector('a')!, { pointerType: 'touch' });
+    expect(raf).not.toHaveBeenCalled();
+    raf.mockRestore();
+  });
+});
+
+describe('a logo link to the page already open', () => {
+  it('scrolls to the top instead of reloading', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false }) as never;
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo as never;
+    const { container } = render(<Brand href={window.location.pathname} />);
+    const event = fireEvent.click(container.querySelector('a')!);
+    expect(event).toBe(false);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+  });
+
+  it('jumps without smoothing under reduced motion', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    window.matchMedia = vi.fn().mockReturnValue({ matches: true }) as never;
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo as never;
+    const { container } = render(<Brand href={window.location.pathname} />);
+    fireEvent.click(container.querySelector('a')!);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'auto' });
+  });
+
+  it('navigates normally to another page, or on a modified click', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo as never;
+    const other = render(<Brand href="/somewhere-else/" />);
+    expect(fireEvent.click(other.container.querySelector('a')!)).toBe(true);
+    const here = render(<Brand href={window.location.pathname} />);
+    expect(fireEvent.click(here.container.querySelector('a')!, { metaKey: true })).toBe(true);
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+});
+
+describe('sizes', () => {
+  it('sets the large logo a size up for the footer, with a wider gap', () => {
+    const { container } = render(<Brand size="lg" />);
+    expect(container.firstElementChild!.className).toContain('gap-3 text-2xl');
+    expect(container.querySelector('svg')!.getAttribute('class')).toContain('size-10');
   });
 });
