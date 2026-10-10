@@ -25,7 +25,7 @@ The canvas is a focus stop in the normal `Tab` order, labelled **"Canvas"**. Tab
 
 Once focus is on the canvas:
 
-- **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the canvas. The canvas scrolls the selected element into view as you go.
+- **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the canvas. The canvas scrolls each selected shape into view as you go (arrows are selected without scrolling).
 - There's **no wrap and no trap**: pressing `Tab` past the last element (or `Shift`+`Tab` before the first) moves focus out of the canvas to the next thing on the page, so you can always keyboard your way onward.
 - The **selection ring is the focus indicator**: there's one highlighted element, not two competing outlines.
 - Elements **locked by someone else** are skipped, the same as when you click, and so are elements on a hidden or locked [layer](/help/canvas/layers/).
@@ -37,7 +37,7 @@ This works even in read-only views, since it's just navigation. It is part of th
 
 Every element carries a name, so a screen reader can describe it, for example `Square "Login"`, `Sticky note`, or `Arrow "yes"`. A polite live region announces changes as they happen:
 
-- **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label), a short summary when several are selected (`Selected 2 Squares & an Arrow`), or `Selection cleared`.
+- **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label; arrows, tables and images are always named by their type, such as `Selected an Arrow`), a short summary when several are selected (`Selected 2 Squares & an Arrow`), or `Selection cleared`.
 - **Editing:** deleting an element (`Deleted 'Login'`), **Undo** and **Redo** (`Undid the last change`, `Redid the last change`) are announced too.
 - **Mode:** switching editor mode with `Shift`+`D` announces the new one, for example `Draw mode`.
 
@@ -53,7 +53,7 @@ If animation is uncomfortable, turn on **Reduce Motion** in [Settings](/help/use
 
 ## Larger controls
 
-If the panels and buttons are too small to read or hit comfortably, **UI Scale** in Settings, under **Appearance**, makes the panels, the toolbar and the bottom-right buttons bigger (up to 120%, or 140% for the palette strip) without zooming the canvas. Desktop only.
+If the panels and buttons are too small to read or hit comfortably, **UI Scale** in Settings, under **Appearance**, makes the panels, the toolbar and the bottom-right buttons smaller or bigger (80% to 120%) without zooming the canvas. Under it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** set each one on its own, and the toolbar goes up to 140%. Desktop only.
 
 <Tip>
   This is a baseline, honest but not exhaustive: keyboard-only users can reach, traverse, and edit
