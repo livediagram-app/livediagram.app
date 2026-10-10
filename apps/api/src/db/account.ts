@@ -228,8 +228,8 @@ export async function migrateOwnerId(
   const sharedInsertRes = await env.DB.prepare(
     // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
     // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
-    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id)
-     SELECT ?, document_id, role, level, last_seen, tab_id
+    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id, share_code)
+     SELECT ?, document_id, role, level, last_seen, tab_id, share_code
      FROM shared_with
      WHERE owner_id = ?`,
   )

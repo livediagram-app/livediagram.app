@@ -66,13 +66,26 @@ export type ItemsTallyRequest = { items: { id: string; votes: Record<string, num
 export type ItemsRoomOp = { kind: 'items'; upserts: Item[]; removed: string[]; rev: number };
 
 // PUT /api/documents/:id/item-types (docs/specs/026-plan/item-types.md "Storage and sync"): the
-// document's type catalogue, whole, or null to go back to the built-in types. The answer is the
-// catalogue as stored.
-export type ItemTypesRequest = { itemTypes: ItemTypeCatalogue | null };
-export type ItemTypesResponse = { itemTypes: ItemTypeCatalogue | null };
+// document's type catalogue, whole, or null to go back to the built-in types. `expectedRev` names the
+// catalogue's revision the change was made to (the document's `itemTypesRev`); when it has moved on the
+// write is refused, 409 `item_types_stale` with the stored catalogue and revision (ItemTypesStale), so the
+// caller re-applies its change to them. Left out, the write lands whatever is stored. The answer is the
+// catalogue as stored, with its new revision.
+export type ItemTypesRequest = { itemTypes: ItemTypeCatalogue | null; expectedRev?: number };
+export type ItemTypesResponse = { itemTypes: ItemTypeCatalogue | null; itemTypesRev: number };
+export type ItemTypesStale = {
+  error: 'item_types_stale';
+  itemTypes: ItemTypeCatalogue | null;
+  itemTypesRev: number;
+};
 
 // The room op a catalogue write sends (system kind), to every session including tab-scoped ones.
-export type ItemTypesRoomOp = { kind: 'item-types'; itemTypes: ItemTypeCatalogue | null };
+export type ItemTypesRoomOp = {
+  kind: 'item-types';
+  itemTypes: ItemTypeCatalogue | null;
+  // Absent from an op sent before the catalogue had a revision.
+  itemTypesRev?: number;
+};
 
 export const ITEM_ERRORS = ['item_not_found', 'item_exists', 'item_busy', 'items_full'] as const;
 
@@ -83,4 +96,6 @@ export type PlanResponse = {
   boards: PlanBoardOutline[];
   statuses: PlanStatusName[];
   types: readonly ItemTypeDef[];
+  // The catalogue's revision, for a change of card types to name as its `expectedRev`.
+  itemTypesRev: number;
 };

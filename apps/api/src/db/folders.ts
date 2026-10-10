@@ -57,26 +57,10 @@ export async function createFolder(
   };
 }
 
-export async function updateFolder(
-  env: Env,
-  id: string,
-  patch: { name?: string; parentId?: string | null },
-): Promise<void> {
-  const now = Date.now();
-  // Build a partial UPDATE so we never accidentally clear a column the
-  // caller didn't touch. `name` and `parentId` are both legal so we
-  // can't merge them into one statement without losing the
-  // "undefined = leave alone" semantic.
-  if (patch.name !== undefined) {
-    await env.DB.prepare('UPDATE folders SET name = ?, updated_at = ? WHERE id = ?')
-      .bind(patch.name, now, id)
-      .run();
-  }
-  if (patch.parentId !== undefined) {
-    await env.DB.prepare('UPDATE folders SET parent_id = ?, updated_at = ? WHERE id = ?')
-      .bind(patch.parentId, now, id)
-      .run();
-  }
+export async function renameFolder(env: Env, id: string, name: string): Promise<void> {
+  await env.DB.prepare('UPDATE folders SET name = ?, updated_at = ? WHERE id = ?')
+    .bind(name, Date.now(), id)
+    .run();
 }
 
 // Deleting a folder moves its direct subfolders and documents (trashed ones too) up to its parent,
@@ -102,25 +86,37 @@ export async function deleteFolder(env: Env, id: string): Promise<{ parentId: st
   return { parentId: parent?.parent_id ?? null };
 }
 
-// Cycle check for folder moves. Walks the proposed ancestor chain
-// from `newParentId` upward; if we hit `folderId` along the way the
-// move would form a cycle. Caller rejects with a 409 in that case.
-export async function folderMoveWouldCycle(
-  env: Env,
-  folderId: string,
-  newParentId: string,
-): Promise<boolean> {
-  let cursor: string | null = newParentId;
-  const seen = new Set<string>();
-  while (cursor !== null) {
-    const here: string = cursor;
-    if (here === folderId) return true;
-    if (seen.has(here)) return true; // defensive — corrupt graph
-    seen.add(here);
-    const row = await env.DB.prepare('SELECT parent_id FROM folders WHERE id = ?')
-      .bind(here)
-      .first<{ parent_id: string | null }>();
-    cursor = row?.parent_id ?? null;
+// Reparents a folder in ONE statement that refuses a cycle (docs/specs/013-workspace/folders.md):
+// the recursive CTE walks the ancestors of the proposed parent, and the row only changes when the
+// folder is not among them and the parent still exists. Checking first and writing second left a
+// window in which two crossing moves (A into B, B into A) each passed the check and together made
+// a loop. UNION, not UNION ALL, so the walk ends even on an already corrupt chain. Answers whether
+// the folder moved; false means a cycle, or a parent deleted meanwhile, and the caller answers 409.
+export async function moveFolder(env: Env, id: string, parentId: string | null): Promise<boolean> {
+  const now = Date.now();
+  if (parentId === null) {
+    const res = await env.DB.prepare(
+      'UPDATE folders SET parent_id = NULL, updated_at = ? WHERE id = ?',
+    )
+      .bind(now, id)
+      .run();
+    return (res.meta.changes ?? 0) > 0;
   }
-  return false;
+  const res = await env.DB.prepare(
+    `UPDATE folders SET parent_id = ?2, updated_at = ?3
+     WHERE id = ?1
+       AND EXISTS (SELECT 1 FROM folders WHERE id = ?2)
+       AND NOT EXISTS (
+         WITH RECURSIVE ancestors(id) AS (
+           SELECT ?2
+           UNION
+           SELECT f.parent_id FROM folders f JOIN ancestors a ON f.id = a.id
+           WHERE f.parent_id IS NOT NULL
+         )
+         SELECT 1 FROM ancestors WHERE id = ?1
+       )`,
+  )
+    .bind(id, parentId, now)
+    .run();
+  return (res.meta.changes ?? 0) > 0;
 }

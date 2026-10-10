@@ -5,6 +5,7 @@ import { FORMAT_KEYS, mergeFormat, type FormatPatch } from './format';
 import { layoutIndex } from './layout';
 import { mapFormulaRefs } from './formula/stored';
 import { applyLayoutChange, shrinkRange, type LayoutChange } from './store-layout';
+import { idRangeOf, inverseDelete } from './store-inverse-delete';
 import { sameName } from './range-names';
 import {
   cellKey,
@@ -12,7 +13,6 @@ import {
   type Cell,
   type CellFormat,
   type CellInput,
-  type IdRange,
   type Sheet,
   type SheetLayout,
   type SheetPerson,
@@ -115,8 +115,6 @@ function shrinkRef(
   return out;
 }
 
-const idRangeOf = (x: IdRange): IdRange => ({ r1: x.r1, c1: x.c1, r2: x.r2, c2: x.c2 });
-
 export function applySheetWrite(sheet: Sheet, write: SheetWrite, ctx: ApplyContext): Applied {
   const touched = new Set<string>();
   const stamp = { updatedAt: ctx.now, updatedBy: ctx.by };
@@ -193,36 +191,14 @@ function formatRestore(format: CellFormat | undefined): FormatPatch | null {
   return { ...patch, ...(format as FormatPatch) };
 }
 
-// Contiguous runs of `ids` in `list`, each with the id before it (null at the start).
-function runsOf(
-  list: readonly string[],
-  ids: ReadonlySet<string>,
-): { after: string | null; ids: string[] }[] {
-  const runs: { after: string | null; ids: string[] }[] = [];
-  let lastKept: string | null = null;
-  let cur: { after: string | null; ids: string[] } | null = null;
-  for (const id of list) {
-    if (ids.has(id)) {
-      if (!cur) {
-        cur = { after: lastKept, ids: [] };
-        runs.push(cur);
-      }
-      cur.ids.push(id);
-    } else {
-      lastKept = id;
-      cur = null;
-    }
-  }
-  return runs;
-}
-
 // The ids not in `list`, in one pass over each (a Set, never a scan per id: a sheet has 10k rows).
 function without(ids: readonly string[], list: readonly string[]): string[] {
   const has = new Set(list);
   return ids.filter((id) => !has.has(id));
 }
 
-function inverseLayout(before: SheetLayout, ch: LayoutChange): LayoutChange[] {
+// `now` is the layout the undo lands on: a deletion's undo puts back what it took into that (./store-inverse-delete).
+function inverseLayout(before: SheetLayout, ch: LayoutChange, now: SheetLayout): LayoutChange[] {
   switch (ch.k) {
     // Deleting a frozen row unfreezes it, so the undo of an insert also puts the freeze back.
     case 'insertRows':
@@ -236,39 +212,8 @@ function inverseLayout(before: SheetLayout, ch: LayoutChange): LayoutChange[] {
         { k: 'freeze', cols: before.frozenCols ?? 0 },
       ];
     case 'deleteRows':
-    case 'deleteCols': {
-      const rows = ch.k === 'deleteRows';
-      const list = rows ? before.rows : before.cols;
-      const has = new Set(list);
-      const gone = new Set(ch.ids.filter((id) => has.has(id)));
-      const axis = rows ? 'r' : 'c';
-      const out: LayoutChange[] = runsOf(list, gone).map((run) => ({
-        k: rows ? 'insertRows' : 'insertCols',
-        after: run.after,
-        ids: run.ids,
-      }));
-      const sizes = rows ? before.rowSize : before.colSize;
-      const bySize = new Map<number, string[]>();
-      for (const id of gone) {
-        const px = sizes?.[id];
-        if (px !== undefined) bySize.set(px, [...(bySize.get(px) ?? []), id]);
-      }
-      for (const [px, ids] of bySize) out.push({ k: 'size', axis, ids, px });
-      const hidden = (rows ? before.hiddenRows : before.hiddenCols)?.filter((id) => gone.has(id));
-      if (hidden?.length) out.push({ k: 'hide', axis, ids: hidden, hidden: true });
-      out.push(
-        rows
-          ? { k: 'freeze', rows: before.frozenRows ?? 0 }
-          : { k: 'freeze', cols: before.frozenCols ?? 0 },
-      );
-      out.push({ k: 'merges', merges: before.merges ?? [] });
-      out.push({ k: 'filter', filter: before.filter ?? null });
-      // The card tables as they were, links and drafts of the deleted lines included; the named ranges too.
-      for (const t of before.cardTables ?? []) out.push({ k: 'cardTable', id: t.id, table: t });
-      for (const x of before.names ?? [])
-        out.push({ k: 'name', name: x.name, range: idRangeOf(x) });
-      return out;
-    }
+    case 'deleteCols':
+      return inverseDelete(before, ch, now);
     case 'moveRows':
     case 'orderRows':
       return [{ k: 'orderRows', ids: [...before.rows] }];
@@ -362,19 +307,42 @@ function inverseLayout(before: SheetLayout, ch: LayoutChange): LayoutChange[] {
 }
 
 // The write that undoes `result` (made from `before`): exactly the cells, rows and columns it touched go back.
-export function inverseSheetWrite(before: Sheet, result: Applied): SheetWrite {
+// `now` is the sheet's layout when the undo is made (the result's own by default): what a deletion took is put
+// back into it, so links, drafts, merges and names made since are kept.
+export function inverseSheetWrite(before: Sheet, result: Applied, now?: SheetLayout): SheetWrite {
   const applied = result.applied;
   if (applied.kind === 'title') return { kind: 'title', title: before.title };
   const cells = restoreCells(before, result.touched);
   if (applied.kind === 'cells') return { kind: 'cells', cells };
-  // Undo the layout changes last to first, each against the layout it was applied to.
-  const layouts: SheetLayout[] = [before.layout];
-  for (const ch of applied.changes)
-    layouts.push(applyLayoutChange(layouts[layouts.length - 1]!, ch));
-  const changes: LayoutChange[] = [];
-  for (let i = applied.changes.length - 1; i >= 0; i--)
-    changes.push(...inverseLayout(layouts[i]!, applied.changes[i]!));
+  const changes = inverseLayoutChanges(before.layout, applied.changes, now ?? result.sheet.layout);
   return { kind: 'layout', changes, ...(cells.length ? { cells } : {}) };
+}
+
+// The layout half of an undo: `changes` (applied to `before`) undone last to first, each against the layout it was
+// applied to, and each landing on `now` as the undo's earlier changes leave it.
+export function inverseLayoutChanges(
+  before: SheetLayout,
+  changes: readonly LayoutChange[],
+  now: SheetLayout,
+): LayoutChange[] {
+  const layouts: SheetLayout[] = [before];
+  for (const ch of changes) layouts.push(applyLayoutChange(layouts[layouts.length - 1]!, ch));
+  let landing = now;
+  const out: LayoutChange[] = [];
+  for (let i = changes.length - 1; i >= 0; i--) {
+    const undo = inverseLayout(layouts[i]!, changes[i]!, landing);
+    for (const ch of undo) landing = applyLayoutChange(landing, ch);
+    out.push(...undo);
+  }
+  return out;
+}
+
+// Does undoing this write depend on the sheet as it is at the undo (a deletion's undo merges into it)?
+export function undoReadsNow(write: SheetWrite): boolean {
+  return (
+    write.kind === 'layout' &&
+    write.changes.some((ch) => ch.k === 'deleteRows' || ch.k === 'deleteCols')
+  );
 }
 
 export type MergeOutcome =

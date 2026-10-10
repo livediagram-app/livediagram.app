@@ -176,8 +176,13 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
   - Optimistic: `write` splits the change with `splitWrite` (at most `SHEET_WRITE_CELLS_MAX` cells and
     `SHEET_WRITE_BYTES_MAX` bytes a part), validates each part against the sheet as the parts before it leave it,
     applies the whole change locally, pushes one undo step (`inverseSheetWrite` from the pre-write sheet), and sends
-    the parts in order. On a refusal it toasts by `sheetRefusalMessage(error)`, drops the pending part and refetches
-    the sheet.
+    the parts in order. On a refusal (an `ApiError` other than status 0, 408, 429 or 5xx) it toasts by
+    `sheetRefusalMessage(error)`, drops the pending part and refetches the sheet.
+  - Transient failures (`isTransientWriteError`, `sheet-write-retry.ts`: no `ApiError` at all, or status 0, 408,
+    429, 5xx) keep the part pending and send it again after `sheetWriteRetryMs(attempt)` (`SHEET_WRITE_RETRY_MS`
+    500 ms doubling to `SHEET_WRITE_RETRY_MAX_MS` 30 s), inside the sheet's queue so later writes wait behind it;
+    before each resend it stops if the part is no longer pending (the room confirmed it, the answer having been
+    lost, or the sheet went). The wait is injectable (`SheetStoreDeps.wait`) for tests.
   - Writes to one sheet are sent one at a time in order (a per-sheet queue), so the server sees them as made.
   - Room ops: `mergeSheetChange`; own ops (matched by write id) confirm the pending part; a gap or `refetch` →
     `refetchSheet` (debounced `SHEET_REFETCH_DEBOUNCE_MS`).
@@ -208,7 +213,9 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 
 - `useItemUndo`'s journal takes any step; the sheet store client pushes `{ undo, redo }` closures through the
   bridge's `pushUndo`. Undo writes `inverseSheetWrite(before, applied)` with `undo: true` (never refused for a title
-  its own undo puts back); redo writes the change again. A change sent in parts (a big paste), or reaching several
+  its own undo puts back); a change holding a row or column deletion has its layout half worked out when Undo is
+  pressed (`inverseLayoutChanges` against the sheet's view, each sheet's later parts against what the earlier ones
+  leave), so the undo merges into the sheet as it is then; redo writes the change again. A change sent in parts (a big paste), or reaching several
   sheets (Insert Cells, a cut whose cells other sheets' formulas read, a replacing CSV import), is one step.
 
 ## Deleting a sheet
@@ -344,7 +351,7 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 
 Log fingerprints (`[sheets]`): api `sheets.rejected <error>`, `sheets.write.retry`, `sheets.write.busy`,
 `sheets.full`, `sheets.created`, `sheets.deleted`, `sheets.delete.deferred`, `sheets.restored`, `sheets.expired`; editor `sheets.refetch.gap`,
-`sheets.write.failed <error>`, `sheets.offline.write`, `sheets.recalc.truncated`, `sheets.load.failed`. Never
+`sheets.write.failed <error>`, `sheets.write.retrying <attempt, status>`, `sheets.offline.write`, `sheets.recalc.truncated`, `sheets.load.failed`. Never
 inputs, formats or titles.
 
 ## Testing
@@ -363,6 +370,8 @@ inputs, formats or titles.
 | Offline restore keeps a stored sheet; delete query              | `apps/live/lib/offline/offline-sheets.test.ts`, `lib/api/sheets.test.ts`                                                                                                                                                                      |
 | Room op scoped to the tab                                       | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                             |
 | Store client: optimistic, reconcile, gap, queue, split, undo    | `apps/live/components/sheets/sheet-store-client.test.ts`                                                                                                                                                                                      |
+| Transient write failures resent with backoff, refusals dropped  | `apps/live/components/sheets/sheet-store-client.test.ts`, `components/sheets/sheet-write-retry.test.ts`                                                                                                                                       |
+| Undo of a deletion merges into the sheet as it is               | `packages/sheets/src/store-inverse-delete.test.ts`, `apps/live/components/sheets/sheet-store-client.test.ts`                                                                                                                                  |
 | Presence: receive, throttle, re-say                             | `apps/live/components/sheets/sheet-presence-store.test.ts`                                                                                                                                                                                    |
 | Model: attach, load, placed and copied sheets, cards            | `apps/live/components/sheets/useSheetModel.test.tsx`                                                                                                                                                                                          |
 | Bridge: room ops, attach, undo journal                          | `apps/live/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                                                                             |

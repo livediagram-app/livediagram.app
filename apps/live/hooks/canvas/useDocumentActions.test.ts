@@ -29,7 +29,7 @@ function actions() {
       setDocumentList: vi.fn(),
       confirm: vi.fn() as never,
       ownerId: 'me',
-      hookDeleteFolder: vi.fn(),
+      hookDeleteFolder: vi.fn(async () => true),
       folders: [],
       sharedDocuments: [],
       setSharedDocuments: vi.fn(),

@@ -35,8 +35,10 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 - `bringBoardCardTypes(api, documentId, elements, known?)`: nothing read or written when no Plan board is among the
   elements; else `catalogueWithBoardTypes(stored, elements, hasCards)` from the document's `itemTypes` and whether it
   has any item (`known` when the caller has read them, as `addBoard` has), PUT only when it changes.
-- `changeCardTypes`: PUT the catalogue, then `set { status: trash, trashedFrom }` on each live card of a deleted
-  type, as the editor's `trashItems`.
+- `changeCardTypes`: PUT the catalogue naming `plan.itemTypesRev` as `expectedRev`, then `set { status: trash,
+trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`. A 409 `item_types_stale`
+  (`isCardTypesStale`) reads the plan again and applies the changes again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then
+  answers the refusal; `bringBoardCardTypes` does the same with the document's `itemTypesRev` (`KnownCardTypes.rev`).
 - `placeBoard`: preset through `freshBoardSetup`; columns by name reuse a status `statusNamed` finds (each status
   once), else `<slug>~<4 chars>`; a preset's `doneColumnId` is dropped with its columns; placed right of the tab's
   elements' bounding box by `PLACED_BOARD_GAP`, tops aligned, origin on an empty tab.

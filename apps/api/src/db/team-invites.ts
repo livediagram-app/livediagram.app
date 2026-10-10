@@ -13,13 +13,20 @@ import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from 
 // GET /api/teams so an invitee sees the team on their next Explorer
 // visit whether they signed up before or after the invite. Idempotent
 // and cheap when there's nothing pending (indexed on email).
+//
+// A team the user already belongs to is skipped: an invite sent to their email after they joined
+// by link (or under another address) would otherwise become a second membership row for the same
+// person. The unique (team_id, user_id) index (migration 0083) backs this up, and OR IGNORE keeps a
+// concurrent claim or link join from turning that into an error: the row stays unclaimed instead.
 export async function connectInvitesByEmail(
   env: Env,
   userId: string,
   email: string,
 ): Promise<void> {
   await env.DB.prepare(
-    'UPDATE team_members SET user_id = ?, updated_at = ? WHERE email = ? AND user_id IS NULL',
+    `UPDATE OR IGNORE team_members SET user_id = ?1, updated_at = ?2
+     WHERE email = ?3 AND user_id IS NULL
+       AND team_id NOT IN (SELECT team_id FROM team_members WHERE user_id = ?1)`,
   )
     .bind(userId, Date.now(), email)
     .run();

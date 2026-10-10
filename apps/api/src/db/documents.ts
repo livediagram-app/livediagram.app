@@ -18,7 +18,7 @@ import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
 import { redactTabDataForCommunity } from '../community-redact';
 import { redactTabDataAuthors } from '../comments';
-import { imageGrantCopyStatements } from './image-grants';
+import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
 import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
@@ -40,6 +40,7 @@ type DocumentRow = {
   presentation: string | null;
   // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
   item_types: string | null;
+  item_types_rev?: number;
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
@@ -99,6 +100,7 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     source: (row.source as DocumentDTO['source']) ?? null,
     presentation: row.presentation ?? null,
     itemTypes: readItemTypeCatalogue(row.item_types ?? null),
+    itemTypesRev: row.item_types_rev ?? 0,
     savedAt: row.saved_at,
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
@@ -123,7 +125,7 @@ const INTENT_COLS = 'opens_in, tab_kind, template_family';
 const COMMUNITY_STATE_EXPR = `(SELECT CASE WHEN cp.state <> 'listed' THEN cp.state WHEN ${PUBLIC_POST} THEN 'listed' END
   FROM community_posts cp JOIN documents d ON d.id = cp.document_id
   WHERE cp.document_id = documents.id) AS community_state`;
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
@@ -318,15 +320,27 @@ export async function setDocumentPresentation(
 
 // Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
 // the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
-// default types.
+// default types. Raises the catalogue's revision; with `expectedRev` it lands only while the stored
+// revision is that one. Returns the new revision, or null when the stored one had moved on.
 export async function setDocumentItemTypes(
   env: Env,
   id: string,
   itemTypes: ItemTypeCatalogue | null,
-): Promise<void> {
-  await env.DB.prepare(`UPDATE documents SET item_types = ?, saved_at = ? WHERE id = ?`)
-    .bind(itemTypes ? JSON.stringify(itemTypes) : null, Date.now(), id)
-    .run();
+  expectedRev?: number,
+): Promise<number | null> {
+  const row = await env.DB.prepare(
+    `UPDATE documents SET item_types = ?, item_types_rev = item_types_rev + 1, saved_at = ?
+      WHERE id = ? AND (? IS NULL OR item_types_rev = ?) RETURNING item_types_rev`,
+  )
+    .bind(
+      itemTypes ? JSON.stringify(itemTypes) : null,
+      Date.now(),
+      id,
+      expectedRev ?? null,
+      expectedRev ?? null,
+    )
+    .first<{ item_types_rev: number }>();
+  return row?.item_types_rev ?? null;
 }
 
 // Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): folder and team scope move
@@ -335,24 +349,45 @@ export async function setDocumentItemTypes(
 // write: a joined member moving a team document out into their own
 // personal library becomes its owner (docs/specs/013-workspace/team-shared-documents.md), and folders are
 // owner-scoped so the row must follow them. Omit to keep the owner.
+//
+// The folder's existence and scope are checked INSIDE the UPDATE, not only by the caller's read
+// beforehand: a folder deleted (or moved to the other space) between that read and this write would
+// otherwise leave the document filed under a folder that is gone. Answers whether the row changed;
+// false means the folder (or the document) is not there any more, and the caller answers 404.
 export async function setDocumentFolder(
   env: Env,
   id: string,
   folderId: string | null,
   teamId: string | null = null,
   newOwnerId?: string,
-): Promise<void> {
-  if (newOwnerId !== undefined) {
-    await env.DB.prepare(
-      'UPDATE documents SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?',
-    )
-      .bind(folderId, teamId, newOwnerId, id)
-      .run();
-    return;
+): Promise<boolean> {
+  const owner = newOwnerId ?? null;
+  const update = env.DB.prepare(
+    `UPDATE documents SET folder_id = ?2, team_id = ?3, owner_id = COALESCE(?4, owner_id)
+     WHERE id = ?1
+       AND (?2 IS NULL OR EXISTS (
+         SELECT 1 FROM folders f
+         WHERE f.id = ?2
+           AND f.team_id IS ?3
+           AND (?3 IS NOT NULL OR f.owner_id = COALESCE(?4, documents.owner_id))
+       ))`,
+  ).bind(id, folderId, teamId, owner);
+  if (newOwnerId === undefined) {
+    const res = await update.run();
+    return (res.meta.changes ?? 0) > 0;
   }
-  await env.DB.prepare('UPDATE documents SET folder_id = ?, team_id = ? WHERE id = ?')
-    .bind(folderId, teamId, id)
-    .run();
+  // An owner change: the previous owner's images in it keep serving once it is the new owner's, granted in
+  // the same batch (a refused move leaves only a redundant grant, the old owner still owning it).
+  const [, res] = await env.DB.batch([
+    imageGrantOwnerChangeStatement(
+      env,
+      'd.id = ?2 AND d.owner_id <> ?3',
+      [id, newOwnerId],
+      Date.now(),
+    ),
+    update,
+  ]);
+  return (res?.meta.changes ?? 0) > 0;
 }
 
 // Toggle the shareable flag on a document. The actual codes live in

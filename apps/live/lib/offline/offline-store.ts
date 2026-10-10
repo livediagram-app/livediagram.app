@@ -8,28 +8,32 @@
 // Storage: one IndexedDB record per document, holding its meta + all tab bodies
 // inline (offline documents load whole — no lazy per-tab fetch). The set of
 // offline ids IS the set of record keys, mirrored in an in-memory cache so the
-// dispatch can answer "is this id offline?" cheaply.
+// dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
+// every tab of the browser in step).
 
-import { upgradeStores } from './legacy-offline-store';
 import type { SheetJson } from '@livediagram/sheets';
 import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
 import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
-import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livediagram/ui';
 import { DocumentTrashedError } from '../document-trashed';
-import { reportApiWarning } from '../api/error-report';
+import {
+  offlineBackend,
+  setOfflineBackend,
+  type OfflineBackend,
+  type OfflineRecordChange,
+} from './offline-backend';
+import {
+  forgetOfflineId,
+  isOfflineIdSync,
+  rememberOfflineId,
+  resetOfflineIds,
+} from './offline-ids';
 
 // Sentinel owner id stamped on offline documents. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
 export const OFFLINE_OWNER_ID = 'offline';
-
-const DB_NAME = 'livediagram-offline';
-// Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
-// ./legacy-offline-store moves every record across.
-const DB_VERSION = 2;
-const STORE = 'documents';
 
 // The stored shape for one offline document.
 export type OfflineDocumentRecord = {
@@ -203,192 +207,32 @@ export function removeTab(
 }
 
 // ---------------------------------------------------------------------------
-// Storage backend (IndexedDB by default; swappable in tests)
+// Storage backend (./offline-backend) and the id cache (./offline-ids)
 // ---------------------------------------------------------------------------
 
-export type OfflineBackend = {
-  get(id: string): Promise<OfflineDocumentRecord | undefined>;
-  put(rec: OfflineDocumentRecord): Promise<void>;
-  delete(id: string): Promise<void>;
-  all(): Promise<OfflineDocumentRecord[]>;
-};
-
-function idbRequest<T>(req: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error ?? new Error('IndexedDB request failed'));
-  });
-}
-
-// How long opening the store may take (docs/specs/007-editor/load-recovery.md "The load always ends").
-// Every document load asks the store first, so a browser whose IndexedDB never answers `open` used to
-// hold the load on the opening screen forever. Shared with the browser checks' probe so the
-// diagnostics report the same limit the load uses.
-export const OFFLINE_STORE_OPEN_TIMEOUT_MS = INDEXED_DB_PROBE_TIMEOUT_MS;
-
-// Thrown when the store did not open in time or reported `blocked`.
-export class OfflineStoreUnavailableError extends Error {
-  constructor(reason: 'timeout' | 'blocked') {
-    super(`offline store ${reason}`);
-    this.name = 'OfflineStoreUnavailableError';
-  }
-}
-
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (typeof indexedDB === 'undefined') {
-      reject(new Error('IndexedDB unavailable'));
-      return;
-    }
-    let settled = false;
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    const giveUp = (reason: 'timeout' | 'blocked') => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      reject(new OfflineStoreUnavailableError(reason));
-    };
-    const timer = setTimeout(() => giveUp('timeout'), OFFLINE_STORE_OPEN_TIMEOUT_MS);
-    req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
-    req.onblocked = () => giveUp('blocked');
-    req.onsuccess = () => {
-      // An open that lands after we gave up is closed at once, so it never holds a version lock.
-      if (settled) return req.result.close();
-      settled = true;
-      clearTimeout(timer);
-      resolve(req.result);
-    };
-    req.onerror = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      reject(req.error ?? new Error('IndexedDB open failed'));
-    };
-  });
-}
-
-async function run<T>(
-  mode: IDBTransactionMode,
-  op: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T> {
-  const db = await openDb();
-  try {
-    const store = db.transaction(STORE, mode).objectStore(STORE);
-    return await idbRequest(op(store));
-  } finally {
-    db.close();
-  }
-}
-
-const indexedDbBackend: OfflineBackend = {
-  get: (id) => run('readonly', (s) => s.get(id) as IDBRequest<OfflineDocumentRecord | undefined>),
-  put: (rec) => run('readwrite', (s) => s.put(rec)).then(() => undefined),
-  delete: (id) => run('readwrite', (s) => s.delete(id)).then(() => undefined),
-  all: () => run('readonly', (s) => s.getAll() as IDBRequest<OfflineDocumentRecord[]>),
-};
-
-let backend: OfflineBackend = indexedDbBackend;
-
-// The current backend, for ./offline-trash.ts, which reads and rewrites whole
-// records the same way the ops below do.
-export function offlineBackend(): OfflineBackend {
-  return backend;
-}
+export {
+  OFFLINE_STORE_OPEN_TIMEOUT_MS,
+  OfflineStoreUnavailableError,
+  offlineBackend,
+  type OfflineBackend,
+  type OfflineRecordChange,
+} from './offline-backend';
+export { isOfflineId, isOfflineIdSync, offlineIdCount, subscribeOfflineIds } from './offline-ids';
 
 // Test seam: swap in an in-memory backend. Also resets the id cache.
 export function __setOfflineBackend(b: OfflineBackend | null): void {
-  backend = b ?? indexedDbBackend;
-  idCache = null;
-  idCacheLoad = null;
-  storeUnavailable = false;
-  pendingIds.clear();
+  setOfflineBackend(b);
+  resetOfflineIds();
 }
 
-// ---------------------------------------------------------------------------
-// Offline id cache — cheap "is this document offline?" for the dispatch
-// ---------------------------------------------------------------------------
-
-let idCache: Set<string> | null = null;
-let idCacheLoad: Promise<Set<string>> | null = null;
-// Ids registered before the cache finished loading (a create racing the
-// first lookup). Merged into the cache when it lands and consulted by both
-// checks, so a just-created offline document can never read as "not offline"
-// (a miss would leak its writes to the server; see docs/specs/006-document/offline-mode.md and the ghost-row
-// bug the meta PUT's create-on-first-write used to turn that into).
-const pendingIds = new Set<string>();
-
-// Set once the store failed to open in time: the rest of the page load answers from the pending set
-// instead of waiting out the limit again on every check (two per document load).
-let storeUnavailable = false;
-
-async function loadIds(): Promise<Set<string>> {
-  if (idCache) return idCache;
-  if (storeUnavailable) return new Set(pendingIds);
-  if (!idCacheLoad) {
-    idCacheLoad = backend
-      .all()
-      .then((recs) => {
-        idCache = new Set([...recs.map((r) => r.id), ...pendingIds]);
-        return idCache;
-      })
-      .catch((err: unknown) => {
-        // No IndexedDB (SSR, private mode) or a transient open failure.
-        // Do NOT pin an empty cache: clear the in-flight slot so the next
-        // check retries, and answer THIS check from the pending set only.
-        // A store that would not open in time is the exception: it is not
-        // retried for the rest of the page load (see storeUnavailable).
-        idCacheLoad = null;
-        if (err instanceof OfflineStoreUnavailableError) {
-          storeUnavailable = true;
-          console.warn(`[offline-store] unavailable: ${err.message}`);
-          reportApiWarning('OfflineStore.Unavailable');
-        }
-        return new Set(pendingIds);
-      });
+// Thrown by a write whose record is gone while this tab still lists the id: another tab synced it
+// to the cloud or purged it, and the write has nowhere to land. The id is forgotten first, so the
+// autosave shows the failure instead of "Saved" and its retry routes where the document now is.
+export class OfflineDocumentMissingError extends Error {
+  constructor(id: string) {
+    super(`offline document ${id} is no longer in this browser`);
+    this.name = 'OfflineDocumentMissingError';
   }
-  return idCacheLoad;
-}
-
-export async function isOfflineId(id: string): Promise<boolean> {
-  return (await loadIds()).has(id);
-}
-
-// How many documents this browser holds (the local Trash included), off the same cached index: a
-// cheap upper bound that lets a caller skip reading every record (the move prompt after signing in,
-// docs/specs/014-identity/auth-and-guest-access.md) when there is nothing, or nothing new, to offer.
-export async function offlineIdCount(): Promise<number> {
-  return (await loadIds()).size;
-}
-
-// Synchronous check off the already-loaded cache — for the `beforeunload`
-// beacon flush, which can't await. Returns false until the cache has loaded
-// (by which point any document being edited has already been through the async
-// path, so its id is cached).
-export function isOfflineIdSync(id: string): boolean {
-  return pendingIds.has(id) || (idCache?.has(id) ?? false);
-}
-
-// Told whenever a document joins or leaves this browser's store (a create, Sync Document, Take Offline):
-// what shows or reads a document's offline-ness follows a conversion without a reload
-// (docs/specs/006-document/offline-mode.md "Syncing in place").
-const idListeners = new Set<(id: string) => void>();
-export function subscribeOfflineIds(listener: (id: string) => void): () => void {
-  idListeners.add(listener);
-  return () => idListeners.delete(listener);
-}
-function announce(id: string): void {
-  for (const l of idListeners) l(id);
-}
-
-function rememberId(id: string): void {
-  pendingIds.add(id);
-  if (idCache) idCache.add(id);
-  announce(id);
-}
-function forgetId(id: string): void {
-  pendingIds.delete(id);
-  if (idCache) idCache.delete(id);
-  announce(id);
 }
 
 // ---------------------------------------------------------------------------
@@ -399,8 +243,10 @@ function forgetId(id: string): void {
 // concurrent ops (two tab autosaves, or a tab save racing a rename) could
 // each read the same snapshot
 // and the later put would silently drop the earlier write. One module-level
-// chain serialises all read-modify-write ops; each is a couple of IndexedDB
-// round-trips, so queueing adds no perceptible latency.
+// chain serialises all read-modify-write ops in this browser tab; each is one
+// IndexedDB transaction, so queueing adds no perceptible latency. The read and
+// the write share that transaction (offlineUpdateRecord), which is what keeps
+// ANOTHER tab's write from landing between them.
 let writeChain: Promise<unknown> = Promise.resolve();
 
 // A record the editor may still write: present, and not in the local Trash
@@ -417,21 +263,48 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
   return next;
 }
 
+// Read-modify-write one record in a single transaction (see OfflineRecordChange). Callers run it
+// inside serializeOfflineWrite.
+export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Promise<void> {
+  return offlineBackend().update(id, change);
+}
+
+// The editor's writes to a live record: `change` runs on it when it is writable. A missing record
+// is a no-op when this tab has already forgotten the id (a queued autosave landing after this
+// tab's own Sync Document), and an OfflineDocumentMissingError when the id is still listed.
+async function writeLive(
+  id: string,
+  change: (rec: OfflineDocumentRecord) => OfflineDocumentRecord,
+): Promise<void> {
+  await serializeOfflineWrite(async () => {
+    let missing = false;
+    await offlineUpdateRecord(id, (rec) => {
+      missing = rec === undefined;
+      return writable(rec) ? change(rec) : undefined;
+    });
+    if (missing && isOfflineIdSync(id)) {
+      forgetOfflineId(id);
+      console.warn('[offline-store] write-to-missing-record, id forgotten');
+      throw new OfflineDocumentMissingError(id);
+    }
+  });
+}
+
 // Live records only: a trashed one waits in the local Trash.
 export async function offlineListDocuments(): Promise<DocumentSummary[]> {
-  const recs = await backend.all();
+  const recs = await offlineBackend().all();
   return recs.filter((r) => r.trashedAt === undefined).map(recordToSummary);
 }
 
 // A trashed record reads as the deleted state, the local twin of the api's 410.
 export async function offlineLoadDocument(id: string): Promise<LiveDoc | null> {
-  const rec = await backend.get(id);
+  const rec = await offlineBackend().get(id);
   if (rec?.trashedAt !== undefined) throw new DocumentTrashedError(id);
   return rec ? recordToDocument(rec) : null;
 }
 
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
-  const rec = await backend.get(id);
+  const rec = await offlineBackend().get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
   // The offline twin of the api's rowToTab: a document kept in this browser can
   // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
@@ -464,8 +337,8 @@ export async function offlineCreateDocument(
     ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
   };
-  await backend.put(rec);
-  rememberId(rec.id);
+  await offlineBackend().put(rec);
+  rememberOfflineId(rec.id);
   return recordToDocument(rec);
 }
 
@@ -474,11 +347,7 @@ export async function offlineSaveDocumentMeta(
   patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
   now: number,
 ): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    const rec = await backend.get(id);
-    if (!writable(rec)) return;
-    await backend.put(applyMeta(rec, patch, now));
-  });
+  await writeLive(id, (rec) => applyMeta(rec, patch, now));
 }
 
 // An offline document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"), already
@@ -488,11 +357,7 @@ export async function offlineSaveItemTypes(
   itemTypes: ItemTypeCatalogue | null,
   now: number,
 ): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    const rec = await backend.get(id);
-    if (!writable(rec)) return;
-    await backend.put({ ...rec, itemTypes, savedAt: now });
-  });
+  await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
 }
 
 // Personal-folder placement for an offline document (docs/specs/013-workspace/folders.md). Folders are
@@ -503,11 +368,7 @@ export async function offlineSetDocumentFolder(
   folderId: string | null,
   now: number,
 ): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    const rec = await backend.get(id);
-    if (!writable(rec)) return;
-    await backend.put({ ...rec, folderId, savedAt: now });
-  });
+  await writeLive(id, (rec) => ({ ...rec, folderId, savedAt: now }));
 }
 
 // Star / un-star an offline document (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
@@ -515,56 +376,70 @@ export async function offlineSetDocumentFolder(
 // document, and bumping it would reorder Recent on a click that changed
 // nothing about the content.
 export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    const rec = await backend.get(id);
-    if (!rec) return;
-    await backend.put({ ...rec, favourite });
-  });
+  await serializeOfflineWrite(() =>
+    offlineUpdateRecord(id, (rec) => (rec ? { ...rec, favourite } : undefined)),
+  );
 }
 
 export async function offlineListFavouriteIds(): Promise<string[]> {
-  const recs = await backend.all();
+  const recs = await offlineBackend().all();
   return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    // No create-on-missing: a save must never resurrect a deleted document.
-    // A pending debounced autosave can land AFTER a sync-to-cloud deleted
-    // the record; recreating it here would shadow the freshly-synced cloud
-    // copy behind a 1-tab offline ghost (the local analog of the server's
-    // old create-on-first-write bug). Records are only ever created by
-    // offlineCreateDocument / offlinePutRecord.
-    const rec = await backend.get(id);
-    if (!writable(rec)) return;
-    await backend.put(upsertTab(rec, tab, now));
-  });
+  // No create-on-missing: a save must never resurrect a deleted document.
+  // A pending debounced autosave can land AFTER a sync-to-cloud deleted
+  // the record; recreating it here would shadow the freshly-synced cloud
+  // copy behind a 1-tab offline ghost (the local analog of the server's
+  // old create-on-first-write bug). Records are only ever created by
+  // offlineCreateDocument / offlinePutRecord.
+  await writeLive(id, (rec) => upsertTab(rec, tab, now));
 }
 
 export async function offlineDeleteTab(id: string, tabId: string, now: number): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    const rec = await backend.get(id);
-    if (!writable(rec)) return;
-    await backend.put(removeTab(rec, tabId, now));
-  });
+  await writeLive(id, (rec) => removeTab(rec, tabId, now));
 }
 
 export async function offlineDeleteDocument(id: string): Promise<void> {
   // Serialized with the tab / meta writes so a queued save can't interleave
   // with (or observe a half-applied) delete.
   await serializeOfflineWrite(async () => {
-    await backend.delete(id);
-    forgetId(id);
+    await offlineBackend().delete(id);
+    forgetOfflineId(id);
+  });
+}
+
+// Sync Document's last step (docs/specs/006-document/offline-mode.md "Save to server"): remove the
+// record only if it still matches what was uploaded, judged and done in one transaction so no write
+// (from this tab or another) can land between the check and the delete. Answers what it found:
+// `deleted` (with the record as it was), `changed` (with the record as it is now) or `missing`.
+export type OfflineDeleteOutcome =
+  { outcome: 'deleted' | 'changed'; rec: OfflineDocumentRecord } | { outcome: 'missing' };
+
+export async function offlineDeleteIfUnchanged(
+  id: string,
+  unchanged: (rec: OfflineDocumentRecord) => boolean,
+): Promise<OfflineDeleteOutcome> {
+  return serializeOfflineWrite(async () => {
+    let found = { outcome: 'missing' } as OfflineDeleteOutcome;
+    await offlineUpdateRecord(id, (rec) => {
+      if (!rec) return undefined;
+      const same = unchanged(rec);
+      found = { outcome: same ? 'deleted' : 'changed', rec };
+      return same ? 'delete' : undefined;
+    });
+    if (found.outcome !== 'changed') forgetOfflineId(id);
+    return found;
   });
 }
 
 // Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-document/offline-mode.md) to
 // upload the whole document, and by "take offline" to seed one.
 export async function offlineGetRecord(id: string): Promise<OfflineDocumentRecord | null> {
-  return (await backend.get(id)) ?? null;
+  return (await offlineBackend().get(id)) ?? null;
 }
 
 export async function offlinePutRecord(rec: OfflineDocumentRecord): Promise<void> {
-  await backend.put(rec);
-  rememberId(rec.id);
+  await offlineBackend().put(rec);
+  rememberOfflineId(rec.id);
 }

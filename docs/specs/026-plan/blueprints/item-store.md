@@ -24,13 +24,16 @@ src/item-types.ts    ITEM_TYPES, itemTypeOf(id) (unknown -> fallback def), ItemT
 src/fields.ts        KNOWN_FIELDS (field -> kind), PRIORITIES, validateFields, validateFieldKey
 src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
-src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store)
+src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store), rankInColumn,
+                     itemPlacer (ranks a batch of creates: one sort per column, not one per create)
+src/write-checks.ts  readItemPlace, readItemCreate, readItemPatch, readItemMove, statusExcluded, readItemWrite,
+                     writtenItemsRefusal: the api's body checks, run by an offline document on its own writes
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
 src/board-status-picks.ts the column picker's statuses: pickableStatuses(names, items, types), missingStatuses(setup,
                      names), missingBoardStatuses(setup, names, { items, types, boards }) (cards, boards, colour)
 src/views.ts         itemSummary, itemAccessibleName: one-line text for agents and announcements
-src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, storeAsCreates
+src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, writeLimitedTo, storeAsCreates
 src/presets.ts       PLAN_BOARD_PRESETS, presetSetup, presetSetupOrBlank
 src/person.ts        itemPersonId(ownerId): the hashed person id
 src/refs.ts          resolveItemRef(items, ref): #12, 12 or an id prefix
@@ -87,9 +90,9 @@ interface ItemMove extends ItemPlace {
 
 - `ItemCreate.key` and `votes` are accepted only to restore an item (undo, sync); `validateVotes` bounds the votes
   (`ITEM_VOTERS_MAX`, `ITEM_VOTES_PER_PERSON_MAX`).
-- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`), `LANE_FIELD_BUILT_INS` or a
-  custom field id (Parent's `parent` among them); `type` moves a
-  type swimlane.
+- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`), `LANE_FIELD_BUILT_INS`, a
+  custom field id (Parent's `parent` among them) or `ARCHIVED_FIELD` (`archived`: a card dragged off an Archive
+  board, and that move's undo): `isMoveSettable`; `type` moves a type swimlane.
 
 ### Validation (`validateFields(fields, mode)`)
 
@@ -120,8 +123,11 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 ### Rank
 
 Base-36 fractional keys over `0-9a-z`. `rankBetween(null, null)` is `'i'`; `rankBetween(a, b)` returns the
-shortest key strictly between (midpoint digit, extending with a digit when adjacent). Keys never end in `0`, so a
-key between always exists. Ties (equal ranks after concurrent inserts) order by `key`.
+shortest key strictly between (midpoint digit, extending with a digit when adjacent). At an open end it steps
+instead of halving: `rankAfter(a)` is the next key above `a` at its own width (the last digit runs `1-z`, the others
+`0-z`, carrying), and once every key of that width is used it doubles the width with the smallest tail (`z` to `z1`,
+`zz` to `zz01`); `rankBefore(b)` mirrors it (`1` to `0z`, `01` to `00zz`). So n appends cost O(log n) digits. Keys
+never end in `0`, so a key between always exists. Ties (equal ranks after concurrent inserts) order by `key`.
 
 ### apply.ts
 
@@ -182,7 +188,7 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   it takes only archived items, all into `columns[0]`. `normaliseBoardSetup` keeps `archive: true` only.
 - Preset `archive`: one column `archived` "Archived", Compact cards, widgets count, types, filter.
 - Board drop: onto an Archive board patches `{ set: { archived: true } }` (status kept; its own cards do not
-  reorder); off one onto another board moves, then patches `{ clear: ['archived'] }`. An Archive board refuses
+  reorder); off one onto another board is one move carrying `clear: ['archived']` (one write, one undo step). An Archive board refuses
   palette cards and has no Add Card.
 - Card Finder (`card-finder.ts`, items.md "Finding a card"): `findCards(items, { query, show, boardStatuses, types?,
 typeLabel? })` keeps live cards of any type id (no catalogue filter), narrowed to `types` when non-empty;
@@ -254,7 +260,17 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   is written, so one refusal refuses the whole request, naming the item (`{ error, field?, id }`). The updates go
   in one D1 batch, each guarded by the rev read, with one `items_rev` raise; an item a concurrent write moved on
   is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs
-  `[items] patched` with the count.
+  `[items] patched` with the count. Every attempt checks all its items before writing its batch; a retry that then
+  fails (an item refused as read again, or `item_busy` after the retries) answers its refusal with the items that
+  already landed added (`items`, `rev`, as `ItemsResponse`), logging `[items] items.patches.partial`. The editor's
+  client (`lib/api/items.ts`) throws `ItemWritePartlyLanded { landed, code }` for that, or for a later request of
+  a many-item write failing after earlier ones landed; `usePlanItems` keeps what landed and pushes one undo step for
+  it alone (`writeLimitedTo`).
+- A create, bulk create or seed (`createMany`) reads the store once per attempt: a named key is free when that
+  read's keys lack it (a key a racing write took fails the insert, which retries), and one `itemPlacer` ranks every
+  create, so n creates cost no per-create query and one sort per column.
+- A move reads its neighbours on every attempt (`writeItem`'s change may be async): a retry ranks against the
+  column as it then is.
 - Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
   share, such as the caller, refusals and relay, in `item-route-kit.ts`), dispatched from
   `document-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
@@ -412,13 +428,18 @@ replays the write with the keys the first write was given. Votes push nothing.
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
 - Changing many cards at once (`patches`) is one request per `ITEM_BULK_MAX` cards and one D1 batch, never a
   request per card; a type with 2,000 cards is 10 requests.
+- A bulk create or a seed of n cards is one store read and one insert batch per `ITEM_BULK_MAX` cards, and ranks
+  them in O(n log n): measured 2,000 creates at 5.3 ms CPU against 73 ms with a sort per create
+  (`store-growth.test.ts` holds the growth ratio).
+- Ranks stay short at an open end: 2,000 appends or prepends end at 8 digits (halving the gap reached 334 and 401,
+  past `isValidRank`'s 64).
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
-`items.refetch.gap`, `items.offline.write`, `items.offline.comment`, `items.comment.failed` (editor),
+`items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.patches.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api). Api logs never
 include `fields` or comment text.
 
@@ -427,7 +448,11 @@ include `fields` or comment text.
 | Rule                                           | Test                                                                                                                                                                                  |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                   |
-| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                                                                                                       |
+| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                     |
+| Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                           |
+| Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/live/lib/offline/offline-items.test.ts`                                                                                              |
+| Partial many-item write: answer, client, undo  | `apps/api/src/routes/item-routes.test.ts`, `apps/live/lib/api/items-patches.test.ts`, `apps/live/hooks/plan/usePlanItems.undo.test.ts`                                                |
+| Archive drag-off is one move                   | `apps/live/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                    |
 | apply functions                                | `apply.test.ts`                                                                                                                                                                       |
 | Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                       |
 | Tab-scoped set                                 | `tab-items.test.ts`                                                                                                                                                                   |

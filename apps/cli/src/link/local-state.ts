@@ -54,6 +54,14 @@ export async function readLinkState(io: CliIo, dir: string, linkPath: string): P
   return empty;
 }
 
+// The local sync state directory, private to this account: made 0700, and narrowed to 0700 when an earlier version
+// left it wider. Called before anything is created inside it (the lock first).
+export async function prepareLinkStateDir(io: CliIo, dir: string): Promise<void> {
+  await io.files.mkdir(dir, DIR_MODE);
+  const mode = await io.files.mode(dir);
+  if (mode !== null && mode !== DIR_MODE) await io.files.chmod(dir, DIR_MODE);
+}
+
 export async function writeLinkState(io: CliIo, dir: string, state: LinkState): Promise<void> {
   await io.files.mkdir(dir, DIR_MODE);
   await io.files.write(posix.join(dir, 'state.json'), JSON.stringify(state), FILE_MODE);

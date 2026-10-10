@@ -5,7 +5,11 @@ import {
   __setOfflineBackend,
   applyMeta,
   isOfflineId,
+  isOfflineIdSync,
   offlineCreateDocument,
+  offlineDeleteIfUnchanged,
+  offlineGetRecord,
+  offlinePutRecord,
   offlineDeleteDocument,
   offlineDeleteTab,
   offlineIdCount,
@@ -186,6 +190,32 @@ describe('upsertTab — tab kind', () => {
     );
     const legacy = tab({ layers: [{ id: 'layer:es:board', name: 'Event Storming' }] });
     expect(upsertTab(rec(), legacy, 2).tabs[0]!.kind).toBe('event-storming');
+  });
+});
+
+describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offline-mode.md)', () => {
+  it('removes the record and forgets the id when it still matches', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));
+    const out = await offlineDeleteIfUnchanged('d1', (r) => r.savedAt === 5);
+    expect(out).toMatchObject({ outcome: 'deleted', rec: { savedAt: 5 } });
+    expect(await offlineGetRecord('d1')).toBeNull();
+    expect(isOfflineIdSync('d1')).toBe(false);
+  });
+
+  it('keeps a record that changed, answering it as it is now', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));
+    await offlineSaveTab('d1', tab('t9'), 6);
+    const out = await offlineDeleteIfUnchanged('d1', (r) => r.savedAt === 5);
+    expect(out).toMatchObject({ outcome: 'changed', rec: { savedAt: 6 } });
+    expect(await offlineGetRecord('d1')).not.toBeNull();
+    expect(isOfflineIdSync('d1')).toBe(true);
+  });
+
+  it('answers missing for a record already gone', async () => {
+    __setOfflineBackend(memBackend());
+    expect(await offlineDeleteIfUnchanged('gone', () => true)).toEqual({ outcome: 'missing' });
   });
 });
 

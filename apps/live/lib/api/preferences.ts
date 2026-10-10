@@ -29,22 +29,23 @@ export async function apiGetPreferences(ownerId: string): Promise<Record<string,
   }
 }
 
+// True once the api confirmed the save (a 2xx). Never throws: a refusal or a network failure
+// answers false, and lib/preferences-sync keeps this device's copy until a save lands.
 export async function apiPutPreferences(
   ownerId: string,
   prefs: Record<string, unknown>,
-): Promise<void> {
+): Promise<boolean> {
   try {
-    await apiFetch(`${API_BASE}/preferences`, {
+    const res = await apiFetch(`${API_BASE}/preferences`, {
       method: 'PUT',
       headers: await apiHeaders(ownerId, { body: true }),
       body: JSON.stringify({ prefs }),
     });
-    // Errors swallowed: the toggle has already taken effect locally
-    // and we don't surface a toast for a settings-sync failure
-    // (would be more annoying than useful). Next page load reads
-    // localStorage, which is the authoritative value for this
-    // device until the next successful PUT.
+    // No toast for a settings-sync failure (more annoying than useful): the toggle has already
+    // taken effect locally, and the caller logs and retries on the next load.
+    if (!res.ok) console.warn(`[preferences] save-refused status=${res.status}`);
+    return res.ok;
   } catch {
-    // Same swallow as above.
+    return false;
   }
 }

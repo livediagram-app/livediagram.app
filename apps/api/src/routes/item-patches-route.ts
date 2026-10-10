@@ -3,13 +3,16 @@
 // grant, be in scope), each patch is read as a single one is, and every resulting item is checked before anything
 // is written, so one refusal refuses the request, naming the item. The updates land in one D1 batch, each guarded
 // by the rev read, with one store rev raise and one room op; an item a concurrent write moved on is read again and
-// retried, the others kept.
+// retried, the others kept. A retry that then fails (the item kept changing, or as read again it is refused) has
+// already landed the others: its refusal carries them (`items`, `rev`, as a success's answer), so the caller keeps
+// them and can undo them rather than taking the whole request as unwritten.
 import type { ItemsResponse } from '@livediagram/api-schema';
 import {
   ITEM_BULK_MAX,
   ITEM_WRITE_RETRIES,
   applyPatch,
   fieldsWithinBounds,
+  readItemPatch,
   type Item,
   type ItemPatchOf,
   type ItemRejection,
@@ -24,10 +27,10 @@ import {
   itemCaller,
   itemNotFound,
   isItemEditor,
-  readPatch,
   relay,
   retiresItem,
   writer,
+  type ItemCaller,
 } from './item-route-kit';
 
 // A refusal that names the item it is about.
@@ -44,11 +47,25 @@ function readPatches(raw: unknown): ItemPatchOf[] | Response {
     if (!entry || typeof entry !== 'object' || typeof (entry as { id?: unknown }).id !== 'string')
       return badRequest('each item needs its id');
     const { id, ...body } = entry as Record<string, unknown> & { id: string };
-    const patch = readPatch(body);
+    const patch = readItemPatch(body);
     if (typeof patch === 'string') return rejectedFor(id, patch);
     out.push({ id, patch });
   }
   return out;
+}
+
+// A failure after some items landed: the refusal's body with the landed items added.
+async function withLanded(
+  refusal: Response,
+  caller: ItemCaller,
+  done: Map<string, Item>,
+  rev: number,
+): Promise<Response> {
+  if (done.size === 0) return refusal;
+  const body = (await refusal.json()) as Record<string, unknown>;
+  console.info('[items] items.patches.partial', { landed: done.size, error: body.error });
+  const answer: ItemsResponse = { items: forCaller(caller, [...done.values()]), rev };
+  return json({ ...body, ...answer }, { status: refusal.status });
 }
 
 export async function patches(ctx: RouteContext, documentId: string): Promise<Response> {
@@ -75,13 +92,14 @@ export async function patches(ctx: RouteContext, documentId: string): Promise<Re
     const nexts = new Map<string, Item>();
     for (const { id, patch } of pending)
       nexts.set(id, applyPatch(nexts.get(id) ?? stored.get(id)!, patch, { now, by }));
+    // Every item is checked before any of this attempt's batch is written.
     for (const [id, next] of nexts) {
       if (excludedStatus(caller, next, stored.get(id)!, undo))
-        return rejectedFor(id, 'status_excluded', 'status');
+        return withLanded(rejectedFor(id, 'status_excluded', 'status'), caller, done, rev);
       if (retiresItem(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))
-        return forbidden();
+        return withLanded(forbidden(), caller, done, rev);
       const bound = fieldsWithinBounds(next.fields);
-      if (bound) return rejectedFor(id, bound);
+      if (bound) return withLanded(rejectedFor(id, bound), caller, done, rev);
     }
     if (nexts.size === 0) break;
     const written = await updateItemsAtRev(
@@ -97,7 +115,7 @@ export async function patches(ctx: RouteContext, documentId: string): Promise<Re
     if (pending.length === 0) break;
     console.info('[items] items.write.retry', { documentId, attempt, left: pending.length });
   }
-  if (pending.length) return itemBusy();
+  if (pending.length) return withLanded(itemBusy(), caller, done, rev);
   console.info('[items] patched', { documentId, count: done.size });
   const answer: ItemsResponse = { items: forCaller(caller, [...done.values()]), rev };
   return json(answer);

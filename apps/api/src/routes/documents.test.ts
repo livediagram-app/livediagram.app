@@ -125,6 +125,7 @@ function fakeDocument(ownerId: string, teamId: string | null = null): DocumentDT
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
+  db.setDocumentFolder.mockResolvedValue(true);
   canReadDocument.mockReset();
   canEditDocument.mockReset();
   resolveDocumentGrant.mockReset();

@@ -149,8 +149,19 @@ documents wherever they are filed.
   share names if the user really wants. The breadcrumb path
   disambiguates them in the move picker.
 - The API rejects cycles when moving a folder (a folder can't
-  become its own ancestor). Cycle check happens server-side because
-  D1 can't enforce it declaratively.
+  become its own ancestor) with `409 cycle`. Cycle check happens server-side because
+  D1 can't enforce it declaratively. It runs **inside the move's own
+  UPDATE** (a recursive walk over the new parent's ancestors), so two
+  crossing moves (A into B while B moves into A) can never both pass a
+  check made before either wrote. A new parent deleted meanwhile is
+  refused the same way.
+- Folder names are non-empty strings of at most `MAX_NAME_LEN`
+  characters; a missing, empty or non-string `name` (or a non-string
+  `id` / `parentId` / `teamId`) is `400` before anything is written.
+- Filing a document (`PUT /api/documents/:id/folder`) checks the
+  folder's existence and scope inside the same UPDATE that files it, so
+  a folder deleted after the route's own read files nothing and the
+  move answers `404`.
 
 Migration `0007_folders.sql` creates the `folders` table and adds
 the `folder_id` column.

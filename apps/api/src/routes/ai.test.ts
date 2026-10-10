@@ -194,3 +194,22 @@ describe('handleAi element payload size', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 });
+
+// docs/specs/007-editor/ai-assistance.md: a provider that cannot be reached is the provider's error, never a 500.
+describe('handleAi with the provider unreachable', () => {
+  it('answers ai_error when the retry fails at the network too', async () => {
+    vi.useFakeTimers();
+    try {
+      globalThis.fetch = vi.fn(async () => {
+        throw new TypeError('fetch failed');
+      }) as typeof fetch;
+      const pending = handleAi(makeCtx({ env: {} }));
+      await vi.runAllTimersAsync();
+      const res = await pending;
+      expect(res.status).not.toBe(500);
+      expect(await res.json()).toMatchObject({ error: 'ai_error' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

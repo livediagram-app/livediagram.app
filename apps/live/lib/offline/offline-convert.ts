@@ -6,82 +6,56 @@
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
-import { storeAsCreates } from '@livediagram/items';
 import { fetchItems } from '../api/items';
-import {
-  apiCreateDocument,
-  apiListFavourites,
-  apiLoadDocument,
-  apiLoadTab,
-  apiSetFavourite,
-} from '@/lib/api-client';
+import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
-import { embedTabImages, isDataImageId, uploadEmbeddedImages } from './offline-images';
+import { embedTabImages, isDataImageId } from './offline-images';
 import {
   offlineCreateDocument,
   offlineDeleteDocument,
-  offlineGetRecord,
   offlinePutRecord,
   type OfflineDocumentRecord,
 } from './offline-store';
-import { fetchAllSheets, sheetAsCreate } from '../api/sheets';
+import { fetchAllSheets } from '../api/sheets';
+import {
+  OfflineSyncIncompleteError,
+  syncOfflineDocument,
+  type OfflineSyncResult,
+} from './offline-sync';
 
-// Offline → Cloud ("Save to your account"). Creates the cloud copy first, then
-// removes the local one, so a network failure leaves the offline document
-// intact. Returns the (unchanged) document id and the images it re-homed (data URI -> gallery id), for an
-// editor syncing in place. `apiCreateDocument` does not dispatch on the offline index, so it always writes
-// to the server even while the id is still registered offline.
-export async function saveOfflineToCloud(
-  offlineId: string,
-  ownerId: string,
-): Promise<{ id: string; imageIds: Map<string, string> }> {
-  const rec = await offlineGetRecord(offlineId);
-  if (!rec) throw new Error('offline document not found');
-  // Re-home embedded data-URI images to R2 first (docs/specs/009-elements/images.md + /76): the cloud
-  // copy gets real gallery images instead of bloated tab JSON. Best-effort
-  // per image; a kept data URI still renders.
-  const { tabs, imageIds } = await uploadEmbeddedImages(ownerId, rec.tabs);
-  // Declare the conversion so the feed says "Synced to the Cloud" rather than
-  // reporting a brand-new document (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
-  // Everything the record holds besides tabs travels too: the local copy is
-  // deleted next, so a deck or placement left behind is gone for good.
-  const upload = (folderId: string | null) =>
-    apiCreateDocument(
-      ownerId,
-      {
-        id: rec.id,
-        name: rec.name,
-        tabs,
-        folderId,
-        createdAt: rec.createdAt,
-        presentation: rec.presentation ?? null,
-        // The item store, in each column's order (docs/specs/026-plan/items.md "Offline documents").
-        items: storeAsCreates(rec.items ?? []),
-        // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").
-        itemTypes: rec.itemTypes ?? null,
-        // The sheet store, whole (docs/specs/029-sheets/sheet-store.md "Offline documents").
-        ...(rec.sheets?.length ? { sheets: rec.sheets.map(sheetAsCreate) } : {}),
-      },
-      { conversion: 'sync' },
-    );
-  try {
-    await upload(rec.folderId ?? null);
-  } catch (err) {
-    // The server refuses a folder deleted since, or not the caller's, by name and writes nothing
-    // (docs/specs/013-workspace/folders.md "Placement on create"). The sync files the document in
-    // the root of My documents instead, on its own say-so, rather than losing the conversion over a folder.
-    const code = err instanceof ApiError ? err.code : null;
-    if (code !== 'folder_not_found' && code !== 'folder_scope_mismatch') throw err;
-    console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);
-    await upload(null);
+// One conversion per document at a time, in this tab: two overlapping ones (a second menu, or the
+// Share gate beside a menu) would each upload, or each delete, behind the other's back. Kept here
+// rather than in the menu that starts it, which unmounts when it closes and forgets.
+const converting = new Set<string>();
+
+// Thrown by a conversion started while another of the same document runs. Callers stay quiet: the
+// first one reports for both.
+export class ConversionInProgressError extends Error {
+  constructor() {
+    super('offline conversion already running');
+    this.name = 'ConversionInProgressError';
   }
-  await offlineDeleteDocument(rec.id);
-  // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
-  // on the server AFTER the delete: while the id is still registered offline,
-  // apiSetFavourite would route the star straight back to the local store.
-  if (rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
-  return { id: rec.id, imageIds };
+}
+
+export function conversionInProgress(documentId: string): boolean {
+  return converting.has(documentId);
+}
+
+async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise<T> {
+  if (converting.has(documentId)) throw new ConversionInProgressError();
+  converting.add(documentId);
+  try {
+    return await run();
+  } finally {
+    converting.delete(documentId);
+  }
+}
+
+// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id and the images it
+// re-homed (data URI -> gallery id), for an editor syncing in place.
+export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
+  return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
 }
 
 // Cloud → Offline ("Take offline"). Downloads the whole document, writes it to
@@ -89,10 +63,18 @@ export async function saveOfflineToCloud(
 // local write happens first so a failed delete leaves a (harmless) duplicate
 // rather than nothing. The server delete goes through the raw `apiDelete` so it
 // isn't re-routed to the local store once the id is registered offline.
-export async function takeCloudOffline(
+export function takeCloudOffline(
   documentId: string,
   ownerId: string,
   shareCode: string | null = null,
+): Promise<void> {
+  return oneAtATime(documentId, () => downloadAndRemoveCloudCopy(documentId, ownerId, shareCode));
+}
+
+async function downloadAndRemoveCloudCopy(
+  documentId: string,
+  ownerId: string,
+  shareCode: string | null,
 ): Promise<void> {
   const liveDoc = await apiLoadDocument(ownerId, documentId);
   if (!liveDoc) throw new Error('document not found');
@@ -136,9 +118,9 @@ export async function takeCloudOffline(
   if (unembedded) throw new Error('image embed incomplete');
 
   // The cloud star is a row keyed on the document, so the server delete below
-  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). Best-effort:
-  // apiListFavourites answers [] rather than throwing when the fetch fails.
-  const starred = (await apiListFavourites(ownerId)).includes(liveDoc.id);
+  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
+  // read aborts here, before anything is written: taken as "not starred" it would drop the star.
+  const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
   const now = Date.now();
   const rec: OfflineDocumentRecord = {
     id: liveDoc.id,
@@ -193,8 +175,14 @@ export class SyncStillSavingError extends Error {
   }
 }
 
+// A sync stopped by its own checks (./offline-sync) names what happened: the local copy is kept
+// either way, and a retry is the fix.
 export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
+  if (e instanceof OfflineSyncIncompleteError)
+    return e.reason === 'kept_changing'
+      ? 'This document kept changing while it synced. Your local copy is safe; try again when you finish editing.'
+      : 'The cloud copy came up short of cards or sheets, so your local copy was kept. Try again.';
   return e instanceof ApiError && e.status === 413
     ? 'This document is too large to sync: a tab exceeds the server size limit, usually a big embedded image. Remove or shrink it and try again.'
     : 'Could not sync this document. Check your connection and try again.';

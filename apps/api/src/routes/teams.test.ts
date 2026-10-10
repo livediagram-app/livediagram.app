@@ -518,7 +518,10 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
     const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
     expect(res.status).toBe(204);
-    expect(db.removeTeamMemberKeepingAdmin).toHaveBeenCalledWith({}, 'm2');
+    expect(db.removeTeamMemberKeepingAdmin).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ id: 'm2' }),
+    );
   });
 
   it("hands a removed member's team work to the team before the row goes", async () => {

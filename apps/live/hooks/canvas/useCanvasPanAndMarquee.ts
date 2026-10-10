@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/document';
+import {
+  buildElementIndex,
+  drawnBounds,
+  endpointPosition,
+  isBoxed,
+  type Element,
+} from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -280,8 +286,10 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
           if (!isBoxed(el)) continue;
           // Containment, not intersection: the element must be FULLY
           // enclosed by the marquee to be selected (the user has to
-          // sweep right over it, not just clip an edge).
-          if (el.x >= minX && el.x + el.width <= maxX && el.y >= minY && el.y + el.height <= maxY) {
+          // sweep right over it, not just clip an edge). A rotated element
+          // is judged by its drawn (turned) corners, not its unrotated box.
+          const b = drawnBounds(el);
+          if (b.x >= minX && b.x + b.width <= maxX && b.y >= minY && b.y + b.height <= maxY) {
             hits.add(el.id);
           }
         }

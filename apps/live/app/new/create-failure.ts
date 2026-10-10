@@ -42,3 +42,13 @@ export function createFailureCopy(error: unknown): CreateFailure {
     actionLabel: 'Choose another place',
   };
 }
+
+// The ids a create writes under. Minted once per attempt and kept for its Retry: a create that
+// reached the server but whose answer was lost would, retried under fresh ids, make a second
+// document. Retried under the same ids, the api takes it as the re-commit of an id the caller
+// already owns (docs/specs/007-editor/new-document-route.md "Retry").
+export type CreateIds = { documentId: string; tabId: string };
+
+export function createIdsFor(retrying: CreateIds | null): CreateIds {
+  return retrying ?? { documentId: crypto.randomUUID(), tabId: crypto.randomUUID() };
+}

@@ -320,7 +320,7 @@ describe('useAutosave and a board delta', () => {
 // docs/specs/024-agents/agent-changesets.md "The write path" step 8: each save says which
 // changesets its snapshot holds, from the same render as the snapshot.
 describe('useAutosave and changesets', () => {
-  it('sends the seen revision of the tab it saves, and none for a tab without one', () => {
+  it('sends the seen revision of the tab it saves, and none for a tab without one', async () => {
     const { useSubject } = setup();
     const { rerender } = renderHook(({ tabs, seen }) => useSubject(tabs, 0, () => {}, seen), {
       initialProps: {
@@ -337,7 +337,11 @@ describe('useAutosave and changesets', () => {
       expect.objectContaining({ changesetSeen: 5 }),
     );
     rerender({ tabs: [tab('again')], seen: new Map() });
-    act(() => vi.advanceTimersByTime(600));
+    // The tab's second save goes once its first has settled (tab-save-queue.ts).
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+      await vi.runAllTimersAsync();
+    });
     expect(apiSaveTab).toHaveBeenLastCalledWith(
       'me',
       'd1',
@@ -345,6 +349,31 @@ describe('useAutosave and changesets', () => {
       null,
       expect.not.objectContaining({ changesetSeen: expect.anything() }),
     );
+  });
+});
+
+// docs/specs/012-collaboration/collab-race-hardening.md "Saves": a tab's newer save never overtakes its older one.
+describe('useAutosave ordering', () => {
+  it("holds a tab's newer save until its older one has landed", async () => {
+    const { useSubject } = setup();
+    let land!: (rev: number | null) => void;
+    apiSaveTab.mockImplementationOnce(() => new Promise((r) => (land = r)));
+    const { rerender } = renderHook(({ tabs }) => useSubject(tabs, 0, () => {}), {
+      initialProps: { tabs: [tab('first')] },
+    });
+    act(() => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    rerender({ tabs: [tab('second')] });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+      await Promise.resolve();
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      land(1);
+      await vi.runAllTimersAsync();
+    });
+    expect(apiSaveTab).toHaveBeenCalledTimes(2);
   });
 });
 

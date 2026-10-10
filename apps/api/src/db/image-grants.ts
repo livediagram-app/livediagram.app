@@ -10,6 +10,7 @@
 // carries an image its source could serve.
 
 import type { Env } from '../types';
+import { visitLinkSql } from './shared';
 import { imageRefIndexDocumentStatement, isImageRefIndexComplete } from './image-refs';
 
 // The one predicate every reader shares: document `d` (aliased) may serve image
@@ -20,11 +21,36 @@ const SERVES = `(i.owner_id = d.owner_id
 
 // ---------- Writers ---------------------------------------------------
 
+// A document changing owner (a member leaving a team hands their work on; a team document moved into someone's
+// own library): the images its owner placed served only because they owned it, so they stop serving the moment
+// someone else does. Grant each one first, in the same batch as the owner change, to the documents `where`
+// picks (a SQL condition on `d`, its params bound from ?2 on). A grant outlives the membership
+// (docs/specs/009-elements/images.md "Placement grants").
+export function imageGrantOwnerChangeStatement(
+  env: Env,
+  where: string,
+  params: readonly (string | number | null)[],
+  now: number,
+): D1PreparedStatement {
+  return env.DB.prepare(
+    `INSERT OR IGNORE INTO image_grants (document_id, image_id, created_at)
+     SELECT DISTINCT d.id, i.id, ?1
+       FROM documents d
+       JOIN document_tabs dt ON dt.document_id = d.id
+       JOIN image_refs r ON r.tab_id = dt.tab_id
+       JOIN images i ON i.id = r.image_id AND i.owner_id = d.owner_id
+      WHERE ${where}`,
+  ).bind(now, ...params);
+}
+
 // For each image a saved body places, in each document holding the tab: grant it
 // when the image's owner is entitled to place it there right now, as a joined
-// member of the document's team, or a collaborator who may add content: an edit
-// collaborator, or a Participant (docs/specs/013-workspace/share-roles.md), who
-// places images too. The writer's identity is not needed. An image the document's owner owns needs no row.
+// member of the document's team, or a collaborator who may add content whose visit's
+// link is still live: an edit collaborator, or a Participant
+// (docs/specs/013-workspace/share-roles.md), who places images too. A revoked or
+// expired link earns nothing, so an id pasted after access went cannot be laundered
+// into a grant. The writer's identity is not needed. An image the document's owner
+// owns needs no row.
 export function imageGrantPlacementStatements(
   env: Env,
   tabId: string,
@@ -47,7 +73,8 @@ export function imageGrantPlacementStatements(
                OR EXISTS (
                   SELECT 1 FROM shared_with s
                    WHERE s.owner_id = i.owner_id AND s.document_id = d.id
-                     AND (s.role = 'edit' OR s.level = 'participate')))`,
+                     AND (s.role = 'edit' OR s.level = 'participate')
+                     AND d.shareable = 1 AND ${visitLinkSql('?3')} IS NOT NULL))`,
     ).bind(tabId, JSON.stringify(ids), now),
   ];
 }

@@ -149,13 +149,21 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     { role: 'user', content: userContent },
   ];
 
-  const oaiRes = await chatCompletions(provider, {
-    model,
-    messages,
-    stream: true,
-    max_tokens: isTextMode ? MAX_TOKENS_REVIEW : MAX_TOKENS_MUTATE,
-    ...(isTextMode ? {} : { response_format: { type: 'json_object' } }),
-  });
+  // A provider unreachable twice (chatCompletions retries a network failure once) is the provider's error,
+  // answered as one (aiError), never a 500 internal_error, as the read-notes route answers it.
+  let oaiRes: Response;
+  try {
+    oaiRes = await chatCompletions(provider, {
+      model,
+      messages,
+      stream: true,
+      max_tokens: isTextMode ? MAX_TOKENS_REVIEW : MAX_TOKENS_MUTATE,
+      ...(isTextMode ? {} : { response_format: { type: 'json_object' } }),
+    });
+  } catch (err) {
+    console.error('[ai] provider unreachable:', err instanceof Error ? err.message : String(err));
+    return aiError();
+  }
 
   if (!oaiRes.ok || !oaiRes.body) {
     const errText = await oaiRes.text().catch(() => '');

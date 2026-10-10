@@ -180,7 +180,7 @@ A deck should feel like a deck, and the transitions are what sell it.
 - Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
 - The travel is **the full width of the screen**, and the animated node is the canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than what's on the canvas sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
 - The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding — the slide appears to arrive, then keeps creeping.
-- The transition attribute is cleared on the animation's **own `animationend`**, never on a timer. A timer has to guess the duration, and guessing even slightly short yanks the attribute mid-animation: the element snaps from wherever it had got to straight to its resting place, which is the little bounce at the end that reads as rubber-banding even once the curve is right. A long failsafe timeout still runs, so a missing surface or an animation that never fires cannot leave the attribute stuck and block the next transition.
+- The transition attribute is cleared on the slide surface's **own `animationend`** (one bubbling up from an element on the slide is ignored), never on a timer. A timer has to guess the duration, and guessing even slightly short yanks the attribute mid-animation: the element snaps from wherever it had got to straight to its resting place, which is the little bounce at the end that reads as rubber-banding even once the curve is right. A long failsafe timeout still runs, so a missing surface or an animation that never fires cannot leave the attribute stuck and block the next transition.
 - Transitions are **CSS transforms on the slide surface**, not per-element animation. One moving layer is cheap at any slide size, so a hundred-element slide transitions exactly as fast as a one-element slide.
 - The animation must NEVER target the canvas's content wrapper, which carries the pan/zoom transform: a CSS animation on `transform` replaces the inline one for its whole duration, which drops the slide to unzoomed top-left for the length of the transition. For the same reason the fit measures `offsetWidth/offsetHeight` (layout size) rather than `getBoundingClientRect` (the transformed box), or it fits each slide to a viewport the entry animation was mid-way through shrinking.
 
@@ -196,7 +196,7 @@ The jump button (or `G`) opens a popover listing every slide by position and nam
 
 `Esc` closes an open popover before it leaves the deck. Both popovers can be open over a slide and both take `Esc`, so without an order the key that dismisses a list would end the presentation.
 
-**Announcing the slide.** The HUD carries an `aria-live="polite"` region reading the position and name on every change ("Slide 7 of 23, Architecture"). The deck is otherwise an entirely visual surface, and a presenter driving it with a screen reader gets nothing back from a slide changing silently.
+**Announcing the slide.** The HUD carries an `aria-live="polite"` region reading the position and name on every change of slide or of the deck's length ("Slide 7 of 23, Architecture"), never on an edit that leaves the slide on screen as it is. The deck is otherwise an entirely visual surface, and a presenter driving it with a screen reader gets nothing back from a slide changing silently.
 
 **Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind. Click again, `Esc`, or advancing the slide closes it.
 
@@ -224,7 +224,7 @@ Anything needing thought belongs in the panel, before you start, which is why
 per-slide budgets are authored there and only their DISPLAY is switched here.
 
 - **Transition** — Slide, Fade or None, plus a **speed** (Quick / Normal / Slow) which disappears when the transition is None, rather than sitting there greyed out. The speed drives the animation through a `--lvd-slide-ms` custom property, so the keyframes stay one definition.
-- **Auto-advance** — Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about.
+- **Auto-advance** — Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about. The timer runs from the slide's arrival; a re-render (a collaborator's edit, the clock) never restarts it.
 - **Zoom** — Fill screen (a small slide is blown up) or Actual size (never past 100%), for authors whose slides are already the size they meant.
 - **Keep controls visible** — stop the HUD fading when the pointer rests.
 - **Hide the pointer** — a still cursor left on a projector is a distraction. Driven by the same idle signal that fades the HUD, so the two come back together; a hidden cursor you could not bring back would be a trap.
@@ -276,6 +276,8 @@ They are deliberately NOT the elements' existing `note?` field ([Document struct
 This is a stance, not a v1 shortcut. "Follow the presenter" was the obvious v2 and is **not planned**: it makes presenting something that happens TO other people, which is the opposite of the point. You are showing a room what you want them to see, on your screen. Somebody else reading the same document in another window is doing their own work and should be left alone.
 
 What it saves is real. Presenting needs **no room op, no api-schema change, and nothing in the Durable Object**. Remote cursors and lasers are hidden from the presenter's own view (they would puncture the illusion on a projector), and edits arriving mid-presentation apply underneath as normal, so a slide re-renders if one of its members changed.
+
+**The presenter stays on their slide.** The running deck remembers the slide on screen by its id, not its place in the run, so a collaborator deleting a tab, or hiding, adding or moving a slide, never moves the presenter to another slide or ends the deck. When the slide on screen itself goes, the one now in its place shows (the last one if it was last); the end state comes only once no slide is left. Such an edit is not a move: no transition plays, the auto-advance timer keeps running from the slide's arrival, and nothing is announced.
 
 ### Deck edits are ordinary document data
 

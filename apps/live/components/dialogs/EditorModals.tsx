@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/document';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { commitUserPreferences } from '@/lib/user-preferences';
 
 const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
@@ -28,7 +29,6 @@ export function EditorModals() {
     closeSettings,
     userPreferences,
     setUserPreferences,
-    writeUserPreferences,
     selfParticipant,
     aiCapable,
     canvasThemeTab,
@@ -54,13 +54,16 @@ export function EditorModals() {
         <SettingsDialog
           settings={userPreferences}
           onChange={(next) => {
-            setUserPreferences(next);
             // Pass the resolved owner id so the new prefs round-trip
             // to D1 (docs/specs/007-editor/user-preferences.md). selfParticipant?.id is null until the
             // identity effect resolves it, but settingsOpen can't be
             // true until the user clicks the gear, which only renders
             // after that effect ran, so the id is always set here.
-            writeUserPreferences(next, selfParticipant?.id ?? null);
+            // The row built `next` on this render's preferences; only its change is written, onto
+            // the freshest, so another tab's change since is kept.
+            setUserPreferences(
+              commitUserPreferences(userPreferences, next, selfParticipant?.id ?? null),
+            );
           }}
           ownerId={selfParticipant?.id ?? null}
           onClose={closeSettings}

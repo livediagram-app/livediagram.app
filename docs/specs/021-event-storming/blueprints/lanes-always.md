@@ -20,6 +20,7 @@ Scope, by file:
 | `packages/templates/src/templates.ts`                            | `templateCanvasOverrides('event-storming')` marks the board settled       |
 | `apps/live/hooks/canvas/boxed-drag-resolve.ts`                   | `laneHeld` switches the y threshold                                       |
 | `apps/live/hooks/canvas/useEditorDrag.ts`                        | Picks the lane anchor of a selection; passes `laneHeld`                   |
+| `apps/live/hooks/canvas/lane-drag.ts`                            | `lanesHoldDrag`, `laneAnchorOf`: which drags meet the lanes, and by what  |
 | `apps/live/lib/palette-drag-snap.ts`                             | `laneHeld` switches the y threshold                                       |
 | `apps/live/lib/palette-drag-preview.ts`                          | `workshop` flag on the drag preview                                       |
 | `apps/live/components/palette/palette-tile-drag.ts`              | Publishes `workshop` for a kinded tile                                    |
@@ -32,7 +33,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useLaneSettle.ts`                        | The one-time settle of an older board                                     |
 | `apps/live/lib/import-merge.ts`                                  | A file import onto an event-storming tab settles its notes                |
 | `apps/live/lib/next-note-add.ts`                                 | The next note takes its source's lane                                     |
-| `apps/live/lib/insert-between.ts`                                | The slot's `atY` is a lane centre                                         |
+| `apps/live/lib/insert-between.ts`                                | The slot's `atY` is a lane centre; the row is the cursor's lane           |
 | `packages/document/src/tab-builders.ts`, `apps/mcp/src/tools.ts` | `landWorkshopArrivals` in `update_document`                               |
 | `packages/sticky-vision/scripts/placement-check.ts`              | Private harness: photo placement over the labelled walls                  |
 | `apps/help/app/canvas/event-storming-boards/page.mdx`            | Help: lanes section                                                       |
@@ -77,10 +78,15 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
 - `resolveBoxedMove({ …, laneHeld })` and `paletteDragSnapAt({ …, laneHeld })` call
   `snapToLane(candidate, timeline, laneSnapThreshold(laneHeld))`. With `laneHeld` the lane
   snap never returns null, so x capture always runs against the lane the note lands on.
-- `useEditorDrag`: `laneAnchorId` = the primary when it is a workshop note, else the first
-  workshop note among `drag.startBounds` keys (insertion order), else the primary.
-  `laneHeld = laneAnchorId is a workshop note`. `resolveBoxedMove` is called with
-  `primaryId: laneAnchorId` whenever the timeline is on (D1).
+- `useEditorDrag`: `laneAnchorId` = `laneAnchorOf(elements, primary, ids)`: the primary when it
+  is a workshop note, else the first workshop note among `drag.startBounds` keys (insertion
+  order), else null (the primary is used). `laneHeld = laneAnchorId !== null`. The timeline is on
+  for a move when `lanesHoldDrag(elements, ids)`: the dragged set holds a workshop note (anything
+  else in it, a label or a frame, moves by the same delta) or is all stickies. `resolveBoxedMove`
+  is called with `primaryId: laneAnchorId` whenever the timeline is on (D1).
+- Alt insertion: `findInsertionSlot({ …, lanes })` (both callers pass the board's lanes) builds
+  the row from the boxed elements whose centre's `laneIndexAt` equals the cursor's, and an open
+  slot stays open only while the cursor is on its notes' lane.
 - Palette drag: `PaletteDragPreview.workshop = true` for a tile with an `esKind`;
   `laneHeld = preview.workshop === true`.
 - Stamp: `stampPlacement(x, y, size, board, held)`, with `held = stampHeld(intent)`
@@ -324,6 +330,9 @@ only skips a settle the forger could have undone. MCP input is already validated
 | Lane step from on / off a lane                          | `event-storming-lanes.test.ts`                            |
 | Held y snap at any distance, plain sticky within 20px   | `boxed-drag-resolve.test.ts`, `palette-drag-snap.test.ts` |
 | Selection anchored on the first workshop note           | `useEditorDrag.lanes.test.tsx`                            |
+| A note moved with a label or a frame keeps its lane     | `lane-drag.test.ts`                                       |
+| Alt insertion's row is the cursor's lane                | `insert-between.test.ts`                                  |
+| A pre-stamp note takes its kind on load, never live     | `packages/document/src/legacy-es-kinds.test.ts`           |
 | Rows to lanes, cascade, order                           | `event-storming-lane-landing.test.ts`                     |
 | Lone arrival on an occupied spot takes a free slot      | `event-storming-lane-landing.test.ts`                     |
 | Settle: y only, locked stays, same array when on lanes  | `event-storming-lane-landing.test.ts`                     |

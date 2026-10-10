@@ -2,6 +2,7 @@ import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction 
 import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { rebaseLocalEdits } from './rebase-local-edits';
 
 // Re-hydrating a document in place after the room can't bridge our
 // reconnect gap (docs/specs/012-collaboration/resync-without-reload.md). This used to be `window.location.reload()`:
@@ -78,9 +79,11 @@ export function useRoomResync(opts: {
         // now) and let usePerTabLoad's retry path own the recovery.
         return;
       }
-      // Unlike usePerTabLoad's merge, this deliberately OVERWRITES tabs that
-      // already hold content. That's the entire job: we know we missed ops,
-      // so local content is the stale copy and the server's is authoritative.
+      // Unlike usePerTabLoad's merge, this replaces tabs that already hold
+      // content: we know we missed ops, so the server's copy is the base. What
+      // was edited here and not yet saved goes back on top of it
+      // (rebaseLocalEdits), judged against the baseline before it moves.
+      const savedBefore = new Map(lastSavedTabsRef.current.map((t) => [t.id, t] as const));
       const overwrite = (prev: Tab[]): Tab[] =>
         prev.map((t) => {
           const next = byId.get(t.id);
@@ -88,7 +91,13 @@ export function useRoomResync(opts: {
           // by the meta path, not the content fetch.
           return next ? { ...next, folder: t.folder } : t;
         });
-      applyRemoteTabs(overwrite);
+      applyRemoteTabs((prev) =>
+        prev.map((t) => {
+          const next = byId.get(t.id);
+          if (!next) return t;
+          return { ...rebaseLocalEdits(next, t, savedBefore.get(t.id)), folder: t.folder };
+        }),
+      );
       // In the same batch as the content it describes (useChangesetSeen).
       for (const [tabId, rev] of revs) noteChangesetSeen(tabId, rev);
       // Inbound, not a local edit: moving the baseline with it is what keeps

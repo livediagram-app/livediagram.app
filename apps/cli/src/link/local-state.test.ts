@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { fakeIo } from '../testing/fake-io';
 import { SYNC_REPORTS_KEPT } from './constants';
 import { parseLinkFile } from './link-file';
-import { linkIdOf, linkStateDir, readLinkState, saveReport, writeLinkState } from './local-state';
+import {
+  linkIdOf,
+  linkStateDir,
+  prepareLinkStateDir,
+  readLinkState,
+  saveReport,
+  writeLinkState,
+} from './local-state';
 
 // The local sync state (docs/specs/027-repositories/blueprints/repository-link.md "Data and persistence"): per link
 // and work tree, under the git directory, else the cache; never committed.
@@ -84,5 +91,32 @@ describe('saveReport', () => {
       exit: 0,
     });
     expect(io.fileMap.get(reports[0]!)!.mode).toBe(0o600);
+  });
+});
+
+describe('prepareLinkStateDir', () => {
+  // The directory as the file system reports it: `mode` answers what an earlier version left, or null when unknown.
+  const withDirMode = (mode: number | null) => {
+    const io = fakeIo();
+    const chmods: string[] = [];
+    io.files.mode = async () => mode;
+    io.files.chmod = async (path, to) => void chmods.push(`${path} ${to.toString(8)}`);
+    return { io, chmods };
+  };
+
+  it('makes the directory, and narrows one an earlier version left wider to 0700', async () => {
+    const { io, chmods } = withDirMode(0o755);
+    await prepareLinkStateDir(io, '/state');
+    expect(io.dirMap.has('/state')).toBe(true);
+    expect(chmods).toEqual(['/state 700']);
+  });
+
+  it('leaves a 0700 directory, or one whose mode is unknown, as it is', async () => {
+    for (const mode of [0o700, null]) {
+      const { io, chmods } = withDirMode(mode);
+      await prepareLinkStateDir(io, '/state');
+      expect(io.dirMap.has('/state')).toBe(true);
+      expect(chmods).toEqual([]);
+    }
   });
 });

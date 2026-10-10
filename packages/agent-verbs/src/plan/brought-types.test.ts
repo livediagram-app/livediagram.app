@@ -85,4 +85,29 @@ describe('bringBoardCardTypes', () => {
     const known = { stored: null, hasCards: false };
     await expect(bringBoardCardTypes(a, D, [board('bug-triage')], known)).rejects.toThrow();
   });
+
+  // docs/specs/026-plan/item-types.md "Storage and sync": the save names the revision read; another change landing
+  // first sends it back to read the card types again.
+  it('reads the card types again when another change landed first', async () => {
+    let rev = 2;
+    const sent: unknown[] = [];
+    const fake = fakeApi({
+      [`/documents/${D}`]: () =>
+        Response.json({ document: { id: D, tabs: [], itemTypes: null, itemTypesRev: rev } }),
+      [`/documents/${D}/items`]: () => Response.json({ items: [], rev: 1 }),
+      [`/documents/${D}/item-types`]: async (r: Request) => {
+        sent.push(((await r.json()) as { expectedRev?: number }).expectedRev);
+        if (sent.length === 1) {
+          rev = 3;
+          return Response.json(
+            { error: 'item_types_stale', itemTypes: null, itemTypesRev: 3 },
+            { status: 409 },
+          );
+        }
+        return Response.json({ itemTypes: null, itemTypesRev: 4 });
+      },
+    });
+    expect(await bringBoardCardTypes(fake, D, [board('kanban')])).toEqual(['task', 'action']);
+    expect(sent).toEqual([2, 3]);
+  });
 });

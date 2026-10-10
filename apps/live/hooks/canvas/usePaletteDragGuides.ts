@@ -3,6 +3,7 @@
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
+  ES_LANES,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -140,8 +141,9 @@ export function usePaletteDragGuides({
               elements: live,
               inertIds: inert,
               active: slot,
-              // Lanes on: open the slot by whole columns, so the row it
-              // pushes is still on the grid afterwards.
+              // The row is the cursor's lane: an insertion is offered only on
+              // an event-storming board, which is a board of lanes.
+              lanes: lanes ?? ES_LANES,
             })
           : null;
       if (slot) {

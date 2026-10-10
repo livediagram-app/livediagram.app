@@ -344,6 +344,50 @@ describe('changeCardTypes', () => {
     const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
     expect(r.refusal!.message).toContain('view this document but not change it');
   });
+
+  // docs/specs/026-plan/item-types.md "Storage and sync": a save names the revision it read; when an editor's change
+  // landed first, the plan is read again and the change applied to it, keeping the editor's.
+  it('applies its changes again to card types someone else changed meanwhile', async () => {
+    let rev = 4;
+    let types: unknown[] = [...ITEM_TYPES, BUG];
+    const puts: { itemTypes: { types: { id: string }[] }; expectedRev: number }[] = [];
+    const { api: a } = api({
+      [`/documents/${D}/plan`]: () =>
+        Response.json({ boards: [BOARD()], statuses: STATUSES, types, itemTypesRev: rev }),
+      [`/documents/${D}/item-types`]: async (r: Request) => {
+        const body = (await r.json()) as (typeof puts)[number];
+        puts.push(body);
+        if (puts.length === 1) {
+          // An editor added a type between the read and the save.
+          rev = 5;
+          types = [...types, { ...BUG, id: 'spike', label: 'Spike' }];
+          return Response.json(
+            { error: 'item_types_stale', itemTypes: null, itemTypesRev: 5 },
+            { status: 409 },
+          );
+        }
+        return Response.json({ itemTypes: body.itemTypes, itemTypesRev: 6 });
+      },
+    });
+    const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
+    expect(r.refusal).toBeUndefined();
+    expect(puts.map((p) => p.expectedRev)).toEqual([4, 5]);
+    const ids = puts[1]!.itemTypes.types.map((t) => t.id);
+    expect(ids).toContain('spike');
+    expect(ids).toContain('risk');
+  });
+
+  it('gives up with a refusal when the card types keep changing', async () => {
+    const { api: a } = api({
+      [`/documents/${D}/item-types`]: () =>
+        Response.json(
+          { error: 'item_types_stale', itemTypes: null, itemTypesRev: 9 },
+          { status: 409 },
+        ),
+    });
+    const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
+    expect(r.refusal).toMatchObject({ code: 'item_types_stale' });
+  });
 });
 
 describe('addBoard', () => {
@@ -381,6 +425,24 @@ describe('addBoard', () => {
     ]);
     const saved = (seen[1]!.body as { itemTypes: { types: { id: string }[] } }).itemTypes;
     expect(saved.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug', 'story']);
+  });
+
+  // docs/specs/026-plan/item-types.md "Storage and sync": the types a board brings are saved against the revision read.
+  it('saves the brought card types against the revision the document was read at', async () => {
+    const { api: a, seen } = api({
+      [`/documents/${D}`]: {
+        document: {
+          id: D,
+          itemTypes: { version: 1, types: [...ITEM_TYPES, BUG] },
+          itemTypesRev: 3,
+          tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }],
+        },
+      },
+    });
+    const r = await addBoard(a, D, { preset: 'sprint' }, 'mcp');
+    if (!r.ok) throw new Error(r.message);
+    const put = seen.find((s) => s.method === 'PUT')!;
+    expect((put.body as { expectedRev: number }).expectedRev).toBe(3);
   });
 
   it('takes a tab, and refuses an unknown tab, type or preset', async () => {

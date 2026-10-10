@@ -771,6 +771,14 @@ describe('apiUploadImage request shape (docs/specs/009-elements/images.md)', () 
     expect(out).toEqual({ image: { id: 'img1' }, deduped: false });
   });
 
+  it('percent-encodes a name a header cannot hold (a macOS screenshot, a non-Latin name)', async () => {
+    const spy = stubOk();
+    const name = 'Screenshot at 9.41.02\u202fAM 図.png';
+    await expect(apiUploadImage('owner', file({ originalName: name }))).resolves.toBeDefined();
+    const h = (spy.mock.calls[0]![1] as RequestInit).headers as Headers;
+    expect(decodeURIComponent(h.get('X-Image-Original-Name')!)).toBe(name);
+  });
+
   it('omits X-Image-Original-Name when no original name is given', async () => {
     const spy = stubOk();
     await apiUploadImage('owner', file({ originalName: undefined }));

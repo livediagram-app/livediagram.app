@@ -103,15 +103,6 @@ export async function readItems(env: Env, documentId: string, ids: string[]): Pr
   return (res.results ?? []).map(itemFromRow);
 }
 
-export async function itemKeyTaken(env: Env, documentId: string, key: number): Promise<boolean> {
-  const row = await env.DB.prepare(
-    'SELECT 1 AS x FROM items WHERE document_id = ? AND item_key = ?',
-  )
-    .bind(documentId, key)
-    .first<{ x: number }>();
-  return row !== null;
-}
-
 function bumpRev(env: Env, documentId: string, nextKey?: number): D1PreparedStatement {
   return nextKey === undefined
     ? env.DB.prepare(

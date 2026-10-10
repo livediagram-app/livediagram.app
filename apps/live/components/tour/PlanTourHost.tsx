@@ -8,6 +8,7 @@ import { EXAMPLE_TOTAL_CELL, PLAN_TOUR_RELAUNCH_EVENT, type PlanTourTrack } from
 import { requestSheetSelect } from '@/lib/sheet-select-request';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { hasTourPending } from '@/lib/tour-pending';
 import { waitForSelector } from './tour-dom';
 import { planTourSteps, planTourStepTelemetryType, type PlanTourApi } from './plan-tour-steps';
@@ -113,7 +114,11 @@ export function PlanTourHost() {
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.closeCard();
     content.removeAll();
-    const next = { ...ctx.userPreferences, planTourSeen: true };
+    // Onto the freshest preferences, not this render's: the whole blob is written.
+    const next = rebaseUserPreferences(ctx.userPreferences, {
+      ...ctx.userPreferences,
+      planTourSeen: true,
+    });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     debugLog('[plan-tour] end', { outcome });

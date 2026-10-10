@@ -10,6 +10,7 @@ import { SheetCardRows } from './SheetCardRows';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   cycleInRange,
+  selectsSeveral,
   displayValue,
   formatA1,
   homeEnd,
@@ -240,7 +241,8 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, fontFami
     e.stopPropagation();
     const sel = c.selectionNow();
     const range = sel.ranges[sel.ranges.length - 1]!;
-    const multi = range.r1 !== range.r2 || range.c1 !== range.c2;
+    // A clicked merge is one cell, not a range to cycle through.
+    const multi = selectsSeveral(sel, c.grid);
     switch (cmd.kind) {
       case 'move':
         return actions.move(cmd.dir, cmd.jump, cmd.extend);

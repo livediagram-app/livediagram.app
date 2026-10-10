@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { deleteFolder } from './folders';
+import { deleteFolder, moveFolder } from './folders';
 import { trashDocument } from './trash';
 
 // Deleting a folder on a real schema (docs/specs/013-workspace/folders.md "Deleting a folder",
@@ -142,5 +142,68 @@ describe('deleteFolder', () => {
 
     expect(await deleteFolder(db.env, 'workshops')).toEqual({ parentId: 'projects' });
     expect(await deleteFolder(db.env, 'top')).toEqual({ parentId: null });
+  });
+});
+
+// The cycle check runs inside the move's own UPDATE (docs/specs/013-workspace/folders.md), so two
+// crossing moves cannot both pass a check made before either wrote.
+describe('moveFolder', () => {
+  it('moves a folder under an unrelated one', async () => {
+    folder('a', null);
+    folder('b', null);
+    expect(await moveFolder(db.env, 'a', 'b')).toBe(true);
+    expect(parentOf('a')).toBe('b');
+  });
+
+  it('refuses the second of two crossing moves, leaving no loop', async () => {
+    folder('a', null);
+    folder('b', null);
+    // Both "checks" would have passed against the starting tree; the first write lands, the second
+    // sees it inside its own statement.
+    const [first, second] = await Promise.all([
+      moveFolder(db.env, 'a', 'b'),
+      moveFolder(db.env, 'b', 'a'),
+    ]);
+    expect([first, second]).toEqual([true, false]);
+    expect(parentOf('a')).toBe('b');
+    expect(parentOf('b')).toBeNull();
+  });
+
+  it('refuses a folder into itself or any descendant', async () => {
+    folder('a', null);
+    folder('b', 'a');
+    folder('c', 'b');
+    expect(await moveFolder(db.env, 'a', 'a')).toBe(false);
+    expect(await moveFolder(db.env, 'a', 'c')).toBe(false);
+    expect(parentOf('a')).toBeNull();
+  });
+
+  it('refuses a parent that no longer exists', async () => {
+    folder('a', null);
+    expect(await moveFolder(db.env, 'a', 'gone')).toBe(false);
+    expect(parentOf('a')).toBeNull();
+  });
+
+  it('moves to the root', async () => {
+    folder('a', null);
+    folder('b', 'a');
+    expect(await moveFolder(db.env, 'b', null)).toBe(true);
+    expect(parentOf('b')).toBeNull();
+  });
+
+  it('ends its walk on an already corrupt loop', async () => {
+    folder('x', null);
+    folder('y', 'x');
+    db.sql.prepare("UPDATE folders SET parent_id = 'y' WHERE id = 'x'").run();
+    folder('a', null);
+    expect(await moveFolder(db.env, 'a', 'x')).toBe(true);
+  });
+
+  it('walks a deep chain in one statement', async () => {
+    folder('f0', null);
+    for (let i = 1; i < 500; i++) folder(`f${i}`, `f${i - 1}`);
+    const started = performance.now();
+    expect(await moveFolder(db.env, 'f0', 'f499')).toBe(false);
+    expect(performance.now() - started).toBeLessThan(250);
   });
 });

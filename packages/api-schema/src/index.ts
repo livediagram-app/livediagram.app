@@ -64,6 +64,8 @@ export type LiveDoc = {
   // (or absent, from an older client or record) for the built-in ones. Written only by
   // PUT /documents/:id/item-types.
   itemTypes?: ItemTypeCatalogue | null;
+  // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
+  itemTypesRev?: number;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

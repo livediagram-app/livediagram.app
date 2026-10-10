@@ -42,13 +42,38 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   authoritative for the session.
 - **On toggle**: update localStorage immediately (so the UI
   reflects the change without waiting for the network), then
-  fire-and-forget `PUT /api/preferences` with the full updated
-  blob. If the PUT fails the local change still applies; the
-  next page load picks the cache again. Last-write-wins per
-  device.
+  `PUT /api/preferences` with the full updated blob in the
+  background. Last-write-wins per device.
+- **Saving to the server** (`apps/live/lib/preferences-sync.ts`):
+  - **It fits.** The blob is trimmed to the api's cap (4,096
+    characters of `{"prefs":...}`) before it is cached or sent:
+    the oldest hidden-from-Recent ids go first
+    ([Hide from Recent](../013-workspace/hide-from-recent.md)), then the
+    least recently used shape picks
+    ([Draw mode, Shape slots](../023-draw-mode/draw-mode.md)); every
+    other key stays whole. A full account measured 4,967 characters,
+    past which every save was refused. A trim logs
+    `[preferences] trimmed to fit dropped=<n> length=<n>`.
+  - **One save at a time, the latest wins.** A save made while one
+    is in flight waits, and replaces any save already waiting, so
+    the server can never end on an older blob than the last one sent.
+  - **A save that did not land keeps this device's copy.** From the
+    moment a save is queued until one succeeds, this browser is
+    marked unsynced for that owner
+    (`livediagram:user-preferences:unsynced`, holding the owner id).
+    A refused or failed save (logged `[preferences] save-refused
+status=<n>` or `save-not-confirmed`) leaves the mark, and the
+    next load lets the cache win over the server's blob and sends it
+    again, instead of the server reverting settings it never received.
 - **Cross-tab updates**: the browser's native `storage` event on
   the preferences key still fires across tabs in the same
-  browser, so toggling in one tab updates every open editor.
+  browser, so toggling in one tab updates every open editor and
+  Explorer: both follow the cache live rather than holding their
+  own copy. Because every save sends the WHOLE blob, a change is
+  always built on the freshest cache, never on a render's snapshot
+  (`rebaseUserPreferences`: only the keys the change touched are
+  applied over the cache); built on a snapshot, it would undo a
+  change another tab made since.
 
 ### Why D1 instead of localStorage-only
 
@@ -739,10 +764,10 @@ Live in `apps/live/lib/user-preferences.ts`:
   cached preferences, parsing the stored JSON and defaulting any
   missing key. Returns `{}` on parse failure (graceful). Sync,
   reads localStorage only, so the editor can use it during render.
-- `writeUserPreferences(prefs, ownerId?): void` serialises and
-  writes back to localStorage AND, when `ownerId` is supplied,
-  fires a non-blocking `PUT /api/preferences` so the value
-  round-trips to D1. Also dispatches a
+- `writeUserPreferences(prefs, ownerId?): void` trims the blob to
+  fit, serialises and writes it back to localStorage AND, when
+  `ownerId` is supplied, queues a `PUT /api/preferences` (one at a
+  time, latest wins) so the value round-trips to D1. Also dispatches a
   `livediagram:preferences-changed` window event so same-tab
   listeners (notably `lib/telemetry.ts`) can refresh their cached
   gate without polling. Callers without an `ownerId` (unit tests,
@@ -752,11 +777,17 @@ Live in `apps/live/lib/user-preferences.ts`:
 - `fetchUserPreferences(ownerId): Promise<UserPreferences | null>`
   does a single `GET /api/preferences` for the resolved owner,
   merges the server's value over the localStorage cache (server
-  wins on conflict), writes the merged blob back to localStorage,
+  wins on conflict, unless this browser holds an unconfirmed save
+  for the owner, when the cache wins and is sent again), writes the merged blob back to localStorage,
   and dispatches `livediagram:preferences-changed`. Returns the
   merged preferences, or null on failure / when the api worker
   is unreachable (the caller can treat that as "stick with the
   cache"). Called once at editor mount.
+
+- `rebaseUserPreferences(snapshot, next)` moves a change built on a
+  render's snapshot onto the freshest cache, and
+  `commitUserPreferences(snapshot, next, ownerId)` rebases, writes and
+  returns it, for callers that also hold the preferences in state.
 
 Cross-tab updates are picked up via the browser's native `storage`
 event on the preferences key.

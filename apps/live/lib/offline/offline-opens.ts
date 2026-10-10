@@ -11,6 +11,7 @@ import type { DocumentSummary } from '@livediagram/api-schema';
 import { windowStartOf, utcDay } from '@livediagram/api-schema';
 import {
   offlineBackend,
+  offlineUpdateRecord,
   recordToSummary,
   serializeOfflineWrite,
   type LocalOpens,
@@ -52,12 +53,15 @@ export function nextLocalOpens(prev: LocalOpens | undefined, now: number): Local
 export async function offlineRecordOpen(id: string, now: number): Promise<void> {
   try {
     await serializeOfflineWrite(async () => {
-      const rec = await offlineBackend().get(id);
-      if (!rec || rec.trashedAt !== undefined) return;
-      const opens = nextLocalOpens(localOpensOf(rec.opens), now);
-      // savedAt stays: an open is not an edit, and bumping it would reorder every list.
-      await offlineBackend().put({ ...rec, opens });
-      debugLog(`[home] local-open-recorded days=${opens.days.length}`);
+      let days = 0;
+      await offlineUpdateRecord(id, (rec) => {
+        if (!rec || rec.trashedAt !== undefined) return undefined;
+        const opens = nextLocalOpens(localOpensOf(rec.opens), now);
+        days = opens.days.length;
+        // savedAt stays: an open is not an edit, and bumping it would reorder every list.
+        return { ...rec, opens };
+      });
+      if (days > 0) debugLog(`[home] local-open-recorded days=${days}`);
     });
   } catch (err) {
     console.warn('[home] local-open-failed', err);

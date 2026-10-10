@@ -46,6 +46,41 @@ describe('rankBetween', () => {
     }
   });
 
+  // A column appended to (or prepended to) thousands of times keeps short keys: halving the open gap grew a
+  // digit every five or six appends (2000 appends reached 334 digits, past isValidRank's 64).
+  it('keeps keys short over many appends and prepends', () => {
+    let hi = rankBetween(null, null);
+    let lo = hi;
+    for (let i = 0; i < 2000; i++) {
+      const up = rankAfter(hi);
+      const down = rankBefore(lo);
+      expect(up > hi && isValidRank(up)).toBe(true);
+      expect(down < lo && isValidRank(down)).toBe(true);
+      hi = up;
+      lo = down;
+    }
+    expect(hi.length).toBeLessThanOrEqual(8);
+    expect(lo.length).toBeLessThanOrEqual(8);
+  });
+
+  it('steps an open end at the key’s own width, doubling it once the width is used up', () => {
+    expect(rankAfter('i')).toBe('j');
+    expect(rankAfter('z')).toBe('z1');
+    expect(rankAfter('z1z')).toBe('z21');
+    expect(rankAfter('zz')).toBe('zz01');
+    expect(rankBefore('i')).toBe('h');
+    expect(rankBefore('1')).toBe('0z');
+    expect(rankBefore('h1')).toBe('gz');
+    expect(rankBefore('01')).toBe('00zz');
+  });
+
+  it('still fits keys between the stepped ones', () => {
+    const keys = ['z', rankAfter('z'), rankAfter(rankAfter('z'))];
+    const mid = rankBetween(keys[1]!, keys[2]!);
+    expect(mid > keys[1]! && mid < keys[2]!).toBe(true);
+    expect(isValidRank(mid)).toBe(true);
+  });
+
   it('validates ranks', () => {
     expect(isValidRank('i')).toBe(true);
     expect(isValidRank('i0')).toBe(false);

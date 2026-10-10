@@ -118,17 +118,36 @@ export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[]))
   return { past: [], present: next, future: [], depth: 0, branch: branchOf(h) + 1 };
 }
 
-// Merge a remote peer's change into the present WITHOUT touching the
-// undo / redo stacks. Used by inbound `tab` / `document-meta` ops: peers
-// autosave ~every 600ms, so clearing history on each (what `reset` did)
-// made the local user's undo stack vanish several times a second during
-// any shared session. The retained past states predate the remote
-// change, so undoing far enough can locally drop a peer's edit — an
-// accepted limitation of last-write-wins collab without OT / CRDT, and
-// far better than undo not working at all while someone else is editing.
+// Replace the present with content from elsewhere (a resync's fetched tabs, a Q&A board's own
+// write) WITHOUT touching the undo / redo stacks. A peer's op goes through historyApplyRemoteOp
+// instead, so undo never brings back what a peer changed.
 export function historyApplyRemote(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
   const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
   return { ...h, present: next };
+}
+
+// A peer's (or an agent's) op, applied to the present AND to every undo and redo snapshot
+// (docs/specs/012-collaboration/realtime-conflict-resolution.md "Undo"): undo then restores the
+// person's own earlier state with the peer's change still in it, so it takes back only their own
+// edits, never a collaborator's (a peer's element, a tab they added). `apply` is the pure op
+// (applyRoomOpToTabs), returning its input when the op changes nothing there, so an untouched
+// snapshot keeps its identity and nothing re-renders for it.
+export function historyApplyRemoteOp(h: History, apply: (tabs: Tab[]) => Tab[]): History {
+  const present = apply(h.present);
+  let changed = present !== h.present;
+  const each = (stack: Tab[][]) => {
+    let moved = false;
+    const out = stack.map((tabs) => {
+      const next = apply(tabs);
+      if (next !== tabs) moved = true;
+      return next;
+    });
+    if (moved) changed = true;
+    return moved ? out : stack;
+  };
+  const past = each(h.past);
+  const future = each(h.future);
+  return changed ? { ...h, present, past, future } : h;
 }
 
 type DocumentHistory = {
@@ -141,6 +160,8 @@ type DocumentHistory = {
   cancelToCheckpoint: () => void;
   reset: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
   applyRemote: (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => void;
+  // A peer's op, into the present and every undo / redo snapshot (historyApplyRemoteOp).
+  applyRemoteOp: (apply: (tabs: Tab[]) => Tab[]) => void;
   undo: () => void;
   redo: () => void;
   // The counters item undo steps are placed by (useItemUndo).
@@ -200,6 +221,11 @@ export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
     setHistory((h) => historyApplyRemote(h, tabs));
   };
 
+  // Stable: the room's op handler and the changeset feed hold it.
+  const applyRemoteOp = useCallback((apply: (tabs: Tab[]) => Tab[]) => {
+    setHistory((h) => historyApplyRemoteOp(h, apply));
+  }, []);
+
   // Stable: useItemUndo calls it from item writes.
   const clearRedo = useCallback(() => {
     setHistory(historyClearRedo);
@@ -219,6 +245,7 @@ export function useDocumentHistory(initialTabs: Tab[]): DocumentHistory {
     cancelToCheckpoint,
     reset,
     applyRemote,
+    applyRemoteOp,
     undo,
     redo,
   };

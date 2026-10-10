@@ -15,6 +15,7 @@ Two D1 tables, owned by the api worker (migration `0019_teams.sql`):
   - `user_id` is a Clerk user id. Null on a pending invite that hasn't connected yet.
   - `email` is the lowercased invite address. Unique per team. May be null only on the creator's row when the deployment's JWT carries no email claim.
   - One of `user_id` / `email` is always set.
+  - **One row per person per team**: a unique index on `(team_id, user_id) WHERE user_id IS NOT NULL` (migration `0082`) refuses a second membership row for the same user. The migration folded existing duplicates into one row first, keeping the joined (then oldest) row and any joined-admin role among them.
   - `status` is the accept/decline handshake state. Creator rows are born `joined`; invite rows are born `invited`. Rows that pre-date migration 0021 were backfilled `joined` (they joined under the old auto-join rules) except never-connected invites, which stayed `invited`.
 
 ## Identity: signed-in only
@@ -37,7 +38,7 @@ A client-supplied `X-Owner-Email` header used to be a fallback, but it was **rem
 Membership is a two-step handshake: being invited does not make someone a member until they accept.
 
 - An Admin invites by email address. That creates a `team_members` row: `role = 'member'`, `email = <lowercased address>`, `user_id = NULL`, **`status = 'invited'`**. **No email is sent in v1** (Resend hasn't shipped); the inviter tells the person out of band.
-- **Lazy email claim**: on every authenticated `GET /api/teams` and `GET /api/teams/invites`, the worker connects pending invites (`user_id = <sub> WHERE email = <caller's verified email> AND user_id IS NULL`) using the email resolved per the section above, so an invitee just opens the Invites page and sees invites sent to the address they're signed in with. Connecting fills in who the person is, it does **not** accept for them; `status` stays `invited`.
+- **Lazy email claim**: on every authenticated `GET /api/teams` and `GET /api/teams/invites`, the worker connects pending invites (`user_id = <sub> WHERE email = <caller's verified email> AND user_id IS NULL`) using the email resolved per the section above, so an invitee just opens the Invites page and sees invites sent to the address they're signed in with. Connecting fills in who the person is, it does **not** accept for them; `status` stays `invited`. A team the caller already belongs to is skipped: its invite row stays unclaimed rather than becoming a second membership for the same person.
 - The invitee sees the invite in the Explorer's **Invites** section (below, with team name, organisation, and member count) and chooses:
   - **Accept** → `status` flips to `joined`; the team moves into their Teams list and their row in the team reads as a normal member.
   - **Decline** → the member row is deleted; they were never a member. An Admin may re-invite the same address later.
@@ -88,7 +89,7 @@ All under `/api/teams`, Clerk Bearer required, handled by `apps/api/src/routes/t
 - `DELETE /api/teams/:id` — Admin only; deletes member rows too.
 - `POST /api/teams/:id/members` `{email}` — Admin only; creates the pending invite row.
 - `PUT /api/teams/:id/members/:memberId` `{role}` — Admin only; last-admin guard.
-- `DELETE /api/teams/:id/members/:memberId` — Admin, or the member's own row (leave); last-admin guard.
+- `DELETE /api/teams/:id/members/:memberId` — Admin, or the member's own row (leave); last-admin guard. Removes every row that user holds in the team, never just one of them. The guard counts joined admins who are other people, so a second row of the same user never stands in as the remaining admin.
 - `POST /api/teams/:id/invite-link` / `DELETE /api/teams/:id/invite-link` — Admin only; turn the shareable invite link on (mint + 1-week expiry) / off (see "Shareable invite link").
 - `GET /api/teams/invite-link/:token` — resolve a join token to its team; the one open (guest-readable) team endpoint.
 - `POST /api/teams/invite-link/:token/join` — signed-in; join via the link.
@@ -109,7 +110,7 @@ The right-pane team view is **one calm card**, not a stack of panels:
 - The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show their resolved display name or the invite email's local part prettified ("anna.smith" → "Anna Smith") — and the member's **email address** on a muted secondary line beneath the name (truncated for long addresses so the row stays tidy on mobile). Pending rows carry an amber **"Invited"** pill next to the name and render their avatar dimmed.
 - Roles: admins get a quiet inline role select per row; non-admins see a read-only role pill. Remove actions appear on row hover only.
 - The Remove action reads the row's `status`: an `invited` row has never been a member, so its confirm asks to **Withdraw invite?** and says the person has not joined yet, rather than offering to remove them "from" a team they were never in. `components/panels/team-removal.ts` owns that wording alongside the telemetry type, so the two can't disagree.
-- **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory hover card) instead of a role select. The server's `409 last_admin` remains as the backstop for stale UIs.
+- **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory hover card) instead of a role select. "Only Admin" counts **joined** admins, exactly as the server does (`components/panels/team-last-admin.ts`): an invited row promoted to admin neither keeps the last joined admin's Leave available nor gets pinned itself. The server's `409 last_admin` remains as the backstop for stale UIs.
 - Admins also get a slim invite-by-email footer row. Placeholder copy: "Add your team by email address, they will receive an invite." (The invite lands in their in-app Invites section; no transactional email until Resend ships.)
 
 The pane title row reads "Recent Documents" for the recent section (renamed from "Recent" in the same change as this spec).

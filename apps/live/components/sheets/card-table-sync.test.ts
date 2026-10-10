@@ -160,6 +160,25 @@ describe('rows to cards', () => {
     ).toEqual([]);
   });
 
+  it('takes rows pasted under a draft row, or under each other, into the table', () => {
+    const before = sheetOf();
+    // A block pasted below the table, its cells in any order: each row joins under the one above it.
+    const block = [R[5]!, R[3]!, R[4]!].map((r) => ({ r, c: C[1]!, i: { s: 'pasted' } }));
+    const { after } = edit(before, { kind: 'cells', cells: block });
+    expect(pushPlan(before, after, { kind: 'cells', cells: block }, items()).drafts).toEqual(
+      [R[3], R[4], R[5]].map((row) => ({ tableId: 'tbl1', row })),
+    );
+    // Under a row that is already a draft (a new row typed earlier).
+    const drafted = {
+      ...after,
+      layout: { ...after.layout, cardTables: [{ ...table, drafts: [R[3]!] }] },
+    };
+    const below = [{ r: R[4]!, c: C[1]!, i: { s: 'next' } }];
+    expect(pushPlan(before, drafted, { kind: 'cells', cells: below }, items()).drafts).toEqual([
+      { tableId: 'tbl1', row: R[4] },
+    ]);
+  });
+
   it('leaves a draft row alone when cards change', () => {
     const s = sheetOf({ '1,1': 'Mine' });
     const drafted = { ...s, layout: { ...s.layout, cardTables: [{ ...table, drafts: [R[1]!] }] } };

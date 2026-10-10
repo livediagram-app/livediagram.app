@@ -174,6 +174,10 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
+// The keepalive bodies an unload flush sends at most: browsers allow 64 KB in all per page; the rest is
+// headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
+export const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
+
 export function flushDocumentSavesBeacon(args: {
   ownerId: string;
   documentId: string;
@@ -233,6 +237,16 @@ export function flushDocumentSavesBeacon(args: {
   const sharePassword = getSessionSharePassword();
   if (sharePassword) base['X-Share-Password'] = sharePassword;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
+  // Browsers refuse keepalive bodies past 64 KB in all (per page), and the refusal was swallowed below, so a
+  // large tab's last edits were lost on close. Keepalive while the bodies fit; past that, a plain request,
+  // which still lands when the page lives on (hidden, or left for another page of the app).
+  let keepaliveLeft = KEEPALIVE_BUDGET_BYTES;
+  const keepaliveFor = (body: string | undefined) => {
+    const bytes = body ? new TextEncoder().encode(body).length : 0;
+    if (bytes > keepaliveLeft) return false;
+    keepaliveLeft -= bytes;
+    return true;
+  };
   for (const t of args.changedTabs) {
     const seen = args.changesetSeen?.get(t.id);
     const headers: Record<string, string> = {
@@ -240,29 +254,31 @@ export function flushDocumentSavesBeacon(args: {
       ...(args.loadedTabIds.has(t.id) ? { 'X-Allow-Empty': '1' } : {}),
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
     };
+    const body = JSON.stringify(tabForWire(t));
     void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${t.id}`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify(tabForWire(t)),
-      keepalive: true,
+      body,
+      keepalive: keepaliveFor(body),
     }).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
     void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${tabId}`, {
       method: 'DELETE',
       headers: base,
-      keepalive: true,
+      keepalive: keepaliveFor(undefined),
     }).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
+    const body = JSON.stringify({
+      name: args.name,
+      tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
+    });
     void apiFetch(`${API_BASE}/documents/${args.documentId}`, {
       method: 'PUT',
       headers: jsonHeaders,
-      body: JSON.stringify({
-        name: args.name,
-        tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
-      }),
-      keepalive: true,
+      body,
+      keepalive: keepaliveFor(body),
     }).catch(() => {});
   }
 }
