@@ -13,7 +13,9 @@
 	encode zstd gzip
 
 	# The api, the rooms, the identity provider and the built sites: one process.
-	reverse_proxy app:8787
+	# The port comes from the environment docker-compose.yml hands this container,
+	# which is the same number the app service was given.
+	reverse_proxy app:{$APP_PORT:8787}
 
 	# A self-host on a LAN usually speaks plain HTTP; these keep the browser's
 	# stricter defaults from breaking the editor there.
@@ -30,5 +32,5 @@
 {$MCP_SITE_ADDRESS} {
 	encode zstd gzip
 
-	reverse_proxy mcp:8788
+	reverse_proxy mcp:{$MCP_PORT:8788}
 }

@@ -16,7 +16,10 @@ services:
       # deployment that serves a build from the host or only wants the api.
       target: ${APP_TARGET:-runtime}
     environment:
-      PORT: 8787
+      # The port everything else follows: the healthcheck below reads it back out
+      # of the process's own environment, the MCP service calls the api on it, and
+      # Caddy proxies to it. Changing APP_PORT here and in .env is the whole edit.
+      PORT: ${APP_PORT:-8787}
       HOST: 0.0.0.0
       DATABASE_PATH: /data/livediagram.sqlite
       OBJECTS_DIR: /data/objects
@@ -48,7 +51,10 @@ services:
         - CMD
         - node
         - -e
-        - fetch('http://127.0.0.1:8787/api/capabilities').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+        # Reads the port the app was actually given, so this cannot drift from
+        # PORT above. Written with string concatenation, not a template literal:
+        # a literal `${...}` in a Compose file is interpolation, not JavaScript.
+        - fetch('http://127.0.0.1:' + (process.env.PORT ?? 8787) + '/api/capabilities').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
       interval: 30s
       timeout: 5s
       retries: 3
@@ -65,13 +71,14 @@ services:
       target: ${APP_TARGET:-runtime}
     command: ['node', 'mcp-dist/node.mjs']
     environment:
-      PORT: 8788
+      PORT: ${MCP_PORT:-8788}
       HOST: 0.0.0.0
       # The MCP's OAuth state is its own: its own file beside the app's, so one
       # process writes each.
       MCP_DATABASE_PATH: /data/mcp.sqlite
-      # The api, as this process reaches it: the app service, on this network.
-      MCP_API_ORIGIN: http://app:8787
+      # The api, as this process reaches it: the app service, on this network, on
+      # the port the app was given (never a second copy of the number).
+      MCP_API_ORIGIN: http://app:${APP_PORT:-8787}
       # The page the consent step redirects to, on the origin people use.
       CONSENT_BASE_URL: ${PUBLIC_ORIGIN:-http://localhost:8080}
       # Optional and inert when unset: telemetry only, exactly as on the api.
@@ -87,7 +94,7 @@ services:
         - CMD
         - node
         - -e
-        - fetch('http://127.0.0.1:8788/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+        - fetch('http://127.0.0.1:' + (process.env.PORT ?? 8788) + '/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
       interval: 30s
       timeout: 5s
       retries: 3
@@ -106,6 +113,10 @@ services:
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}
       # Where the MCP process answers. Its own origin: see the mcp service above.
       MCP_SITE_ADDRESS: ${MCP_SITE_ADDRESS:-http://mcp.localhost}
+      # The upstreams the Caddyfile proxies to, from the same two values the
+      # services themselves were given.
+      APP_PORT: ${APP_PORT:-8787}
+      MCP_PORT: ${MCP_PORT:-8788}
     depends_on:
       app:
         condition: service_healthy
