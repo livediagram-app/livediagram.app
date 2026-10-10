@@ -60,6 +60,9 @@ reached from Home's Jump back in (**See more**) and All activity from its What h
   Change folder, Use as default for, Delete). A team folder row opens the team page at that folder and carries no menu.
 - **My documents** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
   default for** ([Default folders](default-folders.md#use-as-default-for)).
+- **The `⋯` shows on hover.** A folder row's and My documents' `⋯` stays hidden until the row is hovered or has
+  keyboard focus, and stays while its menu is open. On a touch screen (a coarse pointer), where nothing hovers, it
+  always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
