@@ -123,7 +123,7 @@ export function PollPromptSheet({
                 type="button"
                 disabled={text.trim().length === 0}
                 onClick={() => onAnswer(text.trim())}
-                className={`w-full rounded-lg bg-brand-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
+                className={`w-full rounded-lg bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
               >
                 Send answer
               </button>

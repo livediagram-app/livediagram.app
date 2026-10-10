@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-livediagram measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party, and a deployment only collects them if its operator turns them on: livediagram.app does, a self-hosted copy does not unless its operator chooses to. You can switch them off for your own browser at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
+livediagram measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party, and a deployment only collects them if its operator turns them on: livediagram.app does, a self-hosted copy does not unless its operator chooses to. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
 
 ## What an event looks like
 
@@ -25,7 +25,7 @@ The server checks this as well. It throws away any event whose category or actio
 
 That second check is a backstop rather than the main protection. The protection is that the editor only ever sends a value from a fixed list in the first place: where a value could come from something you named, it is mapped to a fixed token before it is sent. A theme you built and named yourself is reported as simply "Custom", and your name for it never leaves your browser.
 
-The same rules apply to error tracking. When something breaks, the event records only a generic token: an HTTP status like "Http500" for a failed request, or a fixed kind like "Uncaught" for a browser-side exception. Never an error message, stack trace, URL, or anything about what you were working on. These show up on the dashboard's Exceptions view like everything else.
+The same rules apply to error tracking. When something breaks, the event records only a short preset code naming the kind of failure and where in the app it happened, like "Http500.SaveTab" for a failed save or "Uncaught.Document.TypeError" for a browser-side exception. Never an error message, stack trace, URL, or anything about what you were working on. These show up on the dashboard's Exceptions view like everything else.
 
 ## Page views
 
@@ -62,7 +62,8 @@ You are always in control of your own browser.
 </Figure>
 
 <Step n={1}>
-  Open **Settings**, from the gear at the end of the bottom bar in the editor or the Explorer.
+  Open **Settings**, from the gear near the right-hand end of the bottom bar, beside the light and
+  dark toggle, in the editor or the Explorer.
 </Step>
 <Step n={2}>Choose the **Privacy** category and switch off **Send Anonymous Usage Events**.</Step>
 <Step n={3}>
@@ -72,6 +73,8 @@ You are always in control of your own browser.
 </Step>
 
 The opt-out itself is the last signal your browser sends, so even leaving is recorded only as an anonymous "someone opted out", never tied to you.
+
+A few counts only the server can make: a sign-up or sign-in, a share-link visitor's first visit, a document used by several people or an AI tool, an email sent, and a server error. The server records those itself, with the same three anonymous fields, so the browser switch does not turn them off.
 
 The switch is on until you turn it off. It is saved with your other preferences, so when you are signed in it follows you to your other browsers once the editor has loaded there; as a guest, set it in each browser you use.
 

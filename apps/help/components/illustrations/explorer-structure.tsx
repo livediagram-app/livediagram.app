@@ -183,14 +183,15 @@ function TreeRow({
   );
 }
 
-/** The List / Card toggle: two square buttons, the card side pressed. */
+/** The List / Card / Details toggle: three square buttons, as in the app
+ *  (ViewToggle.tsx), with Card pressed. */
 function ViewToggle({ x, y }: { x: number; y: number }) {
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width={42}
+        width={62}
         height={22}
         rx={6}
         className="fill-slate-100 stroke-slate-200"
@@ -219,6 +220,21 @@ function ViewToggle({ x, y }: { x: number; y: number }) {
         <rect x={x + 26} y={y + 12} width={4} height={4} rx={1} />
         <rect x={x + 32} y={y + 12} width={4} height={4} rx={1} />
       </g>
+      {/* Details view: a small table */}
+      <rect
+        x={x + 45}
+        y={y + 6}
+        width={12}
+        height={10}
+        rx={1.5}
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.3}
+      />
+      <path
+        d={`M${x + 45} ${y + 9.5} h12 M${x + 49} ${y + 9.5} v6.5`}
+        className="stroke-slate-400"
+        strokeWidth={1.1}
+      />
     </g>
   );
 }
@@ -589,11 +605,11 @@ export function ExplorerPageLayout() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={184} y={36} size={13} weight={700} tone="strong">
+      <Label x={184} y={36} size={12} weight={700} tone="strong">
         My documents
       </Label>
-      <Button x={300} y={25} w={52} h={22} label="Create" />
-      <ViewToggle x={356} y={25} />
+      <Button x={278} y={25} w={46} h={22} label="Create" />
+      <ViewToggle x={328} y={25} />
       <FolderCard x={184} y={58} w={102} h={88} title="Projects" meta="7 items" more={4} />
       <DocCard x={292} y={58} w={102} h={88} title="Roadmap" meta="2h ago" thumb={1} star />
       <DocCard x={184} y={152} w={102} h={88} title="Onboarding" meta="Yesterday" />
@@ -777,7 +793,7 @@ export function FilterSearchResults() {
   );
 }
 
-/** The card view inside a folder: the List / Card toggle set to cards, a subfolder's preview mosaic
+/** The card view inside a folder: the List / Card / Details toggle set to cards, a subfolder's preview mosaic
  *  with its +N tile, and document cards with a favourite star. */
 export function CardViewGrid() {
   return (
@@ -788,8 +804,8 @@ export function CardViewGrid() {
       <Label x={16} y={46} size={10} tone="muted">
         My documents › Projects
       </Label>
-      <Button x={298} y={15} w={66} h={22} label="Create" />
-      <ViewToggle x={370} y={15} />
+      <Button x={268} y={15} w={66} h={22} label="Create" />
+      <ViewToggle x={340} y={15} />
       <FolderCard x={16} y={62} w={122} h={124} title="Sprint notes" meta="6 items" more={3} />
       <DocCard x={148} y={62} w={122} h={124} title="Roadmap" meta="2h ago" thumb={1} star />
       <DocCard x={280} y={62} w={122} h={124} title="Data model" meta="Yesterday" thumb={2} />

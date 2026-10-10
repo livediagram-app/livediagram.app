@@ -169,7 +169,7 @@ function CountBadge({ count, icon }: { count: number; icon: React.ReactNode }) {
       {icon}
       <span
         aria-hidden
-        className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900 ${SOLID_BRAND_DARK}`}
+        className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900 ${SOLID_BRAND_DARK}`}
       >
         <span className="text-optical-centre">{count}</span>
       </span>

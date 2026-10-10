@@ -122,7 +122,7 @@ function SampleValue({
       );
     case 'checkbox':
       return (
-        <span className="flex h-4 w-4 items-center justify-center rounded border border-brand-600 bg-brand-600 text-white dark:border-brand-600 dark:bg-brand-600">
+        <span className="flex h-4 w-4 items-center justify-center rounded border border-brand-700 bg-brand-700 text-white dark:border-brand-600 dark:bg-brand-600">
           <CheckIcon size={11} />
         </span>
       );

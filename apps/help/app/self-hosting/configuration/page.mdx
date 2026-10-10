@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Configuration and Optional Auth" description="The environment variables that shape a self-hosted instance, and how sign-in degrades gracefully to pure-guest mode." categoryTitle="Self-Hosting" categorySlug="self-hosting">
 
-A self-hosted livediagram is configured entirely through environment variables, not code edits. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
+A self-hosted livediagram is configured through environment variables, secrets and each Worker's `wrangler.toml`, not application code. A few `wrangler.toml` values ship with livediagram.app's own settings (the database and KV ids, the allowed AI origins, the MCP issuer), so a fork replaces those with its own. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
 
 ## How configuration is supplied
 
@@ -23,7 +23,7 @@ Secrets and settings never live in source code, since the repository is public. 
 
 Each app that needs configuration ships an example file documenting which variables it expects, so you can see at a glance what to set.
 
-<Figure caption="Each surface reads configuration at runtime, so no secrets ever live in the public source.">
+<Figure caption="Workers read secrets and settings at runtime and frontends bake publishable values in at build time, so no secrets ever live in the public source.">
   <ConfigSources />
 </Figure>
 
@@ -31,7 +31,7 @@ Each app that needs configuration ships an example file documenting which variab
 
 Authentication is provided by an optional integration with Clerk, and the app supports three modes depending on what you configure.
 
-1. **Hybrid**, the production setup: both the frontend publishable key (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`) and the API's verification URL (`CLERK_JWKS_URL`) are set, so guests and signed-in users coexist.
+1. **Hybrid**, the production setup: both the publishable key (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, on the live and community builds; a repository secret when you deploy through GitHub Actions) and the API's verification URL (`CLERK_JWKS_URL`) are set, so guests and signed-in users coexist.
 2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
 3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: people can sign in, but the API treats everyone as a guest.
 
@@ -51,15 +51,15 @@ The API identifies the owner of a request in one of two equivalent ways: a verif
 
 Every other optional feature follows the same pattern: unset means off, and the editor hides what it cannot use.
 
-| Feature                    | Turn it on with                                                                                                                                                         |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Image uploads, thumbnails  | An R2 bucket bound to the api Worker. Optional per-owner caps: `IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`                                                       |
-| AI assistant, photo import | One AI key on the api Worker: `OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`, or `AI_API_KEY` with `AI_BASE_URL` and `AI_MODEL`                                           |
-| Email                      | `RESEND_API_KEY` on the api Worker (needs sign-in)                                                                                                                      |
-| Google Drive mirror        | `GOOGLE_CLIENT_ID` on the api Worker and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on the live build; `GOOGLE_CLIENT_SECRET` and `DRIVE_TOKEN_KEY` keep it syncing (needs sign-in) |
-| MCP server for AI tools    | Deploy the mcp Worker with its own KV namespace and hostname (needs sign-in)                                                                                            |
-| Telemetry                  | `TELEMETRY_ENABLED` on the api Worker and `NEXT_PUBLIC_TELEMETRY_ENABLED` on every frontend build                                                                       |
-| Continue with Google       | `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` on the live build, with Google enabled in Clerk                                                                                      |
+| Feature                    | Turn it on with                                                                                                                                                                                                                                                |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Image uploads, thumbnails  | Create the `livediagram-images` R2 bucket the api `wrangler.toml` already binds (or delete that binding to leave uploads off). Optional per-owner caps: `IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`                                                     |
+| AI assistant, photo import | One AI key on the api Worker: `OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`, or `AI_API_KEY` with `AI_BASE_URL` and `AI_MODEL`. Also set `AI_ALLOWED_ORIGINS` to your own origin or remove it: it ships with livediagram.app's, and any other origin gets a 403 |
+| Email                      | `RESEND_API_KEY` on the api Worker, plus `RESEND_FROM` on a domain verified in Resend and `APP_BASE_URL` set to your origin, since both default to livediagram.app (needs sign-in)                                                                             |
+| Google Drive mirror        | `GOOGLE_CLIENT_ID` on the api Worker and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on the live build; `GOOGLE_CLIENT_SECRET` and `DRIVE_TOKEN_KEY` keep it syncing (needs sign-in)                                                                                        |
+| MCP server for AI tools    | Deploy the mcp Worker with its own KV namespace and hostname, then point `CONSENT_BASE_URL` (mcp Worker) at your editor's origin, and `NEXT_PUBLIC_MCP_ORIGIN` (live build) and `OAUTH_ISSUER` (api Worker) at your MCP host (needs sign-in)                   |
+| Telemetry                  | `TELEMETRY_ENABLED` on the api Worker and `NEXT_PUBLIC_TELEMETRY_ENABLED` on every frontend build                                                                                                                                                              |
+| Continue with Google       | `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` on the live build, with Google enabled in Clerk. The bundled deploy workflow already sets it, so enable Google in Clerk or remove that line                                                                                 |
 
 The Community is the one feature that is on by default; set `COMMUNITY_ENABLED` to `false` on the api Worker to switch it off.
 

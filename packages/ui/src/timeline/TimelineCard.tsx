@@ -102,7 +102,7 @@ export function TimelineCard({
         )}
         {isNew && (
           <span
-            className={`inline-flex items-center absolute left-2 top-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-sm ${SOLID_BRAND_DARK}`}
+            className={`inline-flex items-center absolute left-2 top-2 rounded bg-brand-700 px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-sm ${SOLID_BRAND_DARK}`}
           >
             <span className="text-optical-line text-optical-caps">New</span>
           </span>

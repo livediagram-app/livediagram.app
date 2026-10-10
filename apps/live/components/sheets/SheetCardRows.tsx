@@ -314,7 +314,7 @@ function RowButton({
         <button
           type="button"
           aria-label={label}
-          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-brand-500 bg-brand-500 text-white shadow-sm transition hover:bg-brand-600 dark:bg-brand-600"
+          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-brand-700 bg-brand-700 text-white shadow-sm transition hover:bg-brand-800 dark:bg-brand-600"
           onClick={onClick}
         >
           {children}

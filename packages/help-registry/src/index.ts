@@ -854,7 +854,7 @@ export const articles: Article[] = [
   {
     slug: 'hand',
     title: 'Hand',
-    description: 'Grab and pan the canvas without moving any elements.',
+    description: 'Pan the canvas with a plain drag on empty space.',
     keywords: 'pan drag move canvas grab scroll navigate space middle click hand tool',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',

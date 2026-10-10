@@ -1,12 +1,12 @@
 // Decorative illustration for the "Time to start" CTA band: a pen laying down
 // a flourish over a card, an arrow flowing to a second node that pops in, and a
 // scatter of sparkles, a quick "start drawing" cue above the heading. White
-// line-art reads on the brand-500 band; every moving part reuses the shared
+// line-art reads on the brand-700 band; every moving part reuses the shared
 // `.fa-*` classes (apps/marketing/app/feature-art/core.css), which the
 // reduced-motion guard in globals.css settles to a clean static frame. Purely
 // decorative, so the whole SVG is aria-hidden.
 
-// The pen's bands are the CTA band's own colour showing through (brand-600 in dark).
+// The pen's bands are the CTA band's own colour showing through (brand-700 in light, brand-600 in dark).
 const BAND_STROKE = 'dark:stroke-brand-600';
 
 export function StartDrawingArt({
@@ -61,10 +61,10 @@ export function StartDrawingArt({
           strokeWidth={1.5}
           strokeLinejoin="round"
         />
-        <path d="M0 6 L8 6" stroke="#0ea5e9" strokeWidth={1.5} className={BAND_STROKE} />
+        <path d="M0 6 L8 6" stroke="#0369a1" strokeWidth={1.5} className={BAND_STROKE} />
         <path
           d="M4 27 L4 22"
-          stroke="#0ea5e9"
+          stroke="#0369a1"
           strokeWidth={1.5}
           strokeLinecap="round"
           className={BAND_STROKE}

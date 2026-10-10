@@ -26,7 +26,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
           <GlyphDisc
             size={28}
             aria-hidden
-            className="bg-brand-600 text-sm font-semibold text-white transition-colors group-hover:bg-brand-700"
+            className="bg-brand-700 text-sm font-semibold text-white transition-colors group-hover:bg-brand-800"
           >
             {number}
           </GlyphDisc>

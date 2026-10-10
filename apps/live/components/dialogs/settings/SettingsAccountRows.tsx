@@ -48,7 +48,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
                 pictureUrl={user?.pictureUrl}
                 size={IDENTITY_AVATAR_PX}
                 aria-hidden
-                className={`bg-brand-500 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
+                className={`bg-brand-700 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
               >
                 {accountInitial(user)}
               </PictureDisc>

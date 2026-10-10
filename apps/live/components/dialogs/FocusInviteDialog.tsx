@@ -54,7 +54,7 @@ export function FocusInviteDialog({
             type="button"
             autoFocus
             onClick={onAccept}
-            className={`cursor-pointer rounded-lg bg-brand-500 px-4 py-1.5 text-[13px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
+            className={`cursor-pointer rounded-lg bg-brand-700 px-4 py-1.5 text-[13px] font-semibold text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             Take me there
           </button>

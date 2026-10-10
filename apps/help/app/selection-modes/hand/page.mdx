@@ -6,19 +6,19 @@ import { HandMode } from '@/components/illustrations/palette-modes';
 export const metadata = helpMetadata({
   title: 'Hand',
   description:
-    'Use the Hand mode in livediagram to pan around the canvas without moving any of your elements.',
+    'Use the Hand mode in livediagram to pan around the canvas with a plain drag on empty space.',
   path: '/help/selection-modes/hand/',
 });
 
 <ArticleLayout
   title="Hand"
-  description="Pan and scroll the canvas without moving any of your elements."
+  description="Pan the canvas with a plain drag on empty space, without drawing a selection box."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   subArticles={getSubArticles("hand")}
 >
 
-The Hand mode lets you move your view of the canvas without touching the elements on it. Choose it from the tool picker at the start of the palette strip, or press **`H`**.
+The Hand mode turns a drag on empty canvas into a pan, so you move your view instead of drawing a selection box. Pressing an element still selects it, and dragging it still moves it. Choose it from the tool picker at the start of the palette strip, or press **`H`**.
 
 ## Panning the canvas
 
@@ -30,7 +30,7 @@ Grab the surface and drag to move your view in any direction. This is the quicke
 
 ## Why a dedicated mode
 
-You can pan from any tool without switching: drag with the middle mouse button, hold `Space` and drag, or scroll with two fingers on a trackpad (see [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/)). Those all rely on an extra key, button or gesture. The Hand mode makes panning the only thing a plain drag does, so there is no risk of moving an element while you are getting around the canvas.
+You can pan from any tool without switching: drag with the middle mouse button, hold `Space` and drag, or scroll with two fingers on a trackpad (see [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/)). Those all rely on an extra key, button or gesture. The Hand mode makes a plain drag on empty canvas pan instead of drawing a selection box. A drag that starts on an element still moves that element, so start on empty space to get around.
 
 ## Where Hand is the starting tool
 
@@ -38,7 +38,7 @@ You can pan from any tool without switching: drag with the middle mouse button, 
 - **In [Plan mode](/help/canvas/plan-mode/)**, you start on Hand, because a board's cards handle clicks and drags themselves.
 - **An [embedded](/help/collaboration/sharing/embeds/) diagram** always opens on Hand.
 
-Press `V` or pick **Select** when you want to edit again.
+Press `V` or pick **Select** when you want to edit again. If an element is selected, press `Esc` first, since with one element selected a letter key types into its label.
 
 Hand is available everywhere: to view-only visitors (press `H`), and in [Draw mode](/help/canvas/draw-mode/), where `H` works even though the palette shows Draw's own tools.
 

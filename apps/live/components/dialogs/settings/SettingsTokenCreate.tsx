@@ -77,7 +77,7 @@ export function SettingsTokenCreate({
               onClick={() => setName(suggestion)}
               className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition ${
                 name === suggestion
-                  ? `border-brand-500 bg-brand-500 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `border-brand-700 bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                   : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300'
               }`}
             >

@@ -212,7 +212,7 @@ function NoteLinkField({
         type="button"
         onMouseDown={noFocusSteal}
         onClick={apply}
-        className={`rounded-md bg-brand-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-700 ${SOLID_BRAND_DARK_CONTROL}`}
+        className={`rounded-md bg-brand-700 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Apply
       </button>

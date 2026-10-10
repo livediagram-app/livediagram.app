@@ -144,10 +144,10 @@ Deploy order matters: the router's service bindings reference six other workers,
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
-- `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and push.
+- `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and every push to `main`.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
 - `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
-- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
@@ -230,10 +230,10 @@ reader prefers Google, each falling back to whichever key exists, and
   `gemini-2.5-flash-lite` rather than the assistant's model — it reads
   handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
   single provider, setting `AI_MODEL` moves the reader too unless you set this.
-- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
+- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livediagram.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets both; a private or Clerk-less fork can leave them unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_CLERK` unset so guests keep AI; a private or Clerk-less fork can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
 
 ## Email (optional, Resend)
 

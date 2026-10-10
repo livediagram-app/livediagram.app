@@ -29,7 +29,7 @@ const TONE_CLASS: Record<BannerTone, string> = {
   // Solid, for a pill that reports something HAPPENING to your view right now
   // (being followed along, docs/specs/012-collaboration/follow-me-viewport.md) rather than a mode you turned on. It is
   // meant to be the loudest thing on the canvas until you stop it.
-  live: `border-brand-500 bg-brand-500 text-white ${SOLID_BRAND_DARK}`,
+  live: `border-brand-700 bg-brand-700 text-white ${SOLID_BRAND_DARK}`,
   danger:
     'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200',
 };

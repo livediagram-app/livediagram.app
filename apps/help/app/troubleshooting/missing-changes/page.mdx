@@ -18,14 +18,14 @@ Work in livediagram is saved automatically as you go, so missing changes are usu
 
 1. **Check the right tab.** Each tab stores its own content. If a tab looks empty, confirm you are on the tab you actually edited. See [tabs](/help/tabs/using-tabs/).
 2. **Check the right document.** It is easy to have two similar documents open. Open [your documents](/explorer/recent) and confirm you are in the one you edited.
-3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers, switched devices, or signed in, you are looking at a different owner's set of documents. See [working as a guest](/help/getting-started/guest-vs-account/).
+3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers or devices, you are looking at a different guest identity's documents. If you just signed in, your guest documents move into your account; if they have not appeared, reload, and if they still do not show, [contact us](/help/contact/) with the report from **Copy Diagnostics**. See [working as a guest](/help/getting-started/guest-vs-account/).
 4. **Reload the page.** A refresh reloads your saved document and clears any temporary display issue.
 
 ## How saving works
 
 Changes are saved automatically after you make them, per tab, to the server, not just to your browser. There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
 
-There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
+There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Your changes will save when you reconnect. Keep this tab open.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
 
 - **Couldn't confirm you're signed in**: your session has lapsed. Sign in again to keep the changes.
 - **You no longer have permission to edit this document**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
@@ -58,7 +58,7 @@ If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the 
 
 **Two people editing different elements on the same tab is safe.** Edits travel as changes to individual elements and merge by element, so your move of one box cannot overwrite somebody's edit to another. That was not always true, and it is the single most common shape of "my change vanished".
 
-**Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while somebody else has it selected, so you can see that it is spoken for before you start.
+**Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while another editor has it selected, so you can see that it is spoken for before you start.
 
 If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the document, still without a page reload.
 

@@ -78,7 +78,7 @@ export function AssigneePicker({
         <GlyphDisc
           size={24}
           aria-hidden
-          className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
         >
           {initialsOf(m.name)}
         </GlyphDisc>

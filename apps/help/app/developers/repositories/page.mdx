@@ -27,7 +27,7 @@ Run this in the repository (or in one package of a monorepo), signed in to the [
 livediagram link init --folder "Minigames" --level files
 ```
 
-It writes `livediagram.toml` beside you. In a terminal, leaving out `--folder` shows a list of your folders to pick from; in a script it lists them as commands instead. `--doc` links single documents, and you can repeat it or combine it with a folder.
+It writes `livediagram.toml` beside you. In a terminal, giving neither `--folder` nor `--doc` shows a list of your folders to pick from; in a script it lists them as commands instead. `--doc` links single documents, and you can repeat it or combine it with a folder. A link file looks like this (the ids are placeholders for your real ones, and `dir` is optional, defaulting to `diagrams`):
 
 ```toml
 host = "https://livediagram.app"
@@ -51,7 +51,7 @@ Commit `livediagram.toml`. It holds ids and settings, never a credential: someon
 | `index` | `INDEX.md`: every document, its tabs and its link          | Agents finding diagrams by name (the default) |
 | `files` | `INDEX.md`, plus a snapshot and a text outline per diagram | Reading diagrams offline, in reviews and git  |
 
-At `files`, each document gets a `.livediagram.json` snapshot (one element per line, so a change is a one-line diff) and a `.md` outline that an agent reads at a fraction of the size. Both open with a line saying they are generated.
+At `files`, each document gets a `.livediagram.json` snapshot (one element per line, so a change is a one-line diff) and a `.md` outline that an agent reads at a fraction of the size. The outline opens with a line saying it is generated and linking the document.
 
 ## Sync
 
@@ -63,7 +63,7 @@ livediagram link status       # each document and whether it is in step
 
 A sync writes newer snapshots, adds documents that joined the folder and removes the files of documents that left it or went to the Trash. Git history keeps what was removed. With `--watch`, the files follow within a moment of each change in the editor.
 
-Snapshots are for reading. If a snapshot was changed by hand, the sync leaves it alone and names it, so nothing you wrote is lost; send it back with `livediagram push <file>`. A file that git left with conflict markers is held back the same way until you keep one side.
+Snapshots are for reading. If a snapshot was changed by hand, the sync leaves it alone and names it, so nothing you wrote is lost; send it back with `livediagram push <file>`. If the document also changed in livediagram since, the push is refused as stale; keep a copy of your change, sync, then make it again. A file that git left with conflict markers is held back the same way until you keep one side.
 
 A teammate syncing with their own sign-in only reaches what they can open. A document they cannot open stays exactly as committed.
 

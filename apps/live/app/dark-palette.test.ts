@@ -39,7 +39,7 @@ const STEEL: Record<string, string> = {
   '900': '#1d3553',
   '950': '#142538',
 };
-// Light mode's ramp, which the dark palette must not touch (the light half of #74 is not ours).
+// Light mode's ramp, which the dark palette must not touch (light-palette.test.ts guards its fills).
 const SKY: Record<string, string> = {
   '50': '#f0f9ff',
   '100': '#e0f2fe',

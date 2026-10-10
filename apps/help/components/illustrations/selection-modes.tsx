@@ -513,7 +513,7 @@ export function SpotlightTool() {
       <defs>
         <mask id="mtt-spot-hole">
           <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={232} cy={150} r={52} fill="black" />
+          <circle cx={234} cy={158} r={54} fill="black" />
         </mask>
       </defs>
       <PickerTrigger tool="spotlight" />
@@ -528,8 +528,10 @@ export function SpotlightTool() {
         className="fill-slate-900/55"
         mask="url(#mtt-spot-hole)"
       />
-      <circle cx={232} cy={150} r={52} className="fill-none stroke-amber-300" strokeWidth={2} />
-      <circle cx={232} cy={150} r={4} className="fill-amber-300" />
+      {/* The cursor's stand-in, as the app draws it: a sky dot with a white rim and a glow,
+          below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
+      <circle cx={234} cy={162} r={8} className="fill-sky-400/30" />
+      <circle cx={234} cy={162} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
     </Scene>
   );
 }
