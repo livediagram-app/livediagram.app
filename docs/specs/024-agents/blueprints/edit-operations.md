@@ -371,7 +371,8 @@ before the node, and every step uses it:
 2. **Beyond.** A unit is beyond when its centre on the axis lies past the midline (the node's near edge minus
    half the gap), in the axis' direction.
 3. **Shift.** Each unit beyond, a container unit with its `containerContents` ([Carry](#carry)), moves by `shift` along the axis.
-   Locked units stay where they are (EO47).
+   Locked units stay where they are (EO47): a locked container, a unit itself or carried inside one, stays with
+   everything it holds, so its members never leave it.
 4. **Grow and go outward.** The scope container grows along the axis by `shift` on its far side, so every
    shifted element keeps its membership; then room is made in the scope's own holder, with the midline at the
    container's old far edge and the container itself left out, so an outer container grows in turn and what lay
