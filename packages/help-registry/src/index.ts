@@ -688,7 +688,7 @@ export const articles: Article[] = [
     title: 'Offline Mode',
     description: 'Save a document only in this browser, and move it to or from your account.',
     keywords:
-      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost',
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',

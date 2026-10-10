@@ -311,13 +311,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I keep a document off your servers entirely?',
         a: (
           <>
-            Yes. Offline Mode saves a document only in your browser, never on our servers. You can
-            choose it when you create a document and switch either way later. See{' '}
+            Yes. Offline Mode saves a document only in your browser, never on our servers. Until you
+            sign in, new documents start that way; after, you can choose it when you create one.
+            Either way you can switch later. See{' '}
             <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:
-          'Yes. Offline Mode saves a document only in your browser, never on our servers. You can choose it when you create a document and switch either way later. See Offline Mode.',
+          'Yes. Offline Mode saves a document only in your browser, never on our servers. Until you sign in, new documents start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',

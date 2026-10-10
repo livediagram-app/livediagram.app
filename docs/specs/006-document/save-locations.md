@@ -51,16 +51,20 @@ the `PlacementCard` tile). The locations today:
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
 - One function answers it: `defaultSaveLocationFor({ signedIn, clerkEnabled })` in
-  `apps/live/lib/save-locations.ts`. Every create path asks it: the wizard's
-  pre-selection and the wizard-less links (`/new?template=`, `/new?blank=1`).
+  `apps/live/lib/save-locations.ts`. Every create path asks it, through
+  `useNewDocumentLocation` (`apps/live/app/new/useNewDocumentLocation.ts`): the
+  wizard's pre-selection (the picker's `defaultSaveLocation`), its Skip, and the
+  wizard-less links (`/new?template=`, `/new?blank=1`).
+- A `/new?folder=` / `?team=` context names a server place, so it is
+  livediagram whoever is creating.
 - Before Clerk has answered, `signedIn` is the `__client_uat` hint
   ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers));
   once it settles, the settled answer. The wizard re-reads the default until
   the reader picks a tile, so a signed-in person never sees Local Browser stuck
   on from the moment before Clerk answered.
-- A saved "Always save new documents in <place> and skip this step"
+- In the wizard, a saved "Always save new documents in <place> and skip this step"
   ([Default folders](../013-workspace/default-folders.md)) beats the default: it
-  is the reader's own choice.
+  is the reader's own choice. The wizard-less links never read it (as before).
 - For a guest, choosing Local Browser shows the same data-loss warning as
   anyone gets; that it is the default does not soften it.
 

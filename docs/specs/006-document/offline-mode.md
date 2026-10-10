@@ -101,30 +101,42 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 ## Instant open
 
 A Local only document lives in this browser, so opening it waits on nothing the
-server says. The editor bootstrap ([Dedicated route for new-document creation → In-place handoff](../007-editor/new-document-route.md#in-place-handoff-to-the-editor))
-takes an **offline fast path** when the id in the path is registered in the local
-index (`isOfflineIdSync`, primed before the first render):
+server says. The editor bootstrap ([Dedicated route for new-document creation → In-place handoff](../007-editor/new-document-route.md#in-place-handoff-to-the-editor),
+`app/document/[id]/useIdentityBootstrap.ts`) takes an **early open** when, before
+auth has settled, the path names a document registered in the local index
+(`isOfflineId`). Share links, embeds and workbenches always wait for auth.
 
-- It does **not wait for auth to settle**, mint a guest id or fetch the
-  participant. The document is read from IndexedDB and painted at once, under the
-  participant this browser already knows (`readLocalSelf` in
-  `apps/live/lib/local-identity.ts`: the Clerk id or signed guest id it last
-  used, the name and colour it last saved), else a fresh local placeholder.
-- The participant then resolves **in the background** exactly as a cloud open
-  resolves it (auth settles, guest id, `apiLoadSelf`), and replaces the
-  placeholder when it lands. The document is not reloaded: an offline document
-  is the reader's own whoever they turn out to be.
-- **`/new` hands its tabs across.** A document `/new` just created opens from the
-  tabs it built, held in memory for the handoff (`takeFreshDocument` in
-  `apps/live/lib/offline/fresh-document.ts`), so the first paint does not read
-  back what it has just written. A refresh reads IndexedDB as usual.
+- The early open does **not wait for auth to settle**, mint a guest id or fetch
+  the participant. It reads the document from IndexedDB and paints it under the
+  `'self'` placeholder participant.
+- **Owner-scoped work waits for the real reader.** Under `'self'`, nothing is
+  read or written as an owner: the participant record is not saved, preferences
+  stay local (`writeUserPreferences`), and the custom themes, shape libraries,
+  recent images and Explorer lists load only once the reader is known. Sync
+  Document from the Share dialog waits too (the gate's `ready`).
+- **The reader resolves in the background** once auth answers, exactly as a
+  cloud open resolves it (`resolveParticipant` in
+  `app/document/[id]/resolve-participant.ts`: the Clerk id or signed guest id,
+  then the participant row), followed by the Explorer lists and the guest naming
+  nudge. The document is not reloaded: an offline document is the reader's own
+  whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers))
   creating Local only, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
-  background.
+  background (`commitNewDocument` in `app/new/page.tsx`).
+- The editor reads back the record `/new` has just written rather than taking
+  the tabs across in memory: the read is one IndexedDB get, small beside the
+  waits removed, and keeps one load path.
 
-Measured on the local dev stack (median of 5, fresh browser per run), create to
-first canvas paint: see the PR that shipped this for the before and after.
+**Measured** on the local dev stack (headless Chromium, median of 5, a fresh
+browser profile per first visit), guest create to first canvas paint:
+
+| Link                   | Before (cloud) first / return | After (Local only) first / return |
+| ---------------------- | ----------------------------- | --------------------------------- |
+| `/new?blank=1`         | 2,402 / 1,237 ms              | 1,221 / 922 ms                    |
+| `/new?template=kanban` | 2,611 / 1,433 ms              | see the PR (dev-server noise)     |
+
+API requests on the way to the canvas fell from 21 to 2 (both `GET /api/capabilities`) for `/new?blank=1`.
 
 ## "Local only" badge + Explorer
 
@@ -418,10 +430,12 @@ Track adoption without content, reusing the closed vocabulary:
   show the **Local only** pill wherever an offline document is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - Guest default + instant open: `lib/save-locations.ts` (`defaultSaveLocationFor`),
-  `lib/signed-in-hint.ts`, `lib/offline/fresh-document.ts`, the offline fast path
-  in `app/document/[id]/useIdentityBootstrap.ts`.
-- The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx` +
-  `hooks/useLocalMovePrompt.ts`.
+  `lib/signed-in-hint.ts`, `app/new/useNewDocumentLocation.ts`, the early open in
+  `app/document/[id]/useIdentityBootstrap.ts` with `app/document/[id]/resolve-participant.ts`.
+- One-click guest share: `components/dialogs/ShareOfflineGate.tsx` (`atOnce`, `ready`),
+  `lib/offline/share-after-sync.ts`, `hooks/persistence/useShareAfterSync.ts`.
+- The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx`,
+  `hooks/persistence/useLocalMovePrompt.ts`, `lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Document" and "Take Offline" (with confirmation + image re-homing).
 - Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,
