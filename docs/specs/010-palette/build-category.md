@@ -5,7 +5,7 @@ lay a diagram _out_ with, as opposed to the ones you draw _on_ it:
 
 | Tile          | Came from     |
 | ------------- | ------------- |
-| **Mind node** | Write (Tools) |
+| **Mind Node** | Write (Tools) |
 | **Lane**      | Draw (Tools)  |
 | **Frame**     | Draw (Tools)  |
 | **Timeline**  | Components    |

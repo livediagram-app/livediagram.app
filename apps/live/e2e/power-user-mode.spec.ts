@@ -59,7 +59,7 @@ test.describe('Role pill', () => {
     const pill = header(page).getByRole('button', { name: 'Editing. Owned by you' });
     await expect(pill).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Add square', exact: true }).first(),
+      page.getByRole('button', { name: 'Add Square', exact: true }).first(),
     ).toBeVisible();
 
     await pill.hover();
@@ -69,7 +69,7 @@ test.describe('Role pill', () => {
     const viewing = header(page).getByRole('button', { name: 'Viewing. Owned by you' });
     await expect(viewing).toBeVisible();
     // Read-only: the palette's add tiles are gone.
-    await expect(page.getByRole('button', { name: 'Add square', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add Square', exact: true })).toHaveCount(0);
 
     await viewing.click();
     await expect(pill).toBeVisible();
@@ -120,12 +120,12 @@ test.describe('Power user mode', () => {
     await tabBar(page).getByRole('button', { name: 'Viewing (read-only)', exact: true }).click();
 
     // Palette tile: no caption; the name comes back on keyboard focus.
-    const square = page.getByRole('button', { name: 'Add square', exact: true }).first();
+    const square = page.getByRole('button', { name: 'Add Square', exact: true }).first();
     // The strip's always-visible shortcut letter is a kept hint; the caption is gone.
     await expect(square).not.toContainText('Square');
     await page.mouse.move(700, 500);
     await keyboardFocus(page, square);
-    await expect(page.locator(TOOLTIP)).toHaveText('Add square', { timeout: 300 });
+    await expect(page.locator(TOOLTIP)).toHaveText('Add Square', { timeout: 300 });
 
     // Selection: no caption, no desktop bin, no More; the keys still delete.
     await square.click();

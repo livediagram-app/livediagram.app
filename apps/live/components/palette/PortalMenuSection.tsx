@@ -114,7 +114,7 @@ export function PortalMenuSection({
         ))}
         {/* Always offered, and the only option when this is the first portal in
             the document: the far end usually doesn't exist yet. */}
-        <MenuTile icon={<PlusGlyph />} label="Create portal" onClick={onCreateLinkedPortal} />
+        <MenuTile icon={<PlusGlyph />} label="Create Portal" onClick={onCreateLinkedPortal} />
       </MenuTileGrid>
     </MenuAccordionSection>
   );

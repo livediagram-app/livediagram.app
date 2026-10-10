@@ -80,7 +80,8 @@ opens no session anywhere its owner has not approved.
 - **Never more than the token.** The session's level is the minting token's level on the document, capped by the
   owner's own access now: a view token gives a read-only frame.
 - **Only what the editor of one document needs.** The document, its tabs, comments, changesets, items and room;
-  uploading images into it and reading its images; reading the person's display identity, preferences, custom
+  uploading images into it (always with the bytes: the hash-only dedupe shortcut is not theirs, so the session
+  cannot probe the owner's gallery, [Images](../009-elements/images.md) "Size cap") and reading its images; reading the person's display identity, preferences, custom
   themes and shape libraries; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other documents, the person's library and folders,
   writing preferences or the profile, the guest migration, tokens, teams, the account and the AI assistant. The

@@ -85,6 +85,6 @@ describe('QuickConnectRing menu', () => {
     const labels = [...container.querySelectorAll('button[aria-label]')]
       .map((b) => b.getAttribute('aria-label'))
       .filter((l) => l !== 'Quick add and connect');
-    expect(labels).toEqual(['Add child', 'Add sibling', 'Duplicate']);
+    expect(labels).toEqual(['Add Child', 'Add Sibling', 'Duplicate']);
   });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  MAX_FREEHAND_POINTS,
   STROKE_PRESSURE_MAX_ERROR,
   freehandPressures,
   strokePointCount,
@@ -62,6 +63,25 @@ const scribble = [
 ];
 
 describe('a whiteboard pen stroke', () => {
+  // docs/specs/006-document/stroke-points.md "Limits": a stroke longer than a stroke can store is
+  // simplified to fit on release, never lost.
+  it('keeps a stroke drawn with more samples than a stroke can store, with its pressures', () => {
+    const n = MAX_FREEHAND_POINTS + 5_000;
+    const long = Array.from({ length: n }, (_, i) => ({
+      x: i * 0.2,
+      y: 100 + Math.sin(i / 50) * 40,
+    }));
+    const pressures = long.map((_, i) => 0.3 + 0.4 * Math.abs(Math.sin(i / 400)));
+    const s = setup(pen());
+    expect(() => s.commit(long, false, { pressures, streamline: 0.2 })).not.toThrow();
+    const [stroke] = s.elements as FreehandElement[];
+    expect(stroke?.type).toBe('freehand');
+    const count = strokePointCount(stroke!.packedPoints);
+    expect(count).toBeGreaterThan(1);
+    expect(count).toBeLessThanOrEqual(MAX_FREEHAND_POINTS);
+    expect(freehandPressures(stroke!)).toHaveLength(count);
+  });
+
   it('stays in hand after a stroke, unless picked up for one (the Logo palette): then put down, its stroke selected', () => {
     const held = setup(pen());
     held.commit(scribble, false);

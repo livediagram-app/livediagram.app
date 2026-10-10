@@ -93,7 +93,8 @@ tab names and counts; at `files` the outlines are in the outline files.
   an unchanged revision writes the same bytes); when it was last synced lives in the local sync state.
 - The slug comes from the document's name at first mirror and then stays: the path is stable while the document is
   renamed or moved, and a sync names the files whose path would now differ (`sync --relocate` moves them, through
-  `git mv` inside a git work tree).
+  `git mv` inside a git work tree). A move never lands on a file livediagram did not write: a hand-written
+  `architecture.md` at the target is kept, the document stays where it is, and the sync refuses it naming that file.
 - Formatting is not meaning: a file reformatted by another tool parses alike, hashes alike (the hash is over
   canonical JSON), and is rewritten in the canonical form at its next change.
 

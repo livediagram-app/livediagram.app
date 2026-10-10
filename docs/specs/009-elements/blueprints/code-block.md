@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/live/components/dialogs/EditorElementDialogs.tsx`      | Mounts the dialog for `codeEditOpenForId`                                                     |
 | `apps/live/components/canvas/useBoxedElementGestures.ts`     | Double-click routes a code block to `onEditCode`                                              |
 | `apps/live/components/palette/ElementDataSections.tsx`       | The Code section (Tools flyout)                                                               |
-| `apps/live/components/palette/context-menu-data-editors.tsx` | `CodeSummary`: line count, language, Edit code, Wrap toggle                                   |
+| `apps/live/components/palette/context-menu-data-editors.tsx` | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
 | `apps/live/components/palette/PresetSections.tsx`            | `CodeThemePresetsSection` in the Style band                                                   |
 | `apps/live/lib/style-presets.ts`                             | `applyCodeThemeToEl`                                                                          |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
@@ -90,7 +90,7 @@ A failed load renders plain text and retries on the next mount (D105).
 1. Double-click on the card calls `onEditCode(id)` before any label edit, unless
    `remotelyLocked`; read-only surfaces pass no handler. A user-locked block still opens [QE7].
 2. The Code section (Tools flyout): `CodeSummary` ("No code yet" or "n lines · language"), an
-   **Edit code** button opening the same dialog, and a **Wrap Long Lines** toggle
+   **Edit Code** button opening the same dialog, and a **Wrap Long Lines** toggle
    (`setCodeWrapSelected`, `'CodeWrap'`). No language picker in the menu [QE5].
 3. `CodeEditDialog`: a 14-row monospace textarea (`maxLength = CODE_MAX_LENGTH`, spellcheck off,
    autofocus) and a language `select` ("Plain text" for `plain`). Tab inserts two spaces at the

@@ -4,8 +4,10 @@
 // pipeline, which resizes, dedupes and uploads (or embeds offline).
 
 import type { ImportImageFailure, ImportImageOutcome, ImportImageSource } from '../import-images';
+import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '../import-images/constants';
 import type { PickedImage } from '../upload-image';
 import { creditFor, galleryNameFor, type OpenverseImage } from './openverse';
+import { readCapped } from './read-capped';
 import { debugLog } from '@/lib/debug-log';
 
 export type PickFailure = ImportImageFailure | 'download-failed';
@@ -26,6 +28,9 @@ const RETRY_WITH_THUMBNAIL: ReadonlySet<ImportImageFailure> = new Set([
   'missing-bytes',
 ]);
 
+// A Blob, or why there is none: 'too-large' (over the pipeline's source cap,
+// refused without reading the rest) is final; any other reason tries the
+// thumbnail.
 async function download(url: string, fetchImpl: typeof fetch): Promise<Blob | string> {
   try {
     const res = await fetchImpl(url, {
@@ -36,7 +41,8 @@ async function download(url: string, fetchImpl: typeof fetch): Promise<Blob | st
     if (!res.ok) return `status-${res.status}`;
     const type = res.headers.get('content-type') ?? '';
     if (!type.toLowerCase().startsWith('image/')) return 'not-an-image';
-    return await res.blob();
+    const read = await readCapped(res, IMPORT_IMAGE_MAX_SOURCE_BYTES, type);
+    return read.ok ? read.blob : read.reason;
   } catch {
     return 'network';
   }
@@ -69,6 +75,7 @@ export async function storeSearchResult(
 
   onStage('downloading');
   const full = await download(result.url, fetchImpl);
+  if (full === 'too-large') return { ok: false, failure: 'too-large' };
   if (typeof full !== 'string') {
     onStage('saving');
     const outcome = await store({ kind: 'blob', blob: full, name });
@@ -81,6 +88,7 @@ export async function storeSearchResult(
 
   onStage('downloading');
   const thumb = await download(result.thumbnail, fetchImpl);
+  if (thumb === 'too-large') return { ok: false, failure: 'too-large' };
   if (typeof thumb === 'string') return { ok: false, failure: 'download-failed' };
   onStage('saving');
   const outcome = await store({ kind: 'blob', blob: thumb, name });

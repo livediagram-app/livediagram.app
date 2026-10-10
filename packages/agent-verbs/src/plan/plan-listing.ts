@@ -8,7 +8,9 @@ import {
   isTrashed,
   itemStatus,
   itemTitle,
-  typeIn,
+  resolveStatus,
+  resolveType,
+  statusKey,
   TRASH_STATUS,
   type Item,
   type ItemTypeDef,
@@ -68,9 +70,49 @@ export interface PlanListing {
   hint?: string;
 }
 
+// What list_items and `item ls` narrow by, as given: a card type and a column, each by name or id.
 export interface ListingFilter {
   type?: string;
   status?: string;
+}
+
+// The same narrowing resolved to ids, by the names change_items takes (resolveType, resolveStatus), so a filter
+// reads a column or type exactly as a write does.
+export interface ResolvedListingFilter {
+  type?: string;
+  status?: string;
+}
+
+export type ListingFilterRefusal = { ok: false; code: string; message: string };
+
+// Resolves a listing's filter, or refuses a name the document does not have with the names it does. Trashed cards
+// are listed too, so "Trash" (the Trash's own status) is a column a filter may name.
+export function resolveListingFilter(
+  state: PlanState,
+  filter: ListingFilter,
+): ({ ok: true } & ResolvedListingFilter) | ListingFilterRefusal {
+  const out: ResolvedListingFilter = {};
+  if (filter.type) {
+    const t = resolveType(filter.type, state.plan.types);
+    if (!t.ok) return { ok: false, code: t.code, message: t.message };
+    out.type = t.type.id;
+  }
+  if (filter.status) {
+    if (filter.status === TRASH_STATUS || statusKey(filter.status) === statusKey('Trash'))
+      out.status = TRASH_STATUS;
+    else if (state.plan.statuses.length === 0)
+      return {
+        ok: false,
+        code: 'status_unknown',
+        message: `No column "${filter.status}": the document has no Plan board yet, so no card is in a column.`,
+      };
+    else {
+      const s = resolveStatus(filter.status, state.plan.statuses);
+      if (!s.ok) return { ok: false, code: s.code, message: s.message };
+      out.status = s.status;
+    }
+  }
+  return { ok: true, ...out };
 }
 
 const ref = (item: Item) => `#${item.key}`;
@@ -109,12 +151,12 @@ export function listedType(t: ItemTypeDef): ListedType {
   };
 }
 
-export function planListing(state: PlanState, filter: ListingFilter = {}): PlanListing {
+// The plan, narrowed by a filter resolveListingFilter resolved.
+export function planListing(state: PlanState, filter: ResolvedListingFilter = {}): PlanListing {
   const { plan } = state;
   const live = state.items
     .filter((i) => !isTrashed(i) && !isArchived(i))
     .sort((a, b) => compareRank(a.rank, b.rank) || a.key - b.key);
-  const label = (id: string) => typeIn(plan.types, id).label;
   const onABoard = new Set<string>();
   const boards = plan.boards.map((b): ListedBoard => {
     const filed = b.kind === 'board';
@@ -145,20 +187,9 @@ export function planListing(state: PlanState, filter: ListingFilter = {}): PlanL
       }),
     };
   });
-  // A status filter takes a column name too.
-  const wanted = filter.status
-    ? (plan.statuses.find(
-        (s) => s.status === filter.status || s.name.toLowerCase() === filter.status!.toLowerCase(),
-      )?.status ?? filter.status)
-    : undefined;
   const items = [...state.items]
-    .filter(
-      (i) =>
-        !filter.type ||
-        i.type === filter.type ||
-        label(i.type).toLowerCase() === filter.type.toLowerCase(),
-    )
-    .filter((i) => !wanted || itemStatus(i) === wanted)
+    .filter((i) => !filter.type || i.type === filter.type)
+    .filter((i) => !filter.status || itemStatus(i) === filter.status)
     .sort((a, b) => a.key - b.key)
     .map((i) => ({
       ref: ref(i),

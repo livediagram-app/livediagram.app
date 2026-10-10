@@ -127,7 +127,7 @@ for the work.
   turning a column's header has no effect and the toggle is not offered there.
 - A title longer than the strip is tall wraps across the strip's thickness; what does not fit is
   clipped. The strip's padding is at most the small padding, so a one-line strip keeps its line.
-- The context menu's Text section carries **Upright title** for a lane with a side strip; one commit,
+- The context menu's Text section carries **Upright Title** for a lane with a side strip; one commit,
   one undo step.
 - Export (SVG, PNG, PDF) draws the turned title exactly as the canvas does; screen readers read the
   title as text, unaffected by its turn.

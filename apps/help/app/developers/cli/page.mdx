@@ -163,7 +163,7 @@ livediagram graph render flow.mmd --png flow.png
 
 To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports. `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel, and nothing on livediagram is deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel, and nothing on livediagram is deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
 ## Help, Guides and the Agent Skill
 

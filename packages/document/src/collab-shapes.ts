@@ -152,6 +152,22 @@ export function temperaturePosition(average: number): number {
 // anonymity guarantee expressed in the schema rather than in the UI.
 export const IDEA_MAX_CARDS = 300;
 export const IDEA_MAX_TEXT = 500;
+// Each card's random id (`ideaCardIds`, docs/specs/012-collaboration/blueprints/idea-box-race.md): a UUID is
+// 36 characters; the room's other ids are bounded at 64. Safe range 36..128.
+export const IDEA_CARD_ID_MAX = 64;
+
+// A box's card ids, aligned by position with its cards: cut to the cards' length and padded with '' (an
+// id-less card: one from before ids, a template's, a poll capture's or one the room's ledger restored).
+export function alignedIdeaCardIds(el: { ideaCards?: string[]; ideaCardIds?: string[] }): string[] {
+  const n = (el.ideaCards ?? []).length;
+  const ids = (el.ideaCardIds ?? []).slice(0, n);
+  while (ids.length < n) ids.push('');
+  return ids;
+}
+
+export function isIdeaCardId(v: unknown): v is string {
+  return typeof v === 'string' && v.length > 0 && v.length <= IDEA_CARD_ID_MAX;
+}
 
 export function isIdeaBoxShape(kind: ShapeKind): boolean {
   return kind === 'idea-box';

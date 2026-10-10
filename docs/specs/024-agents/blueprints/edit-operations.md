@@ -160,20 +160,20 @@ label    := a quoted value
 word     := ref | label          (one element)
 ```
 
-| Term                | Matches                                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `ref`               | `resolveRef(word, refs)`: the element whose id equals it, else the one id it is a prefix of; several: ambiguous |
-| `"Label"`           | Elements whose `label`, trimmed, equals it trimmed, compared after `toLowerCase()` (EO11)                       |
-| `label~text`        | Elements whose `label` contains the text, compared after `toLowerCase()`                                        |
-| `type:<v>`          | `kindWordOf(el) === v` or `el.type === v`, so `type:square` and `type:shape` both match a square                |
-| `shape:<v>`         | Shapes whose `shape === v`                                                                                      |
-| `in:<word>`         | Elements whose chain of holders includes the container `<word>` names; arrows are never members (EO14)          |
-| `from:<word>`       | Arrows whose `from` is pinned to that element                                                                   |
-| `to:<word>`         | Arrows whose `to` is pinned to that element                                                                     |
-| `<a>-><b>`          | Arrows whose `from` is pinned to `a` and `to` to `b`                                                            |
-| `downstream:<word>` | Boxed elements reachable from it along pinned arrows from `from` to `to`, itself excluded (EO13)                |
-| `upstream:<word>`   | The same against the arrows' direction                                                                          |
-| `selected`          | The ids in `options.selected` that exist in the state                                                           |
+| Term                | Matches                                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ref`               | `resolveRef(word, refs)`: the element whose id equals it, else the one id it is a prefix of; several: ambiguous                                   |
+| `"Label"`           | Elements whose `label`, trimmed, equals it trimmed, compared after `toLowerCase()` (EO11)                                                         |
+| `label~text`        | Elements whose `label` contains the text, compared after `toLowerCase()`                                                                          |
+| `type:<v>`          | `kindWordOf(el) === v` or `el.type === v`, so `type:square` and `type:shape` both match a square                                                  |
+| `shape:<v>`         | Shapes whose `shape === v`                                                                                                                        |
+| `in:<word>`         | Elements whose chain of holders includes the container `<word>` names; arrows are never members (EO14)                                            |
+| `from:<word>`       | Arrows whose `from` is pinned to that element                                                                                                     |
+| `to:<word>`         | Arrows whose `to` is pinned to that element                                                                                                       |
+| `<a>-><b>`          | Arrows whose `from` is pinned to `a` and `to` to `b`; split at the `->` outside quotes, so `"Sign in"->"Pay"` reads; a third end is a parse error |
+| `downstream:<word>` | Boxed elements reachable from it along pinned arrows from `from` to `to`, itself excluded (EO13)                                                  |
+| `upstream:<word>`   | The same against the arrows' direction                                                                                                            |
+| `selected`          | The ids in `options.selected` that exist in the state                                                                                             |
 
 - All terms of one selector must match (intersection). Matches are listed in element order (z-order, EO12).
 - A `<word>` inside a term must resolve to exactly one element, else that word's own `target_not_found` or
@@ -213,7 +213,8 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 - **Live fields.** A key in `LIVE_ELEMENT_FIELDS` (the comment thread, responses, ideas) is `invalid_value` with
   the hint "comments go through the comment commands; responses and ideas are people's".
 - **Value parsing.** JSON form values are JSON. Line form values: a quoted value is a string; an unquoted value is
-  read as JSON when it is a JSON number, `true`, `false`, or starts with `[` or `{`, else it is a string (EO19).
+  read as JSON when the whole value is a JSON number, `true` or `false`, or it starts with `[` or `{`, else it is a
+  string (EO19): `label=2FA`, `label=3D` and `label=1st` are strings, `width=200` is a number.
   `key=` is `null`: the field is removed (`unset`).
 - **Geometry.** A named `x`, `y`, `width` or `height` is written as given: stored, absolute coordinates, not
   origin-relative (EO20). It counts as a move for arrow rebinding and membership lines.
@@ -251,7 +252,8 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 | `at:x,y`         | Top-left at `origin + (x, y)`, exact, never nudged (EO25)                                                                                                              |
 
 - `gap` defaults to `PLACEMENT_GAP` and is an integer in `[0, PLACEMENT_GAP_MAX]` (EO23); it applies to the four
-  sides and `after`.
+  sides and `after`. `gap:` with no number, or one that is not a number, is a `parse_error` ("a number after
+  gap:"), never 0.
 - **No placement** on `add`: `right-of` the element the latest earlier `add` or `insert` in this changeset created;
   else top-left at `(contentRight + PLACEMENT_GAP, contentTop)` of all boxed elements; on an empty tab at the
   origin (EO26). `align:` on `add` aligns that default spot.
@@ -292,9 +294,10 @@ means `newElementId` ([Ids](#ids)).
   arrow from b to a does not count; `a` equal to `b` is `invalid_value`. Otherwise a new arrow
   `createPinnedArrow(a, bestAnchorTowards(a, centreOf(b)), b, bestAnchorTowards(b, centreOf(a)))`, new id, other
   fields as `set`, painted, on a's layer, inserted in the order directly after the later of a and b.
-- **`rewire <arrow> from=<x> | to=<y>`.** The target must be an arrow; x or y a boxed element (`invalid_value`
-  otherwise). The named end is pinned to it; both ends re-anchor with `bestAnchorTowards` facing each other; the
-  arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31).
+- **`rewire <arrow> from=<x> | to=<y> | from=<x> to=<y>`.** At least one end is named, both may be (a reversal names both, so it never passes through a self-loop). The target must be an arrow; x and y boxed elements (`invalid_value`
+  otherwise). Each named end is pinned to its box; both ends re-anchor with `bestAnchorTowards` facing each other; the
+  arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31). Ends that would land on one box (a named end onto the box
+  the other end is pinned to, or both named alike) are `invalid_value` ("an arrow joins two different boxes"), as `connect a -> a` is.
 - **`insert <kind> [id=] key=value… between <a> <b>`.** The arrows pinned from a to b: none is `not_connected`,
   several is `target_ambiguous` naming them, with the hint "rewire one of them by its ref instead". The node is
   built as `add` builds it, then:
@@ -370,7 +373,8 @@ before the node, and every step uses it:
 2. **Beyond.** A unit is beyond when its centre on the axis lies past the midline (the node's near edge minus
    half the gap), in the axis' direction.
 3. **Shift.** Each unit beyond, a container unit with its `containerContents` ([Carry](#carry)), moves by `shift` along the axis.
-   Locked units stay where they are (EO47).
+   Locked units stay where they are (EO47): a locked container, a unit itself or carried inside one, stays with
+   everything it holds, so its members never leave it.
 4. **Grow and go outward.** The scope container grows along the axis by `shift` on its far side, so every
    shifted element keeps its membership; then room is made in the scope's own holder, with the midline at the
    container's old far edge and the container itself left out, so an outer container grows in turn and what lay
@@ -521,12 +525,16 @@ Line form, words separated by whitespace:
   placement, `gap:` its gap; other `key:value` words, quoted words, `label~`, `->` words and other bare words are
   selector terms; flags are the operation's keywords. Keys read case-insensitively, as `tokenKeyOf` in
   `@livediagram/explorer-lens` reads them (EO11).
-- **Operation shapes.** `connect` splits its selectors at a standalone `->`; `insert … between <a> <b>` takes one
+- **Operation shapes.** `connect` splits its selectors at a standalone `->`, or at the `->` outside quotes of one
+  word (`connect "Sign in"->"Pay"`); a second `->`, either way, is a `parse_error` ("one -> in connect"), never a
+  dropped end (E17); `insert … between <a> <b>` takes one
   word each; `wrap` reads members up to the word `in`.
 
 `formatOperation` prints the canonical line form: operation, selector or kind, `id=`, fields in the given order
 (strings quoted when they hold whitespace, `"`, `#` at the start, `=` or `:`), placement, flags. Parsing its output
-gives the same operation.
+gives the same operation. Two operations have no line form and print as their JSON form, which parses back alike:
+an `add` with a whole element, and a `wrap` with two or more targets that are not one ref or one quoted label (the
+line form would join them into one selector).
 
 ### Result lines
 
@@ -662,6 +670,8 @@ Edge cases:
 - **E14** `keep-arrows` where both ends were removed: the arrow has two free ends and stays.
 - **E15** A placement reference on a hidden layer: placement uses its box all the same.
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
+- **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
+  `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
 
 ## Security and trust
 
@@ -692,13 +702,19 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
   costs the neighbourhood and a walk past a row of n boxes costs O(n). Capture (`wrap`) reads holders once.
 - **Containment.** `deriveContainers` is `O(n × containers)` through `smallestHolder`; computed twice per changeset (before and after) and for
   `in:` on demand.
+- **Container order.** `containersBehindMembers` builds each container's member list once and keeps an index map
+  of the order, updating only the range a moved container crosses: `O(n)` plus what moves. Before, a scan of the
+  order per member made a one-field `set` cost 157 ms at 10,000 members of one frame; now 19 ms.
+- **Targets.** `noteTarget` keeps a `Set` beside the ordered `targets`, so a `set … all` notes each element in
+  `O(1)`; the old `includes` was quadratic in the elements resolved.
 - **Nearest candidates** run only on `target_not_found` / `unknown_field`: banded Levenshtein with band
   `NEAREST_MAX_DISTANCE` over labels cut to 60 characters, `O(n × 60 × band)`, about 6,000,000 cells at worst.
 - **Layout** costs `autoLayoutElements` on the selection only.
 - **Budget.** `EDIT_APPLY_BUDGET_MS` is the aim for a 500-operation changeset on a 2,000-element tab, measured, not
   a gate. Measured: 498 operations on 1,980 elements take 39 ms without inserts, and 88 ms with 83 of them inserts
   (make room reads the tab's holders and the connected group once per insert). The gate is `performance.test.ts`:
-  four times the tab, or four times the changeset, costs under eight times as much.
+  four times the tab, or four times the changeset, costs under eight times as much; the container order pass and
+  `noteTarget` are timed alone at 2,400 and 9,600 elements, under the same ratio.
 
 ## Observability
 

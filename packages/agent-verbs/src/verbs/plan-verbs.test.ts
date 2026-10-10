@@ -128,6 +128,9 @@ describe('board set', () => {
       boardSet.input.parse({ doc: DOC_A, board: 'b1', types: 'all', title: 'S2' }),
     );
     expect(boardSet.text!(every)).toEqual(['~ board "S2": To Do (takes every type)']);
+    expect(boardSet.text!({ ...every, takes: [] })).toEqual([
+      '~ board "S2": To Do (takes no type)',
+    ]);
   });
 
   it('refuses a board it cannot find', async () => {

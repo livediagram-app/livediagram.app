@@ -32,11 +32,11 @@ function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; lab
  *  its Tools group open, each key cap beside its label as the editor words it. */
 export function KeyboardShortcuts() {
   const rows: [string, string][] = [
-    ['V', 'Select tool (or 1)'],
-    ['H', 'Hand tool'],
-    ['K', 'Laser pointer'],
+    ['V', 'Select Tool (or 1)'],
+    ['H', 'Hand Tool'],
+    ['K', 'Laser Pointer'],
     ['E', 'Eraser (click / drag to delete)'],
-    ['Z', 'Zen mode (focus)'],
+    ['Z', 'Zen Mode (focus)'],
   ];
   return (
     <Scene w={420} h={236} bg="plain">

@@ -27,6 +27,7 @@ import {
   type TextSize,
   type Tab,
 } from '@livediagram/document';
+import type { ImportOutcome } from './import-tab';
 import { getTheme, recolourElementsForTheme } from './themes';
 
 // ---------------------------------------------------------------------
@@ -40,8 +41,20 @@ export type MarkdownNode = { label: string; children: MarkdownNode[] };
 // recursive layout and recolour stay far inside the stack; a deeper item becomes a sibling of the
 // deepest. 24 is beyond any outline a person writes; safe range 8 to a few hundred.
 export const MAX_LIST_DEPTH = 24;
+
+// The most nodes one import keeps: headings, list items, prose lines and tables together, in
+// document order (docs/specs/020-import-export/markdown-import.md "Limits"). The rest are counted as
+// left out and the Import dialog's report says how many. Provenance (measured 2026-10-10): each
+// outline node lands as a box and an arrow, about 450 bytes of tab JSON with a 40-character label
+// and 650 at the 120-character label cap, so 2,000 nodes of two-byte characters at the cap made a
+// 1.29 MB tab (4,001 elements), inside the 1,991,808-byte tab row (MAX_TAB_BYTES) and the 10,000
+// MAX_ELEMENTS_PER_TAB, and built in under 10 ms; 3,000 such nodes came within 3% of the row cap.
+// Safe range 500 to 2,500; above that a long-labelled outline no longer fits one tab.
+export const MAX_MARKDOWN_IMPORT_NODES = 2_000;
+
 type MarkdownTable = { headers: string[]; rows: string[][] };
-type ParsedMarkdown = { roots: MarkdownNode[]; tables: MarkdownTable[] };
+// `leftOut`: the headings, list items, prose lines and tables past MAX_MARKDOWN_IMPORT_NODES.
+type ParsedMarkdown = { roots: MarkdownNode[]; tables: MarkdownTable[]; leftOut: number };
 
 // Strip inline Markdown / HTML so a node label reads as plain text.
 // Order matters: images before links (both use `[]()`), emphasis after
@@ -104,6 +117,18 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
   const tables: MarkdownTable[] = [];
   let inFence = false;
   let fenceMarker = '';
+  // Nodes kept so far, and those read past the cap. Once full, every later node is counted, never
+  // kept, so the import stays the file's first MAX_MARKDOWN_IMPORT_NODES in document order.
+  let kept = 0;
+  let leftOut = 0;
+  const hasRoom = (): boolean => {
+    if (kept < MAX_MARKDOWN_IMPORT_NODES) {
+      kept += 1;
+      return true;
+    }
+    leftOut += 1;
+    return false;
+  };
 
   const currentHeading = (): MarkdownNode =>
     headingStack.length > 0 ? headingStack[headingStack.length - 1]!.node : root;
@@ -141,7 +166,7 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
         if (rows.length < MAX_TABLE_ROWS) rows.push(splitTableRow(lines[j]!));
         j++;
       }
-      tables.push({ headers, rows });
+      if (hasRoom()) tables.push({ headers, rows });
       i = j - 1;
       listStack = [];
       continue;
@@ -152,7 +177,7 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
     if (heading) {
       const level = heading[1]!.length;
       const label = cleanInline(heading[2]!.replace(/\s+#+\s*$/, '')); // drop closing ###
-      if (!label) continue;
+      if (!label || !hasRoom()) continue;
       while (headingStack.length > 0 && headingStack[headingStack.length - 1]!.level >= level) {
         headingStack.pop();
       }
@@ -169,7 +194,7 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
     if (list) {
       const indent = list[1]!.length;
       const label = cleanInline(list[2]!.replace(/^\[[ xX]\]\s+/, '')); // strip task checkbox
-      if (!label) continue;
+      if (!label || !hasRoom()) continue;
       while (listStack.length > 0 && listStack[listStack.length - 1]!.indent >= indent) {
         listStack.pop();
       }
@@ -187,12 +212,12 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
     // Anything else: a prose line. Attach under the current heading so
     // content isn't dropped, and end the current list.
     const label = cleanInline(trimmed.replace(/^>\s?/, ''));
-    if (!label) continue;
+    if (!label || !hasRoom()) continue;
     currentHeading().children.push({ label, children: [] });
     listStack = [];
   }
 
-  return { roots: root.children, tables };
+  return { roots: root.children, tables, leftOut };
 }
 
 // ---------------------------------------------------------------------
@@ -312,7 +337,8 @@ function buildTableElement(table: MarkdownTable, x: number, y: number): TableEle
 // Build
 // ---------------------------------------------------------------------
 
-type MarkdownImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
+// `leftOut` counts what MAX_MARKDOWN_IMPORT_NODES left behind (0 when the whole file fit).
+type MarkdownImportResult = { ok: true; tab: Tab; leftOut: number } | { ok: false; error: string };
 
 export function buildTabFromMarkdown(
   markdown: string,
@@ -361,6 +387,7 @@ export function buildTabFromMarkdown(
 
   return {
     ok: true,
+    leftOut: parsed.leftOut,
     tab: {
       id: crypto.randomUUID(),
       name: tabName,
@@ -370,6 +397,31 @@ export function buildTabFromMarkdown(
       backgroundPattern: theme.backgroundPattern,
       patternColor: theme.patternColor,
       templateChosen: true,
+    },
+  };
+}
+
+// The report line for nodes past the cap: the count is shown before it ("1,234 · ...").
+export const MARKDOWN_LEFT_OUT_RULE = `Headings, list items, lines and tables beyond the first ${MAX_MARKDOWN_IMPORT_NODES.toLocaleString('en-GB')} were left out`;
+
+/**
+ * The Import dialog's outcome for a Markdown import: the shared report (docs/specs/020-import-export/
+ * board-scene.md "The report") when the node cap left something out, so nothing is lost silently.
+ */
+export function markdownImportOutcome(tab: Tab, leftOut: number): ImportOutcome {
+  if (leftOut <= 0) return { status: 'done' };
+  let shapes = 0;
+  let connectors = 0;
+  for (const el of tab.elements) {
+    if (el.type === 'arrow') connectors += 1;
+    else shapes += 1;
+  }
+  return {
+    status: 'done',
+    scene: {
+      landed: { shape: shapes, connector: connectors },
+      degraded: [],
+      skipped: [{ rule: MARKDOWN_LEFT_OUT_RULE, count: leftOut }],
     },
   };
 }

@@ -48,7 +48,7 @@ function show(ctx: ReturnType<typeof editor>, pendingDraw: PendingDraw | null = 
 describe('PaletteLogoTab', () => {
   it('offers the Pen, the Pencil and the three markers', () => {
     show(editor());
-    for (const name of ['Pen', 'Freehand pencil', 'Marker 1', 'Marker 2', 'Marker 3'])
+    for (const name of ['Pen', 'Freehand Pencil', 'Marker 1', 'Marker 2', 'Marker 3'])
       expect(screen.getByRole('option', { name })).toBeTruthy();
     fireEvent.click(screen.getByRole('option', { name: 'Pen' }));
     expect(actions.beginPath).toHaveBeenCalled();

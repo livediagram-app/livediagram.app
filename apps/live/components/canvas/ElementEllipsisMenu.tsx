@@ -322,7 +322,7 @@ export function ElementMenuSettingsRow({ onOpen }: { onOpen: () => void }) {
         role="separator"
         className="my-1 block border-t border-slate-100 dark:border-slate-800"
       />
-      <ElementMenuItem onPress={onOpen}>All settings…</ElementMenuItem>
+      <ElementMenuItem onPress={onOpen}>All Settings…</ElementMenuItem>
     </>
   );
 }

@@ -17,6 +17,7 @@ Scope, by file:
 | `apps/live/lib/image-search/search.ts`            | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
 | `apps/live/lib/image-search/telemetry.ts`         | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
 | `apps/live/lib/image-search/pick.ts`              | `storeSearchResult`: download (full, else thumbnail) and store          |
+| `apps/live/lib/image-search/read-capped.ts`       | `readCapped`: read a body, refusing past a byte cap                     |
 | `apps/live/hooks/ui/useImageSearch.ts`            | Search tab state: query, pages, status, picking                         |
 | `apps/live/components/panels/ImageSearchPane.tsx` | The Search tab's form, grid, states and footer credit                   |
 | `apps/live/components/panels/ImagePicker.tsx`     | Third tab; `onSelect(image: PickedImage)` carries the credit            |
@@ -80,10 +81,14 @@ fetch and `onStage('saving')` before each `session.store`:
 
 1. Fetch `result.url` (`mode: 'cors'`, `credentials: 'omit'`, `referrerPolicy: 'no-referrer'`).
    A network error, a non-2xx answer, or a `Content-Type` that doesn't start with `image/` → step 3.
+   The body is read with `readCapped(res, IMPORT_IMAGE_MAX_SOURCE_BYTES, type)`: a `Content-Length`
+   over the cap is refused before reading, and a body that streams past it is cancelled at the chunk
+   that crosses it. Either is final as `too-large`, with no thumbnail try, as the pipeline's own
+   `too-large` always was.
 2. `session.store({ kind: 'blob', blob, name })`. `ok` → done. Failure `unsupported` or
    `missing-bytes` → step 3. Any other failure is final.
 3. The same fetch of `result.thumbnail`, then `session.store`. A download failure here is final as
-   `download-failed`.
+   `download-failed` (`too-large` if over the cap).
 
 `name` is the result's title, else `openverse-<id>` (D149).
 
@@ -144,6 +149,7 @@ characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 charac
 | Load more past the last page                  | Button hidden when `page >= pageCount`                              |
 | Full image blocked by CORS / not an image     | Thumbnail fallback                                                  |
 | Full image is SVG or > 50 MB source           | Pipeline rasterises SVG; > 50 MB is `too-large`, final (spec limit) |
+| Host declares or streams > 50 MB              | Download stops at the cap; `too-large`, final, nothing stored       |
 | Both downloads fail                           | "Couldn't download that image. Try another one."                    |
 | Gallery full / images unavailable / too large | The pipeline failure's upload copy (table below)                    |
 | Offline Mode document                         | Session embeds as data URI; over budget → "too large" copy          |
@@ -176,7 +182,8 @@ Pick failure copy (`pickFailureMessage`):
 - 20 results per page; thumbnails come from Openverse's thumbnail endpoint (about 600 px, 30 to
   80 kB), `loading="lazy"`, `decoding="async"`.
 - A pick downloads one full image (Flickr's `_b` sizes are about 1024 px; the largest seen are
-  around 4500 px), then the pipeline caps it at 2048 px.
+  around 4500 px), then the pipeline caps it at 2048 px. The download itself never holds more than
+  `IMPORT_IMAGE_MAX_SOURCE_BYTES` (50 MB) plus one stream chunk, whatever the host sends.
 - `ImageSearchPane` is part of the lazily loaded picker chunk; the pipeline's browser module is
   imported on first pick.
 
@@ -249,6 +256,8 @@ dropped as stale sends nothing.
 | Gallery-full is final; both downloads fail → download-failed | `apps/live/lib/image-search/pick.test.ts`              |
 | Warning token per search kind and pick failure               | `apps/live/lib/image-search/telemetry.test.ts`         |
 | Thumbnail fallback reported once, not on a direct store      | `apps/live/lib/image-search/pick.test.ts`              |
+| Over the source cap: refused, no thumbnail, nothing stored   | `apps/live/lib/image-search/pick.test.ts`              |
+| Cap by Content-Length, mid-stream cancel, under-cap join     | `apps/live/lib/image-search/read-capped.test.ts`       |
 | Stages: downloading, saving; again for the thumbnail         | `apps/live/lib/image-search/pick.test.ts`              |
 | Placeholders while searching; a tile's until it loads        | `apps/live/components/panels/ImageSearchPane.test.tsx` |
 | Picked tile busy, stage copy, others disabled, hand-off      | `apps/live/components/panels/ImageSearchPane.test.tsx` |

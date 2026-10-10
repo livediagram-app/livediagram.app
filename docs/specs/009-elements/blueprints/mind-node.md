@@ -425,8 +425,8 @@ listener only reads keys while a growth it opened is pending, and lets modified 
   category's Radius grid (single and multi-selection menus) and a whiteboard's Corners row. The grid
   highlights `shownBorderRadius(el)`: the node's own preset, else `'md'` (12px, the default).
 - Toolbar: Add child and Add sibling after Edit text, each naming its shortcut in its hover card.
-- Ring: a selected mind node's quick-connect ring leads with "Add child" ("Shortcut: Tab.") and
-  "Add sibling" ("Shortcut: Enter."), then Duplicate alone of the standard options (no Arrow,
+- Ring: a selected mind node's quick-connect ring leads with "Add Child" ("Shortcut: Tab.") and
+  "Add Sibling" ("Shortcut: Enter."), then Duplicate alone of the standard options (no Arrow,
   Pencil or Text).
 - Menu: "Mind Map" section with `MindFlowTiles` (Tree, Balanced, Downward, Bubble, with
   `MIND_FLOW_HINT` hints) and Tidy Map.

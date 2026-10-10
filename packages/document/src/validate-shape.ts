@@ -16,6 +16,7 @@ import {
   AGENDA_MAX_TEXT,
   DECISION_MAX_DRIVERS,
   DECISION_MAX_TEXT,
+  IDEA_CARD_ID_MAX,
   IDEA_MAX_CARDS,
   IDEA_MAX_TEXT,
   ROLL_CALL_MAX,
@@ -202,6 +203,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'ideaCards',
     valid: rowsOf(IDEA_MAX_CARDS, isStrUpTo(IDEA_MAX_TEXT)),
     rule: arrayRule(IDEA_MAX_CARDS, `strings of ${IDEA_MAX_TEXT} characters`),
+  },
+  {
+    field: 'ideaCardIds',
+    valid: rowsOf(IDEA_MAX_CARDS, isStrUpTo(IDEA_CARD_ID_MAX)),
+    rule: arrayRule(IDEA_MAX_CARDS, `ids of ${IDEA_CARD_ID_MAX} characters`),
   },
   flag('ideasRevealed'),
   {

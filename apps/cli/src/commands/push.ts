@@ -13,6 +13,7 @@ import {
 import type { ChangesetResponse, DocumentResponse } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import type { CliIo } from '../io';
+import { mirrorFileText } from '../link/mirror-file';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
 import { failureOf } from '../output/failure-of';
@@ -123,6 +124,9 @@ export async function pushFile(
     };
     landed = true;
   }
-  if (landed) await io.files.write(input.file, pullFileText(file));
+  // A mirror file (no `pulledAt`) is written back in its own canonical form, byte-stable for git (RL30, RL31).
+  const text =
+    file.livediagramSync.pulledAt === undefined ? mirrorFileText(file) : pullFileText(file);
+  if (landed) await io.files.write(input.file, text);
   return { lines, exit };
 }

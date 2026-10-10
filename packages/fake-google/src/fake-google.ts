@@ -3,7 +3,7 @@
 // test proves the mirror without real Google credentials.
 //
 //   - OAuth: POST /token (authorization_code, refresh_token) and POST /revoke.
-//   - Drive v3: changes (startPageToken, list), files (list, get, alt=media,
+//   - Drive v3: about (the user's permissionId), changes (startPageToken, list), files (list, get, alt=media,
 //     create, update, delete), uploads (multipart, resumable).
 //   - `fields` is honoured; `q` supports what the mirror sends.
 //   - `user*` methods act as the person in Drive's own UI.
@@ -373,6 +373,18 @@ export class FakeGoogle {
 
   private async drive(request: Request, url: URL, method: string, user: string): Promise<Response> {
     const path = url.pathname;
+
+    // Who the token acts for. Drive requires `fields` here; the user's
+    // permissionId is the stable id of the Google account (the fake's user).
+    if (path === '/drive/v3/about' && method === 'GET') {
+      const fields = url.searchParams.get('fields');
+      if (!fields) return driveError(400, 'required', 'The fields parameter is required');
+      const about = {
+        kind: 'drive#about',
+        user: { kind: 'drive#user', permissionId: user, emailAddress: `${user}@example.test` },
+      };
+      return jsonResponse(200, pickFields(about, parseFields(fields)));
+    }
 
     if (path === '/drive/v3/changes/startPageToken' && method === 'GET') {
       return jsonResponse(200, {

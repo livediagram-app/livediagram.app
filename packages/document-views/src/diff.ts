@@ -1,7 +1,7 @@
 // What changed between two reads of a tab (docs/specs/024-agents/blueprints/document-views.md "diff",
 // VW36), in the outline's terms. The CLI computes it from the tab it cached; no api door serves it.
 import type { DiffView, ViewDoor } from '@livediagram/api-schema';
-import { STYLE_KEYS, type Element, type Tab } from '@livediagram/document';
+import { STYLE_KEYS, type Element, type Endpoint, type Tab } from '@livediagram/document';
 import { attributesOf } from './attributes';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
@@ -51,6 +51,8 @@ const ATTRIBUTE_SOURCES = [
   'responses',
   'responsesRevealed',
   'ideaCards',
+  // Each card's random id moves with its card, so the ideas count speaks for it too.
+  'ideaCardIds',
   'ideasRevealed',
   'qaNotes',
   'agendaItems',
@@ -99,10 +101,18 @@ function threadState(el: Element): string {
     : `${thread.comments.length} ${thread.resolved ? 'resolved' : 'open'}`;
 }
 
-function containerRef(model: ViewModel, id: string): string {
-  const container = model.tree.nodes.get(id)?.container ?? null;
-  return container === null ? 'canvas' : model.refs.refOf(container);
-}
+// Two reads have two ref tables: one added id can lengthen another's ref. So changes compare ids, and refs are
+// only how a change prints.
+const containerIdOf = (model: ViewModel, id: string): string | null =>
+  model.tree.nodes.get(id)?.container ?? null;
+const containerText = (model: ViewModel, id: string | null): string =>
+  id === null ? 'canvas' : model.refs.refOf(id);
+const endpointKey = (end: Endpoint): string =>
+  end.kind === 'pinned'
+    ? `pinned ${end.elementId}`
+    : end.kind === 'on-arrow'
+      ? `arrow ${end.arrowId}`
+      : `free ${end.x},${end.y}`;
 
 // A printed arrow's edge; every printed arrow has one.
 function edgeOf(model: ViewModel, id: string): ViewEdge {
@@ -143,8 +153,11 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
     add('note', `note ${how}`, noteA, noteB, ['note', 'noteRich']);
   }
   if (b.type !== 'arrow') {
-    const [inA, inB] = [containerRef(before, a.id), containerRef(after, b.id)];
-    if (inA !== inB) add('in', `in ${inA} → ${inB}`, inA, inB);
+    const [idA, idB] = [containerIdOf(before, a.id), containerIdOf(after, b.id)];
+    if (idA !== idB) {
+      const [inA, inB] = [containerText(before, idA), containerText(after, idB)];
+      add('in', `in ${inA} → ${inB}`, inA, inB);
+    }
   }
   const [sumA, sumB] = [contentSummaryOf(a), contentSummaryOf(b)];
   if (sumA !== sumB)
@@ -160,8 +173,9 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
   if (a.type === 'arrow' && b.type === 'arrow') {
     const [edgeA, edgeB] = [edgeOf(before, a.id), edgeOf(after, b.id)];
     for (const end of ['from', 'to'] as const) {
+      if (endpointKey(a[end]) === endpointKey(b[end])) continue;
       const [was, now] = [endText(edgeA[end]), endText(edgeB[end])];
-      if (was !== now) add(end, `${end} ${was} → ${now}`, was, now, [end]);
+      add(end, `${end} ${was} → ${now}`, was, now, [end]);
     }
   }
   const [boxA, boxB] = [boxOf(a), boxOf(b)];

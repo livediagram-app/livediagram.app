@@ -1199,6 +1199,18 @@ comment ids (one by one, or with their element), diffed by `removedComments`. A
 comment that comes back (an undo) is new again to the next save and is recorded
 afresh.
 
+Deleting a whole tab or a whole Plan card retracts every comment it held the same
+way (`retractTabComments`, `retractCardComments`): the tab delete route unlinks the
+tab and reads its stored body in one statement (`deleteTabRow`), and the card delete
+route reads the card as it deletes it (`deleteItemRow`), so a comment written a
+moment before can never slip between a read and the delete. Every comment event is
+pinned to the document whose write recorded it, so a tab unlinked from one document
+loses only that document's events; another document still holding the tab keeps
+its own, until the tab leaves it too. Purging a document from the Trash, or deleting
+it outright, sweeps all of its events (§3.5), its tabs' and cards' comments among
+them. An undone card delete brings the card's comments back without their events: a
+card's comments are recorded only by the comment routes.
+
 A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
 `action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no
 account yet). Both are what [Explorer Home](explorer-home.md)'s What happened needs to say "replied" and "assigned

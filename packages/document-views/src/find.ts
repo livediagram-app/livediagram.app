@@ -132,15 +132,15 @@ export function findView(
     const count = counts.get(field) ?? 0;
     return count > 0 ? [plural(count, field, `${field}s`)] : [];
   });
-  lines.push({
-    text:
-      matches.length === 0
-        ? '0 matches'
-        : `${plural(matches.length, 'match', 'matches')}: ${summary.join(', ')}`,
-  });
+  // The totals close the view whatever the budget: dropping them left a cut answer with no elision line.
+  const closing =
+    matches.length === 0
+      ? '0 matches'
+      : `${plural(matches.length, 'match', 'matches')}: ${summary.join(', ')}`;
   const fitted = fitLines({
     header: headerLine(model.facts),
     lines,
+    closing,
     budget: options.budget,
     door: options.door ?? 'cli',
   });

@@ -426,7 +426,7 @@ function MenuRowList({
   return <g>{out}</g>;
 }
 
-/** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock tab, Delete) over
+/** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock Tab, Delete) over
  *  full-width rows in three groups (folders and documents, content, the mode), opened from the
  *  active tab's ⋯ button. */
 export function TabMenu() {
@@ -463,7 +463,7 @@ export function TabMenu() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {/* Toolbar: Rename, Duplicate, Paste | Lock tab, Delete */}
+      {/* Toolbar: Rename, Duplicate, Paste | Lock Tab, Delete */}
       {[0, 1, 2].map((i) => (
         <rect
           key={i}
@@ -521,7 +521,7 @@ export function TabMenu() {
         className="fill-white stroke-slate-500"
         strokeWidth={1.2}
       />
-      {/* Lock tab + Delete at the right edge */}
+      {/* Lock Tab + Delete at the right edge */}
       <rect
         x={mx + mw - 62}
         y={my + 8}
@@ -562,7 +562,7 @@ export function TabMenu() {
         Rename, Duplicate, Paste
       </Label>
       <Label x={14} y={46} size={10} tone="muted">
-        Lock tab, Delete
+        Lock Tab, Delete
       </Label>
     </Scene>
   );

@@ -25,7 +25,7 @@ Right-click a portal → **Portal**:
 
 - **Name** — a text field, committed on blur / Enter.
 - **Leads to** — a grid of every OTHER portal in the document, this tab's first; a portal on another tab is labelled `Name · Tab`. The current target is marked active, and picking it again unlinks.
-- **Create portal** — always offered, and the only option for the first portal in a document: it drops a second portal beside this one, already linked both ways, and selects it so you can drag it where you want.
+- **Create Portal** — always offered, and the only option for the first portal in a document: it drops a second portal beside this one, already linked both ways, and selects it so you can drag it where you want.
 
 **A link is two-way.** Whatever you can step into, you can step back out of. Writing one side writes the other, and any third portal still claiming either end is released — a portal leads to exactly one place. Resolution also honours an **incoming** link, so a one-sided pairing written by an import, an older diagram, or the API still returns you.
 

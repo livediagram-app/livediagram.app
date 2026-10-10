@@ -44,6 +44,12 @@ describe('planOutline', () => {
     expect(plan.boards[1]!.columns[1]).toEqual({ status: 'later', name: 'Later', wipLimit: 3 });
   });
 
+  it('reads a board whose last type was turned off as taking none, never every type', () => {
+    const none = { ...presetSetup('kanban'), title: 'Empty', addTypes: [] };
+    const plan = planOutline([{ id: 't1', name: 'Board', elements: [board('b1', none)] }], null);
+    expect(plan.boards[0]!.types).toEqual([]);
+  });
+
   it('names each status once, the first board winning, and never an archive column', () => {
     const { statuses } = planOutline(tabs, null);
     const doing = statuses.filter((s) => s.status === 'doing');

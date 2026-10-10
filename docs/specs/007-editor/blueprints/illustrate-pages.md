@@ -511,7 +511,7 @@ only the renderer's own markup, whose labels are escaped.
 
 Copy and layout as the spec: **Add a Page** over the two cards (**Infographic**, "A page to lay
 out: layouts, icons, charts and media."; **Article**, "A page to write on, flowing onto new pages
-as it grows."), each over its miniature; the strip +'s HoverCard **Add page**, "A new infographic or
+as it grows."), each over its miniature; the strip +'s HoverCard **Add Page**, "A new infographic or
 article page after the last."; the first page's card **What Is This Page For?**, "Choose now: a
 page keeps its kind once you start."; the navigator **Previous page**, "n of m", **Next page**;
 the panel's tabs **Page** / **Background** / **Layouts** (an article page **Page** / **Background** / **Style** / **Text**; a logo page **Background** / **Layouts**), sections **Size**,
@@ -534,7 +534,7 @@ at most 100 pages: delete one to split this page."
   focus as well as hover.
 - The page label is a button named by its text (a HoverCard describes the press); the invite and
   Slides buttons are named; Tooltips repeat names only.
-- The + (both): `aria-haspopup="dialog"`, `aria-expanded`, named **Add page**; the popover
+- The + (both): `aria-haspopup="dialog"`, `aria-expanded`, named **Add Page**; the popover
   `role="dialog"` named "Add a Page" around a `role="group"`; cards are buttons (name and line as
   text), arrow keys cycle, Escape returns focus to the +.
 - The first page's card `role="group"` named "What is this page for?"; the navigator

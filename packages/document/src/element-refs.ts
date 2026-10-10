@@ -97,11 +97,13 @@ function nearestRefs(input: string, table: RefTable): string[] {
 }
 
 // Input to one element, or a named refusal. Case-sensitive; reads ids only, never labels. An exact id
-// wins; otherwise a prefix must be unique. A printed-length prefix matching several now is `stale`.
+// wins; otherwise a prefix must be unique. A printed-length prefix matching several now is `stale`. An
+// `id:"…"` ref always carries a full id, so it matches exactly or not at all: never a longer id it prefixes.
 export function resolveRef(input: string, table: RefTable): RefResolution {
   const wanted = unquotedIdRef(input);
   if (wanted === null || wanted === '') return { kind: 'not-found', input, nearest: [] };
   if (table.ids.includes(wanted)) return { kind: 'found', id: wanted };
+  if (wanted !== input) return { kind: 'not-found', input, nearest: nearestRefs(wanted, table) };
   const candidates = [...new Set(table.ids.filter((id) => id.startsWith(wanted)))];
   if (candidates.length === 1) return { kind: 'found', id: candidates[0]! };
   if (candidates.length > 1) {

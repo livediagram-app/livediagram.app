@@ -224,3 +224,68 @@ describe('an interrupted guest id upgrade', () => {
     expect(window.localStorage.getItem(PENDING)).toBeNull();
   });
 });
+
+// Two tabs opening at once on a legacy unsigned id: each loads its own copy of the module, so the
+// per-module `inflight` share cannot help; the Web Lock must serialise them across tabs.
+describe('the signed-id upgrade across tabs', () => {
+  function fakeLocks() {
+    let tail: Promise<unknown> = Promise.resolve();
+    const names: string[] = [];
+    return {
+      names,
+      request: (name: string, run: () => Promise<unknown>) => {
+        names.push(name);
+        const next = tail.then(run);
+        tail = next.catch(() => undefined);
+        return next;
+      },
+    };
+  }
+
+  async function loadTab() {
+    vi.resetModules();
+    return { guest: await import('./guest-identity') };
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('lets the second tab adopt the identity the first one wrote, never minting again', async () => {
+    const locks = fakeLocks();
+    vi.stubGlobal('navigator', { locks });
+    window.localStorage.setItem(ID, 'legacy');
+    const tabA = await loadTab();
+    const tabB = await loadTab();
+    // The api mock is shared by both tabs: without the lock each would mint, A then B.
+    mockMint
+      .mockResolvedValueOnce({ ownerId: 'signed-a', ownerSig: 'sig-a' })
+      .mockResolvedValueOnce({ ownerId: 'signed-b', ownerSig: 'sig-b' });
+    mockUpgrade.mockResolvedValue('moved');
+
+    const [a, b] = await Promise.all([
+      tabA.guest.ensureSignedGuestIdentity(),
+      tabB.guest.ensureSignedGuestIdentity(),
+    ]);
+
+    expect(a).toEqual({ id: 'signed-a', sig: 'sig-a' });
+    expect(b).toEqual({ id: 'signed-a', sig: 'sig-a' });
+    expect(locks.names).toEqual([
+      tabA.guest.GUEST_UPGRADE_LOCK_NAME,
+      tabB.guest.GUEST_UPGRADE_LOCK_NAME,
+    ]);
+    expect(mockMint).toHaveBeenCalledTimes(1);
+    expect(mockUpgrade).toHaveBeenCalledTimes(1);
+    expect(window.localStorage.getItem(ID)).toBe('signed-a');
+    expect(window.localStorage.getItem(SIG)).toBe('sig-a');
+  });
+
+  it('still resolves without navigator.locks', async () => {
+    vi.stubGlobal('navigator', {});
+    window.localStorage.setItem(ID, 'legacy');
+    const tab = await loadTab();
+    mockMint.mockResolvedValue({ ownerId: 'signed', ownerSig: 'sig' });
+    mockUpgrade.mockResolvedValue('moved');
+    expect(await tab.guest.ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
+  });
+});

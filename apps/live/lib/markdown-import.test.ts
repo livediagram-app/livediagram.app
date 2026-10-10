@@ -11,7 +11,10 @@ import {
   buildTabFromMarkdown,
   cleanInline,
   layoutOutline,
+  MARKDOWN_LEFT_OUT_RULE,
+  markdownImportOutcome,
   MAX_LIST_DEPTH,
+  MAX_MARKDOWN_IMPORT_NODES,
   parseMarkdown,
   type MarkdownNode,
 } from './markdown-import';
@@ -256,5 +259,66 @@ describe('markdown import limits', () => {
     expect(table.cells[0]).toHaveLength(MAX_TABLE_COLS);
     expect(table.cells.length * MAX_TABLE_COLS).toBeLessThanOrEqual(MAX_TABLE_CELLS);
     expect(isValidTab(result.tab)).toBe(true);
+  });
+});
+
+// The node cap (docs/specs/020-import-export/markdown-import.md "Limits"): an import keeps the first
+// MAX_MARKDOWN_IMPORT_NODES headings, list items, lines and tables, and the report counts the rest.
+describe('markdown import node cap', () => {
+  const countNodes = (nodes: MarkdownNode[]): number =>
+    nodes.reduce((n, node) => n + 1 + countNodes(node.children), 0);
+  const listOf = (n: number) =>
+    ['# Root', ...Array.from({ length: n - 1 }, (_, i) => `- item ${i}`)].join('\n');
+
+  it('keeps every node of a file at the cap, and leaves nothing out', () => {
+    const result = buildTabFromMarkdown(listOf(MAX_MARKDOWN_IMPORT_NODES));
+    if (!result.ok) throw new Error(result.error);
+    expect(result.leftOut).toBe(0);
+    expect(markdownImportOutcome(result.tab, result.leftOut)).toEqual({ status: 'done' });
+  });
+
+  it('keeps the first nodes in document order and counts the rest, tables included', () => {
+    const md = [listOf(MAX_MARKDOWN_IMPORT_NODES + 10), '| a |', '| - |', '| 1 |', 'prose'].join(
+      '\n',
+    );
+    const parsed = parseMarkdown(md);
+    expect(countNodes(parsed.roots)).toBe(MAX_MARKDOWN_IMPORT_NODES);
+    expect(parsed.tables).toHaveLength(0);
+    expect(parsed.leftOut).toBe(12);
+    const kept = parsed.roots[0]!.children;
+    expect(kept[kept.length - 1]!.label).toBe(`item ${MAX_MARKDOWN_IMPORT_NODES - 2}`);
+  });
+
+  it('reports what was left out, with what landed, and the tab stays valid', () => {
+    const result = buildTabFromMarkdown(listOf(MAX_MARKDOWN_IMPORT_NODES + 500));
+    if (!result.ok) throw new Error(result.error);
+    expect(result.leftOut).toBe(500);
+    expect(isValidTab(result.tab)).toBe(true);
+    expect(markdownImportOutcome(result.tab, result.leftOut)).toEqual({
+      status: 'done',
+      scene: {
+        landed: { shape: MAX_MARKDOWN_IMPORT_NODES, connector: MAX_MARKDOWN_IMPORT_NODES - 1 },
+        degraded: [],
+        skipped: [{ rule: MARKDOWN_LEFT_OUT_RULE, count: 500 }],
+      },
+    });
+    expect(MARKDOWN_LEFT_OUT_RULE).toBe(
+      'Headings, list items, lines and tables beyond the first 2,000 were left out',
+    );
+  });
+
+  // Worst case: a file far past the cap. The cap bounds what is built (above); reading the rest stays
+  // linear, so four times the file costs about four times as much, never sixteen (measured
+  // 2026-10-10: 2,000 nodes 7.5 ms, 40,000 nodes 38 ms with the cap, 157 ms without it). A growth
+  // ratio on CPU time, as cleanInline's test above, so a busy machine cannot fail it.
+  it('reads four times the file past the cap for about four times the cost, never sixteen', () => {
+    const fastest = (md: string) =>
+      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void buildTabFromMarkdown(md))));
+    const smallMd = listOf(MAX_MARKDOWN_IMPORT_NODES * 10);
+    const largeMd = listOf(MAX_MARKDOWN_IMPORT_NODES * 40);
+    fastest(smallMd); // warm the JIT so the first sample is not the slow one
+    const small = fastest(smallMd);
+    const large = fastest(largeMd);
+    expect(large).toBeLessThan(small * 8 + 5);
   });
 });

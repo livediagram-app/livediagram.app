@@ -9,6 +9,7 @@ import {
   changeCardTypes,
   planListing,
   readPlanState,
+  resolveListingFilter,
 } from '@livediagram/agent-verbs';
 import {
   mcpAddBoard,
@@ -30,7 +31,10 @@ export function registerPlanTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListItems, async (args, extra) => {
     const api = clientFor(env, requireToken(extra as Extra));
     const state = await readPlanState(api, args.documentId);
-    return textResult({ ...planListing(state, args), url: deepLink(env, args.documentId) });
+    // A column or card type named as change_items names them; an unknown one is refused with the names there are.
+    const filter = resolveListingFilter(state, args);
+    if (!filter.ok) return errorResult(filter.message);
+    return textResult({ ...planListing(state, filter), url: deepLink(env, args.documentId) });
   });
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {

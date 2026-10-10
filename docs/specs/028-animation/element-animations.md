@@ -100,7 +100,7 @@ A text element's old value lives in `animation`. Picking a Text animation for it
   composes with an element's own rotation.
 - **The format painter** copies a body animation only between members of the same set, and a Text animation to any
   element that carries words.
-- **Clear animation** (the command palette) clears the body and the Text animation together.
+- **Clear Animation** (the command palette) clears the body and the Text animation together.
 
 ## The quality bar
 

@@ -205,7 +205,7 @@ export function AgendaMenuSection({
           onClick={() => onSetItems([...rows, { label: '', minutes: AGENDA_DEFAULT_MINUTES }])}
           className={MENU_ADD_ROW_BUTTON}
         >
-          Add segment
+          Add Segment
         </button>
       </div>
     </MenuAccordionSection>
@@ -313,7 +313,7 @@ export function DecisionMenuSection({
             onClick={() => onSetDrivers([...rows, ''])}
             className={MENU_ADD_ROW_BUTTON}
           >
-            Add driver
+            Add Driver
           </button>
         </div>
       </div>

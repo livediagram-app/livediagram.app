@@ -124,8 +124,8 @@ independent of the key (D106).
 ### Edit
 
 1. Tools flyout, **Data** section: pie and bar use `PieDataEditor` (swatch, label, value per row;
-   `+ Add slice` appends `{ label: 'Item n', value: 10 }`; remove disabled at one row, `D102`);
-   line uses `LineDataSummary` and an **Edit data** button opening `LineDataDialog`.
+   `+ Add Slice` appends `{ label: 'Item n', value: 10 }`; remove disabled at one row, `D102`);
+   line uses `LineDataSummary` and an **Edit Data** button opening `LineDataDialog`.
 2. `LineDataDialog`: a row per category, a column per series, add and remove on both axes (never
    below one), **Import CSV** (`parseCsvLineData`), committing the whole dataset on each blur or
    structural change.

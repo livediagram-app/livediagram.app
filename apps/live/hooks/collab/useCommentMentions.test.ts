@@ -30,13 +30,14 @@ describe('useCommentMentions notify', () => {
   it("names the card for a card's comment, and nothing more for a canvas one", async () => {
     const { result } = hook();
     await waitFor(() => expect(api.apiGetTeam).toHaveBeenCalled());
-    result.current.notifyMentioned('Hi @priya', mentions, 'item-one');
+    result.current.notifyMentioned('Hi @priya', mentions, 'item-one', 'c1');
     expect(track).toHaveBeenCalledWith('Comment', 'Mentioned');
     expect(api.apiNotifyMention).toHaveBeenCalledWith('me', 't1', {
       documentId: 'd1',
       commentText: 'Hi @priya',
       mentions: [{ userId: 'u2', memberId: 'm2' }],
       itemId: 'item-one',
+      commentId: 'c1',
     });
     result.current.notifyMentioned('Hi @priya', mentions);
     expect(api.apiNotifyMention).toHaveBeenLastCalledWith('me', 't1', {

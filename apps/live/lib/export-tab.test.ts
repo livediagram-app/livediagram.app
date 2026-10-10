@@ -391,3 +391,42 @@ describe('exportScale', () => {
     expect(exportScale(2, 0, 0)).toBe(2);
   });
 });
+
+// The SVG draws arrows as the PNG / PDF do (docs/specs/020-import-export/export-fidelity.md).
+describe('renderTabToSvg arrows match the canvas', () => {
+  const crossing = (visible: boolean) =>
+    tab({
+      layers: [
+        { id: 'base', name: 'Layer 1' },
+        { id: 'secret', name: 'Hidden', visible },
+      ],
+      elements: [
+        shape('a', { layerId: 'base' }),
+        shape('b', { x: 400, layerId: 'base' }),
+        shape('c', { x: 200, layerId: 'secret' }),
+        pinnedArrow('arr', 'a', 'b', undefined, { layerId: 'base' }),
+      ],
+    });
+
+  it('breaks an arrow behind a box it draws', () => {
+    expect(renderTabToSvg(crossing(true))).toContain('<mask');
+  });
+
+  it('never breaks an arrow behind a box on a hidden layer', () => {
+    expect(renderTabToSvg(crossing(false))).not.toContain('<mask');
+  });
+
+  it('fills a hollow head with the tab background, not the default canvas colour', () => {
+    const svg = renderTabToSvg(
+      tab({
+        backgroundColor: '#fde68a',
+        elements: [
+          shape('a'),
+          shape('b', { x: 400 }),
+          pinnedArrow('arr', 'a', 'b', undefined, { arrowheadShape: 'triangle-hollow' }),
+        ],
+      }),
+    );
+    expect(svg).toMatch(/<polygon points="[^"]*" fill="#fde68a" stroke=/);
+  });
+});

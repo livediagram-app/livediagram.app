@@ -27,7 +27,7 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Line', blurb: 'A plain line, no pointers' },
   ],
   Build: [
-    { caption: 'Mind node', blurb: 'Tab adds a child, Enter a sibling' },
+    { caption: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling' },
     { caption: 'Table', blurb: 'An editable grid of cells' },
     { caption: 'Lane', blurb: 'A titled band that carries its steps' },
     { caption: 'Frame', blurb: 'A labelled box that groups a section', key: 'F' },

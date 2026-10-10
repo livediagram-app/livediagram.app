@@ -17,7 +17,7 @@ import {
   tabLinkedToOwnedDocument,
 } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
-import { recordVisitorOpened } from '../timeline';
+import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
@@ -185,7 +185,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      await deleteTabRow(env, id, tabId);
+      const removed = await deleteTabRow(env, id, tabId);
+      // Its comments' words leave this document's feed with it (docs/specs/013-workspace/timeline.md §4.3).
+      if (removed) ctx.waitUntil?.(retractTabComments(env, id, removed));
       // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
       // holders leave the editor as on a revoke.
       const revoked = await deleteShareLinksForTab(env, id, tabId);

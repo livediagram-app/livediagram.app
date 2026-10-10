@@ -13,7 +13,7 @@ canvas that holds the output can't hold the attendance.
 
 ## Take, don't track
 
-The element does **not** render live presence. Pressing **Take roll** copies
+The element does **not** render live presence. Pressing **Take Roll** copies
 the presence list into the element, and that copy is what it shows forever.
 The list is the person taking it first, then everyone else, one entry per
 person by collab key (`uniqueParticipants`): your own second tab, or a peer
@@ -55,7 +55,7 @@ bottom edge.
 - The people below as **rounded chips**, each the participant's presence avatar
   (initials on their presence colour) and their name, in a wrapping grid. When
   a roll is taken while the card is on screen they cascade in.
-- **Take roll** at the foot as the accent bar; once taken, **Take again**.
+- **Take Roll** at the foot as the accent bar; once taken, **Take Again**.
 - Before the first roll, the shared invitation ("Nobody recorded yet", "Take
   the roll to freeze who is here into the document").
 

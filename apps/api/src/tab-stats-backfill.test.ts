@@ -55,6 +55,21 @@ describe('runTabStatsBackfill', () => {
     expect(log).toHaveBeenCalledWith('tab-stats: backfilled n=2 left=none');
   });
 
+  // A document's Type is the mode of its newest `written_at`: a backfilled old tab dated by the
+  // run would outrank a tab edited since.
+  it("dates each row by the tab's own last write, not the run", async () => {
+    tabWithoutStats('old', '{"elements":[]}');
+    vi.useFakeTimers({ now: T0 + 365 * 24 * 60 * 60 * 1000 });
+    try {
+      await runTabStatsBackfill(db.env);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(db.sql.prepare('SELECT written_at FROM tab_stats WHERE tab_id = ?').get('old')).toEqual({
+      written_at: T0,
+    });
+  });
+
   it('leaves a tab a write already counted', async () => {
     tabWithoutStats('t1', '{"elements":[]}');
     db.sql

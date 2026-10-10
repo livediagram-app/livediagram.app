@@ -44,7 +44,7 @@ describe('the whiteboard shape catalogue', () => {
 
   it('holds the sticky note as a shape, armed as a plain note', () => {
     const sticky = whiteboardShapeEntry('sticky')!;
-    expect(sticky.label).toBe('Sticky note');
+    expect(sticky.label).toBe('Sticky Note');
     expect(sticky.intent).toEqual({ type: 'sticky' });
     expect(isWhiteboardShapeKey('sticky')).toBe(true);
     // An Event Storming note (a coloured sticky) is not the whiteboard's note.

@@ -261,7 +261,7 @@ export function MarkersMenu() {
 }
 
 /** The Style flyout's Presets grid: twenty looks, four wide, in their four runs (the theme's
- *  own, the greys, the line treatments, the status set), then Reset to default. */
+ *  own, the greys, the line treatments, the status set), then Reset to Default. */
 export function StylePresetsGrid() {
   // Each tile: a fill class, a stroke class, and a dash for the line treatments.
   type T = { fill: string; stroke: string; dash?: string; w?: number };
@@ -327,7 +327,7 @@ export function StylePresetsGrid() {
           );
         })}
       </g>
-      {/* Reset to default */}
+      {/* Reset to Default */}
       <rect
         x={164}
         y={208}
@@ -338,7 +338,7 @@ export function StylePresetsGrid() {
         strokeWidth={1.5}
       />
       <Label x={248} y={221} size={10} weight={600} anchor="middle" tone="body">
-        Reset to default
+        Reset to Default
       </Label>
       <Shape
         x={360}

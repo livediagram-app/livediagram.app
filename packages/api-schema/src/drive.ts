@@ -24,6 +24,9 @@ export type DriveConnection = {
   pageToken: string | null;
   pageTokenSavedAt: number | null;
   connectedAt: number;
+  // A consent by another Google account, waiting for the owner to confirm or
+  // cancel the switch; null when none is pending or it expired.
+  pendingAccountSwitch: { expiresAt: number } | null;
 };
 
 // One mirrored document or folder, with the Drive state livediagram last wrote
@@ -68,6 +71,11 @@ export const DRIVE_LEASE_MS = 15 * 60 * 1000;
 export const DRIVE_LEASE_RENEW_BEFORE_MS = 5 * 60 * 1000;
 // How long a consent `state` may be redeemed.
 export const DRIVE_STATE_TTL_MS = 10 * 60 * 1000;
+// How long a consent by another Google account waits for the owner to confirm
+// or cancel the switch (docs/specs/022-drive-mirror/drive-mirror.md,
+// "Reconnecting with another Google account"): time to read and answer the
+// dialog; past it the sealed token is never used.
+export const DRIVE_ACCOUNT_SWITCH_TTL_MS = 30 * 60 * 1000;
 // Rows per PUT /api/drive/items: one D1 batch.
 export const DRIVE_ITEMS_PUT_MAX = 100;
 export const DRIVE_ID_MAX = 200;

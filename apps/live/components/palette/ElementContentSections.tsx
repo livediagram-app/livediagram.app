@@ -202,21 +202,21 @@ export function ElementContentSections({
       {target.type === 'table' ? (
         <MenuAccordionSection title="Table" icon={<TableGlyph />} {...sectionProps('table')}>
           <MenuToggleRow
-            label="Header row"
+            label="Header Row"
             description="Style the first row as a header."
             checked={target.headerRow ?? false}
             onToggle={props.onToggleTableHeaderRow}
           />
           <ContextMenuDivider />
           <MenuToggleRow
-            label="Header column"
+            label="Header Column"
             description="Style the first column as a header."
             checked={target.headerColumn ?? false}
             onToggle={props.onToggleTableHeaderColumn}
           />
           <ContextMenuDivider />
           <MenuToggleRow
-            label="Zebra striping"
+            label="Zebra Striping"
             description="Tint alternate body rows."
             checked={target.zebra ?? false}
             onToggle={props.onToggleTableZebra}

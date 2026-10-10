@@ -531,7 +531,7 @@ export {
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
-export { titleCase } from './title-case';
+export { headlineCase, titleCase } from './title-case';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).

@@ -235,8 +235,9 @@ export async function apiNotifyMention(
     documentId: string;
     commentText: string;
     mentions: { userId: string | null; memberId?: string }[];
-    // A Plan card's comment: the card the email opens.
+    // A Plan card's comment: the card the email opens, and the stored comment the api quotes.
     itemId?: string;
+    commentId?: string;
   },
 ): Promise<void> {
   const res = await apiFetch(`${API_BASE}/teams/${teamId}/notify-mention`, {

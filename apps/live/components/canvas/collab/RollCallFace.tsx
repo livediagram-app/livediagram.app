@@ -84,7 +84,7 @@ export function RollCallFace({
         footer={
           onTakeRoll ? (
             <AccentBar onPress={onTakeRoll} icon={<ClipboardGlyph />}>
-              {entries.length ? 'Take again' : 'Take roll'}
+              {entries.length ? 'Take Again' : 'Take Roll'}
             </AccentBar>
           ) : undefined
         }

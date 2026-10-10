@@ -99,7 +99,7 @@ export function DoneCheckFace({
                       close();
                     }}
                   >
-                    Clear my mark
+                    Clear My Mark
                   </ElementMenuItem>
                 ) : null}
                 {onResetAll ? (
@@ -109,7 +109,7 @@ export function DoneCheckFace({
                       close();
                     }}
                   >
-                    Reset everyone
+                    Reset Everyone
                   </ElementMenuItem>
                 ) : null}
                 {onOpenSettings ? (

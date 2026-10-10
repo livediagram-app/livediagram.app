@@ -5,6 +5,7 @@
 // its rev, relayed to the room without author ids), so concurrent comments never lose one another.
 
 import { applyItemComment, itemThread, type ItemCommentChange } from '@livediagram/document';
+import type { ItemCommentAddResponse, ItemResponse } from '@livediagram/api-schema';
 import type { Item, ItemPerson } from '@livediagram/items';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { recordCommentResolved, retractComments } from '../timeline';
@@ -50,11 +51,15 @@ async function add(ctx: RouteContext, documentId: string, itemId: string): Promi
     reply = (itemThread(item)?.comments.length ?? 0) > 0;
     return change(item, by);
   });
-  if (res.ok) {
-    afterCommentPosted(ctx, asCommenter(caller), comment, reply);
-    console.info('[items] comment added', { documentId, agent: ctx.token !== null });
-  }
-  return res;
+  if (res.status !== 200) return res;
+  afterCommentPosted(ctx, asCommenter(caller), comment, reply);
+  console.info('[items] comment added', { documentId, agent: ctx.token !== null });
+  // The comment's id, so a mention email can name the stored comment rather than carry its text.
+  const answer: ItemCommentAddResponse = {
+    ...((await res.json()) as ItemResponse),
+    commentId: comment.id,
+  };
+  return json(answer);
 }
 
 // Delete-own for anyone who may comment; any comment for an editor (on the canvas, through the tab save).

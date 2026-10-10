@@ -70,7 +70,7 @@ equivalence), so exports match the canvas. Snapshots ([Document SVG snapshots](.
 ## Interactions with existing style machinery
 
 - **Format painter** copies `shadow` with the other boxed style fields.
-- **Reset style** ([Style presets](../010-palette/style-presets.md)'s shape reset) clears it; **Reset to theme**
+- **Reset style** ([Style presets](../010-palette/style-presets.md)'s shape reset) clears it; **Reset to Theme**
   (colours only) leaves it alone — a shadow is geometry, not a colour.
 - Themes never write shadows; presets are theme-independent.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): preset commits fire `track('Element', 'Changed',

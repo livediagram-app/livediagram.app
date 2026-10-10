@@ -91,7 +91,7 @@ export const QaNoteRow = forwardRef<
           }}
         >
           <RoundAction
-            label="Discuss now"
+            label="Discuss Now"
             description="Put this note in the spotlight at the top of the board."
             tone="accent"
             textColor={textColor}
@@ -100,7 +100,7 @@ export const QaNoteRow = forwardRef<
             <DiscussGlyph />
           </RoundAction>
           <RoundAction
-            label="Mark done"
+            label="Mark Done"
             description="Folds it into Discussed with its votes frozen."
             textColor={textColor}
             onPress={actions.onDone}

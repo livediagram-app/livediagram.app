@@ -53,8 +53,8 @@ infographic page takes the last infographic page's size and orientation (else A4
 its orientation after a Fit to Content page, whose sides are that page's alone); a new
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
 slide's size (else 16:9), landscape; a new logo page is the 1024 x 1024 artboard. The popover is the same on
-a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. The Toolbar
-strip ends, after a divider, with the same **+** (Add page), opening the same
+a phone (a bottom sheet). The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
+strip ends, after a divider, with the same **+** (Add Page), opening the same
 popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
 row's own **+** adds a page.
 

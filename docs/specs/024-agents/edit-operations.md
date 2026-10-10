@@ -18,7 +18,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `rm`      | `rm <selector> [all] [keep-arrows]`                                               | Removes; arrows pinned to it go too and are listed, or stay with free ends with `keep-arrows`     |
 | `move`    | `move <selector> <placement> \| by=dx,dy [all]`                                   | Moves; pinned arrows follow; a frame or lane carries its members; membership changes are reported |
 | `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                         | A pinned arrow, anchors chosen facing each other; a second arrow a→b needs `again`                |
-| `rewire`  | `rewire <arrow> from=<x> \| to=<y>`                                               | Moves one end of an arrow to another element                                                      |
+| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `to=<y>`                                    | Moves one or both ends of an arrow to other elements                                              |
 | `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                              | Puts a node on the a→b arrow: that arrow becomes a→new, a new arrow new→b copies its style        |
 | `wrap`    | `wrap <selector…> in frame\|lane [id=<id>] key=value… [tidy] [absorb\|make-room]` | Draws a frame or lane around the members; `tidy` lays them out compactly first                    |
 | `unwrap`  | `unwrap <frame>`                                                                  | Removes the frame or lane and keeps its members where they are                                    |

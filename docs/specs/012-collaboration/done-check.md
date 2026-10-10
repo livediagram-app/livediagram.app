@@ -79,8 +79,8 @@ that was already complete: it celebrates the moment, not the state.
 A small `…` leading the card's title (`headerExtra` on `CollabPanel`, added for
 this):
 
-- **Clear my mark** — only shown when you have one.
-- **Reset everyone** — clears the round.
+- **Clear My Mark** — only shown when you have one.
+- **Reset Everyone** — clears the round.
 
 Inline rather than portalled: the card is already a pointer-active surface, and
 a portalled menu would have to track a canvas element through pan, zoom and the

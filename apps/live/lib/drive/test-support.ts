@@ -358,6 +358,7 @@ export function world() {
     pageToken: null,
     pageTokenSavedAt: null,
     connectedAt: T0,
+    pendingAccountSwitch: null,
   };
   return { clock, timers, google, ld };
 }

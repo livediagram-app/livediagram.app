@@ -9,7 +9,7 @@ from the keyboard.
 - **Enter** adds a **sibling** directly after it.
 
 The same two actions are one click away, for anyone who doesn't know the keys:
-**Add child** and **Add sibling** buttons on the node's selection toolbar (after
+**Add Child** and **Add Sibling** buttons on the node's selection toolbar (after
 Edit text), and the same two options on its quick-connect "+" ring. On a mind
 node the ring holds only those two and Duplicate: a free arrow, a freehand
 sketch or a loose text label is not how a map grows, so Arrow, Pencil and Text
@@ -466,8 +466,8 @@ undo stack has moved on.
 
 ## Discoverability
 
-A selected mind node's quick-add **"+"** leads with **Add child** and **Add
-sibling**, each naming its shortcut in the hover card ("Shortcut: Tab", "Shortcut:
+A selected mind node's quick-add **"+"** leads with **Add Child** and **Add
+Sibling**, each naming its shortcut in the hover card ("Shortcut: Tab", "Shortcut:
 Enter"). Keyboard-driven expansion is worthless if nobody finds it, and a
 hover card on a palette tile is read once, months before it matters. The "+" is
 where every other per-element action already lives, so the two that grow a

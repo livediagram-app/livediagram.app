@@ -102,12 +102,12 @@ describe('ToolbarPalette', () => {
       'Popular',
     );
     // Diagram's Popular leads with the square.
-    expect(within(strip()).getByRole('button', { name: 'Add square' })).toBeTruthy();
+    expect(within(strip()).getByRole('button', { name: 'Add Square' })).toBeTruthy();
   });
 
   it('reaches the same add-handler as the Palette from a strip tile', () => {
     const { h } = show();
-    fireEvent.click(within(strip()).getByRole('button', { name: 'Add square' }));
+    fireEvent.click(within(strip()).getByRole('button', { name: 'Add Square' }));
     expect(h.onAddShape).toHaveBeenCalledWith('square', expect.anything());
   });
 
@@ -222,8 +222,8 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
     );
-    expect(within(strip()).getByRole('button', { name: 'Add web browser' })).toBeTruthy();
-    expect(within(strip()).queryByRole('button', { name: 'Add square' })).toBeNull();
+    expect(within(strip()).getByRole('button', { name: 'Add Web Browser' })).toBeTruthy();
+    expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
   });
 
   it('only offers More when the category has more than the strip shows', () => {
@@ -261,7 +261,7 @@ describe('ToolbarPalette', () => {
     fireEvent.click(screen.getByRole('button', { name: 'More Shapes' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(popover).not.toBeNull();
-    fireEvent.click(within(popover).getByRole('button', { name: 'Add circle' }));
+    fireEvent.click(within(popover).getByRole('button', { name: 'Add Circle' }));
     expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
@@ -311,33 +311,33 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Selection mode' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
     expect(
-      within(strip()).getAllByRole('button', { name: /^Add .* note$/ }).length,
+      within(strip()).getAllByRole('button', { name: /^Add .* Note$/ }).length,
     ).toBeGreaterThan(0);
   });
 
   // docs/specs/021-event-storming/event-storming.md: the floating palette's board row, in the strip.
-  it('offers Add from photo on an event-storming board, as its category does', () => {
+  it('offers Add from Photo on an event-storming board, as its category does', () => {
     const onImportPhoto = vi.fn();
     show({ esBoard: true, esBoardControls: { onImportPhoto } });
-    fireEvent.click(within(strip()).getByRole('button', { name: 'Add from photo' }));
+    fireEvent.click(within(strip()).getByRole('button', { name: 'Add from Photo' }));
     expect(onImportPhoto).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps Add from photo focusable but inert while it is unavailable', () => {
+  it('keeps Add from Photo focusable but inert while it is unavailable', () => {
     const onImportPhoto = vi.fn();
     show({ esBoard: true, esBoardControls: { onImportPhoto, photoDisabled: true } });
-    const button = within(strip()).getByRole('button', { name: 'Add from photo' });
+    const button = within(strip()).getByRole('button', { name: 'Add from Photo' });
     expect(button.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(button);
     expect(onImportPhoto).not.toHaveBeenCalled();
   });
 
-  it('offers no Add from photo off a board, or where the deployment has no photo import', () => {
+  it('offers no Add from Photo off a board, or where the deployment has no photo import', () => {
     show({ esBoardControls: { onImportPhoto: vi.fn() } });
-    expect(screen.queryByRole('button', { name: 'Add from photo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
     cleanup();
     show({ esBoard: true, esBoardControls: {} });
-    expect(screen.queryByRole('button', { name: 'Add from photo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
   });
 
   it('hides rather than unmounts, so the chosen category survives', () => {
@@ -368,13 +368,13 @@ describe('ToolbarPalette', () => {
     );
   });
 
-  it('ends with Add page in Illustrate mode, but not on a phone (docs/specs/007-editor/illustrate-pages.md)', () => {
+  it('ends with Add Page in Illustrate mode, but not on a phone (docs/specs/007-editor/illustrate-pages.md)', () => {
     show({ mode: 'illustrate', onAddPage: vi.fn() });
-    expect(screen.getByRole('button', { name: 'Add page' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add Page' })).toBeTruthy();
     cleanup();
     mobile.value = true;
     show({ mode: 'illustrate', onAddPage: vi.fn() });
-    expect(screen.queryByRole('button', { name: 'Add page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
   });
 
   describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
@@ -405,7 +405,7 @@ describe('ToolbarPalette', () => {
         within(popover).getByRole('textbox', { name: 'Search elements' }),
       );
       type(popover, 'database');
-      fireEvent.click(within(popover).getByRole('button', { name: 'Add cylinder' }));
+      fireEvent.click(within(popover).getByRole('button', { name: 'Add Cylinder' }));
       expect(h.onAddShape).toHaveBeenCalledWith('cylinder', expect.anything());
       // Used, so closed: the canvas is clear to draw on.
       expect(document.querySelector('[data-toolbar-search]')).toBeNull();
@@ -415,12 +415,12 @@ describe('ToolbarPalette', () => {
       const { h } = show();
       const popover = openSearch();
       type(popover, 'pie chart');
-      expect(within(popover).queryByRole('button', { name: 'Add pie chart' })).toBeNull();
+      expect(within(popover).queryByRole('button', { name: 'Add Pie Chart' })).toBeNull();
       expect(popover.textContent).toContain('No Diagram elements match');
       const accordion = within(popover).getByRole('button', { name: /Not in Diagram Mode/ });
       expect(accordion.getAttribute('aria-expanded')).toBe('false');
       fireEvent.click(accordion);
-      fireEvent.click(within(popover).getByRole('button', { name: 'Add pie chart' }));
+      fireEvent.click(within(popover).getByRole('button', { name: 'Add Pie Chart' }));
       expect(h.onAddShape).toHaveBeenCalledWith('pie-chart', expect.anything());
     });
 
@@ -437,7 +437,7 @@ describe('ToolbarPalette', () => {
           .getAllByRole('button')
           .map((b) => b.getAttribute('aria-label'))
           .filter((l) => l?.startsWith('Add ')),
-      ).toEqual(['Add diamond']);
+      ).toEqual(['Add Diamond']);
       cleanup();
       show();
       expect(openSearch().textContent).toContain('Nothing on this tab yet');

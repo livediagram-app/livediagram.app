@@ -45,17 +45,18 @@ export async function runTabStatsBackfill(
   while (counted < maxRows && clock() - start < TAB_STATS_BACKFILL_BUDGET_MS) {
     const limit = Math.min(TAB_STATS_BACKFILL_PAGE_ROWS, maxRows - counted);
     const { results } = await env.DB.prepare(
-      `SELECT t.id, t.data FROM tabs t
+      `SELECT t.id, t.data, t.updated_at FROM tabs t
         WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id)
         LIMIT ?`,
     )
       .bind(limit)
-      .all<{ id: string; data: string }>();
-    const now = Date.now();
+      .all<{ id: string; data: string; updated_at: number }>();
     const statements = results.map((row) => {
       const { stats, corrupt } = tabStatsOfData(row.data);
       if (corrupt) console.warn(`tab-stats: corrupt tab ${row.id} counted empty`);
-      return tabStatsBackfillStatement(env, row.id, stats, now);
+      // The tab's own last write, never the run's time: a document's Type is the mode of its newest
+      // `written_at`, so stamping now would let an old tab outrank one edited yesterday.
+      return tabStatsBackfillStatement(env, row.id, stats, row.updated_at);
     });
     if (statements.length > 0) await env.DB.batch(statements);
     counted += results.length;

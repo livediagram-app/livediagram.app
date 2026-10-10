@@ -126,7 +126,7 @@ export function svgEstimate(el: Face, title: string, color: string, a: CollabAcc
       if (!revealed && n > 0) {
         out += accentBar(PAD_X, footerY, inner, 'Reveal', a, GLYPH.eye, n);
       } else if (revealed) {
-        out += accentBar(PAD_X, footerY, inner, 'New round', a, GLYPH.reopen);
+        out += accentBar(PAD_X, footerY, inner, 'New Round', a, GLYPH.reopen);
       }
       const areaTop = BODY_TOP + PICK_H + BODY_GAP;
       const areaBottom = (n > 0 || revealed ? footerY : h - PAD_Y) - BODY_GAP;

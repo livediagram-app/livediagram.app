@@ -49,8 +49,9 @@ export type ConnectOperation = {
   again?: true;
 };
 
+// One end, or both at once (a reversal never passes through a self-loop).
 export type RewireOperation = { op: 'rewire'; target: Selector } & (
-  { from: Selector } | { to: Selector }
+  { from: Selector; to?: Selector } | { from?: undefined; to: Selector }
 );
 
 export type InsertOperation = {

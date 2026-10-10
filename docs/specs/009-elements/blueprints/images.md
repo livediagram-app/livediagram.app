@@ -112,8 +112,9 @@ Guards run in this order; the first failure answers.
 4. `Content-Type` (lower-cased) not in `ACCEPTED_IMAGE_TYPES` → 415 `unsupported_type`.
 5. `Content-Length` missing, non-finite or `<= 0` → 400; `> MAX_IMAGE_BYTES` → 413
    `file_too_large` (unreachable behind step 2 while both caps are equal).
-6. `X-Image-Sha256` matches `/^[0-9a-f]{64}$/` and a row exists at `(owner, sha)` → 200
-   `{ image, deduped: true }`, body unread.
+6. Not a workbench session (`ctx.workbench`) and not an API token (`ctx.token`), `X-Image-Sha256`
+   matches `/^[0-9a-f]{64}$/` and a row exists at `(owner, sha)` → 200 `{ image, deduped: true }`,
+   body unread. A workbench or token caller skips this step and dedupes at step 11 (E4a).
 7. Soft caps, only when at least one is set: one `imageTotalsByOwner` query; `count >= maxImages`
    → 403 `gallery_full` `reason: 'count'`; `bytes + Content-Length > maxBytes` → 403
    `gallery_full` `reason: 'bytes'` (D35).
@@ -158,7 +159,10 @@ Invariants:
 ### Delete, list, usage
 
 - `DELETE /api/images/:id`: owner only; no row → 200 `{ ok: true }`; another owner → 403
-  (D34); else `IMAGES.delete(id)` then `deleteImage`, 200 `{ ok: true }`.
+  (D34); else `deleteImage` then `IMAGES.delete(id)`, 200 `{ ok: true }`. Row first, so a row
+  never outlives its bytes: a D1 throw leaves both (500, retryable); an R2 throw after it is
+  caught and logged `[images] R2 delete failed after the row was removed` with the id, and the
+  answer is still 200 (orphaned bytes, never a row that dedupe hands back with nothing behind it).
 - `GET /api/images`: owner only; `listImagesByOwner`, newest first.
 - `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `documents →
 document_tabs → image_refs` ([Image reference index](image-reference-index.md#readers)), no tab
@@ -315,7 +319,9 @@ read a 503 as `null` and `{}`.
   An image a surviving shared tab still places in another owner's document goes too; that
   element renders **broken** (D142).
   **Guest to account migration**: `UPDATE OR IGNORE images SET owner_id`; rows that collide on
-  the dedupe key stay with the guest id and remain readable by reference.
+  the dedupe key stay with the guest id. The documents move in one batch after
+  `imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [guestId], now)`, so every guest image
+  they place, a dedupe loser included, keeps serving in them by grant.
 - **Trash**: a trashed document keeps its tabs, so its images stay referenced until the purge
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
 - **Reference index**: `image_refs` is derived from tab bodies and owned by the
@@ -332,6 +338,7 @@ read a 503 as `null` and `{}`.
 | E2  | Truncated or malformed JPEG                         | 415 `malformed_jpeg`; nothing written                                                                |
 | E3  | Lying `Content-Length`                              | Body re-checked after read, 413                                                                      |
 | E4  | Forged `X-Image-Sha256`                             | Early dedupe is owner-scoped; body hash re-verified before insert                                    |
+| E4a | Workbench or token probing the gallery by hash      | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row      |
 | E5  | Same bytes uploaded concurrently                    | Unique index rejects the second insert; its R2 object is deleted and the existing row returned (GB4) |
 | E5a | Racing uploads that together pass a cap             | The later insert is refused; its R2 object deleted; 403 `gallery_full`, or 409 when room returned    |
 | E6  | Upload without a valid sha header at a full gallery | Cap check precedes body dedupe: 403 even when the bytes are already stored                           |
@@ -418,13 +425,14 @@ read a 503 as `null` and `{}`.
 
 ## Observability
 
-| #   | Where                         | Level          | Fingerprint                                                                        |
-| --- | ----------------------------- | -------------- | ---------------------------------------------------------------------------------- |
-| O1  | Insert refused by the caps    | `console.info` | `[images] cap refused a racing upload` + `{ owner }`                               |
-| O2  | Upload rejection (GB5)        | `console.warn` | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
-| O3  | Upload stored / deduped (GB5) | `console.info` | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
-| O4  | Delete (GB5)                  | `console.info` | `[images] deleted id=<id>`                                                         |
-| O5  | Client upload failure (GB5)   | `console.warn` | `[image-upload] failed code=<token>`                                               |
+| #   | Where                          | Level           | Fingerprint                                                                        |
+| --- | ------------------------------ | --------------- | ---------------------------------------------------------------------------------- |
+| O1  | Insert refused by the caps     | `console.info`  | `[images] cap refused a racing upload` + `{ owner }`                               |
+| O2  | Upload rejection (GB5)         | `console.warn`  | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
+| O3  | Upload stored / deduped (GB5)  | `console.info`  | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
+| O4  | Delete (GB5)                   | `console.info`  | `[images] deleted id=<id>`                                                         |
+| O5  | R2 delete failed after the row | `console.error` | `[images] R2 delete failed after the row was removed` + `{ imageId }`              |
+| O5  | Client upload failure (GB5)    | `console.warn`  | `[image-upload] failed code=<token>`                                               |
 
 O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands. The retention and
 backfill fingerprints live in [Image reference index](image-reference-index.md#observability).

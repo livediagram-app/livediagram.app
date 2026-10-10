@@ -43,7 +43,7 @@ export type HintState = {
   open: boolean;
   source: HintOpenSource | null;
   // Callback ref for the wrapper around the trigger.
-  attach: (el: HTMLSpanElement | null) => void;
+  attach: (el: HTMLElement | null) => void;
   // The element the hint describes and is placed against (D7).
   anchor: () => Element | null;
   triggerProps: HintTriggerProps;
@@ -63,7 +63,7 @@ type TimerName = 'openTimer' | 'closeTimer' | 'pressTimer' | 'lingerTimer';
 // Everything pointer traffic touches. Kept out of React state so hovering
 // re-renders nothing until the hint actually opens or closes.
 type Machine = {
-  wrapper: HTMLSpanElement | null;
+  wrapper: HTMLElement | null;
   open: boolean;
   source: HintOpenSource | null;
   overTrigger: boolean;
@@ -164,7 +164,7 @@ export function useHint(kind: HintKind): HintState {
     m.lingerTimer = setTimeout(close, HINT_TOUCH_LINGER_MS);
   }, [close]);
 
-  const attach = useCallback((el: HTMLSpanElement | null) => {
+  const attach = useCallback((el: HTMLElement | null) => {
     machine.current.wrapper = el;
   }, []);
 

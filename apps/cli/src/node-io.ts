@@ -281,14 +281,24 @@ function listenLoopback(): Promise<LoopbackServer> {
   });
 }
 
-// The platform's opener (CLI34): `open`, `xdg-open`, or `cmd /c start ""`. Detached, its output ignored.
+// The platform's opener (CLI34): `open`, `xdg-open`, or `rundll32 url.dll,FileProtocolHandler`. Never a shell: on
+// Windows `cmd /c start` would read the URL's `&` as a command separator (a broken sign-in, and an injection), so the
+// URL goes to rundll32 as one argument. Only an http(s) URL is opened at all.
+export function openerFor(
+  platform: NodeJS.Platform,
+  url: string,
+): [command: string, args: string[]] | null {
+  if (!/^https?:\/\//i.test(url)) return null;
+  if (platform === 'darwin') return ['open', [url]];
+  if (platform === 'win32') return ['rundll32', ['url.dll,FileProtocolHandler', url]];
+  return ['xdg-open', [url]];
+}
+
+// Detached, its output ignored.
 function openUrl(url: string): Promise<boolean> {
-  const [command, args] =
-    process.platform === 'darwin'
-      ? ['open', [url]]
-      : process.platform === 'win32'
-        ? ['cmd', ['/c', 'start', '""', url]]
-        : ['xdg-open', [url]];
+  const opener = openerFor(process.platform, url);
+  if (!opener) return Promise.resolve(false);
+  const [command, args] = opener;
   return new Promise((resolve) => {
     const child = spawn(command, args, { stdio: 'ignore', detached: true });
     child.once('error', () => resolve(false));

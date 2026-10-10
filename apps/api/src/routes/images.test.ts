@@ -107,6 +107,28 @@ describe('handleImages', () => {
     expect(db.deleteImage).toHaveBeenCalledWith(expect.anything(), 'i1');
   });
 
+  it('DELETE removes the row before the bytes, so a D1 failure leaves both in place', async () => {
+    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+    db.deleteImage.mockRejectedValue(new Error('D1 down'));
+    const images = imagesBinding();
+    await expect(handleImages(makeCtx('DELETE', '/api/images/i1', { images }))).rejects.toThrow(
+      'D1 down',
+    );
+    expect(images.delete).not.toHaveBeenCalled();
+  });
+
+  it('DELETE answers ok and logs when only the R2 delete fails after the row is gone', async () => {
+    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+    const images = imagesBinding();
+    images.delete.mockRejectedValue(new Error('R2 down'));
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const res = await handleImages(makeCtx('DELETE', '/api/images/i1', { images }));
+    expect(res.status).toBe(200);
+    expect(db.deleteImage).toHaveBeenCalledWith(expect.anything(), 'i1');
+    expect(error.mock.calls[0]![0]).toBe('[images] R2 delete failed after the row was removed');
+    error.mockRestore();
+  });
+
   it('byte-read 404 for an unknown image', async () => {
     db.getImage.mockResolvedValue(null);
     const res = await handleImages(makeCtx('GET', '/api/images/i9'));
@@ -304,6 +326,59 @@ describe('POST /api/images under a per-owner cap', () => {
       limit: 1000,
       current: 995,
     });
+  });
+});
+
+// docs/specs/009-elements/images.md "Size cap": the X-Image-Sha256 shortcut answers a bare hash with the gallery row,
+// so it is only the owner's own editor's; a workbench session or an API token uploads the body.
+describe('POST /api/images hash-only dedupe shortcut', () => {
+  const SHA = 'a'.repeat(64);
+  const post = (opts: { workbench?: boolean; token?: boolean }) => {
+    const images = imagesBinding();
+    const ctx = makeTestRouteContext('POST', '/api/images', {
+      owner: 'owner-1',
+      env: { IMAGES: images } as unknown as Env,
+      ...(opts.workbench
+        ? { workbench: { documentId: 'd1', ownerId: 'owner-1', sessionId: 's1' } as never }
+        : {}),
+      ...(opts.token ? { token: { id: 'tok-1' } } : {}),
+    });
+    // A non-zero length with a body that is not an image: the probe never meant to send the file.
+    const request = new Request('https://api.test/api/images', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'image/png',
+        'Content-Length': '1',
+        'X-Image-Sha256': SHA,
+        'X-Image-Width': '4',
+        'X-Image-Height': '4',
+      },
+      body: new Uint8Array([0]),
+    });
+    return handleImages({ ...ctx, request });
+  };
+
+  beforeEach(() => {
+    db.findImageBySha.mockResolvedValue({ id: 'secret', originalName: 'payslip.png' });
+  });
+
+  it('answers the owner own editor from the hash alone', async () => {
+    const res = await post({});
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      image: { id: 'secret', originalName: 'payslip.png' },
+      deduped: true,
+    });
+  });
+
+  it.each([
+    ['a workbench session', { workbench: true }],
+    ['an API token', { token: true }],
+  ])('never answers %s from the hash alone', async (_label, opts) => {
+    const res = await post(opts);
+    expect(res.status).toBe(415);
+    expect(JSON.stringify(await res.json())).not.toContain('secret');
+    expect(db.findImageBySha).not.toHaveBeenCalled();
   });
 });
 

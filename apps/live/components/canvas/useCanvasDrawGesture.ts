@@ -85,6 +85,7 @@ export function useCanvasDrawGesture({
     viewportZoom,
     isPinchingRef,
     onCommitFreehand,
+    whiteboard,
   });
 
   // Snap a draw gesture's START point to nearby element edge / centre

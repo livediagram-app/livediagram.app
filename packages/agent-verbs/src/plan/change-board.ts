@@ -25,9 +25,13 @@ import { tabPath } from '../verbs/shared';
 export interface ChangeBoardInput extends Omit<BoardChange, 'types'> {
   // The board: its title, or its element id.
   board: string;
-  // Card types by id or name; an empty list shows every type again.
-  types?: readonly string[];
+  // Card types by id or name; an empty list takes none (as the editor's last type turned off does), and
+  // EVERY_TYPE shows every type again.
+  types?: readonly string[] | typeof EVERY_TYPE;
 }
+
+// What a board that names no card types takes, in answers, and what change_board takes to show every type again.
+export const EVERY_TYPE = 'every type';
 
 export type ChangeBoardResult =
   | {
@@ -79,14 +83,14 @@ export async function changeBoard(
     if (!found.ok) return found;
     const { tabId, elementId } = found.board;
     let types: string[] | null | undefined;
-    if (input.types) {
+    if (input.types === EVERY_TYPE) types = null;
+    else if (input.types) {
       types = [];
       for (const name of input.types) {
         const t = resolveType(name, state.plan.types);
         if (!t.ok) return t;
         types.push(t.type.id);
       }
-      if (types.length === 0) types = null;
     }
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
     const element = (tab.elements as Element[]).find((e) => e.id === elementId);

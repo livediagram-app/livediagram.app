@@ -20,7 +20,8 @@ never told a change worked when it shows on no board.
 - The api answers a document's plan in one request, `GET /api/documents/:id/plan`, to anyone who may read the
   document (a tab-scoped grant sees its tab's boards only):
   - **boards**: each Plan board, in tab then canvas order, with its tab (id and name), its title, its kind
-    (`board`, `all-cards`, `archive`), the card types it takes (or every type) and its columns (name, status, WIP
+    (`board`, `all-cards`, `archive`), the card types it takes (every type when it names none; none, as the editor shows, when its last type was
+    turned off) and its columns (name, status, WIP
     limit);
   - **statuses**: each status the boards name, once, with its column name, the first board's name winning (the
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
@@ -33,7 +34,8 @@ never told a change worked when it shows on no board.
   types lists only theirs), then the items, each with its column's name beside its status (`Trash` for a trashed
   card, none for a status no board names), then the card types. Live cards no board column shows are listed under
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
-  by card type or column takes a name too.
+  by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
+  Trash), and a name the document does not have is refused with the names it has, never answered with no items.
 - A document with no board says so, and how to get one: a Plan template (`kanban`, `project-planner`,
   `bug-triage`, ...) on `create_document` or `add_tab`.
 
@@ -80,7 +82,10 @@ Every write takes what a person would say, and stores the ids:
 - Columns are given whole, by name, left to right: a name the board has keeps its column (status, WIP limit,
   colour) and so its cards; a name the document's other boards use shares their status; any other name is a new,
   empty column. A column left out takes nothing with it: its cards keep their status and wait off this board.
-- Card types are named as everywhere; an empty list shows every type again.
+  Every column keeps an id of its own: a kept column keeps its id, and a new one whose name would give it a kept
+  column's id ("Doing" beside a kept "In Progress" whose id is `doing`) takes the next free one (`doing-2`).
+- Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
+  takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept
   except on the set-up; the board widens when its columns need it.
 

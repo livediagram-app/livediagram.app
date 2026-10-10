@@ -825,7 +825,7 @@ ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
 ## Performance and limits
 
 - Each `lvw_` request: one indexed `SELECT` (`secret_hash` unique) joined to `api_tokens` by primary key, about the
-  cost of `resolveApiToken` without its `last_used_at` write (WB32). The autosave's cadence (one save per debounce)
+  cost of `resolveApiToken` without its once-a-minute `last_used_at` write (WB32). The autosave's cadence (one save per debounce)
   adds one such read per save.
 - `workbenchRouteVerdict`: a walk over at most 40 patterns of at most 8 segments, constant per request.
 - Mint: four indexed reads (pairing, document meta, grant, tab link) and one insert. Redemption: one update, one

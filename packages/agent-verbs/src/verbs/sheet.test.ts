@@ -173,9 +173,7 @@ describe('sheet rows and columns', () => {
       '~ sheet "Costs": inserted 1 column before column B',
     ]);
     expect(await run(sheetRmRows, { where: '3:4' })).toEqual(['~ sheet "Costs": deleted rows 3:4']);
-    expect(await run(sheetRmCols, { where: 'B' })).toEqual([
-      '~ sheet "Costs": deleted columns B:B',
-    ]);
+    expect(await run(sheetRmCols, { where: 'B' })).toEqual(['~ sheet "Costs": deleted column B']);
     const out = await sheetRmRows.run!(
       ctx,
       sheetRmRows.input.parse({ doc: DOC_A, sheet: 'Costs', where: '9' }),

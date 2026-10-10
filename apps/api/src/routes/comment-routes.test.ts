@@ -267,6 +267,55 @@ describe('delete-own', () => {
   });
 });
 
+// docs/specs/013-workspace/timeline.md §4.3: a tab deleted whole takes every comment's words with it,
+// from the document it left only; a document still holding the tab keeps its own events.
+describe('deleting the tab', () => {
+  it('retracts its comments from the document it left, and the last one to hold it', async () => {
+    seed([
+      shape('a', { commentThread: { resolved: true, comments: [comment('c1'), comment('c2')] } }),
+    ]);
+    sql.sql.exec(`
+      INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+        VALUES ('d2', 'owner', 'Linked', 1, 1, 1);
+      INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
+    `);
+    const insert = sql.sql.prepare(
+      `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
+         description, occurred_at, snapshot, created_at)
+       VALUES (?, 'owner', 'document', ?, ?, 't', 'text', 1, ?, 1)`,
+    );
+    const on = (doc: string) => JSON.stringify({ documentId: doc });
+    // A comment's event is pinned to the document whose save recorded it: c1 through d1, c2 through d2.
+    insert.run('d1-c1', 'c1', 'comment_added', on('d1'));
+    insert.run('d1-res', 'd1:a', 'comment_resolved', on('d1'));
+    insert.run('d1-t2', 'c9', 'comment_added', on('d1'));
+    insert.run('d2-c2', 'c2', 'comment_added', on('d2'));
+    insert.run('d2-res', 'd2:a', 'comment_resolved', on('d2'));
+    const events = () =>
+      (sql.sql.prepare('SELECT id FROM timeline_events ORDER BY id').all() as { id: string }[]).map(
+        (r) => r.id,
+      );
+
+    // Unlinked from d1: d1's events for it go; the other tab's, and d2's, stay.
+    expect((await call({ method: 'DELETE', path: '/tabs/t1' })).status).toBe(204);
+    await Promise.all(pending);
+    expect(events()).toEqual(['d1-t2', 'd2-c2', 'd2-res']);
+
+    // d2 was the last to hold it: the tab row goes, and d2's events with it.
+    const res = await handleDocuments(
+      makeTestRouteContext('DELETE', '/api/documents/d2/tabs/t1', {
+        env: sql.env,
+        owner: 'owner',
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+    expect(res.status).toBe(204);
+    await Promise.all(pending);
+    expect(events()).toEqual(['d1-t2']);
+    expect(sql.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+  });
+});
+
 describe('a lost race', () => {
   it('re-reads and repeats once, then answers 409 tab_busy', async () => {
     seed([shape('a')]);

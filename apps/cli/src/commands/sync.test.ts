@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { run } from '../main';
 import { linkIdOf } from '../link/local-state';
+import { GENERATED_LINE_START } from '../link/mirror-tree';
 import { fakeIo, TOKEN, type FakeIo } from '../testing/fake-io';
 import { box, hostDoc, linkHost, type HostDoc, type LinkHost } from '../testing/link-host';
 
@@ -113,6 +114,60 @@ describe('sync at files', () => {
     );
     expect(io.fileMap.has(MIRROR)).toBe(false);
     expect(file(io, '/work/diagrams/screens/start-screen.md')).toContain('# Start screen');
+  });
+
+  it('never relocates over a file it did not write, and still writes the document in place', async () => {
+    const mine = '# Start screen\nHand written architecture notes.\n';
+    const { io, host } = setup('files', [home()]);
+    await sync(io);
+    io.fileMap.set('/work/diagrams/screens/start-screen.md', { data: mine, mode: 0o644 });
+    host.edit('d-home', 0, [box('b1', 'Play button')]);
+    host.doc('d-home').name = 'Start screen';
+    const moved = await sync(io, '--relocate');
+    expect(moved.code).toBe(1);
+    expect(moved.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: not moved, diagrams/screens/start-screen.md is already there and livediagram did not write it; kept. Move or rename that file, then livediagram sync --relocate',
+    );
+    expect(file(io, '/work/diagrams/screens/start-screen.md')).toBe(mine);
+    expect(io.fileMap.has('/work/diagrams/screens/start-screen.livediagram.json')).toBe(false);
+    expect(file(io, MIRROR)).toContain('Play button');
+    expect(file(io, OUTLINE)).toContain('# Start screen');
+  });
+
+  it('relocates over an outline it generated that was left at the target', async () => {
+    const stale = `${GENERATED_LINE_START}. Do not edit by hand.\n\n# An old outline\n`;
+    const { io, host } = setup('files', [home()]);
+    await sync(io);
+    io.fileMap.set('/work/diagrams/screens/start-screen.md', { data: stale, mode: 0o644 });
+    host.doc('d-home').name = 'Start screen';
+    const moved = await sync(io, '--relocate');
+    expect(moved.code).toBe(0);
+    expect(moved.out).toContain(
+      '» diagrams/screens/home-screen.livediagram.json → diagrams/screens/start-screen.livediagram.json',
+    );
+    expect(io.fileMap.has(OUTLINE)).toBe(false);
+    expect(file(io, '/work/diagrams/screens/start-screen.md')).not.toContain('An old outline');
+  });
+
+  it('refuses a mirror file whose host is not a URL, and the rest proceeds', async () => {
+    const { io, host } = setup('files', [home(), menu()]);
+    await sync(io);
+    const text = file(io, MIRROR)!.replace(
+      '"host": "https://livediagram.app"',
+      '"host": "not a url"',
+    );
+    expect(text).toContain('"not a url"');
+    io.fileMap.set(MIRROR, { data: text, mode: 0o644 });
+    host.edit('d-menu');
+    const result = await sync(io);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: livediagramSync.host is not a URL',
+    );
+    expect(result.out).toContain('~ diagrams/menu.livediagram.json');
+    expect(file(io, MIRROR)).toBe(text);
+    const status = await run(['link', 'status'], io);
+    expect(status).toBe(0);
   });
 
   it('refuses ahead and diverged documents naming push, and the rest proceeds', async () => {

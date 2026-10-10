@@ -7,6 +7,7 @@
 // neither the guest header nor an API token reaches any of this.
 
 import {
+  DRIVE_ACCOUNT_SWITCH_TTL_MS,
   DRIVE_ITEM_KINDS,
   DRIVE_ITEMS_PUT_MAX,
   DRIVE_NAME_MAX,
@@ -30,9 +31,16 @@ import {
   updateDriveConnectionState,
   upsertBrokerConnection,
 } from '../db/drive';
+import {
+  getDriveAccountId,
+  recordDriveAccount,
+  setPendingAccountSwitch,
+} from '../db/drive-account';
+import { cancelAccountSwitch, confirmAccountSwitch } from '../drive/account-switch';
 import { driveMode } from '../drive/config';
 import { importDriveKey, openRefreshToken, sealRefreshToken } from '../drive/crypto';
 import { disconnectDrive } from '../drive/disconnect';
+import { fetchGoogleAccountId } from '../drive/google-account';
 import { exchangeCode, GoogleOAuthError, refreshAccessToken } from '../drive/google-oauth';
 import { isAllowedRedirectUri, signDriveState, verifyDriveState } from '../drive/state';
 import { json, noContent, notFound, signInRequired } from '../responses';
@@ -109,12 +117,16 @@ function parseItem(raw: unknown): DriveItem | null {
 
 // Which Drive route a request names, before any gate runs, so an unknown path
 // is a plain 404 whatever the deployment's configuration.
-type DriveRoute = 'state' | 'connect' | 'token' | 'connection' | 'items' | 'item' | 'lease';
+type DriveRoute =
+  'state' | 'connect' | 'account-switch' | 'token' | 'connection' | 'items' | 'item' | 'lease';
 
 function matchRoute(segments: string[], method: string): DriveRoute | null {
   if (segments.length === 3) {
     if (segments[2] === 'state' && method === 'POST') return 'state';
     if (segments[2] === 'connect' && method === 'POST') return 'connect';
+    if (segments[2] === 'account-switch' && (method === 'POST' || method === 'DELETE')) {
+      return 'account-switch';
+    }
     if (segments[2] === 'token' && method === 'POST') return 'token';
     if (segments[2] === 'connection' && ['GET', 'PUT', 'DELETE'].includes(method)) {
       return 'connection';
@@ -164,8 +176,13 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
       return driveError(400, 'invalid_state');
     }
     let refreshToken: string | null;
+    let accountId: string;
     try {
-      ({ refreshToken } = await exchangeCode(env, code, redirectUri, now));
+      let accessToken: string;
+      ({ accessToken, refreshToken } = await exchangeCode(env, code, redirectUri, now));
+      // Which Google account consented: a different one than before must not
+      // inherit the first account's root folder, page token and items.
+      accountId = await fetchGoogleAccountId(env, accessToken);
     } catch (err) {
       logOutcome(
         'connect',
@@ -173,16 +190,37 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
       );
       return driveError(502, 'drive_exchange_failed');
     }
+    const recorded = await getDriveAccountId(env, owner);
+    const otherAccount = recorded !== null && recorded !== accountId;
     if (!refreshToken) {
       // Google sends a refresh token only on the first consent (or with
       // prompt=consent). Without one and nothing stored, the broker cannot
-      // mint tokens later, so the connection would be hollow.
+      // mint tokens later, so the connection would be hollow. A stored one
+      // from another Google account would mint tokens for the wrong account.
       if (!(await getSealedRefreshToken(env, owner))) {
         logOutcome('connect', 'no_refresh_token');
         return driveError(502, 'drive_no_refresh_token');
       }
-    } else {
-      const key = (await importDriveKey(env.DRIVE_TOKEN_KEY))!;
+      if (otherAccount) {
+        logOutcome('connect', 'no_refresh_token account_changed');
+        return driveError(502, 'drive_no_refresh_token');
+      }
+    }
+    const key = (await importDriveKey(env.DRIVE_TOKEN_KEY))!;
+    if (otherAccount) {
+      // Another Google account: nothing changes until the owner confirms the
+      // switch (POST /drive/account-switch) or cancels it.
+      await setPendingAccountSwitch(
+        env,
+        owner,
+        await sealRefreshToken(key, owner, refreshToken!),
+        accountId,
+        now + DRIVE_ACCOUNT_SWITCH_TTL_MS,
+      );
+      logOutcome('connect', 'account_switch_pending');
+      return json({ connection: await getDriveConnection(env, owner, now) });
+    }
+    if (refreshToken) {
       await upsertBrokerConnection(
         env,
         owner,
@@ -190,9 +228,24 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
         now,
       );
     }
+    await recordDriveAccount(env, owner, accountId);
     await setDriveConnectionStatus(env, owner, 'connected');
     logOutcome('connect', 'ok');
     return json({ connection: await getDriveConnection(env, owner) });
+  }
+
+  if (route === 'account-switch') {
+    if (mode !== 'broker') return brokerUnavailable();
+    if (method === 'DELETE') {
+      logOutcome('account-switch', (await cancelAccountSwitch(env, owner)) ? 'cancelled' : 'none');
+      return noContent();
+    }
+    if (!(await confirmAccountSwitch(env, owner, now))) {
+      logOutcome('account-switch', 'expired');
+      return driveError(409, 'drive_account_switch_expired');
+    }
+    logOutcome('account-switch', 'confirmed');
+    return json({ connection: await getDriveConnection(env, owner, now) });
   }
 
   if (route === 'token') {

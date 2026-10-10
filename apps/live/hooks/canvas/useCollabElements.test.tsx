@@ -37,6 +37,7 @@ function setup(
     self = person('owner', 'k-me', 'Me'),
     presence = [] as Participant[],
     startTimer = vi.fn(),
+    postIdea = vi.fn(async () => true),
   } = {},
 ) {
   let tabs: Tab[] = [{ id: 't1', name: 'T', elements: [element] }];
@@ -49,6 +50,7 @@ function setup(
       commitTabs: tickTabs,
       tickTabs,
       applyElementDelta: vi.fn(),
+      postIdea,
       activeElements: tabs[0]!.elements,
       editsBlocked: false,
       sessionToolsBlocked: false,
@@ -104,10 +106,22 @@ describe('useCollabElements: agenda', () => {
 });
 
 describe('useCollabElements: idea box', () => {
-  it('says whether the idea went in, so a refused draft is kept', () => {
+  it('says whether the idea went in, so a refused draft is kept', async () => {
     const box = (n: number) =>
       card({ shape: 'idea-box', ideaCards: Array.from({ length: n }, (_, i) => `i${i}`) });
-    expect(setup(box(0)).api.addIdea(box(0), 'Coffee')).toBe(true);
+    const postIdea = vi.fn(async () => true);
+    expect(await setup(box(0), { postIdea }).api.addIdea(box(0), ' Coffee ')).toBe(true);
+    expect(postIdea).toHaveBeenCalledWith('t1', box(0), 'Coffee');
+    // The room numbered another card first (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
+    const lost = vi.fn(async () => false);
+    expect(await setup(box(299), { postIdea: lost }).api.addIdea(box(299), 'Tea')).toBe(false);
     expect(setup(box(IDEA_MAX_CARDS)).api.addIdea(box(IDEA_MAX_CARDS), 'Coffee')).toBe(false);
+  });
+
+  it('empties the card ids with the cards', () => {
+    const box = card({ shape: 'idea-box', ideaCards: ['a'], ideaCardIds: ['1'] });
+    const { api, el } = setup(box);
+    api.clearIdeas(box);
+    expect(el()).toMatchObject({ ideaCards: [], ideaCardIds: [] });
   });
 });

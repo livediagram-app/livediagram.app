@@ -75,7 +75,12 @@ export function edgesOf(
     const source =
       el.from.kind === 'pinned' && nodeIds.has(el.from.elementId) ? el.from.elementId : null;
     if (source === null) ownLine.push(edge);
-    else bySource.set(source, [...(bySource.get(source) ?? []), edge]);
+    else {
+      // Appended in place: copying the list per arrow was quadratic in a hub's arrows.
+      const list = bySource.get(source);
+      if (list) list.push(edge);
+      else bySource.set(source, [edge]);
+    }
   });
   return { bySource, ownLine, all, byArrow: new Map(all.map((edge) => [edge.arrow.id, edge])) };
 }

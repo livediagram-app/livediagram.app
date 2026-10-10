@@ -418,7 +418,7 @@ function NumberBox({ x, y, label, value }: { x: number; y: number; label: string
   );
 }
 
-/** The Size category: Width and Height boxes, the aspect lock and Reset aspect ratio. */
+/** The Size category: Width and Height boxes, the aspect lock and Reset Aspect Ratio. */
 export function SizeCategory() {
   const mx = 18;
   const my = 20;
@@ -428,7 +428,7 @@ export function SizeCategory() {
         <NumberBox x={mx + 14} y={my + 46} label="WIDTH" value="160" />
         <NumberBox x={mx + 122} y={my + 46} label="HEIGHT" value="90" />
         <Label x={mx + 14} y={my + 104} size={11} weight={600} tone="strong">
-          Lock aspect ratio
+          Lock Aspect Ratio
         </Label>
         <Label x={mx + 14} y={my + 119} size={10} tone="muted">
           Typing one dimension carries the other
@@ -438,7 +438,7 @@ export function SizeCategory() {
         <circle cx={mx + 210} cy={my + 110} r={6} className="fill-white help-art-as-drawn" />
         <rect x={mx + 14} y={my + 136} width={204} height={26} rx={6} className="fill-slate-100" />
         <Label x={mx + 116} y={my + 149.5} anchor="middle" size={11} weight={600} tone="body">
-          Reset aspect ratio
+          Reset Aspect Ratio
         </Label>
       </MenuCard>
       {/* The element being sized, with its dimensions. */}

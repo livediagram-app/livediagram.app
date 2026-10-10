@@ -451,21 +451,21 @@ export function MultiSelectionContextMenu({
                 {...sectionProps('m-table')}
               >
                 <MenuToggleRow
-                  label="Header row"
+                  label="Header Row"
                   description="Style the first row as a header."
                   checked={tableSrc.headerRow ?? false}
                   onToggle={props.onToggleTableHeaderRow}
                 />
                 <ContextMenuDivider />
                 <MenuToggleRow
-                  label="Header column"
+                  label="Header Column"
                   description="Style the first column as a header."
                   checked={tableSrc.headerColumn ?? false}
                   onToggle={props.onToggleTableHeaderColumn}
                 />
                 <ContextMenuDivider />
                 <MenuToggleRow
-                  label="Zebra striping"
+                  label="Zebra Striping"
                   description="Tint alternate body rows."
                   checked={tableSrc.zebra ?? false}
                   onToggle={props.onToggleTableZebra}

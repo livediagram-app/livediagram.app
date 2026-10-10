@@ -236,16 +236,20 @@ summary }`.
 
 ### The device grant (server, `oauth-device.ts`)
 
-| From     | Event                                            | To       | Effect                                                         |
-| -------- | ------------------------------------------------ | -------- | -------------------------------------------------------------- |
-| absent   | `POST /oauth/device_authorization`               | pending  | `device:<deviceCode>` and `usercode:<userCode>`, TTL 600 s     |
-| pending  | `POST /oauth/token` before `interval` has passed | pending  | `slow_down`; the stored interval grows by `DEVICE_SLOW_DOWN_S` |
-| pending  | `POST /oauth/token`                              | pending  | `authorization_pending`; `lastPolledAt` stored                 |
-| pending  | `POST /oauth/device/complete`                    | approved | token and expiry stored; `usercode:` deleted                   |
-| pending  | `POST /oauth/device/deny`                        | denied   | `usercode:` deleted                                            |
-| approved | `POST /oauth/token`                              | absent   | `{ access_token, token_type, expires_in }`; record deleted     |
-| denied   | `POST /oauth/token`                              | absent   | `access_denied`; record deleted                                |
-| any      | TTL passes                                       | absent   | `expired_token` on the next poll                               |
+| From     | Event                                            | To       | Effect                                                              |
+| -------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------- |
+| absent   | `POST /oauth/device_authorization`               | pending  | `device:<deviceCode>` and `usercode:<userCode>`, TTL 600 s          |
+| pending  | `POST /oauth/token` before `interval` has passed | pending  | `slow_down`; `devicepoll:`'s interval grows by `DEVICE_SLOW_DOWN_S` |
+| pending  | `POST /oauth/token`                              | pending  | `authorization_pending`; `lastPolledAt` stored in `devicepoll:`     |
+| pending  | `POST /oauth/device/complete`                    | approved | token and expiry stored; `usercode:` deleted                        |
+| pending  | `POST /oauth/device/deny`                        | denied   | `usercode:` deleted                                                 |
+| approved | `POST /oauth/token`                              | absent   | `{ access_token, token_type, expires_in }`; both keys deleted       |
+| denied   | `POST /oauth/token`                              | absent   | `access_denied`; both keys deleted                                  |
+| any      | TTL passes                                       | absent   | `expired_token` on the next poll                                    |
+
+A poll never writes `device:<deviceCode>`: its `lastPolledAt` and earned interval live in `devicepoll:<deviceCode>`
+(same TTL). Only the page writes `device:` after the start, so a poll that read the record before an approval and
+answers after it cannot write it back as pending, whatever KV's cross-region staleness (E31).
 
 ### The room stream (`wait`, `watch`)
 
@@ -283,11 +287,15 @@ summary }`.
 
 ### Pull and push
 
-- `pull <doc> [--to <dir>] [--svg]`: `documentOf` (a share link's code applies), then each tab with its `ETag`, in
+- `pull <doc> [--to <dir>] [--svg] [--force]`: `documentOf` (a share link's code applies), then each tab with its `ETag`, in
   order; writes the pull file (CLI27) atomically (temporary file then rename) and records each tab's read copy; a tab
   answered without a revision exits 7. `--svg` adds `<slug>.<tab-slug>.svg` per tab from
   `GET .../tabs/:tabId/render.svg` (`apps/api/src/routes/tab-render-route.ts`, `renderTabSvg` in
   `apps/api/src/thumbnail.ts`), two tabs of one name told apart by `-<id8>`.
+- **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
+  (`apps/cli/src/link/sync-state.ts`, the test `sync` uses for `ahead`) finds a tab hashing other than its pulled
+  record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
+  the check and overwrites.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
   `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `livediagramSync`, is created
@@ -636,12 +644,16 @@ random bytes, base64url; `user_code` is 8 letters of `USER_CODE_ALPHABET`, print
 - `loginWithBrowser`: PKCE verifier of 32 random bytes (43 base64url characters), S256 challenge, 16-byte `state`;
   `http.createServer` on `127.0.0.1`, port 0; authorize URL with `client_id=livediagram-cli`, `redirect_uri`
   `http://127.0.0.1:<port>/callback`, `response_type=code`, `code_challenge_method=S256`; opens the browser
-  (`openBrowser`: `open` on macOS, `xdg-open` on Linux, `cmd /c start ""` on Windows) and always prints the URL to
-  stderr. The first `GET /callback` with the matching `state` answers the callback page and closes the server;
+  (`openerFor` in `apps/cli/src/node-io.ts`: `open` on macOS, `xdg-open` on Linux, `rundll32
+url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never passes through a shell, so `&` in
+  it is never a command separator; only an http(s) URL is opened) and always prints the URL to stderr. The first
+  `GET /callback` with the matching `state` answers the callback page and closes the server;
   `error=access_denied` ends with exit 4. `POST /oauth/token` form `grant_type=authorization_code`, `code`,
   `code_verifier`, `redirect_uri`, `client_id`. Timeout `LOGIN_TIMEOUT_MS`.
 - `loginWithDevice`: `POST /oauth/device_authorization`; stderr: `Open <verification_uri> and enter <user code>.`
-  and the complete URL; polls `/oauth/token` every `interval` seconds, honouring `slow_down`.
+  and the complete URL; polls `/oauth/token` every `interval` seconds, honouring `slow_down`, until the code's
+  `expires_in` (`DEVICE_CODE_TTL_S` when absent) has passed: a poll that would land after it is not sent, and the
+  login ends with the expired-code error, as for `expired_token`.
 - `loginWithToken`: stdin must not be a terminal (exit 2 otherwise); reads to end, trims, `isApiTokenFormat`, else
   exit 1.
 - All three end in `GET {apiBase}/tokens/current` with the new token, then `store.put(profile, credential)`, then
@@ -755,7 +767,7 @@ No D1 table, no migration. Local files (CLI5):
 `StoredCredential = { host, token, tokenId, accountName, role, expiresAt }`. `<key hash>` is the first 16 hex of
 SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
 `rename`. An unreadable or wrong-version derived file is ignored and rewritten; a malformed `config.toml` or
-`credentials.json` exits 2 naming the file and the line. Server state: the device grant's two KV keys, TTL 600 s;
+`credentials.json` exits 2 naming the file and the line. Server state: the device grant's three KV keys, TTL 600 s;
 nothing in D1.
 
 ## Errors and edge cases
@@ -773,7 +785,7 @@ nothing in D1.
   `livediagram auth status` (which shows the role).
 - **E9** The browser never returns (closed tab, wrong account): the loopback times out after `LOGIN_TIMEOUT_MS`,
   exit 4, hint `--device`.
-- **E10** The person's account is at the token cap: the consent page shows its error; the CLI times out (E9) and the
+- **E10** The person's account is at the token cap: the consent page shows the token-limit line; the CLI times out (E9) and the
   hint adds "or revoke a token in Settings › API Tokens".
 - **E11** A second `/callback` request (a refresh, a probe): answered 404 once the first valid one closed the
   server; a wrong `state` answers 400 and keeps waiting.
@@ -803,6 +815,13 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 - **E28** Unknown keys in `config.toml`: ignored, logged under debug.
 - **E29** A read copy evicted between `wait` printing a revision and `tab diff`: E21.
 - **E30** `comment reply|resolve|reopen` on an element with no thread: exit 3 (CLI78).
+- **E31** A poll reads the pending record, the page approves, then the poll answers: the poll writes only
+  `devicepoll:`, so the approval stands and the next poll receives the token.
+- **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
+  the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
+  minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
+  leaves a live token counting towards the cap (`apps/live/lib/oauth-handover.ts`, log `[oauth] handover refused;
+minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
 
 ## Security and trust
 
@@ -866,7 +885,9 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
   - consent: "Connect {clientName}", the consent page's paragraph and its role choice, Connect and Cancel.
   - done: "You're connected" / "Return to your terminal; it carries on by itself."
   - cancelled: "Connection cancelled" / "Your terminal will stop waiting."
-  - error: "Something went wrong. Please try again."
+  - error, by cause (E32): expired "This request has expired. Run the sign-in again from your terminal."; at the
+    token cap (409 `token_limit_reached`) "Your account has reached its limit of API tokens. Revoke one in Settings,
+    under Account › API Tokens, then try again."; anything else "Something went wrong. Please try again."
 - **CLI notices** (stderr), final copy:
   - telemetry: `livediagram counts which commands succeed (the command's name only: never arguments, documents or
 hosts) and sends the count to <host>. Turn it off: livediagram telemetry off, or LIVEDIAGRAM_TELEMETRY=0.`
@@ -896,6 +917,7 @@ npx @livediagram/cli@latest`
 | Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
 | Held                      | `<n> elements are selected by people:`, `  <ref> (<name>)`                 | `retry later, or add --wait-held 30`                                                            |
 | Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
+| Unpushed changes          | `<path> changed here and is not pushed; not overwritten`                   | `send it: livediagram push <path>, or drop it: livediagram pull "<doc>" --force`                |
 | Rate limited              | `<host> is rate limiting this token`                                       | `wait a minute, then retry`                                                                     |
 | Network                   | `could not reach <host> (<code>)`                                          | `check the connection, or choose another host with --host`                                      |
 | Server                    | `<host> failed (HTTP <status>)`                                            | `retry shortly`                                                                                 |
@@ -997,6 +1019,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                               |
 | A self-host profile never contacts livediagram.app                                            | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                     |
 | Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                            |
+| Pull refuses a file with unpushed changes; `--force` overwrites (CLI27a)                      | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                   |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                   |
 | Export every document, each format                                                            | `apps/cli/src/commands/export-views.test.ts`                                                                                                                |
 | Render prints path and size, never bytes; MCP and CLI draw alike                              | `apps/cli/src/commands/render.test.ts`; `packages/render-png/src/index.test.ts` (size, text drawn in Inter, one wasm initialisation, a failed load retried) |

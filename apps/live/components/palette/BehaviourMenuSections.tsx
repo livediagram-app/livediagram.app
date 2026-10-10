@@ -135,13 +135,13 @@ export function RevealMenuSection({
       <MenuTileGrid cols={2}>
         <MenuTile
           icon={<RevealIcon />}
-          label="Reveal for all"
+          label="Reveal for All"
           active={revealed}
           onClick={() => onSetRevealed(true)}
         />
         <MenuTile
           icon={<ToolsMenuGlyph />}
-          label="Hide for all"
+          label="Hide for All"
           active={!revealed}
           onClick={() => onSetRevealed(false)}
         />
@@ -211,13 +211,13 @@ export function PickerMenuSection({
       <MenuTileGrid cols={2}>
         <MenuTile
           icon={<ToolsMenuGlyph />}
-          label="People here"
+          label="People Here"
           active={source === 'participants'}
           onClick={() => onSetPickerSource('participants')}
         />
         <MenuTile
           icon={<PickerIcon />}
-          label="A list"
+          label="A List"
           active={source === 'options'}
           onClick={() => onSetPickerSource('options')}
         />

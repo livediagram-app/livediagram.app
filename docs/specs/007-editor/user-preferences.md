@@ -495,7 +495,7 @@ and the dialog stays as the one complete, browsable index of them.
   lazy-loaded via `next/dynamic` (matches the other on-demand
   modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
-  dark-mode toggle. The "Keyboard shortcuts" command in search
+  dark-mode toggle. The "Keyboard Shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
   Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
   of a category (the Google Drive connect flow returns to Account > Cloud Sync): the section

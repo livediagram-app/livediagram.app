@@ -18,6 +18,8 @@ export function directionOf(token: string | undefined): MermaidDirection {
 }
 
 // Strip trailing %% comments and statement-terminating semicolons, then trim.
+// A `%%` inside a double-quoted label is text, not a comment (Mermaid lexes a
+// quoted string as one token), so `A["50%% done"]` keeps its label.
 //
 // Deliberately scans instead of using /%%.*$/ and /;+\s*$/. Both of those are
 // unanchored, so on a line the tail doesn't match the engine retries from every
@@ -25,7 +27,7 @@ export function directionOf(token: string | undefined): MermaidDirection {
 // thousand '%%' or ';' characters would lock the importing tab. Indexing and a
 // reverse scan do the same job in one pass.
 export function cleanLine(rawLine: string): string {
-  const commentAt = rawLine.indexOf('%%');
+  const commentAt = commentStart(rawLine);
   const body = commentAt === -1 ? rawLine : rawLine.slice(0, commentAt);
 
   const trimmed = body.trim();
@@ -35,6 +37,26 @@ export function cleanLine(rawLine: string): string {
 }
 
 const SEMICOLON = ';'.charCodeAt(0);
+const QUOTE = '"'.charCodeAt(0);
+const PERCENT = '%'.charCodeAt(0);
+
+// Index of the first `%%` outside a double-quoted run, or -1. One pass.
+function commentStart(line: string): number {
+  let quoted = false;
+  for (let i = 0; i < line.length - 1; i += 1) {
+    const c = line.charCodeAt(i);
+    if (c === QUOTE) quoted = !quoted;
+    else if (!quoted && c === PERCENT && line.charCodeAt(i + 1) === PERCENT) return i;
+  }
+  return -1;
+}
+
+// Mermaid's numeric entity code (`#124;` is `|`, `#37;` is `%`), as Mermaid
+// itself decodes it; a number past Unicode stays as written.
+function decodeEntityCode(code: string, digits: string): string {
+  const n = Number(digits);
+  return n <= 0x10ffff ? String.fromCodePoint(n) : code;
+}
 
 // Label text -> element label: strip surrounding quotes, turn <br> line
 // breaks into real newlines, decode the entities the export emits.
@@ -44,7 +66,7 @@ export function decodeLabel(s: string): string {
   return t
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/&quot;/g, '"')
-    .replace(/#124;/g, '|')
+    .replace(/#(\d+);/g, decodeEntityCode)
     .replace(/&amp;/g, '&');
 }
 

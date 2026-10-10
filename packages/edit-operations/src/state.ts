@@ -63,6 +63,8 @@ export type EditState = {
   readonly created: ElementId[];
   // Pre-existing ids the operations resolved, first resolution first (EO46).
   readonly targets: ElementId[];
+  // The same ids as a set, so noting one is O(1) however many a selector resolves.
+  readonly targetSet: Set<ElementId>;
   readonly removed: Map<ElementId, Removal>;
   readonly warnings: EditWarning[];
   readonly locked: ReadonlyMap<ElementId, LockReason>;
@@ -106,6 +108,7 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     touched: new Map(),
     created: [],
     targets: [],
+    targetSet: new Set(),
     removed: new Map(),
     warnings: [],
     locked: lockedIds(tab),
@@ -272,7 +275,9 @@ export function boxedOf(state: EditState, id: ElementId): BoxedElement | undefin
 
 // A pre-existing element joins the targets the first time an operation resolves it (EO46).
 export function noteTarget(state: EditState, id: ElementId): void {
-  if (state.before.has(id) && !state.targets.includes(id)) state.targets.push(id);
+  if (!state.before.has(id) || state.targetSet.has(id)) return;
+  state.targetSet.add(id);
+  state.targets.push(id);
 }
 
 // The refusal of an operation that would change a locked element, logged with its scope.

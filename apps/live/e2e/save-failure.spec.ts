@@ -18,7 +18,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
         })
       : route.continue(),
   );
-  await page.getByRole('button', { name: 'Add square', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
   await canvas.click({ position: { x: 420, y: 300 } });
 
   // Next's route announcer is an alert too; the toast is the other one.
@@ -31,7 +31,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
   const saved = page.waitForResponse(
     (r) => r.request().method() === 'PUT' && /\/api\/documents\/[^/]+\/tabs\//.test(r.url()),
   );
-  await page.getByRole('button', { name: 'Add square', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
   await canvas.click({ position: { x: 560, y: 300 } });
   expect((await saved).status()).toBeLessThan(300);
 

@@ -104,7 +104,7 @@ export function LockedElementMenu({
               />
               {/* The name is the point: "free it" without saying whose hold you
                 are breaking is an action you cannot judge before taking. */}
-              <span className="truncate">Release {holder.name}&rsquo;s hold</span>
+              <span className="truncate">Release {holder.name}&rsquo;s Hold</span>
             </button>
           ))}
           <p id={noteId} aria-hidden className="px-3 pt-1 text-[10px] leading-snug text-slate-400">

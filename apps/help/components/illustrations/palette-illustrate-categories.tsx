@@ -152,7 +152,7 @@ export function ComponentsCategory() {
   const rows: [string, string][] = [
     ['Banner', 'A themed title block for the top'],
     ['Callout', 'A note box with an icon and title'],
-    ['Stat row', 'Three KPI cards side by side'],
+    ['Stat Row', 'Three KPI cards side by side'],
     ['Process', 'Numbered steps joined by arrows'],
     ['Hero', 'A big image with a title card'],
     ['Header', 'A website-style nav bar'],

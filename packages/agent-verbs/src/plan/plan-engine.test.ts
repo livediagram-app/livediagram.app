@@ -7,7 +7,7 @@ import { apiRefusalOf } from './api-refusal';
 import { changeCardTypes } from './card-types';
 import { changeBoard, resolveBoard } from './change-board';
 import { applyItemChanges } from './item-changes';
-import { NO_BOARD_HINT, planListing } from './plan-listing';
+import { NO_BOARD_HINT, planListing, resolveListingFilter } from './plan-listing';
 import { readPlanState } from './plan-state';
 
 // The Plan engine (docs/specs/026-plan/plan-agents.md): names in, ids out, refusals that say what is there.
@@ -163,6 +163,14 @@ describe('planListing', () => {
     expect(listing.hint).toBeUndefined();
   });
 
+  it('shows no card on a board that takes no type', async () => {
+    const { api: a } = api({}, { boards: [BOARD([])], statuses: STATUSES, types: ITEM_TYPES });
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.boards[0]!.takes).toEqual([]);
+    expect(listing.boards[0]!.columns.flatMap((c) => c.cards)).toEqual([]);
+    expect(listing.notOnBoard).toEqual(expect.arrayContaining(['#1', '#2']));
+  });
+
   it('names custom fields as writes do', async () => {
     const withSev = [
       item(7, 'fff777', { title: 'Sev', status: 'done~x', 'f-sev': 'S2', 'f-gone': 1 }, 'bug'),
@@ -183,12 +191,50 @@ describe('planListing', () => {
       { boards: [BOARD(['bug'])], statuses: STATUSES, types: [...ITEM_TYPES, BUG] },
     );
     const state = await readPlanState(a, D);
-    const listing = planListing(state, { type: 'Bug', status: 'done' });
+    const filter = resolveListingFilter(state, { type: 'Bug', status: 'done' });
+    if (!filter.ok) throw new Error(filter.message);
+    const listing = planListing(state, filter);
     expect(listing.boards[0]!.takes).toEqual(['Bug']);
     expect(listing.boards[0]!.columns[0]!.cards).toEqual([]);
     expect(listing.items.map((i) => i.ref)).toEqual(['#3']);
     const { api: none } = api({}, { boards: [], statuses: [], types: ITEM_TYPES });
     expect(planListing(await readPlanState(none, D)).hint).toBe(NO_BOARD_HINT);
+  });
+});
+
+describe('resolveListingFilter', () => {
+  it('reads a column and a card type as change_items does, spacing, case and punctuation aside', async () => {
+    const { api: a } = api({}, { boards: [BOARD()], statuses: STATUSES, types: ITEM_TYPES });
+    const state = await readPlanState(a, D);
+    expect(resolveListingFilter(state, { status: 'to-do', type: 'TASK' })).toEqual({
+      ok: true,
+      status: 'todo~x',
+      type: 'task',
+    });
+    const listing = planListing(state, { status: 'todo~x' });
+    expect(listing.items.map((i) => i.ref)).toEqual(['#1', '#2']);
+  });
+
+  it('refuses a card type the document lacks, naming the ones it has', async () => {
+    const { api: a } = api({}, { boards: [BOARD()], statuses: STATUSES, types: ITEM_TYPES });
+    expect(resolveListingFilter(await readPlanState(a, D), { type: 'Epic' })).toMatchObject({
+      ok: false,
+      code: 'type_unknown',
+      message: expect.stringContaining('Task (task)'),
+    });
+  });
+
+  it('takes the Trash as a column, and refuses a column with no board at all', async () => {
+    const { api: a } = api({}, { boards: [], statuses: [], types: ITEM_TYPES });
+    const state = await readPlanState(a, D);
+    expect(resolveListingFilter(state, { status: 'trash' })).toEqual({
+      ok: true,
+      status: TRASH_STATUS,
+    });
+    expect(resolveListingFilter(state, { status: 'Doing' })).toMatchObject({
+      ok: false,
+      code: 'status_unknown',
+    });
   });
 });
 
@@ -521,6 +567,28 @@ describe('change lines', () => {
     expect(r.applied[0]).toContain('no board with that column takes Bug cards');
     expect(r.applied[0]).toContain('"Sprint" with change_board');
   });
+
+  it('warns when the only board with the column takes no type at all', async () => {
+    const { api: a } = api(
+      {
+        [`/documents/${D}/items`]: (r: Request) =>
+          r.method === 'GET'
+            ? Response.json({ items: ITEMS, rev: 1 })
+            : Response.json({
+                item: item(9, 'new999', { title: 'Write', status: 'todo~x' }, 'task'),
+                rev: 2,
+              }),
+      },
+      { boards: [BOARD([])], statuses: STATUSES, types: ITEM_TYPES },
+    );
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'add', title: 'Write', type: 'Task', status: 'To Do' }],
+      await readPlanState(a, D),
+    );
+    expect(r.applied[0]).toContain('no board with that column takes Task cards');
+  });
 });
 
 describe('changeBoard', () => {
@@ -557,8 +625,11 @@ describe('changeBoard', () => {
     expect(op.operations[0]!.fields.planBoard.columns[0]!.wipLimit).toBe(2);
     expect(op.operations[0]!.fields.planBoard.addTypes).toEqual(['task', 'bug']);
     expect(Object.keys(op.base.elements)).toEqual(['b1']);
-    const every = await changeBoard(a, D, { board: 'b1', types: [] }, 'cli');
+    const every = await changeBoard(a, D, { board: 'b1', types: 'every type' }, 'cli');
     expect(every).toMatchObject({ ok: true, takes: 'every type' });
+    // An empty list takes none, as in the editor, rather than every type.
+    const none = await changeBoard(a, D, { board: 'b1', types: [] }, 'cli');
+    expect(none).toMatchObject({ ok: true, takes: [] });
   });
 
   it('refuses an unknown or ambiguous board, type or column list', async () => {
@@ -639,7 +710,13 @@ describe('every branch of the engine', () => {
         [...ITEM_TYPES, LINKED],
       ),
     );
-    const listing = planListing(await readPlanState(a, D), { status: 'nowhere' });
+    const state = await readPlanState(a, D);
+    expect(resolveListingFilter(state, { status: 'nowhere' })).toMatchObject({
+      ok: false,
+      code: 'status_unknown',
+      message: expect.stringContaining('Columns: To Do, Done'),
+    });
+    const listing = planListing(state, { status: 'nowhere~x' });
     expect(listing.types.find((t) => t.id === 'risk')!.custom[0]).toMatchObject({
       linkType: 'task',
     });

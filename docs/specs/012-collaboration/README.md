@@ -2,6 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
+- ./blueprints/README.md - when implementing a collaboration spec from its blueprint
 - ./presentation-mode.md - when working on Presentation mode: Full-screen slide deck of author-picked element sets, each slide from one tab, built and run from a Slide Deck panel
 - ./session-tools.md - when working on Session tools (timer + voting): Per-tab facilitator countdown/stopwatch + live dot-voting, synced to every participant
 - ./assigned-actions.md - when working on Assigned actions: Implemented: Assign Action tile attaches a named/described action on an element to a teammate (any joined team), optional opt-out email notification, on-element badge + popover (complete/edit/delete), a merged Collaborate Panel listing open/resolved actions + comment threads, and the menu's collaboration band split into Collaborate (actions/comments) + Resources (link/note)

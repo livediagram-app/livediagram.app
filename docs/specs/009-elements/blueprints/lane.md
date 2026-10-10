@@ -39,7 +39,7 @@ Scope, by file:
 | Heading fill  | `headerFill`                                       | Gutter colour; shared with a table's header row   |
 | Seam          | (render) the gutter / body boundary                | Drag handle for `headerSize`                      |
 | Seam target   | `laneSeamCoordinates`, `alignmentCoordinates`      | Coordinates a seam may snap to                    |
-| Upright title | `titleOrientation: 'upright'`, `isUprightTitle`    | A side strip's title turned to read bottom to top |
+| Upright Title | `titleOrientation: 'upright'`, `isUprightTitle`    | A side strip's title turned to read bottom to top |
 
 Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in code (the field is
 `headerSize` / `headerFill`, the concept is gutter), "divider" for the seam, "section" (a frame).
@@ -73,14 +73,14 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 9. **Stacking.** Lanes are never repositioned automatically. Each lane draws its own border, so
    flush lanes show two borders side by side [QA9].
 
-10. **Upright title.** `isUprightTitle(el)` = `titleOrientation === 'upright'` and the gutter edge is
+10. **Upright Title.** `isUprightTitle(el)` = `titleOrientation === 'upright'` and the gutter edge is
     `left`, `right` or `centre-x`. Then: the default gutter size is `LANE_BAND_PX`; the label box is the
     strip (inset by the padding), turned −90° about its centre, so its width runs up the strip's height
     and its height across the strip (`uprightTitleStrip`, `uprightTitleFrame`); the text wraps within that
     turned box and is clipped to it, with a padding of at most `PADDING_PX.sm`; the vertical pin (`top` / `middle` / `bottom`)
     aligns it along the strip (`top` → the strip's top end, where the turned text ends). A band
     (`top` / `bottom` edge) ignores the field. Editing the title edits the turned box in place.
-11. **Toggle.** The context menu's Text section shows **Upright title** (switch) for a lane whose gutter
+11. **Toggle.** The context menu's Text section shows **Upright Title** (switch) for a lane whose gutter
     edge is a side; on: `titleOrientation: 'upright'`, off: field removed; one `commit`. Telemetry
     `Element·Changed·LaneUprightTitle`.
 
@@ -236,7 +236,7 @@ None in code today [GA1]. The upright toggle tracks `Element·Changed·LaneUprig
 | Drag clamp, centred 2x, one commit (I2)                 | none [GA14]                                                                  |                                                                                                     |
 | Render clamp of a stored size                           | none [QA10]                                                                  |                                                                                                     |
 | Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `packages/document/src/lane-gutter.test.ts`                                                         |
-| Upright title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/live/components/canvas/upright-title.test.ts`     |
+| Upright Title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/live/components/canvas/upright-title.test.ts`     |
 | Upright toggle: offered on side strips only, one commit | the Text section switch                                                      | `apps/live/components/palette/*.test.tsx`                                                           |
 
 ## Constants and configuration

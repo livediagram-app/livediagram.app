@@ -83,7 +83,7 @@ sends no whole-element update.
 1. `ChecklistRowsEditor` keeps a local draft (`useFollowingDraft`), replaced during render when
    the element's rows change, so a typed draft survives a re-render with the same rows.
 2. Text inputs (`maxLength` 200, placeholder "Task") commit the whole draft on blur.
-3. `+ Add row` appends `{ text: '', done: false }`, disabled at 30 rows. `×` removes a row,
+3. `+ Add Row` appends `{ text: '', done: false }`, disabled at 30 rows. `×` removes a row,
    disabled at one row (`D102`).
 4. `setChecklistItemsSelected` slices to 30 rows and 200 characters each, writes every selected
    checklist, one undo step, `track('Element', 'Changed', 'Checklist')`.

@@ -1,6 +1,6 @@
 import { connect } from 'node:net';
 import { describe, expect, it } from 'vitest';
-import { nodeIo } from './node-io';
+import { nodeIo, openerFor } from './node-io';
 
 // The real loopback server (sign-in's callback). A browser keeps a preconnected or keep-alive socket open to
 // it after the callback; closing must end those too, or the command never exits until the tab is closed.
@@ -33,5 +33,24 @@ describe('interrupts', () => {
 
     expect(heard).toBe(1);
     expect(process.listenerCount('SIGINT') + process.listenerCount('SIGTERM')).toBe(0);
+  });
+});
+
+// Opening the sign-in URL (CLI34): never through a shell, so `&` in the query is a character, not a command.
+describe('openerFor', () => {
+  const url = 'https://livediagram.app/oauth/authorize?a=1&b=2&calc.exe';
+
+  it('hands Windows the URL as one rundll32 argument, never cmd', () => {
+    expect(openerFor('win32', url)).toEqual(['rundll32', ['url.dll,FileProtocolHandler', url]]);
+  });
+
+  it('uses open on macOS and xdg-open elsewhere', () => {
+    expect(openerFor('darwin', url)).toEqual(['open', [url]]);
+    expect(openerFor('linux', url)).toEqual(['xdg-open', [url]]);
+  });
+
+  it('opens nothing that is not an http(s) URL', () => {
+    expect(openerFor('win32', 'file:///C:/Windows/System32/calc.exe')).toBeNull();
+    expect(openerFor('linux', '--help')).toBeNull();
   });
 });

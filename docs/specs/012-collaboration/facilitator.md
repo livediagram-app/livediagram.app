@@ -125,7 +125,7 @@ every one of them behaves exactly as it does today.
 | Agenda item press (it starts that item's countdown)                   | `useCollabElements.ts`    |
 | Estimate / Temperature: reveal responses, clear for a new round       | `useCollabElements.ts`    |
 | Idea box: reveal, clear, scatter to the canvas                        | `useCollabElements.ts`    |
-| Done check: "Reset everyone"                                          | `DoneCheckFace.tsx`       |
+| Done check: "Reset Everyone"                                          | `DoneCheckFace.tsx`       |
 | Quiz: edit the question, start, lock, reveal, run again               | `useQuizElements.ts`      |
 | Picker: the roll everyone watches                                     | `useBehaviourElements.ts` |
 | Roll call: take the roll                                              | `useCollabElements.ts`    |
@@ -337,7 +337,7 @@ would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.
 
 The **card-level** verbs — an idea box's Reveal, an estimate's Clear, a done
-check's Reset everyone, the roll call, the picker's spin, a reveal zone's cover
+check's Reset Everyone, the roll call, the picker's spin, a reveal zone's cover
 and a Bring Focus press — go the other way: while somebody else facilitates the
 control is simply **absent**, exactly as it is for a view-only visitor today.
 That is the shape those faces already have (each verb is drawn only when its

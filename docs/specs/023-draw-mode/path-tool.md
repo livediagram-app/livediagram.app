@@ -91,7 +91,7 @@ A path is edited in its own **edit mode**, as in Figma, and is a **full pen tool
 corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
 - **Enter** by double-clicking (double-tapping) a path with Select, pressing **Enter** with one
-  path selected, or pressing **Edit points** in a selected path's selection toolbar. A path just
+  path selected, or pressing **Edit Points** in a selected path's selection toolbar. A path just
   finished with the Path tool can be edited at once the same ways.
   **Leave** with **Escape**, **Enter**, or a click outside the path. The dock shows the edit mode
   by pressing Select with a path glyph; the rest of the canvas stays visible and inert.
@@ -103,7 +103,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
   the stacking order, its layer or its fill, so no node or handle is ever hidden or unreachable.
 - **An edit toolbar** floats above the path while in edit mode, with the selected nodes' **node
   type** as a three-way choice (**Corner**, **Mirrored**, **Aligned**, showing the shared type or
-  none), **Delete point**, **Close path** / **Open path** (opening cuts the path at the selected
+  none), **Delete Point**, **Close Path** / **Open Path** (opening cuts the path at the selected
   node), and **Done**. Delete point, Close path and Done also have keys (Backspace / Delete,
   J, Escape); the node type is also toggled by Alt-click and double-click (below). It is how a finger, which has no Alt or
   keyboard, reaches everything; long-pressing a node selects it and brings the toolbar near it.
@@ -128,9 +128,9 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
   both of its handles adjust. A straight segment gains handles as it bends.
 - **Deleting nodes:** **Backspace / Delete** removes the selected nodes and joins their neighbours;
   a path left with fewer nodes than it needs is deleted.
-- **Closing an open path:** select both of its end nodes and press **J**, or press **Close path**
+- **Closing an open path:** select both of its end nodes and press **J**, or press **Close Path**
   (with no node selected it joins the two ends). **Opening a closed path:** select a node and press
-  **Open path**; the path is cut there and that node becomes both ends. Deleting nodes from a closed
+  **Open Path**; the path is cut there and that node becomes both ends. Deleting nodes from a closed
   path keeps it closed.
 - **Editing while drawing:** with the Path tool in hand, the path being drawn is editable too, as
   in Figma: **Ctrl (Cmd on a Mac) held** turns the pointer into the edit pointer for as long as it

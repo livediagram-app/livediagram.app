@@ -87,6 +87,7 @@ export const ELEMENT_FIELD_NAMES = {
     'responsesRevealed',
     'estimateScale',
     'ideaCards',
+    'ideaCardIds',
     'ideasRevealed',
     'qaNotes',
     'qaRev',

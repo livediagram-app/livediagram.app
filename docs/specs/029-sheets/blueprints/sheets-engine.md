@@ -66,6 +66,8 @@ src/store.ts               SheetWrite, applySheetWrite, inverseSheetWrite, merge
 src/chart-data.ts          sheetChartTable (a range as categories and series), regionAround, CHART_*_MAX
 src/store-layout.ts        applyLayoutChange (insert, delete, move, order, size, hide, freeze, merge(s), filter, options)
 src/validate.ts            validateWrite(sheet, write) -> ok | rejection; validateSheetCreate
+src/write-caps.ts          writesCapsProblem(sheet, writes, documentCells) -> sheet_full | sheet_too_large |
+                           sheets_full | null (a whole split change against the caps); documentCellCount
 src/commands.ts            typeInto, typeIntoRanges, clearRanges, formatRanges, borderRange, merge/unmerge,
                            fillRange, fillFromEdge, splitWrite, stepDecimals, boundedRange
 src/commands-axis.ts       insert, append, delete, hide, resize, move, freeze, sort, filter (layout writes)
@@ -397,7 +399,10 @@ type SheetWrite =
 size, decimals), `axis_id_invalid` (pattern, or an insert reusing a live id), `title_invalid` (empty or >
 `SHEET_TITLE_MAX`), `merge_invalid` (overlap, or > `SHEET_MERGES_MAX`), `filter_invalid`, `write_too_large`
 (> `SHEET_WRITE_CELLS_MAX` cells or > `SHEET_WRITE_BYTES_MAX`). `validateSheetCreate` checks a whole sheet the
-same way.
+same way. `writesCapsProblem(sheet, writes, documentCells)` (`write-caps.ts`) applies a change's writes in order
+and answers the cap the result passes: `sheet_full` or `sheet_too_large` by `sheetProblem`, `sheets_full` when
+the cells it adds take `documentCells` past `DOCUMENT_CELLS_MAX`; a change that grows nothing (cells, bytes, rows,
+columns) is never refused.
 
 ## Clipboard, CSV, fill, sort, filter, find
 

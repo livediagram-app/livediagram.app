@@ -78,9 +78,12 @@ applied by the sender and every receiver through the same pure
 
 - `response`: one participant's answer set, or withdrawn with `null`, keyed
   by `participantKey` (done check, estimate, temperature).
-- `idea`: one anonymous card appended. No author, still ([Idea box](idea-box.md)). The box
+- `idea`: one anonymous card appended, with the random `id` its poster
+  minted for it (`ideaCardIds`). No author, still ([Idea box](idea-box.md)). The box
   refuses a card past `IDEA_MAX_CARDS`, at the press and on apply, so a
-  full box can no longer fail the tab's validation on save.
+  full box can no longer fail the tab's validation on save; a card whose id
+  the box already holds is a replay, and a no-op. Two posts racing for the
+  last card settle in the room's order ([Idea box](idea-box.md) "Racing for the last card").
 - `check`: one checklist row ticked or unticked. Rows have no ids, so the
   row is named by index AND text; a peer who moved or retitled rows gets the
   row with that text, or nothing. A tick is no longer undoable.
@@ -109,10 +112,10 @@ with a DIFFERENT round replaces the answers and ideas (that is how a clear
 reaches everyone). Undo re-grafts `collabRound` and the checklist ticks with
 the other live fields.
 
-Decisions against the plan above: idea cards did not get ids (the round and
-the keep-ours merge make them unnecessary, and the field stays a plain
-string list), and checklist rows are matched by index and text rather than
-given ids, for the same reason: no schema change.
+Decisions against the plan above: checklist rows are matched by index and
+text rather than given ids (no schema change). Idea cards first went without
+ids too, and gained them (`ideaCardIds`, beside the plain string list) when a
+poster's card had to be taken back after losing the race for the last card.
 
 Still open until phase 4: a view-role comment goes through its REST
 endpoint, not a delta (the room drops view-role mutations), so editors still

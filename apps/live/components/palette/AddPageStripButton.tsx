@@ -19,13 +19,13 @@ export function AddPageStripButton({ onAdd }: { onAdd: (kind: PageKind) => void 
   return (
     <>
       <HoverCard
-        title="Add page"
+        title="Add Page"
         description="A new infographic, article, slide or logo page after the last."
       >
         <button
           ref={button}
           type="button"
-          aria-label="Add page"
+          aria-label="Add Page"
           aria-haspopup="dialog"
           aria-expanded={open}
           // A press on the + itself toggles the popover rather than counting as outside it.

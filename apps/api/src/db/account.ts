@@ -9,6 +9,7 @@ import { COPY_COUNT_SQL } from './community-engagement';
 import { snapshotKeys } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
+import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
 import { uniqueLibraryName } from '@livediagram/api-schema';
 import type { Env } from '../types';
@@ -120,6 +121,9 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
+  // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
+  // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
+  await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
   // at Google and drop the connection and every mirror row. The Drive files are
   // the user's and stay.
@@ -198,13 +202,14 @@ export async function deleteAccount(
 // images has a UNIQUE (owner_id, sha256) index that drives the
 // dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
 // on the Clerk side (the user uploaded the same bytes under both
-// identities). The skipped guest row stays at fromOwnerId; the
-// formerly-guest documents (now Clerk-owned) still resolve those
-// image ids via the document-reference fallback in GET
-// /api/images/:id (docs/specs/009-elements/images.md), so the canvas keeps rendering them.
-// Only the gallery list filters by owner_id, so the dedupe loser
-// stops showing up there, which is the right outcome (the Clerk
-// twin is identical bytes anyway).
+// identities). The skipped guest row stays at fromOwnerId, so a
+// formerly-guest document (now Clerk-owned) no longer serves it by
+// ownership. Before the documents move, every guest image those
+// documents place is granted to them, in the same batch
+// (docs/specs/009-elements/images.md "Placement grants"), so the
+// canvas keeps rendering the dedupe loser. Only the gallery list
+// filters by owner_id, so the dedupe loser stops showing up there,
+// which is the right outcome (the Clerk twin is identical bytes anyway).
 //
 // Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
@@ -219,9 +224,15 @@ export async function migrateOwnerId(
   fromOwnerId: string,
   toOwnerId: string,
 ): Promise<{ documents: number; folders: number; shared: number; images: number }> {
-  const documentsRes = await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?')
-    .bind(toOwnerId, fromOwnerId)
-    .run();
+  // The grant first, while the guest still owns the documents: an image left on the guest id by the
+  // dedupe below keeps serving in them.
+  const [, documentsRes] = await env.DB.batch([
+    imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [fromOwnerId], Date.now()),
+    env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ?').bind(
+      toOwnerId,
+      fromOwnerId,
+    ),
+  ]);
   const foldersRes = await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
@@ -236,6 +247,15 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
+  // A visit is to someone else's document. The guest may have visited one the account owns, and
+  // the account may have visited one the guest owned (now the account's): either way the visit
+  // would list the account's own document under its "Shared with you", so drop it.
+  await env.DB.prepare(
+    `DELETE FROM shared_with WHERE owner_id = ?1
+       AND document_id IN (SELECT id FROM documents WHERE owner_id = ?1)`,
+  )
+    .bind(toOwnerId)
+    .run();
   // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
   // shared_with so a Clerk userId who somehow already had a row (an
   // earlier sign-in on a different device) keeps that authoritative
@@ -331,8 +351,9 @@ export async function migrateOwnerId(
   console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
   // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
-  // leaves those guest rows in place so the image id stays
-  // resolvable by every formerly-guest document that references it.
+  // leaves those guest rows in place; the grants written with the
+  // documents move above keep them served by every formerly-guest
+  // document that places them.
   const imagesRes = await env.DB.prepare(
     'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
   )
@@ -352,7 +373,7 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   return {
-    documents: documentsRes.meta.changes ?? 0,
+    documents: documentsRes?.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     shared: sharedInsertRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,

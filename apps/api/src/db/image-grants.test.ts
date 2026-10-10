@@ -3,6 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, setDocumentFolder } from './documents';
 import { handTeamWorkToHeir } from './teams';
+import { migrateOwnerId } from './account';
 import { documentRemovalStatements } from './document-removal';
 import {
   documentServesImage,
@@ -21,7 +22,7 @@ import { insert, liveDoc, team } from './test-trash-fixtures';
 
 afterEach(() => resetImageRefIndexMemo());
 
-function image(sql: DatabaseSync, id: string, ownerId: string) {
+function image(sql: DatabaseSync, id: string, ownerId: string, sha256 = id) {
   insert(sql, 'images', {
     id,
     owner_id: ownerId,
@@ -29,7 +30,7 @@ function image(sql: DatabaseSync, id: string, ownerId: string) {
     byte_size: 1,
     width: 1,
     height: 1,
-    sha256: id,
+    sha256,
     created_at: 0,
   });
 }
@@ -268,5 +269,26 @@ describe('an owner change', () => {
     await upsertTab(db.env, 'D', tabWith('t1', 'alice-img'), 0);
     await setDocumentFolder(db.env, 'D', null, null, 'user_bob');
     expect(await documentServesImage(db.env, 'D', 'alice-img')).toBe(true);
+  });
+
+  // Sign-up (docs/specs/015-api/api.md "Owner-keyed data"): the account already holds the same bytes, so the
+  // guest's image stays on the guest id while the document moves to the account.
+  it("keeps a guest's image serving after sign-up when the account holds the same bytes", async () => {
+    const db = sqliteD1();
+    liveDoc(db.sql, 'D', { owner: 'guest-1' });
+    image(db.sql, 'guest-img', 'guest-1', 'same-bytes');
+    image(db.sql, 'account-img', 'user_ada', 'same-bytes');
+    image(db.sql, 'guest-only', 'guest-1');
+    await upsertTab(db.env, 'D', tabWith('t1', 'guest-img'), 0);
+    await upsertTab(db.env, 'D', tabWith('t2', 'guest-only'), 1);
+    await migrateOwnerId(db.env, 'guest-1', 'user_ada');
+    const owners = db.sql.prepare('SELECT id, owner_id FROM images ORDER BY id').all();
+    expect(owners.map((r) => `${r.id}:${r.owner_id}`)).toEqual([
+      'account-img:user_ada',
+      'guest-img:guest-1',
+      'guest-only:user_ada',
+    ]);
+    expect(await documentServesImage(db.env, 'D', 'guest-img')).toBe(true);
+    expect(await documentServesImage(db.env, 'D', 'guest-only')).toBe(true);
   });
 });

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { EditRejection } from '@livediagram/api-schema';
 import type { Element, Tab } from '@livediagram/document';
 import { reachableFrom } from './graph-walk';
+import { refused } from './fixtures/outcomes';
+import { elementOf, run } from './fixtures/run';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { formatRejections } from './rejections';
 import { parseSelector, resolveOne, resolveSelector, resolveSome } from './selectors';
@@ -81,6 +83,11 @@ describe('selector rows', () => {
     expect(ids('to:n6')).toEqual(['a5']);
     expect(ids('n6->n7')).toEqual(['a6']);
     expect(ids('n7->n6')).toEqual([]);
+    expect(ids('"3-D Secure?"->"Charge card"')).toEqual(['a6']);
+    expect(ids('n6->"Charge card"')).toEqual(['a6']);
+    expect(refusal('n5->n6->n7').details[0]).toBe(
+      'selector "n5->n6->n7": a->b with one arrow: an arrow has two ends',
+    );
   });
 
   it('downstream and upstream along arrows, the start left out', () => {
@@ -287,5 +294,15 @@ describe('parseSelector and reachableFrom', () => {
     ] as Element[];
     expect([...reachableFrom(loop, 'x', 'downstream')]).toEqual(['y']);
     expect([...reachableFrom(loop, 'x', 'upstream')]).toEqual(['y']);
+  });
+});
+
+// An `id:"…"` ref names one full id: once that element is gone it names nothing, never the longer id it prefixes.
+describe('id:"…" refs', () => {
+  it('never fall back to a prefix after their element is removed', () => {
+    const tab = withElements(sticky('n1 0', 'Ten'), sticky('n1 ', 'One'));
+    const outcome = run('rm id:"n1 "\nset id:"n1 " label=Renamed', tab);
+    expect(refused(outcome).code).toBe('target_not_found');
+    expect(elementOf(tab, 'n1 0')).toMatchObject({ label: 'Ten' });
   });
 });

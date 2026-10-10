@@ -56,6 +56,8 @@ function refuseLine(action: Extract<SyncAction, { kind: 'refuse' }>, lc: LineCon
       return `! ${p}: synced from ${action.detail}, not this link's ${lc.linkHost}`;
     case 'duplicate':
       return `! ${p}: names the same document as ${lc.pathOf(action.detail!)}`;
+    case 'occupied':
+      return `! ${p}: not moved, ${lc.pathOf(action.detail!)} is already there and livediagram did not write it; kept. Move or rename that file, then livediagram sync --relocate`;
   }
 }
 

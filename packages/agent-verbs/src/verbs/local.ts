@@ -247,6 +247,10 @@ export const pull = defineVerb({
     doc: z.string().describe('A name, id prefix or livediagram URL'),
     to: z.string().optional().describe('The directory to write to; the current one by default'),
     svg: z.boolean().optional().describe('Also write each tab as an SVG drawing'),
+    force: z
+      .boolean()
+      .optional()
+      .describe('Overwrite the file even when it holds changes not yet pushed'),
   }),
   output: z.object({ paths: z.array(z.string()) }),
   text: ({ paths }) => paths,

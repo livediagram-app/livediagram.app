@@ -22,7 +22,9 @@ export type RefuseReason =
   | 'conflicted'
   | 'invalid'
   | 'foreign-host'
-  | 'duplicate';
+  | 'duplicate'
+  // `--relocate` found a file it did not write at the target (E16a).
+  | 'occupied';
 
 // A tab as a write line names it: its revision before (null: new) and now.
 export type TabMove = { id: string; name: string; from: number | null; to: number };
@@ -54,7 +56,7 @@ export type SyncAction =
       documentId: string | null;
       path: string;
       reason: RefuseReason;
-      // The parse failure, the other host, or the other file.
+      // The parse failure, the other host, or the other file (at `occupied`, the file at the target).
       detail: string | null;
     }
   // An unreadable document with no file has no path.
@@ -214,8 +216,11 @@ export function planSync(input: PlanInput): Plan {
       taken.delete(file.path);
       const expected = mirrorPathFor({ id: documentId, name }, folderPath, taken);
       taken.add(file.path);
-      if (expected !== file.path)
+      if (expected !== file.path) {
+        // Reserved, so a second document renamed to the same name steps aside (E16b) instead of moving onto it.
+        taken.add(expected);
         documentActions.push({ kind: 'relocate', ...doc, path: file.path, to: expected });
+      }
     }
     if (state === 'in-step') {
       documentActions.push({ kind: 'none', ...doc, path });

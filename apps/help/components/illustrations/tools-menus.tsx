@@ -100,7 +100,7 @@ function SectionButton({ y, label }: { y: number; label: string }) {
 // --- Scenes ------------------------------------------------------------------
 
 /** Tools → Checklist: a done toggle, the row text and a remove per row, then
- *  Add row. */
+ *  Add Row. */
 export function ChecklistMenu() {
   const rows: [boolean, string][] = [
     [true, 'Book the room'],
@@ -121,7 +121,7 @@ export function ChecklistMenu() {
           </g>
         );
       })}
-      <SectionButton y={156} label="+ Add row" />
+      <SectionButton y={156} label="+ Add Row" />
     </ToolsFlyout>
   );
 }
@@ -183,7 +183,7 @@ export function ProgressMenu() {
 }
 
 /** Tools → Data for a pie or bar chart: a swatch, a label and a value per
- *  slice, then + Add slice. */
+ *  slice, then + Add Slice. */
 export function ChartDataMenu() {
   const rows: [string, string, number][] = [
     ['fill-brand-500', 'Design', 40],
@@ -205,7 +205,7 @@ export function ChartDataMenu() {
           </g>
         );
       })}
-      <SectionButton y={156} label="+ Add slice" />
+      <SectionButton y={156} label="+ Add Slice" />
     </ToolsFlyout>
   );
 }
@@ -235,9 +235,9 @@ function PortalRing({
 }
 
 /** Two linked portals on the canvas, and the Portal section of the menu:
- *  Name, the Leads to grid (with a portal on another tab), and Create portal. */
+ *  Name, the Leads to grid (with a portal on another tab), and Create Portal. */
 export function PortalMenu() {
-  const tiles = ['Portal 2', 'Portal 3 · Detail', 'Create portal'];
+  const tiles = ['Portal 2', 'Portal 3 · Detail', 'Create Portal'];
   return (
     <Scene w={420} h={236}>
       <PortalRing cx={56} cy={84} hue="brand" />
@@ -278,7 +278,7 @@ export function PortalMenu() {
                 weight={on ? 700 : 500}
                 tone={on ? 'accent' : 'body'}
               >
-                {t === 'Create portal' ? `+ ${t}` : t}
+                {t === 'Create Portal' ? `+ ${t}` : t}
               </Label>
             </g>
           );

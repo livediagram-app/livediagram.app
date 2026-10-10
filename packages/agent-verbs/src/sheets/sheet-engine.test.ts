@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiClient } from '@livediagram/api-client';
 import { PLACED_BOARD_GAP } from '@livediagram/items';
+import { DOCUMENT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@livediagram/sheets';
 import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { seeded, sheetJson, sheetServer, type SheetServer } from '../testing/sheets';
 import { addSheet } from './add-sheet';
@@ -38,7 +39,7 @@ const notes = () =>
 
 function setup(
   sheets = [costs(), notes()],
-  opts: { refuse?: string; status?: number } = {},
+  opts: { refuse?: string; status?: number; refuseAfter?: number } = {},
 ): { api: ApiClient; server: SheetServer; sent: unknown[] } {
   const server = sheetServer(DOC_A, sheets, opts);
   const sent: unknown[] = [];
@@ -303,6 +304,25 @@ describe('changing a sheet', () => {
     expect(r.frozen).toEqual({ rows: 1, cols: 0 });
   });
 
+  it('says which rows and columns a delete took, not the span asked for', async () => {
+    const { api } = setup();
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      {
+        sheet: 'Costs',
+        changes: [
+          { op: 'delete_rows', rows: '4' },
+          // The sheet has 100 rows: a span past them deletes as far as they go.
+          { op: 'delete_rows', rows: '50:500' },
+          { op: 'delete_cols', cols: 'C:D' },
+        ],
+      },
+      'mcp',
+    );
+    expect(result.applied).toEqual(['deleted row 4', 'deleted rows 50:99', 'deleted columns C:D']);
+  });
+
   it('sorts, clears and deletes', async () => {
     const { api } = setup();
     const result = await changeSheet(
@@ -404,7 +424,8 @@ describe('changing a sheet', () => {
       },
       'mcp',
     );
-    expect(last.applied).toEqual(['deleted columns A:Z']);
+    // Asked for A:Z of 26 columns: one always stays, so the line names the 25 deleted.
+    expect(last.applied).toEqual(['deleted columns A:Y; column Z stays, as a sheet keeps one']);
     expect(last.refusal).toEqual({
       code: 'range_invalid',
       message: 'A sheet keeps at least one row and one column.',
@@ -630,5 +651,116 @@ describe('adding a sheet', () => {
       }),
     );
     expect(await addSheet(api, DOC_A, {}, 'mcp')).toMatchObject({ ok: false, code: 'sheets_full' });
+  });
+
+  it('fills a sheet on the tab asked for, counting the document’s cells first', async () => {
+    const { api, server } = setup();
+    const result = await addSheet(api, DOC_A, { tabId: TWO, rows: [['a', 1]] }, 'cli', seeded(7));
+    expect(result).toMatchObject({ ok: true, tabId: TWO, title: 'Sheet 1', filled: 'A1:B1' });
+    expect(server.writes).toHaveLength(1);
+  });
+});
+
+// A change goes to the api in parts of at most 5,000 cells, each checked on its own there; checked whole here first,
+// so a later part's refusal cannot leave half a change stored and reported as nothing
+// (docs/specs/029-sheets/sheet-store.md "Agents").
+describe('changes larger than one write', () => {
+  const grid = (rows: number, cols: number) =>
+    Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => r * cols + c));
+  // A sheet on the other tab holding most of the document's cell budget.
+  const crowded = (cells: number) => ({
+    ...notes(),
+    cells: Array.from({ length: cells }, (_, i) => ({ r: `r${i}`, c: 'c0' })),
+  });
+
+  it('refuses a change that would pass the document’s cells, before writing any part', async () => {
+    const { api, server } = setup([costs(), crowded(DOCUMENT_CELLS_MAX - 10)]);
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Costs', changes: [{ op: 'set', at: 'A10', rows: grid(1, 20) }] },
+      'mcp',
+    );
+    expect(result.refusal).toEqual({
+      code: 'sheets_full',
+      message: expect.stringContaining('none of it was written'),
+    });
+    expect(server.writes).toEqual([]);
+  });
+
+  it('says how much of a change landed when a later part is still refused', async () => {
+    const { api, server } = setup(undefined, { refuse: 'sheet_busy', refuseAfter: 1 });
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      {
+        sheet: 'Costs',
+        changes: [{ op: 'set', at: 'A10', rows: grid(300, 20) }],
+      },
+      'mcp',
+    );
+    expect(server.writes).toHaveLength(2);
+    expect(result.applied).toEqual([
+      `partly set A10:T309: ${SHEET_WRITE_CELLS_MAX} of its 6000 cells landed before the refusal`,
+    ]);
+    expect(result.refusal?.code).toBe('sheet_busy');
+    expect(result.rev).toBe(2);
+  });
+
+  it('add_sheet refuses first cells past the document’s cells without making a sheet', async () => {
+    const { api, server } = setup([costs(), crowded(DOCUMENT_CELLS_MAX - 10)]);
+    expect(await addSheet(api, DOC_A, { tabId: TWO, rows: grid(1, 20) }, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'sheets_full',
+    });
+    expect(server.creates).toEqual([]);
+  });
+
+  it('add_sheet deletes the sheet it made when filling it fails, and places nothing', async () => {
+    const { api, server, sent } = setup(undefined, { refuse: 'sheet_busy', refuseAfter: 1 });
+    const result = await addSheet(api, DOC_A, { rows: grid(300, 20) }, 'mcp', seeded(5));
+    expect(result).toMatchObject({ ok: false, code: 'sheet_busy' });
+    expect(server.creates).toHaveLength(1);
+    expect(server.deletes).toEqual([(server.creates[0] as { id: string }).id]);
+    expect(sent).toEqual([]);
+  });
+
+  it('add_sheet deletes the sheet it made when placing it is refused', async () => {
+    const { api, server } = setup();
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () =>
+      Response.json({ error: 'conflict' }, { status: 409 });
+    await expect(addSheet(api, DOC_A, { rows: [['a']] }, 'mcp')).resolves.toMatchObject({
+      ok: false,
+    });
+    expect(server.deletes).toEqual([(server.creates[0] as { id: string }).id]);
+  });
+
+  it('add_sheet still answers the placing refusal when deleting the sheet it made fails', async () => {
+    const { api, server } = setup();
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () =>
+      Response.json({ error: 'conflict' }, { status: 409 });
+    const offline: ApiClient = {
+      ...api,
+      fetch: (path, init) =>
+        init?.method === 'DELETE'
+          ? Promise.reject(new TypeError('offline'))
+          : api.fetch(path, init),
+    };
+    expect(await addSheet(offline, DOC_A, { rows: [['a']] }, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'conflict',
+    });
+    expect(server.creates).toHaveLength(1);
+    expect(server.deletes).toEqual([]);
+  });
+
+  it('add_sheet keeps the sheet it made when placing it never answered, since its element may have landed', async () => {
+    const { api, server } = setup();
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () => {
+      throw new TypeError('network down');
+    };
+    await expect(addSheet(api, DOC_A, { rows: [['a']] }, 'mcp')).rejects.toThrow('network down');
+    expect(server.creates).toHaveLength(1);
+    expect(server.deletes).toEqual([]);
   });
 });

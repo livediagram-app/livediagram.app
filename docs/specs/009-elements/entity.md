@@ -43,7 +43,7 @@ type round-trips identically to one that had it removed.
 
 The rows live in a **Fields** section in the right-click menu (under the Tools
 flyout, where the other data-shape editors sit), mirroring the checklist's row
-editor: a name input, a type input, a remove button, and Add field. Same shape
+editor: a name input, a type input, a remove button, and Add Field. Same shape
 of problem (a bounded list of short strings edited in a narrow menu), so the
 same shape of control.
 

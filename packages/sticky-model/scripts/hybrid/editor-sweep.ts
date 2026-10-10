@@ -6,7 +6,7 @@ import { score, type ScoredBox } from '../../../sticky-vision/scripts/truth';
 import { mergedFloorOf, realMergedOf, table, type Row } from '../report';
 
 // The hybrid as the EDITOR runs it (group M): headless Chromium drives a built
-// editor through /new → Event storming → Add from photo for each labelled
+// editor through /new → Event storming → Add from Photo for each labelled
 // wall, reads every box the review shows (its style's left / top / width /
 // height, as fractions of the photo), and scores them with the classical
 // sweep's own scorer. The same walls then go through the hybrid in Node, on

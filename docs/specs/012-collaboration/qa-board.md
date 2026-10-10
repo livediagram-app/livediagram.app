@@ -56,7 +56,7 @@ note.
 | Pick the note to discuss    | The facilitator, else any editor         |
 | Mark done / reopen          | The facilitator, else any editor         |
 | Remove a note (moderation)  | The facilitator, else any editor         |
-| Empty the board             | The facilitator, else any editor         |
+| Empty the Board             | The facilitator, else any editor         |
 
 "The facilitator, else any editor" is [Facilitator](facilitator.md)'s rule: while somebody holds the
 baton the controls are theirs; when nobody does, any editor can run the board.
@@ -200,7 +200,12 @@ theme's text colour where it doesn't (a pale yellow stroke on a cream card).
 - **Adding.** A field at the foot with the Anonymous toggle, Enter to post. A
   freshly posted note drops in with a short settle animation. At 200 notes
   (`QA_MAX_NOTES`) the field reads **Board is full** and is off, and a post
-  refused at the cap keeps its draft. The toggle is a switch named
+  refused at the cap keeps its draft. That holds when the board filled up
+  between the viewer's last look and the post, too: the server answers with
+  the board as it stands, the new note left out, so the optimistic note goes,
+  the toast says **The board filled up before your note landed.**, and the
+  draft goes back in the field (unless something new was typed meanwhile),
+  where the full board now holds it with the field off. The toggle is a switch named
   "Anonymous" in both states, its state in `aria-checked`; the visible text
   still says "As Sam" while off.
 - **Done notes** collapse into a folded "Discussed · N" drawer below the live

@@ -2310,6 +2310,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/drive/account-switch',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Confirm a pending switch to another Google account: the mirror state is cleared and the new account takes over. 409 drive_account_switch_expired when none is pending. Clerk session only.',
+    auth: 'clerk',
+    responseSchema: wrap('connection', 'DriveConnection'),
+    statuses: [200, 401, 409, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/account-switch',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Cancel a pending switch to another Google account: its grant is revoked and the connection stays as it was. Clerk session only.',
+    auth: 'clerk',
+    statuses: [204, 401, 503],
+  },
+  {
+    method: 'POST',
     path: '/drive/token',
     segment: 'drive',
     tag: 'Google Drive',

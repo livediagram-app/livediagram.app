@@ -302,13 +302,15 @@ comment, max)` (append unless present or full, `resolved: false`), `threadWithou
 
   | Method | Path                                 | Gate                      | Body                  | Answers                        |
   | ------ | ------------------------------------ | ------------------------- | --------------------- | ------------------------------ |
-  | POST   | `/items/:itemId/comments`            | participate               | `{ text, mentions? }` | `ItemResponse`                 |
+  | POST   | `/items/:itemId/comments`            | participate               | `{ text, mentions? }` | `ItemCommentAddResponse`       |
   | DELETE | `/items/:itemId/comments/:commentId` | participate; own, or edit | none                  | `ItemResponse`                 |
   | POST   | `/items/:itemId/comments/resolve`    | participate               | none                  | `ItemResponse`, 204 if already |
   | POST   | `/items/:itemId/comments/reopen`     | participate               | none                  | `ItemResponse`, 204 if already |
 
   The comment is made by `newComment` (comment-routes.ts: text trimmed, ≤ `COMMENT_TEXT_MAX`, author name,
-  colour and id from the caller, token id for an agent); a post runs `afterCommentPosted` (timeline, owner email);
+  colour and id from the caller, token id for an agent); a post answers `ItemCommentAddResponse` (`ItemResponse`
+  plus the new comment's `commentId`, which a mention's notify request names, comment-mentions.md "The email")
+  and runs `afterCommentPosted` (timeline, owner email);
   a resolve records `recordCommentResolved` keyed `<doc>:item:<itemId>`. Refusals: 400 text, 403 another's
   comment, `404 comment_not_found`, `404 item_not_found`, `413 comments_full`, 409 `item_busy`.
 

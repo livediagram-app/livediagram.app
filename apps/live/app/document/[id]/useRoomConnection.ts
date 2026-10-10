@@ -33,7 +33,7 @@ import {
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { applyRoomOpToTabs } from './room-op-apply';
+import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
@@ -95,6 +95,9 @@ export function useRoomConnection(opts: {
   // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
   // never brings back what the peer changed.
   applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
+  // This browser's own idea posts the room has not answered (useIdeaPosts), so a peer's card that reaches a
+  // full box takes the newest one's place (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
+  pendingIdeaIds?: PendingIdeaIds;
   // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
   // for a tab still waiting on its first fetch is left to that fetch.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
@@ -204,6 +207,7 @@ export function useRoomConnection(opts: {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
+    pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -432,7 +436,7 @@ export function useRoomConnection(opts: {
         applyRemoteOp((prev) =>
           op.kind === 'document-meta'
             ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op),
+            : applyRoomOpToTabs(prev, op, pendingIdeaIds),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         const switched = peerModeSwitchOf(op);
