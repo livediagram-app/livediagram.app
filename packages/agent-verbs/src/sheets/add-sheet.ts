@@ -1,8 +1,10 @@
 // Putting a new Sheet on a tab for an agent (docs/specs/029-sheets/sheet-store.md "Agents", MCP add_sheet and
 // `sheet add`): the sheet is made in the store first (a title unique on the tab, optionally filled from rows or CSV
 // text read as typed from A1), then a Sheet element framing it is placed beside what the tab holds, as add_board
-// places a board, in one changeset (live to anyone with the tab open).
-import type { ApiClient } from '@livediagram/api-client';
+// places a board, in one changeset (live to anyone with the tab open). The first cells are checked against the
+// store's caps before the sheet is made, and a sheet whose filling or placing then fails is deleted, so a failed
+// call leaves no unplaced sheet holding cells of the document's budget and a retry starts clean.
+import { ApiError, type ApiClient } from '@livediagram/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
@@ -16,6 +18,7 @@ import { createShape } from '@livediagram/document';
 import { placeBeside } from '@livediagram/items';
 import {
   AGENT_LOCALE,
+  documentCellCount,
   emptyLayout,
   emptySheet,
   makeSheetId,
@@ -33,7 +36,7 @@ import {
 } from '@livediagram/sheets';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { tabPath } from '../verbs/shared';
-import { sendSheetWrite } from './change-sheet';
+import { capsRefusal, sendSheetWrite } from './change-sheet';
 import { readSheets, sheetsPath, type SheetRefusal } from './sheet-state';
 
 export interface AddSheetInput {
@@ -120,6 +123,11 @@ export async function addSheet(
     const blank = emptySheet({ id: makeSheetId(rand), tabId, title, layout });
     const first = firstCells(input, onTab.map(sheetFromJson), blank, rand);
     if ('ok' in first) return first;
+    if (first.write) {
+      const cells = documentCellCount(all ?? (await readSheets(api, documentId)));
+      const over = capsRefusal(blank, [first.write], cells);
+      if (over) return { ok: false, ...over };
+    }
 
     // The sheet, blank, then its first cells as the editor fills a dropped CSV: one write a call, split when large.
     const create: SheetCreateRequest = { id: blank.id, tabId, title, layout };
@@ -128,37 +136,72 @@ export async function addSheet(
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(create),
     });
-    let sheet = sheetFromJson(made);
-    for (const part of first.write ? splitWrite(first.write) : [])
-      sheet = await sendSheetWrite(api, documentId, sheet, part, client);
-
-    const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    const { x, y } = placeBeside(tab.elements);
-    const element = { ...createShape('plan-sheet', x, y), planSheet: { sheetId: sheet.id } };
-    const body: ChangesetRequest = {
-      operations: [{ op: 'add', element }],
-      base: { rev: tab.rev, elements: {} },
-      summary: `Add the ${title} sheet`,
-    };
-    const answer = await api.json<ChangesetResponse>(`${tabPath(documentId, tabId)}/changesets`, {
-      method: 'POST',
-      headers: { [CLIENT_HEADER]: client },
-      body: JSON.stringify(body),
-    });
-    return {
-      ok: true,
-      tabId,
-      sheetId: sheet.id,
-      elementId: element.id,
-      title: sheet.title,
-      filled: first.filled,
-      truncated: first.truncated,
-      changesetId: answer.changeset?.id ?? null,
-      rev: answer.changeset?.rev ?? null,
-    };
+    return await fillAndPlace(api, documentId, tabId, sheetFromJson(made), first, client);
   } catch (err) {
     const refusal = apiRefusalOf(err);
     if (!refusal) throw err;
     return { ok: false, ...refusal };
   }
+}
+
+// A sheet made by a call that then failed: nothing frames it, so it is deleted rather than left holding cells.
+async function deleteUnplaced(api: ApiClient, documentId: string, sheetId: string): Promise<void> {
+  try {
+    const res = await api.fetch(`${sheetsPath(documentId)}/${encodeURIComponent(sheetId)}`, {
+      method: 'DELETE',
+    });
+    console.info('[sheets] add_sheet failed; unplaced sheet deleted', { status: res.status });
+  } catch {
+    console.warn('[sheets] add_sheet failed; unplaced sheet not deleted');
+  }
+}
+
+// Fills the made sheet with its first cells, then places its element. A failure deletes the sheet, except a
+// placing request that never answered: its element may have landed, and a frame with no sheet is worse.
+async function fillAndPlace(
+  api: ApiClient,
+  documentId: string,
+  tabId: string,
+  made: Sheet,
+  first: { write: SheetWrite | null; filled: string | null; truncated: boolean },
+  client: 'mcp' | 'cli',
+): Promise<AddSheetResult> {
+  let sheet = made;
+  try {
+    for (const part of first.write ? splitWrite(first.write) : [])
+      sheet = await sendSheetWrite(api, documentId, sheet, part, client);
+  } catch (err) {
+    await deleteUnplaced(api, documentId, made.id);
+    throw err;
+  }
+  const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
+  const { x, y } = placeBeside(tab.elements);
+  const element = { ...createShape('plan-sheet', x, y), planSheet: { sheetId: sheet.id } };
+  const body: ChangesetRequest = {
+    operations: [{ op: 'add', element }],
+    base: { rev: tab.rev, elements: {} },
+    summary: `Add the ${sheet.title} sheet`,
+  };
+  let answer: ChangesetResponse;
+  try {
+    answer = await api.json<ChangesetResponse>(`${tabPath(documentId, tabId)}/changesets`, {
+      method: 'POST',
+      headers: { [CLIENT_HEADER]: client },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    if (err instanceof ApiError) await deleteUnplaced(api, documentId, made.id);
+    throw err;
+  }
+  return {
+    ok: true,
+    tabId,
+    sheetId: sheet.id,
+    elementId: element.id,
+    title: sheet.title,
+    filled: first.filled,
+    truncated: first.truncated,
+    changesetId: answer.changeset?.id ?? null,
+    rev: answer.changeset?.rev ?? null,
+  };
 }

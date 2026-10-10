@@ -179,6 +179,11 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   JSON number or boolean; a formula an agent writes that cannot be read is refused (`formula_invalid`, naming the
   cell and why), never stored as `#ERROR!`.
 - Values an agent reads are worked out by the same engine the editor uses.
+- An agent's change goes to the api in parts of at most 5,000 cells, so it is checked whole against the sheet's and
+  the document's caps first: one that would pass them is refused with nothing written. If a later part is still
+  refused (the sheet busy, a person filling it meanwhile), the answer says how many cells of that change landed.
+  `add_sheet` checks its first cells the same way before making the sheet, and deletes the sheet it made when
+  filling or placing it fails, so a failed call leaves no unplaced sheet spending the document's cells.
 
 ## Limits
 

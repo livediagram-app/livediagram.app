@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiClient } from '@livediagram/api-client';
 import { PLACED_BOARD_GAP } from '@livediagram/items';
+import { DOCUMENT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@livediagram/sheets';
 import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { seeded, sheetJson, sheetServer, type SheetServer } from '../testing/sheets';
 import { addSheet } from './add-sheet';
@@ -38,7 +39,7 @@ const notes = () =>
 
 function setup(
   sheets = [costs(), notes()],
-  opts: { refuse?: string; status?: number } = {},
+  opts: { refuse?: string; status?: number; refuseAfter?: number } = {},
 ): { api: ApiClient; server: SheetServer; sent: unknown[] } {
   const server = sheetServer(DOC_A, sheets, opts);
   const sent: unknown[] = [];
@@ -630,5 +631,80 @@ describe('adding a sheet', () => {
       }),
     );
     expect(await addSheet(api, DOC_A, {}, 'mcp')).toMatchObject({ ok: false, code: 'sheets_full' });
+  });
+});
+
+// A change goes to the api in parts of at most 5,000 cells, each checked on its own there; checked whole here first,
+// so a later part's refusal cannot leave half a change stored and reported as nothing
+// (docs/specs/029-sheets/sheet-store.md "Agents").
+describe('changes larger than one write', () => {
+  const grid = (rows: number, cols: number) =>
+    Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => r * cols + c));
+  // A sheet on the other tab holding most of the document's cell budget.
+  const crowded = (cells: number) => ({
+    ...notes(),
+    cells: Array.from({ length: cells }, (_, i) => ({ r: `r${i}`, c: 'c0' })),
+  });
+
+  it('refuses a change that would pass the document’s cells, before writing any part', async () => {
+    const { api, server } = setup([costs(), crowded(DOCUMENT_CELLS_MAX - 10)]);
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Costs', changes: [{ op: 'set', at: 'A10', rows: grid(1, 20) }] },
+      'mcp',
+    );
+    expect(result.refusal).toEqual({
+      code: 'sheets_full',
+      message: expect.stringContaining('none of it was written'),
+    });
+    expect(server.writes).toEqual([]);
+  });
+
+  it('says how much of a change landed when a later part is still refused', async () => {
+    const { api, server } = setup(undefined, { refuse: 'sheet_busy', refuseAfter: 1 });
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      {
+        sheet: 'Costs',
+        changes: [{ op: 'set', at: 'A10', rows: grid(300, 20) }],
+      },
+      'mcp',
+    );
+    expect(server.writes).toHaveLength(2);
+    expect(result.applied).toEqual([
+      `partly set A10:T309: ${SHEET_WRITE_CELLS_MAX} of its 6000 cells landed before the refusal`,
+    ]);
+    expect(result.refusal?.code).toBe('sheet_busy');
+    expect(result.rev).toBe(2);
+  });
+
+  it('add_sheet refuses first cells past the document’s cells without making a sheet', async () => {
+    const { api, server } = setup([costs(), crowded(DOCUMENT_CELLS_MAX - 10)]);
+    expect(await addSheet(api, DOC_A, { tabId: TWO, rows: grid(1, 20) }, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'sheets_full',
+    });
+    expect(server.creates).toEqual([]);
+  });
+
+  it('add_sheet deletes the sheet it made when filling it fails, and places nothing', async () => {
+    const { api, server, sent } = setup(undefined, { refuse: 'sheet_busy', refuseAfter: 1 });
+    const result = await addSheet(api, DOC_A, { rows: grid(300, 20) }, 'mcp', seeded(5));
+    expect(result).toMatchObject({ ok: false, code: 'sheet_busy' });
+    expect(server.creates).toHaveLength(1);
+    expect(server.deletes).toEqual([(server.creates[0] as { id: string }).id]);
+    expect(sent).toEqual([]);
+  });
+
+  it('add_sheet deletes the sheet it made when placing it is refused', async () => {
+    const { api, server } = setup();
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () =>
+      Response.json({ error: 'conflict' }, { status: 409 });
+    await expect(addSheet(api, DOC_A, { rows: [['a']] }, 'mcp')).resolves.toMatchObject({
+      ok: false,
+    });
+    expect(server.deletes).toEqual([(server.creates[0] as { id: string }).id]);
   });
 });

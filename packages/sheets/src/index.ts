@@ -27,6 +27,7 @@ export * from './store';
 export * from './store-layout';
 export * from './range-names';
 export * from './validate';
+export * from './write-caps';
 export * from './a1-io';
 export * from './chart-data';
 export * from './sheet-starters';
