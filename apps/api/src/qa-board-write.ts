@@ -17,6 +17,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { getTabData, swapTabData } from './db';
+import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';
 import type { Env } from './types';
 
@@ -54,16 +55,24 @@ export async function writeQaAction(env: Env, req: QaWriteRequest): Promise<QaWr
     // what is there and write nothing.
     if (nextNotes === notes) return { ok: true, changed: false, notes, rev };
     const nextRev = rev + 1;
-    const nextData = JSON.stringify({
+    const nextBody = {
       ...data,
       elements: data.elements.map((el) =>
         el === board ? { ...board, qaNotes: nextNotes, qaRev: nextRev } : el,
       ),
-    });
+    };
+    const nextData = JSON.stringify(nextBody);
     // Bytes, as D1 counts them, not UTF-16 units (docs/specs/015-api/api.md "Tab size").
     let swapped: boolean;
     try {
-      swapped = await swapTabData(env, documentId, tabId, raw, nextData, data.elements.length);
+      swapped = await swapTabData(
+        env,
+        documentId,
+        tabId,
+        raw,
+        nextData,
+        tabStatsOf(nextBody, nextData),
+      );
     } catch (error) {
       if (error instanceof TabTooLargeError) return { ok: false, status: 413 };
       throw error;

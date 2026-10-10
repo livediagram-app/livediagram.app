@@ -1,7 +1,7 @@
 // Where a listed document belongs to the reader (docs/specs/013-workspace/explorer-structure.md#local-only-documents).
 
 import { describe, expect, it } from 'vitest';
-import { documentSpace, isLocalOnly } from './document-space';
+import { documentSpace, isLocalOnly, readerAccessOf } from './document-space';
 
 describe('isLocalOnly', () => {
   it('recognises a document saved only in this browser', () => {
@@ -30,5 +30,14 @@ describe('documentSpace', () => {
     expect(
       documentSpace({ ownerId: '', shared: { ownerName: null, role: 'view', shareCode: 's' } }),
     ).toBe('shared');
+  });
+});
+
+describe('readerAccessOf', () => {
+  it('is Editor for the reader own, team and local documents, and the link role when shared', () => {
+    expect(readerAccessOf({})).toBe('edit');
+    expect(readerAccessOf({ shared: null })).toBe('edit');
+    expect(readerAccessOf({ shared: { role: 'participate' } })).toBe('participate');
+    expect(readerAccessOf({ shared: { role: 'view' } })).toBe('view');
   });
 });

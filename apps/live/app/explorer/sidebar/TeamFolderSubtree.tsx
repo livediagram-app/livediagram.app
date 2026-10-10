@@ -2,6 +2,7 @@
 
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { SidebarRow } from './SidebarRow';
+import { useExplorerDropTarget } from '../useExplorerDropTarget';
 import { trackSidebar } from './sidebar-telemetry';
 import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
 import { FolderLabel } from './SidebarFolderSubtree';
@@ -13,6 +14,7 @@ import { FolderLabel } from './SidebarFolderSubtree';
 export type TeamFolderNode = { id: string; name: string; parentId: string | null };
 
 export function TeamFolderSubtree({
+  teamId,
   folder,
   depth,
   childrenByParent,
@@ -20,6 +22,7 @@ export function TeamFolderSubtree({
   onToggleExpand,
   onOpenFolder,
 }: {
+  teamId: string;
   folder: TeamFolderNode;
   depth: number;
   childrenByParent: Map<string | null, TeamFolderNode[]>;
@@ -30,6 +33,11 @@ export function TeamFolderSubtree({
   const kids = childrenByParent.get(folder.id) ?? [];
   const isOpen = expanded.has(folder.id);
   const markerWords = useDefaultFolderDescription(folder.id);
+  // A dropped document moves into this team folder; resting on the row opens or closes it.
+  const drop = useExplorerDropTarget(
+    { teamId, folderId: folder.id },
+    { onLongHover: kids.length > 0 ? () => onToggleExpand(folder.id) : undefined },
+  );
   return (
     <SidebarRow
       icon={<FolderSolidIcon open={isOpen} />}
@@ -45,10 +53,13 @@ export function TeamFolderSubtree({
       expandable={kids.length > 0}
       expanded={isOpen}
       onToggleExpand={() => onToggleExpand(folder.id)}
+      rowProps={drop.handlers}
+      highlighted={drop.isDragOver}
     >
       {kids.map((k) => (
         <TeamFolderSubtree
           key={k.id}
+          teamId={teamId}
           folder={k}
           depth={depth + 1}
           childrenByParent={childrenByParent}

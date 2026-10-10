@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { claimHint, isTooltipWarm, releaseHint, resetHintRegistry } from './hint-registry';
-import { TOOLTIP_WARMUP_MS } from './hint-constants';
+import { claimHint, isHintWarm, releaseHint, resetHintRegistry } from './hint-registry';
+import { PREVIEW_WARMUP_MS, TOOLTIP_WARMUP_MS } from './hint-constants';
 
 afterEach(() => resetHintRegistry());
 
@@ -25,12 +25,12 @@ describe('hint registry', () => {
   });
 
   it('is cold until a tooltip has opened', () => {
-    expect(isTooltipWarm(0)).toBe(false);
+    expect(isHintWarm('tooltip', 0)).toBe(false);
   });
 
   it('is warm while a tooltip is open', () => {
     claimHint({}, () => {}, 'tooltip');
-    expect(isTooltipWarm(10_000)).toBe(true);
+    expect(isHintWarm('tooltip', 10_000)).toBe(true);
   });
 
   it('stays warm for the warm-up window after a tooltip closes, then cools', () => {
@@ -38,17 +38,33 @@ describe('hint registry', () => {
     const closeToken = {};
     claimHint(closeToken, close, 'tooltip');
     releaseHint(closeToken, 'tooltip', 1_000);
-    expect(isTooltipWarm(1_000 + TOOLTIP_WARMUP_MS - 1)).toBe(true);
-    expect(isTooltipWarm(1_000 + TOOLTIP_WARMUP_MS)).toBe(false);
+    expect(isHintWarm('tooltip', 1_000 + TOOLTIP_WARMUP_MS - 1)).toBe(true);
+    expect(isHintWarm('tooltip', 1_000 + TOOLTIP_WARMUP_MS)).toBe(false);
   });
 
   it('is not warmed by a hover card', () => {
     const close = () => {};
     const closeToken = {};
     claimHint(closeToken, close, 'hover-card');
-    expect(isTooltipWarm(0)).toBe(false);
+    expect(isHintWarm('tooltip', 0)).toBe(false);
     releaseHint(closeToken, 'hover-card', 0);
-    expect(isTooltipWarm(1)).toBe(false);
+    expect(isHintWarm('tooltip', 1)).toBe(false);
+  });
+
+  it('warms previews by previews, apart from tooltips', () => {
+    const token = {};
+    claimHint(token, () => {}, 'preview');
+    expect(isHintWarm('preview', 0)).toBe(true);
+    expect(isHintWarm('tooltip', 0)).toBe(false);
+    releaseHint(token, 'preview', 1_000);
+    expect(isHintWarm('preview', 1_000 + PREVIEW_WARMUP_MS - 1)).toBe(true);
+    expect(isHintWarm('preview', 1_000 + PREVIEW_WARMUP_MS)).toBe(false);
+    expect(isHintWarm('tooltip', 1_001)).toBe(false);
+  });
+
+  it('never warms a hover card, which has no delay', () => {
+    claimHint({}, () => {}, 'hover-card');
+    expect(isHintWarm('hover-card', 0)).toBe(false);
   });
 
   it('ignores a release from a hint that no longer holds the slot', () => {
@@ -59,6 +75,6 @@ describe('hint registry', () => {
     claimHint(firstToken, first, 'tooltip');
     claimHint(secondToken, second, 'tooltip');
     releaseHint(firstToken, 'tooltip', 0);
-    expect(isTooltipWarm(10_000)).toBe(true); // second is still open
+    expect(isHintWarm('tooltip', 10_000)).toBe(true); // second is still open
   });
 });

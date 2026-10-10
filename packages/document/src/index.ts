@@ -382,6 +382,7 @@ export {
 } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
+export * from './tab-stats';
 export * from './illustrate-page';
 export * from './illustrate-page-fit';
 export * from './page-lock';

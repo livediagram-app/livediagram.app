@@ -63,6 +63,9 @@ reached from Home's What happened (**See timeline**). The retired `/explorer/act
   Change folder, Use as default for, Delete). A team folder row opens the team page at that folder and carries no menu.
 - **My documents** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
   default for** ([Default folders](default-folders.md#use-as-default-for)).
+- **The `⋯` shows on hover.** A folder row's and My documents' `⋯` stays hidden until the row is hovered or has
+  keyboard focus, and stays while its menu is open. On a touch screen (a coarse pointer), where nothing hovers, it
+  always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
   ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
@@ -196,7 +199,9 @@ What differs is what a row does in an editor, where leaving the document is a bi
 - **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
   smallest; expansion lasts as long as the editor is open.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto My documents to file
-  it at the root. A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
+  it at the root; a drag resting on a row with a chevron opens or closes it
+  ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)). On the Explorer page every folder, My
+  documents and each team take a dropped document ([Folders: standalone page](folders.md#standalone-explorer-page)). A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
   the session may use; My documents carries its Use as default for menu.
 - Group titles and separators follow Minimal chrome exactly as in the sidebar.
 - The tree scrolls inside the panel when it is taller than the space it has.

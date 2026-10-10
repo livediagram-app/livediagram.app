@@ -20,10 +20,25 @@ describe('EllipsisTriggerButton', () => {
     expect(screen.getByRole('button').className).toContain('h-5 w-5');
   });
 
-  it('hides until hover in reveal mode, but stays pinned while its menu is open', () => {
-    const { rerender } = render(<EllipsisTriggerButton label="m" onClick={noop} reveal />);
-    expect(screen.getByRole('button').className).toContain('sm:opacity-0');
-    rerender(<EllipsisTriggerButton label="m" onClick={noop} reveal expanded />);
-    expect(screen.getByRole('button').className).not.toContain('sm:opacity-0');
+  it('hides until hover in reveal mode only where the pointer can hover', () => {
+    render(<EllipsisTriggerButton label="m" onClick={noop} reveal />);
+    const classes = screen.getByRole('button').className.split(' ');
+    expect(classes).toContain('pointer-fine:opacity-0');
+    expect(classes).toContain('pointer-fine:group-hover:opacity-100');
+    // A touch screen has no hover, so nothing hides it there.
+    expect(classes).not.toContain('opacity-0');
+    expect(classes.some((c) => c.startsWith('sm:'))).toBe(false);
+  });
+
+  it('shows in reveal mode while its tree row has keyboard focus', () => {
+    render(<EllipsisTriggerButton label="m" onClick={noop} reveal />);
+    const classes = screen.getByRole('button').className.split(' ');
+    expect(classes).toContain('pointer-fine:focus-visible:opacity-100');
+    expect(classes).toContain('pointer-fine:[li:focus-visible>div>&]:opacity-100');
+  });
+
+  it('stays pinned in reveal mode while its menu is open', () => {
+    render(<EllipsisTriggerButton label="m" onClick={noop} reveal expanded />);
+    expect(screen.getByRole('button').className).not.toContain('opacity-0');
   });
 });

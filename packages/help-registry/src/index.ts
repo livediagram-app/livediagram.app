@@ -1615,9 +1615,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'list-and-card-views',
-    title: 'List and Card Views',
-    description: 'Toggle browse views between compact rows and preview cards with live snapshots.',
-    keywords: 'card grid view toggle thumbnail preview snapshot layout rows tiles gallery',
+    title: 'List, Card and Details Views',
+    description:
+      'Toggle browse views between compact rows, preview cards and a sortable details table.',
+    keywords:
+      'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

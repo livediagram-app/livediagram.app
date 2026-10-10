@@ -11,9 +11,10 @@ in code, copy and specs.
 | -------------- | ---------------------------------------- | --------------------------------------------------------- | ----------- |
 | **Tooltip**    | The control's name, and nothing else     | After a **500 ms** hover; **instantly** on keyboard focus | No          |
 | **Hover card** | A bold title over a one-line description | **Instantly** on hover and on keyboard focus              | No          |
+| **Preview**    | A picture of what the control opens      | After a **600 ms** hover; **instantly** on keyboard focus | No          |
 | **Popover**    | Controls: menus, pickers, forms          | On click or tap                                           | Yes         |
 
-Tooltips and hover cards are the two kinds of **hint**: content that appears because a control was
+Tooltips, hover cards and previews are the three kinds of **hint**: content that appears because a control was
 hovered or focused, and that goes away when it no longer is. A popover is not a hint. It opens because
 someone asked for it, it takes clicks, and it stays until it is closed.
 
@@ -75,7 +76,20 @@ pad, so it opened every time the pointer crossed it). Anything worth saying
 about a removed one lives in the element's help article and its accessible
 name.
 
-## Behaviour shared by both hints
+## Preview
+
+- **A picture of what the control opens**, for a row whose own text does not show it: a document's
+  snapshot in the Explorer's [Details view](../013-workspace/explorer-details-view.md). The picture and
+  a caption naming it, nothing to press.
+- **Opens after a 600 ms hover**, longer than a tooltip: a pointer moving down a table passes many
+  rows, and a picture is a bigger thing to put in its way. **Instantly** on keyboard-visible focus.
+- **Warm-up.** Once a preview has opened, the next opens at once while the pointer moves along the
+  rows, for as long as it arrives within **500 ms** of the last preview closing. Tooltips and previews
+  keep their own warm-ups.
+- **The hover card's surface**, wider (20 rem) with a small inset, so the picture sits in a frame.
+- Touch: a row with visible text takes no long-press hint, so a preview never shows on touch.
+
+## Behaviour shared by all hints
 
 These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
 
@@ -93,9 +107,9 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
 - **Placement.** Above the control by preference; below, right or left when there is no room, kept
   inside the viewport. The pointer tracks the control's centre when the hint slides to stay on screen.
 - **Motion.** A hint fades in as a small fade (see [Motion](./motion.md)), and not at all under reduced
-  motion. The 500 ms wait before a tooltip is an intent timer, not motion, and does not count against the
+  motion. The wait before a tooltip or a preview is an intent timer, not motion, and does not count against the
   motion budget.
-- **Dark-aware.** Both follow the app's appearance, not the operating system's native tooltip style.
+- **Dark-aware.** Every hint follows the app's appearance, not the operating system's native tooltip style.
 - **Dark mode uses the dark chrome's colours.** In dark mode a hint is never a lighter card on the
   dark chrome: it takes the colours of the editor's dark menus and cards under the
   [Steel palette](./color-scheme.md). A tooltip is the dark surface (slate 900) and a hover card the dark

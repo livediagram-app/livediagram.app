@@ -30,6 +30,7 @@ import {
   rememberOfflineId,
   resetOfflineIds,
 } from './offline-ids';
+import { offlineDocumentStats } from './offline-stats';
 
 // Sentinel owner id stamped on offline documents. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -148,6 +149,7 @@ export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
     empty: (rec.tabs[0]?.elements.length ?? 0) === 0,
+    stats: offlineDocumentStats(rec),
   };
 }
 

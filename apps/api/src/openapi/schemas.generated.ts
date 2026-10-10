@@ -4545,6 +4545,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "DocumentStats": {
+    "additionalProperties": false,
+    "properties": {
+      "bytes": {
+        "type": "number"
+      },
+      "comments": {
+        "type": "number"
+      },
+      "elements": {
+        "type": "number"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/EditorMode"
+      }
+    },
+    "required": [
+      "mode",
+      "elements",
+      "comments",
+      "bytes"
+    ],
+    "type": "object"
+  },
   "DocumentSummary": {
     "additionalProperties": false,
     "properties": {
@@ -4604,6 +4628,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "stats": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DocumentStats"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "tabKind": {
         "anyOf": [
           {
@@ -4644,6 +4678,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shareCode",
       "shareable",
       "source",
+      "stats",
       "tabKind",
       "teamId",
       "templateFamily"

@@ -7,7 +7,11 @@
 // menu come from document-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
-import type { CardViewProps, DocumentEntryProps } from '@/app/explorer/explorer-view-props';
+import {
+  documentEntryPropsFor,
+  type CardViewProps,
+  type DocumentEntryProps,
+} from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
@@ -15,7 +19,12 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { isLocalOnly } from '@/lib/document-space';
-import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
+import {
+  DocumentEntryMenu,
+  documentDragProps,
+  hrefForDocument,
+  ownerLabelFor,
+} from './document-row-shared';
 import {
   FavouriteMarker,
   FolderChip,
@@ -40,25 +49,10 @@ export function CardView(props: CardViewProps) {
     onCommitRenameFolder,
     onCancelRenameFolder,
     renamingFolderId,
-    renamingDocumentId,
-    onCommitRenameDocument,
-    onCancelRenameDocument,
     folderActions,
-    onStartRenameDocument,
-    onDuplicateDocument,
-    onDeleteDocument,
-    onMoveDocument,
-    onDismissShared,
-    recentExcludedIds,
-    favouriteIds,
-    onToggleFavourite,
-    folderChipFor,
-    onToggleRecentExclusion,
-    onShowHistory,
     childrenCount,
     documentsCount,
     folderContents,
-    showOwner = false,
     showVisibilityBadge = true,
   } = props;
   return (
@@ -83,26 +77,8 @@ export function CardView(props: CardViewProps) {
       {liveDocs.map((d) => (
         <DocumentCard
           key={d.id}
-          document={d}
-          ownerId={ownerId}
-          showOwner={showOwner}
+          {...documentEntryPropsFor(props, d)}
           showVisibilityBadge={showVisibilityBadge}
-          renaming={renamingDocumentId === d.id}
-          onStartRename={() => onStartRenameDocument(d.id)}
-          onCommitRename={(name) => onCommitRenameDocument(d.id, name)}
-          onCancelRename={onCancelRenameDocument}
-          onDuplicate={() => onDuplicateDocument(d.id)}
-          onDelete={() => onDeleteDocument(d.id)}
-          onMove={(anchor) => onMoveDocument(d.id, anchor)}
-          onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
-          folderChip={folderChipFor?.(d) ?? null}
-          favourite={favouriteIds?.has(d.id) === true}
-          onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
-          recentExcluded={recentExcludedIds?.includes(d.id) === true}
-          onShowHistory={onShowHistory ? () => onShowHistory(d.id) : undefined}
-          onToggleRecentExclusion={
-            onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
-          }
         />
       ))}
     </div>
@@ -143,7 +119,11 @@ function DocumentCard(
   );
 
   return (
-    <div className={cardShell} onContextMenu={menu.onContextMenu}>
+    <div
+      className={cardShell}
+      onContextMenu={menu.onContextMenu}
+      {...documentDragProps(liveDoc, renaming)}
+    >
       {/* Larger snapshot. The whole preview links to the document unless
           we're renaming (then it's inert so the input keeps focus). */}
       {renaming ? (

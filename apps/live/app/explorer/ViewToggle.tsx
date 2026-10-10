@@ -4,9 +4,16 @@ import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
-// The List / Card segmented toggle in the Explorer header (docs/specs/006-document/document-snapshots.md).
+// The List / Card / Details segmented toggle in the Explorer header
+// (docs/specs/006-document/document-snapshots.md, docs/specs/013-workspace/explorer-details-view.md).
 // Lets you switch how the browse views render the same folders +
-// documents: dense rows, or cards with a large SVG snapshot.
+// documents: dense rows, cards with a large SVG snapshot, or a sortable table.
+const TOGGLE_TELEMETRY = {
+  list: 'ExplorerViewList',
+  card: 'ExplorerViewCard',
+  details: 'ExplorerViewDetails',
+} as const satisfies Record<ExplorerViewMode, string>;
+
 export function ViewToggle({
   mode,
   onChange,
@@ -18,7 +25,7 @@ export function ViewToggle({
   // side changes nothing, so it isn't a signal worth counting.
   const choose = (next: ExplorerViewMode) => {
     if (next !== mode) {
-      track('UI', 'Toggled', next === 'card' ? 'ExplorerViewCard' : 'ExplorerViewList');
+      track('UI', 'Toggled', TOGGLE_TELEMETRY[next]);
     }
     onChange(next);
   };
@@ -43,6 +50,14 @@ export function ViewToggle({
         description="Cards with a large preview of each document."
       >
         <GridIcon />
+      </ToggleButton>
+      <ToggleButton
+        active={mode === 'details'}
+        onClick={() => choose('details')}
+        label="Details view"
+        description="A sortable table: type, comments, access, size and dates."
+      >
+        <DetailsIcon />
       </ToggleButton>
     </div>
   );
@@ -99,6 +114,16 @@ function GridIcon() {
       <rect x="9" y="2.5" width="4.5" height="4.5" rx="1" />
       <rect x="2.5" y="9" width="4.5" height="4.5" rx="1" />
       <rect x="9" y="9" width="4.5" height="4.5" rx="1" />
+    </Glyph>
+  );
+}
+
+// A table: a header band over rows split into columns.
+function DetailsIcon() {
+  return (
+    <Glyph size={15} units={16} strokeLinecap="butt">
+      <rect x="2" y="2.5" width="12" height="11" rx="1.5" />
+      <path d="M2 6h12M2 9.5h12M6.5 6v7.5" />
     </Glyph>
   );
 }
