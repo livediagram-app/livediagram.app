@@ -11,7 +11,13 @@ import type { FolderActionBundle } from '../explorer-view-props';
 import { FolderActionsMenu } from '../folder-actions-menu';
 import { menuHandlers } from '../folder-row';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
-import { CELL_CLASS, DateCell, SHOWN_FROM_CLASS } from './details-cells';
+import {
+  DateCell,
+  FolderTypeCell,
+  SHOWN_FROM_CLASS,
+  cellClass,
+  useDenseRows,
+} from './details-cells';
 import { formatItems } from './details-format';
 
 // One folder in the Details view (docs/specs/013-workspace/explorer-details-view.md): name, "Folder",
@@ -34,6 +40,8 @@ export function DetailsFolderRow({
   getActions: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
   const menu = useRowMenu({ disabled: renaming });
+  const dense = useDenseRows();
+  const CELL_CLASS = cellClass(dense);
   const drop = useExplorerDropTarget({ teamId: folder.teamId ?? null, folderId: folder.id });
   return (
     <tr
@@ -45,7 +53,8 @@ export function DetailsFolderRow({
     >
       <td className={`${CELL_CLASS} max-w-0`}>
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="shrink-0 text-amber-500">
+          {/* Where the Type column is hidden, the name carries the folder icon. */}
+          <span aria-hidden className="shrink-0 text-amber-500 sm:hidden">
             <FolderSolidIcon />
           </span>
           {renaming ? (
@@ -67,10 +76,8 @@ export function DetailsFolderRow({
           {renaming ? null : <DefaultFolderMarker folderId={folder.id} />}
         </span>
       </td>
-      <td
-        className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.sm} text-xs text-slate-600 dark:text-slate-300`}
-      >
-        Folder
+      <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.sm} text-center`}>
+        <FolderTypeCell />
       </td>
       <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.md}`} />
       <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.md}`} />
@@ -90,6 +97,7 @@ export function DetailsFolderRow({
           <EllipsisTriggerButton
             {...menu.triggerProps}
             reveal
+            size={dense ? 'sm' : 'lg'}
             label={`Menu for folder ${folder.name}`}
           />
         )}
