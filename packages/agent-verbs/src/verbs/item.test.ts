@@ -93,6 +93,13 @@ describe('item ls', () => {
     expect(
       (await itemLs.run!(ctx, { doc: DOC_A, type: 'Bug', status: 'to do' })).items,
     ).toHaveLength(0);
+    // Named as item add and set name a column: in-progress style spelling reads the same column.
+    expect(
+      (await itemLs.run!(ctx, { doc: DOC_A, type: undefined, status: 'TO-DO' })).items,
+    ).toHaveLength(1);
+    await expect(
+      itemLs.run!(ctx, { doc: DOC_A, type: undefined, status: 'Review' }),
+    ).rejects.toMatchObject({ code: 'status_unknown' });
   });
 });
 

@@ -34,7 +34,8 @@ never told a change worked when it shows on no board.
   types lists only theirs), then the items, each with its column's name beside its status (`Trash` for a trashed
   card, none for a status no board names), then the card types. Live cards no board column shows are listed under
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
-  by card type or column takes a name too.
+  by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
+  Trash), and a name the document does not have is refused with the names it has, never answered with no items.
 - A document with no board says so, and how to get one: a Plan template (`kanban`, `project-planner`,
   `bug-triage`, ...) on `create_document` or `add_tab`.
 

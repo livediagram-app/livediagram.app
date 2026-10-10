@@ -32,8 +32,14 @@ const fieldsArg = z
 
 export const listItemsShape = {
   documentId,
-  type: typeArg.optional().describe('Only items of this card type, by name or id.'),
-  status: statusArg.optional().describe('Only items in this column, by name or status.'),
+  type: typeArg
+    .optional()
+    .describe('Only items of this card type, by name or id; an unknown one is refused.'),
+  status: statusArg
+    .optional()
+    .describe(
+      'Only items in this column, by name or status ("Trash" for the Trash); an unknown one is refused.',
+    ),
 };
 
 const itemChange = z.discriminatedUnion('op', [

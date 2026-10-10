@@ -81,6 +81,7 @@ export {
   NO_BOARD_HINT,
   planListing,
   planPath,
+  resolveListingFilter,
   readPlanState,
   type AddBoardInput,
   type AddBoardResult,
