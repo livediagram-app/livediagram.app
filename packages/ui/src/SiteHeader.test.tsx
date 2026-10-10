@@ -26,7 +26,13 @@ describe('SiteHeader', () => {
   });
 
   it('keeps Choose Template the primary beside it', () => {
-    expect(html).toMatch(/href="\/new\?via=Home\.Header"[^>]*><span[^>]*>Choose Template</);
+    const primary = html.match(/<a [^>]*href="\/new\?via=Home\.Header"[^>]*>(.*?)<\/a>/);
+    expect(primary?.[0]).toContain('aria-label="Choose Template"');
+    expect(primary?.[1]?.replace(/<[^>]+>/g, '')).toBe('Choose Template');
+  });
+
+  it('drops "Choose" only below 360px, so the bar fits a 320px phone', () => {
+    expect(html).toMatch(/<span class="max-\[359px\]:hidden">Choose <\/span>Template/);
   });
 
   it('no longer says Just Draw anywhere', () => {
