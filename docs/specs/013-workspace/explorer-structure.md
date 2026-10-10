@@ -196,7 +196,9 @@ What differs is what a row does in an editor, where leaving the document is a bi
 - **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
   smallest; expansion lasts as long as the editor is open.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto My documents to file
-  it at the root. A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
+  it at the root; a drag resting on a row with a chevron opens or closes it
+  ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)). On the Explorer page every folder, My
+  documents and each team take a dropped document ([Folders: standalone page](folders.md#standalone-explorer-page)). A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
   the session may use; My documents carries its Use as default for menu.
 - Group titles and separators follow Minimal chrome exactly as in the sidebar.
 - The tree scrolls inside the panel when it is taller than the space it has.

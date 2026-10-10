@@ -2,7 +2,7 @@
 
 // Pieces shared by the Explorer's list row (explorer-route-document-row)
 // and card (CardView): the actions menu (and the entry-props binding of
-// it), the owner label, and the open-href helper. The badges they show
+// it), the owner label, the open-href helper and the drag source. The badges they show
 // live beside this, in document-badges.
 // Extracted so the two view modes can't drift on what a document's badge
 // says or which actions its menu offers.
@@ -33,7 +33,8 @@ import {
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import type { PaneDocument } from './views';
-import { documentSpace } from '@/lib/document-space';
+import { documentSpace, isLocalOnly } from '@/lib/document-space';
+import { startDocumentDrag } from '@/components/panels/explorer-drag-mime';
 import type { DocumentEntryProps } from './explorer-view-props';
 import { VisibilityBadge } from './document-badges';
 
@@ -43,6 +44,22 @@ export function hrefForDocument(liveDoc: PaneDocument): string {
   return liveDoc.shared
     ? `/document/${liveDoc.id}?s=${encodeURIComponent(liveDoc.shared.shareCode)}`
     : `/document/${liveDoc.id}`;
+}
+
+// What makes a row or card a drag source (docs/specs/013-workspace/folders.md "Drag-and-drop"):
+// any document the reader can move (their own, a team's, one in this browser), never one
+// shared with them, which lives in someone else's library, nor one being renamed, whose
+// field owns the pointer.
+export function documentDragProps(
+  liveDoc: PaneDocument,
+  renaming: boolean,
+): { draggable?: true; onDragStart?: (e: React.DragEvent) => void } {
+  if (renaming || liveDoc.shared) return {};
+  return {
+    draggable: true,
+    onDragStart: (e) =>
+      startDocumentDrag(e.dataTransfer, { id: liveDoc.id, localOnly: isLocalOnly(liveDoc) }),
+  };
 }
 
 // Who a row's Owner cell names: the team for a team document, the sharer

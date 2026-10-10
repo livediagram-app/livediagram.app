@@ -15,7 +15,12 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { isLocalOnly } from '@/lib/document-space';
-import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
+import {
+  DocumentEntryMenu,
+  documentDragProps,
+  hrefForDocument,
+  ownerLabelFor,
+} from './document-row-shared';
 import {
   FavouriteMarker,
   FolderChip,
@@ -143,7 +148,11 @@ function DocumentCard(
   );
 
   return (
-    <div className={cardShell} onContextMenu={menu.onContextMenu}>
+    <div
+      className={cardShell}
+      onContextMenu={menu.onContextMenu}
+      {...documentDragProps(liveDoc, renaming)}
+    >
       {/* Larger snapshot. The whole preview links to the document unless
           we're renaming (then it's inert so the input keeps focus). */}
       {renaming ? (

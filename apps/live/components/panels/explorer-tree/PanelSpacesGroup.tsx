@@ -45,8 +45,12 @@ export function PanelSpacesGroup({
   const rootFolders = ownIndex.foldersByParent.get(null) ?? [];
   const rootDocuments = ownIndex.documentsByFolder.get(null) ?? [];
   const draggable = !!tree.onMoveDocumentToFolder;
-  const drop = useDocumentDropTarget(null, tree.onMoveDocumentToFolder);
   const expandable = rootFolders.length + rootDocuments.length > 0;
+  const { onMoveDocumentToFolder } = tree;
+  const drop = useDocumentDropTarget(
+    onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined,
+    { onLongHover: expandable ? () => tree.onToggle(MY_DOCUMENTS_EXPAND_KEY) : undefined },
+  );
   const myDocumentsMenu = useMyDocumentsMenu(tree.defaultFolders?.forRoot, { reveal: true });
   return (
     <SidebarGroup id="spaces" divider={divider} first={first}>
@@ -65,11 +69,7 @@ export function PanelSpacesGroup({
         expandable={expandable}
         expanded={tree.expanded[MY_DOCUMENTS_EXPAND_KEY] ?? false}
         onToggleExpand={() => tree.onToggle(MY_DOCUMENTS_EXPAND_KEY)}
-        rowProps={
-          tree.onMoveDocumentToFolder
-            ? { onDragOver: drop.onDragOver, onDragLeave: drop.onDragLeave, onDrop: drop.onDrop }
-            : undefined
-        }
+        rowProps={onMoveDocumentToFolder ? drop.handlers : undefined}
         highlighted={drop.isDragOver}
         onContextMenu={myDocumentsMenu.onContextMenu}
         trailing={myDocumentsMenu.trailing}

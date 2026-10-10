@@ -15,6 +15,7 @@ import { SidebarRow } from './SidebarRow';
 import { SidebarSignInNudge } from './SidebarSignInNudge';
 import { TeamRows } from './TeamRows';
 import { useMyDocumentsMenu } from './useMyDocumentsMenu';
+import { useExplorerDropTarget } from '../useExplorerDropTarget';
 
 // Spaces (docs/specs/013-workspace/explorer-structure.md): My documents and each team as
 // root folders, then Invites and New team, or the guest's sign-in nudge.
@@ -46,6 +47,13 @@ export function SpacesGroup({
   } = useExplorer();
   const myDocumentsMenu = useMyDocumentsMenu(rootDefaults, { reveal: true });
   const has = (row: SidebarRowKind) => rows.includes(row);
+  // A document dropped here files at the root; resting on it opens or closes the root folders.
+  const drop = useExplorerDropTarget(
+    { teamId: null, folderId: null },
+    {
+      onLongHover: rootFolders.length > 0 ? () => toggleExpand(MY_DOCUMENTS_EXPAND_KEY) : undefined,
+    },
+  );
   return (
     <SidebarGroup
       id="spaces"
@@ -68,6 +76,8 @@ export function SpacesGroup({
         onToggleExpand={() => toggleExpand(MY_DOCUMENTS_EXPAND_KEY)}
         onContextMenu={myDocumentsMenu.onContextMenu}
         trailing={myDocumentsMenu.trailing}
+        rowProps={drop.handlers}
+        highlighted={drop.isDragOver}
       >
         {rootFolders.map((f) => (
           <SidebarFolderSubtree
