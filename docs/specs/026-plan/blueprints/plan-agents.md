@@ -76,6 +76,7 @@ types? }`, `change_card_types { documentId, changes[1..32] }`; outputs `listItem
 | a change after an earlier one applied fails                                | the answer lists what applied before it                                                                                           |
 | board `addTypes: []` (last type turned off)                                | outline `types: []`; `takes: []`; no card shows on it; a card placed in its columns is reported "no board with that column takes" |
 | `change_board` / `add_board` `types: []`                                   | `addTypes: []` (takes none); `change_board` `types: "every type"` clears `addTypes`                                               |
+| `change_board` new column whose id a kept column has                       | `uniqueColumnIds` in `reshapeBoard`: the kept column keeps its id, the new one takes `<id>-<n>`, the first free                   |
 
 ## Security and trust
 

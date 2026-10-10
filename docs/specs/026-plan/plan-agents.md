@@ -81,6 +81,8 @@ Every write takes what a person would say, and stores the ids:
 - Columns are given whole, by name, left to right: a name the board has keeps its column (status, WIP limit,
   colour) and so its cards; a name the document's other boards use shares their status; any other name is a new,
   empty column. A column left out takes nothing with it: its cards keep their status and wait off this board.
+  Every column keeps an id of its own: a kept column keeps its id, and a new one whose name would give it a kept
+  column's id ("Doing" beside a kept "In Progress" whose id is `doing`) takes the next free one (`doing-2`).
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
   takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept

@@ -155,6 +155,23 @@ export interface BoardChange {
   types?: readonly string[] | null;
 }
 
+// Column ids made unique after a reshape: a kept column keeps its id (its done mark and the editor's references
+// follow it), and a new column whose name slugs to a kept one's id ("Doing" beside a kept "In Progress" whose id is
+// `doing`) takes the next free `<id>-<n>`.
+function uniqueColumnIds(
+  columns: readonly PlanColumn[],
+  kept: ReadonlySet<PlanColumn>,
+): PlanColumn[] {
+  const taken = new Set(columns.filter((c) => kept.has(c)).map((c) => c.id));
+  return columns.map((c) => {
+    if (kept.has(c)) return c;
+    let id = c.id;
+    for (let n = 2; taken.has(id); n++) id = `${c.id}-${n}`;
+    taken.add(id);
+    return id === c.id ? c : { ...c, id };
+  });
+}
+
 // A board's set-up after an agent's change (docs/specs/026-plan/plan-agents.md "Changing a board"). Cards keep their
 // statuses: a column taken away leaves its cards waiting off this board (on any other board that has the status).
 export function reshapeBoard(
@@ -180,7 +197,10 @@ export function reshapeBoard(
     const others = existing.filter((s) => !own.some((o) => o.status === s.status));
     const made = namedColumns(change.columns, [...own, ...others], suffix);
     if (typeof made === 'string') return { ok: false, code: 'board_invalid', message: made };
-    const columns = made.map((c) => setup.columns.find((o) => o.status === c.status) ?? c);
+    const columns = uniqueColumnIds(
+      made.map((c) => setup.columns.find((o) => o.status === c.status) ?? c),
+      new Set(setup.columns),
+    );
     const done = columns.some((c) => c.id === setup.doneColumnId) ? setup.doneColumnId : undefined;
     const { doneColumnId: _done, ...rest } = next;
     next = { ...rest, columns, ...(done ? { doneColumnId: done } : {}) };
