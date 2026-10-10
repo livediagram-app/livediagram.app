@@ -221,13 +221,25 @@ The server, not the client, establishes every fact that matters:
 - no-ops silently unless `emailEnabled(env)` and the assignee's
   `notifyActionAssigned` pref (§6) is on; an invited member with no
   account has no prefs yet, so the pref defaults to on and the invite
-  email from the membership row is the destination.
+  email from the membership row is the destination;
+- checks whether the **assignee** can open the document, by the access
+  check's legs below plus one: a document in this team's library counts as
+  open to an invited member too (they get in on accepting). When they cannot,
+  the email names no document and its button opens the Explorer instead, with
+  "ask them to share it" in place of the document name;
+- **claims** the email before sending, since the action name and description
+  come from the body: the same email (assigner, document, recipient, action
+  name, description) goes at most once per 24 hours, and one sender's
+  action-assigned and mention emails are capped at 60 an hour, both in
+  `notify_email_claims` ([Comment mentions](comment-mentions.md) "The email" has the
+  detail).
 
 Then it sends the **action-assigned** email (new template in
 `email/templates.ts`, dispatcher in `email/notifications.ts` following the
 `notifyDocumentJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
 assigned you an action on _{document name}_", the action name, the first
-~200 characters of the description, and a CTA linking to the document. All
+~200 characters of the description, and a CTA linking to the document (when
+the assignee can open it, see above). All
 user-influenced strings (action name, description, document name, assigner
 name) are HTML-escaped. The content stays within [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
@@ -255,7 +267,8 @@ check is in flight nothing shows, and if it errors the dialog falls back
 to the old heuristic (picked team ≠ the document's team → hedged "may not
 be able to open" wording). Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
-than a dead CTA.
+than a dead CTA, and the email to an assignee who cannot open the document
+names no document and links to none.
 
 ## 5. The Collaborate Panel
 

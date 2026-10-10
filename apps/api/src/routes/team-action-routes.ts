@@ -16,6 +16,31 @@ import type { RouteContext } from './context';
 const ACTION_NAME_MAX = 200;
 const ACTION_DESCRIPTION_MAX = 2000;
 
+type DocumentMeta = { id: string; ownerId: string; teamId: string | null };
+
+// Can this member of `teamId` open the document? (docs/specs/012-collaboration/assigned-actions.md §4, the access
+// check.) The legs the server can see: the document is in this team's library (an invited member gets in on
+// accepting), the member owns it, is a joined member of its library's team, or has opened it through a share
+// link. A member with no account yet has no other leg.
+async function memberCanOpenDocument(
+  env: RouteContext['env'],
+  teamId: string,
+  member: Pick<TeamMember, 'userId'>,
+  liveDoc: DocumentMeta,
+): Promise<boolean> {
+  if (liveDoc.teamId === teamId) return true;
+  const memberUserId = member.userId;
+  if (!memberUserId) return false;
+  if (liveDoc.ownerId === memberUserId) return true;
+  if (
+    liveDoc.teamId &&
+    (await getMembership(env, liveDoc.teamId, memberUserId))?.status === 'joined'
+  ) {
+    return true;
+  }
+  return hasSharedAccess(env, memberUserId, liveDoc.id);
+}
+
 // Returns null when the request isn't an action route.
 export async function handleTeamActionRoutes(
   ctx: RouteContext,
@@ -49,12 +74,7 @@ export async function handleTeamActionRoutes(
     const callerViaShare =
       callerIsOwner || callerViaTeam ? false : await hasSharedAccess(env, userId, documentId);
     if (!callerIsOwner && !callerViaTeam && !callerViaShare) return notFound();
-    const canAccess =
-      liveDoc.ownerId === assigneeUserId ||
-      (liveDoc.teamId
-        ? (await getMembership(env, liveDoc.teamId, assigneeUserId))?.status === 'joined'
-        : false) ||
-      (await hasSharedAccess(env, assigneeUserId, documentId));
+    const canAccess = await memberCanOpenDocument(env, teamId, assignee, liveDoc);
     return json({ canAccess });
   }
 
@@ -115,12 +135,17 @@ export async function handleTeamActionRoutes(
     // identity (participant profile, then their email), so a spoofed
     // assignerName in a tab blob can never sign an email.
     const assignerName = (await getParticipant(env, userId))?.name ?? clerkEmail ?? null;
+    // An assignee who cannot open the document still hears about the action, but the email
+    // names no document: its name is not theirs to learn from an assignment.
+    const assigneeCanOpen = await memberCanOpenDocument(env, teamId, assignee, liveDoc);
     ctx.waitUntil?.(
       notifyActionAssigned(env, {
         assigneeUserId: assignee.userId,
         assigneeFallbackEmail: assignee.email,
+        assignerUserId: userId,
         assignerName,
         document: { id: liveDoc.id, name: liveDoc.name },
+        assigneeCanOpen,
         actionName,
         description,
       }).catch(() => {}),

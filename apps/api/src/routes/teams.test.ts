@@ -815,6 +815,45 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
     expect(input.assignerName).toBe('sam@x.com');
   });
+
+  it('passes the verified caller as the assigner the email is claimed against', async () => {
+    await post();
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assignerUserId).toBe('user-1');
+  });
+
+  // docs/specs/012-collaboration/assigned-actions.md §4: the email names the document only to an
+  // assignee who can open it.
+  it('marks a document the assignee cannot open, so the email leaves its name out', async () => {
+    // The caller's own personal document; the assignee never opened it.
+    db.hasSharedAccess.mockResolvedValue(false);
+    await post();
+    const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
+    expect(input.assigneeCanOpen).toBe(false);
+    expect(db.hasSharedAccess).toHaveBeenCalledWith({}, 'user-2', 'd1');
+  });
+
+  it('lets the email name the document for an assignee who reached it through a share link', async () => {
+    db.hasSharedAccess.mockImplementation(async (_env: Env, who: string) => who === 'user-2');
+    await post();
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(true);
+  });
+
+  it('counts the document in this team’s library as open to an invited assignee too', async () => {
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
+    db.listTeamMembers.mockResolvedValue([
+      member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
+    ]);
+    await post({ assigneeMemberId: 'm3', documentId: 'd1', actionName: 'Review the copy' });
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(true);
+  });
+
+  it('names no document to an invited assignee outside its library', async () => {
+    db.listTeamMembers.mockResolvedValue([
+      member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
+    ]);
+    await post({ assigneeMemberId: 'm3', documentId: 'd1', actionName: 'Review the copy' });
+    expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(false);
+  });
 });
 
 describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comment-mentions.md)', () => {
@@ -839,6 +878,11 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
     db.listTeamMembers.mockResolvedValue(members);
     db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
     db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
+  });
+
+  it('passes the verified author as the sender the email is claimed against', async () => {
+    await post();
+    expect(vi.mocked(notifyMentioned).mock.calls[0]![1].authorUserId).toBe('user-1');
   });
 
   it('202 + emails each mentioned member with server-derived names', async () => {

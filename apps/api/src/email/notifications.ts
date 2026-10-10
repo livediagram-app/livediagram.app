@@ -13,6 +13,7 @@ import {
   claimFirstShare,
   claimJoinNotify,
   claimMilestone,
+  claimNotifyEmail,
   getNotificationPrefs,
   getOwnerEmail,
   listTeamAdminUserIds,
@@ -36,6 +37,45 @@ import {
   milestoneEmail,
 } from './templates';
 
+// The action-assigned and mentioned emails carry text from the request body, so each is claimed before it
+// goes (db/notify-email-claims.ts). The same email (sender, document, recipient, text) goes once per this
+// window, so a replayed request reaches nobody twice; a day covers any retry or double-submit.
+export const NOTIFY_EMAIL_DEDUPE_MS = 24 * 60 * 60 * 1000;
+// At most this many of those emails per sender per hour: three comments that each @-mention MENTIONS_MAX
+// (20) teammates, far past any real hour of assigning and mentioning, and a ceiling on a scripted session.
+// Safe range 20..200.
+export const NOTIFY_EMAILS_PER_SENDER_PER_HOUR = 60;
+const NOTIFY_RATE_WINDOW_MS = 60 * 60 * 1000;
+
+// The claim key: a SHA-256 over the parts that make two emails the same one. Hashed so the table holds no
+// comment text, action names or addresses.
+async function notifyEmailKey(parts: (string | null)[]): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(parts));
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function claimTeamNotifyEmail(
+  env: Env,
+  senderId: string,
+  parts: (string | null)[],
+): Promise<boolean> {
+  const now = Date.now();
+  const claimed = await claimNotifyEmail(env, {
+    key: await notifyEmailKey([senderId, ...parts]),
+    senderId,
+    now,
+    dedupeSince: now - NOTIFY_EMAIL_DEDUPE_MS,
+    rateSince: now - NOTIFY_RATE_WINDOW_MS,
+    rateMax: NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
+  });
+  if (!claimed)
+    console.warn(
+      `[notify-email] skipped a ${String(parts[0])} email: duplicate or sender over the hourly cap`,
+    );
+  return claimed;
+}
+
 // docs/specs/012-collaboration/assigned-actions.md: a teammate assigned the recipient an action on a document element.
 // Fired by the notify-action route AFTER it has verified both parties are
 // joined members of the same team and resolved every string server-side.
@@ -50,8 +90,13 @@ export async function notifyActionAssigned(
     // then, and prefs default to on (no account, no prefs row).
     assigneeUserId: string | null;
     assigneeFallbackEmail: string | null;
+    // The assigner's verified account id: the dedupe key's sender and whose hourly cap the email counts against.
+    assignerUserId: string;
     assignerName: string | null;
     document: { id: string; name: string };
+    // False when the assignee cannot open the document: the email then names no document and does not link
+    // into it (docs/specs/012-collaboration/assigned-actions.md §4).
+    assigneeCanOpen: boolean;
     actionName: string;
     description: string | null;
   },
@@ -65,13 +110,20 @@ export async function notifyActionAssigned(
     const prefs = await getNotificationPrefs(env, input.assigneeUserId);
     if (!prefs.notifyActionAssigned) return;
   }
+  const claimed = await claimTeamNotifyEmail(env, input.assignerUserId, [
+    'action',
+    input.document.id,
+    input.assigneeUserId ?? `mail:${to}`,
+    input.actionName,
+    input.description,
+  ]);
+  if (!claimed) return;
   await sendEmail(env, {
     to,
     ...actionAssignedEmail(
       env,
       input.assignerName,
-      input.document.name,
-      input.document.id,
+      input.assigneeCanOpen ? input.document : null,
       input.actionName,
       input.description,
     ),
@@ -87,6 +139,8 @@ export async function notifyMentioned(
   input: {
     recipientUserId: string | null;
     recipientFallbackEmail: string | null;
+    // The author's verified account id: the dedupe key's sender and whose hourly cap the email counts against.
+    authorUserId: string;
     authorName: string | null;
     document: { id: string; name: string };
     commentText: string;
@@ -103,6 +157,14 @@ export async function notifyMentioned(
     const prefs = await getNotificationPrefs(env, input.recipientUserId);
     if (!prefs.notifyMentions) return;
   }
+  const claimed = await claimTeamNotifyEmail(env, input.authorUserId, [
+    'mention',
+    input.document.id,
+    input.itemId ?? null,
+    input.recipientUserId ?? `mail:${to}`,
+    input.commentText,
+  ]);
+  if (!claimed) return;
   await sendEmail(env, {
     to,
     ...mentionedEmail(

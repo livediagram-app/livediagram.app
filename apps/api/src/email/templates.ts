@@ -315,8 +315,9 @@ const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
 export function actionAssignedEmail(
   env: Env,
   assignerName: string | null,
-  documentName: string,
-  documentId: string,
+  // Null when the assignee cannot open the document (docs/specs/012-collaboration/assigned-actions.md §4): the
+  // email names no document and its button opens the Explorer instead of a page they would be refused.
+  document: { id: string; name: string } | null,
   actionName: string,
   description: string | null,
 ): RenderedEmail {
@@ -325,7 +326,7 @@ export function actionAssignedEmail(
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
   const liveDoc =
-    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared document';
+    document && document.name.trim() ? escapeHtml(document.name.trim()) : 'a shared document';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -334,15 +335,22 @@ export function actionAssignedEmail(
           : description.trim(),
       )
     : null;
+  const intro = document
+    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its document yet, so ask them to share it with you.`;
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,
     html: shell({
       heading: 'You have a new action',
-      intro: `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`,
+      intro,
       ...(detail ? { outro: detail } : {}),
-      ctaText: 'Open the document',
-      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
+      ...(document
+        ? {
+            ctaText: 'Open the document',
+            ctaHref: `${base}/document/${encodeURIComponent(document.id)}`,
+          }
+        : { ctaText: 'Open livediagram', ctaHref: `${base}/explorer` }),
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
