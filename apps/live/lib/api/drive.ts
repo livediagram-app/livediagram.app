@@ -36,6 +36,23 @@ export async function apiDriveConnect(
   return (await expectOk<{ connection: DriveConnection }>(res, 'drive connect')).connection;
 }
 
+// Confirm a pending switch to another Google account
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Reconnecting with another
+// Google account"). Throws ApiError code `drive_account_switch_expired` (409)
+// when none is pending any more.
+export async function apiConfirmDriveAccountSwitch(ownerId: string): Promise<DriveConnection> {
+  const res = await apiFetch(`${base}/account-switch`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId),
+  });
+  return (await expectOk<{ connection: DriveConnection }>(res, 'drive account switch')).connection;
+}
+
+// Cancel it: the connection stays as it was.
+export async function apiCancelDriveAccountSwitch(ownerId: string): Promise<void> {
+  await apiDelete(`${base}/account-switch`, ownerId, { action: 'drive account switch cancel' });
+}
+
 export async function apiDriveToken(ownerId: string): Promise<DriveAccessToken> {
   const res = await apiFetch(`${base}/token`, {
     method: 'POST',

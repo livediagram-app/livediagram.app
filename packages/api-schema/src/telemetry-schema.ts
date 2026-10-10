@@ -147,7 +147,8 @@ export const TELEMETRY_CATEGORIES = [
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
   // 'Broker' | 'Browser'), 'Changed'·'NeedsReconnect' (Google stopped
-  // accepting the grant), 'Created'·'FirstMirror' (every document mirrored once),
+  // accepting the grant), 'Changed'·'AccountSwitched' | 'AccountKept' (the
+  // answer to a consent from another Google account), 'Created'·'FirstMirror' (every document mirrored once),
   // 'Applied' typed by the inbound change ('Rename' | 'Move' | 'Trash' |
   // 'Restore' | 'Purge' | 'UnknownFolder'), and 'Opened' typed by the Open
   // with outcome ('Opened' | 'ImportOffered' | 'Error'). Never a file or

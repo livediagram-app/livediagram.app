@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DRIVE_LEASE_MS, type DriveItem } from '@livediagram/api-schema';
+import { setPendingAccountSwitch } from './drive-account';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
   acquireDriveLease,
@@ -52,9 +53,20 @@ describe('connections', () => {
       pageToken: null,
       pageTokenSavedAt: null,
       connectedAt: T0,
+      pendingAccountSwitch: null,
     });
     expect(JSON.stringify(conn)).not.toContain('sealed');
     expect(await getSealedRefreshToken(env, 'user_a')).toBe('v1.sealed');
+  });
+
+  it('shows a live pending account switch by its expiry only, never its token or account', async () => {
+    const { env } = sqliteD1();
+    await upsertBrokerConnection(env, 'user_a', 'v1.sealed', T0);
+    await setPendingAccountSwitch(env, 'user_a', 'v1.pending', 'google-2', T0 + 1000);
+    const conn = await getDriveConnection(env, 'user_a', T0);
+    expect(conn!.pendingAccountSwitch).toEqual({ expiresAt: T0 + 1000 });
+    expect(JSON.stringify(conn)).not.toMatch(/pending"?:?.*v1|google-2/);
+    expect((await getDriveConnection(env, 'user_a', T0 + 1000))!.pendingAccountSwitch).toBeNull();
   });
 
   it('a reconnect replaces the token, clears needs_reconnect and keeps the mirror state', async () => {

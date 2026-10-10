@@ -200,19 +200,43 @@ this spec does not restate it.
   account it belongs to (`about.user.permissionId`, the account's stable id;
   the consent asks only for `drive.file` and `drive.install`, so there is no
   id token and no `sub` to read, and `about` answers under `drive.file`) and
-  records it on the connection. When a consent comes from a different account
-  than the one recorded, the root folder, the page token and every mirrored
-  item belong to the first account's Drive, so they are cleared in the same
-  step and the next pass starts a fresh mirror in the new account, as after a
-  disconnect. The first account's files stay where they are. If the new
-  account sent no refresh token, the stored one is the first account's, so the
-  connect answers `502 drive_no_refresh_token` and changes nothing (the app
-  always asks with `prompt=consent`, so Google sends one in practice). A consent from the same account keeps
-  everything. A connection made before accounts were recorded adopts the first
-  account that consents without clearing anything, since nothing tells whether
-  it changed. If Drive cannot name the account, the connect answers
-  `502 drive_exchange_failed` and stores nothing. Browser-only mode has no
-  server-side consent and records no account.
+  records it on the connection. A consent from the same account keeps
+  everything. A consent from a **different** account changes nothing yet: the
+  root folder, the page token and every mirrored item belong to the first
+  account's Drive, so the user decides.
+  - The connect stores the new account's sealed token and id as a **pending
+    account switch** beside the live connection, which keeps syncing the first
+    account meanwhile, and answers with the connection showing the switch.
+  - The page Google returns to (`/drive/connected`) then asks, in a dialog
+    titled **Switch Google Account?**: "This Google account is not the one
+    livediagram syncs with. Switching moves Cloud Sync to the new account and
+    starts a fresh copy of My documents in its Drive. The files already in the
+    other account's Drive stay there untouched." Buttons **Keep Current
+    Account** and **Switch Account**.
+  - **Switch Account** confirms: in one step the new token and account replace
+    the old, the root folder, the page token and every mirrored item are
+    cleared, and the next pass starts a fresh mirror in the new account, as
+    after a disconnect. The first account's grant is then revoked (best
+    effort), as a disconnect does; its files stay where they are.
+  - **Keep Current Account** cancels: the pending switch is dropped and its new
+    grant revoked (best effort); the connection is exactly as it was.
+  - A pending switch lasts **30 minutes**. Confirming one that has expired (or
+    was never made) answers `409 drive_account_switch_expired` and changes
+    nothing; the dialog then says the request timed out and to connect again.
+    A newer consent replaces a pending switch (another different account
+    replaces it; the recorded account consenting again drops it).
+  - If the new account sent no refresh token, there is nothing to switch to,
+    so the connect answers `502 drive_no_refresh_token` and changes nothing
+    (the app always asks with `prompt=consent`, so Google sends one in
+    practice).
+  - A connection made before accounts were recorded adopts the first account
+    that consents without asking or clearing anything, since nothing tells
+    whether it changed. If Drive cannot name the account, the connect answers
+    `502 drive_exchange_failed` and stores nothing. Browser-only mode has no
+    server-side consent and records no account.
+  - **Share roles:** the switch is an account-level setting of the signed-in
+    owner, reached only from their own Cloud Sync connect; no shared document
+    reaches it, so Editor, Participant and Viewer have no part in it.
 
 ## The file
 
@@ -500,7 +524,7 @@ What decides it:
 
 ## Disconnecting and account deletion
 
-- **Disconnect** revokes the grant, deletes the stored token and mirror rows,
+- **Disconnect** revokes the grant (and a pending account switch's), deletes the stored token and mirror rows,
   and **leaves every Drive file in place**. Reconnecting later starts a fresh
   mirror into a new or re-chosen root, matching existing files by
   `ldDocumentId` where it can.
@@ -515,7 +539,10 @@ D1, owned by the api worker:
   `refresh_token_enc`, `root_folder_id`, `page_token`, `page_token_saved_at`,
   `status` (`connected` | `needs_reconnect`), `connected_at`, `lease_holder`,
   `lease_expires_at`, `google_account_id` (the consenting Google account's
-  `permissionId`, migration `0088`; null until a broker consent records it).
+  `permissionId`, migration `0088`; null until a broker consent records it),
+  and a pending account switch's `pending_refresh_token_enc`,
+  `pending_google_account_id` and `pending_expires_at` (migration `0089`; all
+  null when none is pending).
 - `drive_items`: `owner_id`, `item_kind` (`diagram` | `folder`), `ld_id`,
   `drive_file_id`, and the last written `name`, `parent_id`, `trashed`,
   `md5`, `head_revision_id`, plus `mirrored_saved_at` (the document revision
@@ -662,7 +689,8 @@ Preset-enum events only, category `Drive`: connected and disconnected
 (`Changed` `NeedsReconnect`), first mirror finished (`Created` `FirstMirror`,
 once per connection per browser), an inbound change applied (`Applied`, by
 type: `Rename`, `Move`, `Trash`, `Restore`, `Purge`, `UnknownFolder`), an Open
-with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`). `Linked` fires when a
+with (`Opened`, by outcome: `Opened`, `ImportOffered`, `Error`), and the answer to a
+pending account switch (`Changed`, `AccountSwitched` or `AccountKept`). `Linked` fires when a
 connection completes, not where it started, so moving Connect into Settings
 leaves the pair as it is.
 

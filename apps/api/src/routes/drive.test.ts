@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { bytesToBase64, type DriveItem } from '@livediagram/api-schema';
+import {
+  bytesToBase64,
+  DRIVE_ACCOUNT_SWITCH_TTL_MS,
+  type DriveItem,
+} from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { getSealedRefreshToken } from '../db/drive';
 import { signDriveState } from '../drive/state';
@@ -80,13 +84,30 @@ async function body<T>(res: Response): Promise<T> {
   return (await res.json()) as T;
 }
 
-async function connect(db: SqliteD1, owner = 'user_a') {
+async function connect(db: SqliteD1, owner = 'user_a', refreshToken = 'rt-1') {
   const state = await signDriveState(KEY, owner, URI, Date.now());
   googleReplies.push({
     status: 200,
-    body: { access_token: 'at', refresh_token: 'rt-1', expires_in: 3600 },
+    body: { access_token: 'at', refresh_token: refreshToken, expires_in: 3600 },
   });
   return call(db, 'POST', '/connect', { body: { code: 'code-1', state }, clerkUserId: owner });
+}
+
+// The account columns of user_a's connection row.
+function accountRow(db: SqliteD1) {
+  return db.sql
+    .prepare(
+      `SELECT google_account_id, pending_google_account_id, pending_refresh_token_enc, pending_expires_at
+         FROM drive_connections WHERE owner_id = ?`,
+    )
+    .get('user_a');
+}
+
+// Which refresh token the broker mints access tokens from now.
+async function mintedFrom(db: SqliteD1): Promise<string | null> {
+  googleReplies.push({ status: 200, body: { access_token: 'minted', expires_in: 3600 } });
+  await call(db, 'POST', '/token');
+  return googleCalls.at(-1)!.form.get('refresh_token');
 }
 
 function item(over: Partial<DriveItem> = {}): DriveItem {
@@ -249,26 +270,28 @@ describe('reconnecting with another Google account', () => {
     expect(await items(db)).toHaveLength(1);
   });
 
-  it('clears the root folder, page token and items when another account consents', async () => {
+  it('parks a consent by another account as a pending switch, changing nothing else', async () => {
     const db = sqliteD1(BROKER);
     await connect(db);
     await mirrorState(db);
     as('google-2');
-    const res = await connect(db);
+    const before = Date.now();
+    const res = await connect(db, 'user_a', 'rt-2');
     expect(res.status).toBe(200);
-    expect(await connection(db)).toMatchObject({
-      status: 'connected',
-      rootFolderId: null,
-      pageToken: null,
-      pageTokenSavedAt: null,
+    const { connection: answered } = await body<{
+      connection: { pendingAccountSwitch: { expiresAt: number } | null };
+    }>(res);
+    expect(answered.pendingAccountSwitch!.expiresAt).toBeGreaterThanOrEqual(
+      before + DRIVE_ACCOUNT_SWITCH_TTL_MS,
+    );
+    expect(await connection(db)).toMatchObject({ rootFolderId: 'root-a', pageToken: 'pt-a' });
+    expect(await items(db)).toHaveLength(1);
+    expect(accountRow(db)).toMatchObject({
+      google_account_id: 'google-1',
+      pending_google_account_id: 'google-2',
     });
-    expect(await items(db)).toEqual([]);
-    const row = db.sql
-      .prepare('SELECT google_account_id FROM drive_connections WHERE owner_id = ?')
-      .get('user_a');
-    expect(row).toEqual({ google_account_id: 'google-2' });
+    expect(await mintedFrom(db)).toBe('rt-1');
   });
-
   it('adopts the account on a connection made before accounts were recorded, clearing nothing', async () => {
     const db = sqliteD1(BROKER);
     await connect(db);
@@ -301,6 +324,137 @@ describe('reconnecting with another Google account', () => {
     expect(res.status).toBe(502);
     expect(await body(res)).toEqual({ error: 'drive_exchange_failed' });
     expect(await getSealedRefreshToken(db.env, 'user_a')).toBeNull();
+  });
+});
+
+// docs/specs/022-drive-mirror/drive-mirror.md "Reconnecting with another Google account": the switch.
+describe('account switch', () => {
+  async function pendingSwitch(db: SqliteD1) {
+    await connect(db);
+    await call(db, 'PUT', '/connection', { body: { rootFolderId: 'root-a', pageToken: 'pt-a' } });
+    await call(db, 'PUT', '/items', { body: { items: [item()] } });
+    googleAccount = { status: 200, body: { user: { permissionId: 'google-2' } } };
+    await connect(db, 'user_a', 'rt-2');
+  }
+  const revoked = () =>
+    googleCalls.filter((c) => c.url.endsWith('/revoke')).map((c) => c.form.get('token'));
+
+  it('confirm clears the mirror state, binds the new account and revokes the old grant', async () => {
+    const db = sqliteD1(BROKER);
+    await pendingSwitch(db);
+    const res = await call(db, 'POST', '/account-switch');
+    expect(res.status).toBe(200);
+    expect((await body<{ connection: unknown }>(res)).connection).toMatchObject({
+      status: 'connected',
+      rootFolderId: null,
+      pageToken: null,
+      pageTokenSavedAt: null,
+      pendingAccountSwitch: null,
+    });
+    expect((await body<{ items: unknown[] }>(await call(db, 'GET', '/items'))).items).toEqual([]);
+    expect(accountRow(db)).toEqual({
+      google_account_id: 'google-2',
+      pending_google_account_id: null,
+      pending_refresh_token_enc: null,
+      pending_expires_at: null,
+    });
+    expect(revoked()).toEqual(['rt-1']);
+    expect(await mintedFrom(db)).toBe('rt-2');
+  });
+
+  it('cancel keeps the connection as it was and revokes the new grant', async () => {
+    const db = sqliteD1(BROKER);
+    await pendingSwitch(db);
+    const res = await call(db, 'DELETE', '/account-switch');
+    expect(res.status).toBe(204);
+    expect(
+      (await body<{ connection: unknown }>(await call(db, 'GET', '/connection'))).connection,
+    ).toMatchObject({ rootFolderId: 'root-a', pageToken: 'pt-a', pendingAccountSwitch: null });
+    expect((await body<{ items: unknown[] }>(await call(db, 'GET', '/items'))).items).toHaveLength(
+      1,
+    );
+    expect(accountRow(db)).toMatchObject({
+      google_account_id: 'google-1',
+      pending_refresh_token_enc: null,
+    });
+    expect(revoked()).toEqual(['rt-2']);
+    expect(await mintedFrom(db)).toBe('rt-1');
+  });
+
+  it('cancel with nothing pending answers 204 and revokes nothing', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    expect((await call(db, 'DELETE', '/account-switch')).status).toBe(204);
+    expect(revoked()).toEqual([]);
+  });
+
+  it('an expired switch is not shown, refuses confirm with 409, and is dropped', async () => {
+    const db = sqliteD1(BROKER);
+    await pendingSwitch(db);
+    db.sql.exec(`UPDATE drive_connections SET pending_expires_at = ${Date.now() - 1}`);
+    expect(
+      (
+        await body<{ connection: { pendingAccountSwitch: unknown } }>(
+          await call(db, 'GET', '/connection'),
+        )
+      ).connection.pendingAccountSwitch,
+    ).toBeNull();
+    const res = await call(db, 'POST', '/account-switch');
+    expect(res.status).toBe(409);
+    expect(await body(res)).toEqual({ error: 'drive_account_switch_expired' });
+    expect(accountRow(db)).toMatchObject({
+      google_account_id: 'google-1',
+      pending_refresh_token_enc: null,
+    });
+    expect((await body<{ items: unknown[] }>(await call(db, 'GET', '/items'))).items).toHaveLength(
+      1,
+    );
+    expect(revoked()).toEqual([]);
+  });
+
+  it('confirm with no switch ever made answers 409', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    expect((await call(db, 'POST', '/account-switch')).status).toBe(409);
+  });
+
+  it('a third account replaces the pending switch', async () => {
+    const db = sqliteD1(BROKER);
+    await pendingSwitch(db);
+    googleAccount = { status: 200, body: { user: { permissionId: 'google-3' } } };
+    await connect(db, 'user_a', 'rt-3');
+    expect(accountRow(db)).toMatchObject({ pending_google_account_id: 'google-3' });
+    await call(db, 'POST', '/account-switch');
+    expect(accountRow(db)).toMatchObject({ google_account_id: 'google-3' });
+    expect(await mintedFrom(db)).toBe('rt-3');
+  });
+
+  it('the recorded account consenting again drops the pending switch', async () => {
+    const db = sqliteD1(BROKER);
+    await pendingSwitch(db);
+    googleAccount = { status: 200, body: { user: { permissionId: 'google-1' } } };
+    const res = await connect(db);
+    expect(
+      (await body<{ connection: { pendingAccountSwitch: unknown } }>(res)).connection
+        .pendingAccountSwitch,
+    ).toBeNull();
+    expect(accountRow(db)).toMatchObject({
+      google_account_id: 'google-1',
+      pending_refresh_token_enc: null,
+    });
+  });
+
+  it('disconnect revokes a pending grant too', async () => {
+    const db = sqliteD1(BROKER);
+    await pendingSwitch(db);
+    await call(db, 'DELETE', '/connection');
+    expect(revoked()).toEqual(['rt-1', 'rt-2']);
+  });
+
+  it('answers 503 drive_broker_unavailable in browser mode', async () => {
+    const db = sqliteD1(BROWSER);
+    expect((await call(db, 'POST', '/account-switch')).status).toBe(503);
+    expect((await call(db, 'DELETE', '/account-switch')).status).toBe(503);
   });
 });
 

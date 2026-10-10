@@ -12,7 +12,12 @@ Scope, by file:
 | `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`                    |
 | `apps/api/migrations/0057_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                                      |
 | `apps/api/migrations/0088_drive_google_account.sql`             | `drive_connections.google_account_id`                                                   |
+| `apps/api/migrations/0089_drive_account_switch.sql`             | `drive_connections.pending_*` (a pending account switch)                                |
 | `apps/api/src/drive/google-account.ts`                          | Which Google account a consent belongs to (Drive `about`)                               |
+| `apps/api/src/drive/account-switch.ts`                          | Confirm or cancel a pending account switch                                              |
+| `apps/api/src/drive/revoke-sealed.ts`                           | Best-effort revoke of a sealed refresh token                                            |
+| `apps/api/src/db/drive-account.ts`                              | Recorded account and pending switch statements                                          |
+| `apps/live/components/drive/DriveAccountSwitchDialog.tsx`       | The Switch Google Account? dialog on `/drive/connected`                                 |
 | `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                               |
 | `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                                |
 | `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                                  |
@@ -95,6 +100,8 @@ Scope, by file:
 | Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see                  |
 | Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                         |
 | Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDocumentId`        |
+| Account        | `google_account_id`                               | The Drive `permissionId` of the Google account the connection syncs with        |
+| Account switch | `pending_*` columns, `pendingAccountSwitch`       | A consent by another account, waiting for the owner to confirm or cancel        |
 
 Banned synonyms: "sync target", "backup", "Drive location", "Drive save". The mirror is never where a document lives.
 
@@ -328,6 +335,8 @@ type DriveConnection = {
   pageToken: string | null;
   pageTokenSavedAt: number | null;
   connectedAt: number;
+  // A consent by another Google account waiting for confirm or cancel; null when none, or expired.
+  pendingAccountSwitch: { expiresAt: number } | null;
 };
 type DriveItem = {
   kind: DriveItemKind;
@@ -357,6 +366,8 @@ Every route: `503 drive_not_configured` when `driveMode` is `off`; `401 sign_in_
 | `POST`   | `/drive/state`               | `{ redirectUri }`                                   | `200 { state }`              | `400 invalid_redirect_uri`; `503 drive_broker_unavailable` unless `broker`                                                                         |
 | `POST`   | `/drive/connect`             | `{ code, state }`                                   | `200 { connection }`         | `400 invalid_request`, `400 invalid_state`, `502 drive_exchange_failed`, `502 drive_no_refresh_token`; `503 drive_broker_unavailable`              |
 | `POST`   | `/drive/token`               | none                                                | `200 DriveAccessToken`       | `404 drive_not_connected`, `409 drive_needs_reconnect`, `429 drive_token_rate_limited`, `502 drive_refresh_failed`; `503 drive_broker_unavailable` |
+| `POST`   | `/drive/account-switch`      | none                                                | `200 { connection }`         | `409 drive_account_switch_expired`; `503 drive_broker_unavailable`                                                                                 |
+| `DELETE` | `/drive/account-switch`      |                                                     | `204`                        | `503 drive_broker_unavailable`                                                                                                                     |
 | `GET`    | `/drive/connection`          |                                                     | `200 { connection \| null }` |                                                                                                                                                    |
 | `PUT`    | `/drive/connection`          | `{ rootFolderId?, pageToken? }`                     | `200 { connection }`         | `400 invalid_request`; `404 drive_not_connected` (broker mode, no row)                                                                             |
 | `DELETE` | `/drive/connection`          |                                                     | `204`                        |                                                                                                                                                    |
@@ -393,13 +404,38 @@ or `https://www.googleapis.com`. Returns the non-empty `user.permissionId`; a ne
 id throws `GoogleOAuthError('failed')`.
 
 `POST /drive/connect`, after the verified state: `exchangeCode`, then `fetchGoogleAccountId` with the fresh access
-token; either throwing → `502 drive_exchange_failed`, nothing stored. No refresh token: none stored →
-`502 drive_no_refresh_token`; one stored but `getDriveAccountId` names another account →
-`502 drive_no_refresh_token`, logged `drive: connect no_refresh_token account_changed`, nothing changed. Otherwise
-`upsertBrokerConnection`, then `bindDriveAccount(env, owner, accountId)`: one batch that, only when the recorded
-account is non-null and differs, deletes the owner's `drive_items` and nulls `root_folder_id`, `page_token` and
-`page_token_saved_at`, then records the account. A null recorded account (a row from before `0088`) is adopted
-without clearing. Returns whether it cleared; true logs `drive: connect account_changed state_cleared`.
+token; either throwing → `502 drive_exchange_failed`, nothing stored. Then, with `recorded = getDriveAccountId`:
+
+1. No refresh token: none stored → `502 drive_no_refresh_token`; one stored but `recorded` is non-null and differs →
+   `502 drive_no_refresh_token`, logged `drive: connect no_refresh_token account_changed`, nothing changed.
+2. `recorded` non-null and different from `accountId` (with a refresh token): `setPendingAccountSwitch(env, owner,
+sealed, accountId, now + DRIVE_ACCOUNT_SWITCH_TTL_MS)` overwrites any pending switch and touches nothing else (token,
+   root, page token, items, status, lease all stay). Logged `drive: connect account_switch_pending`. `200
+{ connection }` with `pendingAccountSwitch` set.
+3. Otherwise (same account, or `recorded` null): `upsertBrokerConnection` when a refresh token came, then
+   `recordDriveAccount(env, owner, accountId)`, which records the account and nulls the three `pending_*` columns. A
+   null `recorded` (a row from before `0088`) is adopted without clearing.
+
+### Account switch (`drive/account-switch.ts`)
+
+`confirmAccountSwitch(env, owner, now)` (`POST /drive/account-switch`): reads the old sealed token, then one batch,
+each statement guarded by `pending_refresh_token_enc IS NOT NULL AND pending_expires_at > now`: delete the owner's
+`drive_items`; update the row to `refresh_token_enc = pending_refresh_token_enc`, `google_account_id =
+pending_google_account_id`, `root_folder_id`, `page_token`, `page_token_saved_at` and the `pending_*` columns null,
+`status = 'connected'`. No row changed → the pending columns are nulled (an expired switch is dropped) and the route
+answers `409 drive_account_switch_expired`, logged `drive: account-switch expired`. Changed → the old token is
+opened and revoked best effort (`revokeToken`; unreadable logs `drive: revoke_skipped token_unreadable`), logged
+`drive: account-switch confirmed`, `200 { connection }`.
+
+`cancelAccountSwitch(env, owner)` (`DELETE /drive/account-switch`): reads the pending sealed token, nulls the
+`pending_*` columns, then revokes the pending token best effort. Always `204`, logged `drive: account-switch
+cancelled` (or `none` when nothing was pending). Revoking is safe because a pending account always differs from the
+recorded one, so the grant revoked is never the one the connection uses.
+
+`disconnectDrive` also revokes a pending token, best effort, before deleting the row.
+
+`toConnection` sets `pendingAccountSwitch = { expiresAt }` only when `pending_refresh_token_enc` is non-null and
+`pending_expires_at > now`.
 
 ### DriveClient (`lib/drive/drive-client.ts`)
 
@@ -506,12 +542,17 @@ CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 ```
 
 `0088_drive_google_account.sql`: `ALTER TABLE drive_connections ADD COLUMN google_account_id TEXT`.
+`0089_drive_account_switch.sql`: `pending_refresh_token_enc TEXT`, `pending_google_account_id TEXT`,
+`pending_expires_at INTEGER`, all nullable, null when no switch is pending.
 
 | Field                          | Class             | Notes                                                                |
 | ------------------------------ | ----------------- | -------------------------------------------------------------------- |
 | `refresh_token_enc`            | secret, encrypted | `v1.<iv b64url>.<ciphertext b64url>`, AAD = owner id; never read out |
 | `root_folder_id`, `page_token` | mirror state      | Drive ids, not personal data                                         |
 | `google_account_id`            | account link      | Drive `permissionId` of the consenting account; never on the wire    |
+| `pending_refresh_token_enc`    | secret, encrypted | As `refresh_token_enc`, for the account waiting to be switched to    |
+| `pending_google_account_id`    | account link      | That account's `permissionId`; never on the wire                     |
+| `pending_expires_at`           | coordination      | Epoch ms; only its presence and time reach the wire                  |
 | `lease_*`                      | coordination      | Overwritten freely                                                   |
 | `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the documents table already holds      |
 | everything else                | mirror state      |                                                                      |
@@ -534,7 +575,11 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 | 404 on the root                                         | Root treated as missing; step 3 of the pass runs                                                |
 | 5xx from Google or the api                              | Pass ends, `error = 'failed'`, logged                                                           |
 | `invalid_grant`                                         | Row `needs_reconnect`, `409`, banner                                                            |
-| Reconnect by a different Google account                 | Root, page token and items cleared with the new account recorded; fresh mirror next pass        |
+| Reconnect by a different Google account                 | Pending switch stored; nothing else changes until the owner confirms or cancels                 |
+| Switch confirmed                                        | Root, page token and items cleared, new token and account in place; old grant revoked           |
+| Switch cancelled                                        | Pending columns cleared, its grant revoked; connection as before                                |
+| Switch confirmed after 30 min, or never made            | `409 drive_account_switch_expired`; dialog shows the timed-out copy                             |
+| Another consent while a switch is pending               | A third account replaces it; the recorded account drops it                                      |
 | Different account, no refresh token sent                | `502 drive_no_refresh_token`; the first account's token and state untouched                     |
 | Content over 5 MB                                       | Resumable upload                                                                                |
 | Thumbnail render fails                                  | Upload without thumbnail, logged                                                                |
@@ -727,12 +772,26 @@ Google Drive…"; import: "This document isn't in your livediagram." **Import a 
 **Import as new document**; error: "This file can't be
 opened in livediagram." with **Go to Explorer**.
 
+### Account switch dialog
+
+`DriveConnected` (`/drive/connected`): when `apiDriveConnect` returns a connection whose `pendingAccountSwitch` is
+set, the phase becomes `switch` and `DriveAccountSwitchDialog` opens over the landing card (shared `Dialog`,
+`DialogFooter`, `Button`). Title **Switch Google Account?**; body as the spec; buttons **Keep Current Account**
+(secondary, also Escape / backdrop) and **Switch Account** (primary, focused on open). While a call runs both
+buttons are disabled and the primary reads **Switching…**. Switch Account: `apiConfirmDriveAccountSwitch`,
+`track('Drive', 'Changed', 'AccountSwitched')`, then the usual `markConnectConnected` and return. Keep Current
+Account: `apiCancelDriveAccountSwitch`, `track('Drive', 'Changed', 'AccountKept')`, then return with no outcome mark (the
+connection is unchanged, so neither Connected nor Cancelled applies). A `409 drive_account_switch_expired` keeps the dialog open with the body "This request timed out. Nothing
+changed. Connect again from Settings, Account, Cloud Sync." and one button **Back to Cloud Sync**; any other failure
+shows "That didn't work. Nothing changed. Try again." and leaves both buttons.
+
 ## Accessibility
 
 The Cloud Sync row lives in the Settings dialog (focus trap, Escape); its buttons are native buttons with visible
 focus rings. A warning status pairs a glyph with its words, so colour is never the only signal. The first copy's count is in the
 status and the text line. The text line is `aria-live="polite"`; the status, whose time changes every minute, is
-not announced. The banner is `role="status"`. The notice badge carries an `aria-label` with the notice text.
+not announced. The banner is `role="status"`. The account switch dialog is a labelled
+modal (`aria-labelledby` its title) with the shared focus trap; its error line is `role="alert"`. The notice badge carries an `aria-label` with the notice text.
 Colours are the existing slate / brand tokens, which meet AA in both themes.
 
 ## Observability
@@ -750,6 +809,8 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Signed state                                | `apps/api/src/drive/state.test.ts`                                      |
 | Token routes, `invalid_grant`, revoke       | `apps/api/src/routes/drive.test.ts`                                     |
 | Reconnect by another Google account         | `routes/drive.test.ts` (`reconnecting with another Google account`)     |
+| Account switch confirm, cancel, expiry      | `routes/drive.test.ts` (`account switch`)                               |
+| Account switch dialog                       | `apps/live/components/drive/DriveAccountSwitchDialog.test.tsx`          |
 | Clerk-only, 503 when off                    | `routes/drive.test.ts`                                                  |
 | Rows removed with document, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
 | OpenAPI parity                              | `openapi/route-parity.test.ts`                                          |
@@ -794,6 +855,7 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 | `DRIVE_LEASE_MS`                           | 15 min                                                                | api-schema `drive.ts`    | Spec; 5..30 min                                             |
 | `DRIVE_LEASE_RENEW_BEFORE_MS`              | 5 min                                                                 | api-schema               | Spec                                                        |
 | `DRIVE_STATE_TTL_MS`                       | 10 min                                                                | api-schema               | Spec                                                        |
+| `DRIVE_ACCOUNT_SWITCH_TTL_MS`              | 30 min                                                                | api-schema               | Spec; time to read and answer the dialog; 10..60 min        |
 | `DRIVE_ITEMS_PUT_MAX`                      | 100                                                                   | api-schema               | One D1 batch; D1 allows 1000 statements                     |
 | `DRIVE_ITEMS_PUT_BATCH`                    | 25                                                                    | cadence                  | D5                                                          |
 | `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                                                                 | cadence                  | Google multipart limit                                      |
