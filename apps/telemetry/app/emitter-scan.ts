@@ -329,7 +329,11 @@ export function scanEmitters(repoRoot: string, roots: string[], skip: string): E
     const text = readFileSync(path, 'utf8');
     const kind = path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
     const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, kind);
-    repo.add(new FileScan(sf, path.slice(repoRoot.length + 1), repo));
+    // Posix separators: this is the path the dashboard's tables, docs and
+    // tests name an emitter by ("apps/live/hooks/…"), and `join` answers with
+    // backslashes on Windows — which made every computed-emitter lookup miss
+    // there (300 failing cases in metric-emitters.test.ts) while CI stayed green.
+    repo.add(new FileScan(sf, path.slice(repoRoot.length + 1).replaceAll('\\', '/'), repo));
   }
   return repo.scans.flatMap(emitsIn);
 }
