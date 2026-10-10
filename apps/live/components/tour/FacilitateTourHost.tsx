@@ -60,6 +60,9 @@ export function FacilitateTourHost() {
 
   const inFacilitate = ctx.editorMode.mode === 'facilitate';
   const seen = ctx.userPreferences?.facilitateTourSeen === true;
+  // After the welcome tour: someone who has not seen it is offered it first (TourHost treats it as owed
+  // while they are in Facilitate), and this tour follows once it is answered.
+  const welcomeSeen = ctx.userPreferences?.tourSeen === true;
   const canWork =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
@@ -102,7 +105,7 @@ export function FacilitateTourHost() {
   // tour ending re-renders this through useActiveTour, so this tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inFacilitate || !canWork || otherTour || hasTourPending()) return;
+    if (!inFacilitate || !canWork || otherTour || !welcomeSeen || hasTourPending()) return;
     const t = setTimeout(() => {
       setArmed(false);
       debugLog('[facilitate-tour] offer');
@@ -111,7 +114,7 @@ export function FacilitateTourHost() {
       track('UI', 'Opened', 'FacilitateTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [armed, active, seen, inFacilitate, canWork, otherTour, engineRef]);
+  }, [armed, active, seen, inFacilitate, canWork, otherTour, welcomeSeen, engineRef]);
 
   // Settings rerun (the "Show Facilitate Tour" row, turned on from off + closed): offers again in
   // Facilitate, and otherwise the next time the person enters it (the row has cleared the preference).

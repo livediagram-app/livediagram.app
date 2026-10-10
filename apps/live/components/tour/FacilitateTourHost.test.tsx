@@ -52,7 +52,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     embedMode: false,
     editorMode: { mode: 'facilitate' },
     activeTab: { id: 'tab1', locked: false },
-    userPreferences: {},
+    userPreferences: { tourSeen: true },
     setUserPreferences,
     writeUserPreferences,
     selfParticipant: { id: 'me' },
@@ -103,7 +103,7 @@ describe('FacilitateTourHost offer', () => {
   });
 
   it.each([
-    ['seen', { userPreferences: { facilitateTourSeen: true } }],
+    ['seen', { userPreferences: { tourSeen: true, facilitateTourSeen: true } }],
     ['read-only', { isReadOnly: true }],
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
@@ -132,6 +132,17 @@ describe('FacilitateTourHost offer', () => {
     expect(offered()).toBe(true);
   });
 
+  it('waits until the welcome tour is answered, then follows it', () => {
+    editor({ userPreferences: {} });
+    const { rerender } = render(<FacilitateTourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+    editor({ userPreferences: { tourSeen: true } });
+    rerender(<FacilitateTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+  });
+
   it('waits while the welcome tour is still owed', () => {
     markTourPending();
     editor();
@@ -149,7 +160,7 @@ describe('FacilitateTourHost offer', () => {
   });
 
   it('reruns from Settings in Facilitate', () => {
-    editor({ userPreferences: { facilitateTourSeen: true } });
+    editor({ userPreferences: { tourSeen: true, facilitateTourSeen: true } });
     const { rerender } = render(<FacilitateTourHost />);
     act(() => vi.advanceTimersByTime(2000));
     expect(offered()).toBe(false);
@@ -180,7 +191,10 @@ describe('FacilitateTourHost end', () => {
   it('declining marks it seen and sends the decline', () => {
     start();
     act(() => stage.engine!.skip());
-    expect(writeUserPreferences).toHaveBeenCalledWith({ facilitateTourSeen: true }, 'me');
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { tourSeen: true, facilitateTourSeen: true },
+      'me',
+    );
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'FacilitateTourOffer');
   });
 
@@ -195,7 +209,10 @@ describe('FacilitateTourHost end', () => {
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'FacilitateTourCompleted');
-    expect(writeUserPreferences).toHaveBeenCalledWith({ facilitateTourSeen: true }, 'me');
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { tourSeen: true, facilitateTourSeen: true },
+      'me',
+    );
   });
 
   it('leaves the Share step out where there is no Share button', () => {

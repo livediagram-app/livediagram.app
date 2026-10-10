@@ -117,12 +117,16 @@ export function TourHost() {
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
   const seen = ctx.userPreferences?.tourSeen === true;
+  // Owed by a sibling (docs/specs/012-collaboration/facilitate-tour.md "Where it appears"): someone in
+  // Facilitate who has seen neither tour is offered this one first, and the Facilitate tour as it ends.
+  const owedByFacilitate =
+    ctx.editorMode.mode === 'facilitate' && ctx.userPreferences?.facilitateTourSeen !== true;
   const ready =
     ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode && !otherTour;
   const offerRef = useLatest(offer);
   useEffect(() => {
     offerPendingRef.current ??= hasTourPending();
-    if (!offerPendingRef.current || active || !ready) return;
+    if (!(offerPendingRef.current || owedByFacilitate) || active || !ready) return;
     if (seen) {
       // Resolved elsewhere (another tab / device): tidy the stale flag.
       clearTourPending();
@@ -134,7 +138,7 @@ export function TourHost() {
       offerRef.current();
     }, 800);
     return () => clearTimeout(t);
-  }, [active, ready, seen, offerRef]);
+  }, [active, ready, seen, owedByFacilitate, offerRef]);
 
   // Settings relaunch (the "Show Welcome Tour" row, turned on + closed):
   // rerun from the top: the welcome card is always step 1. Also re-marks

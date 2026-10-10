@@ -28,6 +28,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     isReadOnly: false,
     embedMode: false,
     esBoard: false,
+    editorMode: { mode: 'diagram' },
     userPreferences: { tourSeen: false },
     closeContextMenu: vi.fn(),
     ...over,
@@ -70,6 +71,28 @@ describe('TourHost offer', () => {
   it('makes no offer without a handoff', () => {
     editor();
     render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+  });
+
+  // docs/specs/012-collaboration/facilitate-tour.md "Where it appears": the welcome tour comes first.
+  it('is owed in Facilitate to someone who has seen neither tour', () => {
+    editor({ editorMode: { mode: 'facilitate' } });
+    render(<TourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+  });
+
+  it('is not owed in Facilitate once the Facilitate tour is answered, or once it is seen', () => {
+    editor({
+      editorMode: { mode: 'facilitate' },
+      userPreferences: { tourSeen: false, facilitateTourSeen: true },
+    });
+    const { rerender } = render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+    editor({ editorMode: { mode: 'facilitate' }, userPreferences: { tourSeen: true } });
+    rerender(<TourHost />);
     act(() => vi.advanceTimersByTime(2000));
     expect(offered()).toBe(false);
   });

@@ -23,9 +23,11 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
 - **Armed** on entering Facilitate (or mounting in it) and by the rerun event while in Facilitate;
   disarmed on leaving, on offering, and whenever `facilitateTourSeen` is true.
 - **Offer** after `OFFER_DELAY_MS` (800) when armed, in Facilitate, `canWork` (hydrated, no welcome
-  overlay, not read-only, not embedded, tab not locked), not seen, no other tour active
-  (`useActiveTour()` is null or `'facilitate'`) and `hasTourPending()` false. The welcome tour's end
-  clears both, which re-runs the effect: that is the "after the welcome tour" rule.
+  overlay, not read-only, not embedded, tab not locked), not seen, the welcome tour seen (`tourSeen`), no
+  other tour active (`useActiveTour()` is null or `'facilitate'`) and `hasTourPending()` false.
+- **Welcome tour first:** `TourHost` treats its offer as owed (`owedByFacilitate`) while the tab's mode is
+  `facilitate` and `facilitateTourSeen` is not true, beside the `/new` handoff flag; its `tourSeen` check
+  still applies. Answering it sets `tourSeen`, which re-runs this host's offer effect.
 - **One tour at a time:** each of `TourHost`, `PlanTourHost`, `FacilitateTourHost` treats any other
   active tour as blocking and publishes itself with `setActiveTour` while active.
 - **Steps:** `welcome` (card) → `kit` (`palette`) → `collaborate` (`palette-category-menu`, opens the

@@ -30,8 +30,10 @@ card were removed once this tour proved the better introduction.
 - **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md) and the
   [Facilitate tour](../012-collaboration/facilitate-tour.md) are this tour's
   siblings; while any is on screen the others wait, and the Plan and Facilitate
-  tours also wait while this tour's offer is still owed, so a newcomer in
-  Facilitate is offered this tour first and the Facilitate tour when it ends.
+  tours also wait while this tour's offer is still owed. In Facilitate this
+  tour is also owed to someone who has answered neither it nor the Facilitate
+  tour, without the `/new` handoff, so a newcomer there is offered this tour
+  first and the Facilitate tour when it ends.
 
 ## Handoff
 

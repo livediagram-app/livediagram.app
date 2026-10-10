@@ -18,10 +18,11 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
   opening a document whose tab opens in Facilitate, or creating one from a Facilitate template (a retro, Blank
   Session). The editor has to be usable, as for the welcome tour (hydrated, no welcome overlay, not read-only,
   not an embed), and the tab not locked.
-- **After the welcome tour, never with it.** A person who has not done the welcome tour yet is offered it
-  first; while it is on screen, or its offer is still owed, the Facilitate tour waits, and is offered as soon as
-  the welcome tour ends (taken, skipped or declined) if the person is still in Facilitate. It never runs at
-  the same time as the Plan tour either: one tour at a time.
+- **After the welcome tour, never with it.** Someone in Facilitate who has not done the welcome tour
+  (`tourSeen` not set) and not answered this one is offered the **welcome tour first**, even when nothing
+  else owed it to them (a Blank Session link skips the `/new` handoff). The Facilitate tour waits until the
+  welcome tour is answered (taken, skipped or declined), and is offered as soon as it is, if the person is
+  still in Facilitate. It never runs at the same time as the Plan tour either: one tour at a time.
 - **Optional.** The offer is the opt-in: **Show me around** starts it, **No thanks** declines it, with equal
   weight.
 - **Once ever per person**, through the synced `facilitateTourSeen` user preference
