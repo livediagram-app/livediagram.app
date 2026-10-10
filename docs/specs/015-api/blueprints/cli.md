@@ -777,7 +777,7 @@ nothing in D1.
   `livediagram auth status` (which shows the role).
 - **E9** The browser never returns (closed tab, wrong account): the loopback times out after `LOGIN_TIMEOUT_MS`,
   exit 4, hint `--device`.
-- **E10** The person's account is at the token cap: the consent page shows its error; the CLI times out (E9) and the
+- **E10** The person's account is at the token cap: the consent page shows the token-limit line; the CLI times out (E9) and the
   hint adds "or revoke a token in Settings › API Tokens".
 - **E11** A second `/callback` request (a refresh, a probe): answered 404 once the first valid one closed the
   server; a wrong `state` answers 400 and keeps waiting.
@@ -809,6 +809,11 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 - **E30** `comment reply|resolve|reopen` on an element with no thread: exit 3 (CLI78).
 - **E31** A poll reads the pending record, the page approves, then the poll answers: the poll writes only
   `devicepoll:`, so the approval stands and the next poll receives the token.
+- **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
+  the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
+  minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
+  leaves a live token counting towards the cap (`apps/live/lib/oauth-handover.ts`, log `[oauth] handover refused;
+minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
 
 ## Security and trust
 
@@ -872,7 +877,9 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
   - consent: "Connect {clientName}", the consent page's paragraph and its role choice, Connect and Cancel.
   - done: "You're connected" / "Return to your terminal; it carries on by itself."
   - cancelled: "Connection cancelled" / "Your terminal will stop waiting."
-  - error: "Something went wrong. Please try again."
+  - error, by cause (E32): expired "This request has expired. Run the sign-in again from your terminal."; at the
+    token cap (409 `token_limit_reached`) "Your account has reached its limit of API tokens. Revoke one in Settings,
+    under Account › API Tokens, then try again."; anything else "Something went wrong. Please try again."
 - **CLI notices** (stderr), final copy:
   - telemetry: `livediagram counts which commands succeed (the command's name only: never arguments, documents or
 hosts) and sends the count to <host>. Turn it off: livediagram telemetry off, or LIVEDIAGRAM_TELEMETRY=0.`

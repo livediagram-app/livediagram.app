@@ -8,7 +8,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { apiExchangeOauthToken } from '@/lib/api-client';
+import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import {
   completeDevice,
@@ -16,6 +16,7 @@ import {
   fetchDeviceSession,
   userCodeOf,
 } from '@/lib/mcp-device-session';
+import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { OAUTH_PRIMARY, OauthShell } from '../oauth-shell';
@@ -24,7 +25,14 @@ type Step =
   | { kind: 'enter' }
   | { kind: 'checking' }
   | { kind: 'unknown' }
-  | { kind: 'consent'; userCode: string; clientName: string; working: boolean; failed: boolean }
+  | {
+      kind: 'consent';
+      userCode: string;
+      clientName: string;
+      working: boolean;
+      // Why the last Connect failed, or null before one has.
+      failed: HandoverFailure | null;
+    }
   | { kind: 'done' }
   | { kind: 'cancelled' };
 
@@ -103,23 +111,30 @@ function Device() {
             userCode,
             clientName: session.clientName,
             working: false,
-            failed: false,
+            failed: null,
           }
         : { kind: 'unknown' },
     );
   };
 
   const approve = async (userCode: string, clientName: string) => {
-    setStep({ kind: 'consent', userCode, clientName, working: true, failed: false });
-    try {
-      const { token, expiresAt } = await apiExchangeOauthToken(clerkUserId, clientName, readOnly);
-      if (!(await completeDevice(userCode, token, expiresAt))) throw new Error('complete failed');
-      // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): the CLI signed in, which mints a token.
-      track('Token', 'Created', 'Cli');
-      setStep({ kind: 'done' });
-    } catch {
-      setStep({ kind: 'consent', userCode, clientName, working: false, failed: true });
+    setStep({ kind: 'consent', userCode, clientName, working: true, failed: null });
+    // Checks the code is still waiting before minting, and revokes a token the MCP did not take, so a failed
+    // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
+    const result = await mintAndHandOver({
+      sessionLive: async () => (await fetchDeviceSession(userCode)) !== null,
+      mint: () => apiExchangeOauthToken(clerkUserId, clientName, readOnly),
+      complete: async (token, expiresAt) =>
+        (await completeDevice(userCode, token, expiresAt)) ? true : null,
+      revoke: (id) => apiRevokeToken(clerkUserId, id),
+    });
+    if (!result.ok) {
+      setStep({ kind: 'consent', userCode, clientName, working: false, failed: result.reason });
+      return;
     }
+    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): the CLI signed in, which mints a token.
+    track('Token', 'Created', 'Cli');
+    setStep({ kind: 'done' });
   };
 
   switch (step.kind) {
@@ -181,7 +196,7 @@ function Device() {
           </button>
           {failed ? (
             <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">
-              Something went wrong. Please try again.
+              {handoverFailureCopy(failed, 'Run the sign-in again from your terminal.')}
             </p>
           ) : null}
           <div className="mt-5 flex items-center gap-2">
