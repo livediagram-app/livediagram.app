@@ -211,6 +211,7 @@ import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/li
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
+import { activeElementsCommit } from './active-elements-commit';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
@@ -2000,13 +2001,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
       return;
     }
-    // Mapped inside the update, from the tab as it is then: a peer's op that
-    // arrived after the last render (tabsRef lags it) is built on, never
-    // written back over in its older form and broadcast as ours.
-    commitTabs((ts) => {
-      const tab = ts.find((t) => t.id === activeId);
-      return tab ? patchTab(ts, activeId, { elements: mapElements(tab.elements) }) : ts;
-    });
+    // Mapped inside the update, from the tab as it is then (activeElementsCommit): a
+    // drag's landed result or a peer's op queued after the last render is built on,
+    // never written back over.
+    commitTabs(activeElementsCommit(activeId, mapElements));
   };
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
