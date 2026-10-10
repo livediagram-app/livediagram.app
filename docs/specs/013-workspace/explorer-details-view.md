@@ -33,7 +33,9 @@ by any column.
   headers show the column's icon (shapes, a speech bubble, a key) in place of a title, still sortable,
   and name the column in a tooltip and for assistive technology. Each cell's icon names its value in a
   tooltip and for assistive technology ("Draw", "3 comments", "Editor").
-- **Comments** show the count inside the bubble, up to 99, then "99+".
+- **Comments** show the count inside the bubble, up to 99, then "99+", centred on the bubble's body
+  (not its tail). The bubble's outline is faint and the number in full contrast: the count is what
+  matters.
 - **Type** is the mode of the tab written most recently, so a document worked in Draw last week and
   in Plan today reads Plan. An event-storming board's mode is always Diagram. The mode's icon
   and name are the editor's own ([Editor modes](../007-editor/editor-modes.md)).

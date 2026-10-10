@@ -113,7 +113,10 @@ describe('DetailsView', () => {
     // Icon columns: no visible words, the value named for assistive technology.
     expect(within(cells[1]!).getByText('Plan').className).toContain('sr-only');
     expect(within(cells[2]!).getByText('3 comments').className).toContain('sr-only');
-    expect(within(cells[2]!).getByText('3').getAttribute('aria-hidden')).toBe('true');
+    // The number is drawn inside the bubble icon, which assistive technology skips.
+    expect(within(cells[2]!).getByText('3').closest('svg')!.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
     expect(within(cells[3]!).getByText('Editor').className).toContain('sr-only');
     expect(cells[4]!.textContent).toMatch(/^12 objects \(12 KB\)$/);
   });

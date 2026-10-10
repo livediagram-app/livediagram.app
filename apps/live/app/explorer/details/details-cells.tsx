@@ -3,7 +3,7 @@
 import type { AccessLevel, DocumentStats } from '@livediagram/api-schema';
 import { editorModeLabel } from '@livediagram/document';
 import { lucideKey, lucideMessageSquare, lucideShapes } from '@livediagram/icons/lucide';
-import { EDITOR_MODE_ICONS, Tooltip, lucideGlyph } from '@livediagram/ui';
+import { EDITOR_MODE_ICONS, Glyph, Prims, Tooltip, lucideGlyph } from '@livediagram/ui';
 import { ROLE_PASS } from '@/components/dialogs/share-dialog-parts';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { isPowerUserMode } from '@/lib/power-user-mode';
@@ -91,7 +91,15 @@ export function FolderTypeCell() {
 // Above this the bubble reads "99+".
 const COMMENTS_SHOWN_MAX = 99;
 
-// A speech bubble holding the count; nothing for none (D151).
+// The bubble's body, in its 24-unit grid: lucide's message-square runs from y 3 to y 19, its tail
+// below. The count sits on the body's centre, not the icon's.
+const BUBBLE_BODY_CENTRE_Y = 11;
+// Digits are cap height tall above the baseline (about 0.72 em in the interface font), so the
+// baseline sits half a cap height below the centre for them to read as centred.
+const CAP_HEIGHT_EM = 0.72;
+
+// A speech bubble holding the count, drawn as one icon: a faint outline, the number in full
+// contrast. Nothing for none (D151).
 export function CommentsCell({
   stats,
   dense = false,
@@ -103,18 +111,30 @@ export function CommentsCell({
   const n = stats.comments;
   if (n === 0) return null;
   const label = `${n} ${n === 1 ? 'comment' : 'comments'}`;
+  const shown = n > COMMENTS_SHOWN_MAX ? `${COMMENTS_SHOWN_MAX}+` : String(n);
+  // In grid units: three characters need a smaller size to stay inside the body.
+  const fontSize = shown.length > 2 ? 8 : 10;
   return (
     <NamedIcon label={label}>
-      <span className="relative inline-flex text-slate-500 dark:text-slate-400">
-        <CommentsHeaderIcon aria-hidden size={dense ? 20 : 24} />
-        {/* Centred in the bubble's body: the box, less the tail at its foot. */}
-        <span
-          aria-hidden="true"
-          className={`absolute inset-0 flex items-center justify-center ${dense ? 'pb-[3px] text-[8px]' : 'pb-1 text-[9px]'} font-semibold leading-none tabular-nums text-slate-700 dark:text-slate-200`}
+      <Glyph
+        size={dense ? 20 : 24}
+        units={24}
+        weight={1}
+        className="text-slate-300 dark:text-slate-600"
+      >
+        <Prims prims={lucideMessageSquare} />
+        <text
+          x={12}
+          y={BUBBLE_BODY_CENTRE_Y + (CAP_HEIGHT_EM * fontSize) / 2}
+          textAnchor="middle"
+          fontSize={fontSize}
+          fontWeight={600}
+          stroke="none"
+          className="fill-slate-600 tabular-nums dark:fill-slate-300"
         >
-          {n > COMMENTS_SHOWN_MAX ? `${COMMENTS_SHOWN_MAX}+` : n}
-        </span>
-      </span>
+          {shown}
+        </text>
+      </Glyph>
     </NamedIcon>
   );
 }

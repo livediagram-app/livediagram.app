@@ -182,8 +182,11 @@ CREATE TABLE tab_stats (
   visually hidden text).
 - Type cell: `EDITOR_MODE_ICONS[mode]` at 14 px, muted; a folder shows `FolderSolidIcon` (and, below
   `sm`, where Type is hidden, the folder icon leads its name).
-- Comments cell (`CommentsCell`): the message-square at 24 px (20 dense) with the count centred in its
-  body, 9 px (8 dense) semibold, `99+` above 99; named "N comments"; nothing for zero.
+- Comments cell (`CommentsCell`): one `Glyph` (24 px, 20 dense, weight 1): lucide's message-square in
+  slate 300 / dark slate 600, and the count as SVG `text` in slate 600 / dark slate 300, semibold, 10
+  grid units (8 for `99+`), centred on the bubble's body (`BUBBLE_BODY_CENTRE_Y` 11 of 24, the tail
+  below) with its baseline half a cap height (`CAP_HEIGHT_EM` 0.72) lower so the digits read centred;
+  named "N comments"; nothing for zero.
 - Access cell: `ROLE_PASS[level].Icon` at 12 px in slate 500 / dark slate 400, named
   `ROLE_PASS[level].title`.
 - Dense rows (`useDenseRows()`: `isPowerUserMode(prefs)` from the Explorer context): `cellClass(true)`
