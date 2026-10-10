@@ -75,7 +75,7 @@ changes before it would have done.
   naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide or logo page has no
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
-  (angle in degrees, default 180), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
+  (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
   plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks the page's own-coloured
   content as the panel does (`withPageInkFor`).
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)

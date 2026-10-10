@@ -257,12 +257,12 @@ pageNumbers? }`, behaviour `destructive`, output `{ documentId, tabId, article, 
 
 ## Constants and configuration
 
-| Constant                 | Value   | Provenance                                                          | Safe range   |
-| ------------------------ | ------- | ------------------------------------------------------------------- | ------------ |
-| `PAGE_CHANGES_MAX`       | 50      | Matches `change_items` and `change_sheet`                           | 1 to 100     |
-| `ARTICLE_MARKDOWN_MAX`   | 400,000 | 5,000 blocks of ~80 characters; well inside `MAX_TAB_BYTES` 1.99 MB | 100k to 1.5M |
-| `ILLUSTRATE_REF_MAX`     | 64      | `isArticleId`'s cap                                                 | fixed        |
-| `DEFAULT_GRADIENT_ANGLE` | 180     | Top to bottom, the panel's default                                  | 0 to 359     |
+| Constant               | Value   | Provenance                                                          | Safe range   |
+| ---------------------- | ------- | ------------------------------------------------------------------- | ------------ |
+| `PAGE_CHANGES_MAX`     | 50      | Matches `change_items` and `change_sheet`                           | 1 to 100     |
+| `ARTICLE_MARKDOWN_MAX` | 400,000 | 5,000 blocks of ~80 characters; well inside `MAX_TAB_BYTES` 1.99 MB | 100k to 1.5M |
+| `ILLUSTRATE_REF_MAX`   | 64      | `isArticleId`'s cap                                                 | fixed        |
+| `PAGE_GRADIENT_ANGLE`  | 160     | The page panel's gradients (moved to packages/document)             | 0 to 359     |
 
 ## Defaults ledger
 

@@ -5,7 +5,7 @@ import { Slice, type Node as PMNode } from 'prosemirror-model';
 import type { DirectEditorProps } from 'prosemirror-view';
 import { track } from '@/lib/telemetry';
 import { blocksToDoc } from './article-convert';
-import { looksLikeMarkdown, parseMarkdownBlocks, plainTextBlocks } from './article-markdown';
+import { looksLikeMarkdown, parseMarkdownBlocks, plainTextBlocks } from '@livediagram/document';
 
 export const articlePasteProps: Pick<DirectEditorProps, 'clipboardTextParser' | 'handlePaste'> = {
   // Pasted text (docs/specs/007-editor/article-pages.md "Writing", Paste): Markdown becomes

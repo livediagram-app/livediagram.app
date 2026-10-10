@@ -10,7 +10,7 @@ import type { LaidOutPage, Tab } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { renderTabToSvg } from '@/lib/export-tab';
-import { buildPageLayout } from '@/lib/page-layout-build';
+import { buildPageLayout } from '@livediagram/templates';
 
 /** The page with `layout` placed, as SVG markup: what lands, nothing else of the tab. */
 export function logoLayoutSvg(tab: Tab, page: LaidOutPage, layout: PageLayoutId): string {

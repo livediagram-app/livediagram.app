@@ -11,25 +11,29 @@ import {
   MAX_ILLUSTRATE_PAGES,
   nextArticleFlowId,
   nextIllustratePageId,
-  newLogoPage,
-  newSlidePage,
   pageHasOrientation,
   pageKindOf,
   pageSizesFor,
   pageUnits,
-  withArticleAdded,
   withPageKindChosen,
-  withArticleDuplicated,
-  withArticleRemoved,
-  withUnitMoved,
   PAGE_NAME_MAX,
-  withDuplicatedPage,
   withIllustratePages,
   withPageSplit,
-  withPageContentReplaced,
   withPageInkFor,
-  withContentFittedToPage,
+  pageAdded,
+  pageBackgroundSet,
+  pageDuplicated,
+  pageLaidOut,
+  pageLockRefuses,
+  pageLockSet,
+  pageMovedTo,
+  pageRemoved,
+  pageRenamed,
+  pageResized,
+  pagesSharing,
+  pageTurned,
   type IllustratePage,
+  type PageEdit,
   type PageBackground,
   type PageKind,
   type PageOrientation,
@@ -37,7 +41,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
-import { buildPageLayout } from '@/lib/page-layout-build';
+import { buildPageLayout } from '@livediagram/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
@@ -87,6 +91,11 @@ export type IllustratePageEdits = {
 };
 
 type TabChange = (tab: Tab) => Tab | null;
+
+// A pure page edit's answer as a commit: its tab, or no change when refused (the checks above
+// already said why) or when nothing changed.
+const edited = (before: Tab, out: PageEdit<Tab>): Tab | null =>
+  'tab' in out && out.tab !== before ? out.tab : null;
 
 // Telemetry for a kind chosen on the first page, and for a page of a kind added.
 const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
@@ -151,9 +160,7 @@ export function illustratePageEdits({
   // refuses those for all. A page's own edits (its name) reach only the page itself, so another
   // page's lock never holds them (`shared: false`).
   const refusedLocked = (pageId: string, edit: string, shared = true) => {
-    const target = page(pageId);
-    const reach = shared && target?.flow ? current.filter((p) => p.flow === target.flow) : [target];
-    if (!reach.some((p) => p?.locked === true)) return false;
+    if (!pageLockRefuses(current, pageId, shared)) return false;
     debugLog('[illustrate-page] refused: page locked', { tabId, pageId, edit });
     return true;
   };
@@ -161,10 +168,7 @@ export function illustratePageEdits({
     if (!page(pageId) || isLocked(pageId) === locked) return;
     // Tracked before it changes, so an unlock still reaches the wire.
     track('Tab', 'Changed', locked ? 'PageLocked' : 'PageUnlocked');
-    patchPage(pageId, (p) => {
-      const { locked: _drop, ...rest } = p;
-      return locked ? { ...rest, locked: true } : rest;
-    });
+    commitTab((t) => edited(t, pageLockSet(t, pageId, locked)));
     debugLog('[illustrate-page] lock set', { tabId, pageId, locked });
   };
   const startBlank = (pageId: string) => {
@@ -174,15 +178,6 @@ export function illustratePageEdits({
     patchPage(pageId, (p) => ({ ...p, startedBlank: true }));
     debugLog('[illustrate-page] started blank', { tabId, pageId });
   };
-  // The pages a page-wide change reaches: the page, or every page of its article.
-  const sharing = (ps: readonly IllustratePage[], pageId: string): Set<string> => {
-    const target = ps.find((p) => p.id === pageId);
-    if (!target) return new Set();
-    return new Set(
-      target.flow ? ps.filter((p) => p.flow === target.flow).map((p) => p.id) : [pageId],
-    );
-  };
-
   // A turn or a new size re-fits an infographic page's content into the page as it now is: what
   // was on it before stays on it, scaled down as one where it no longer fits
   // (withContentFittedToPage). A document's pages all change together; its writing reflows and
@@ -192,16 +187,6 @@ export function illustratePageEdits({
     const flow = page(pageId)?.flow;
     if (flow) articleHandleOf(flow)?.claimLayout();
   };
-  const reshapePage = (pageId: string, patch: (p: IllustratePage) => IllustratePage) =>
-    commitTab((t) => {
-      const ps = illustratePagesOf(t);
-      const reach = sharing(ps, pageId);
-      const next = ps.map((p) => (reach.has(p.id) ? patch(p) : p));
-      if (ps.find((p) => p.id === pageId)?.flow) return withIllustratePages(t, next);
-      const before = layOutIllustratePages(ps);
-      const ids = elementIdsOnPage(t.elements, before, pageId);
-      return withContentFittedToPage(withIllustratePages(t, next), ids, pageId);
-    });
 
   // A page in a slide size (every slide page) has no turn: it is landscape only.
   const setOrientation = (pageId: string, next: PageOrientation) => {
@@ -214,7 +199,7 @@ export function illustratePageEdits({
     }
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
     claimArticleLayout(pageId);
-    reshapePage(pageId, (p) => ({ ...p, orientation: next }));
+    commitTab((t) => edited(t, pageTurned(t, pageId, next)));
     // The view frames the page itself, so a turned page is framed again in its new shape.
     onGoTo(pageId);
     debugLog('[illustrate-page] orientation set', { tabId, pageId, orientation: next });
@@ -243,11 +228,7 @@ export function illustratePageEdits({
     }
     track('Tab', 'Changed', 'PageSize');
     claimArticleLayout(pageId);
-    reshapePage(pageId, (p) => {
-      // Leaving Fit to Content leaves its sides behind with it.
-      const { size: _drop, fit: _sides, ...rest } = p;
-      return size === 'a4' ? rest : { ...rest, size };
-    });
+    commitTab((t) => edited(t, pageResized(t, pageId, size)));
     onGoTo(pageId);
     debugLog('[illustrate-page] size set', { tabId, pageId, size });
   };
@@ -256,10 +237,7 @@ export function illustratePageEdits({
     const name = raw.trim().slice(0, PAGE_NAME_MAX);
     if ((page(pageId)?.name ?? '') === name) return;
     track('Tab', 'Changed', 'PageRenamed');
-    patchPage(pageId, (p) => {
-      const { name: _drop, ...rest } = p;
-      return name ? { ...rest, name } : rest;
-    });
+    commitTab((t) => edited(t, pageRenamed(t, pageId, name)));
     debugLog('[illustrate-page] renamed', { tabId, pageId, named: name !== '' });
   };
   // A new fill also re-inks the page's own-coloured text, lines and icons so they still read on it
@@ -278,22 +256,7 @@ export function illustratePageEdits({
     const next = withBackgroundPatch(target, patch);
     if (sameFill(was?.fill, next?.fill) && was?.pattern === next?.pattern) return;
     track('Tab', 'Changed', 'fill' in patch ? 'PageBackground' : 'PagePattern');
-    commitTab((t) => {
-      const ps = illustratePagesOf(t);
-      const target = ps.find((p) => p.id === pageId);
-      if (!target) return null;
-      const background = withBackgroundPatch(target, patch);
-      const reach = sharing(ps, pageId);
-      const next = ps.map((p) => {
-        if (!reach.has(p.id)) return p;
-        const { background: _drop, ...rest } = p;
-        return background ? { ...rest, background } : rest;
-      });
-      let repaged = withIllustratePages(t, next);
-      if ('fill' in patch)
-        for (const id of reach) repaged = withPageInkFor(repaged, id, background);
-      return repaged;
-    });
+    commitTab((t) => edited(t, pageBackgroundSet(t, pageId, patch)));
     debugLog('[illustrate-page] background set', { tabId, pageId, keys: Object.keys(patch) });
   };
   const units = pageUnits(current);
@@ -302,7 +265,7 @@ export function illustratePageEdits({
     const from = unitIndexOf(pageId);
     if (from < 0 || from === unitIndex) return;
     track('Tab', 'Changed', 'PageMoved');
-    commitTab((t) => withUnitMoved(t, pageId, unitIndex));
+    commitTab((t) => edited(t, pageMovedTo(t, pageId, unitIndex)));
     debugLog('[illustrate-page] moved', { tabId, pageId, from, to: unitIndex });
   };
   const canMove = (pageId: string, by: -1 | 1) => {
@@ -327,43 +290,14 @@ export function illustratePageEdits({
   const addPage = (kind: PageKind) => {
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextIllustratePageId(current);
+    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    commitTab((t) => edited(t, pageAdded(t, kind, id, flow)));
     if (kind === 'article') {
-      const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
-      const last = current[current.length - 1];
-      const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');
-      commitTab((t) =>
-        withArticleAdded(
-          t,
-          {
-            id,
-            orientation: paper ? last.orientation : 'portrait',
-            ...(paper && last.size ? { size: last.size } : {}),
-          },
-          flow,
-        ),
-      );
       onGoTo(id);
       onArticleCreated?.(flow);
       debugLog('[illustrate-page] article added', { tabId, flow, count: current.length + 1 });
       return;
     }
-    commitPages((ps) => {
-      if (ps.length >= MAX_ILLUSTRATE_PAGES || ps.some((p) => p.id === id)) return null;
-      if (kind === 'slide') {
-        const lastSlide = [...ps].reverse().find((p) => p.kind === 'slide');
-        return [...ps, newSlidePage(id, lastSlide?.size)];
-      }
-      if (kind === 'logo') return [...ps, newLogoPage(id)];
-      const model = [...ps]
-        .reverse()
-        .find((p) => !p.flow && p.kind !== 'slide' && p.kind !== 'logo');
-      // Fit to Content's sides are its own page's: a new page made after one is A4.
-      const size = model?.size === 'fit' ? undefined : model?.size;
-      return [
-        ...ps,
-        { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) },
-      ];
-    });
     onGoTo(id);
     debugLog('[illustrate-page] page added', { tabId, count: current.length + 1 });
   };
@@ -371,25 +305,19 @@ export function illustratePageEdits({
     const target = page(pageId);
     if (!target) return;
     track('Tab', 'Changed', 'PageDuplicated');
+    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    const id = nextIllustratePageId(current);
+    let created: string | undefined;
+    commitTab((t) => {
+      const out = edited(t, pageDuplicated(t, pageId, id, flow));
+      if (out) created = target.flow ? out.pages?.find((p) => p.flow === flow)?.id : id;
+      return out;
+    });
+    if (created) onGoTo(created);
     if (target.flow) {
-      const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
-      let created: string | undefined;
-      commitTab((t) => {
-        const out = withArticleDuplicated(t, target.flow!, flow);
-        created = out?.pages.find((p) => p.flow === flow)?.id;
-        return out;
-      });
-      if (created) onGoTo(created);
       debugLog('[illustrate-page] article duplicated', { tabId, flow: target.flow });
       return;
     }
-    const id = nextIllustratePageId(current);
-    commitTab((t) => {
-      const ps = illustratePagesOf(t);
-      if (ps.length >= MAX_ILLUSTRATE_PAGES || ps.some((p) => p.id === id)) return null;
-      return withDuplicatedPage(t, pageId, id);
-    });
-    onGoTo(id);
     debugLog('[illustrate-page] duplicated', { tabId, pageId });
   };
   // A deleted page takes its content with it; the pages after it close the gap. An article page
@@ -405,20 +333,11 @@ export function illustratePageEdits({
     const at = unitIndexOf(pageId);
     const land = at > 0 ? units[at - 1]!.pageIds.at(-1) : units[at + 1]?.pageIds[0];
     if (land) onGoTo(land);
+    commitTab((t) => edited(t, pageRemoved(t, pageId)));
     if (target.flow) {
-      commitTab((t) => withArticleRemoved(t, target.flow!));
       debugLog('[illustrate-page] article removed', { tabId, flow: target.flow });
       return;
     }
-    commitTab((t) => {
-      const ps = illustratePagesOf(t);
-      if (ps.length <= 1) return null;
-      const emptied = withPageContentReplaced(t, pageId, []);
-      return withIllustratePages(
-        emptied,
-        ps.filter((p) => p.id !== pageId),
-      );
-    });
     debugLog('[illustrate-page] page removed', { tabId, pageId });
   };
 
@@ -462,8 +381,7 @@ export function illustratePageEdits({
     commitTab((t) => {
       const page = layOutIllustratePages(illustratePagesOf(t)).find((p) => p.id === pageId);
       if (!page) return null;
-      const placed = buildPageLayout(layoutId, page);
-      return withPageContentReplaced(t, pageId, placed);
+      return edited(t, pageLaidOut(t, pageId, buildPageLayout(layoutId, page)));
     });
     onLayoutPlaced();
     debugLog('[illustrate-page] layout placed', { tabId, pageId, layout: layoutId });
@@ -482,7 +400,7 @@ export function illustratePageEdits({
       elements,
       pages: [...current],
     };
-    for (const id of sharing(current, preview.pageId))
+    for (const id of pagesSharing(current, preview.pageId))
       shown = withPageInkFor(shown, id, background);
     if (shown.elements === elements) {
       if (localPreview()?.tabId === tabId) clearLocalPreview();

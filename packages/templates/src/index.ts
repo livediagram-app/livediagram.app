@@ -18,5 +18,6 @@ export * from './page-layouts';
 export * from './slide-layouts';
 export * from './logo-layouts';
 export * from './layout-catalogue';
+export { buildPageLayout } from './page-layout-build';
 export * from './template-tab';
 export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';
