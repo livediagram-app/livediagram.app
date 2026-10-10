@@ -60,20 +60,22 @@ types? }`, `change_card_types { documentId, changes[1..32] }`; outputs `listItem
 
 ## Errors and edge cases
 
-| Case                                                                       | Handling                                                                 |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| column name no board has                                                   | `status_unknown`, lists the columns                                      |
-| no board at all                                                            | `status_unknown`, says to use `add_board` or leave status out            |
-| card type unknown                                                          | `type_unknown`, lists `Name (id)` for each type                          |
-| field the type lacks                                                       | `field_unknown`, lists the type's fields                                 |
-| Choice option not offered                                                  | `choice_unknown`, lists the options                                      |
-| item ref none or several                                                   | `item_unknown`, names the candidates when several                        |
-| card type change breaks a rule                                             | `type_change_invalid`, names the rule; nothing saved                     |
-| board preset unknown, columns 0 or > 12, two columns one name, title empty | `board_invalid`                                                          |
-| tab unknown / no tabs                                                      | `tab_unknown`, lists the tabs                                            |
-| api 4xx                                                                    | `apiRefusalOf`: by code (`status_excluded`...) or status (403, 404, 410) |
-| api 5xx or network                                                         | thrown (the MCP's error path and `Error·Api` telemetry)                  |
-| a change after an earlier one applied fails                                | the answer lists what applied before it                                  |
+| Case                                                                       | Handling                                                                                                                          |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| column name no board has                                                   | `status_unknown`, lists the columns                                                                                               |
+| no board at all                                                            | `status_unknown`, says to use `add_board` or leave status out                                                                     |
+| card type unknown                                                          | `type_unknown`, lists `Name (id)` for each type                                                                                   |
+| field the type lacks                                                       | `field_unknown`, lists the type's fields                                                                                          |
+| Choice option not offered                                                  | `choice_unknown`, lists the options                                                                                               |
+| item ref none or several                                                   | `item_unknown`, names the candidates when several                                                                                 |
+| card type change breaks a rule                                             | `type_change_invalid`, names the rule; nothing saved                                                                              |
+| board preset unknown, columns 0 or > 12, two columns one name, title empty | `board_invalid`                                                                                                                   |
+| tab unknown / no tabs                                                      | `tab_unknown`, lists the tabs                                                                                                     |
+| api 4xx                                                                    | `apiRefusalOf`: by code (`status_excluded`...) or status (403, 404, 410)                                                          |
+| api 5xx or network                                                         | thrown (the MCP's error path and `Error·Api` telemetry)                                                                           |
+| a change after an earlier one applied fails                                | the answer lists what applied before it                                                                                           |
+| board `addTypes: []` (last type turned off)                                | outline `types: []`; `takes: []`; no card shows on it; a card placed in its columns is reported "no board with that column takes" |
+| `change_board` / `add_board` `types: []`                                   | `addTypes: []` (takes none); `change_board` `types: "every type"` clears `addTypes`                                               |
 
 ## Security and trust
 

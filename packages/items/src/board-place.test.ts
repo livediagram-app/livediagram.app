@@ -96,6 +96,9 @@ describe('reshapeBoard', () => {
     expect(r).toMatchObject({ ok: true, setup: { title: 'Sprint 15', addTypes: ['task', 'bug'] } });
     const every = reshapeBoard(setup, { types: null }, others);
     expect(every.ok && every.setup.addTypes).toBeUndefined();
+    // An empty list takes none, as the editor's last type turned off does; it never reads as every type.
+    const none = reshapeBoard(setup, { types: [] }, others);
+    expect(none.ok && none.setup.addTypes).toEqual([]);
     expect(reshapeBoard(setup, { title: ' ' }, others)).toMatchObject({ ok: false });
     expect(reshapeBoard(setup, { columns: [] }, others)).toMatchObject({ ok: false });
   });

@@ -101,9 +101,9 @@ export const addBoardShape = {
     .array(z.string())
     .optional()
     .describe(
-      'The card types it shows and takes, by name or id. Absent: the preset’s (todo takes Actions, roadmap ' +
-        'Projects, sprint Stories, Tasks and Bugs...; the answer says), or every type for columns by name. A ' +
-        'preset’s Bug or Story the document lacks is added to its card types.',
+      'The card types it shows and takes, by name or id; an empty list takes none. Absent: the preset’s (todo ' +
+        'takes Actions, roadmap Projects, sprint Stories, Tasks and Bugs...; the answer says), or every type ' +
+        'for columns by name. A preset’s Bug or Story the document lacks is added to its card types.',
     ),
 };
 
@@ -124,9 +124,12 @@ export const changeBoardShape = {
         'cards off this board.',
     ),
   types: z
-    .array(z.string())
+    .union([z.array(z.string()), z.literal('every type')])
     .optional()
-    .describe('The card types it shows and takes, by name; an empty list shows every type.'),
+    .describe(
+      'The card types it shows and takes, by name; "every type" shows every type again, and an empty list ' +
+        'takes none (no card shows on it).',
+    ),
 };
 
 const customField = z.object({

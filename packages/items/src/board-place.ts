@@ -150,7 +150,8 @@ export interface BoardChange {
   // Every column, by name, left to right: a name the board has keeps its column (status, WIP limit, colour); a name
   // the document's other boards use shares their status; any other is a new, empty column.
   columns?: readonly string[];
-  // The card types it shows and takes, by id (resolved by the caller); null shows every type again.
+  // The card types it shows and takes, by id (resolved by the caller); null shows every type again, and an empty
+  // list takes none, as the editor's last type turned off does.
   types?: readonly string[] | null;
 }
 
@@ -186,7 +187,7 @@ export function reshapeBoard(
   }
   if (change.types !== undefined) {
     const { addTypes: _types, ...rest } = next;
-    next = change.types && change.types.length ? { ...rest, addTypes: [...change.types] } : rest;
+    next = change.types ? { ...rest, addTypes: [...change.types] } : rest;
   }
   return { ok: true, setup: next };
 }

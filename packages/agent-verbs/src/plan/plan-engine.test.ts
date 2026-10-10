@@ -163,6 +163,14 @@ describe('planListing', () => {
     expect(listing.hint).toBeUndefined();
   });
 
+  it('shows no card on a board that takes no type', async () => {
+    const { api: a } = api({}, { boards: [BOARD([])], statuses: STATUSES, types: ITEM_TYPES });
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.boards[0]!.takes).toEqual([]);
+    expect(listing.boards[0]!.columns.flatMap((c) => c.cards)).toEqual([]);
+    expect(listing.notOnBoard).toEqual(expect.arrayContaining(['#1', '#2']));
+  });
+
   it('names custom fields as writes do', async () => {
     const withSev = [
       item(7, 'fff777', { title: 'Sev', status: 'done~x', 'f-sev': 'S2', 'f-gone': 1 }, 'bug'),
@@ -521,6 +529,28 @@ describe('change lines', () => {
     expect(r.applied[0]).toContain('no board with that column takes Bug cards');
     expect(r.applied[0]).toContain('"Sprint" with change_board');
   });
+
+  it('warns when the only board with the column takes no type at all', async () => {
+    const { api: a } = api(
+      {
+        [`/documents/${D}/items`]: (r: Request) =>
+          r.method === 'GET'
+            ? Response.json({ items: ITEMS, rev: 1 })
+            : Response.json({
+                item: item(9, 'new999', { title: 'Write', status: 'todo~x' }, 'task'),
+                rev: 2,
+              }),
+      },
+      { boards: [BOARD([])], statuses: STATUSES, types: ITEM_TYPES },
+    );
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'add', title: 'Write', type: 'Task', status: 'To Do' }],
+      await readPlanState(a, D),
+    );
+    expect(r.applied[0]).toContain('no board with that column takes Task cards');
+  });
 });
 
 describe('changeBoard', () => {
@@ -557,8 +587,11 @@ describe('changeBoard', () => {
     expect(op.operations[0]!.fields.planBoard.columns[0]!.wipLimit).toBe(2);
     expect(op.operations[0]!.fields.planBoard.addTypes).toEqual(['task', 'bug']);
     expect(Object.keys(op.base.elements)).toEqual(['b1']);
-    const every = await changeBoard(a, D, { board: 'b1', types: [] }, 'cli');
+    const every = await changeBoard(a, D, { board: 'b1', types: 'every type' }, 'cli');
     expect(every).toMatchObject({ ok: true, takes: 'every type' });
+    // An empty list takes none, as in the editor, rather than every type.
+    const none = await changeBoard(a, D, { board: 'b1', types: [] }, 'cli');
+    expect(none).toMatchObject({ ok: true, takes: [] });
   });
 
   it('refuses an unknown or ambiguous board, type or column list', async () => {
