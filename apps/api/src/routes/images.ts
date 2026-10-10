@@ -323,7 +323,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   }
 
   // DELETE /api/images/:id: gallery delete. Owner only.
-  // Removes the R2 object + the D1 row. Existing references
+  // Removes the D1 row, then the R2 object. Existing references
   // on documents stay; the renderer falls back to a broken-
   // image placeholder.
   if (segments.length === 3 && request.method === 'DELETE') {
@@ -333,8 +333,15 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const meta = await getImage(env, imageId);
     if (!meta) return json({ ok: true });
     if (meta.ownerId !== owner) return forbidden();
-    await env.IMAGES.delete(imageId);
+    // The row first: a row is what dedupe and the byte read trust, so it must never outlive its
+    // bytes. A D1 failure throws with both still in place; an R2 failure after it leaves bytes no
+    // row names (storage kept, never an id that serves nothing), logged with the id.
     await deleteImage(env, imageId);
+    try {
+      await env.IMAGES.delete(imageId);
+    } catch (err) {
+      console.error('[images] R2 delete failed after the row was removed', { imageId }, err);
+    }
     return json({ ok: true });
   }
 

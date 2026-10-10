@@ -159,7 +159,10 @@ Invariants:
 ### Delete, list, usage
 
 - `DELETE /api/images/:id`: owner only; no row → 200 `{ ok: true }`; another owner → 403
-  (D34); else `IMAGES.delete(id)` then `deleteImage`, 200 `{ ok: true }`.
+  (D34); else `deleteImage` then `IMAGES.delete(id)`, 200 `{ ok: true }`. Row first, so a row
+  never outlives its bytes: a D1 throw leaves both (500, retryable); an R2 throw after it is
+  caught and logged `[images] R2 delete failed after the row was removed` with the id, and the
+  answer is still 200 (orphaned bytes, never a row that dedupe hands back with nothing behind it).
 - `GET /api/images`: owner only; `listImagesByOwner`, newest first.
 - `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `documents →
 document_tabs → image_refs` ([Image reference index](image-reference-index.md#readers)), no tab
@@ -422,13 +425,14 @@ read a 503 as `null` and `{}`.
 
 ## Observability
 
-| #   | Where                         | Level          | Fingerprint                                                                        |
-| --- | ----------------------------- | -------------- | ---------------------------------------------------------------------------------- |
-| O1  | Insert refused by the caps    | `console.info` | `[images] cap refused a racing upload` + `{ owner }`                               |
-| O2  | Upload rejection (GB5)        | `console.warn` | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
-| O3  | Upload stored / deduped (GB5) | `console.info` | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
-| O4  | Delete (GB5)                  | `console.info` | `[images] deleted id=<id>`                                                         |
-| O5  | Client upload failure (GB5)   | `console.warn` | `[image-upload] failed code=<token>`                                               |
+| #   | Where                          | Level           | Fingerprint                                                                        |
+| --- | ------------------------------ | --------------- | ---------------------------------------------------------------------------------- |
+| O1  | Insert refused by the caps     | `console.info`  | `[images] cap refused a racing upload` + `{ owner }`                               |
+| O2  | Upload rejection (GB5)         | `console.warn`  | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
+| O3  | Upload stored / deduped (GB5)  | `console.info`  | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
+| O4  | Delete (GB5)                   | `console.info`  | `[images] deleted id=<id>`                                                         |
+| O5  | R2 delete failed after the row | `console.error` | `[images] R2 delete failed after the row was removed` + `{ imageId }`              |
+| O5  | Client upload failure (GB5)    | `console.warn`  | `[image-upload] failed code=<token>`                                               |
 
 O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands. The retention and
 backfill fingerprints live in [Image reference index](image-reference-index.md#observability).

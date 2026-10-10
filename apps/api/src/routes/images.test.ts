@@ -107,6 +107,28 @@ describe('handleImages', () => {
     expect(db.deleteImage).toHaveBeenCalledWith(expect.anything(), 'i1');
   });
 
+  it('DELETE removes the row before the bytes, so a D1 failure leaves both in place', async () => {
+    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+    db.deleteImage.mockRejectedValue(new Error('D1 down'));
+    const images = imagesBinding();
+    await expect(handleImages(makeCtx('DELETE', '/api/images/i1', { images }))).rejects.toThrow(
+      'D1 down',
+    );
+    expect(images.delete).not.toHaveBeenCalled();
+  });
+
+  it('DELETE answers ok and logs when only the R2 delete fails after the row is gone', async () => {
+    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+    const images = imagesBinding();
+    images.delete.mockRejectedValue(new Error('R2 down'));
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const res = await handleImages(makeCtx('DELETE', '/api/images/i1', { images }));
+    expect(res.status).toBe(200);
+    expect(db.deleteImage).toHaveBeenCalledWith(expect.anything(), 'i1');
+    expect(error.mock.calls[0]![0]).toBe('[images] R2 delete failed after the row was removed');
+    error.mockRestore();
+  });
+
   it('byte-read 404 for an unknown image', async () => {
     db.getImage.mockResolvedValue(null);
     const res = await handleImages(makeCtx('GET', '/api/images/i9'));
