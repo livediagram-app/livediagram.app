@@ -46,6 +46,8 @@ const editor = (over: Record<string, unknown> = {}) => {
     activeTab: { id: 'tab1', locked: false },
     userPreferences: { tourSeen: false },
     closeContextMenu: vi.fn(),
+    tourSquare: { place: vi.fn(), remove: tourSquareRemove },
+    setSelectedId,
     setUserPreferences: vi.fn(),
     writeUserPreferences,
     selfParticipant: { id: 'me' },
@@ -53,6 +55,8 @@ const editor = (over: Record<string, unknown> = {}) => {
   };
 };
 const writeUserPreferences = vi.fn();
+const tourSquareRemove = vi.fn((): string | null => null);
+const setSelectedId = vi.fn();
 const offered = () => track.mock.calls.some((c) => c[0] === 'UI' && c[2] === 'TourOffer');
 
 beforeEach(() => {
@@ -214,6 +218,14 @@ describe('TourHost closing card in Facilitate', () => {
       'me',
     );
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'FacilitateTourOffer');
+  });
+
+  it('takes away the square it placed, and its selection, when it ends', async () => {
+    tourSquareRemove.mockReturnValueOnce('sq1');
+    await runToOutro('diagram');
+    act(() => popover.props!.onNext());
+    expect(tourSquareRemove).toHaveBeenCalled();
+    expect(setSelectedId).toHaveBeenCalledWith(null);
   });
 
   it('has no Facilitate offer outside Facilitate', async () => {

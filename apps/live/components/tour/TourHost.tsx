@@ -63,9 +63,8 @@ export function TourHost() {
           x: centre.x - base.width / 2,
           y: centre.y - base.height / 2,
         };
-        // Single-undo-block append via the AI merge path: fresh id, so it
-        // lands as a plain add.
-        ctx.applyAiElements([el], 'generate');
+        // The tour's own square, with no history, taken away when the tour ends (useTourSquare).
+        ctx.tourSquare.place(el);
         elementId = el.id;
       }
       ctx.setSelectedId(elementId);
@@ -180,6 +179,8 @@ export function TourHost() {
     // The offer is now RESOLVED, so the reload-surviving pending flag can
     // finally go.
     apiRef.current.closeContextMenu();
+    // The square it placed on an empty tab goes, so the document is left as the person had it.
+    if (ctx.tourSquare.remove() !== null) ctx.setSelectedId(null);
     clearTourPending();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     // In Facilitate the Facilitate tour's offer rode on this tour's closing card

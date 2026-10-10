@@ -80,7 +80,10 @@ live in `apps/live/components/tour/tour-steps.ts`):
 5. **The Explorer**: the in-editor document/folder browser.
 6. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its
-   right-click menu programmatically.
+   right-click menu programmatically. A square it added is the tour's own:
+   placed with no history and taken away, with its selection, when the tour
+   ends however it ends (`useTourSquare`), so a fresh document is left as it
+   was and Undo never brings it back.
 7. **Tabs**: highlights the active tab pill and the "+" add button as one
    region (an `alsoHighlight` union, like the dropdown steps), with the
    tab menu covered in the copy. A separate open-the-⋯-menu step existed
