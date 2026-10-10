@@ -19,7 +19,7 @@ import {
 // signal, its tracks, the example board, cards and sheet it shows Plan working on, and the leftover record
 // that lets a later visit tidy tour content a reload cut short.
 
-// Settings → Plan tour: the "Show Plan Tour" row, turned on from off and closed, reruns the tour. A
+// Settings → Plan tour: the Show Tours › "Plan" row, turned on from off and closed, reruns the tour. A
 // window event keeps the dialog decoupled from PlanTourHost, as the welcome tour's relaunch does.
 export const PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch';
 

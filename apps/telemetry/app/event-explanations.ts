@@ -38,6 +38,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
   'Editor|Changed|ModePlan':
     'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
+  'Editor|Changed|ModeFacilitate':
+    'Someone switched a tab to Facilitate mode, to run a session with their team: timers, votes, polls and reveals.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -964,6 +966,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
+  'UI|Closed|FacilitateTourOffer':
+    'Someone turned the Facilitate tour down: No thanks on its own card, or finishing the welcome tour without pressing Show me Facilitate.',
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
@@ -990,6 +994,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the card type editor's Show Me tour.",
   'UI|Ended|CardTypeTourSkipped':
     "Someone left the card type editor's Show Me tour before its end.",
+  'UI|Ended|FacilitateTourCompleted':
+    "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
   'UI|Ended|PlanTourCompleted':
     "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PlanTourSkipped':
@@ -1009,7 +1016,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|SessionPoll':
     'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
   'UI|Opened|BehaviourGroup':
-    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements).",
+    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements). No longer recorded: Facilitate mode offers each of those categories directly in the palette.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -1069,9 +1076,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
+    'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' Show Tours › "Welcome".',
+  'UI|Opened|FacilitateTourOffer':
+    'The Facilitate tour was offered: on the welcome tour\'s closing card ("Show me Facilitate") for someone new in Facilitate mode, or as its own card for someone who had already done the welcome tour, or replayed from Settings\' Show Tours › "Facilitate".',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' Show Tours › "Plan".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1100,10 +1109,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|BehaviourSearch':
-    "Someone searched within the palette's Collaborate tab (formerly Behaviours).",
+    "Someone searched within the palette's Collaborate tab (formerly Behaviours). No longer recorded: the Collaborate tab became six palette categories, and the palette's own search finds their tiles.",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
+  'UI|Selected|FacilitateTourFromWelcome':
+    "Someone pressed Show me Facilitate on the welcome tour's closing card, going straight into the Facilitate tour.",
   'UI|Selected|PlanTourBoards':
     "Someone picked Boards on the Plan tour's first card, touring boards and cards on an example board.",
   'UI|Selected|PlanTourSheets':
@@ -1126,6 +1137,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
   'UI|Started|CardTypeTour':
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
+  'UI|Started|FacilitateTour':
+    "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
     "Someone picked a track on the Plan tour's first card, beginning its walkthrough on an example board or sheet.",
   'UI|Toggled|ActivityRevertPreviewOff':
@@ -1251,6 +1264,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
   'UI|Toggled|TemplateModePlan':
     'Someone narrowed the New Document templates to the ones that open in Plan mode.',
+  'UI|Toggled|TemplateModeFacilitate':
+    'Someone narrowed the New Document templates to the ones that open in Facilitate mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':
@@ -1260,13 +1275,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TourSeenOff':
-    'Someone switched on "Show Welcome Tour" in Settings, marking the tour as not yet seen and relaunching it immediately.',
+    'Someone switched on Show Tours › "Welcome" in Settings, marking the tour as not yet seen and relaunching it immediately.',
   'UI|Toggled|TourSeenOn':
-    'Someone switched off "Show Welcome Tour" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+    'Someone switched off Show Tours › "Welcome" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+  'UI|Toggled|FacilitateTourSeenOff':
+    'Someone switched on Show Tours › "Facilitate" in Settings, marking the Facilitate tour as not yet seen.',
+  'UI|Toggled|FacilitateTourSeenOn':
+    'Someone switched off Show Tours › "Facilitate" in Settings, marking the Facilitate tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on "Show Plan Tour" in Settings, marking the Plan tour as not yet seen.',
+    'Someone switched on Show Tours › "Plan" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off "Show Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+    'Someone switched off Show Tours › "Plan" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -1274,6 +1293,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+  'UI|View|FacilitateTourStepCollaborate':
+    'The Facilitate tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
+  'UI|View|FacilitateTourStepSessionStrip':
+    'The Facilitate tour reached its "Run the room" step, on the Session strip.',
+  'UI|View|FacilitateTourStepShare':
+    'The Facilitate tour reached its "Bring people in" step, on Share.',
+  'UI|View|FacilitateTourStepOutro':
+    'The Facilitate tour reached its closing "You\'re ready to facilitate" card.',
   'UI|View|PlanTourStepBoard':
     'The Plan tour reached its "Your board" step, placing its example board.',
   'UI|View|PlanTourStepAddCards':
@@ -1301,11 +1328,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepSheetPalette':
     'The Plan tour\'s Spreadsheets track reached its "The Plan palette" step, opening the palette\'s categories.',
   'UI|View|TourStepCategories':
-    'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
+    'The welcome tour reached its "Palette Categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
     'The welcome tour reached its "The element menu" step, showing the right-click menu on an element.',
   'UI|View|TourStepEditorMode':
-    'The welcome tour reached its "Diagram & Draw" step, pointing out the switch between the two editor modes.',
+    'The welcome tour reached its "Change Tab Mode" step, pointing out the switch for the tab\'s editor mode.',
   'UI|View|TourStepExplorer': 'The welcome tour reached its "The Explorer" step.',
   'UI|View|TourStepOutro': 'The welcome tour reached its closing "You\'re ready to go" card.',
   'UI|View|TourStepPalette': 'The welcome tour reached its "The Palette" step.',

@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 95;
+export const TEMPLATE_COUNT = 96;
 // Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 17;
 
@@ -46,7 +46,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in four modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards, and Facilitate for running a session with your team. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -138,8 +138,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: `${TEMPLATE_COUNT} starter templates across eight categories, and twenty-six themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
       },
       {
-        q: 'What are the four modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Illustrate lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
+        q: 'What are the five modes?',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Illustrate lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. Facilitate runs a session with your team, with timers, dot votes, polls and reveals to hand. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',

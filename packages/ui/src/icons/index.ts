@@ -47,6 +47,7 @@ export {
   IllustrateIcon,
   PlanCardsIcon,
   PlanIcon,
+  FlipchartIcon,
   MarkerIcon,
   MindmapIcon,
 } from './drawing-kinds';

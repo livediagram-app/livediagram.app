@@ -103,11 +103,16 @@ describe('SessionClusterStrip', () => {
 });
 
 describe('sessionStripTools', () => {
-  it('offers all three in Diagram, Timer and Vote in Plan, none in Draw or Illustrate', () => {
-    expect(sessionStripTools(undefined)).toEqual({ timer: true, vote: true, poll: true });
-    expect(sessionStripTools('diagram')).toEqual({ timer: true, vote: true, poll: true });
+  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram, Draw or Illustrate', () => {
+    expect(sessionStripTools('facilitate')).toEqual({ timer: true, vote: true, poll: true });
     expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
+    expect(sessionStripTools(undefined)).toBeNull();
+    expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
     expect(sessionStripTools('illustrate')).toBeNull();
+  });
+
+  it('keeps all three on an event-storming board, a workshop that is always Diagram', () => {
+    expect(sessionStripTools('diagram', true)).toEqual({ timer: true, vote: true, poll: true });
   });
 });

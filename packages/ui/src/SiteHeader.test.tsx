@@ -22,7 +22,14 @@ describe('SiteHeader', () => {
       (m) => m[1],
     );
     expect(html).toContain('href="/new?template=blank-plan&amp;via=Home.HeaderPlan"');
-    expect(rows).toEqual(['Blank Diagram', 'Blank Whiteboard', 'Blank Illustration', 'Blank Plan']);
+    expect(html).toContain('href="/new?template=blank-session&amp;via=Home.HeaderSession"');
+    expect(rows).toEqual([
+      'Blank Diagram',
+      'Blank Whiteboard',
+      'Blank Illustration',
+      'Blank Plan',
+      'Blank Session',
+    ]);
   });
 
   it('keeps Choose Template the primary beside it', () => {

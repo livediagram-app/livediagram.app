@@ -19,7 +19,7 @@ item store.
 
 ## Offering the mode
 
-- Plan is the fourth mode, after Illustrate: the mode switch, the tab menu's mode rows, **Shift+D** and the template picker's
+- Plan is the fourth mode, after Illustrate and before Facilitate: the mode switch, the tab menu's mode rows, **Shift+D** and the template picker's
   mode filter list it in that order.
 - It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
   Its Settings › Experimental switch went when it graduated.

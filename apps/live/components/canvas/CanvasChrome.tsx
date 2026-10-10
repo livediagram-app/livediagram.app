@@ -56,6 +56,7 @@ import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { atLeastInset } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
@@ -604,9 +605,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        // On a phone the cluster may wrap: the Session strip takes its own row above the rest
-        // (docs/specs/012-collaboration/session-tools.md), or it would push Undo off the screen.
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end ${PHONE_TOOLBAR_ITEMS}`}
+        // On a phone the cluster stays one row (docs/specs/012-collaboration/session-tools.md "The Session
+        // strip"): its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
+        // usual 44px (always 44px tall to tap), so Undo, the Session strip, Layers and Theme and Fit fill the
+        // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
+        // pushed off the screen.
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>
@@ -625,8 +629,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Diagram has all three, Plan its Timer and
                 Vote; Draw and Illustrate keep their bottom bar to their own tools. */}
-            {props.sessionTools && sessionStripTools(props.editorMode) ? (
-              <div className="contents phone:order-first phone:flex phone:basis-full phone:justify-end">
+            {props.sessionTools && sessionStripTools(props.editorMode, props.esBoard === true) ? (
+              <div className="contents">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
                   voteRunning={!!props.tabVote}
@@ -643,7 +647,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
                   canStart={!readOnly}
-                  offersPoll={!!sessionStripTools(props.editorMode)?.poll}
+                  offersPoll={!!sessionStripTools(props.editorMode, props.esBoard === true)?.poll}
                   open={
                     activeDockPanel === 'session-timer' ||
                     activeDockPanel === 'session-vote' ||

@@ -34,14 +34,17 @@ const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /
 async function openBlank(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  // The Plan tour offers itself 800 ms into Plan mode (PlanTourHost OFFER_DELAY_MS), and its overlay
+  // The Plan and Facilitate tours offer themselves 800 ms into their modes (OFFER_DELAY_MS), and their overlay
   // takes the presses these specs make there on a slow runner; it has its own unit tests.
   await page.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.planTourSeen !== true)
-        localStorage.setItem(key, JSON.stringify({ ...prefs, planTourSeen: true }));
+      if (prefs.planTourSeen !== true || prefs.facilitateTourSeen !== true)
+        localStorage.setItem(
+          key,
+          JSON.stringify({ ...prefs, planTourSeen: true, facilitateTourSeen: true }),
+        );
     } catch {
       // No storage: nothing to mark.
     }
@@ -96,8 +99,8 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // Illustrate is on by default, so there are three modes: Shift+D moves to the next, and wraps
-  // (docs/specs/007-editor/editor-modes.md "The mode switch").
+  // Every mode is always offered, so Shift+D steps through all five and wraps
+  // (docs/specs/007-editor/editor-modes.md "The mode switch", "Every mode, always offered").
   test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
     page,
     pageErrors,
@@ -118,11 +121,13 @@ test.describe('editor modes', () => {
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
     // Plan moves on like any mode (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     await page.keyboard.press('Shift+D');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
+    await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
 
-  // A board placed in Plan stays through Diagram and Draw, and works again back in Plan
+  // A board placed in Plan stays through Facilitate, Diagram and Draw, and works again back in Plan
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
   test('a board placed in Plan stays on the tab in every mode', async ({ page, pageErrors }) => {
     await openBlank(page);
@@ -133,6 +138,9 @@ test.describe('editor modes', () => {
     // The new board is selected, and a key on a selection types into it: a press on empty canvas,
     // right of the board, lets it go and gives the canvas the keys.
     await page.locator(CANVAS).click({ position: { x: 1500, y: 600 } });
+    await page.keyboard.press('Shift+D');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
+    await expect(boards(page)).toHaveCount(1);
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     await expect(page.getByRole('dialog')).toHaveCount(0);

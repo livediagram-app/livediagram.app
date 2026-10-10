@@ -143,9 +143,9 @@ function StopwatchGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The Collaborate category of the palette (id `behaviour`): a search box over the six group
- *  tiles you click into. Ordered room-first, with the labels BEHAVIOUR_GROUPS gives them. */
-export function BehaviourGroups() {
+/** The Collaborate elements in the palette's category picker: Facilitate mode's Collaborate band, six
+ *  categories ordered room-first, with the labels and order PALETTE_CATEGORIES gives them. */
+export function CollaborateCategories() {
   const px = 52;
   const py = 12;
   const groups: { label: string; icon: ReactNode }[] = [
@@ -157,37 +157,11 @@ export function BehaviourGroups() {
     { label: 'Navigate', icon: <AvatarGlyph /> },
   ];
   return (
-    <Scene w={420} h={228} bg="plain">
-      <Panel x={px} y={py} w={316} h={200} title="COLLABORATE">
-        {/* Search across all six groups at once */}
-        <rect
-          x={px + 12}
-          y={py + 30}
-          width={292}
-          height={22}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <circle
-          cx={px + 25}
-          cy={py + 41}
-          r={4}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.5}
-        />
-        <path
-          d="M0 0 L4 4"
-          transform={`translate(${px + 28} ${py + 44})`}
-          className="stroke-slate-400"
-          strokeWidth={1.5}
-        />
-        <Label x={px + 38} y={py + 42} size={10} tone="muted">
-          Search collaboration
-        </Label>
+    <Scene w={420} h={196} bg="plain">
+      <Panel x={px} y={py} w={316} h={168} title="COLLABORATE">
         {groups.map((g, i) => {
           const gx = px + 12 + (i % 3) * 102;
-          const gy = py + 62 + Math.floor(i / 3) * 66;
+          const gy = py + 32 + Math.floor(i / 3) * 66;
           return (
             <g key={g.label}>
               <rect

@@ -5,7 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./live-app.md - when working on Live app: The diagram editor app (clean routes, no `/live` prefix)
 - ./load-recovery.md - when working on a document that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
 - ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
-- ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All, Diagram, Draw, Illustrate), the mode glyph on template cards, the four blanks, or the Draw and Illustrate templates
+- ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All and one per mode), the mode glyph on template cards, the five blanks, or the Draw, Illustrate and Facilitate templates
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./split-view.md - when working on Side by side tabs: dragging a tab to the right edge to open it beside the active tab, each tab keeping its side under one header, the editor following a click or a resting pointer between panes with no view jump, the live other pane, the drop zone and ghost, resizing, persistence

@@ -241,13 +241,13 @@ export const WHITEBOARD_RECOGNITION = chart(
   'Shape recognition switched on or off on a whiteboard.',
 );
 
-// Editor modes (docs/specs/007-editor/editor-modes.md): switches between Diagram and Draw.
+// Editor modes (docs/specs/007-editor/editor-modes.md): switches between the editor modes.
 export const EDITOR_MODE_SWITCHES = chart(
   'Editor',
   'Changed',
   'Editor Mode Switches',
-  'A tab switched to Diagram, Draw or Illustrate mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan'] },
+  'A tab switched to another editor mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan', 'ModeFacilitate'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -916,6 +916,14 @@ export const PLAN_TOUR_OFFERED = opened(
   'Plan Tour Offered',
   'The Plan tour offered, the first time someone works in Plan mode.',
   (t) => t === 'PlanTourOffer',
+);
+
+// The Facilitate tour's offer (docs/specs/012-collaboration/facilitate-tour.md); charted in its funnel on
+// the Visitors tab.
+export const FACILITATE_TOUR_OFFERED = opened(
+  'Facilitate Tour Offered',
+  'The Facilitate tour offered, the first time someone works in Facilitate mode.',
+  (t) => t === 'FacilitateTourOffer',
 );
 
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on

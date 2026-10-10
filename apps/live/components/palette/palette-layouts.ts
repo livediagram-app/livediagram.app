@@ -59,8 +59,20 @@ const EMBED_TILES = [
   'media:embed-website',
 ];
 
-// Diagram mode: Popular, then every category but the mock-up kit (Components, Devices) and the
-// charts (Data), each with its own tiles but Media's embeds.
+// Write's own tiles, then the Comment panel and the Action card: comments and assigned actions belong
+// to every mode, so Diagram keeps them though their Collaborate category is Facilitate's.
+const WRITE_WITH_COMMENTS = [
+  ...tilesForCategory('write').map((t) => t.id),
+  'collab:comment-pin',
+  'collab:action-card',
+];
+
+// Image and Avatar; no embedded pages.
+const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
+
+// Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
+// (Data) and the session kit (Stickers, Collaborate: Facilitate's, docs/specs/012-collaboration/
+// facilitate-mode.md), each with its own tiles but Media's embeds.
 const DIAGRAM: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -86,16 +98,14 @@ const DIAGRAM: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    { id: 'write' },
+    // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
+    { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
     { id: 'build' },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
-    { id: 'stickers' },
     { id: 'technology' },
-    // Image and Avatar; no embedded pages.
-    { id: 'media', tiles: tilesExcept('media', ...EMBED_TILES) },
-    { id: 'behaviour' },
+    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
   ],
 };
 
@@ -154,6 +164,49 @@ const ILLUSTRATE: PaletteLayout = {
   ],
 };
 
+// Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette"): running a session
+// with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
+// Polygon, no Lane or Timeline), the decorations a room reaches for, and the Collaborate elements as
+// six categories, one per group; no tech icons, mock-up kit, charts or workshop notation.
+const FACILITATE: PaletteLayout = {
+  landing: 'popular',
+  categories: [
+    {
+      // Twelve tiles a session is most often run with: notes and words, a frame and an arrow to
+      // arrange them, the three session tools, then the reveal and the ask-the-room elements.
+      id: 'popular',
+      tiles: [
+        'tools:sticky',
+        'tools:text',
+        'tools:frame',
+        'tools:arrow',
+        'tools:session-timer',
+        'tools:session-vote',
+        'tools:session-poll',
+        'tools:reveal',
+        'collab:agenda',
+        'collab:idea-box',
+        'collab:qa-board',
+        'collab:temperature',
+      ],
+    },
+    { id: 'shapes' },
+    { id: 'my-shapes' },
+    { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
+    { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
+    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline') },
+    { id: 'icons' },
+    { id: 'stickers' },
+    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
+    { id: 'collab-ask' },
+    { id: 'collab-tools' },
+    { id: 'collab-record' },
+    { id: 'collab-react' },
+    { id: 'collab-mode' },
+    { id: 'collab-navigate' },
+  ],
+};
+
 // Plan mode (docs/specs/026-plan/plan-mode.md "The palette"): cards, boards and their widgets first, then the
 // plan views that read every card (docs/specs/026-plan/plan-views.md), then the few other elements a team
 // plans beside its boards, borrowed from Write, Media and Behaviours; nothing that organises a diagram.
@@ -183,11 +236,16 @@ const PLAN: PaletteLayout = {
   ],
 };
 
-export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE, plan: PLAN } as const;
+export const PALETTE_LAYOUTS = {
+  diagram: DIAGRAM,
+  illustrate: ILLUSTRATE,
+  plan: PLAN,
+  facilitate: FACILITATE,
+} as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
 export function paletteLayoutFor(mode: EditorMode): PaletteLayout {
-  return mode === 'illustrate' ? ILLUSTRATE : mode === 'plan' ? PLAN : DIAGRAM;
+  return mode === 'draw' ? DIAGRAM : PALETTE_LAYOUTS[mode];
 }
 
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {

@@ -85,7 +85,8 @@ export function PlanTourHost() {
   const { active } = engine;
 
   // One tour at a time: publish this one while it is on screen.
-  const otherTour = useActiveTour() === 'welcome';
+  const shown = useActiveTour();
+  const otherTour = shown !== null && shown !== 'plan';
   useEffect(() => {
     setActiveTour('plan', active);
   }, [active]);
@@ -143,7 +144,7 @@ export function PlanTourHost() {
     return () => clearTimeout(t);
   }, [armed, active, seen, inPlan, canWork, otherTour, engineRef]);
 
-  // Settings rerun (the "Show Plan Tour" row, turned on from off + closed): offers again in Plan, and
+  // Settings rerun (the Show Tours › "Plan" row, turned on from off + closed): offers again in Plan, and
   // otherwise the next time the person enters it (the row has cleared `planTourSeen`).
   const inPlanRef = useLatest(inPlan);
   useEffect(() => {

@@ -122,3 +122,28 @@ describe('SettingsCategoryPane link rows', () => {
     expect(onOpenCategory).toHaveBeenCalledWith('tokens');
   });
 });
+
+// Show Tours (docs/specs/007-editor/user-preferences.md "Show Tours"): each switch in the group writes its
+// own preference and sends its own token, as its own row used to.
+describe('SettingsCategoryPane toggle group', () => {
+  const ACCESSIBILITY = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
+
+  it('turns the Plan tour back on: planTourSeen false, PlanTourSeenOff', () => {
+    const onChange = vi.fn();
+    render(
+      <SettingsCategoryPane
+        category={ACCESSIBILITY}
+        settings={{ tourSeen: true, planTourSeen: true }}
+        onChange={onChange}
+      />,
+    );
+    const plan = screen.getByRole('switch', { name: 'Plan' });
+    expect(plan.getAttribute('aria-checked')).toBe('false');
+    expect(screen.getByRole('switch', { name: 'Facilitate' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(plan);
+    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'PlanTourSeenOff');
+    expect(onChange).toHaveBeenCalledWith({ tourSeen: true, planTourSeen: false });
+  });
+});

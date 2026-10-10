@@ -12,7 +12,19 @@ import { TourHost } from './TourHost';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('./TourPopover', () => ({ TourPopover: () => null }));
+const popover = vi.hoisted(() => ({
+  props: null as null | {
+    card?: string;
+    onNext: () => void;
+    outroChoice?: { label: string; onPick: () => void };
+  },
+}));
+vi.mock('./TourPopover', () => ({
+  TourPopover: (props: NonNullable<typeof popover.props>) => {
+    popover.props = props;
+    return null;
+  },
+}));
 vi.mock('./tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async () => null,
@@ -28,11 +40,23 @@ const editor = (over: Record<string, unknown> = {}) => {
     isReadOnly: false,
     embedMode: false,
     esBoard: false,
+    editorMode: { mode: 'diagram' },
+    isOwner: true,
+    prefsSettled: true,
+    activeTab: { id: 'tab1', locked: false },
     userPreferences: { tourSeen: false },
     closeContextMenu: vi.fn(),
+    tourSquare: { place: vi.fn(), remove: tourSquareRemove },
+    setSelectedId,
+    setUserPreferences: vi.fn(),
+    writeUserPreferences,
+    selfParticipant: { id: 'me' },
     ...over,
   };
 };
+const writeUserPreferences = vi.fn();
+const tourSquareRemove = vi.fn((): string | null => null);
+const setSelectedId = vi.fn();
 const offered = () => track.mock.calls.some((c) => c[0] === 'UI' && c[2] === 'TourOffer');
 
 beforeEach(() => {
@@ -70,6 +94,39 @@ describe('TourHost offer', () => {
   it('makes no offer without a handoff', () => {
     editor();
     render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+  });
+
+  // docs/specs/012-collaboration/facilitate-tour.md "Where it appears": the welcome tour comes first.
+  it('is owed in Facilitate to someone who has seen neither tour', () => {
+    editor({ editorMode: { mode: 'facilitate' } });
+    render(<TourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+  });
+
+  it.each([
+    ["to an Editor joining someone else's session", { isOwner: false }],
+    ['before the synced preferences are in', { prefsSettled: false }],
+    ['on a locked tab', { activeTab: { id: 'tab1', locked: true } }],
+  ])('is not owed in Facilitate %s', (_why, over) => {
+    editor({ editorMode: { mode: 'facilitate' }, ...over });
+    render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+  });
+
+  it('is not owed in Facilitate once the Facilitate tour is answered, or once it is seen', () => {
+    editor({
+      editorMode: { mode: 'facilitate' },
+      userPreferences: { tourSeen: false, facilitateTourSeen: true },
+    });
+    const { rerender } = render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+    editor({ editorMode: { mode: 'facilitate' }, userPreferences: { tourSeen: true } });
+    rerender(<TourHost />);
     act(() => vi.advanceTimersByTime(2000));
     expect(offered()).toBe(false);
   });
@@ -119,5 +176,60 @@ describe('TourHost alongside the Plan tour', () => {
     act(() => requestTourRelaunch());
     expect(offered()).toBe(true);
     expect(hasTourPending()).toBe(true);
+  });
+});
+
+// docs/specs/012-collaboration/facilitate-tour.md "Where it appears": the Facilitate tour's offer rides on
+// this tour's closing card, never a pop-up after it.
+describe('TourHost closing card in Facilitate', () => {
+  const runToOutro = async (mode: string) => {
+    editor({ editorMode: { mode } });
+    render(<TourHost />);
+    act(() => requestTourRelaunch());
+    act(() => popover.props!.onNext());
+    // Every anchored step finds no target in this harness and is skipped, so it runs to the outro.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+    expect(popover.props!.card).toBe('outro');
+  };
+
+  it('offers Show me Facilitate, which ends this tour and starts that one', async () => {
+    const started = vi.fn();
+    window.addEventListener('livediagram:facilitate-tour-start', started);
+    await runToOutro('facilitate');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'FacilitateTourOffer');
+    expect(popover.props!.outroChoice?.label).toBe('Show me Facilitate');
+    act(() => popover.props!.outroChoice!.onPick());
+    expect(started).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ tourSeen: true, facilitateTourSeen: true }),
+      'me',
+    );
+    expect(track).not.toHaveBeenCalledWith('UI', 'Closed', 'FacilitateTourOffer');
+    window.removeEventListener('livediagram:facilitate-tour-start', started);
+  });
+
+  it('finishing without it answers the Facilitate tour too, so nothing pops up after', async () => {
+    await runToOutro('facilitate');
+    act(() => popover.props!.onNext());
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ tourSeen: true, facilitateTourSeen: true }),
+      'me',
+    );
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'FacilitateTourOffer');
+  });
+
+  it('takes away the square it placed, and its selection, when it ends', async () => {
+    tourSquareRemove.mockReturnValueOnce('sq1');
+    await runToOutro('diagram');
+    act(() => popover.props!.onNext());
+    expect(tourSquareRemove).toHaveBeenCalled();
+    expect(setSelectedId).toHaveBeenCalledWith(null);
+  });
+
+  it('has no Facilitate offer outside Facilitate', async () => {
+    await runToOutro('diagram');
+    expect(popover.props!.outroChoice).toBeUndefined();
   });
 });

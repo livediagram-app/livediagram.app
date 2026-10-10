@@ -197,8 +197,11 @@ export type UserPreferences = {
   tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome tour's:
   // true once its offer has been answered, so it never offers itself again on any device. Surfaced in
-  // Settings as "Show Plan Tour" (inverted). Missing / undefined === not seen.
+  // Settings as Show Tours › "Plan" (inverted). Missing / undefined === not seen.
   planTourSeen?: boolean;
+  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as Show Tours › "Facilitate" (inverted). Missing / undefined === not seen.
+  facilitateTourSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one

@@ -392,6 +392,9 @@ export function PaletteDropdown({
                         // say it started.
                         <div
                           role="presentation"
+                          // A tour can ring one band: its heading through its last tile (the
+                          // Facilitate tour's Collaborate step).
+                          data-tour-id={`band-${heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                           className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${bandTint(opt.group)} ${
                             i === 0
                               ? 'pt-0.5'
@@ -406,6 +409,7 @@ export function PaletteDropdown({
                         role="option"
                         aria-selected={opt.id === value}
                         data-option-id={opt.id}
+                        data-tour-id={`option-${opt.id}`}
                         disabled={opt.disabled}
                         onClick={() => {
                           if (opt.disabled) return;

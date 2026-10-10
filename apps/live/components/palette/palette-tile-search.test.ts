@@ -235,3 +235,23 @@ describe('a worst-case query', () => {
     expect((performance.now() - start) / 50).toBeLessThan(16);
   });
 });
+
+// Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "What Diagram gives up"): the
+// Collaborate tiles leave Diagram's palette but Search still finds them, with the other modes'.
+describe('the session kit from Diagram', () => {
+  it("lists Collaborate tiles in Diagram's other-modes section and Facilitate's own", () => {
+    const diagram = elementTileSections({ mode: 'diagram', hasImage: true });
+    expect(ids(diagram.here)).not.toContain('tools:session-timer');
+    expect(ids(diagram.elsewhere)).toContain('tools:session-timer');
+    expect(ids(diagram.elsewhere)).toContain('collab:quiz');
+    const facilitate = elementTileSections({ mode: 'facilitate', hasImage: true });
+    expect(ids(facilitate.here)).toContain('tools:session-timer');
+    expect(ids(facilitate.here)).toContain('collab:quiz');
+  });
+
+  it("keeps the Comment panel and the Action card in Diagram's own section", () => {
+    const here = ids(elementTileSections({ mode: 'diagram', hasImage: true }).here);
+    expect(here).toContain('collab:comment-pin');
+    expect(here).toContain('collab:action-card');
+  });
+});

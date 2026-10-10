@@ -254,9 +254,12 @@ type UserPreferences = {
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome
-  // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
+  // tour's. Surfaced in Settings as Show Tours › "Plan" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
+  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as Show Tours › "Facilitate" (inverted). Missing / undefined === not seen.
+  facilitateTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -567,7 +570,7 @@ and the dialog stays as the one complete, browsable index of them.
   collapsible groups), **Panels** (panel opacity; with the
   sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
-  **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
+  **Accessibility** (reduce motion, Show Tours), **AI Tools** (assistant,
   suggested prompts, and a **Manage API Tokens** link row that opens the API
   Tokens sub-category), **Documents** (a **Where New Documents Go** section: first **Skip the Location Step**,
   the `skipLocationStep` preference with a Turn Off button, then one row per
@@ -699,17 +702,21 @@ and the dialog stays as the one complete, browsable index of them.
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
   and read as broken.
 
-  **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
-  asks "show me the tour?", the preference records "already seen". Because
-  `tourSeen !== true` is necessary but NOT sufficient for the offer (TourHost
-  also needs the per-tab pending flag, which only `/new` sets), closing the
-  dialog with the row on **marks that flag**, so the row's promise is true
-  for a reader who had simply never taken the tour. Turning it on from off
-  additionally relaunches in place. Its telemetry tokens still describe the
-  PREFERENCE, so the dashboard series keeps its meaning. **Show Plan Tour**, beneath it, is inverted
-  against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
+  **Show Tours** is one control for the three guided tours: a heading and one description over a grid of
+  switches, **Welcome**, **Plan** and **Facilitate**, each its own preference with its own
+  telemetry, and a **Learn more** link per tour after the description (a `toggleGroup` row: three
+  near-identical rows each repeating the same paragraph read as clutter). Every switch is inverted: on
+  means "show me the tour", the preference records "already seen".
+
+  **Welcome** is inverted against the stored `tourSeen`. Because `tourSeen !== true` is necessary but
+  NOT sufficient for the offer (TourHost also needs the per-tab pending flag, which only `/new` sets),
+  closing the dialog with the switch on **marks that flag**, so its promise is true for a reader who had
+  simply never taken the tour. Turning it on from off additionally relaunches in place. Its telemetry
+  tokens still describe the PREFERENCE, so the dashboard series keeps its meaning. **Plan** is
+  inverted against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
   entering Plan), so closing the dialog only reruns it, when it was turned on from off
-  ([Plan tour](../026-plan/plan-tour.md)).
+  ([Plan tour](../026-plan/plan-tour.md)). **Facilitate** works the same way against
+  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)).
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the
   categories and, per row, its label, description, help article, section,

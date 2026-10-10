@@ -6,18 +6,18 @@ import { TabModeMenuScene, LeaveIllustrateScene } from '@/components/illustratio
 export const metadata = helpMetadata({
   title: 'Editor Modes',
   description:
-    'Work on any tab in Diagram, Draw, Illustrate or Plan mode: what each mode is for, how to switch with the mode switch, Shift+D or the tab menu, why everyone on a tab shares its mode, and what stays the same when you switch.',
+    'Work on any tab in Diagram, Draw, Illustrate, Plan or Facilitate mode: what each mode is for, how to switch with the mode switch, Shift+D or the tab menu, why everyone on a tab shares its mode, and what stays the same when you switch.',
   path: '/help/canvas/editor-modes/',
 });
 
 <ArticleLayout
   title="Editor Modes"
-  description="Diagram, Draw, Illustrate and Plan: four ways of working on the same tab."
+  description="Diagram, Draw, Illustrate, Plan and Facilitate: five ways of working on the same tab."
   categoryTitle="Canvas"
   categorySlug="canvas"
 >
 
-An **editor mode** is how you work on a tab right now. There are four: **Diagram**, **Draw**, **Illustrate** and **Plan**. A mode decides which tools are in front of you; it never changes what is on the tab. Switch from Diagram to Draw and every shape stays exactly where it was, and the strokes you draw in Draw mode are still there when you switch back.
+An **editor mode** is how you work on a tab right now. There are five: **Diagram**, **Draw**, **Illustrate**, **Plan** and **Facilitate**. A mode decides which tools are in front of you; it never changes what is on the tab. Switch from Diagram to Draw and every shape stays exactly where it was, and the strokes you draw in Draw mode are still there when you switch back.
 
 Three words describe how documents and tabs differ, and they mean different things:
 
@@ -25,27 +25,28 @@ Three words describe how documents and tabs differ, and they mean different thin
 - **Kind** is what a tab is. Almost every tab is a general tab that works in every mode; the [Event Storming board](/help/canvas/event-storming-boards/) is the one tab with its own kind, its own notation and no modes.
 - **Template** is what a document was made from. A Kanban board or a retrospective is a general tab made from a template, never a kind of tab of its own. See [Templates](/help/canvas/templates/).
 
-## The Four Modes
+## The Five Modes
 
-- **Diagram**: shapes, arrows, the palette and snapping. The palette opens on **Popular** and offers Shapes, Write, Draw, Build, Icons, Stickers, Tech, Media and Collaborate, and shapes snap into line with alignment guides. This is where every new document starts unless its template says otherwise.
+- **Diagram**: shapes, arrows, the palette and snapping. The palette opens on **Popular** and offers Shapes, Write, Draw, Build, Icons, Tech and Media, and shapes snap into line with alignment guides. This is where every new document starts unless its template says otherwise.
 - **Draw**: pens, the eraser and shape recognition, for sketching by hand. The palette strip gives way to Draw's own tools: Select, three markers, Text, the Path tool, the Eraser (whole strokes or just part of one) and your pinned shapes, in a dock across the top. See [Draw Mode](/help/canvas/draw-mode/).
 - **Illustrate**: pages, for building a finished visual or writing an article. The tab is laid out as sheets in a row, each with a settings cog and a **+** after the last to add another, and the palette trades pens, tech icons and Collaborate for Components, Devices and Data charts. Export from Illustrate saves the pages. See [Illustrate Mode](/help/canvas/illustrate/).
 - **Plan**: boards of items, for running work through columns of cards. The palette holds **Cards**, **Boards**, **Widgets**, **Metrics**, **Visualisations**, **Content** and **Tools**, and opens on Cards (or Boards, until the tab has a board). The bottom-right corner gains **Trash**, **Cards** and **Card Types**, while the Layers and Quick Style panels step aside. See [Plan Mode](/help/canvas/plan-mode/).
+- **Facilitate**: running a session with your team, such as a retro, a town hall or a workshop. The palette adds **Stickers** and the six **Collaborate** categories (timers, votes, polls, reveals, quizzes and the rest of the session kit) and opens on a **Popular** of session tools, and the bottom-right corner gains the **Timer**, **Vote** and **Poll** buttons. See [Facilitate Mode](/help/canvas/facilitate-mode/).
 
 Every mode is on for everyone, with nothing to turn on in Settings.
 
 ## The Mode Switch
 
-The mode switch shows the mode you are in. Press it to open a short menu of the four modes, the current one ticked, and choose another. Choosing switches at once and closes the menu; **Escape** or a click elsewhere closes it without switching.
+The mode switch shows the mode you are in. Press it to open a short menu of the five modes, the current one ticked, and choose another. Choosing switches at once and closes the menu; **Escape** or a click elsewhere closes it without switching.
 
 - **It sits beside the menu button** in the card at the top left, as an icon, just left of the [palette strip](/help/palette/toolbar-layout/).
 - **It stays put in every mode**, so it is always where you left it, even in Draw mode.
 
-<Figure caption="The mode switch beside the menu button, open on the four modes: the current one ticked, ⇧D on the next.">
+<Figure caption="The mode switch beside the menu button, open on the five modes: the current one ticked, ⇧D on the next.">
   <ModeSwitchScene />
 </Figure>
 
-**Shift+D** moves to the next mode from anywhere on the canvas: Diagram, then Draw, Illustrate, Plan and back to Diagram. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
+**Shift+D** moves to the next mode from anywhere on the canvas: Diagram, then Draw, Illustrate, Plan, Facilitate and back to Diagram. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
 
 ## One Mode for Everyone
 
@@ -54,13 +55,13 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
 - **Undo switches back.** Switching is one step in your [undo history](/help/canvas/undo/): **Undo** puts the tab back in the mode it was in, exactly as it was, for everyone, and **Redo** switches again.
 - **The tab pill shows the tab's mode.** Each tab in the tab bar starts with the icon of its mode, the same icon the switch uses.
 - **A tab opens in its mode**, for everyone, Diagram unless something set it otherwise.
-- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab) and choose **Diagram**, **Draw**, **Illustrate** or **Plan** from the mode rows at the bottom. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
+- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab) and choose **Diagram**, **Draw**, **Illustrate**, **Plan** or **Facilitate** from the mode rows at the bottom. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
 
 <Figure caption="The tab menu's mode rows, with a dot on the tab's current one; the tab pill leads with the same icon.">
   <TabModeMenuScene />
 </Figure>
 
-- **New documents and new tabs open in Diagram**, whatever mode you are in, unless the template you pick opens somewhere else: **Blank Whiteboard** opens in Draw, **Blank Illustration** in Illustrate and **Blank Plan** in Plan.
+- **New documents and new tabs open in Diagram**, whatever mode you are in, unless the template you pick opens somewhere else: **Blank Whiteboard** opens in Draw, **Blank Illustration** in Illustrate, **Blank Plan** in Plan, and **Blank Session** and the session templates (the retrospectives, Town Hall Q&A, Lean Coffee, Crazy Eights and Meeting Agenda) in Facilitate.
 - In the Explorer, the **Opens in** filter finds documents by the mode they were created to open in. See [Filters](/help/explorer/filters/).
 
 ## On a Phone
@@ -87,7 +88,7 @@ Switching is instant, with no reload, and nothing on the tab moves.
 
 ## Leaving Illustrate
 
-Diagram, Draw and Plan modes do not show pages, so when you can edit a tab that has something on it, switching out of Illustrate (with the switch, Shift+D or the tab menu's mode rows) asks first:
+Diagram, Draw, Plan and Facilitate modes do not show pages, so when you can edit a tab that has something on it, switching out of Illustrate (with the switch, Shift+D or the tab menu's mode rows) asks first:
 
 - **A tab with content but no articles** shows a small card beside the switch: **Switch to Diagram?** (or Draw, or Plan). What you change in the other mode may not fit back onto your pages when you return. Press **Switch** to go, or **Cancel** (or Escape) to stay.
 - **A tab with articles** asks **Turn Articles Into Pages?**: **Turn Into Pages**, **Keep as Articles** or **Cancel**. See [Writing Articles](/help/canvas/illustrate/articles/#exporting-presenting-and-leaving).

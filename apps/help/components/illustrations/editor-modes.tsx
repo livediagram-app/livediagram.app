@@ -1,5 +1,5 @@
 // Editor-mode illustrations for the Canvas article on Editor Modes (docs/specs/018-help/help-app.md,
-// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the four modes at its foot
+// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the five modes at its foot
 // (chrome/TabModeMenuRows.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
 // confirmation card that hangs from the mode switch when an editor leaves Illustrate on a tab with
 // pages (dialogs/LeaveIllustrateConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
@@ -9,10 +9,11 @@
 import { Scene, Label, Button } from './primitives';
 import { MenuCard } from './toolbar-layout';
 
-type Mode = 'Diagram' | 'Draw' | 'Illustrate' | 'Plan';
+type Mode = 'Diagram' | 'Draw' | 'Illustrate' | 'Plan' | 'Facilitate';
 
 /** Each mode's mark (packages/ui EDITOR_MODE_ICONS) on its 24-unit grid, centred on (0, 0) and
- *  drawn at `scale`: a flowchart, a marker, a page with a chart over two lines, a board. */
+ *  drawn at `scale`: a flowchart, a marker, a page with a chart over two lines, a board, a
+ *  flipchart on an easel. */
 function ModeMark({
   mode,
   className = 'stroke-slate-500',
@@ -54,6 +55,15 @@ function ModeMark({
             <path d="M8.5 15H15.5M8.5 18H13" {...common} />
           </>
         );
+      case 'Facilitate':
+        return (
+          <>
+            <path d="M3 3.5H21" {...common} />
+            <rect x={4.5} y={3.5} width={15} height={12} rx={1} {...common} />
+            <path d="M8 8H16M8 11.5H13" {...common} />
+            <path d="M12 15.5V21M8 15.5L5.5 21M16 15.5L18.5 21" {...common} />
+          </>
+        );
       default:
         return (
           <>
@@ -67,15 +77,19 @@ function ModeMark({
   return <g transform={`scale(${scale}) translate(-12 -12)`}>{body}</g>;
 }
 
-// The four modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
+// The five modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
   { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
   { mode: 'Illustrate', lines: ['Pages: infographics to lay out, and', 'articles to write.'] },
   { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
+  {
+    mode: 'Facilitate',
+    lines: ['Run a session with your team: timers,', 'votes, polls and reveals.'],
+  },
 ];
 
-/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the four
+/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the five
  *  mode rows, each with its mark, name and what it is for, a dot on the tab's current one (Draw),
  *  above the tab bar whose pill leads with the same mark. */
 export function TabModeMenuScene() {

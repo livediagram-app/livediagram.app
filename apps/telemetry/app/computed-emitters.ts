@@ -165,6 +165,21 @@ export const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// The Facilitate tour's steps, as facilitateTourStepTelemetryType makes them (apps/live
+// facilitate-tour-steps.ts, docs/specs/012-collaboration/facilitate-tour.md). The welcome card sends no step view.
+export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/facilitate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `FacilitateTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
@@ -405,10 +420,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'the rich-text command a note applied',
   },
   'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
-    values: ['BehaviourSearch', 'IconSearch', 'TechSearch', 'StickerSearch'],
+    values: ['IconSearch', 'TechSearch', 'StickerSearch'],
   },
   'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
-    values: ['BehaviourGroup', 'IconGroup', 'TechGroup', 'StickerGroup'],
+    values: ['IconGroup', 'TechGroup', 'StickerGroup'],
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
@@ -453,6 +468,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: API_ERROR_WHY,
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/FacilitateTourHost.tsx UI·View': {
+    values: FACILITATE_TOUR_STEP_SOURCE,
+  },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],

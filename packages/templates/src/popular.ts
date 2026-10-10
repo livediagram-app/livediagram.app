@@ -13,6 +13,7 @@ export const MODE_BEST: Readonly<Record<EditorMode, readonly TemplateKind[]>> = 
   draw: ['journey-doodle', 'comic-strip', 'idea-garden', 'rich-picture'],
   illustrate: ['event-poster', 'year-in-review', 'social-carousel', 'data-story'],
   plan: ['project-planner', 'kanban', 'team-retro', 'bug-triage'],
+  facilitate: ['retrospective', 'town-hall', 'lean-coffee', 'crazy-eights'],
 };
 
 const LISTED = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));

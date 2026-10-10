@@ -118,9 +118,9 @@ A strip shows one category at a time, so finding an element means knowing which 
 ## More: the rest of the category
 
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
-Stickers, Technology and Collaborate do not. More opens the current
+Stickers and Technology do not. More opens the current
 category's full Palette body in a popover hanging from the More button's own
-right edge: search, group browser, everything. The popover is
+right edge: search, collapsed groups, everything. The popover is
 wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
 from it closes it, so the canvas is clear to draw on; switching category
 closes it too, since it was showing the old one. Opening it focuses the body's
