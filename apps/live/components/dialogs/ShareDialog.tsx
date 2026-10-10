@@ -47,6 +47,8 @@ export function ShareDialog({
   onSetPassword,
   offline,
   onSyncToCloud,
+  syncAtOnce = false,
+  syncReady = true,
   community,
   communityListed = false,
   passwordLockedReason,
@@ -149,7 +151,14 @@ export function ShareDialog({
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.
   if (offline && onSyncToCloud) {
-    return <ShareOfflineGate onSyncToCloud={onSyncToCloud} onClose={onClose} />;
+    return (
+      <ShareOfflineGate
+        onSyncToCloud={onSyncToCloud}
+        atOnce={syncAtOnce}
+        ready={syncReady}
+        onClose={onClose}
+      />
+    );
   }
 
   return (
