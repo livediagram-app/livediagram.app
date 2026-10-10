@@ -17,6 +17,14 @@ import { MAX_FREEHAND_POINTS, encodeStrokePoints } from './stroke-points';
 const box = { x: 0, y: 0, width: 100, height: 60 };
 
 describe('isValidElement', () => {
+  it("bounds a Participant's adder key", () => {
+    const sticky = { id: 's', type: 'sticky', x: 0, y: 0, width: 10, height: 10 };
+    expect(isValidElement({ ...sticky, addedBy: 'a'.repeat(32) })).toBe(true);
+    expect(isValidElement({ ...sticky, addedBy: 'a'.repeat(33) })).toBe(false);
+    expect(isValidElement({ ...sticky, addedBy: '' })).toBe(false);
+    expect(isValidElement({ ...sticky, addedBy: 7 })).toBe(false);
+  });
+
   it('accepts a well-formed shape', () => {
     expect(isValidElement({ id: 'a', type: 'shape', shape: 'square', ...box })).toBe(true);
   });

@@ -51,6 +51,9 @@ export type GripContext = {
   isPaintMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
+  // A read-only session that may still resize this element (a Participant): handles, never edge anchors, since a
+  // connector is not its to draw.
+  resizable?: boolean;
 };
 
 // One element's resize handles and edge anchors (docs/specs/008-canvas/blueprints/selection-store.md):
@@ -69,9 +72,9 @@ export function elementGrips(
     ctx.editingId !== el.id &&
     !ctx.isPaintMode &&
     !ctx.tabLocked &&
-    !ctx.readOnly &&
+    (!ctx.readOnly || ctx.resizable === true) &&
     !isFixedSizeElement(el);
-  return { handles, anchors: handles && el.type !== 'table' };
+  return { handles, anchors: handles && !ctx.readOnly && el.type !== 'table' };
 }
 
 export function deriveCanvasSelection(input: {

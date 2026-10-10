@@ -49,7 +49,12 @@ export function TemperatureFace({
         onRespond={onRespond}
       />
       <MoodBars tally={tally} textColor={textColor} />
-      <MoodMeter average={stats.average} count={stats.count} textColor={textColor} />
+      <MoodMeter
+        average={stats.average}
+        count={stats.count}
+        textColor={textColor}
+        canRespond={!!onRespond}
+      />
     </CollabPanel>
   );
 }

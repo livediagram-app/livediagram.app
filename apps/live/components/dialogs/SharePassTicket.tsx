@@ -3,11 +3,10 @@ import type { ShareRole } from '@/lib/api-client';
 import { ROLE_PASS } from './share-dialog-parts';
 
 // The card every share link is drawn as (docs/specs/007-editor/live-app.md
-// "The pass metaphor"): a role-coloured stub and a body the caller fills.
+// "The pass metaphor"): a role-coloured header band and a body the caller fills.
 // Active and expired passes share it so the two read as the same object in two
-// states. A perforated edge with punched notches was tried and read as stray
-// dots and circles at this size, so the stub's colour edge is the only divide.
-const STUB_WIDTH = 'w-16';
+// states. The band runs across the top rather than down the left so the body,
+// and the link in it, has the card's whole width (blueprint SR7).
 
 // Arrival and departure (docs/specs/007-editor/live-app.md "Share dialog"):
 // the <li> is a one-row grid whose row eases between 0fr and 1fr, so a pass
@@ -48,14 +47,14 @@ export function SharePassTicket({
     >
       <div className="min-h-0 overflow-hidden px-0.5 pt-0.5 pb-2">
         <div
-          className={`relative flex overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow] duration-long ${
+          className={`relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow] duration-long ${
             expired
               ? 'border-slate-200 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-800/40'
               : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/70'
           }${highlight ? ' border-brand-300 ring-2 ring-brand-400/40 dark:border-brand-500/60' : ''}`}
         >
           <div
-            className={`flex ${STUB_WIDTH} shrink-0 flex-col items-center justify-center gap-1 py-3 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 ${
               expired
                 ? 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
                 : pass.solid
@@ -64,7 +63,7 @@ export function SharePassTicket({
             <Icon />
             <span className="text-[10px] font-bold uppercase tracking-[0.12em]">{pass.stamp}</span>
           </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-2 py-2.5 pr-3 pl-4">{children}</div>
+          <div className="flex min-w-0 flex-col gap-2 px-3 py-2.5">{children}</div>
         </div>
       </div>
     </li>

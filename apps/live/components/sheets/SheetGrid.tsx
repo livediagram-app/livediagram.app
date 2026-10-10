@@ -61,7 +61,8 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, fontFami
   const clipboard = useSheetClipboard();
   const total = totalSize(c.geometry);
   // Room under the last row for Add Rows, for someone who may edit.
-  const footer = c.canEdit && c.sheet.layout.rows.length < SHEET_ROWS_MAX ? ADD_ROWS_PX : 0;
+  const footer =
+    (c.canShape ?? c.canEdit) && c.sheet.layout.rows.length < SHEET_ROWS_MAX ? ADD_ROWS_PX : 0;
   const window = visibleWindow(c.geometry, c.scroll, {
     width: Math.max(0, c.view.width - c.geometry.headW),
     height: Math.max(0, c.view.height - c.geometry.headH),
@@ -436,7 +437,11 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, fontFami
             palette={c.palette}
             selection={c.interactive ? c.selection : null}
             view={c.view}
-            onUnhide={c.canEdit ? (axis, from, to) => actions.hide(axis, false, from, to) : null}
+            onUnhide={
+              (c.canShape ?? c.canEdit)
+                ? (axis, from, to) => actions.hide(axis, false, from, to)
+                : null
+            }
           />
           {pointer.preview?.kind === 'resize' || pointer.preview?.kind === 'move' ? (
             <div

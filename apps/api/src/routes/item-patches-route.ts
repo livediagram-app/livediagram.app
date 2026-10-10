@@ -18,7 +18,7 @@ import {
   type ItemRejection,
 } from '@livediagram/items';
 import { readItems, updateItemsAtRev } from '../db';
-import { badRequest, json } from '../responses';
+import { badRequest, forbidden, json } from '../responses';
 import { readBody, type RouteContext } from './context';
 import {
   excludedStatus,
@@ -26,7 +26,9 @@ import {
   itemBusy,
   itemCaller,
   itemNotFound,
+  isItemEditor,
   relay,
+  retiresItem,
   writer,
   type ItemCaller,
 } from './item-route-kit';
@@ -67,7 +69,7 @@ async function withLanded(
 }
 
 export async function patches(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+  const caller = await itemCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -94,6 +96,8 @@ export async function patches(ctx: RouteContext, documentId: string): Promise<Re
     for (const [id, next] of nexts) {
       if (excludedStatus(caller, next, stored.get(id)!, undo))
         return withLanded(rejectedFor(id, 'status_excluded', 'status'), caller, done, rev);
+      if (retiresItem(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))
+        return withLanded(forbidden(), caller, done, rev);
       const bound = fieldsWithinBounds(next.fields);
       if (bound) return withLanded(rejectedFor(id, bound), caller, done, rev);
     }

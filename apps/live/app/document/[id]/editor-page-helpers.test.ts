@@ -227,6 +227,20 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
 });
 
 describe('resolveDocumentSession (owner / role / share-code security)', () => {
+  // docs/specs/013-workspace/share-roles.md: a Participant link opens at its level; its embed only looks.
+  it('opens a Participant link as a Participant, and its embed as a Viewer', () => {
+    const base = { documentOwnerId: 'owner', selfId: 'visitor', shareCodeParam: 'C' };
+    expect(resolveDocumentSession({ ...base, shareRole: 'participate' }).sessionRole).toBe(
+      'participate',
+    );
+    expect(
+      resolveDocumentSession({ ...base, shareRole: 'participate', embed: true }).sessionRole,
+    ).toBe('view');
+    expect(resolveDocumentSession({ ...base, shareRole: 'edit', embed: true }).sessionRole).toBe(
+      'edit',
+    );
+  });
+
   it('owner: always edit, no share code, even when arriving via a share URL', () => {
     const s = resolveDocumentSession({
       documentOwnerId: 'me',

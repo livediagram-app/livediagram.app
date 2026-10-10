@@ -4,7 +4,13 @@
 // Durable Object WebSocket upgrade with its role / password trust
 // boundary.
 
-import { capWorkbenchRole, isClerkIdShape } from '@livediagram/api-schema';
+import {
+  capWorkbenchRole,
+  isClerkIdShape,
+  type AccessLevel,
+  type RoomTicketResponse,
+} from '@livediagram/api-schema';
+import { adderKeyFor } from '../adder-key';
 import { guestSignatureEnforced } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
@@ -55,8 +61,11 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // tagged with its pairing so unpairing closes exactly its sockets.
     const workbench = ctx.workbench ?? null;
     const personId = ctx.clerkUserId ?? workbench?.ownerId ?? null;
-    const role =
-      workbench && capWorkbenchRole(grant.role, workbench.level) !== 'edit' ? 'view' : grant.role;
+    const role = workbench ? capWorkbenchRole(grant.role, workbench.level) : grant.role;
+    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
+    // stickies and text it adds. Only a Participant needs one; no identity, no key (it may then edit, never add).
+    const caller = ctx.resolveOwner();
+    const adderKey = role === 'participate' && caller ? await adderKeyFor(id, caller) : null;
     const ticket = await createWsTicket(env, id, {
       role,
       tabScope: grant.tabScope,
@@ -67,8 +76,12 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       // (docs/specs/024-agents/agent-changesets.md "Held elements").
       personTag: personId === null ? null : await personTagFor(id, personId),
       workbenchPairing: workbench?.pairingId ?? null,
+      adderKey,
     });
-    return json({ ticket });
+    // The caller's own adder key comes back with its ticket, so its editor knows which stickies are its own
+    // to delete (docs/specs/013-workspace/share-roles.md). It says nothing about anybody else.
+    const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
+    return json(answer);
   }
 
   if (segments.length === 4 && segments[3] === 'ws') {
@@ -80,7 +93,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // forward it to the Durable Object via X-Verified-Role; the DO
     // ignores any role the client might set in its own hello
     // payload, so this header is the trust boundary.
-    let role: 'edit' | 'view' | null = null;
+    let role: AccessLevel | null = null;
     // A tab-scoped link's tab, and the code that admitted a share visitor
     // (docs/specs/013-workspace/tab-scoped-share-links.md). Null for the owner and a team member.
     let tabScope: string | null = null;
@@ -91,6 +104,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let personTag: string | null = null;
     // Only a workbench session's ticket carries its pairing; every other leg has none.
     let workbenchPairing: string | null = null;
+    // Only a Participant's ticket carries an adder key; every other leg has none.
+    let adderKey: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -138,7 +153,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       ownerSigOk &&
       isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
-      ({ role, tabScope, shareCode, account, personTag, workbenchPairing } = admission);
+      ({ role, tabScope, shareCode, account, personTag, workbenchPairing, adderKey } = admission);
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
@@ -203,6 +218,12 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The workbench pairing that opened the session (docs/specs/013-workspace/workbench-embeds.md), set on every
     // path for the same reason as the headers above. Empty = none.
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbenchPairing ?? '');
+    // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"), set on every path for the
+    // same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Adder', adderKey ?? '');
+    // The document this room serves, so a Participant's write knows its row; the room is named after it, and the
+    // header is set on every path for the same reason as the headers above.
+    forwarded.headers.set('X-Verified-Document', id);
     // The caller's network, hashed with the document id (docs/specs/012-collaboration/vote-integrity.md): what
     // caps a poll's answers from one network. Set on every path for the same reason as the headers above.
     forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));

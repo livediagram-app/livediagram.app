@@ -61,6 +61,8 @@ type ItemPanelProps = {
   // Every label the document's items carry (the labels field's suggestions).
   labels: readonly string[];
   canEdit: boolean;
+  // Archive, Trash and the type editor (ItemPanelMenu); absent: as canEdit.
+  canRetire?: boolean;
   // Whether the save landed (false: refused), so a field can go back to what is saved.
   onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;
   // Several fields in one write (the description and its formatting).
@@ -138,6 +140,7 @@ function ItemPanelContent({
   people,
   labels,
   canEdit,
+  canRetire = canEdit,
   onSave,
   onPatch,
   onType,
@@ -249,6 +252,7 @@ function ItemPanelContent({
       <ItemPanelMenu
         itemKey={item.key}
         canEdit={canEdit}
+        canRetire={canRetire}
         archived={isArchived(item)}
         flagged={isFlagged(item)}
         onDuplicate={onDuplicate}

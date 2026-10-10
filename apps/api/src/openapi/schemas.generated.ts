@@ -5,6 +5,14 @@
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
+  "AccessLevel": {
+    "enum": [
+      "view",
+      "participate",
+      "edit"
+    ],
+    "type": "string"
+  },
   "ActivityAction": {
     "additionalProperties": false,
     "properties": {
@@ -10619,11 +10627,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "ShareRole": {
-    "enum": [
-      "edit",
-      "view"
-    ],
-    "type": "string"
+    "$ref": "#/components/schemas/AccessLevel"
   },
   "SharedTabsSummary": {
     "additionalProperties": false,
@@ -11283,6 +11287,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
+      },
+      "addedBy": {
+        "type": "string"
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
@@ -12668,6 +12675,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
+      "addedBy": {
+        "type": "string"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -13582,12 +13592,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "WorkbenchRole": {
-    "enum": [
-      "view",
-      "participate",
-      "edit"
-    ],
-    "type": "string"
+    "$ref": "#/components/schemas/AccessLevel"
   },
   "WorkbenchSessionRequest": {
     "additionalProperties": false,

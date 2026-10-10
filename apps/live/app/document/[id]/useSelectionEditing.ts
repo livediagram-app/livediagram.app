@@ -35,6 +35,8 @@ export function useSelectionEditing(opts: {
   // The active tab is locked: every save is refused, so no label editor opens to take typing it would
   // throw away.
   tabLocked?: boolean;
+  // A Participant writes on elements despite isReadOnly (docs/specs/013-workspace/share-roles.md).
+  canWriteText?: (el: Element) => boolean;
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): never selectable.
   layerInertIds: Set<string>;
   // Smart layer naming (docs/specs/006-document/layers.md): called with every committed label so a
@@ -86,6 +88,7 @@ export function useSelectionEditing(opts: {
   const {
     readSelection,
     isReadOnly,
+    canWriteText,
     layerInertIds,
     adoptLayerName,
     formatSourceId,
@@ -109,9 +112,16 @@ export function useSelectionEditing(opts: {
     setContextMenu,
   } = set;
 
+  // Whether this session may write on the element: an Editor always, a Participant on what it may.
+  const writable = (elementId: string) => {
+    if (!isReadOnly) return true;
+    const el = activeTab.elements.find((e) => e.id === elementId);
+    return !!el && !!canWriteText?.(el);
+  };
+
   const beginEdit = (elementId: string) => {
     // Viewers may select to inspect, but never enter text-edit mode; nor anyone on a locked tab.
-    if (isReadOnly || opts.tabLocked) return;
+    if (opts.tabLocked || !writable(elementId)) return;
     // Another participant has it selected — don't let two people edit it.
     if (lockedByOther(elementId)) return;
     if (formatSourceId !== null) return;
@@ -237,7 +247,7 @@ export function useSelectionEditing(opts: {
   const cancelEdit = () => setEditingId(null);
 
   const typeIntoSelected = (elementId: string, char: string): boolean => {
-    if (isReadOnly || opts.tabLocked) return false;
+    if (opts.tabLocked || !writable(elementId)) return false;
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;

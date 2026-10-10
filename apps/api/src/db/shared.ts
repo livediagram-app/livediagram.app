@@ -3,6 +3,7 @@
 import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 import { firstTabCountSql, isEmptyCount } from './tabs';
+import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';
 
 // Record a visitor's access to a shared document. Idempotent on
 // (owner_id, document_id): repeat visits just bump last_seen + role.
@@ -31,15 +32,15 @@ export async function recordSharedAccess(
 ): Promise<boolean> {
   const now = Date.now();
   const inserted = await env.DB.prepare(
-    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id, share_code) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id, share_code) VALUES (?, ?, ?, ?, ?, ?, ?)',
   )
-    .bind(ownerId, documentId, role, now, tabId, shareCode)
+    .bind(ownerId, documentId, legacyRoleColumn(role), levelColumn(role), now, tabId, shareCode)
     .run();
   if (inserted.meta.changes === 1) return true;
   await env.DB.prepare(
-    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ?, share_code = ? WHERE owner_id = ? AND document_id = ?',
+    'UPDATE shared_with SET role = ?, level = ?, tab_id = ?, last_seen = ?, share_code = ? WHERE owner_id = ? AND document_id = ?',
   )
-    .bind(role, tabId, now, shareCode, ownerId, documentId)
+    .bind(legacyRoleColumn(role), levelColumn(role), tabId, now, shareCode, ownerId, documentId)
     .run();
   return false;
 }
@@ -50,7 +51,8 @@ export async function recordSharedAccess(
  *  recorded (`share_code` NULL), the oldest live link of its role and scope. `now` is the bound parameter
  *  holding the current time. One definition, so Shared with you, Home and every access leg agree. */
 export function visitLinkSql(now: string, s = 's', d = 'd'): string {
-  const live = `sl.document_id = ${d}.id AND sl.purpose = 'share' AND sl.role = ${s}.role
+  const live = `sl.document_id = ${d}.id AND sl.purpose = 'share'
+                AND COALESCE(sl.level, sl.role) = COALESCE(${s}.level, ${s}.role)
                 AND sl.tab_id IS ${s}.tab_id AND (sl.expires_at IS NULL OR sl.expires_at > ${now})`;
   return `CASE WHEN ${s}.share_code IS NOT NULL
             THEN (SELECT sl.code FROM share_links sl WHERE sl.code = ${s}.share_code AND ${live})
@@ -114,7 +116,7 @@ export async function dropVisitsThroughLinks(
 // All-tabs code, and vice versa.
 export async function listSharedWith(env: Env, ownerId: string): Promise<SharedWithItem[]> {
   const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
+    `SELECT d.id, d.name, d.saved_at, s.role, s.level, s.tab_id,
             ${visitLinkSql('?1')} AS share_code,
             ${firstTabCountSql('d.id', 's.tab_id')},
             p.name  AS owner_name,
@@ -132,7 +134,8 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       id: string;
       name: string;
       saved_at: number;
-      role: ShareRole;
+      role: string;
+      level: string | null;
       tab_id: string | null;
       share_code: string | null;
       owner_name: string | null;
@@ -145,7 +148,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       id: r.id,
       name: r.name,
       savedAt: r.saved_at,
-      role: r.role,
+      role: storedLevelOf(r),
       shareCode: r.share_code as string,
       tabId: r.tab_id ?? null,
       ownerName: r.owner_name,

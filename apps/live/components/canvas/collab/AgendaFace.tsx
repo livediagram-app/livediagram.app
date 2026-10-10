@@ -31,6 +31,7 @@ export function AgendaFace({
   textColor,
   surface,
   timer,
+  canArrange = true,
   onPressItem,
 }: {
   element: ShapeElement;
@@ -43,6 +44,8 @@ export function AgendaFace({
   // in the canvas host, so only a canvas with a running agenda pays for it.
   timer: TabTimer | undefined;
   onPressItem?: (index: number) => void;
+  // An Editor is told where segments are added; anyone else that the facilitator adds them.
+  canArrange?: boolean;
 }) {
   const items = element.agendaItems ?? [];
   const current = element.agendaCurrent;
@@ -78,7 +81,9 @@ export function AgendaFace({
       >
         {items.length === 0 ? (
           <EmptyRows textColor={textColor} title="No segments yet">
-            Add them from the element’s menu, under Segments.
+            {canArrange
+              ? 'Add them from the element’s menu, under Segments.'
+              : 'The facilitator adds the segments.'}
           </EmptyRows>
         ) : (
           <>

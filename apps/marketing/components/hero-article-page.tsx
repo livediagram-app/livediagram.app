@@ -1,5 +1,6 @@
-import { useId, type CSSProperties } from 'react';
+import { useId } from 'react';
 import { PAGE, secondPageAt } from './hero-illustrate-page';
+import { TEAMMATE, at } from '@/components/art-tokens';
 
 // The hero's Article window (docs/specs/019-marketing/marketing-site.md "Hero"): a long read written
 // in Illustrate mode (docs/specs/007-editor/article-pages.md). Page 1 opens like a magazine
@@ -21,16 +22,12 @@ const RULE = '#e2e8f0';
 const BRAND = '#0284c7';
 const BRAND_TINT = '#bae6fd';
 const WARM = '#f59e0b';
-const TEAMMATE = '#ec4899';
 
 // The page's inner margin, and the measure the body copy runs to.
 const MARGIN = 18;
 const MEASURE = PAGE.w - MARGIN * 2;
 const BODY_SIZE = 7.6;
 const LEADING = 10.5;
-
-const at = (d: number, extra?: Record<string, string | number>) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
 // One line of body copy, written out as you type it.
 function Line({ x, y, d, text }: { x: number; y: number; d: number; text: string }) {

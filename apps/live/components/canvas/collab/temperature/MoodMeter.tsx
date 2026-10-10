@@ -14,10 +14,13 @@ export function MoodMeter({
   average,
   count,
   textColor,
+  canRespond = true,
 }: {
   average: number | null;
   count: number;
   textColor: string;
+  // Only someone who may answer is asked to tap a face (a Viewer only looks).
+  canRespond?: boolean;
 }) {
   const empty = average === null || count === 0;
   const pos = empty ? 0 : temperaturePosition(average);
@@ -51,7 +54,9 @@ export function MoodMeter({
       {empty ? (
         <p className="flex items-baseline gap-2 leading-none" style={{ color: textColor }}>
           <span className="text-[12.5px] font-semibold">No readings yet</span>
-          <span className="text-[11px] opacity-55">Tap the face that fits.</span>
+          {canRespond ? (
+            <span className="text-[11px] opacity-55">Tap the face that fits.</span>
+          ) : null}
         </p>
       ) : (
         <p className="flex items-baseline gap-2 leading-none" style={{ color: textColor }}>

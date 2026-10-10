@@ -56,10 +56,21 @@ describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifica
     expect(update.bindings).toEqual([
       'edit',
       null,
+      null,
       expect.any(Number),
       'CODE2345',
       'visitor-1',
       'diag-1',
+    ]);
+  });
+
+  // docs/specs/013-workspace/share-roles.md (migration 0080): a Participant's visit keeps view in the legacy column.
+  it('records a Participant visit as role view with level participate', async () => {
+    const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
+    await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'participate', null, 'CODE2345');
+    expect(db.one('INSERT OR IGNORE INTO shared_with').bindings.slice(2, 4)).toEqual([
+      'view',
+      'participate',
     ]);
   });
 
@@ -112,7 +123,7 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
     expect(item!.tabId).toBe('tab-2');
     const sql = db.one('FROM shared_with s').sql;
     expect(sql).toContain('sl.tab_id IS s.tab_id');
-    expect(sql).toContain('sl.role = s.role');
+    expect(sql).toContain('COALESCE(sl.level, sl.role) = COALESCE(s.level, s.role)');
   });
 
   it('drops rows whose share has since been revoked', async () => {

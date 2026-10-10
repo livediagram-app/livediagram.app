@@ -49,7 +49,7 @@ export function SheetHeader({
       style={{ height: HEADER_PX, borderColor: c.palette.cardBorder }}
       onDoubleClick={(e) => {
         // As a board's: a double-click on the title or the header's empty space renames, never on its buttons.
-        if (!c.canEdit || renaming) return;
+        if (!c.canShape || renaming) return;
         const t = e.target as HTMLElement;
         if (t !== e.currentTarget && !t.closest('[data-sheet-title]')) return;
         e.stopPropagation();

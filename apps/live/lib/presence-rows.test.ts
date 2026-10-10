@@ -370,3 +370,28 @@ describe('buildRemoteCursorRows pictures', () => {
     expect(rows.find((r) => r.id === 'b')).not.toHaveProperty('picture');
   });
 });
+
+// docs/specs/013-workspace/share-roles.md: a Viewer only looks, so its selection holds nothing.
+describe('buildRemoteSelectionsByElement holds', () => {
+  it("marks a Viewer's selection as not holding, a Participant's and an Editor's as holding", () => {
+    const peer = (id: string, role?: 'view' | 'participate' | 'edit') =>
+      [id, { id, name: id, color: '#000', status: 'online', lastActiveAt: 0, role }] as const;
+    const presence = new Map([
+      peer('v', 'view'),
+      peer('p', 'participate'),
+      peer('e', 'edit'),
+      peer('old'),
+    ]);
+    const selections = new Map([
+      ['v', { elementId: 'a' }],
+      ['p', { elementId: 'b' }],
+      ['e', { elementId: 'c' }],
+      ['old', { elementId: 'd' }],
+    ]);
+    const out = buildRemoteSelectionsByElement(selections, presence as never, 'self', 't');
+    expect(out.get('a')?.[0]?.holds).toBe(false);
+    expect(out.get('b')?.[0]?.holds).toBe(true);
+    expect(out.get('c')?.[0]?.holds).toBe(true);
+    expect(out.get('d')?.[0]?.holds).toBe(true);
+  });
+});

@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { cursorRide, type Point } from '@/lib/hero-motion';
+import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 
 // The hero's Diagram window (docs/specs/019-marketing/marketing-site.md "Hero"): two people map a
 // sign-up flow together in Diagram mode. Inside a frame, you drop three steps from the strip (each
@@ -10,15 +11,9 @@ import { cursorRide, type Point } from '@/lib/hero-motion';
 // ink (the --art-* palette), so it looks as the editor draws it. Each piece arrives at its own --d
 // delay and the two cursors ride CSS motion paths timed to the drops (hero-mode-animations.css).
 
-const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const INK = 'fill-(--art-ink-fill) stroke-(--art-ink-stroke)';
 const LABEL = 'fill-(--art-ink-text)';
 const ARROW = 'stroke-(--art-arrow)';
-const YOU = '#0ea5e9';
-const TEAMMATE = '#ec4899';
-
-const at = (d: number, extra?: Record<string, string | number>) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
 // A label typed out over `dur` seconds once its shape lands.
 function Typed({

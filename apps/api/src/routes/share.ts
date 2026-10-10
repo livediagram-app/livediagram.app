@@ -1,5 +1,6 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
+import { LEVEL_TELEMETRY_TYPE } from '@livediagram/api-schema';
 import { documentImageSvg } from '../document-image';
 import { rowAuthor } from '../community-row';
 import {
@@ -100,7 +101,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           // used to emit it on every open of the share URL, so refreshes and
           // return visits inflated the count.
           ctx.waitUntil?.(
-            reportServerEvent(env, 'Document', 'Joined', link.role === 'edit' ? 'Edit' : 'View'),
+            reportServerEvent(env, 'Document', 'Joined', LEVEL_TELEMETRY_TYPE[link.role]),
           );
           ctx.waitUntil?.(
             getParticipant(env, visitor)

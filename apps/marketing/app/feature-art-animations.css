@@ -95,43 +95,6 @@
   animation: fa-hl 6s ease-in-out infinite;
 }
 
-@keyframes fa-paint {
-  0%,
-  30% {
-    fill: #e2e8f0;
-    stroke: #cbd5e1;
-  }
-  52%,
-  84% {
-    fill: #dbeafe;
-    stroke: #0284c7;
-  }
-  94%,
-  100% {
-    fill: #e2e8f0;
-    stroke: #cbd5e1;
-  }
-}
-
-/* realtime last-write-wins, a shape flips to the other editor's colour */
-@keyframes fa-lww {
-  0%,
-  34% {
-    fill: var(--art-ink-fill);
-    stroke: var(--art-ink-stroke);
-  }
-  54%,
-  88% {
-    fill: #fce7f3;
-    stroke: #db2777;
-  }
-  96%,
-  100% {
-    fill: var(--art-ink-fill);
-    stroke: var(--art-ink-stroke);
-  }
-}
-
 /* spin (refresh) once per cycle, shapes dip out and back */
 @keyframes fa-spin {
   0%,

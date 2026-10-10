@@ -5,7 +5,7 @@ import { removeTeamMemberKeepingAdmin } from './teams';
 
 // One membership row per person per team (docs/specs/013-workspace/teams.md "Members"): the lazy
 // invite claim skips teams the user already belongs to, the database refuses a second row, removal
-// takes every row the user holds, and migration 0082 folds existing duplicates into one.
+// takes every row the user holds, and migration 0083 folds existing duplicates into one.
 
 type Row = { id: string; team: string; user: string | null; email?: string | null };
 type Extra = { role?: string; status?: string; created?: number };
@@ -68,7 +68,7 @@ describe('the unique (team_id, user_id) index', () => {
 
 describe('removal', () => {
   it('takes every row the user holds in that team, and none elsewhere', async () => {
-    const db = sqliteD1({}, { before: '0082' });
+    const db = sqliteD1({}, { before: '0083' });
     seed(db, [
       { id: 'admin', team: 't', user: 'boss', role: 'admin' },
       { id: 'one', team: 't', user: 'u' },
@@ -82,7 +82,7 @@ describe('removal', () => {
   });
 
   it('never counts a second row of the same person as another admin', async () => {
-    const db = sqliteD1({}, { before: '0082' });
+    const db = sqliteD1({}, { before: '0083' });
     seed(db, [
       { id: 'one', team: 't', user: 'u', role: 'admin' },
       { id: 'two', team: 't', user: 'u', role: 'admin' },
@@ -95,9 +95,9 @@ describe('removal', () => {
   });
 });
 
-describe('migration 0082', () => {
+describe('migration 0083', () => {
   it('keeps the joined (then oldest) row of each duplicate set, with its admin role', () => {
-    const db = sqliteD1({}, { before: '0082' });
+    const db = sqliteD1({}, { before: '0083' });
     seed(db, [
       { id: 'invited-old', team: 't', user: 'u', status: 'invited', created: 1 },
       { id: 'joined-new', team: 't', user: 'u', status: 'joined', created: 5 },
@@ -105,7 +105,7 @@ describe('migration 0082', () => {
       { id: 'single', team: 't2', user: 'u', created: 3 },
       { id: 'pending', team: 't', user: null, email: 'p@x.io' },
     ]);
-    applyMigration(db.sql, '0082');
+    applyMigration(db.sql, '0083');
     expect(rowsFor(db, 'u')).toEqual([
       { id: 'joined-new', team_id: 't', role: 'admin', status: 'joined' },
       { id: 'single', team_id: 't2', role: 'member', status: 'joined' },

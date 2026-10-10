@@ -38,6 +38,9 @@ export type EditorDragDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   editingId: string | null;
   isReadOnly: boolean;
+  // A Participant moves what it may despite isReadOnly (docs/specs/013-workspace/share-roles.md).
+  canMove?: (el: Element) => boolean;
+  canResize?: (el: Element) => boolean;
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): every gesture
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;

@@ -11,14 +11,14 @@ import type { QaWriteRequest } from '../qa-board-write';
 
 const { db, gates, votes } = vi.hoisted(() => ({
   db: { getDocument: vi.fn(), getParticipant: vi.fn() },
-  gates: { gateRead: vi.fn(), gateEdit: vi.fn() },
+  gates: { gateParticipate: vi.fn(), gateEdit: vi.fn() },
   votes: { refuseGuestVoteOverCap: vi.fn() },
 }));
 vi.mock('../db', () => db);
 vi.mock('../vote-integrity', () => votes);
 vi.mock('./context', async (orig) => ({
   ...(await orig<typeof import('./context')>()),
-  gateRead: gates.gateRead,
+  gateParticipate: gates.gateParticipate,
   gateEdit: gates.gateEdit,
 }));
 
@@ -52,7 +52,7 @@ beforeEach(() => {
   for (const fn of [...Object.values(db), ...Object.values(gates)]) fn.mockReset();
   db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-0', teamId: null, tabs: [] });
   db.getParticipant.mockResolvedValue({ name: 'Priya', color: '#0af' });
-  gates.gateRead.mockResolvedValue(true);
+  gates.gateParticipate.mockResolvedValue(true);
   gates.gateEdit.mockResolvedValue(false);
   votes.refuseGuestVoteOverCap.mockReset();
   votes.refuseGuestVoteOverCap.mockResolvedValue(null);
@@ -140,7 +140,7 @@ describe('handleQaBoardRoute', () => {
   });
 
   it('refuses a caller who cannot read the document', async () => {
-    gates.gateRead.mockResolvedValue(false);
+    gates.gateParticipate.mockResolvedValue(false);
     const { call } = setup();
     const res = await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
     expect(res!.status).toBe(403);
@@ -151,7 +151,13 @@ describe('handleQaBoardRoute', () => {
   it("names the board's tab to both gates", async () => {
     const { call } = setup();
     await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
-    expect(gates.gateRead).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-0', null, 't1');
+    expect(gates.gateParticipate).toHaveBeenCalledWith(
+      expect.anything(),
+      'd1',
+      'owner-0',
+      null,
+      't1',
+    );
     await call({ elementId: 'b1', action: { type: 'clear' } });
     expect(gates.gateEdit).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-0', null, 't1');
   });

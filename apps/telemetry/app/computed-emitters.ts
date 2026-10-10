@@ -19,6 +19,7 @@ import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
   COMMUNITY_CATEGORIES,
+  LEVEL_TELEMETRY_TYPE,
   COMMUNITY_REPORT_REASONS,
   PLACEMENT_DEFAULT_KEYS,
   SHEET_CHANGE_KINDS,
@@ -223,6 +224,8 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // A share link's access level (docs/specs/013-workspace/share-roles.md), from LEVEL_TELEMETRY_TYPE.
+  'apps/api/src/routes/share.ts Document·Joined': { values: Object.values(LEVEL_TELEMETRY_TYPE) },
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
   'apps/api/src/email/client.ts Error·Api': {
@@ -498,8 +501,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
+  // A new link's level (LEVEL_TELEMETRY_TYPE) and its expiry, the file's two computed sites.
   'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
-    values: ['ExpiryWeek', 'ExpiryMonth', 'ExpirySixMonths'],
+    values: [
+      ...Object.values(LEVEL_TELEMETRY_TYPE),
+      'ExpiryWeek',
+      'ExpiryMonth',
+      'ExpirySixMonths',
+    ],
   },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },

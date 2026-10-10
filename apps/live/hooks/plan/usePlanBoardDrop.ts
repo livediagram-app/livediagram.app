@@ -53,9 +53,14 @@ export function usePlanBoardDrop(opts: {
   projection: BoardProjection | null;
   items: ReadonlyMap<string, Item>;
   interactive: boolean;
+  // The board's structure (its widgets).
   canEdit: boolean;
+  // Moving and dropping cards (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
+  // Absent: as canEdit.
+  canEditCards?: boolean;
 }) {
   const { element, boardRef, plan, setup, projection, items, interactive, canEdit } = opts;
+  const canEditCards = opts.canEditCards ?? canEdit;
   // A card dragged here from another board, and the slot it would land in.
   const [incoming, setIncoming] = useState<PlanIncoming | null>(null);
   // The gap last asked for: a hover drawing the same one is dropped before it reaches React, so a card held
@@ -88,7 +93,7 @@ export function usePlanBoardDrop(opts: {
   const drag = usePlanCardDrag({
     boardRef,
     boardId: element.id,
-    enabled: interactive && canEdit,
+    enabled: interactive && canEditCards,
     onClick: (id) => plan?.openItem(id),
     onDrop: drop,
     onDropOutside: (id, clientX, clientY) => {
@@ -117,7 +122,7 @@ export function usePlanBoardDrop(opts: {
     // A card it would hide (a type it does not show) is refused, as a palette card of that type is.
     accepts: (itemId: string) => {
       const item = items.get(itemId);
-      return !!setup && !!item && canEdit && boardShowsType(setup, item.type, plan?.types);
+      return !!setup && !!item && canEditCards && boardShowsType(setup, item.type, plan?.types);
     },
     refusal: () => {
       if (setup?.archive) return 'An Archive board takes cards moved to it';
@@ -133,7 +138,7 @@ export function usePlanBoardDrop(opts: {
     // An Archive board takes cards moved to it, never a new one; any other board takes the types it shows
     // (docs/specs/026-plan/plan-board.md "Card types a board shows").
     acceptsType: (type: string) =>
-      !!setup && canEdit && !setup.archive && boardShowsType(setup, type, plan?.types),
+      !!setup && canEditCards && !setup.archive && boardShowsType(setup, type, plan?.types),
     // A palette card: a new item of the type at the slot, its row's field set, opened at once to be named
     // (docs/specs/026-plan/plan-mode.md "The palette").
     addCard: (type: string, slot: PlanDropSlot) => {

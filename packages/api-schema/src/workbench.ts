@@ -3,6 +3,8 @@
 // /api/workbench route, the one origin rule, and the confinement allow-list a workbench session lives
 // inside. Shared by the api worker, the live editor and the CLI, so all three decide alike.
 
+import { lowerLevel, type AccessLevel } from './access-levels';
+
 // ---------------------------------------------------------------------
 // Constants (blueprint "Constants and configuration")
 // ---------------------------------------------------------------------
@@ -38,15 +40,12 @@ export function isWorkbenchSessionFormat(value: string): boolean {
 // Levels
 // ---------------------------------------------------------------------
 
-// `participate` is reserved for share roles (blueprint WB1); today a session is `view` or `edit`.
-export type WorkbenchRole = 'view' | 'participate' | 'edit';
-
-const LADDER: readonly WorkbenchRole[] = ['view', 'participate', 'edit'];
+// A workbench session's level is an access level (docs/specs/013-workspace/share-roles.md).
+export type WorkbenchRole = AccessLevel;
 
 // The lower of the two on the ladder; no ceiling gives the role.
 export function capWorkbenchRole(role: WorkbenchRole, ceiling?: WorkbenchRole): WorkbenchRole {
-  if (ceiling === undefined) return role;
-  return LADDER.indexOf(ceiling) < LADDER.indexOf(role) ? ceiling : role;
+  return lowerLevel(role, ceiling);
 }
 
 // ---------------------------------------------------------------------

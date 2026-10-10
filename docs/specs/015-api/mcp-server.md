@@ -505,9 +505,10 @@ Create a shareable link so anyone with the URL can open a document without
 signing in — the verb that turns "the AI made a diagram" into "the AI made a
 diagram and here's a link to send the team." Wraps `POST /api/documents/<id>/share`
 ([Share password](../013-workspace/share-password.md)): `{ documentId, role?, expiry? }` → the public URL
-(`/document/shared?s=<code>`), the granted role, and the expiry. `role` defaults
-to **`view`** (least privilege for an automated share — showing your work
-shouldn't silently grant edit; the model passes `edit` to allow changes), and
+(`/document/shared?s=<code>`), the granted role, and the expiry. `role` is
+`view`, `participate` or `edit` ([Share roles](../013-workspace/share-roles.md)) and defaults to
+**`participate`**: recipients take part (stickies, text, votes) without reshaping the board, and an automated share
+never silently grants edit; the model passes `edit` to allow any change or `view` for an audience, and
 the api applies the same owner-only authorization every share route enforces, so
 a token can only share documents its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
 `never`.

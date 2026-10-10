@@ -625,7 +625,12 @@ export function EditorView() {
                               // Keyed on the poll so a second poll starts with a clean free-text
                               // box rather than inheriting the first one's half-typed answer.
                               key={livePoll.poll?.id ?? 'no-poll'}
-                              poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
+                              // Asked of whoever may answer (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
+                              poll={
+                                ctx.can.takePart && livePoll.poll && !livePoll.myAnswer
+                                  ? livePoll.poll
+                                  : null
+                              }
                               onAnswer={livePoll.answerPoll}
                             />
                             {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
@@ -700,6 +705,7 @@ export function EditorView() {
                               <EmptyCanvasBanner
                                 tabName={activeTab.name}
                                 readOnly={isReadOnly}
+                                participant={ctx.can.addContent && isReadOnly}
                                 onQuickStart={openTemplatePicker}
                               />
                             ) : null}
@@ -720,6 +726,7 @@ export function EditorView() {
           on the move. Suppressed while a mode banner owns the top slot. */}
                             {minimalChrome ? null : (
                               <ModifierHint
+                                readOnly={isReadOnly}
                                 drag={drag}
                                 esBoard={esBoard}
                                 elements={activeTab.elements}

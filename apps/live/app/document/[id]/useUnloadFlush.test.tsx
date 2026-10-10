@@ -17,12 +17,13 @@ const tab = (label: string): Tab =>
     elements: [{ id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, label }],
   }) as Tab;
 
-function mount(tabs: Tab[]) {
+function mount(tabs: Tab[], participant = false, send = vi.fn()) {
   return renderHook(() =>
     useUnloadFlush({
       hydrated: true,
       documentId: 'd1',
       isReadOnly: false,
+      participant,
       tabs,
       documentName: 'Doc',
       selfId: 'me',
@@ -32,6 +33,7 @@ function mount(tabs: Tab[]) {
       loadedTabIdsRef: { current: new Set(['t1']) },
       changesetSeen: new Map(),
       writesForbiddenRef: { current: false },
+      roomRef: { current: { send } as never },
     }),
   );
 }
@@ -54,6 +56,17 @@ describe('useUnloadFlush', () => {
     const view = mount([tab('typed')]);
     view.unmount();
     expect(flush).toHaveBeenCalledOnce();
+  });
+
+  // docs/specs/013-workspace/share-roles.md: a Participant's changes go to the open room, never a beacon.
+  it("relays a Participant's changes to the room instead of a beacon", () => {
+    const send = vi.fn();
+    mount([tab('typed')], true, send);
+    window.dispatchEvent(new Event('pagehide'));
+    expect(flush).not.toHaveBeenCalled();
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'op', op: expect.objectContaining({ tabId: 't1' }) }),
+    );
   });
 
   it('sends nothing when everything is saved', () => {

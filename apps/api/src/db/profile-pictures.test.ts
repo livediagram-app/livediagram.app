@@ -58,7 +58,13 @@ describe('participant pictures', () => {
 describe('room ticket account bit', () => {
   it('carries whether a verified account minted the ticket', async () => {
     const { env } = sqliteD1();
-    const base = { role: 'edit' as const, tabScope: null, shareCode: null, workbenchPairing: null };
+    const base = {
+      role: 'edit' as const,
+      tabScope: null,
+      shareCode: null,
+      workbenchPairing: null,
+      adderKey: null,
+    };
     const account = await createWsTicket(env, 'd1', { ...base, account: true, personTag: null });
     const guest = await createWsTicket(env, 'd1', { ...base, account: false, personTag: null });
     expect((await consumeWsTicket(env, account, 'd1'))?.account).toBe(true);

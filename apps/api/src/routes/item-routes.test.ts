@@ -82,6 +82,7 @@ beforeEach(() => {
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
   `);
@@ -385,6 +386,89 @@ describe('who may do what', () => {
     expect((await call({ method: 'GET', path: '/items', owner: 'stranger' })).status).toBe(403);
     expect((await call({ method: 'GET', path: '/items', owner: null })).status).toBe(400);
     expect((await call({ method: 'GET', path: '/items', doc: 'nope' })).status).toBe(404);
+  });
+
+  // docs/specs/013-workspace/share-roles.md "What a Participant changes": cards, never their deletion.
+  it('lets a Participant add, edit and move cards, but never trash, archive or delete one', async () => {
+    const as = { owner: 'p', code: 'PART' };
+    const made = await call<ItemResponse>({
+      ...as,
+      path: '/items',
+      body: { type: 'task', fields: { title: 'Idea', status: 'todo' } },
+    });
+    expect(made.status).toBe(201);
+    const id = made.body.item.id;
+    expect(
+      (await call({ ...as, path: `/items/${id}`, body: { set: { title: 'Better idea' } } })).status,
+    ).toBe(200);
+    expect(
+      (await call({ ...as, path: `/items/${id}/move`, body: { status: 'done' } })).status,
+    ).toBe(200);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items/patches',
+          body: { items: [{ id, set: { title: 'Again' } }] },
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await call({
+          ...as,
+          path: `/items/${id}`,
+          body: { set: { status: 'trash', trashedFrom: 'done' } },
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items/patches',
+          body: { items: [{ id, set: { archived: true } }] },
+        })
+      ).status,
+    ).toBe(403);
+    expect((await call({ ...as, method: 'DELETE', path: `/items/${id}` })).status).toBe(403);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items/bulk',
+          body: { items: [{ type: 'task', fields: { title: 'x' } }] },
+        })
+      ).status,
+    ).toBe(403);
+    // A fresh card only: no forged dots, thread or key.
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items',
+          body: { type: 'task', fields: { title: 'x' }, votes: { p: 3 } },
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items',
+          body: { type: 'task', fields: { title: 'x' }, key: 99 },
+        })
+      ).status,
+    ).toBe(403);
+    // The owner still trashes it.
+    expect(
+      (
+        await call({
+          path: `/items/${id}`,
+          body: { set: { status: 'trash', trashedFrom: 'done' } },
+        })
+      ).status,
+    ).toBe(200);
   });
 
   it('confines a tab-scoped link to the items its tab shows', async () => {

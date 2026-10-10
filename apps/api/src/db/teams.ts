@@ -243,7 +243,7 @@ export async function updateTeamMemberRoleKeepingAdmin(
 /**
  * The member removed, unless that would leave the team no joined admin; whether it went. Every other
  * row the same user holds in that team goes with it, in the same batch and only once the guarded row
- * is gone, so a duplicate left over from before the unique (team_id, user_id) index (migration 0082)
+ * is gone, so a duplicate left over from before the unique (team_id, user_id) index (migration 0083)
  * cannot keep a removed person in the team.
  */
 export async function removeTeamMemberKeepingAdmin(

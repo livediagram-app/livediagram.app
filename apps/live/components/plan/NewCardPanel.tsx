@@ -18,7 +18,8 @@ export function NewCardPanel({
   onPopoverClose: () => void;
 }) {
   const plan = usePlan();
-  if (!plan?.canEdit) return null;
+  // Adding a card is a Participant's too (docs/specs/013-workspace/share-roles.md).
+  if (!plan?.canEditCards) return null;
   return (
     <MovablePanel
       title="New Card"

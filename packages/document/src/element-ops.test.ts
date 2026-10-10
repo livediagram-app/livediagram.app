@@ -6,6 +6,7 @@ import {
   diffToElementOps,
   invertElementOps,
   type ElementOp,
+  applyRoomElementOp,
 } from './element-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
@@ -189,5 +190,37 @@ describe('applyElementOps, batched', () => {
     const elements = [box('a')];
     expect(applyElementOps(elements, [{ kind: 'update', element: box('gone') }])).toBe(elements);
     expect(applyElementOps(elements, [])).toBe(elements);
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md "Integrity": the room's patch for a Participant's change.
+describe('applyRoomElementOp', () => {
+  const base = [
+    { id: 'a', type: 'sticky', x: 0, y: 0, width: 10, height: 10, label: 'old', note: 'n' },
+    { id: 'b', type: 'sticky', x: 0, y: 0, width: 10, height: 10 },
+  ] as unknown as Element[];
+
+  it('writes and clears only the named fields, keeping the rest of the live copy', () => {
+    const out = applyRoomElementOp(base, {
+      kind: 'patch',
+      id: 'a',
+      set: { label: 'new', id: 'evil', type: 'shape' },
+      clear: ['note'],
+    });
+    expect(out[0]).toEqual({
+      id: 'a',
+      type: 'sticky',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      label: 'new',
+    });
+    expect(out[1]).toBe(base[1]);
+  });
+
+  it('ignores a patch for an element it does not have, and applies any other op as before', () => {
+    expect(applyRoomElementOp(base, { kind: 'patch', id: 'zz', set: { x: 1 } })).toBe(base);
+    expect(applyRoomElementOp(base, { kind: 'remove', id: 'b' }).map((e) => e.id)).toEqual(['a']);
   });
 });

@@ -1,6 +1,6 @@
 // A Plan card's comment writes (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "Comments"):
 // add, delete, resolve and reopen under /api/documents/:id/items/:itemId/comments. The canvas's comment
-// endpoints' rules, on an item: anyone who may comment (participate) adds, resolves and reopens; they delete
+// endpoints' rules, on an item: anyone who may comment (a Participant or an Editor; a Viewer only looks) adds, resolves and reopens; they delete
 // their own comments, and an editor deletes any. Each is an item write (writeItem: the item as stored, guarded by
 // its rev, relayed to the room without author ids), so concurrent comments never lose one another.
 

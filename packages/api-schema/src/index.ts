@@ -12,6 +12,7 @@
 // The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
 // new code should prefer the canonical names here.
 
+import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
@@ -361,7 +362,8 @@ export type TeamInviteLinkJoin = {
 // Share links (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md)
 // ---------------------------------------------------------------------
 
-export type ShareRole = 'edit' | 'view';
+// A share link's access level (docs/specs/013-workspace/share-roles.md): Viewer, Participant or Editor.
+export type ShareRole = AccessLevel;
 
 // What a share link is for (docs/specs/025-community/community.md): an ordinary link the owner manages in the Share
 // dialog, or the community link a Community post owns (never listed, never expires, no room, no comments).
@@ -438,8 +440,9 @@ export type ParticipantPresence = {
   // Object — derived from owner-id match (always 'edit') or the
   // share-code the visitor used to join. Optional so existing
   // hello frames keep parsing while clients catch up; missing value
-  // is treated as "unknown role" by the UI (no badge surfaced).
-  role?: 'edit' | 'view';
+  // is treated as "unknown role" by the UI (no badge surfaced). An access level
+  // (docs/specs/013-workspace/share-roles.md); readers parse it with parseStoredLevel.
+  role?: AccessLevel;
   // Id of the tab this participant is currently focused on. The room
   // remembers it from their `tab-focus` ops and echoes it in the
   // presence list so a LATE joiner learns where everyone already is —
@@ -588,6 +591,7 @@ export type UnfurlResult = {
   favicon?: string;
 };
 
+export * from './access-levels';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';

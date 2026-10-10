@@ -21,7 +21,7 @@ An embed places a live copy of a document inside another page, like a wiki, a do
 
 ## What an embed shows
 
-The embed is built from a share link, and it **honours that link's role**: a **Viewer** pass embeds a read-only canvas, while an **Editor** pass embeds an editable one, so readers of the host page can change the document right there. Pick the pass to match: a Viewer pass when the page is for an audience, an Editor pass when it is for collaborators.
+The embed is built from a share link, and it **honours that link's role**: a **Viewer** or **Participant** pass embeds a read-only canvas, while an **Editor** pass embeds an editable one, so readers of the host page can change the document right there. Pick the pass to match: a Viewer pass when the page is for an audience, an Editor pass when it is for collaborators.
 
 Inside the frame, the embed:
 
@@ -54,7 +54,7 @@ An embed lives exactly as long as its share link. If you revoke the link, or it 
 
 ## Privacy and self-hosting
 
-An embed only exposes what the share link exposes: a Viewer pass's embed is a read-only view, and only an Editor pass's embed can change the document. Anyone who can read the host page's source can also see the embed URL, so treat an editable embed like handing out the edit link itself. Embeds also work on self-hosted instances with no external services: the snippet builds its URL from your own origin, so a self-hosted document produces a self-hosted embed.
+An embed only exposes what the share link exposes: a Viewer or Participant pass's embed is a read-only view (an embed has no way to put a name on what someone adds), and only an Editor pass's embed can change the document. Anyone who can read the host page's source can also see the embed URL, so treat an editable embed like handing out the edit link itself. Embeds also work on self-hosted instances with no external services: the snippet builds its URL from your own origin, so a self-hosted document produces a self-hosted embed.
 
 <Tip>
   Embedding several documents across a wiki is a tidy way to keep architecture and flow diagrams

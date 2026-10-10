@@ -73,14 +73,18 @@ export function selectedKindOf(
 // a selection change renders this, not the editor view that places it.
 export function ModifierHint({
   elements,
+  readOnly = false,
   ...banner
-}: { elements: readonly Element[] } & Omit<
-  ComponentProps<typeof ModifierHintBanner>,
-  'selectedKind'
->) {
-  const selectedKind = useSelectionOf(
+}: {
+  elements: readonly Element[];
+  // A read-only session (a Participant, a Viewer) never splits an arrow, so a selected arrow gets the
+  // general hint, not the branch one (docs/specs/013-workspace/share-roles.md).
+  readOnly?: boolean;
+} & Omit<ComponentProps<typeof ModifierHintBanner>, 'selectedKind'>) {
+  const kind = useSelectionOf(
     useCallback((s: Selection) => selectedKindOf(elements, s.selectedId), [elements]),
   );
+  const selectedKind = readOnly && kind === 'arrow' ? 'other' : kind;
   return <ModifierHintBanner {...banner} selectedKind={selectedKind} />;
 }
 

@@ -1,4 +1,4 @@
-import { ledgerKey, type Tab } from '@livediagram/document';
+import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livediagram/document';
 import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 
@@ -42,4 +42,27 @@ export async function saveTabAndRelay<R>(
   const saved = await put();
   for (const op of rest) room()?.send({ kind: 'op', op });
   return saved;
+}
+
+// A Participant's save (docs/specs/013-workspace/share-roles.md "Integrity"): no tab PUT, no tab or metadata op,
+// only the element changes since `before`, sent to the room, which applies each through the participant content
+// rule and writes D1 itself. A reorder is never sent: a Participant never restacks. With the room closed the save
+// fails, and the autosave retries it as any failed save.
+export function participantElementOps(before: Tab | undefined, tab: Tab): ElementOp[] {
+  return diffToElementOps(before?.elements ?? [], tab.elements).filter(
+    (op) => op.kind !== 'reorder',
+  );
+}
+
+export async function relayParticipantChanges(
+  before: Tab | undefined,
+  tab: Tab,
+  room: () => SaveRoom | null,
+): Promise<null> {
+  const live = room();
+  if (!live) throw new Error('participant save: the room is not open');
+  for (const op of participantElementOps(before, tab)) {
+    live.send({ kind: 'op', op: { kind: 'el', tabId: tab.id, op } });
+  }
+  return null;
 }

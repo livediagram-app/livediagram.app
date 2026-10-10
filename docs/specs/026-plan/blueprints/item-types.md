@@ -43,7 +43,7 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Data and persistence
 
-- Migration `0072_item_types.sql`: `documents.item_types TEXT NULL`. Migration `0081_item_types_rev.sql`:
+- Migration `0072_item_types.sql`: `documents.item_types TEXT NULL`. Migration `0082_item_types_rev.sql`:
   `documents.item_types_rev INTEGER NOT NULL DEFAULT 0`.
 - `db/documents.ts`: `DocumentDTO.itemTypes` read through `readItemTypeCatalogue`, `DocumentDTO.itemTypesRev`
   (0 when absent); written by the create's INSERT (copy, sync, Drive; the revision starts at 0) and by
