@@ -43,6 +43,13 @@ describe('make room', () => {
     expect(boxIn(tab, 'n3')[1]).toBe(boxIn(checkoutFlow(), 'n3')[1]! + 160);
   });
 
+  it('leaves a locked element carried inside a shifted container where it is (EO47)', () => {
+    const tab = applied(run('insert diamond between n2 n3', lockedFlow('n4'))).tab;
+    expect(boxIn(tab, 'n4')).toEqual(boxIn(checkoutFlow(), 'n4'));
+    for (const id of ['f2', 'n5'])
+      expect(boxIn(tab, id)[1]).toBe(boxIn(checkoutFlow(), id)[1]! + 160);
+  });
+
   it('leaves a locked container ungrown (EO47)', () => {
     const tab = applied(run('insert square between n4 n5', lockedFlow('f2'))).tab;
     expect(boxIn(tab, 'f2')).toEqual(boxIn(checkoutFlow(), 'f2'));

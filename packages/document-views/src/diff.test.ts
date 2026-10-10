@@ -109,6 +109,22 @@ describe('diffView (R17, VW36)', () => {
     ]);
   });
 
+  it('names an end moved from one arrow to another, and not one sliding along the same arrow', () => {
+    const [a, b] = ['a', 'b'].map((id, i) => shapeAt('square', id, i * 200, 0));
+    const [ab, ba] = [arrowBetween('ab', 'a', 'b'), arrowBetween('ba', 'b', 'a')];
+    const rides = {
+      ...arrowBetween('r', 'a', 'a'),
+      to: { kind: 'on-arrow' as const, arrowId: 'ab', t: 0.5 },
+    };
+    const before = [a!, b!, ab, ba, rides];
+    expect(
+      changeLines(before, [a!, b!, ab, ba, { ...rides, to: { ...rides.to, t: 0.2 } }]),
+    ).toEqual(['~ arrow r +1 other field']);
+    expect(
+      changeLines(before, [a!, b!, ab, ba, { ...rides, to: { ...rides.to, arrowId: 'ba' } }]),
+    ).toEqual(['~ arrow r to arrow:ab → arrow:ba']);
+  });
+
   // A card's id moves with its card: the ideas count speaks for both, no "other field".
   it('reads an idea with its card id as one change to the ideas', () => {
     const box = { ...shapeAt('idea-box', 'i', 0, 0), ideaCards: ['a'] } as Element;

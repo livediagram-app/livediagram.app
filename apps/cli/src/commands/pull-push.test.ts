@@ -182,6 +182,17 @@ describe('pull', () => {
     });
     const stepped = await cli(['pull', DOC], h.route, first.io);
     expect(stepped.out).toBe('/work/shop-checkout-aaaa1111.livediagram.json\n');
+    // The file it stepped aside to is its own from then on: pulled again, and guarded as the plain one is.
+    const own = '/work/shop-checkout-aaaa1111.livediagram.json';
+    expect((await cli(['pull', DOC], h.route, first.io)).out).toBe(`${own}\n`);
+    edit(first.io, own, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    expect((await cli(['pull', DOC], h.route, first.io)).err).toContain(
+      `error: ${own} changed here and is not pushed; not overwritten`,
+    );
+    // A file there that is not this document's pull file holds no edits of its own to keep.
+    first.io.fileMap.set(own, { data: 'not a pull file', mode: 0o644 });
+    expect((await cli(['pull', DOC], h.route, first.io)).code).toBe(0);
+    expect(pulledFile(first.io, own).document.id).toBe(DOC);
   });
 
   it('refuses to overwrite changes not yet pushed, unless --force drops them', async () => {

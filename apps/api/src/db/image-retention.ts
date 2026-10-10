@@ -93,9 +93,10 @@ export async function deleteOldUnusedImages(env: Env, cutoff: number): Promise<n
 }
 
 // Delete one page of candidate ids: the rows still unreferenced at this instant,
-// their dangling references, then their bytes. Returns how many rows went.
+// their dangling references, then their bytes. Returns how many rows went. An
+// empty page (every candidate referenced again since the count) deletes nothing
+// and returns at the goneIds check below.
 async function reapPage(env: Env, bucket: R2Bucket, ids: string[]): Promise<number> {
-  if (ids.length === 0) return 0;
   const gone = await env.DB.prepare(
     `DELETE FROM images
       WHERE id IN (SELECT value FROM json_each(?)) AND NOT ${LIVE_REFERENCE}

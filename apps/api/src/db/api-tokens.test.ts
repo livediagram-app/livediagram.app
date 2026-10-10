@@ -134,6 +134,14 @@ describe('mintApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
     expect(a!.id).not.toBe(b!.id);
     expect(a!.secret).not.toBe(b!.secret);
   });
+
+  it('refuses when the driver reports no change count at all', async () => {
+    // An INSERT that may not have written must not hand back a secret: the
+    // caller would show a token that cannot authenticate anything.
+    const db = fakeD1();
+    expect(await mintApiToken(db.env, { ownerId: 'u1', name: null })).toBeNull();
+    expect(db.one('INSERT INTO api_tokens').method).toBe('run');
+  });
 });
 
 // The rest of the table's life: listing, the cap's counter, the auth hot path

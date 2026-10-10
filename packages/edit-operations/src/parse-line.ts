@@ -220,10 +220,12 @@ export function parseOperationWords(
       if (at < 0) return fail(rest[0], end, 'connect <a> -> <b>');
       const [a, b] = arrowParts(rest[at]!) as [string, string];
       const column = rest[at]!.column;
-      const part = (text: string, offset: number): Word[] => {
-        const read = tokeniseLine(text);
-        return 'error' in read ? [] : read.words.map((w) => ({ ...w, column: column + offset }));
-      };
+      // Each part is cut from a word that already tokenised, at a -> outside quotes, so it tokenises too.
+      const part = (text: string, offset: number): Word[] =>
+        (tokeniseLine(text) as { words: Word[] }).words.map((w) => ({
+          ...w,
+          column: column + offset,
+        }));
       fromTerms = [...rest.slice(0, at), ...part(a, 0)];
       tail = [...part(b, a.length + 2), ...rest.slice(at + 1)];
     }

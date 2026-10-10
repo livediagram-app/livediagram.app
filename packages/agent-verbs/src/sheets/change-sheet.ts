@@ -67,16 +67,15 @@ export function capsRefusal(
   };
 }
 
-const cellsIn = (write: SheetWrite) => (write.kind === 'title' ? 0 : (write.cells?.length ?? 0));
+// A change goes in parts only when splitWrite cut its cells, so every part of one holds cells: a title, or a write
+// with no cells, is always sent whole and never lands partly.
+const cellsIn = (write: SheetWrite) => (write as { cells: readonly unknown[] }).cells.length;
 
-// What a change whose later part was refused left behind, as its applied line: the cells that landed, or the
-// parts when it changed no cells.
+// What a change whose later part was refused left behind, as its applied line: the cells that landed.
 function partlyLine(line: string, parts: readonly SheetWrite[], sent: number): string {
   const total = parts.reduce((n, p) => n + cellsIn(p), 0);
   const landed = parts.slice(0, sent).reduce((n, p) => n + cellsIn(p), 0);
-  const what =
-    total > 0 ? `${landed} of its ${total} cells` : `${sent} of its ${parts.length} parts`;
-  return `partly ${line}: ${what} landed before the refusal`;
+  return `partly ${line}: ${landed} of its ${total} cells landed before the refusal`;
 }
 
 // Builds and sends each change in turn against the workbook, which follows every landed write.

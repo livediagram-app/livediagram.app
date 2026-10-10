@@ -102,9 +102,9 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
     );
   };
 
-  // At most one stream per document: a second would hear every change twice and never be stopped.
+  // At most one stream per document, a second hearing every change twice and never being stopped: it is called
+  // only for a covered document without one (the first coverage, whose documents are unique, then those unheard).
   const listen = (documentId: string) => {
-    if (streams.has(documentId)) return;
     const stream = openRoomStream({
       io,
       api: ctx.api,
@@ -123,8 +123,8 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
     });
     streams.set(documentId, stream);
     // Moved to the Trash, or its ticket refused: a pass decides `gone` or `unreadable`, and the stream is dropped.
+    // Only a stream never stopped ends so, and until stopped it is still the document's one.
     const drop = () => {
-      if (streams.get(documentId) !== stream) return;
       streams.delete(documentId);
       due({ documents: new Set([documentId]) });
     };
@@ -166,9 +166,10 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
             coverage = fresh;
             // Every covered document without a stream gets one: those that entered, and any whose stream ended
             // (trashed then restored, refused, dropped), so a change never waits on a later pass to be noticed.
-            const unheard = [...after].filter((id) => !streams.has(id) && !entered.includes(id));
-            if (unheard.length > 0) ctx.log(`watch relisten ${unheard.length}`);
-            [...entered, ...unheard].forEach(listen);
+            const unheard = [...after].filter((id) => !streams.has(id));
+            const relisten = unheard.filter((id) => !entered.includes(id)).length;
+            if (relisten > 0) ctx.log(`watch relisten ${relisten}`);
+            unheard.forEach(listen);
             for (const id of left) {
               streams.get(id)?.stop();
               streams.delete(id);

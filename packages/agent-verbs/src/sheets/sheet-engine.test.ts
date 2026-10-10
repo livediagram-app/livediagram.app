@@ -652,6 +652,13 @@ describe('adding a sheet', () => {
     );
     expect(await addSheet(api, DOC_A, {}, 'mcp')).toMatchObject({ ok: false, code: 'sheets_full' });
   });
+
+  it('fills a sheet on the tab asked for, counting the document’s cells first', async () => {
+    const { api, server } = setup();
+    const result = await addSheet(api, DOC_A, { tabId: TWO, rows: [['a', 1]] }, 'cli', seeded(7));
+    expect(result).toMatchObject({ ok: true, tabId: TWO, title: 'Sheet 1', filled: 'A1:B1' });
+    expect(server.writes).toHaveLength(1);
+  });
 });
 
 // A change goes to the api in parts of at most 5,000 cells, each checked on its own there; checked whole here first,
@@ -726,5 +733,34 @@ describe('changes larger than one write', () => {
       ok: false,
     });
     expect(server.deletes).toEqual([(server.creates[0] as { id: string }).id]);
+  });
+
+  it('add_sheet still answers the placing refusal when deleting the sheet it made fails', async () => {
+    const { api, server } = setup();
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () =>
+      Response.json({ error: 'conflict' }, { status: 409 });
+    const offline: ApiClient = {
+      ...api,
+      fetch: (path, init) =>
+        init?.method === 'DELETE'
+          ? Promise.reject(new TypeError('offline'))
+          : api.fetch(path, init),
+    };
+    expect(await addSheet(offline, DOC_A, { rows: [['a']] }, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'conflict',
+    });
+    expect(server.creates).toHaveLength(1);
+    expect(server.deletes).toEqual([]);
+  });
+
+  it('add_sheet keeps the sheet it made when placing it never answered, since its element may have landed', async () => {
+    const { api, server } = setup();
+    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () => {
+      throw new TypeError('network down');
+    };
+    await expect(addSheet(api, DOC_A, { rows: [['a']] }, 'mcp')).rejects.toThrow('network down');
+    expect(server.creates).toHaveLength(1);
+    expect(server.deletes).toEqual([]);
   });
 });

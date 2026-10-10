@@ -168,8 +168,8 @@ type Collapse = { index: number; node: ViewNode; elements: number };
 type Fit = { level: Level; collapsed: Collapse[]; root: boolean };
 
 type Measure = {
-  // Joined length of the header and the lines a fit keeps, the root collapse aside.
-  length: (fit: Fit) => number;
+  // Joined length of the header and every line at a level; a collapse subtracts what it hides itself.
+  length: (level: Level) => number;
   elementsUnder: (index: number) => number;
   // Joined length of entries `from` to `to` (exclusive) at a level, each with its newline.
   range: (level: Level, from: number, to: number) => number;
@@ -186,13 +186,7 @@ function measure(entries: readonly Entry[], header: string): Measure {
   for (const entry of entries) elements.push(elements.at(-1)! + entry.elements);
   const range = (level: Level, from: number, to: number) => sums[level]![to]! - sums[level]![from]!;
   return {
-    length: ({ level, collapsed }) => {
-      const hidden = collapsed.reduce(
-        (n, c) => n + range(level, c.index + 1, entries[c.index]!.end),
-        0,
-      );
-      return header.length + range(level, 0, entries.length) - hidden;
-    },
+    length: (level) => header.length + range(level, 0, entries.length),
     elementsUnder: (i) => elements[entries[i]!.end]! - elements[i + 1]!,
     range,
   };
@@ -244,11 +238,13 @@ function fitOutline(
 ): { fit: Fit; state: OutlineState; fullTokens: number } {
   const m = measure(entries, header);
   const full: Fit = { level: 0, collapsed: [], root: false };
-  const fullTokens = estimateTokens(m.length(full));
+  const fullTokens = estimateTokens(m.length(full.level));
   if (budget === undefined) return { fit: full, state: 'full', fullTokens };
   const tokens = (fit: Fit) => {
     const elision = elisionOf(model, entries, fit, fullTokens, door);
-    return estimateTokens(m.length(fit) + (elision === null ? 0 : elisionLine(elision).length + 1));
+    return estimateTokens(
+      m.length(fit.level) + (elision === null ? 0 : elisionLine(elision).length + 1),
+    );
   };
   if (tokens(full) <= budget) return { fit: full, state: 'full', fullTokens };
   const notes: Fit = { ...full, level: 1 };
@@ -283,7 +279,7 @@ function fitOutline(
     const rest = { count: collapsed.length - named.length, elements: restElements };
     const command = elisionCommand({ only: named[0]!.ref }, door);
     const line = elisionText(dropped, collapsedPartsOf(named, rest), [], command);
-    return estimateTokens(m.length(attributes) - hiddenLength + line.length + 1);
+    return estimateTokens(m.length(attributes.level) - hiddenLength + line.length + 1);
   };
   for (const candidate of candidates) {
     if (inside[candidate.index] === 1) continue;

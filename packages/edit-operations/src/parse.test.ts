@@ -77,10 +77,20 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       fields: { label: 'a->b' },
     });
     expect(one("connect n1->'Pay now'")).toMatchObject({ from: 'n1', to: "'Pay now'" });
+    // A -> inside quotes is text, an escaped \" never closes a double quote, and \ is literal in single quotes.
+    expect(one(`connect "Say \\"hi\\"->x"->'a\\b'`)).toMatchObject({
+      from: '"Say \\"hi\\"->x"',
+      to: "'a\\b'",
+    });
   });
 
   it('refuses a connect with more than two ends rather than dropping one', () => {
-    for (const line of ['connect a->b->c', 'connect a -> b -> c', 'connect a->b -> c']) {
+    for (const line of [
+      'connect a->b->c',
+      'connect a -> b -> c',
+      'connect a->b -> c',
+      'connect a->b c->d',
+    ]) {
       const [error] = errorsOf(line);
       expect(error!.code).toBe('parse_error');
       expect(error!.details.join(' ')).toContain('one -> in connect: <a> -> <b>');

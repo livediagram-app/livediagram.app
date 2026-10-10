@@ -42,6 +42,22 @@ describe('partitionVisible (E7)', () => {
     expect(partitionVisible(tab)).toEqual({ printed: [a], hidden: [second, b, ab, first] });
   });
 
+  it('hides an arrow once when it hangs on hidden elements more than once', () => {
+    const loop = arrowBetween('bb', 'b', 'b');
+    const alsoHidden = { ...arrowBetween('cb', 'c', 'b'), layerId: 'secret' };
+    const tab = {
+      elements: [a, b, onHidden, loop, alsoHidden],
+      layers: [
+        { id: 'default', name: 'Default' },
+        { id: 'secret', name: 'Secret', visible: false },
+      ],
+    };
+    expect(partitionVisible(tab)).toEqual({
+      printed: [a],
+      hidden: [b, onHidden, loop, alsoHidden],
+    });
+  });
+
   it('keeps an arrow whose only pinned end is visible', () => {
     const free = { ...arrowBetween('free', 'a', 'b'), to: { kind: 'free' as const, x: 0, y: 0 } };
     const tab = {
