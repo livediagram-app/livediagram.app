@@ -7,13 +7,20 @@ import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
 import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';
 import { estimateTokens, type ViewResult } from './budget';
-import { buildElision, elisionLine, type ElisionArguments } from './elision';
+import {
+  buildElision,
+  collapsedPartsOf,
+  elisionCommand,
+  elisionLine,
+  elisionText,
+  type ElisionArguments,
+} from './elision';
 import { textField } from './fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { stateAttributeOf } from './state-attribute';
 import { styleAttributesOf, styleBaselines, type StyleBaselines } from './style-attributes';
-import { LABEL_CUT_CHARS } from './constants';
+import { ELISION_CONTAINERS_NAMED, LABEL_CUT_CHARS } from './constants';
 import { jsonString } from './text';
 import {
   isViewRun,
@@ -164,6 +171,8 @@ type Measure = {
   // Joined length of the header and the lines a fit keeps, the root collapse aside.
   length: (fit: Fit) => number;
   elementsUnder: (index: number) => number;
+  // Joined length of entries `from` to `to` (exclusive) at a level, each with its newline.
+  range: (level: Level, from: number, to: number) => number;
 };
 
 function measure(entries: readonly Entry[], header: string): Measure {
@@ -185,6 +194,7 @@ function measure(entries: readonly Entry[], header: string): Measure {
       return header.length + range(level, 0, entries.length) - hidden;
     },
     elementsUnder: (i) => elements[entries[i]!.end]! - elements[i + 1]!,
+    range,
   };
 }
 
@@ -255,15 +265,37 @@ function fitOutline(
         : [],
     )
     .sort((a, b) => b.elements - a.elements || a.index - b.index);
-  let fit: Fit = attributes;
+  // Each step adds one collapse and measures in O(ELISION_CONTAINERS_NAMED): the hidden length and the elided
+  // totals are kept running, entries inside a collapse are marked once (collapses never nest), and the elision
+  // line is measured from its named containers (the first collapsed, being the largest) and the rest's totals.
+  // Rebuilding the fit and its elision per step was quadratic: 1.3 s for 4,000 frames at the MCP budget.
+  const collapsed: Collapse[] = [];
+  const inside = new Uint8Array(entries.length);
+  let hiddenLength = 0;
+  let restElements = 0;
+  const dropped = ['notes', 'attributes'];
+  const collapsedTokens = () => {
+    const named = collapsed.slice(0, ELISION_CONTAINERS_NAMED).map((c) => ({
+      ref: model.refs.refOf(c.node.el.id),
+      kind: model.kindOf(c.node.el),
+      elements: c.elements,
+    }));
+    const rest = { count: collapsed.length - named.length, elements: restElements };
+    const command = elisionCommand({ only: named[0]!.ref }, door);
+    const line = elisionText(dropped, collapsedPartsOf(named, rest), [], command);
+    return estimateTokens(m.length(attributes) - hiddenLength + line.length + 1);
+  };
   for (const candidate of candidates) {
-    const holds = (c: Collapse) =>
-      candidate.index > c.index && candidate.index < entries[c.index]!.end;
-    if (fit.collapsed.some(holds)) continue;
-    fit = { ...fit, collapsed: [...fit.collapsed, candidate] };
-    if (tokens(fit) <= budget) return { fit, state: 'containers-collapsed', fullTokens };
+    if (inside[candidate.index] === 1) continue;
+    const end = entries[candidate.index]!.end;
+    inside.fill(1, candidate.index + 1, end);
+    hiddenLength += m.range(2, candidate.index + 1, end);
+    if (collapsed.length >= ELISION_CONTAINERS_NAMED) restElements += candidate.elements;
+    collapsed.push(candidate);
+    if (collapsedTokens() <= budget)
+      return { fit: { ...attributes, collapsed }, state: 'containers-collapsed', fullTokens };
   }
-  return { fit: { ...fit, root: true }, state: 'root-collapsed', fullTokens };
+  return { fit: { ...attributes, collapsed, root: true }, state: 'root-collapsed', fullTokens };
 }
 
 function runJson(model: ViewModel, run: FreehandRunItem): FreehandRunJson {

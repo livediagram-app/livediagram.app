@@ -147,10 +147,39 @@ function edgeLines(model: ViewModel, edges: readonly ViewEdge[], direction: '←
   });
 }
 
-// Whether an arrow end is pinned to, or rides on, the element.
-function names(end: Endpoint, id: string): boolean {
-  if (end.kind === 'pinned') return end.elementId === id;
-  return end.kind === 'on-arrow' && end.arrowId === id;
+// The element an arrow end is pinned to, or the arrow it rides on.
+function namedBy(end: Endpoint): string | null {
+  if (end.kind === 'pinned') return end.elementId;
+  return end.kind === 'on-arrow' ? end.arrowId : null;
+}
+
+// What every shown element of one model reads: the content origin and each element's arrows in and out, in
+// array order. Built once per model, so showing every selected element is linear in the tab, not selected x tab.
+type ShowIndex = {
+  origin: ReturnType<typeof contentOrigin>;
+  incoming: ReadonlyMap<string, ViewEdge[]>;
+  outgoing: ReadonlyMap<string, ViewEdge[]>;
+};
+const showIndexes = new WeakMap<ViewModel, ShowIndex>();
+
+function showIndexOf(model: ViewModel): ShowIndex {
+  const known = showIndexes.get(model);
+  if (known) return known;
+  const incoming = new Map<string, ViewEdge[]>();
+  const outgoing = new Map<string, ViewEdge[]>();
+  const note = (into: Map<string, ViewEdge[]>, id: string | null, edge: ViewEdge) => {
+    if (id === null) return;
+    const list = into.get(id);
+    if (list) list.push(edge);
+    else into.set(id, [edge]);
+  };
+  for (const edge of model.edges.all) {
+    note(incoming, namedBy(edge.arrow.to), edge);
+    note(outgoing, namedBy(edge.arrow.from), edge);
+  }
+  const index = { origin: contentOrigin(model.printed), incoming, outgoing };
+  showIndexes.set(model, index);
+  return index;
 }
 
 function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
@@ -198,10 +227,11 @@ export function showElement(
   const kind = model.kindOf(el);
   const node = model.tree.nodes.get(el.id);
   const container = node?.container == null ? undefined : model.tree.nodes.get(node.container)?.el;
-  const origin = contentOrigin(model.printed);
+  const index = showIndexOf(model);
+  const origin = index.origin;
   const { fields, omitted } = shownFields(el);
-  const incoming = model.edges.all.filter((edge) => names(edge.arrow.to, el.id));
-  const outgoing = model.edges.all.filter((edge) => names(edge.arrow.from, el.id));
+  const incoming = index.incoming.get(el.id) ?? [];
+  const outgoing = index.outgoing.get(el.id) ?? [];
 
   const inPart =
     container === undefined

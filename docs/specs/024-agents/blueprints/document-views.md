@@ -806,6 +806,15 @@ the tab and its `rev`.
   default budget holds it to `READ_DOCUMENT_DEFAULT_BUDGET` tokens (about 24 KB).
 - Refs O(n log n); reading order O(n log n); containment O(n · c) for c containers, about 10⁶ checks at 100
   containers, measured by the bench below; budget O(n + c log c) on the precomputed cost model.
+- Collapsing containers one at a time keeps the hidden length and the elided totals running and measures the
+  elision line from its named containers and the rest's totals, so each step is O(`ELISION_CONTAINERS_NAMED`):
+  4,000 frames at a budget take about 30 ms (1.2 s when each step rebuilt the fit and its elision line). The
+  result is byte-equal to the step-by-step rebuild.
+- `show` and `show selected` read the content origin and each element's incoming and outgoing arrows from an
+  index built once per model, so a select-all of 8,000 elements takes about 80 ms (3.4 s when each element scanned
+  every arrow). The edge model appends each arrow to its source's list in place.
+- `performance.test.ts` gates these as growth: eight times the containers, or the selection, costs under 24 times
+  as much.
 - The api reads one tab body per view; `overview` holds at most `OVERVIEW_TAB_BATCH` bodies at once (about 15 MB at
   the tab cap) and makes one D1 query per batch.
 - `read_document` makes two service-binding calls (document, view), three with `image: true` (the tab, in parallel).
