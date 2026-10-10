@@ -117,6 +117,12 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Setting, clearing or formatting cells, or changing a sheet’s rows and columns.',
   ),
   mcpTool('AddSheet', 'Add Sheet', 'Putting a new Sheet on a tab, blank or from rows or CSV.'),
+  mcpTool(
+    'ChangePages',
+    'Change Pages',
+    'Adding, changing, laying out, moving or deleting Illustrate pages: slides, logos, infographics.',
+  ),
+  mcpTool('WriteArticle', 'Write Article', 'Writing an article on Illustrate pages from Markdown.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {
