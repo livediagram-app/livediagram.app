@@ -68,6 +68,25 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     });
   });
 
+  it('reads quoted labels on either side of a joined -> (rm, connect)', () => {
+    expect(one('rm "Login"->"Address"')).toEqual({ op: 'rm', target: '"Login"->"Address"' });
+    expect(one('connect "Sign in"->"Pay" label=a->b')).toEqual({
+      op: 'connect',
+      from: '"Sign in"',
+      to: '"Pay"',
+      fields: { label: 'a->b' },
+    });
+    expect(one("connect n1->'Pay now'")).toMatchObject({ from: 'n1', to: "'Pay now'" });
+  });
+
+  it('refuses a connect with more than two ends rather than dropping one', () => {
+    for (const line of ['connect a->b->c', 'connect a -> b -> c', 'connect a->b -> c']) {
+      const [error] = errorsOf(line);
+      expect(error!.code).toBe('parse_error');
+      expect(error!.details.join(' ')).toContain('one -> in connect: <a> -> <b>');
+    }
+  });
+
   it('reads rm, move, connect and rewire', () => {
     expect(one('rm n7 all keep-arrows')).toEqual({
       op: 'rm',

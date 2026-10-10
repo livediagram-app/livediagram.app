@@ -81,6 +81,11 @@ describe('selector rows', () => {
     expect(ids('to:n6')).toEqual(['a5']);
     expect(ids('n6->n7')).toEqual(['a6']);
     expect(ids('n7->n6')).toEqual([]);
+    expect(ids('"3-D Secure?"->"Charge card"')).toEqual(['a6']);
+    expect(ids('n6->"Charge card"')).toEqual(['a6']);
+    expect(refusal('n5->n6->n7').details[0]).toBe(
+      'selector "n5->n6->n7": a->b with one arrow: an arrow has two ends',
+    );
   });
 
   it('downstream and upstream along arrows, the start left out', () => {

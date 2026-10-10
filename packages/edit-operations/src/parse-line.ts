@@ -4,7 +4,7 @@
 // forms share one validation.
 
 import type { FieldValue } from './types';
-import { hasQuotes, unquotedPrefix, type Word } from './tokenise';
+import { arrowParts, hasQuotes, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
 import { isSingleWord } from './selectors';
 import {
   EDIT_OPERATION_NAMES,
@@ -198,26 +198,30 @@ export function parseOperationWords(
   }
 
   if (name === 'connect') {
-    const arrow = rest.findIndex((w) => !hasQuotes(w) && w.value === '->');
+    const isArrow = (w: Word) => !hasQuotes(w) && w.value === '->';
+    const arrows = rest.filter(isArrow);
+    const joined = rest.filter((w) => !isArrow(w) && !fieldOf(w) && arrowParts(w) !== null);
+    // One arrow has two ends: `a -> b -> c` or `a->b->c` is refused, never read as `a -> b` (EO24a).
+    const extra = arrows[1] ?? joined.find((w) => arrows.length > 0 || arrowParts(w)!.length > 2);
+    if (extra ?? joined[1]) return fail(extra ?? joined[1], end, 'one -> in connect: <a> -> <b>');
+    const arrow = rest.findIndex(isArrow);
     let fromTerms: Word[];
     let tail: Word[];
     if (arrow >= 0) {
       fromTerms = rest.slice(0, arrow);
       tail = rest.slice(arrow + 1);
     } else {
-      // `a->b` as one word.
-      const joined = rest.findIndex((w) => !hasQuotes(w) && /^[^-].*->.+$/.test(w.value));
-      if (joined < 0) return fail(rest[0], end, 'connect <a> -> <b>');
-      const [a, b] = rest[joined]!.value.split('->') as [string, string];
-      const column = rest[joined]!.column;
-      const bare = (value: string, at: number): Word => ({
-        value,
-        segments: [{ text: value, quoted: false }],
-        column: at,
-        raw: value,
-      });
-      fromTerms = [...rest.slice(0, joined), bare(a, column)];
-      tail = [bare(b, column + a.length + 2), ...rest.slice(joined + 1)];
+      // `a->b` as one word, either end may be quoted: `"Sign in"->"Pay"`.
+      const at = joined[0] ? rest.indexOf(joined[0]) : -1;
+      if (at < 0) return fail(rest[0], end, 'connect <a> -> <b>');
+      const [a, b] = arrowParts(rest[at]!) as [string, string];
+      const column = rest[at]!.column;
+      const part = (text: string, offset: number): Word[] => {
+        const read = tokeniseLine(text);
+        return 'error' in read ? [] : read.words.map((w) => ({ ...w, column: column + offset }));
+      };
+      fromTerms = [...rest.slice(0, at), ...part(a, 0)];
+      tail = [...part(b, a.length + 2), ...rest.slice(at + 1)];
     }
     const c = collect(name, tail);
     if ('column' in c) return { error: c };

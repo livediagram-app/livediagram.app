@@ -160,20 +160,20 @@ label    := a quoted value
 word     := ref | label          (one element)
 ```
 
-| Term                | Matches                                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `ref`               | `resolveRef(word, refs)`: the element whose id equals it, else the one id it is a prefix of; several: ambiguous |
-| `"Label"`           | Elements whose `label`, trimmed, equals it trimmed, compared after `toLowerCase()` (EO11)                       |
-| `label~text`        | Elements whose `label` contains the text, compared after `toLowerCase()`                                        |
-| `type:<v>`          | `kindWordOf(el) === v` or `el.type === v`, so `type:square` and `type:shape` both match a square                |
-| `shape:<v>`         | Shapes whose `shape === v`                                                                                      |
-| `in:<word>`         | Elements whose chain of holders includes the container `<word>` names; arrows are never members (EO14)          |
-| `from:<word>`       | Arrows whose `from` is pinned to that element                                                                   |
-| `to:<word>`         | Arrows whose `to` is pinned to that element                                                                     |
-| `<a>-><b>`          | Arrows whose `from` is pinned to `a` and `to` to `b`                                                            |
-| `downstream:<word>` | Boxed elements reachable from it along pinned arrows from `from` to `to`, itself excluded (EO13)                |
-| `upstream:<word>`   | The same against the arrows' direction                                                                          |
-| `selected`          | The ids in `options.selected` that exist in the state                                                           |
+| Term                | Matches                                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ref`               | `resolveRef(word, refs)`: the element whose id equals it, else the one id it is a prefix of; several: ambiguous                                   |
+| `"Label"`           | Elements whose `label`, trimmed, equals it trimmed, compared after `toLowerCase()` (EO11)                                                         |
+| `label~text`        | Elements whose `label` contains the text, compared after `toLowerCase()`                                                                          |
+| `type:<v>`          | `kindWordOf(el) === v` or `el.type === v`, so `type:square` and `type:shape` both match a square                                                  |
+| `shape:<v>`         | Shapes whose `shape === v`                                                                                                                        |
+| `in:<word>`         | Elements whose chain of holders includes the container `<word>` names; arrows are never members (EO14)                                            |
+| `from:<word>`       | Arrows whose `from` is pinned to that element                                                                                                     |
+| `to:<word>`         | Arrows whose `to` is pinned to that element                                                                                                       |
+| `<a>-><b>`          | Arrows whose `from` is pinned to `a` and `to` to `b`; split at the `->` outside quotes, so `"Sign in"->"Pay"` reads; a third end is a parse error |
+| `downstream:<word>` | Boxed elements reachable from it along pinned arrows from `from` to `to`, itself excluded (EO13)                                                  |
+| `upstream:<word>`   | The same against the arrows' direction                                                                                                            |
+| `selected`          | The ids in `options.selected` that exist in the state                                                                                             |
 
 - All terms of one selector must match (intersection). Matches are listed in element order (z-order, EO12).
 - A `<word>` inside a term must resolve to exactly one element, else that word's own `target_not_found` or
@@ -522,7 +522,9 @@ Line form, words separated by whitespace:
   placement, `gap:` its gap; other `key:value` words, quoted words, `label~`, `->` words and other bare words are
   selector terms; flags are the operation's keywords. Keys read case-insensitively, as `tokenKeyOf` in
   `@livediagram/explorer-lens` reads them (EO11).
-- **Operation shapes.** `connect` splits its selectors at a standalone `->`; `insert … between <a> <b>` takes one
+- **Operation shapes.** `connect` splits its selectors at a standalone `->`, or at the `->` outside quotes of one
+  word (`connect "Sign in"->"Pay"`); a second `->`, either way, is a `parse_error` ("one -> in connect"), never a
+  dropped end (E17); `insert … between <a> <b>` takes one
   word each; `wrap` reads members up to the word `in`.
 
 `formatOperation` prints the canonical line form: operation, selector or kind, `id=`, fields in the given order
@@ -663,6 +665,8 @@ Edge cases:
 - **E14** `keep-arrows` where both ends were removed: the arrow has two free ends and stays.
 - **E15** A placement reference on a hidden layer: placement uses its box all the same.
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
+- **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
+  `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
 
 ## Security and trust
 

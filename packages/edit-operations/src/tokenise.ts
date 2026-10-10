@@ -104,3 +104,27 @@ export function isQuotedWord(word: Word): boolean {
 export function hasQuotes(word: Word): boolean {
   return word.segments.some((s) => s.quoted);
 }
+
+// A word's raw text split at each `->` outside quotes (`"Sign in"->"Pay"` is two parts), or null when it has none.
+// Each part is raw, quotes kept, so it reads as a selector word of its own.
+export function arrowParts(word: Word): string[] | null {
+  const { raw } = word;
+  const parts: string[] = [];
+  let start = 0;
+  let quote: string | null = null;
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i]!;
+    if (quote) {
+      if (quote === '"' && ch === '\\') i++;
+      else if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === '-' && raw[i + 1] === '>') {
+      parts.push(raw.slice(start, i));
+      start = i + 2;
+      i++;
+    }
+  }
+  if (parts.length === 0) return null;
+  parts.push(raw.slice(start));
+  return parts;
+}
