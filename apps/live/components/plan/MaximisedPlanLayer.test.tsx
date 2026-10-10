@@ -213,11 +213,20 @@ describe('restoring while it is still growing', () => {
 describe('the canvas cover', () => {
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
   it('sets the header band for the element it holds, and none without one', () => {
+    // The cover sits in the canvas, as it is portalled there; the strip's place is set on the canvas.
+    const main = document.createElement('main');
+    document.body.appendChild(main);
     const { container, rerender } = render(
-      <CanvasCover layout={{ insets, band: { height: 53, left: 124, mid: 349 } }} marker={{}}>
+      <CanvasCover
+        layout={{ insets, band: { height: 53, left: 124, mid: 349, stripEnd: 300 } }}
+        marker={{}}
+      >
         <span />
       </CanvasCover>,
+      { container: main },
     );
+    expect(main.style.getPropertyValue('--plan-strip-end')).toBe('300px');
+    expect(main.style.getPropertyValue('--plan-strip-align')).toBe('flex-end');
     const inner = container.querySelector<HTMLElement>('[data-header-band]')!;
     expect(inner.style.getPropertyValue('--plan-band-h')).toBe('53px');
     expect(inner.style.getPropertyValue('--plan-band-left')).toBe('124px');
@@ -231,5 +240,8 @@ describe('the canvas cover', () => {
     const plain = container.querySelector<HTMLElement>('[data-canvas-cover] > div')!;
     expect(plain.style.top).toBe('66px');
     expect(plain.style.getPropertyValue('--plan-band-h')).toBe('');
+    // No band: the strip is centred again.
+    expect(main.style.getPropertyValue('--plan-strip-end')).toBe('');
+    main.remove();
   });
 });

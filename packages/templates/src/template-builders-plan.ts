@@ -7,6 +7,7 @@
 import {
   createShape,
   createSticky,
+  newPlanSheetId,
   type Element,
   type ShapeElement,
   type StickyElement,
@@ -27,6 +28,7 @@ import {
   type PlanTabSpec,
   type PlanTemplateKind,
   type RailItem,
+  type SheetSpec,
 } from './plan-template-catalogue';
 
 export { PLAN_TEMPLATE_KINDS, PLAN_TEMPLATE_TABS, type PlanTemplateKind };
@@ -63,6 +65,20 @@ function board(spec: BoardSpec, x: number, y: number): Box {
     width: spec.width,
     height: spec.height,
     planBoard: boardSetup(spec),
+  };
+}
+
+// A Sheet not yet made: it names its start, and whatever makes the tabs makes its sheet (template-sheets.ts).
+function sheet(spec: SheetSpec, x: number, y: number): Box {
+  return {
+    ...createShape('plan-sheet', x, y),
+    width: spec.width,
+    height: spec.height,
+    planSheet: {
+      sheetId: newPlanSheetId(),
+      start: spec.start,
+      ...(spec.fillTab ? { fillTab: true as const } : {}),
+    },
   };
 }
 
@@ -195,12 +211,15 @@ function bounds(elements: readonly Box[]) {
 
 // One template tab's elements, laid out from (0, 0) and then centred on (cx, cy).
 export function buildPlanTab(spec: PlanTabSpec, cx: number, cy: number): Element[] {
-  const width = spec.board?.width ?? DASHBOARD_W;
+  const width = spec.board?.width ?? spec.sheet?.width ?? DASHBOARD_W;
   const out: Box[] = [];
   let y = 0;
   if (spec.board) {
     out.push(board(spec.board, 0, 0));
     y = spec.board.height + GAP;
+  } else if (spec.sheet) {
+    out.push(sheet(spec.sheet, 0, 0));
+    y = spec.sheet.height + GAP;
   }
   const [metrics, metricsH] = metricRow(spec, y, width);
   out.push(...metrics);

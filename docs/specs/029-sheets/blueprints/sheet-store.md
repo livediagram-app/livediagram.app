@@ -209,6 +209,32 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
   (cut at `SHEET_WRITE_CELLS_MAX` cells: past it, a paste into another document is refused with the spec's toast;
   within the same document it uses `copyOf`).
 
+## Template starts
+
+([Spec](../sheet-store.md#template-starts).) `PlanSheetRef.start` (validated by `isPlanSheetRef`:
+`PLAN_SHEET_START_PATTERN`, kebab-case) names a template start. `@livediagram/sheets` `template-starts.ts`:
+`TEMPLATE_STARTS` (`budget-planner`, `timesheet`, `contact-list`, `task-tracker`), `isTemplateStart`,
+`templateStart(id, now)` (title and `SheetStarter`, dates from `now`) and `templateSheet({ id, tabId, start, now, dark,
+rand })` (an `emptySheet`, `setupWrite` with the Header look, the header frozen and the default size, applied with
+`applySheetWrite`, as `{ id, tabId, title, layout, cells }`). `@livediagram/templates`: `hasTemplateSheets(tabs)`
+(engine-free, in the index) and, at the `@livediagram/templates/template-sheets` subpath so only a caller making sheets
+bundles the engine, `materialiseTemplateSheets(tabs, now, rand)` (`{ tabs, sheets: SheetCreateRequest[] }`, tinted dark
+when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from each Sheet made). Callers:
+
+- `POST /api/documents` (`routes/documents.ts`): after the tabs validate, the made sheets are appended to the body's
+  seed sheets and go through `readSeedSheets` / `seedSheets`; log `[documents] template sheets made`.
+- Changesets (`apps/api/src/changesets/template-sheets.ts` `makeTemplateSheets`, from `submitChangeset` for a `replace`): each sheet
+  inserted with `insertSheetStatements` unless it exists, the tab is full (`DOCUMENT_SHEETS_MAX`,
+  `DOCUMENT_CELLS_MAX`: log `[changeset] template sheet skipped`) or it does not validate; only the Sheets made lose
+  the mark; never a refusal.
+- The wizard's Local only create (`apps/live/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
+  only when `hasTemplateSheets`), stored as the record's `sheets` by `offlineCreateDocument`.
+- The editor (`useSheetModel`): a Sheet still carrying a known `start`, its sheet absent once the tab is `ready`, for
+  someone who may edit: `templateSheet` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
+  then `tickElements` drops the mark (no undo step). `PlanSheetView` shows Opening Sheet, never "no longer in this
+  document", while `start` (as `copyOf`) is set.
+- `freshCopyFields` copies a Sheet with `start` as `{ sheetId: new, start }`.
+
 ## Undo
 
 - `useItemUndo`'s journal takes any step; the sheet store client pushes `{ undo, redo }` closures through the
@@ -362,6 +388,7 @@ inputs, formats or titles.
 | Write batch: upsert, patch per key, clear, rows, rename         | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
 | Rev race retries then busy; huge write relayed as refetch       | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
 | Delete; copy a sheet; copy a document; seeds                    | `apps/api/src/routes/sheet-routes.test.ts` ("deleting, copies and seeds")                                                                                                                                                                     |
+| Template starts: build, materialise, create, changeset, editor  | `packages/sheets/src/template-starts.test.ts`, `packages/templates/src/template-sheets.test.ts`, `apps/api/src/routes/sheet-routes.test.ts`, `apps/api/src/changesets/submit.test.ts`, `apps/live/components/sheets/useSheetModel.test.tsx`   |
 | Reference index: sheetId and copyOf, marks, clears, settles     | `apps/api/src/db/sheet-refs.test.ts`                                                                                                                                                                                                          |
 | Delete when unreferenced, now or on the last reference; restore | `apps/api/src/routes/sheet-routes.test.ts` ("deleting with the element")                                                                                                                                                                      |
 | Expiry deletes past 30 days, bounded by cells                   | `apps/api/src/sheet-sweep.test.ts`                                                                                                                                                                                                            |

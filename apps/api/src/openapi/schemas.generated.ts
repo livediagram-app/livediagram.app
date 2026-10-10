@@ -9940,6 +9940,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "sheetId": {
         "type": "string"
+      },
+      "start": {
+        "type": "string"
       }
     },
     "required": [

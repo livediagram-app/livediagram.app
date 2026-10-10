@@ -126,6 +126,10 @@ const ALL_KINDS = [
   'okrs',
   'product-launch',
   'feedback-board',
+  'budget-planner',
+  'timesheet',
+  'contact-list',
+  'task-tracker',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

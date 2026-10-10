@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 91;
+export const TEMPLATE_COUNT = 95;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {

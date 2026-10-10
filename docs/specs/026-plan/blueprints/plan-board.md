@@ -219,12 +219,33 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   `transitionend` on chrome, a window `resize`, or a child-list change under the canvas that adds or removes chrome
   (`touchesChrome`; the set is re-observed only when it differs; the strip's children are observed too, as its card
   changes width with the category). No key or press listener.
-  The hook returns `CanvasLayout = { insets, band }`. `headerBand(canvas, insets, menu, strip)` (the strip measured as
-  the union of `[data-toolbar-palette]`'s children, its root running the canvas width) returns `HeaderBand { height,
-left, mid }` in px from the element's box (inside the cover's `COVER_PAD_PX` 12) when the menu and strip are in the
-  top half, the canvas is at least `BAND_CANVAS_MIN_PX` 640 wide, the menu ends before the strip, and there are at least
-  `BAND_MID_MIN_PX` 140 between them (less `BAND_GAP_PX` 12 each side) and `BAND_RIGHT_MIN_PX` 280 after the strip; the
-  insets' top is then 0. `CanvasCover` marks its inner box `data-header-band` and sets `--plan-band-h`, `--plan-band-left`
+  The hook returns `CanvasLayout = { insets, band }`. `headerBand(canvas, insets, menu, strip, nameWidth, endWidth)`
+  (the strip measured as the union of `[data-toolbar-palette]`'s children, only its width and height used; `nameWidth`
+  the menu box's `[data-menu-name-slot]`, `MENU_NAME_SLOT_SELECTOR`; `endWidth` the covering element's controls card,
+  `BAND_CONTROLS_SELECTOR` `[data-canvas-cover] [data-band-controls]`, `offsetWidth` plus its header's right padding,
+  `BAND_RIGHT_MIN_PX` 280 until measured) returns `HeaderBand { height, left, mid, stripEnd }` in px from the element's
+  box (inside the cover's `COVER_PAD_PX` 12) when the menu (and strip) are in the top half, the canvas is at least
+  `BAND_CANVAS_MIN_PX` 640 wide, the strip does not start before the menu (a phone), and, with the strip's right edge at
+  the element's right less `endWidth` and `BAND_GAP_PX` 12, at least `BAND_MID_MIN_PX` 140 is left between the menu
+  (judged without the name) and the strip, less `BAND_GAP_PX` each side; `mid` runs from the menu box as it is to the
+  strip (floored at 0), `stripEnd` is the strip's right edge from the canvas's right edge, and the insets' top is 0. Its
+  room never reads where the strip is now, so moving it cannot take the band away. `CanvasCover` sets
+  `--plan-strip-align: flex-end` and `--plan-strip-end` (`setStripEnd`: `stripEnd` over the strip's computed `zoom`) on
+  the canvas `main` it is portalled into while it has a band (`clearStripEnd` on going); `ToolbarPalette`'s root reads
+  them as `align-items` and `padding-right` (centre and 0 otherwise). `useCanvasLayerInsets` observes the controls card
+  too. **The controls card** (`apps/live/components/plan/band-controls.ts`): `BAND_CONTROLS_CLASS`
+  (`[[data-header-band]_&]:` rounded-xl, border, p-1, shadow-md) and `bandControlsProps(palette)` (`data-band-controls`,
+  `--band-card-bg` the palette's surface, `--band-card-line` its border) on `PlanBoardHeader`'s trailing group,
+  `SheetHeader`'s controls and `ViewFrame`'s aside.
+  **The name in the menu box** (`apps/live/components/plan/menu-name-slot.tsx`): `ToolbarExplorerButton` (not inline,
+  not a phone) renders `MenuNameSlot` (`data-menu-name-slot`, `max-w-[16rem]`, a hairline, `empty:hidden`), its node a
+  module store (`setMenuNameSlot`, `useMenuNameSlot`). `CanvasCover` calls `announceHeaderBand()` when its band comes or
+  goes (and on unmount); `InMenuBox({ render })` keeps a hidden marker in the header, checks
+  `marker.closest('[data-header-band]')` in a layout effect on each announcement (the element's DOM is moved into the
+  cover, so no context reaches it), and while in a band with a slot portals `render(true)` into the slot, else renders
+  `render(false)` in place. `PlanBoardHeader` (its `data-board-title` span with `BoardTitle inBox`), `SheetHeader`
+  (`data-sheet-title`) and `ViewFrame` wrap their titles in it; in the box they take `IN_BOX_TITLE_CLASS` and the
+  chrome's ink (a rename field `color: inherit`). `CanvasCover` marks its inner box `data-header-band` and sets `--plan-band-h`, `--plan-band-left`
   and `--plan-band-mid` (`bandVars`). `PlanBoardHeader`, `SheetHeader` and the views' `ViewFrame` read them with their
   own sizes as fallbacks: `h-[var(--plan-band-h,52px)]` (40 px a Sheet's, 2.5rem a view's),
   `pl-[var(--plan-band-left,…)]`, and `max-w-[var(--plan-band-mid,none)]` on the title (and widgets, count) group, the
@@ -237,9 +258,13 @@ left, mid }` in px from the element's box (inside the cover's `COVER_PAD_PX` 12)
   capture handler bails for a target inside `[data-canvas-cover]`, and `useEditorKeyboardShortcuts`, while `canvasCovered()`,
   sorts each key by `coveredKeyRole` (run: undo/redo/search/zen/mode/Escape; swallow: Cmd+D/A/Shift+L, z-order, zoom,
   prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
-fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardCovering()`, swaps its categories for
+fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for
   `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `ToolbarPalette` shows the first offered
-  category while the chosen one is not offered, keeping the choice) to `deriveCanvasSelection`, which then shows no popover, plus or multi-selection toolbar.
+  category while the chosen one is not offered, keeping the choice; while `useSheetFillingTab()` `ToolbarPalette` hides its root
+  (`hidden`), or on a phone (a `leading` menu) renders no card beside the menu; `usePaletteCatalogue`'s tile preamble
+  calls `restorePlanElement()` while `getMaximisedPlanId()` is set and `restoresMaximised(action, args)` (any action
+  but `cancelDraw` and `addShape('plan-card', …)`; `withTileActionPreamble` hands the preamble the action and its
+  arguments)) to `deriveCanvasSelection`, which then shows no popover, plus or multi-selection toolbar.
 - **Fill Tab** (`setup.fillTab: true`, normalised exactly-true by `normaliseBoardSetup`, carried by
   `planBoardPatch` as a set-up key): `fill-tab.ts` (pure) gives `fillTabElementOf(elements)` (`{ id, kind: FillTabKind }`
   or null: the first board whose raw `planBoard.fillTab === true`, or Sheet whose `planSheet.fillTab === true`, in
@@ -252,8 +277,8 @@ fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePal
 tabElementCount }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
   `fillTabElementOf(activeTab.elements)`, and returns `canvasCovered` for the keyboard and `readTabElements` for the
   Plan slice). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
-  (maximised or filled: selection chrome, the Map), `useBoardCovering` (a maximised board, not a view, or a filling board: the
-  palette), `useFillsTab(id)` (a board or Sheet), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
+  (maximised or filled: selection chrome, the Map), `useBoardFillingTab` (a board filling the tab: the palette's Cards alone),
+  `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
   one covered check, read at a key press too. Neither value is on `PlanContext`, so adding or moving an element never
   changes the context (guarded by `plan-cover-store.test.tsx`: 40 element adds, 0 re-renders).
 - **Fill Tab's actions** on `PlanContext` (`usePlanFillTab`, stable callbacks): `tabOthers(id)` (read at a press) and
@@ -365,45 +390,48 @@ ColumnAdded | ColumnAddedExisting`.
 
 ## Testing
 
-| Rule                                             | Test                                                                                                                                                    |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Set-up edits                                     | `apps/live/components/plan/board-setup-edits.test.ts`                                                                                                   |
-| Column picker statuses, counts, boards           | `packages/items/src/board-status-picks.test.ts`                                                                                                         |
-| Fill Tab: which board, deletion, copy            | `apps/live/components/plan/fill-tab.test.ts`                                                                                                            |
-| Fill Tab tiles, confirm, telemetry               | `apps/live/components/palette/PlanFillTabSetting.test.tsx`                                                                                              |
-| Setup Board Layout step, stepper, Fill Tab       | `apps/live/components/plan/PlanSetupBoard.test.tsx`                                                                                                     |
-| Layout read from and written to the board        | `apps/live/components/plan/setup-board.test.ts`                                                                                                         |
-| Maximised/filled insets from the chrome          | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/hooks/ui/useCanvasLayerInsets.test.ts`                                                          |
-| The header band, and the cover's band variables  | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                    |
-| Zoom off while the canvas is covered             | `apps/live/components/chrome/ZoomControls.test.tsx`                                                                                                     |
-| Five slots across a maximised board              | `apps/live/components/plan/plan-board-columns.test.ts`                                                                                                  |
-| Option list roles, keys, menu items              | `apps/live/components/plan/OptionRows.test.tsx`                                                                                                         |
-| Edge auto-scroll math and drag wiring            | `apps/live/hooks/plan/edge-auto-scroll.test.ts`                                                                                                         |
-| Map hidden while covered                         | `apps/live/components/canvas/view-readers.minimap.test.tsx`                                                                                             |
-| Cover store: re-renders only on a change         | `apps/live/hooks/plan/plan-cover-store.test.tsx`                                                                                                        |
-| Palette offers only Cards, then restores         | `apps/live/components/palette/palette-layouts.test.ts`                                                                                                  |
-| No selection chrome over a covered canvas        | `apps/live/lib/canvas-selection.test.ts`, `apps/live/hooks/canvas/useCanvasSelectionView.covered.test.ts`                                               |
-| Nothing under a covered canvas moves             | `FilledTabLayer.test.tsx`, `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`, `apps/live/hooks/canvas/useCanvasSurfaceGestures.test.tsx` |
-| No Status swimlanes on a board (All Cards aside) | `board.test.ts`, `apps/live/components/palette/PlanBoardMenuSection.test.tsx`                                                                           |
-| Filled layer, maximise released, no Escape       | `apps/live/components/plan/FilledTabLayer.test.tsx`                                                                                                     |
-| Fill Tab normalised and patched                  | `board.test.ts`, `packages/document/src/plan-board-patch.test.ts`                                                                                       |
-| Column picker combobox, rows, keys, Add All      | `apps/live/components/plan/AddColumnPicker.test.tsx`                                                                                                    |
-| Picker adds an existing status's column          | `apps/live/components/plan/PlanColumnHeader.test.tsx`                                                                                                   |
-| Factory, validation, size, labels                | `packages/document/src/plan-shapes.test.ts`                                                                                                             |
-| SVG render with and without items                | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`                                                                                                    |
-| Projection: columns, rows, unplaced, filter      | `packages/items/src/board.test.ts`                                                                                                                      |
-| Drop moves, between boards, refusals             | `apps/live/components/plan/plan-board-moves.test.ts`                                                                                                    |
-| Keyboard moves and their announcement            | `apps/live/components/plan/plan-board-keys.test.ts`                                                                                                     |
-| New card types, deleted-type fallback            | `packages/items/src/archive.test.ts`                                                                                                                    |
-| Face-down and votes spent                        | `packages/items/src/board.test.ts`                                                                                                                      |
-| A palette card lands only in a column            | `apps/live/hooks/plan/plan-card-drop.test.ts`                                                                                                           |
-| Plan templates' boards                           | `apps/live/lib/template-boards.test.ts`                                                                                                                 |
-| Card trail steps, cut-back, cap; children        | `apps/live/components/plan/item-trail.test.ts`                                                                                                          |
-| Linked as rows, empty state, open                | `apps/live/components/plan/LinkedCards.test.tsx`                                                                                                        |
-| Breadcrumb crumbs, fold, step back               | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                    |
-| Maximise, restore, Escape, unmount ends it       | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                           |
-| No remount, maximised size, one Escape           | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                 |
-| Drag, Add card, card menu, item panel            | checked by hand against the dev stack (screenshots in the PR)                                                                                           |
+| Rule                                             | Test                                                                                                                                                                  |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Set-up edits                                     | `apps/live/components/plan/board-setup-edits.test.ts`                                                                                                                 |
+| Column picker statuses, counts, boards           | `packages/items/src/board-status-picks.test.ts`                                                                                                                       |
+| Fill Tab: which board, deletion, copy            | `apps/live/components/plan/fill-tab.test.ts`                                                                                                                          |
+| Fill Tab tiles, confirm, telemetry               | `apps/live/components/palette/PlanFillTabSetting.test.tsx`                                                                                                            |
+| Setup Board Layout step, stepper, Fill Tab       | `apps/live/components/plan/PlanSetupBoard.test.tsx`                                                                                                                   |
+| Layout read from and written to the board        | `apps/live/components/plan/setup-board.test.ts`                                                                                                                       |
+| Maximised/filled insets from the chrome          | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/hooks/ui/useCanvasLayerInsets.test.ts`                                                                        |
+| The header band, and the cover's band variables  | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                  |
+| Zoom off while the canvas is covered             | `apps/live/components/chrome/ZoomControls.test.tsx`                                                                                                                   |
+| Five slots across a maximised board              | `apps/live/components/plan/plan-board-columns.test.ts`                                                                                                                |
+| Option list roles, keys, menu items              | `apps/live/components/plan/OptionRows.test.tsx`                                                                                                                       |
+| Edge auto-scroll math and drag wiring            | `apps/live/hooks/plan/edge-auto-scroll.test.ts`                                                                                                                       |
+| Map hidden while covered                         | `apps/live/components/canvas/view-readers.minimap.test.tsx`                                                                                                           |
+| Cover store: re-renders only on a change         | `apps/live/hooks/plan/plan-cover-store.test.tsx`                                                                                                                      |
+| Palette offers only Cards, then restores         | `apps/live/components/palette/palette-layouts.test.ts`, `apps/live/components/palette/ToolbarPalette.test.tsx`                                                        |
+| Palette hidden for a filling Sheet; restore pick | `apps/live/components/palette/ToolbarPalette.test.tsx`, `apps/live/components/palette/palette-tile-actions.test.ts`, `apps/live/hooks/plan/plan-cover-store.test.tsx` |
+| The name rides in the menu box                   | `apps/live/components/plan/menu-name-slot.test.tsx`, `apps/live/lib/canvas-layer-insets.test.ts`                                                                      |
+| The Plan strip shows only with cards to show     | `apps/live/hooks/sheets/card-table-sheets.test.ts`                                                                                                                    |
+| No selection chrome over a covered canvas        | `apps/live/lib/canvas-selection.test.ts`, `apps/live/hooks/canvas/useCanvasSelectionView.covered.test.ts`                                                             |
+| Nothing under a covered canvas moves             | `FilledTabLayer.test.tsx`, `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`, `apps/live/hooks/canvas/useCanvasSurfaceGestures.test.tsx`               |
+| No Status swimlanes on a board (All Cards aside) | `board.test.ts`, `apps/live/components/palette/PlanBoardMenuSection.test.tsx`                                                                                         |
+| Filled layer, maximise released, no Escape       | `apps/live/components/plan/FilledTabLayer.test.tsx`                                                                                                                   |
+| Fill Tab normalised and patched                  | `board.test.ts`, `packages/document/src/plan-board-patch.test.ts`                                                                                                     |
+| Column picker combobox, rows, keys, Add All      | `apps/live/components/plan/AddColumnPicker.test.tsx`                                                                                                                  |
+| Picker adds an existing status's column          | `apps/live/components/plan/PlanColumnHeader.test.tsx`                                                                                                                 |
+| Factory, validation, size, labels                | `packages/document/src/plan-shapes.test.ts`                                                                                                                           |
+| SVG render with and without items                | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`                                                                                                                  |
+| Projection: columns, rows, unplaced, filter      | `packages/items/src/board.test.ts`                                                                                                                                    |
+| Drop moves, between boards, refusals             | `apps/live/components/plan/plan-board-moves.test.ts`                                                                                                                  |
+| Keyboard moves and their announcement            | `apps/live/components/plan/plan-board-keys.test.ts`                                                                                                                   |
+| New card types, deleted-type fallback            | `packages/items/src/archive.test.ts`                                                                                                                                  |
+| Face-down and votes spent                        | `packages/items/src/board.test.ts`                                                                                                                                    |
+| A palette card lands only in a column            | `apps/live/hooks/plan/plan-card-drop.test.ts`                                                                                                                         |
+| Plan templates' boards                           | `apps/live/lib/template-boards.test.ts`                                                                                                                               |
+| Card trail steps, cut-back, cap; children        | `apps/live/components/plan/item-trail.test.ts`                                                                                                                        |
+| Linked as rows, empty state, open                | `apps/live/components/plan/LinkedCards.test.tsx`                                                                                                                      |
+| Breadcrumb crumbs, fold, step back               | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                                  |
+| Maximise, restore, Escape, unmount ends it       | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                                         |
+| No remount, maximised size, one Escape           | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                               |
+| Drag, Add card, card menu, item panel            | checked by hand against the dev stack (screenshots in the PR)                                                                                                         |
 
 ## Constants and configuration
 

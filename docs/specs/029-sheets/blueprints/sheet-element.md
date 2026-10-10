@@ -339,6 +339,19 @@ SheetFillTabOn` / `SheetFillTabOff`.
 - Sheet Settings **Download CSV**: `toCsv` of displayed values up to the filled extent, saved through the shared download helper
   as `<title>.csv`; `track('Sheet', 'Exported', 'Csv')`.
 
+## Zoom
+
+([Spec](../sheet.md#zoom).) `apps/live/hooks/sheets/sheet-zoom.ts`: a module store (`setSheetZoom` clamps to
+`SHEET_ZOOM_MIN` 0.5 and `SHEET_ZOOM_MAX` 2 and rounds to whole percents; `stepSheetZoom(±1)` by `SHEET_ZOOM_STEP`
+0.1; `useSheetZoom`). `plan-cover-store` `isSheetCovering` / `useSheetCovering` (maximised kind `Sheet` or
+`fillTabKind` `Sheet`). `ViewZoomControls`: while a Sheet covers, `ZoomControls` gets the sheet zoom, the store's steps,
+`setSheetZoom` for presets, Fit as `setSheetZoom(1)` and `zoomScope="sheet"` (its hover copy, `ZOOM_COPY`); an effect
+resets the store to 1 when no Sheet covers. `PlanSheetView` passes `zoom` (the store's while `maximised` or
+`useFillsTab`, else 1) to `SheetGrid`, whose root is a `data-sheet-grid-frame` box (`relative flex-1 overflow-hidden`,
+always rendered so zooming never remounts the grid) holding the grid absolute at `100 / zoom` % each way with
+`transform: scale(zoom)` from its top left; `useSheetPointer` and `useSheetPan` already read the scale as screen size
+over `offsetWidth`.
+
 ## Static render (exports, thumbnails, images)
 
 - `packages/document/src/svg-render-plan-sheet.ts`: `svgPlanSheet(el, model: SheetRenderModel | undefined, surface)`

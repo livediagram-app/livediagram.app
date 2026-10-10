@@ -38,6 +38,10 @@ export function freshCopyFields(el: Element): {
   if (el.type === 'sticky' && el.fixedSize) return { ...unowned, rotation: eventStormingTilt() };
   // A copied Sheet frames a new sheet, made from the original's when it is first drawn
   // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
+  // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from
+  // the same start.
+  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.start)
+    return { planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
   if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
     return {
       planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },

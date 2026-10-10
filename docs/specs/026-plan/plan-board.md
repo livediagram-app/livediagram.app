@@ -508,17 +508,26 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - **The header holds the top row**: maximised (or filling its tab), a board, view or Sheet does not start below the
   Toolbar layout's top row; it starts at the top of the canvas area, and its header grows to that row's height
   (`HeaderBand`), so the menu button, the mode menu and the palette toolbar float inside the header instead of over
-  a strip of canvas above it. The header's own content keeps clear of them: its title, count and widgets start after
-  the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when narrow), and
-  its controls (the view's own, Maximise or Restore, the cog) sit at its right end beyond the palette. It is laid out
-  this way only when there is room: at least 140 px between the mode menu and the palette, and 280 px between the
-  palette and the element's right edge (a desktop or a wide tablet). Otherwise (a phone, where the menu sits in the
+  a strip of canvas above it. The palette leaves the centre for the header's right end, 12 px before its controls,
+  so the middle of the header is the title's and widgets'. Its controls (the view's own, Maximise or Restore, the cog,
+  the ⋯ menu) sit together in a rounded card at its right end, matching the menu box at the left: the element's
+  surface, its border and a soft shadow. The header's own content keeps clear of them: its title, count and widgets
+  start after the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when
+  narrow). It is laid out this way only when there is room: at least 140 px between the mode menu and the palette
+  with the palette at the right (a desktop or a wide tablet). Otherwise (a phone, where the menu sits in the
   palette's strip, or a narrow window) the element starts below the top row as before. The header follows the row
-  as it changes (the palette's category switching its width, the window resizing).
+  as it changes (the palette's category switching its width, the window resizing). With no palette in the row (it is
+  hidden, below, or the person may not edit) the header holds the menu alone, its content running on to its controls.
+- **The name rides in the menu box**: while the header holds the top row, the element's name (a board's or view's
+  title, a Sheet's title) moves out of its header into the menu box at the top left, after the mode menu and a hairline,
+  in the chrome's own text colour, truncating past 16 rem. It is the same title: a double-click on it renames it in
+  place, as in the header. The room the band needs is measured from the menu box without the name, so the name
+  coming or going never takes the band away. Without a band (a phone, a narrow window) the name stays in the header.
 - **Zoom stands down**: while a board, view or Sheet is maximised or fills its tab, the canvas cannot zoom, so the
   bottom-right zoom controls (Zoom out, the zoom level and its menu, Zoom in, and a phone's Fit) stay where they
   are but are disabled, each hover card saying why: "Zoom is off while a board, view or sheet fills the canvas." They
-  come back the moment it is restored.
+  come back the moment it is restored. A Sheet is the exception: covering the canvas, the controls zoom its cells
+  instead ([Zoom](../029-sheets/sheet.md#zoom)).
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
   (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot, so a phone scrolls sooner); a column
   set wider takes its slots and the gaps between them. A board of five slots or fewer fills the width as on the
@@ -531,11 +540,15 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - **Restore Board** (a minimise icon, in the same place) or **Escape** puts it back. Escape restores only when
   no dialog (the item panel, a confirm) is open over the board; Escape in a dialog closes the dialog first. One
   Escape restores even with something selected: it restores and does nothing else (it does not also deselect).
-- **The palette offers only Cards**: while a board (not a view: cards land only on a board, so a maximised Gantt
-  chart or other view keeps the palette as it is) is maximised or fills its tab, the palette (as panels or as the
-  toolbar, on a phone too) opens on Plan's **Cards** and its category picker lists Cards alone, whatever the mode,
-  since a card is the one thing that lands on the board. The category the person had stays chosen underneath and is
-  back the moment the board is restored.
+- **The palette follows what fills the screen**:
+  - A board **filling its tab** ([Fill Tab](#fill-tab)): the palette (on a phone too) opens on Plan's **Cards** and its
+    category picker lists Cards alone, whatever the mode, since a card is the one thing that lands on the board.
+  - A Sheet **filling its tab**: the palette is hidden altogether (nothing it offers can land anywhere); on a phone,
+    where the menu shares the palette's row, the menu stays.
+  - Anything **maximised** (a board, view or Sheet, the person's own view for a moment): the palette is the mode's
+    as usual. Picking a tile that is not a card (pressing it, not dragging it) restores the element first, so the
+    tool is ready on the canvas it is meant for; a card tile keeps it maximised (onto a board, a card is dropped).
+  - The category the person had stays chosen underneath and is back the moment the element stops filling the tab.
 - **Nothing under it moves**: while a board is maximised (or fills its tab), the canvas takes no input that would
   change it. A cover over the whole canvas area (the board sits in it at its insets) takes every press, double-click,
   right-click and wheel around the board, so nothing is selected, dragged, marqueed, resized, drawn, panned or

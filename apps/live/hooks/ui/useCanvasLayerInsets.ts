@@ -8,6 +8,7 @@
 // itself measure nothing.
 import { useEffect, useState } from 'react';
 import {
+  BAND_CONTROLS_SELECTOR,
   NO_LAYOUT,
   PANEL_SELECTOR,
   TOP_ROW_SELECTOR,
@@ -17,7 +18,8 @@ import {
 } from '@/lib/canvas-layer-insets';
 
 // The strip itself (its root runs the canvas width; its card changes width with the category) for the header band.
-const OBSERVED = `${TOP_ROW_SELECTOR}, ${PANEL_SELECTOR}, [data-toolbar-palette], [data-toolbar-palette] > *`;
+// The covering element's controls card too: the strip stops short of it, so its width matters.
+const OBSERVED = `${TOP_ROW_SELECTOR}, ${PANEL_SELECTOR}, [data-toolbar-palette], [data-toolbar-palette] > *, ${BAND_CONTROLS_SELECTOR}`;
 
 // A child-list change that adds or removes a piece of chrome (or something holding one).
 export function touchesChrome(

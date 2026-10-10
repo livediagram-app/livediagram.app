@@ -48,12 +48,22 @@ type Props = {
   pointRef: PointRef;
   peers: readonly SheetPeer[];
   fontFamily?: string;
+  // The sheet's zoom while it covers the canvas (sheet-zoom.ts); 1 elsewhere.
+  zoom?: number;
 };
 
 // Find's matches: a soft yellow, as a spreadsheet marks them.
 const FIND_HIGHLIGHT = '#facc15';
 
-export function SheetGrid({ elementId, actions, input, pointRef, peers, fontFamily }: Props) {
+export function SheetGrid({
+  elementId,
+  actions,
+  input,
+  pointRef,
+  peers,
+  fontFamily,
+  zoom = 1,
+}: Props) {
   const bridge = useSheetsBridgeContext();
   const c = useSheetController();
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -327,165 +337,180 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, fontFami
   // A callback ref of its own: a property of `c` passed as `ref` would make the whole controller read as a ref.
   const { setGridEl } = c;
   return (
-    <div
-      ref={setGridEl}
-      // Escape first ends an edit, the copied range's marquee or Find; only then does it restore a maximised sheet.
-      data-keeps-escape={c.editing || c.marquee || c.findOpen ? '' : undefined}
-      role="grid"
-      tabIndex={c.interactive ? 0 : -1}
-      aria-label={`${c.sheet.title} grid`}
-      aria-rowcount={c.sheet.layout.rows.length}
-      aria-colcount={c.sheet.layout.cols.length}
-      aria-multiselectable
-      aria-activedescendant={`${elementId}-${active}`}
-      data-sheet-grid
-      className={`relative min-h-0 flex-1 outline-none ${c.interactive ? (c.maximised ? 'overflow-auto' : 'overflow-auto touch-none') : 'overflow-hidden'}`}
-      onScroll={(e) =>
-        c.setScroll({ top: e.currentTarget.scrollTop, left: e.currentTarget.scrollLeft })
-      }
-      onKeyDown={onKeyDown}
-      onBlur={() => pointer.pan.releaseSpace()}
-      onKeyUp={(e) => {
-        if (!c.editing && e.target === e.currentTarget)
-          pointer.pan.onKeyUp(e, () => actions.startEdit('type', ' '));
-      }}
-      onCopy={clipboard.onCopy}
-      onCut={clipboard.onCut}
-      onPaste={clipboard.onPaste}
-    >
+    // A frame of the grid's room, the grid in it laid out at 1 / zoom of it and scaled back up (docs/specs/029-sheets/
+    // sheet.md "Zoom"): the pointer reads its scale as it reads the canvas's (screen size over layout size), so
+    // selecting, dragging, panning and menus work at any zoom. Always there, so zooming never remounts the grid.
+    <div data-sheet-grid-frame className="relative min-h-0 flex-1 overflow-hidden">
       <div
-        className="relative"
-        style={{
-          width: c.geometry.headW + total.width,
-          height: c.geometry.headH + total.height + footer,
+        ref={setGridEl}
+        style={
+          zoom === 1
+            ? undefined
+            : {
+                width: `${100 / zoom}%`,
+                height: `${100 / zoom}%`,
+                transform: `scale(${zoom})`,
+                transformOrigin: '0 0',
+              }
+        }
+        // Escape first ends an edit, the copied range's marquee or Find; only then does it restore a maximised sheet.
+        data-keeps-escape={c.editing || c.marquee || c.findOpen ? '' : undefined}
+        role="grid"
+        tabIndex={c.interactive ? 0 : -1}
+        aria-label={`${c.sheet.title} grid`}
+        aria-rowcount={c.sheet.layout.rows.length}
+        aria-colcount={c.sheet.layout.cols.length}
+        aria-multiselectable
+        aria-activedescendant={`${elementId}-${active}`}
+        data-sheet-grid
+        className={`absolute left-0 top-0 h-full w-full outline-none ${c.interactive ? (c.maximised ? 'overflow-auto' : 'overflow-auto touch-none') : 'overflow-hidden'}`}
+        onScroll={(e) =>
+          c.setScroll({ top: e.currentTarget.scrollTop, left: e.currentTarget.scrollLeft })
+        }
+        onKeyDown={onKeyDown}
+        onBlur={() => pointer.pan.releaseSpace()}
+        onKeyUp={(e) => {
+          if (!c.editing && e.target === e.currentTarget)
+            pointer.pan.onKeyUp(e, () => actions.startEdit('type', ' '));
         }}
+        onCopy={clipboard.onCopy}
+        onCut={clipboard.onCut}
+        onPaste={clipboard.onPaste}
       >
         <div
-          ref={viewportRef}
-          className="sticky left-0 top-0 overflow-hidden"
-          style={{ width: c.view.width, height: c.view.height, cursor: pointer.cursor }}
-          onPointerDown={pointer.onPointerDown}
-          onPointerMove={pointer.onPointerMove}
-          onDoubleClick={pointer.onDoubleClick}
-          onContextMenu={pointer.onContextMenu}
-          onClick={pointer.onClick}
+          className="relative"
+          style={{
+            width: c.geometry.headW + total.width,
+            height: c.geometry.headH + total.height + footer,
+          }}
         >
           <div
-            className="absolute overflow-hidden"
-            style={{ left: c.geometry.headW, top: c.geometry.headH, right: 0, bottom: 0 }}
+            ref={viewportRef}
+            className="sticky left-0 top-0 overflow-hidden"
+            style={{ width: c.view.width, height: c.view.height, cursor: pointer.cursor }}
+            onPointerDown={pointer.onPointerDown}
+            onPointerMove={pointer.onPointerMove}
+            onDoubleClick={pointer.onDoubleClick}
+            onContextMenu={pointer.onContextMenu}
+            onClick={pointer.onClick}
           >
-            <SheetCells
-              padEnd={dropdownCols}
-              sheet={c.sheet}
-              workbook={c.workbook}
-              version={c.version}
+            <div
+              className="absolute overflow-hidden"
+              style={{ left: c.geometry.headW, top: c.geometry.headH, right: 0, bottom: 0 }}
+            >
+              <SheetCells
+                padEnd={dropdownCols}
+                sheet={c.sheet}
+                workbook={c.workbook}
+                version={c.version}
+                geometry={c.geometry}
+                window={window}
+                scroll={c.scroll}
+                palette={c.palette}
+                locale={c.locale}
+                fontFamily={fontFamily}
+              />
+              {c.interactive ? (
+                <SheetSelectionLayer
+                  geometry={c.geometry}
+                  scroll={c.scroll}
+                  palette={c.palette}
+                  selection={c.selection}
+                  showHandle={c.canEdit && !c.editing && c.focused}
+                  marquee={c.marquee}
+                  outlines={outlines}
+                  filter={filter}
+                  onFilterButton={(colId, at) =>
+                    c.setMenu({ kind: 'filter', colId, x: at.x, y: at.y })
+                  }
+                  quiet={!c.focused}
+                />
+              ) : null}
+              <SheetCardRows />
+              {pointer.preview?.kind === 'fill' ? (
+                <SheetSelectionLayer
+                  geometry={c.geometry}
+                  scroll={c.scroll}
+                  palette={c.palette}
+                  selection={single({ r: pointer.preview.range.r1, c: pointer.preview.range.c1 })}
+                  showHandle={false}
+                  marquee={{ range: pointer.preview.range, cut: false }}
+                  outlines={[]}
+                  filter={null}
+                  onFilterButton={null}
+                />
+              ) : null}
+              <span id={`${elementId}-${active}`} role="gridcell" aria-selected className="sr-only">
+                {active}{' '}
+                {
+                  displayValue(
+                    c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
+                    undefined,
+                    c.locale,
+                  ).text
+                }
+              </span>
+            </div>
+            <div className="absolute" style={{ left: c.geometry.headW, top: c.geometry.headH }}>
+              <SheetCellEditor input={input} fontFamily={fontFamily} />
+            </div>
+            <SheetHeaders
               geometry={c.geometry}
               window={window}
               scroll={c.scroll}
               palette={c.palette}
-              locale={c.locale}
-              fontFamily={fontFamily}
+              selection={c.interactive ? c.selection : null}
+              view={c.view}
+              onUnhide={
+                (c.canShape ?? c.canEdit)
+                  ? (axis, from, to) => actions.hide(axis, false, from, to)
+                  : null
+              }
             />
-            {c.interactive ? (
-              <SheetSelectionLayer
-                geometry={c.geometry}
-                scroll={c.scroll}
-                palette={c.palette}
-                selection={c.selection}
-                showHandle={c.canEdit && !c.editing && c.focused}
-                marquee={c.marquee}
-                outlines={outlines}
-                filter={filter}
-                onFilterButton={(colId, at) =>
-                  c.setMenu({ kind: 'filter', colId, x: at.x, y: at.y })
+            {pointer.preview?.kind === 'resize' || pointer.preview?.kind === 'move' ? (
+              <div
+                className="pointer-events-none absolute z-[9]"
+                style={
+                  pointer.preview.axis === 'c'
+                    ? {
+                        left:
+                          pointer.preview.kind === 'move'
+                            ? c.geometry.headW + pointer.preview.at
+                            : pointer.preview.at,
+                        top: 0,
+                        bottom: 0,
+                        width: 2,
+                        backgroundColor: c.palette.focus,
+                      }
+                    : {
+                        top:
+                          pointer.preview.kind === 'move'
+                            ? c.geometry.headH + pointer.preview.at
+                            : pointer.preview.at,
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        backgroundColor: c.palette.focus,
+                      }
                 }
-                quiet={!c.focused}
               />
             ) : null}
-            <SheetCardRows />
-            {pointer.preview?.kind === 'fill' ? (
-              <SheetSelectionLayer
-                geometry={c.geometry}
-                scroll={c.scroll}
-                palette={c.palette}
-                selection={single({ r: pointer.preview.range.r1, c: pointer.preview.range.c1 })}
-                showHandle={false}
-                marquee={{ range: pointer.preview.range, cut: false }}
-                outlines={[]}
-                filter={null}
-                onFilterButton={null}
-              />
+            {footer && total.height - c.scroll.top < c.view.height ? (
+              <SheetAddRows top={total.height - c.scroll.top} onAdd={actions.appendRows} />
             ) : null}
-            <span id={`${elementId}-${active}`} role="gridcell" aria-selected className="sr-only">
-              {active}{' '}
-              {
-                displayValue(
-                  c.workbook.value(c.sheet.id, c.selection.active.r, c.selection.active.c),
-                  undefined,
-                  c.locale,
-                ).text
-              }
-            </span>
+            {hoverError && hoverBox ? (
+              <div
+                role="tooltip"
+                className="pointer-events-none absolute z-[10] max-w-64 rounded-md bg-slate-800 px-2 py-1 text-[11px] text-white shadow"
+                style={{
+                  left: c.geometry.headW + hoverBox.x,
+                  top: c.geometry.headH + hoverBox.y + hoverBox.h + 2,
+                }}
+              >
+                {hoverError}
+              </div>
+            ) : null}
           </div>
-          <div className="absolute" style={{ left: c.geometry.headW, top: c.geometry.headH }}>
-            <SheetCellEditor input={input} fontFamily={fontFamily} />
-          </div>
-          <SheetHeaders
-            geometry={c.geometry}
-            window={window}
-            scroll={c.scroll}
-            palette={c.palette}
-            selection={c.interactive ? c.selection : null}
-            view={c.view}
-            onUnhide={
-              (c.canShape ?? c.canEdit)
-                ? (axis, from, to) => actions.hide(axis, false, from, to)
-                : null
-            }
-          />
-          {pointer.preview?.kind === 'resize' || pointer.preview?.kind === 'move' ? (
-            <div
-              className="pointer-events-none absolute z-[9]"
-              style={
-                pointer.preview.axis === 'c'
-                  ? {
-                      left:
-                        pointer.preview.kind === 'move'
-                          ? c.geometry.headW + pointer.preview.at
-                          : pointer.preview.at,
-                      top: 0,
-                      bottom: 0,
-                      width: 2,
-                      backgroundColor: c.palette.focus,
-                    }
-                  : {
-                      top:
-                        pointer.preview.kind === 'move'
-                          ? c.geometry.headH + pointer.preview.at
-                          : pointer.preview.at,
-                      left: 0,
-                      right: 0,
-                      height: 2,
-                      backgroundColor: c.palette.focus,
-                    }
-              }
-            />
-          ) : null}
-          {footer && total.height - c.scroll.top < c.view.height ? (
-            <SheetAddRows top={total.height - c.scroll.top} onAdd={actions.appendRows} />
-          ) : null}
-          {hoverError && hoverBox ? (
-            <div
-              role="tooltip"
-              className="pointer-events-none absolute z-[10] max-w-64 rounded-md bg-slate-800 px-2 py-1 text-[11px] text-white shadow"
-              style={{
-                left: c.geometry.headW + hoverBox.x,
-                top: c.geometry.headH + hoverBox.y + hoverBox.h + 2,
-              }}
-            >
-              {hoverError}
-            </div>
-          ) : null}
         </div>
       </div>
     </div>

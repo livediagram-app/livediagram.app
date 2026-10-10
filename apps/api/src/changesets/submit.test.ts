@@ -117,3 +117,39 @@ describe('submitChangeset', () => {
     );
   });
 });
+
+// docs/specs/029-sheets/sheet-store.md "Template starts": a replace that lands a spreadsheet template makes its sheet
+// before the tab is written, and the stored Sheet no longer carries the mark.
+describe('a template’s Sheets', () => {
+  it('makes them when a replace lands the template', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await setUp();
+    const parsed = parseChangesetRequest({ replace: { template: 'timesheet' } });
+    if (!parsed.ok) throw new Error('bad request');
+    const res = await submitChangeset({
+      env: db.env,
+      document: (await getDocument(db.env, 'D'))!,
+      tabId: 't1',
+      request: parsed.value,
+      dryRun: false,
+      author: { id: 'user_o', name: 'W', color: '#000' },
+      tokenId: 'tok_1',
+      frontDoor: 'Api',
+    });
+    expect(res.status).toBeLessThan(300);
+    const sheets = db.sql
+      .prepare("SELECT id, tab_id, title FROM sheets WHERE document_id = 'D'")
+      .all() as {
+      id: string;
+      tab_id: string;
+      title: string;
+    }[];
+    expect(sheets).toHaveLength(1);
+    expect(sheets[0]).toMatchObject({ tab_id: 't1', title: 'Timesheet' });
+    const els = JSON.parse(
+      db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+    ).elements as { planSheet?: { sheetId: string; start?: string; fillTab?: true } }[];
+    const ref = els.find((e) => e.planSheet)!.planSheet!;
+    expect(ref).toEqual({ sheetId: sheets[0]!.id, fillTab: true });
+  });
+});

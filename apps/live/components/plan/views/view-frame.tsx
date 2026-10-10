@@ -8,6 +8,8 @@ import { STATUS_PHASES, STATUS_PHASE_LABELS } from '@livediagram/items';
 import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
 import { CountBadge, Tooltip } from '@livediagram/ui';
+import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
+import { BAND_CONTROLS_CLASS, bandControlsProps } from '../band-controls';
 
 // The phase colours, the same on either surface: they read as status, not as theme.
 export const PHASE_COLOURS = {
@@ -92,7 +94,18 @@ export function ViewFrame({
         style={{ borderColor: palette.border }}
       >
         <span className="flex min-w-0 max-w-[var(--plan-band-mid,none)] items-center gap-2">
-          <span className="min-w-0 truncate text-[13px] font-semibold">{title}</span>
+          {/* In a header band the title rides in the menu box (menu-name-slot). */}
+          <InMenuBox
+            render={(inBox) => (
+              <span
+                className={
+                  inBox ? IN_BOX_TITLE_CLASS : 'min-w-0 truncate text-[13px] font-semibold'
+                }
+              >
+                {title}
+              </span>
+            )}
+          />
           {count !== undefined && state === 'ready' ? (
             <CountBadge
               size="md"
@@ -105,7 +118,11 @@ export function ViewFrame({
           ) : null}
         </span>
         {aside || end ? (
-          <span className="ml-auto flex shrink-0 items-center gap-1">
+          // In a header band, a card like the menu box (band-controls.ts).
+          <span
+            {...bandControlsProps(palette)}
+            className={`ml-auto flex shrink-0 items-center gap-1 ${BAND_CONTROLS_CLASS}`}
+          >
             {aside}
             {end}
           </span>
