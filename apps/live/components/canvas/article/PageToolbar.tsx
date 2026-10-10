@@ -8,6 +8,7 @@
 // Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
 // the less used formats are menus (page-toolbar-panels.tsx). Where it sits is
 // page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts.
+import { keyLabel } from '@/lib/key-label';
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   lucideBaseline,
@@ -68,7 +69,6 @@ import {
   AlignPanel,
   ColourPanel,
   InsertPanel,
-  keyLabel,
   LIST_OPTIONS,
   ListGlyph,
   ListPanel,

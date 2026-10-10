@@ -39,48 +39,77 @@ describe('the cell menu', () => {
     h = await makeSheet({ cells: { A1: '1', A2: '2', B1: 'x', B2: 'y' } });
   });
   const cellMenu: OpenMenu = { kind: 'cell', x: 20, y: 20 };
-  // A tile inside a category: the category opens first (one at a time), as in the element menu.
-  const tile = (section: string, name: string) => {
-    const head = btn(section);
-    if (head.getAttribute('aria-expanded') !== 'true') fireEvent.click(head);
+  // A row inside a side flyout: its trigger opens it first.
+  const fly = (flyout: string, name: string) => {
+    fireEvent.click(screen.getByText(flyout, { exact: true }));
     return btn(name);
   };
+  const reopen = () => act(() => h.ctl().setMenu(cellMenu));
 
-  it('cuts, copies and pastes from its top strip, and pastes specially from Paste Special, closing after each', () => {
+  it('names the selection, and runs the clipboard and clearing verbs from its toolbar, closing after each', () => {
     show(h, cellMenu);
     expect(screen.getByRole('dialog', { name: 'Cell menu' })).toBeTruthy();
+    expect(screen.getByText('A1')).toBeTruthy();
+    expect(screen.getByText('1 Cell')).toBeTruthy();
     for (const [pick, check] of [
       [() => btn('Cut'), () => expect(clip.copyNow).toHaveBeenLastCalledWith(true)],
       [() => btn('Copy'), () => expect(clip.copyNow).toHaveBeenLastCalledWith(false)],
       [() => btn('Paste'), () => expect(clip.pasteNow).toHaveBeenCalledOnce()],
       [
-        () => tile('Paste Special', 'Values Only'),
+        () => btn('Paste Values'),
         () => expect(clip.pasteSpecial).toHaveBeenLastCalledWith('values'),
       ],
       [
-        () => tile('Paste Special', 'Formatting Only'),
+        () => fly('Paste Special', 'Formatting Only'),
         () => expect(clip.pasteSpecial).toHaveBeenLastCalledWith('formats'),
+      ],
+      [
+        () => fly('Paste Special', 'Values Only'),
+        () => expect(clip.pasteSpecial).toHaveBeenLastCalledWith('values'),
       ],
     ] as const) {
       fireEvent.click(pick());
       check();
       expect(h.ctl().menu).toBeNull();
-      act(() => h.ctl().setMenu(cellMenu));
+      reopen();
     }
+  });
+
+  it('names each row for the selection', () => {
+    show(h, cellMenu);
+    act(() => h.select('A1:B3'));
+    reopen();
+    expect(screen.getByText('A1:B3')).toBeTruthy();
+    expect(screen.getByText('6 Cells')).toBeTruthy();
+    for (const name of [
+      'Insert 3 Rows Above',
+      'Insert 3 Rows Below',
+      'Insert 2 Columns Left',
+      'Insert 2 Columns Right',
+      'Delete Rows 1 to 3',
+      'Delete Columns A to B',
+      'Merge Cells',
+    ])
+      expect(btn(name)).toBeTruthy();
+    // One cell has nothing to merge.
+    act(() => h.select('A1'));
+    reopen();
+    no('Merge Cells');
+    no('Unmerge Cells');
   });
 
   it('makes a chart from the cells, closing', () => {
     show(h, cellMenu);
     act(() => h.select('A1:B2'));
-    fireEvent.click(tile('Chart', 'Line'));
+    fireEvent.click(fly('Insert Chart', 'Line Chart'));
     expect(h.placeChart).toHaveBeenCalledWith('line-chart', expect.any(Object));
     expect(h.ctl().menu).toBeNull();
     for (const [name, kind] of [
-      ['Bar', 'bar-chart'],
-      ['Pie', 'pie-chart'],
+      ['Bar Chart', 'bar-chart'],
+      ['Pie Chart', 'pie-chart'],
     ] as const) {
-      act(() => h.ctl().setMenu(cellMenu));
-      fireEvent.click(tile('Chart', name));
+      reopen();
+      fireEvent.click(fly('Insert Chart', name));
       expect(h.placeChart).toHaveBeenLastCalledWith(kind, expect.any(Object));
     }
   });
@@ -89,104 +118,126 @@ describe('the cell menu', () => {
     show(h, cellMenu, { canEdit: false });
     no('Cut');
     no('Paste');
-    no('Insert');
-    no('Clear');
+    no('Insert Row Above');
+    no('Clear Contents');
+    expect(screen.queryByText('Sort', { exact: true })).toBeNull();
     fireEvent.click(btn('Copy'));
     expect(clip.copyNow).toHaveBeenCalledWith(false);
   });
 
-  it('opens one category at a time', () => {
-    show(h, cellMenu);
-    no('Row Above');
-    fireEvent.click(btn('Insert'));
-    expect(btn('Row Above')).toBeTruthy();
-    fireEvent.click(btn('Delete'));
-    no('Row Above');
-    expect(btn('Row')).toBeTruthy();
-    fireEvent.click(btn('Delete'));
-    no('Row');
-  });
-
-  it('inserts and deletes rows and columns at the selection', () => {
+  it('inserts and deletes rows and columns at the selection, on either side', () => {
     show(h, cellMenu, { at: 'A2' });
-    fireEvent.click(tile('Insert', 'Row Above'));
+    fireEvent.click(btn('Insert Row Above'));
     expect(layout(h).rows).toHaveLength(9);
     expect(h.value('A3')).toBe(2);
     expect(h.announce).toHaveBeenCalledWith('1 row inserted');
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Delete', 'Row'));
+    reopen();
+    fireEvent.click(btn('Delete Row 2'));
     expect(layout(h).rows).toHaveLength(8);
     expect(h.value('A2')).toBe(2);
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Insert', 'Column Left'));
+    reopen();
+    fireEvent.click(btn('Insert Row Below'));
+    expect(layout(h).rows).toHaveLength(9);
+    expect(h.value('A2')).toBe(2);
+    expect(h.value('A3')).toBeNull();
+    reopen();
+    fireEvent.click(btn('Insert Column Left'));
     expect(layout(h).cols).toHaveLength(6);
     expect(h.value('B2')).toBe(2);
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Delete', 'Column'));
+    reopen();
+    fireEvent.click(btn('Delete Column A'));
     expect(layout(h).cols).toHaveLength(5);
     expect(h.value('A2')).toBe(2);
+    reopen();
+    fireEvent.click(btn('Insert Column Right'));
+    expect(layout(h).cols).toHaveLength(6);
+    expect(h.value('A2')).toBe(2);
+    expect(h.value('C2')).toBe('y');
   });
 
   it('inserts and deletes cells, shifting their neighbours', () => {
     show(h, cellMenu);
-    fireEvent.click(tile('Insert', 'Cells, Shift Right'));
+    fireEvent.click(fly('Shift Cells', 'Insert Cells, Shift Right'));
     expect(h.value('B1')).toBe(1);
     expect(h.value('C1')).toBe('x');
     expect(h.value('A1')).toBeNull();
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Delete', 'Cells, Shift Left'));
+    reopen();
+    fireEvent.click(fly('Shift Cells', 'Delete Cells, Shift Left'));
     expect(h.value('A1')).toBe(1);
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Insert', 'Cells, Shift Down'));
+    reopen();
+    fireEvent.click(fly('Shift Cells', 'Insert Cells, Shift Down'));
     expect(h.value('A2')).toBe(1);
     expect(h.value('A3')).toBe(2);
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Delete', 'Cells, Shift Up'));
+    reopen();
+    fireEvent.click(fly('Shift Cells', 'Delete Cells, Shift Up'));
     expect(h.value('A1')).toBe(1);
     expect(h.value('A2')).toBe(2);
   });
 
-  it('clears values and formats, or formats only', async () => {
+  it('clears the contents, keeping formats, or the formats, keeping the contents', async () => {
     h = await makeSheet({
       cells: { A1: '1', B1: 'x' },
       format: { A1: { b: true }, B1: { i: true } },
     });
     show(h, cellMenu);
-    fireEvent.click(tile('Clear', 'Formatting'));
+    fireEvent.click(btn('Clear Formatting'));
     expect(h.cell('A1')?.format).toBeUndefined();
     expect(h.value('A1')).toBe(1);
     act(() => h.select('B1'));
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Clear', 'Everything'));
-    expect(h.cell('B1')).toBeUndefined();
+    reopen();
+    fireEvent.click(btn('Clear Contents'));
+    expect(h.value('B1')).toBeNull();
+    expect(h.cell('B1')?.format?.i).toBe(true);
   });
 
-  it('opens Sort Range', () => {
+  it('hides the rows or columns of the selection', () => {
     show(h, cellMenu);
-    fireEvent.click(tile('Cells', 'Sort Range…'));
+    act(() => h.select('A1:B2'));
+    reopen();
+    fireEvent.click(fly('Hide', 'Hide Rows 1 to 2'));
+    expect(layout(h).hiddenRows).toHaveLength(2);
+    expect(h.ctl().menu).toBeNull();
+    reopen();
+    fireEvent.click(fly('Hide', 'Hide Columns A to B'));
+    expect(layout(h).hiddenCols).toHaveLength(2);
+  });
+
+  it('sorts by the active column, or opens Custom Sort', () => {
+    show(h, cellMenu, { at: 'A1' });
+    fireEvent.click(fly('Sort', 'Sort Z to A'));
+    expect(h.value('A1')).toBe(2);
+    reopen();
+    fireEvent.click(fly('Sort', 'Sort A to Z'));
+    expect(h.value('A1')).toBe(1);
+    reopen();
+    fireEvent.click(fly('Sort', 'Custom Sort…'));
     expect(h.ctl().menu).toEqual({ kind: 'sort' });
     expect(screen.getByRole('dialog', { name: 'Sort range' })).toBeTruthy();
   });
 
-  it('merges at once when nothing is lost, and asks when values would be', () => {
+  it('merges at once when nothing is lost, asks when values would be, and unmerges', () => {
     show(h, cellMenu);
     act(() => h.select('C1:D2'));
-    fireEvent.click(tile('Cells', 'Merge Cells'));
+    fireEvent.click(btn('Merge Cells'));
     expect(layout(h).merges).toHaveLength(1);
     expect(h.ctl().menu).toBeNull();
     act(() => h.select('A1:B1'));
-    act(() => h.ctl().setMenu(cellMenu));
-    fireEvent.click(tile('Cells', 'Merge Cells'));
+    reopen();
+    fireEvent.click(btn('Merge Cells'));
     const ask = screen.getByRole('alertdialog', { name: 'Merge Cells' });
     expect(ask.textContent).toContain('keeps only the top-left value');
     fireEvent.click(within(ask).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(layout(h).merges).toHaveLength(1);
-    fireEvent.click(tile('Cells', 'Merge Cells'));
+    fireEvent.click(btn('Merge Cells'));
     fireEvent.click(btn('Merge'));
     expect(layout(h).merges).toHaveLength(2);
     expect(h.value('B1')).toBeNull();
     expect(h.ctl().menu).toBeNull();
+    act(() => h.select('C1'));
+    reopen();
+    fireEvent.click(btn('Unmerge Cells'));
+    expect(layout(h).merges).toHaveLength(1);
   });
 
   it('closes on Escape and hands focus back to the grid', () => {

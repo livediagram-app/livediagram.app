@@ -122,7 +122,11 @@ SheetSelectionLayer.tsx  selection, fill handle, copy and cut marquee, reference
 SheetCellEditor.tsx      in-place editor (textarea + coloured overlay), FunctionAssist (list and argument hint),
                          parse error line
 SheetMenus.tsx           header menus (with Resize…), the filter menu and the Sort Range dialog
-SheetCellMenu.tsx        the cell menu: Cut / Copy / Paste on top (MenuToolbar), categories of tiles below
+SheetCellMenu.tsx        the cell menu: MenuHeader (the selection, its cell count), a MenuToolbar (Cut, Copy, Paste,
+                         Paste Values, Clear Contents, Clear Formatting), plain MenuActionRows grouped by
+                         MenuGroupSeparator (insert either side, delete, merge or unmerge) and plain
+                         MenuFlyoutSections (Sort, Shift Cells, Hide, Paste Special, Insert Chart)
+sheet-cell-menu-labels.ts the rows' words for a selection (cellMenuLabels: "Insert 3 Rows Above", "Delete Columns B to C")
 SheetFindBar.tsx         Find and Replace
 SheetStatusBar.tsx       Sum / Average / Count / Min / Max of the selection (the pick is the viewer's)
 SheetAddRows.tsx         Add [100] more rows at the bottom

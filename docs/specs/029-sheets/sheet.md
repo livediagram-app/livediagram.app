@@ -314,20 +314,33 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 
 ### Cell menu
 
-Right-click on a cell, shaped like the element menu: **Cut**, **Copy** and **Paste** as icon buttons along its top,
-then categories that open one at a time, each a list of option rows:
+Right-click on a cell (or a selection) opens the cell menu, built from the editor's menu parts, as the Explorer's
+document menu is: a header, a toolbar of the clipboard verbs, then icon-left rows in groups, the everyday verbs
+named in full and on show, the rarer ones in side flyouts, short enough to fit a laptop's window. Each row names what it will do to this selection
+("Insert 3 Rows Above", "Delete Columns B to C"), so nothing has to be guessed.
 
-| Category      | Rows                                                                          |
-| ------------- | ----------------------------------------------------------------------------- |
-| Insert        | **Row Above**, **Column Left**, **Cells, Shift Right**, **Cells, Shift Down** |
-| Delete        | **Row**, **Column**, **Cells, Shift Left**, **Cells, Shift Up**               |
-| Paste Special | **Values Only**, **Formatting Only**                                          |
-| Clear         | **Everything**, **Formatting**                                                |
-| Cells         | **Sort Range…**, **Merge Cells** (asking first when it would clear values)    |
-| Chart         | **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))              |
+- **Header**: the selection (`B2:C4`, or `B4` for one cell) and how many cells it covers ("6 Cells").
+- **Toolbar**: **Cut**, **Copy**, **Paste**, **Paste Values**, **Clear Contents** and **Clear Formatting** (icon
+  buttons with their names, and keys where they have them, in the hover card: Cut ⌘X, Copy ⌘C, Paste ⌘V, Paste
+  Values ⇧⌘V, Clear Contents Delete; Ctrl on other systems).
+- **Rows and columns**: **Insert Row Above**, **Insert Row Below**, **Insert Column Left**, **Insert Column Right**
+  (as many as the selection spans: "Insert 3 Rows Above"), then **Delete Row 4** or **Delete Rows 2 to 4**, and
+  **Delete Column B** or **Delete Columns B to C**.
+- **Merge Cells** (a selection of more than one cell; asking first when it would drop values) or **Unmerge Cells**
+  (a selection touching a merge).
+- **Flyouts**, each a side panel of rows:
+
+| Flyout        | Rows                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Sort          | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**     |
+| Shift Cells   | **Insert Cells, Shift Right**, **Insert Cells, Shift Down**, **Delete Cells, Shift Left**, **Delete Cells, Shift Up** |
+| Hide          | **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**                                    |
+| Paste Special | **Values Only**, **Formatting Only**                                                                                  |
+| Insert Chart  | **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))                                                      |
 
 Every row closes the menu once it has acted. A merge that would drop values asks the same thing from here and
-from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only view gets **Copy** alone.
+from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only
+view gets the header and **Copy** alone.
 
 ### Formatting
 
