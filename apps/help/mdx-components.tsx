@@ -163,7 +163,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </ul>
     ),
     ol: ({ children }) => (
-      <ol className="counter-reset-[step] mb-5 ml-1 list-none space-y-2.5 text-slate-600 dark:text-slate-300 [&>li]:relative [&>li]:pl-8 [&>li]:counter-increment-[step] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-0 [&>li]:before:flex [&>li]:before:h-5 [&>li]:before:w-5 [&>li]:before:items-center [&>li]:before:justify-center [&>li]:before:rounded-full [&>li]:before:bg-brand-100 [&>li]:before:text-xs [&>li]:before:font-bold [&>li]:before:text-brand-700 [&>li]:before:content-[counter(step)] dark:[&>li]:before:bg-brand-500/20 dark:[&>li]:before:text-brand-300">
+      <ol className="[counter-reset:step] mb-5 ml-1 list-none space-y-2.5 text-slate-600 dark:text-slate-300 [&>li]:relative [&>li]:pl-8 [&>li]:[counter-increment:step] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-0 [&>li]:before:flex [&>li]:before:h-5 [&>li]:before:w-5 [&>li]:before:items-center [&>li]:before:justify-center [&>li]:before:rounded-full [&>li]:before:bg-brand-100 [&>li]:before:text-xs [&>li]:before:font-bold [&>li]:before:text-brand-700 [&>li]:before:content-[counter(step)] dark:[&>li]:before:bg-brand-500/20 dark:[&>li]:before:text-brand-300">
         {children}
       </ol>
     ),
