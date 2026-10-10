@@ -2,6 +2,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   EXAMPLE_BOARD_TITLE,
+  EXAMPLE_SHEET_SIZE,
+  EXAMPLE_SHEET_TITLE,
+  exampleSheet,
   PLAN_TOUR_CONTENT_KEY,
   PLAN_TOUR_RELAUNCH_EVENT,
   exampleBoard,
@@ -11,6 +14,7 @@ import {
   requestPlanTourRelaunch,
   writeLeftover,
 } from './plan-tour';
+import { takePlacedSheet } from './sheet-seeds';
 
 // The Plan tour's tour content and relaunch (docs/specs/026-plan/plan-tour.md "Tour content").
 
@@ -35,6 +39,20 @@ describe('exampleBoard', () => {
   });
 });
 
+describe('exampleSheet', () => {
+  it('is a Sheet placed already set up from the Budget start, centred on the point', () => {
+    const sheet = exampleSheet({ x: 1000, y: 500 });
+    expect(sheet.shape).toBe('plan-sheet');
+    expect(sheet.width).toBe(EXAMPLE_SHEET_SIZE.width);
+    expect(sheet.x + sheet.width / 2).toBe(1000);
+    expect(sheet.y + sheet.height / 2).toBe(500);
+    expect(takePlacedSheet(sheet.planSheet.sheetId)).toEqual({
+      title: EXAMPLE_SHEET_TITLE,
+      setUp: 'budget',
+    });
+  });
+});
+
 describe('exampleCards', () => {
   it('puts two tasks in To do and an action in Backlog, on the example board only', () => {
     const { planBoard } = exampleBoard({ x: 0, y: 0 });
@@ -56,17 +74,36 @@ describe('exampleCards', () => {
 
 describe('the leftover record', () => {
   it('round-trips, and clears', () => {
-    const content = { documentId: 'doc', boardId: 'b', itemIds: ['a', 'b'] };
+    const content = { documentId: 'doc', elementId: 'b', itemIds: ['a', 'b'] };
     writeLeftover(content);
     expect(readLeftover()).toEqual(content);
     writeLeftover(null);
     expect(readLeftover()).toBeNull();
   });
 
+  it("keeps the example sheet's sheet id", () => {
+    const content = { documentId: 'doc', elementId: 'e', sheetId: 's', itemIds: [] };
+    writeLeftover(content);
+    expect(readLeftover()).toEqual(content);
+  });
+
+  it('reads a record written before the Sheets track as its element', () => {
+    localStorage.setItem(
+      PLAN_TOUR_CONTENT_KEY,
+      JSON.stringify({ documentId: 'doc', boardId: 'b', itemIds: ['i'] }),
+    );
+    expect(readLeftover()).toEqual({ documentId: 'doc', elementId: 'b', itemIds: ['i'] });
+  });
+
   it('drops a malformed value instead of throwing', () => {
     localStorage.setItem(PLAN_TOUR_CONTENT_KEY, '{"documentId":1}');
     expect(readLeftover()).toBeNull();
     expect(localStorage.getItem(PLAN_TOUR_CONTENT_KEY)).toBeNull();
+    localStorage.setItem(
+      PLAN_TOUR_CONTENT_KEY,
+      JSON.stringify({ documentId: 'd', elementId: 'e', sheetId: 4, itemIds: [] }),
+    );
+    expect(readLeftover()).toBeNull();
     localStorage.setItem(PLAN_TOUR_CONTENT_KEY, 'not json');
     expect(readLeftover()).toBeNull();
   });
@@ -79,7 +116,7 @@ describe('the leftover record', () => {
       throw new Error('blocked');
     });
     expect(readLeftover()).toBeNull();
-    expect(() => writeLeftover({ documentId: 'd', boardId: 'b', itemIds: [] })).not.toThrow();
+    expect(() => writeLeftover({ documentId: 'd', elementId: 'b', itemIds: [] })).not.toThrow();
     get.mockRestore();
     set.mockRestore();
   });

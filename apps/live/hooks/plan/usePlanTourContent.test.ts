@@ -12,7 +12,14 @@ import { usePlanTourContent } from './usePlanTourContent';
 const debugLog = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/debug-log', () => ({ debugLog }));
 
-function setup(over: { status?: 'loading' | 'ready'; editsBlocked?: boolean; ok?: boolean } = {}) {
+function setup(
+  over: {
+    status?: 'loading' | 'ready';
+    editsBlocked?: boolean;
+    ok?: boolean;
+    attached?: boolean;
+  } = {},
+) {
   let tabs: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [] as Element[] } as Tab];
   const items = new Map<string, Item>();
   const writes: ItemWrite[] = [];
@@ -42,9 +49,19 @@ function setup(over: { status?: 'loading' | 'ready'; editsBlocked?: boolean; ok?
     activeId: 'tab1',
     tickTabs,
     planItems: { items, status: over.status ?? 'ready', writeQuiet },
+    releaseSheets: vi.fn((_ids: readonly string[]) => over.attached ?? true),
   };
   const hook = renderHook((p: typeof props) => usePlanTourContent(p), { initialProps: props });
-  return { hook, props, tabs: () => tabs, items, writes, tickTabs, writeQuiet };
+  return {
+    hook,
+    props,
+    tabs: () => tabs,
+    items,
+    writes,
+    tickTabs,
+    writeQuiet,
+    releaseSheets: props.releaseSheets,
+  };
 }
 
 beforeEach(() => localStorage.clear());
@@ -61,7 +78,7 @@ describe('usePlanTourContent', () => {
     expect(t.hook.result.current.ensureBoard({ x: 0, y: 0 })).toBe(id);
     expect(t.tickTabs).toHaveBeenCalledTimes(1);
     expect(t.tabs()[0]!.elements.map((e) => e.id)).toEqual([id]);
-    expect(readLeftover()).toEqual({ documentId: 'doc1', boardId: id, itemIds: [] });
+    expect(readLeftover()).toEqual({ documentId: 'doc1', elementId: id, itemIds: [] });
     expect(t.hook.result.current.boardId()).toBe(id);
     expect(t.hook.result.current.status('todo')).toMatch(/^todo~/);
   });
@@ -127,7 +144,7 @@ describe('usePlanTourContent', () => {
   });
 
   it("sweeps a cut-short tour's leftovers on the next visit to that document", () => {
-    writeLeftover({ documentId: 'doc1', boardId: 'old-board', itemIds: ['old1'] });
+    writeLeftover({ documentId: 'doc1', elementId: 'old-board', itemIds: ['old1'] });
     const t = setup();
     // The leftover's board and card exist from the earlier visit.
     expect(t.tickTabs).toHaveBeenCalled();
@@ -136,20 +153,60 @@ describe('usePlanTourContent', () => {
   });
 
   it("leaves another document's leftovers alone", () => {
-    writeLeftover({ documentId: 'other', boardId: 'b', itemIds: [] });
+    writeLeftover({ documentId: 'other', elementId: 'b', itemIds: [] });
     const t = setup();
     expect(t.tickTabs).not.toHaveBeenCalled();
     expect(readLeftover()).not.toBeNull();
   });
 
   it('sweeps the board at once and the cards once the items load', () => {
-    writeLeftover({ documentId: 'doc1', boardId: 'old-board', itemIds: ['old1'] });
+    writeLeftover({ documentId: 'doc1', elementId: 'old-board', itemIds: ['old1'] });
     const t = setup({ status: 'loading' });
     expect(t.tickTabs).toHaveBeenCalledTimes(1);
     expect(readLeftover()).not.toBeNull();
     t.items.set('old1', { id: 'old1', type: 'task', fields: {} } as unknown as Item);
     t.hook.rerender({ ...t.props, planItems: { ...t.props.planItems, status: 'ready' } });
     expect(t.writes).toEqual([{ kind: 'delete', id: 'old1' }]);
+    expect(readLeftover()).toBeNull();
+  });
+
+  it('places the example sheet once, with no history, and takes it away with its sheet', () => {
+    const t = setup();
+    let id: string | null = null;
+    act(() => {
+      id = t.hook.result.current.ensureSheet({ x: 0, y: 0 });
+    });
+    expect(id).toBeTruthy();
+    expect(t.hook.result.current.ensureSheet({ x: 0, y: 0 })).toBe(id);
+    // The board track's content is not there to point at.
+    expect(t.hook.result.current.ensureBoard({ x: 0, y: 0 })).toBeNull();
+    expect(t.hook.result.current.boardId()).toBeNull();
+    expect(t.tickTabs).toHaveBeenCalledTimes(1);
+    const sheetId = t.hook.result.current.sheetId()!;
+    expect(t.hook.result.current.sheetElementId()).toBe(id);
+    expect(readLeftover()).toEqual({ documentId: 'doc1', elementId: id, sheetId, itemIds: [] });
+
+    act(() => t.hook.result.current.removeAll());
+    expect(t.releaseSheets).toHaveBeenCalledWith([sheetId]);
+    expect(t.tabs()[0]!.elements).toEqual([]);
+    expect(t.hook.result.current.sheetId()).toBeNull();
+    expect(readLeftover()).toBeNull();
+  });
+
+  it('warns when no Sheet has drawn to take the sheet, and still removes the element', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const t = setup({ attached: false });
+    act(() => void t.hook.result.current.ensureSheet({ x: 0, y: 0 }));
+    act(() => t.hook.result.current.removeAll());
+    expect(warn).toHaveBeenCalledWith('[plan-tour] content.failed', { step: 'sheet' });
+    expect(t.tabs()[0]!.elements).toEqual([]);
+    warn.mockRestore();
+  });
+
+  it("sweeps a cut-short sheet tour's sheet with its element", () => {
+    writeLeftover({ documentId: 'doc1', elementId: 'old-sheet', sheetId: 's1', itemIds: [] });
+    const t = setup();
+    expect(t.releaseSheets).toHaveBeenCalledWith(['s1']);
     expect(readLeftover()).toBeNull();
   });
 });

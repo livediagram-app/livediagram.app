@@ -9,6 +9,7 @@ import {
   EXAMPLE_MOVE_TO,
   exampleBoard,
   exampleCards,
+  exampleSheet,
   exampleStatus,
   readLeftover,
   writeLeftover,
@@ -21,8 +22,8 @@ import type { PlanItems } from './usePlanItems';
 export const ITEMS_READY_WAIT_MS = 3000;
 
 // The Plan tour's tour content (docs/specs/026-plan/plan-tour.md "Tour content", blueprint plan-tour.md):
-// an example board and its example cards, placed, moved and taken away with no history (tickTabs and
-// writeQuiet) and no telemetry, so Undo never brings them back and they never count as the person's
+// an example board and its example cards, or an example sheet, placed, moved and taken away with no history
+// (tickTabs, writeQuiet, and the sheet's own quiet setup) and no telemetry, so Undo never brings them back and they never count as the person's
 // work. What it made is held in a ref and in a leftover record, so a visit after a reload tidies what a
 // cut-short tour left behind.
 export function usePlanTourContent(opts: {
@@ -32,6 +33,8 @@ export function usePlanTourContent(opts: {
   activeId: string;
   tickTabs: (map: (tabs: Tab[]) => Tab[]) => void;
   planItems: Pick<PlanItems, 'items' | 'status' | 'writeQuiet'>;
+  // Deletes sheets with their elements (the sheets bridge); false before any Sheet has drawn to take it.
+  releaseSheets: (sheetIds: readonly string[]) => boolean;
 }) {
   const liveRef = useLatest(opts);
   const contentRef = useRef<PlanTourContent | null>(null);
@@ -43,17 +46,22 @@ export function usePlanTourContent(opts: {
     writeLeftover(content);
   }, []);
 
-  const dropBoard = useCallback(
-    (boardId: string) =>
+  // The placed element (board or Sheet) off every tab; a Sheet's sheet goes with it, without the Delete Sheet?
+  // question (the tour's own).
+  const dropElement = useCallback(
+    (elementId: string, sheetId: string | undefined) => {
+      if (sheetId && !liveRef.current.releaseSheets([sheetId]))
+        console.warn('[plan-tour] content.failed', { step: 'sheet' });
       liveRef.current.tickTabs((tabs) =>
-        tabs.some((t) => t.elements.some((el) => el.id === boardId))
+        tabs.some((t) => t.elements.some((el) => el.id === elementId))
           ? tabs.map((t) =>
-              t.elements.some((el) => el.id === boardId)
-                ? { ...t, elements: t.elements.filter((el) => el.id !== boardId) }
+              t.elements.some((el) => el.id === elementId)
+                ? { ...t, elements: t.elements.filter((el) => el.id !== elementId) }
                 : t,
             )
           : tabs,
-      ),
+      );
+    },
     [liveRef],
   );
 
@@ -71,16 +79,39 @@ export function usePlanTourContent(opts: {
   const ensureBoard = useCallback(
     (centre: { x: number; y: number }): string | null => {
       const o = liveRef.current;
-      if (contentRef.current) return contentRef.current.boardId;
+      if (contentRef.current) return setupRef.current ? contentRef.current.elementId : null;
       if (o.editsBlocked || !o.documentId) return null;
       const board = exampleBoard(centre);
       o.tickTabs((tabs) =>
         tabs.map((t) => (t.id === o.activeId ? { ...t, elements: [...t.elements, board] } : t)),
       );
       setupRef.current = board.planBoard;
-      record({ documentId: o.documentId, boardId: board.id, itemIds: [] });
+      record({ documentId: o.documentId, elementId: board.id, itemIds: [] });
       debugLog('[plan-tour] content.placed', { boardId: board.id });
       return board.id;
+    },
+    [liveRef, record],
+  );
+
+  // Places the example sheet in the middle of the view, once. Its element id, or null while edits are blocked.
+  const ensureSheet = useCallback(
+    (centre: { x: number; y: number }): string | null => {
+      const o = liveRef.current;
+      if (contentRef.current)
+        return contentRef.current.sheetId ? contentRef.current.elementId : null;
+      if (o.editsBlocked || !o.documentId) return null;
+      const sheet = exampleSheet(centre);
+      o.tickTabs((tabs) =>
+        tabs.map((t) => (t.id === o.activeId ? { ...t, elements: [...t.elements, sheet] } : t)),
+      );
+      record({
+        documentId: o.documentId,
+        elementId: sheet.id,
+        sheetId: sheet.planSheet.sheetId,
+        itemIds: [],
+      });
+      debugLog('[plan-tour] content.placed', { sheetId: sheet.planSheet.sheetId });
+      return sheet.id;
     },
     [liveRef, record],
   );
@@ -131,11 +162,11 @@ export function usePlanTourContent(opts: {
     cardsRef.current = null;
     record(null);
     const items = dropItems(content.itemIds);
-    dropBoard(content.boardId);
+    dropElement(content.elementId, content.sheetId);
     debugLog('[plan-tour] content.removed', { items });
-  }, [dropBoard, dropItems, record]);
+  }, [dropElement, dropItems, record]);
 
-  // A tour cut short on an earlier visit (a reload, a closed window): its board goes once the document
+  // A tour cut short on an earlier visit (a reload, a closed window): its board or sheet goes once the document
   // has loaded, its cards once the item store has. Never what this visit's tour is showing.
   const sweptBoardRef = useRef(false);
   const sweptItemsRef = useRef(false);
@@ -154,10 +185,10 @@ export function usePlanTourContent(opts: {
       sweptItemsRef.current = true;
       return;
     }
-    if (contentRef.current?.boardId === leftover.boardId) return;
+    if (contentRef.current?.elementId === leftover.elementId) return;
     if (!sweptBoardRef.current) {
       sweptBoardRef.current = true;
-      dropBoard(leftover.boardId);
+      dropElement(leftover.elementId, leftover.sheetId);
     }
     if (itemsReady && !sweptItemsRef.current) {
       sweptItemsRef.current = true;
@@ -165,14 +196,17 @@ export function usePlanTourContent(opts: {
       writeLeftover(null);
       debugLog('[plan-tour] content.swept', { items });
     }
-  }, [hydrated, itemsReady, documentId, dropBoard, dropItems]);
+  }, [hydrated, itemsReady, documentId, dropElement, dropItems]);
 
   return {
     ensureBoard,
+    ensureSheet,
     ensureCards,
     moveFirstCard,
     removeAll,
-    boardId: () => contentRef.current?.boardId ?? null,
+    boardId: () => (setupRef.current && contentRef.current?.elementId) || null,
+    sheetElementId: () => (contentRef.current?.sheetId && contentRef.current.elementId) || null,
+    sheetId: () => contentRef.current?.sheetId ?? null,
     firstCardId: () => contentRef.current?.itemIds[0] ?? null,
     // The status the example board gave one of its Kanban columns.
     status: (column: string) =>

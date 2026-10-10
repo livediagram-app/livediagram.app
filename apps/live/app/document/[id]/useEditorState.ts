@@ -2156,7 +2156,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     notify: toast.info,
     readTabElements: planCover.readTabElements,
   });
-  // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
+  // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const planTour = usePlanTourContent({
     documentId,
     hydrated,
@@ -2164,6 +2164,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeId,
     tickTabs,
     planItems,
+    releaseSheets: sheets.releaseSheets,
   });
 
   // Undo / redo handlers. See useEditorHistory.

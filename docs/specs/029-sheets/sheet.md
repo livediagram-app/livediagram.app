@@ -37,6 +37,8 @@ cells are worked out in every browser that shows it.
 - Dropping a `.csv` file on the canvas in Plan mode places a sheet filled from it, titled by the file's name
   (CSV, below).
 - Placing one sends `Element · Added · PlanSheet`.
+- The [Plan tour](../026-plan/plan-tour.md)'s Spreadsheets track places its own **Example Sheet**, already set up
+  (Budget, Header look, header frozen) and never awaiting setup; it sends no event and is no undo step.
 
 ### Setup Sheet
 

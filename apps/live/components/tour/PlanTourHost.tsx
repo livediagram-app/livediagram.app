@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
-import { PLAN_TOUR_RELAUNCH_EVENT } from '@/lib/plan-tour';
+import { EXAMPLE_TOTAL_CELL, PLAN_TOUR_RELAUNCH_EVENT, type PlanTourTrack } from '@/lib/plan-tour';
+import { requestSheetSelect } from '@/lib/sheet-select-request';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { hasTourPending } from '@/lib/tour-pending';
 import { waitForSelector } from './tour-dom';
-import { PLAN_TOUR_STEPS, planTourStepTelemetryType, type PlanTourApi } from './plan-tour-steps';
+import { planTourSteps, planTourStepTelemetryType, type PlanTourApi } from './plan-tour-steps';
 import { PlanTourArt } from './PlanTourArt';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
@@ -17,17 +18,24 @@ import { useTourEngine, type TourOutcome } from './useTourEngine';
 // The settle delay before the offer, as the welcome tour's.
 export const OFFER_DELAY_MS = 800;
 
+// How long placing the example sheet waits for its grid: its chunk may still be loading and its sheet is made
+// once the tab's sheets have loaded (a board draws at once).
+export const SHEET_DRAW_WAIT_MS = 3000;
+
 const PLAN_TOUR_COPY = {
   welcomeEyebrow: 'Plan tour',
   helpHref: '/help/canvas/plan-mode/',
   finish: 'Start planning',
 };
 
+const SHEETS_TOUR_COPY = { ...PLAN_TOUR_COPY, helpHref: '/help/canvas/plan-mode/sheets/' };
+
 // Orchestrates the Plan tour (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md). Mounted once in
 // EditorView beside TourHost; renders nothing until a person who has not seen it is in Plan mode with an
 // editor they can use, the welcome tour is neither on screen nor still owed, and the settle delay has
-// passed, or the Settings row asks for a rerun. The steps run on the shared engine and draw through the
-// shared stage; the tour content they show is made and taken away by usePlanTourContent.
+// passed, or the Settings row asks for a rerun. Its welcome card picks the track (Boards or Spreadsheets);
+// the steps run on the shared engine and draw through the shared stage; the tour content they show is made
+// and taken away by usePlanTourContent.
 export function PlanTourHost() {
   const ctx = useEditorContext();
   const content = ctx.planTour;
@@ -48,14 +56,26 @@ export function PlanTourHost() {
     closeCard: () => {
       if (ctx.plan.openItemId !== null) ctx.plan.closeItem();
     },
+    placeSheet: async () => {
+      const id = content.ensureSheet(ctx.getViewportCenter());
+      if (id) await waitForSelector(`[data-element-id="${id}"] [role="grid"]`, SHEET_DRAW_WAIT_MS);
+    },
+    selectTotal: () => {
+      const id = content.sheetId();
+      if (id) requestSheetSelect(id, EXAMPLE_TOTAL_CELL);
+    },
+    sheetElementId: content.sheetElementId,
     removeContent: () => content.removeAll(),
     boardId: content.boardId,
     firstCardId: content.firstCardId,
     status: content.status,
   });
 
+  // The track picked on the welcome card; Boards stands in until then.
+  const [tourTrack, setTourTrack] = useState<PlanTourTrack>('boards');
+  const steps = useMemo(() => planTourSteps(tourTrack), [tourTrack]);
   const engine = useTourEngine<PlanTourApi>({
-    steps: PLAN_TOUR_STEPS,
+    steps,
     apiRef,
     onStepView: (step) => track('UI', 'View', planTourStepTelemetryType(step.id)),
     onStart: () => track('UI', 'Started', 'PlanTour'),
@@ -111,6 +131,7 @@ export function PlanTourHost() {
     const t = setTimeout(() => {
       setArmed(false);
       debugLog('[plan-tour] offer');
+      setTourTrack('boards');
       engineRef.current.start();
       track('UI', 'Opened', 'PlanTourOffer');
     }, OFFER_DELAY_MS);
@@ -149,12 +170,24 @@ export function PlanTourHost() {
   useEffect(() => () => removeRef.current(), [removeRef]);
   useEffect(() => () => setActiveTour('plan', false), []);
 
+  // Each choice starts its track: the steps switch as the engine leaves the welcome card.
+  const pick = (picked: PlanTourTrack) => {
+    debugLog('[plan-tour] track', { track: picked });
+    track('UI', 'Selected', picked === 'sheets' ? 'PlanTourSheets' : 'PlanTourBoards');
+    setTourTrack(picked);
+    engine.next();
+  };
+
   return (
     <TourStage
       engine={engine}
       ariaPrefix="Plan tour"
-      copy={PLAN_TOUR_COPY}
+      copy={tourTrack === 'sheets' ? SHEETS_TOUR_COPY : PLAN_TOUR_COPY}
       welcomeArt={<PlanTourArt />}
+      welcomeChoices={[
+        { id: 'boards', label: 'Boards', onPick: () => pick('boards') },
+        { id: 'sheets', label: 'Spreadsheets', onPick: () => pick('sheets') },
+      ]}
     />
   );
 }
