@@ -122,13 +122,39 @@ describe('the range a chart reads', () => {
       active: { r: r1, c: c1 },
     });
     expect(chartRangeOf(book, s, sel(1, 0, 2, 1))).toEqual({
-      r1: R[1],
-      c1: C[0],
-      r2: R[2],
-      c2: C[1],
+      range: { r1: R[1], c1: C[0], r2: R[2], c2: C[1] },
     });
-    expect(chartRangeOf(book, s, sel(1, 1, 1, 1))).toEqual(range);
+    expect(chartRangeOf(book, s, sel(1, 1, 1, 1))).toEqual({ range });
     expect(chartRangeOf(book, s, sel(5, 3, 5, 3))).toBeNull();
+  });
+
+  // sheet.md "Charts": the labels in A and the amounts in C, picked together, leave B out.
+  it('charts several ranges as one, reading only the columns picked', async () => {
+    const { store } = wb();
+    await store.loadTab('t1');
+    const book = store.workbook('t1');
+    const s = store.sheet('sheetAAAA')!;
+    const pick = chartRangeOf(book, s, {
+      ranges: [
+        { r1: 1, c1: 2, r2: 3, c2: 2 },
+        { r1: 1, c1: 0, r2: 3, c2: 0 },
+      ],
+      active: { r: 1, c: 0 },
+    });
+    expect(pick).toEqual({
+      range: { r1: R[1], c1: C[0], r2: R[3], c2: C[2] },
+      cols: [C[0], C[2]],
+    });
+    // Ranges that cover every column between them need no list.
+    expect(
+      chartRangeOf(book, s, {
+        ranges: [
+          { r1: 1, c1: 0, r2: 2, c2: 0 },
+          { r1: 1, c1: 1, r2: 2, c2: 1 },
+        ],
+        active: { r: 1, c: 0 },
+      }),
+    ).toEqual({ range: { r1: R[1], c1: C[0], r2: R[2], c2: C[1] } });
   });
 });
 
@@ -136,7 +162,7 @@ describe('placing a chart', () => {
   it('centres it over the Sheet top right, linked to the range', () => {
     const b = bridge();
     const sheetEl = { x: 100, y: 50, width: 900, height: 500 } as ShapeElement;
-    placeSheetChart(b, sheetEl, 'sheetAAAA', 'line-chart', range);
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'line-chart', { range });
     const [at, make] = vi.mocked(b.placeElement).mock.calls[0]!;
     expect(at).toEqual({ x: 100 + 900 - 24 - 150, y: 50 + 120 + 120 });
     expect(make(0, 0)).toMatchObject({
@@ -144,8 +170,13 @@ describe('placing a chart', () => {
       chartSource: { sheetId: 'sheetAAAA', range },
     });
     // A Sheet narrower than the chart takes it at its left edge.
-    placeSheetChart(b, { ...sheetEl, width: 100 }, 'sheetAAAA', 'pie-chart', range);
+    placeSheetChart(b, { ...sheetEl, width: 100 }, 'sheetAAAA', 'pie-chart', { range });
     expect(vi.mocked(b.placeElement).mock.calls[1]![0].x).toBe(100 + 130);
+    // Only some columns picked: the source names them.
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'bar-chart', { range, cols: [C[0]!, C[2]!] });
+    expect(vi.mocked(b.placeElement).mock.calls[2]![1](0, 0)).toMatchObject({
+      chartSource: { sheetId: 'sheetAAAA', range, cols: [C[0], C[2]] },
+    });
   });
 });
 

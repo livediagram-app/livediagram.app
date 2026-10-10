@@ -483,14 +483,18 @@ view gets the header and **Copy** alone.
 
 - **Insert Chart** makes a pie, bar or line chart ([Pie chart](../009-elements/pie-chart.md)) from the sheet's cells:
   the toolbar's **Charts** category (**Bar Chart**, **Line Chart**, **Pie Chart**) and the cell menu's **Chart**
-  section. It reads the selection (its last range); a single cell reads the block of data around it (a spreadsheet's current
+  section. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
   region). A single empty cell with nothing around it says "Select the cells to chart first".
+- Several ranges picked together (Ctrl or ⌘ and a drag: the labels in A2:A5 and the amounts in C2:C5) chart as one:
+  the rows they span, and only the columns picked, in the sheet's order, so a column between them (Category in B) is
+  left out.
 - The range is read as a spreadsheet does: a first row with no numbers among the values names the series; a first
   column of text or dates labels the categories (numbered 1, 2, … without one); every other column is a series
   ("Column B" when unnamed). A pie or bar chart shows the first series (a pie never below zero); a line chart shows
   them all. Rows a filter hides are left out. At most 500 categories and 12 series are read.
 - The chart is an ordinary chart element whose `chartSource` names the sheet and the range by stable row and
-  column ids, so it grows with rows inserted inside the range and follows moves. Its data is read live: change
+  column ids, and, when only some of its columns were picked, those columns (`cols`), so it grows with rows inserted
+  inside the range and follows moves. Its data is read live: change
   the cells and the chart changes, for everyone.
 - It is placed floating over the Sheet's top right (24 px in, below the toolbar), selected. While its centre is
   on its Sheet it moves with the Sheet; dragged onto the canvas it stays there, still live. Moved back on, it is

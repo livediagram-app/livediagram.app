@@ -8,7 +8,12 @@ import type { LineSeries, PieSlice } from './data-shapes';
 export type ChartSource = {
   sheetId: string;
   range: { r1: string; c1: string; r2: string; c2: string };
+  // Only these of the range's columns, by id (several ranges picked together); every column when absent.
+  cols?: string[];
 };
+
+// The most columns a source names: the series cap and a label column (@livediagram/sheets CHART_SERIES_MAX + 1).
+export const CHART_SOURCE_COLS_MAX = 13;
 
 // The table a range holds (@livediagram/sheets SheetChartTable, restated): one category per row, one series per
 // value column.
@@ -22,9 +27,24 @@ const AXIS_ID = /^[a-z0-9]{4,12}$/;
 
 export function isChartSource(v: unknown): v is ChartSource {
   if (typeof v !== 'object' || v === null) return false;
-  const { sheetId, range, ...rest } = v as { sheetId?: unknown; range?: unknown };
+  const { sheetId, range, cols, ...rest } = v as {
+    sheetId?: unknown;
+    range?: unknown;
+    cols?: unknown;
+  };
   if (typeof sheetId !== 'string' || !PLAN_SHEET_ID_PATTERN.test(sheetId)) return false;
   if (Object.keys(rest).length || typeof range !== 'object' || range === null) return false;
+  if (
+    cols !== undefined &&
+    !(
+      Array.isArray(cols) &&
+      cols.length > 0 &&
+      cols.length <= CHART_SOURCE_COLS_MAX &&
+      new Set(cols).size === cols.length &&
+      cols.every((id) => typeof id === 'string' && AXIS_ID.test(id))
+    )
+  )
+    return false;
   const { r1, c1, r2, c2, ...more } = range as Record<string, unknown>;
   return (
     Object.keys(more).length === 0 &&

@@ -9,8 +9,9 @@ import { displayValue } from './number-format';
 import { isError, type Value } from './formula/values';
 import type { Workbook } from './engine/workbook';
 
-// A chart's link to its sheet: the sheet and the range, by ids.
-export type SheetChartLink = { sheetId: string; range: IdRange };
+// A chart's link to its sheet: the sheet and the range, by ids, and only some of its columns when several ranges were
+// picked together (sheet.md "Charts").
+export type SheetChartLink = { sheetId: string; range: IdRange; cols?: readonly string[] };
 
 export type SheetChartTable = {
   // The category labels, one per row of data.
@@ -43,9 +44,12 @@ export function sheetChartTable(
   const rows: number[] = [];
   for (let r = p.r1; r <= p.r2 && rows.length <= CHART_CATEGORIES_MAX; r++)
     if (!ix.hiddenRows.has(layout.rows[r]!)) rows.push(r);
+  const picked = link.cols ? new Set(link.cols) : null;
   const cols: number[] = [];
-  for (let c = p.c1; c <= p.c2 && cols.length <= CHART_SERIES_MAX; c++)
-    if (!ix.hiddenCols.has(layout.cols[c]!)) cols.push(c);
+  for (let c = p.c1; c <= p.c2 && cols.length <= CHART_SERIES_MAX; c++) {
+    const id = layout.cols[c]!;
+    if (!ix.hiddenCols.has(id) && (!picked || picked.has(id))) cols.push(c);
+  }
   if (!rows.length || !cols.length) return { categories: [], series: [] };
   const value = (r: number, c: number) => wb.value(link.sheetId, r, c);
   const text = (r: number, c: number) =>

@@ -18,7 +18,13 @@ const table = {
 describe('a chart drawn from a sheet range', () => {
   it('names a sheet and a range by row and column ids', () => {
     expect(isChartSource({ sheetId: 'sheet0001', range })).toBe(true);
+    expect(isChartSource({ sheetId: 'sheet0001', range, cols: ['aaaa', 'bbbb'] })).toBe(true);
     for (const bad of [
+      { sheetId: 'sheet0001', range, cols: [] },
+      { sheetId: 'sheet0001', range, cols: ['aaaa', 'aaaa'] },
+      { sheetId: 'sheet0001', range, cols: ['NO'] },
+      { sheetId: 'sheet0001', range, cols: 'aaaa' },
+      { sheetId: 'sheet0001', range, cols: Array.from({ length: 14 }, (_, i) => `col${i}aa`) },
       null,
       { sheetId: 'x', range },
       { sheetId: 'sheet0001' },

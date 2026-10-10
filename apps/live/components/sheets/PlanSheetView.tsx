@@ -216,7 +216,7 @@ function SheetWorkspace({
     announce: (m) => plan?.announce(m),
     toast: bridge.toast,
     notify: bridge.notify,
-    placeChart: (kind, range) => placeSheetChart(bridge, element, model.sheet!.id, kind, range),
+    placeChart: (kind, pick) => placeSheetChart(bridge, element, model.sheet!.id, kind, pick),
     onWrote: (before, write) => cardPush.current?.(before, write),
   });
   return (

@@ -2219,6 +2219,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ChartSource": {
     "additionalProperties": false,
     "properties": {
+      "cols": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "range": {
         "additionalProperties": false,
         "properties": {
