@@ -138,6 +138,15 @@ stamp `week1_sent_at`; same for `14d` / `week2_sent_at` (Teams). Daily cadence
 means "after 1 week" resolves to the first daily run on/after day 7 — close
 enough for onboarding; no per-user timers.
 
+A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
+unset for the next run to retry, and counts against the row: `send_attempts`
+goes up by one and `last_attempt_at` records when (migration 0081). Once a row
+reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
+skips it, so an address that always fails (a deleted mailbox, a hard bounce)
+cannot hold a place in the oldest-first batch for good; the sweep logs
+`[email-lifecycle] giving up` once, when it does. A successful send, or a
+sighting with a changed address (§4), resets the count to zero.
+
 ## 6. Code shape
 
 - `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`
@@ -183,8 +192,8 @@ name, or a recipient count.
 ## 8. Out of scope (for now)
 
 Unsubscribe endpoint for the lifecycle series, HTML theming beyond simple
-inline styles, retries/bounce handling (Resend handles delivery; sends are
-best-effort and idempotent via the `*_sent_at` stamps). Per-notification
+inline styles, bounce handling beyond the attempt cap in §5 (Resend handles
+delivery; sends are best-effort and idempotent via the `*_sent_at` stamps). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each of its two transactional notifications, stored
 in the [User preferences](../007-editor/user-preferences.md) preference blob.

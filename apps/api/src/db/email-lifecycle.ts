@@ -15,13 +15,21 @@ const STAGE_COLUMN: Record<LifecycleStage, string> = {
   week2: 'week2_sent_at',
 };
 
+// docs/specs/014-identity/transactional-email.md §5: failed sends after which an owner's row leaves every
+// due-query. Three daily runs rides out a provider outage; an address that has
+// failed three days running is dead (a deleted mailbox, a hard bounce), and
+// left in it would take a place in the oldest-first batch every day for good.
+// Safe range 1..10. A success or a changed address resets the count.
+export const MAX_SEND_ATTEMPTS = 3;
+
 // First authenticated sighting. INSERT OR IGNORE keyed on the owner id; returns
 // true only when a NEW row was created, which the caller treats as sign-up
 // (send the welcome immediately). A returning owner's row then takes the
 // address from this verified token, so a changed Clerk primary email is where
 // the next notification goes. The empty-string suppression rows (the backfill
 // in docs/specs/014-identity/transactional-email.md §4) keep their sentinel, and an unchanged address writes
-// nothing. Only ever run when email is enabled, once per owner per isolate.
+// nothing. A new address starts with a clean failure count (MAX_SEND_ATTEMPTS).
+// Only ever run when email is enabled, once per owner per isolate.
 export async function recordSighting(env: Env, ownerId: string, email: string): Promise<boolean> {
   const res = await env.DB.prepare(
     'INSERT OR IGNORE INTO email_lifecycle (owner_id, email, created_at) VALUES (?, ?, ?)',
@@ -30,7 +38,7 @@ export async function recordSighting(env: Env, ownerId: string, email: string): 
     .run();
   if (res.meta.changes === 1) return true;
   await env.DB.prepare(
-    "UPDATE email_lifecycle SET email = ? WHERE owner_id = ? AND email <> '' AND email <> ?",
+    "UPDATE email_lifecycle SET email = ?, send_attempts = 0 WHERE owner_id = ? AND email <> '' AND email <> ?",
   )
     .bind(email, ownerId, email)
     .run();
@@ -51,9 +59,9 @@ export async function dueForStage(
 ): Promise<LifecycleRow[]> {
   const col = STAGE_COLUMN[stage];
   const { results } = await env.DB.prepare(
-    `SELECT owner_id, email FROM email_lifecycle WHERE ${col} IS NULL AND created_at <= ? AND email <> '' ORDER BY created_at ASC LIMIT ?`,
+    `SELECT owner_id, email FROM email_lifecycle WHERE ${col} IS NULL AND created_at <= ? AND email <> '' AND send_attempts < ? ORDER BY created_at ASC LIMIT ?`,
   )
-    .bind(cutoff, limit)
+    .bind(cutoff, MAX_SEND_ATTEMPTS, limit)
     .all<{ owner_id: string; email: string }>();
   return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
 }
@@ -64,7 +72,9 @@ export async function markStageSent(
   stage: LifecycleStage,
 ): Promise<void> {
   const col = STAGE_COLUMN[stage];
-  await env.DB.prepare(`UPDATE email_lifecycle SET ${col} = ? WHERE owner_id = ?`)
+  await env.DB.prepare(
+    `UPDATE email_lifecycle SET ${col} = ?, send_attempts = 0 WHERE owner_id = ?`,
+  )
     .bind(Date.now(), ownerId)
     .run();
 }
@@ -95,17 +105,19 @@ export async function dueForActivation(
   const { results } = await env.DB.prepare(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.created_at <= ? AND el.activation_sent_at IS NULL AND el.week1_sent_at IS NULL
-       AND el.email <> ''
+       AND el.email <> '' AND el.send_attempts < ?
        AND NOT EXISTS (SELECT 1 FROM documents d WHERE d.owner_id = el.owner_id)
      ORDER BY el.created_at ASC LIMIT ?`,
   )
-    .bind(cutoff, limit)
+    .bind(cutoff, MAX_SEND_ATTEMPTS, limit)
     .all<{ owner_id: string; email: string }>();
   return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
 }
 
 export async function markActivationSent(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare('UPDATE email_lifecycle SET activation_sent_at = ? WHERE owner_id = ?')
+  await env.DB.prepare(
+    'UPDATE email_lifecycle SET activation_sent_at = ?, send_attempts = 0 WHERE owner_id = ?',
+  )
     .bind(Date.now(), ownerId)
     .run();
 }
@@ -121,19 +133,33 @@ export async function dueForWinback(
 ): Promise<LifecycleRow[]> {
   const { results } = await env.DB.prepare(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
-     WHERE el.winback_sent_at IS NULL AND el.email <> ''
+     WHERE el.winback_sent_at IS NULL AND el.email <> '' AND el.send_attempts < ?
        AND (SELECT MAX(d.updated_at) FROM documents d WHERE d.owner_id = el.owner_id) <= ?
      ORDER BY el.created_at ASC LIMIT ?`,
   )
-    .bind(cutoff, limit)
+    .bind(MAX_SEND_ATTEMPTS, cutoff, limit)
     .all<{ owner_id: string; email: string }>();
   return (results ?? []).map((r) => ({ ownerId: r.owner_id, email: r.email }));
 }
 
 export async function markWinbackSent(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare('UPDATE email_lifecycle SET winback_sent_at = ? WHERE owner_id = ?')
+  await env.DB.prepare(
+    'UPDATE email_lifecycle SET winback_sent_at = ?, send_attempts = 0 WHERE owner_id = ?',
+  )
     .bind(Date.now(), ownerId)
     .run();
+}
+
+// A lifecycle send that failed: count it against the owner's row, which leaves
+// every due-query once it reaches MAX_SEND_ATTEMPTS. Returns the new count so
+// the caller can log the row giving up.
+export async function recordSendFailure(env: Env, ownerId: string): Promise<number> {
+  const row = await env.DB.prepare(
+    'UPDATE email_lifecycle SET send_attempts = send_attempts + 1, last_attempt_at = ? WHERE owner_id = ? RETURNING send_attempts',
+  )
+    .bind(Date.now(), ownerId)
+    .first<{ send_attempts: number }>();
+  return row?.send_attempts ?? 0;
 }
 
 // docs/specs/014-identity/transactional-email.md (#6): atomically claim the one-time milestone email for an owner.

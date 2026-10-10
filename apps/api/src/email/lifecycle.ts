@@ -10,6 +10,8 @@ import {
   markActivationSent,
   markStageSent,
   markWinbackSent,
+  MAX_SEND_ATTEMPTS,
+  recordSendFailure,
   recordSighting,
   type LifecycleStage,
 } from '../db/email-lifecycle';
@@ -44,6 +46,17 @@ export async function welcomeOnSighting(env: Env, ownerId: string, email: string
   if (!isNew) return;
   const { sent } = await sendEmail(env, { to: email, ...welcomeEmail(env) });
   if (sent) await markStageSent(env, ownerId, 'welcome');
+  else await noteFailure(env, ownerId);
+}
+
+// A failed lifecycle send counts against the row (docs/specs/014-identity/transactional-email.md §5), which leaves
+// every sweep once it reaches MAX_SEND_ATTEMPTS, so a dead address cannot hold a
+// place in the oldest-first batch for good. Logged once, when the row gives up.
+async function noteFailure(env: Env, ownerId: string): Promise<void> {
+  const attempts = await recordSendFailure(env, ownerId);
+  if (attempts === MAX_SEND_ATTEMPTS) {
+    console.warn(`[email-lifecycle] giving up on an owner after ${attempts} failed sends`);
+  }
 }
 
 // Daily cron (docs/specs/014-identity/transactional-email.md §5). Welcome is swept too so inline-failed / email-was-off
@@ -84,6 +97,7 @@ async function sweepWinback(env: Env, cutoff: number): Promise<void> {
     }
     const { sent } = await sendEmail(env, { to: row.email, ...winBackEmail(env) });
     if (sent) await markWinbackSent(env, row.ownerId);
+    else await noteFailure(env, row.ownerId);
   }
 }
 
@@ -102,6 +116,7 @@ async function sweepStage(
     }
     const { sent } = await sendEmail(env, { to: row.email, ...STAGE_BUILDER[stage](env) });
     if (sent) await markStageSent(env, row.ownerId, stage);
+    else await noteFailure(env, row.ownerId);
   }
 }
 
@@ -115,5 +130,6 @@ async function sweepActivation(env: Env, cutoff: number): Promise<void> {
     }
     const { sent } = await sendEmail(env, { to: row.email, ...activationEmail(env) });
     if (sent) await markActivationSent(env, row.ownerId);
+    else await noteFailure(env, row.ownerId);
   }
 }
