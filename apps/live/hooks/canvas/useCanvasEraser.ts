@@ -43,16 +43,13 @@ import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { WhiteboardEraserMode } from '@/lib/whiteboard-prefs';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
+import type { EraseFrameReader } from '@/lib/erase-frame';
 import {
   partialEraseStep,
   pathsTouched,
   shapesTouched,
   strokesTouched,
 } from '@/lib/whiteboard-erase';
-
-// Where the transformed canvas sits on screen at the press, so a client point
-// maps to canvas coords for the whiteboard's geometric erase.
-export type EraseFrame = { left: number; top: number; zoom: number };
 
 type EraserDeps = {
   editsBlocked: boolean;
@@ -88,10 +85,11 @@ export function useCanvasEraser(deps: EraserDeps) {
   // Whether this gesture has taken its undo checkpoint yet (taken lazily
   // on the first real deletion so an empty press is a no-op).
   const checkpointedRef = useRef(false);
-  // Whiteboard: the press's canvas frame, the previous sample (the brush sweeps
+  // Whiteboard: the sweep's canvas frame reader (read per sample, so a pan or zoom mid-sweep keeps
+  // the brush under the pointer; lib/erase-frame), the previous sample (the brush sweeps
   // the segment between samples, so a fast swipe cannot skip a stroke) and
   // whether a Partial step changed anything.
-  const frameRef = useRef<EraseFrame | null>(null);
+  const frameRef = useRef<EraseFrameReader | null>(null);
   const prevRef = useRef<{ x: number; y: number } | null>(null);
   const cutRef = useRef(false);
   // Ends the sweep in flight, if any: its listeners and its canvas gesture.
@@ -106,7 +104,7 @@ export function useCanvasEraser(deps: EraserDeps) {
   // The whiteboard's step. Returns false when this is not a whiteboard gesture.
   const whiteboardErase = (clientX: number, clientY: number): boolean => {
     const { whiteboard, activeTab, tick, layerInertIds } = depsRef.current;
-    const frame = frameRef.current;
+    const frame = frameRef.current?.() ?? null;
     if (!whiteboard || !frame) return false;
     const rect = { left: frame.left, top: frame.top } as DOMRect;
     const at = pointerToCanvas(clientX, clientY, rect, frame.zoom);
@@ -197,7 +195,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     if (changed) removeErased();
   };
 
-  const beginErase = (clientX: number, clientY: number, frame?: EraseFrame) => {
+  const beginErase = (clientX: number, clientY: number, frame?: EraseFrameReader) => {
     const { editsBlocked, activeTab, setSelectedId, setEditingId } = depsRef.current;
     if (editsBlocked || activeTab.locked === true) return;
     erasedRef.current = new Set();

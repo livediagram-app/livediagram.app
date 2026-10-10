@@ -635,6 +635,8 @@ The eraser offers **both** modes, switched in its flyout:
   as the eraser's ring; a whiteboard eraser has no size, target or Tap
   setting, and always sweeps: the Diagram eraser's panel settings never reach
   it.
+- The brush stays under the pointer through a pan or zoom mid-sweep (a wheel
+  or a pinch while erasing).
 - Locked elements and locked or hidden layers stay protected, as everywhere.
 
 ## Shape recognition

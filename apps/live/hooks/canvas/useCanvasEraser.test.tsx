@@ -87,7 +87,7 @@ describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md
         ...over,
       }),
     );
-    act(() => result.current.beginErase(100, 0, { left: 0, top: 0, zoom: 1 }));
+    act(() => result.current.beginErase(100, 0, () => ({ left: 0, top: 0, zoom: 1 })));
     act(() => {
       window.dispatchEvent(new MouseEvent('pointermove', { clientX: 100, clientY: 100 }));
     });
@@ -101,5 +101,37 @@ describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md
 
   it('keeps Tap on a diagram tab: the move erases nothing', () => {
     expect(sweep({ whiteboard: null })).not.toHaveBeenCalled();
+  });
+
+  it('follows a pan mid-sweep: the brush stays under the pointer', () => {
+    // The press is above the stroke; then the canvas pans down 100 px, so the same client point
+    // now sits on the stroke (canvas y 100 at client y 200).
+    let frame = { left: 0, top: 0, zoom: 1 };
+    let cut: Element[] | null = null;
+    const tick = vi.fn((fn: (els: Element[]) => Element[]) => {
+      cut = fn([stroke]);
+    });
+    const { result } = renderHook(() =>
+      useCanvasEraser({
+        editsBlocked: false,
+        layerInertIds: new Set<string>(),
+        activeId: 't',
+        activeTab: { id: 't', name: 'Tab', elements: [stroke] } as unknown as Tab,
+        tick,
+        markCheckpoint: () => 1,
+        setSelectedId: vi.fn(),
+        setEditingId: vi.fn(),
+        whiteboard: { mode: 'stroke' },
+      }),
+    );
+    act(() => result.current.beginErase(100, 200, () => frame));
+    expect(tick).not.toHaveBeenCalled();
+    frame = { left: 0, top: 100, zoom: 1 };
+    act(() => {
+      window.dispatchEvent(new MouseEvent('pointermove', { clientX: 101, clientY: 200 }));
+    });
+    lift('pointerup');
+    expect(tick).toHaveBeenCalled();
+    expect(cut).toEqual([]);
   });
 });
