@@ -353,6 +353,13 @@ export async function isOfflineId(id: string): Promise<boolean> {
   return (await loadIds()).has(id);
 }
 
+// How many documents this browser holds (the local Trash included), off the same cached index: a
+// cheap upper bound that lets a caller skip reading every record (the move prompt after signing in,
+// docs/specs/014-identity/auth-and-guest-access.md) when there is nothing, or nothing new, to offer.
+export async function offlineIdCount(): Promise<number> {
+  return (await loadIds()).size;
+}
+
 // Synchronous check off the already-loaded cache — for the `beforeunload`
 // beacon flush, which can't await. Returns false until the cache has loaded
 // (by which point any document being edited has already been through the async

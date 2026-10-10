@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { formatRelativeTime } from '@livediagram/ui';
-import { offlineListDocuments } from '@/lib/offline/offline-store';
+import { offlineIdCount, offlineListDocuments } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { dismissLocalMove, shouldOfferLocalMove } from '@/lib/offline/local-move-dismissal';
 import { track } from '@/lib/telemetry';
@@ -34,7 +34,10 @@ export function useLocalMovePrompt(opts: {
   useEffect(() => {
     if (!enabled || !authLoaded || !clerkUserId) return;
     let live = true;
-    void offlineListDocuments()
+    // The cached id count first (an upper bound, the local Trash included): most people hold no
+    // Local only documents, and they never pay for reading every record.
+    void offlineIdCount()
+      .then((upTo) => (shouldOfferLocalMove(clerkUserId, upTo) ? offlineListDocuments() : []))
       .then((docs) => {
         if (!live || !shouldOfferLocalMove(clerkUserId, docs.length)) return;
         const now = Date.now();

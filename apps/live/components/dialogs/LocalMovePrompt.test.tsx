@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { auth, store, convert, track } = vi.hoisted(() => ({
   auth: { authLoaded: true, clerkUserId: 'user_1' as string | null },
-  store: { offlineListDocuments: vi.fn() },
+  store: { offlineListDocuments: vi.fn(), offlineIdCount: vi.fn() },
   convert: { saveOfflineToCloud: vi.fn() },
   track: vi.fn(),
 }));
@@ -29,6 +29,7 @@ beforeEach(() => {
   auth.authLoaded = true;
   auth.clerkUserId = 'user_1';
   store.offlineListDocuments.mockResolvedValue(DOCS);
+  store.offlineIdCount.mockResolvedValue(DOCS.length);
   convert.saveOfflineToCloud.mockResolvedValue('x');
   vi.stubGlobal('location', { ...window.location, reload });
 });
@@ -66,8 +67,10 @@ describe('LocalMovePrompt', () => {
     auth.authLoaded = true;
     await show(false);
     expect(store.offlineListDocuments).not.toHaveBeenCalled();
-    store.offlineListDocuments.mockResolvedValue([]);
+    store.offlineIdCount.mockResolvedValue(0);
     await show();
+    // Nothing held here: the records are never read.
+    expect(store.offlineListDocuments).not.toHaveBeenCalled();
     expect(screen.queryByText('Move Local Documents to Your Account?')).toBeNull();
   });
 
@@ -106,6 +109,9 @@ describe('LocalMovePrompt', () => {
     cleanup();
     await show();
     expect(screen.queryByText('Move Local Documents to Your Account?')).toBeNull();
+    // Not even listed while the count is no more than what was put off.
+    expect(store.offlineListDocuments).toHaveBeenCalledOnce();
+    store.offlineIdCount.mockResolvedValue(3);
     store.offlineListDocuments.mockResolvedValue([
       ...DOCS,
       { id: 'c', name: 'New', savedAt: Date.now() },

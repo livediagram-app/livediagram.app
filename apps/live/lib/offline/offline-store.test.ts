@@ -8,6 +8,7 @@ import {
   offlineCreateDocument,
   offlineDeleteDocument,
   offlineDeleteTab,
+  offlineIdCount,
   offlineListDocuments,
   offlineLoadDocument,
   offlineLoadTab,
@@ -185,5 +186,17 @@ describe('upsertTab — tab kind', () => {
     );
     const legacy = tab({ layers: [{ id: 'layer:es:board', name: 'Event Storming' }] });
     expect(upsertTab(rec(), legacy, 2).tabs[0]!.kind).toBe('event-storming');
+  });
+});
+
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// documents after signing in"): a count off the cached index, never a full read.
+describe('offlineIdCount', () => {
+  it('counts the documents this browser holds', async () => {
+    __setOfflineBackend(memBackend());
+    expect(await offlineIdCount()).toBe(0);
+    await offlineCreateDocument({ id: 'a', name: 'A' }, 1);
+    await offlineCreateDocument({ id: 'b', name: 'B' }, 2);
+    expect(await offlineIdCount()).toBe(2);
   });
 });
