@@ -3,12 +3,19 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { SLIDE_LAYOUTS, TEMPLATES } from '@livediagram/templates';
+import { LOGO_LAYOUTS, PAGE_LAYOUTS, SLIDE_LAYOUTS, TEMPLATES } from '@livediagram/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
 import { ALTERNATIVES } from './alternatives';
-import { FAQ_CATEGORIES, faqAnswerText, SLIDE_LAYOUT_COUNT, TEMPLATE_COUNT } from './faq-content';
+import {
+  FAQ_CATEGORIES,
+  faqAnswerText,
+  LOGO_LAYOUT_COUNT,
+  PAGE_LAYOUT_COUNT,
+  SLIDE_LAYOUT_COUNT,
+  TEMPLATE_COUNT,
+} from './faq-content';
 import { filterFaq } from './faq-filter';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
@@ -69,6 +76,11 @@ describe('slide layout counts in marketing copy', () => {
 
   it('matches the catalogue in the FAQ', () => {
     expect(SLIDE_LAYOUT_COUNT).toBe(SLIDE_LAYOUTS.length);
+  });
+
+  it('matches the infographic and logo catalogues in the FAQ', () => {
+    expect(PAGE_LAYOUT_COUNT).toBe(PAGE_LAYOUTS.length);
+    expect(LOGO_LAYOUT_COUNT).toBe(LOGO_LAYOUTS.length);
   });
 
   it('matches the catalogue on every comparison page', () => {

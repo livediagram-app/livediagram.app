@@ -74,9 +74,9 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Microsoft Whiteboard',
     title: 'Microsoft Whiteboard alternative · livediagram',
     description:
-      'A free, open-source Microsoft Whiteboard alternative: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with the ink still editable.',
+      'A free, open-source Microsoft Whiteboard alternative: pressure-sensitive ink, no Microsoft account, and an import that keeps your boards editable.',
     h1: 'The open-source Microsoft Whiteboard alternative',
-    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, and the standalone apps and remaining legacy boards go on 16 October 2026. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
+    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, the remaining legacy boards are deleted on 16 October 2026, and the standalone apps retire this autumn. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
     rows: [
       {
         label: 'Price',
@@ -126,7 +126,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'What the retirement means',
         paragraphs: [
-          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, and on 16 October 2026 the standalone Windows, iOS and Android apps retire and the remaining legacy boards are deleted for good.',
+          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, the remaining legacy boards are deleted for good on 16 October 2026, and the standalone Windows, iOS and Android apps retire between 16 October and 30 November 2026, depending on which of Microsoft’s notices you read.',
           'If you used Whiteboard on a personal account, for teaching, family planning, tutoring or your own thinking, you need a new home for those boards and for the next ones. Check Microsoft’s own retirement notice for the details that apply to your account.',
         ],
       },
@@ -155,7 +155,7 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Is Microsoft Whiteboard being discontinued?',
-        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, and the standalone apps retire and remaining legacy boards are deleted on 16 October 2026. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
+        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, remaining legacy boards are deleted on 16 October 2026, and the standalone apps retire by 30 November 2026. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
       },
       {
         q: 'Can I import my Microsoft Whiteboard boards?',
@@ -212,7 +212,7 @@ export const ALTERNATIVES: Alternative[] = [
     themBest: [
       'Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.',
       'A deep template and integration marketplace (Jira, Slack, and more).',
-      'AI woven through the whole workspace, well beyond a single assistant panel.',
+      'AI across the canvas: assistants, flows and generators, well beyond a single panel.',
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
     usBest: [
@@ -322,7 +322,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
     ],
     themBest: [
-      'Deep, keyboard-fast mind-map outlining and dedicated brainstorming modes.',
+      'Deep, keyboard-fast mind-map outlining, with a distraction-free ZEN mode.',
       'A refined native desktop experience with dedicated mobile apps.',
       "Pitch mode turns a map's branches into presentation slides.",
     ],
@@ -593,7 +593,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Google Slides',
     title: 'Google Slides alternative · livediagram',
     description:
-      'A free, open-source Google Slides alternative: slide pages from ready-made layouts and decks built from your live canvas, presented with notes, timing and transitions, no account needed.',
+      'A free, open-source Google Slides alternative: slide pages from ready-made layouts, decks built from your canvas, notes, timing and transitions.',
     h1: 'A free, open-source Google Slides alternative',
     lede: 'Google Slides is the presentation tool most people already have open. livediagram makes decks differently: start a slide page from a ready-made layout, or build slides straight from the work on your canvas, so the deck, the write-up and the plan behind it live in one document that your team edits together.',
     rows: [
@@ -698,7 +698,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livediagram',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard and diagram canvas with no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 95 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livediagram covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -735,7 +735,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Your team designs in Figma, and you want boards that sit beside your design files and copy across into them.',
       'A playful, polished feel: stamps, stickers, emotes, cursor chat and widgets.',
       'A large community of plugins, widgets and templates.',
-      'AI features built into the board for generating and summarising content.',
+      'FigJam AI on paid plans, for generating boards and summarising sticky notes.',
     ],
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
@@ -800,7 +800,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Lucidchart',
     title: 'Lucidchart alternative · livediagram',
     description:
-      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, Mermaid, an API and MCP.',
     h1: 'The free Lucidchart alternative, with no limits',
     lede: 'Lucidchart is a mature, professional diagramming tool, with a free plan that limits how many documents and shapes you can make. livediagram is free and open source with no such limits: real-time flowcharts, org charts and architecture diagrams that anyone can open from a link, no account needed.',
     rows: [
