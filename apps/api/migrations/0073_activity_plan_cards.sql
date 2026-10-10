@@ -1,4 +1,4 @@
--- Plan cards on the Activity page (docs/specs/013-workspace/activity-page.md §2.4).
+-- Plan cards on the Inbox (docs/specs/013-workspace/inbox.md §2.4).
 --
 -- The read finds a reader's cards by their hashed assignee id, so the item store gets an expression index on
 -- it. Whether a card is still open, and which board to open it on, comes from the boards in tab JSON, so the

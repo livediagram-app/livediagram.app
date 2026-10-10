@@ -226,7 +226,7 @@ author redaction, and the same thread list, composer and resolve control the com
 - **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
 - **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does
   ([Comment mentions](../012-collaboration/comment-mentions.md)): the card's thread lists on the mentioned person's
-  Activity page (with the thread's other readers: whoever commented in it, and the document's owner), and the
+  Inbox (with the thread's other readers: whoever commented in it, and the document's owner), and the
   author's editor asks the api to email them, the email's button opening the card. `Comment · Mentioned` counts
   each mentioning comment, as on the canvas.
 - **Timeline and email**: a new comment records on the document's timeline and emails the owner (when email is
@@ -292,7 +292,7 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its
   picker.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
-  [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
+  [Inbox](../013-workspace/inbox.md) (§2.4 there), in every document you can open; a row opens the card on its board.
 - **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
 - An agent token acts as its person, and a read-only token reads only.
 

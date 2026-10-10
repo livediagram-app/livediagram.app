@@ -1,4 +1,4 @@
-// collab_actions + collab_threads — the collaboration index (docs/specs/013-workspace/activity-page.md
+// collab_actions + collab_threads — the collaboration index (docs/specs/013-workspace/inbox.md
 // §2): a SQL-filterable projection of the actions and comment threads
 // that live inside element JSON on `tabs`. Plus `owner_aliases` (the
 // identities an owner used to be, §2.2) and `collab_index_state` (which
@@ -7,7 +7,7 @@
 // Writes are STATEMENTS, not calls: every tab write path already runs a
 // D1 batch, and appending the index statements to that batch is what
 // keeps the index in the same transaction as the blob it mirrors. The
-// read is the Activity page's one query per kind.
+// read is the Inbox's one query per kind.
 
 import type { Element } from '@livediagram/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livediagram/api-schema';
@@ -136,7 +136,7 @@ export function collabIndexCopyStatements(
 
 // ---------- Read ------------------------------------------------------
 
-// The scoping every Activity read shares (docs/specs/013-workspace/activity-page.md §4). `me` is the
+// The scoping every Activity read shares (docs/specs/013-workspace/inbox.md §4). `me` is the
 // reader plus every identity they used to be; `visible` is the three
 // sets the Explorer's Recent merges — own, joined-team, shared-with-you
 // (live share only) — with how each is reached and, for a share, the

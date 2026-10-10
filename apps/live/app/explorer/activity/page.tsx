@@ -1,16 +1,14 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/activity — what is outstanding for the reader across every
-// document they can open: open actions assigned to them or by them, and
-// unresolved comment threads they are in (docs/specs/013-workspace/activity-page.md). The layout's
-// ExplorerShell provides the chrome + state; this page only pins the
-// route and the tab title.
+// /explorer/activity is retired (docs/specs/013-workspace/folders.md#explorer-routes): the Inbox was
+// once called Activity, so this address replaces itself with /explorer/inbox and links to it keep
+// working.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('activity'),
+  title: 'Explorer | livediagram',
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return <RetiredViewRedirect from="activity" />;
 }

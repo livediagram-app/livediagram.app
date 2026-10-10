@@ -112,14 +112,27 @@ export function DocumentIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Activity (docs/specs/013-workspace/activity-page.md): an inbox tray with a tick, what's waiting on
-// you, as opposed to the Timeline's spine of what happened.
-export function ActivityIcon({ size = 13 }: IconProps) {
+// The Inbox (docs/specs/013-workspace/inbox.md): a tray with a tick, what's waiting on you, as
+// opposed to the Timeline's spine of what happened.
+export function InboxIcon({ size = 13 }: IconProps) {
   return (
     <G16 size={size}>
       <path d="M2 9.5V12a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 12V9.5" />
       <path d="M2 9.5h3.2l1 1.8h3.6l1-1.8H14" />
       <path d="M5.5 5.2 7.2 7l3.3-3.6" />
+    </G16>
+  );
+}
+
+// The Timeline (docs/specs/013-workspace/timeline.md): a spine with what landed against it, the
+// help centre's Timeline card glyph on this set's 16-unit grid.
+export function TimelineIcon({ size = 13 }: IconProps) {
+  return (
+    <G16 size={size}>
+      <path d="M4 2.5v11" />
+      <circle cx="4" cy="5" r="1.1" />
+      <circle cx="4" cy="11" r="1.1" />
+      <path d="M6.5 5h6M6.5 11h4M6.5 8h2.8" />
     </G16>
   );
 }

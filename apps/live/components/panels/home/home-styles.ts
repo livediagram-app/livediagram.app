@@ -9,7 +9,7 @@ export const SECTION_HEADER =
 /** A section's title: Jump back in, What happened. */
 export const SECTION_HEADING = 'text-base font-semibold text-slate-900 dark:text-slate-100';
 
-/** The quiet link at the end of a heading row: See more, See all activity. Its line box is padded
+/** The quiet link at the end of a heading row: See more, See timeline. Its line box is padded
  *  to the 24 px target. */
 export const SECTION_LINK =
   'inline-flex min-h-6 items-center rounded-sm text-sm font-medium text-brand-700 hover:underline dark:text-brand-300';

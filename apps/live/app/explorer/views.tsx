@@ -72,12 +72,12 @@ export type SelectedNode =
   // The landing view (docs/specs/013-workspace/explorer-home.md): Jump back in, What happened and
   // the person's own Timeline.
   | { kind: 'home' }
-  // All activity (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
-  // happened, reached from Home's See all activity.
+  // The Timeline (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
+  // happened, with its own sidebar row and Home's See timeline link.
   | { kind: 'timeline' }
-  // What is outstanding for the reader across every document (docs/specs/013-workspace/activity-page.md):
-  // open actions assigned to / by them, unresolved threads they're in.
-  | { kind: 'activity' }
+  // The Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the reader across every
+  // document, open actions assigned to / by them and unresolved threads they're in.
+  | { kind: 'inbox' }
   | { kind: 'recent' }
   | { kind: 'all' }
   // Every document the reader can open, narrowed by the lens (docs/specs/013-workspace/explorer-filters.md#views).

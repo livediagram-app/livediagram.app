@@ -88,7 +88,8 @@ export const HELP_ARTICLES = {
   sessionVoting: 'collaboration/session-tools/voting',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
-  activity: 'explorer/activity',
+  // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
+  inbox: 'explorer/activity',
   recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
@@ -315,11 +316,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
-    title: 'Learn about Home',
+    title: 'Learn about Home and the Timeline',
     description: 'Jump back in, what others did while you were away, and your own Timeline.',
   },
-  activity: {
-    title: 'Learn about Activity',
+  inbox: {
+    title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
   recentDocuments: {

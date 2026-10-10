@@ -1,4 +1,4 @@
--- Plan card comment threads on the Activity page (docs/specs/013-workspace/activity-page.md §2.5).
+-- Plan card comment threads on the Inbox (docs/specs/013-workspace/inbox.md §2.5).
 --
 -- The read lists a reader's open card threads per visible document. A partial index on the documents' open
 -- threads lets it seek only the cards with an unresolved thread, never parsing every card of a large document.

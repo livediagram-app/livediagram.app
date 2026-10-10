@@ -14,7 +14,7 @@ The shape kind is `action-card`. It is the action sibling of the Comment panel
 
 Assigned actions already work. Every boxed element can carry one `action`
 ([Assigned actions](assigned-actions.md) §1), and the Assign Action dialog, the popover, complete / reopen,
-the Collaborate panel's rows, the Activity page ([Activity page](../013-workspace/activity-page.md)), the assignment
+the Collaborate panel's rows, the [Inbox](../013-workspace/inbox.md), the assignment
 email, realtime and persistence all run against that field.
 
 What was missing is the same thing the Comment panel filled for comments:
@@ -54,7 +54,7 @@ only job is to hold actions, so:
   same telemetry fires and the same non-undoable carve-out applies (Cmd+Z must
   never silently unassign someone's work).
 - Every action is found by the Collaborate panel (one row per action), the
-  Activity page (one index row per action) and the assignment email because
+  Inbox (one index row per action) and the assignment email because
   they all read `elementActions(el)`. Nothing indexes the panel specially.
 
 ## The card

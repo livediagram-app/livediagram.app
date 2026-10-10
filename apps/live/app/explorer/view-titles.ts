@@ -9,7 +9,8 @@ type NamedKind = Exclude<SelectedNode['kind'], 'folder' | 'team'>;
 
 export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   home: SIDEBAR_LABELS.home,
-  activity: SIDEBAR_LABELS.activity,
+  inbox: SIDEBAR_LABELS.inbox,
+  timeline: SIDEBAR_LABELS.timeline,
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myDocuments,
   offline: SIDEBAR_LABELS.thisBrowser,
@@ -21,8 +22,6 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   recent: 'Recent',
   favourites: 'Favourites',
   search: 'Search results',
-  // The Timeline feed has no row; its page is named by the link that leads there from Home.
-  timeline: 'All activity',
 };
 
 // The document title a static Explorer page exports.
@@ -30,10 +29,10 @@ export function viewDocumentTitle(kind: NamedKind): string {
   return `${VIEW_TITLES[kind]} | livediagram`;
 }
 
-// The views reached from Home, without a sidebar row of their own: All activity (See all activity)
-// and Recent (See more). Their breadcrumb leads back to Home
+// The view reached from Home, without a sidebar row of its own: Recent (See more). Its breadcrumb
+// leads back to Home
 // (docs/specs/013-workspace/explorer-structure.md#page-titles-follow-the-rows).
-const UNDER_HOME: ReadonlySet<SelectedNode['kind']> = new Set(['timeline', 'recent']);
+const UNDER_HOME: ReadonlySet<SelectedNode['kind']> = new Set(['recent']);
 
 export function leadsBackHome(kind: SelectedNode['kind']): boolean {
   return UNDER_HOME.has(kind);

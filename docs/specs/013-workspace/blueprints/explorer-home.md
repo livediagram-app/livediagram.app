@@ -2,7 +2,7 @@
 
 Derived from [Explorer Home](../explorer-home.md) (Jump back in, What happened, Opens), with the allocation of
 [Within reach](../../004-interface-design/within-reach.md), the event store of [Timeline](../timeline.md), the access
-set of [Activity page](../activity-page.md) §4, the identity rules of
+set of [Inbox](../inbox.md) §4, the identity rules of
 [Auth + guest access](../../014-identity/auth-and-guest-access.md) and the owner-keyed list of
 [API](../../015-api/api.md#owner-keyed-data). The spec decides; this file only adds engineering precision. This
 blueprint covers the data: recording opens and makings, Jump back in's set, the reads and the wire. The view, and this browser's
@@ -24,10 +24,10 @@ Scope, by file:
 | `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
 | `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route   |
 | `apps/api/src/timeline/backfill.ts`                                            | The reconstructed edit says `backfilled: true`; it and the reconstructed creation keep a row   |
-| `apps/api/src/db/document-visibility.ts`                                       | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with Activity                |
+| `apps/api/src/db/document-visibility.ts`                                       | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with the Inbox               |
 | `apps/api/src/db/document-opens.ts`                                            | The `document_opens` statements: read, record, touch, migrate, delete, sweep                   |
 | `apps/api/src/db/home.ts`                                                      | `readJumpBackIn`, `REAL_EDIT`, `MARKED_MAKING`, `readWhatHappenedRows`, `readMe`               |
-| `apps/api/src/db/collab-index.ts`                                              | Activity's `SCOPE_CTES` composed from `VISIBLE_DOCUMENTS_CTES`                                 |
+| `apps/api/src/db/collab-index.ts`                                              | The Inbox's `SCOPE_CTES` composed from `VISIBLE_DOCUMENTS_CTES`                                |
 | `apps/api/src/db/timeline.ts`                                                  | `NOT_IN_FEED`: the feed and the unread count leave `document_opened` out                       |
 | `apps/api/src/db/account.ts`                                                   | Account deletion and sign-up migration of `document_opens`                                     |
 | `apps/api/src/timeline/document-events.ts`, `tab-save.ts`                      | `recordDocumentOpened`; `markUsed`, `reply` and `assigneeId` on the snapshots                  |
@@ -74,7 +74,7 @@ Scope, by file:
 | Me                | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                 |
 
 Banned: "visit" or "view" for an open, "frecency" (the rule has no decay), "notification" for a What happened
-action, "timeline" for anything on Home (the feed is All activity, `GET /api/timeline`).
+action, "timeline" for anything on Home but the link that leaves for the Timeline (`GET /api/timeline`).
 
 ## Behaviour and state
 
@@ -200,7 +200,7 @@ existed: `document_edited` rows whose `created_at` is more than `LEGACY_BACKFILL
 `GET /api/home` moves the Timeline feed's unread mark by the Timeline's own rule (`isNewVisit`,
 `apps/api/src/timeline/seen.ts`: no mark yet, or the mark older than `SEEN_WINDOW_MS`), off the response path. The
 response carries `lastSeenAt`, the mark as it stood before this read (`D75`). It seeds nothing: the Timeline
-user-scope backfill is the All activity feed's own business.
+user-scope backfill is the Timeline's own business.
 
 ## Interfaces and contracts
 
@@ -396,7 +396,7 @@ from` moves every row the account does not already hold; each leftover (opened u
 - `home` is in `OWNER_SCOPED_SEGMENTS`: a Clerk-shaped `X-Owner-Id` is refused and, when armed, the guest signature
   is required.
 - `visible` is the boundary: an event, an open or an entry about a document the person cannot open is never read.
-  Team membership is matched on the resolved owner id, as Activity does; teams are Clerk-only and a Clerk-shaped
+  Team membership is matched on the resolved owner id, as the Inbox does; teams are Clerk-only and a Clerk-shaped
   guest header never reaches a route.
 - Opens are private: the event is scoped to `user:<person>` only, left out of the feed, and not a What happened
   verb. Nobody's open is in anybody else's response.
@@ -476,7 +476,7 @@ stay on their own lazy route.
 | Migration merge and account deletion                                                    | `apps/api/src/db/document-opens.test.ts`, `account-owner-columns.test.ts`                 |
 | Reply flag on both comment paths, `assigneeId` on assignment                            | `apps/api/src/timeline/tab-diff.test.ts`, `apps/api/src/routes/home-snapshots.test.ts`    |
 | CORS allows the marker                                                                  | `apps/api/src/responses.test.ts`                                                          |
-| Activity unchanged on the shared visibility                                             | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
+| The Inbox unchanged on the shared visibility                                            | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
 | OpenAPI parity and schemas                                                              | `apps/api/src/openapi/*.test.ts`                                                          |
 | Route labels know `home`                                                                | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
 | Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/live/lib/api/home.test.ts`, `apps/live/lib/api-client.test.ts`                      |

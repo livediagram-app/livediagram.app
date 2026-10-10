@@ -28,13 +28,13 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
 
 ## Views
 
-| View                                               | Route                                                                              | Lens                              |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My documents, and each of its folders              | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
-| A team, at its root or in one of its folders       | `/explorer/team?id=<id>`                                                           | Scoped                            |
-| This browser                                       | `/explorer/offline`                                                                | Scoped                            |
-| Recent, Favourites, Search results, Shared with me | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
-| Home, Activity, the Library pages, Trash, Invites  | Their own                                                                          | None: typing opens Search results |
+| View                                                     | Route                                                                              | Lens                              |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| My documents, and each of its folders                    | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
+| This browser                                             | `/explorer/offline`                                                                | Scoped                            |
+| Recent, Favourites, Search results, Shared with me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
+| Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
 
 - **Search results** (`/explorer/search`) lists every document the reader can open: their own (My documents and this
   browser), every team's they have joined, and Shared with me, newest first, with no cap. It has no sidebar row; its

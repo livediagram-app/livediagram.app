@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Activity page (docs/specs/013-workspace/activity-page.md §1): three sections of rows, Plan cards
+// The Inbox (docs/specs/013-workspace/inbox.md §1): three sections of rows, Plan cards
 // beside actions under Assigned to You (§2.4), each row a link into the editor; and the loading, failed
 // and empty states kept apart.
 

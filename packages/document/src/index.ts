@@ -605,7 +605,7 @@ export * from './theme-presets';
 export * from './element-kind-label';
 
 // The name a boxed element goes by in a list of elements (the Collaborate
-// Panel's rows, the Activity page's rows): its label, a table's first cell,
+// Panel's rows, the Inbox's rows): its label, a table's first cell,
 // or "Untitled".
 export * from './element-display-label';
 

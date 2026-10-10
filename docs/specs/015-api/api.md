@@ -76,7 +76,7 @@ All JSON unless stated. CORS allows any origin (the live app is same-origin via 
 | `favourites`         | `favourites.ts`                  | [Favourites](../013-workspace/favourites.md)                                                           |
 | `placement-defaults` | `placement-defaults.ts`          | [Default folders](../013-workspace/default-folders.md)                                                 |
 | `timeline`           | `timeline.ts`                    | [Timeline](../013-workspace/timeline.md)                                                               |
-| `activity`           | `activity.ts`                    | [Activity page](../013-workspace/activity-page.md)                                                     |
+| `activity`           | `activity.ts`                    | [Inbox](../013-workspace/inbox.md)                                                                     |
 | `preferences`        | `preferences.ts`                 | this spec, below; [User preferences](../007-editor/user-preferences.md)                                |
 | `migrate`            | `migrate.ts`                     | this spec, below                                                                                       |
 | `guest-id`           | `guest-id.ts`                    | this spec, below                                                                                       |
@@ -251,7 +251,7 @@ Making a document is a use of it for whoever makes it: a use day and their lates
 ### Documents in the Trash
 
 Every document read (`getDocument`, `getDocumentMeta`, the lists, Shared with
-you, Favourites, Activity, the Timeline) sees live documents only, so a door
+you, Favourites, the Inbox, the Timeline) sees live documents only, so a door
 nobody remembered fails closed with a 404. The doors that owe a person the
 deleted state (every `/api/documents/:id/*` route, `/api/share/:code` and its
 `image.svg`, the room ticket) ask `missingDocument` on a miss: 410
@@ -465,7 +465,7 @@ This is the one list of columns that hold an owner id (a guest id or a Clerk use
 | `timeline_events.actor_id`                | Deleted ([Timeline](../013-workspace/timeline.md))                                                                                                       | Moved (`UPDATE`)                                                                                                                                     |
 | `timeline_event_scopes.scope_id` (`user`) | Deleted                                                                                                                                                  | Moved: `UPDATE OR IGNORE` + `DELETE`                                                                                                                 |
 | `timeline_scope_state.scope_id` (`user`)  | Deleted                                                                                                                                                  | Moved: `UPDATE OR IGNORE` + `DELETE`                                                                                                                 |
-| `collab_index_state.owner_id`             | Deleted ([Activity page](../013-workspace/activity-page.md))                                                                                             | Moved: `INSERT OR IGNORE` + `DELETE`                                                                                                                 |
+| `collab_index_state.owner_id`             | Deleted ([Inbox](../013-workspace/inbox.md))                                                                                                             | Moved: `INSERT OR IGNORE` + `DELETE`                                                                                                                 |
 | `owner_aliases.owner_id`                  | Deleted                                                                                                                                                  | Moved: `INSERT OR IGNORE` + `DELETE`                                                                                                                 |
 | `owner_aliases.alias_id`                  | Deleted                                                                                                                                                  | Stays: the guest id is recorded as an alias of the account                                                                                           |
 | `api_tokens.owner_id`                     | Deleted ([Public API and API tokens](public-api-and-tokens.md))                                                                                          | Account-only                                                                                                                                         |

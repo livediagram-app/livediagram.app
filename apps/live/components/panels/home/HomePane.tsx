@@ -17,16 +17,16 @@ import { FOCUS_RING, MUTED } from './home-styles';
 export function HomePane({
   ownerId,
   onSeen,
-  allActivityHref,
-  onSeeAll,
+  timelineHref,
+  onSeeTimeline,
   recentHref,
   onSeeMore,
 }: {
   ownerId: string;
   /** Home's read moved the Timeline feed's unread mark: clear the sidebar badge. */
   onSeen: () => void;
-  allActivityHref: string;
-  onSeeAll: () => void;
+  timelineHref: string;
+  onSeeTimeline: () => void;
   recentHref: string;
   onSeeMore: () => void;
 }) {
@@ -66,8 +66,8 @@ export function HomePane({
         groups={home.whatHappened}
         loading={loading}
         lastSeenAt={home.lastSeenAt}
-        allActivityHref={allActivityHref}
-        onSeeAll={onSeeAll}
+        timelineHref={timelineHref}
+        onSeeTimeline={onSeeTimeline}
       />
     </div>
   );

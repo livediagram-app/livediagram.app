@@ -4,7 +4,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // What happened (docs/specs/013-workspace/explorer-home.md): one person's actions are links that
-// open the document; several people collapse into a summary that expands; See all activity leads
+// open the document; several people collapse into a summary that expands; See timeline leads
 // to the feed; no filter controls.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
@@ -43,17 +43,17 @@ const busy = fixtureGroup({
   ],
 });
 
-function renderIt(groups = [busy, solo], onSeeAll = vi.fn(), lastSeenAt?: number) {
+function renderIt(groups = [busy, solo], onSeeTimeline = vi.fn(), lastSeenAt?: number) {
   render(
     <WhatHappened
       groups={groups}
       lastSeenAt={lastSeenAt}
       loading={false}
-      allActivityHref="/explorer/timeline"
-      onSeeAll={onSeeAll}
+      timelineHref="/explorer/timeline"
+      onSeeTimeline={onSeeTimeline}
     />,
   );
-  return onSeeAll;
+  return onSeeTimeline;
 }
 
 beforeEach(() => {
@@ -120,20 +120,20 @@ describe('WhatHappened', () => {
     expect(screen.getByRole('heading', { name: 'Today' })).toBeTruthy();
   });
 
-  it('opens All activity in the app, and leaves modified clicks to the browser', () => {
-    const onSeeAll = renderIt();
-    const link = screen.getByRole('link', { name: 'See all activity' });
+  it('opens the Timeline in the app, and leaves modified clicks to the browser', () => {
+    const onSeeTimeline = renderIt();
+    const link = screen.getByRole('link', { name: 'See timeline' });
     expect(link.getAttribute('href')).toBe('/explorer/timeline');
     fireEvent.click(link);
-    expect(onSeeAll).toHaveBeenCalledTimes(1);
+    expect(onSeeTimeline).toHaveBeenCalledTimes(1);
     fireEvent.click(link, { metaKey: true });
-    expect(onSeeAll).toHaveBeenCalledTimes(1);
+    expect(onSeeTimeline).toHaveBeenCalledTimes(1);
   });
 
   it('says so when nothing happened, and keeps the link', () => {
     renderIt([]);
     expect(screen.getByText('Nothing from others in the last 14 days.')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'See all activity' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'See timeline' })).toBeTruthy();
   });
 
   it('offers no filter controls', () => {

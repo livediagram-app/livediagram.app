@@ -57,7 +57,7 @@ function Tree({ onActivate = () => {} }: { onActivate?: (label: string) => void 
       <nav ref={ref} {...nav}>
         <ul role="tree" aria-label="Overview">
           <Item label="Home" onActivate={() => onActivate('Home')} />
-          <Item label="Activity" />
+          <Item label="Inbox" />
         </ul>
         <ul role="tree" aria-label="Spaces">
           <Item
@@ -97,21 +97,21 @@ describe('useTreeNavigation', () => {
 
   it('moves down and up across groups in visual order', () => {
     render(<Tree />);
-    item('Activity').focus();
+    item('Inbox').focus();
     key('ArrowDown');
     expect(focused()).toBe('My documents');
     key('ArrowDown');
     expect(focused()).toBe('Archive');
     key('ArrowUp');
     key('ArrowUp');
-    expect(focused()).toBe('Activity');
+    expect(focused()).toBe('Inbox');
   });
 
   it('moves the tab stop with focus while inside', () => {
     render(<Tree />);
     item('Home').focus();
     key('ArrowDown');
-    expect(item('Activity').tabIndex).toBe(0);
+    expect(item('Inbox').tabIndex).toBe(0);
     expect(item('Archive').tabIndex).toBe(-1);
   });
 

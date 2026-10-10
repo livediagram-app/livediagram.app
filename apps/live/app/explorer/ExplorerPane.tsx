@@ -31,10 +31,10 @@ const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'search', 'favourites',
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
-  // The Home article covers Home and All activity (docs/specs/013-workspace/explorer-home.md).
+  // The Home article covers Home and the Timeline (docs/specs/013-workspace/explorer-home.md).
   home: 'timeline',
   timeline: 'timeline',
-  activity: 'activity',
+  inbox: 'inbox',
   recent: 'recentDocuments',
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
@@ -258,8 +258,8 @@ export function ExplorerPane() {
           <HomePane
             ownerId={ownerId}
             onSeen={timelineUnread.clear}
-            allActivityHref={explorerPathFor({ kind: 'timeline' })}
-            onSeeAll={() => go({ kind: 'timeline' })}
+            timelineHref={explorerPathFor({ kind: 'timeline' })}
+            onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
           />
@@ -272,9 +272,9 @@ export function ExplorerPane() {
             onShowHistory={(id, name) => setHistoryFor({ id, name })}
           />
         ) : null
-      ) : selected.kind === 'activity' ? (
+      ) : selected.kind === 'inbox' ? (
         // Like the Timeline, ahead of the document-list `loading` gate: the
-        // section reads its own feed (docs/specs/013-workspace/activity-page.md §5).
+        // section reads its own feed (docs/specs/013-workspace/inbox.md §5).
         <ActivityPane feed={activity} />
       ) : loading ? (
         <SkeletonRows />

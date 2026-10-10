@@ -7,15 +7,15 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 ## Route
 
 - Home lives at `/explorer/home`. `/explorer`, and any Explorer URL that names no view, lands on it.
-- The Timeline feed ([Timeline](timeline.md)) keeps its route, `/explorer/timeline`, under the page title **All
-  activity**. It has no sidebar row: it is reached from What happened's **See all activity** link, and its breadcrumb
-  leads back to Home (**Home › All activity**).
+- The **Timeline** ([Timeline](timeline.md)) lives at `/explorer/timeline`, with a sidebar row of its own under the
+  Inbox ([Explorer structure](explorer-structure.md)). What happened's **See timeline** link also opens it; its
+  breadcrumb is its own (**Timeline**).
 
 ## Layout
 
 - **One column**, at every width: **Jump back in**, then **What happened**. It scrolls with the page.
 - **Headings with a rule** set the sections apart. Each section opens with its heading row: the title (a larger
-  heading, about 16 px, bold), the section's quiet link at the right end (**See more**, **See all activity**), and
+  heading, about 16 px, bold), the section's quiet link at the right end (**See more**, **See timeline**), and
   a hairline rule under the row (1 px, the page's line colour, spanning the section's width). Generous space (about
   28 px) separates one section from the next.
 - No cards and no panel backgrounds: the sections sit directly on the page.
@@ -23,7 +23,7 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
   section's header does ([Contextual help links](../018-help/contextual-help-links.md)). Home has no other header
   actions: no import, no folder, no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: Jump back in holds what they
-  reach for, and the full record is All activity's.
+  reach for, and the full record is the Timeline's.
 
 ## Jump back in
 
@@ -129,7 +129,7 @@ the **4 most used** and the **4 most recent**, no document twice.
 - Opens are never listed here: whether someone looked at a document is theirs to know, not the reader's.
 - **No filter controls** sit in or above this section. It stays clean; the shared filters live on the other
   Explorer views ([Explorer filters](explorer-filters.md)).
-- A quiet **See all activity** link beside the section's heading opens the Timeline feed (**All activity**), where
+- A quiet **See timeline** link beside the section's heading opens the **Timeline**, where
   everything that happened, the person's own doings included, can be filtered and paged.
 - Every entry is **spot on**. It names:
   - who acted;
@@ -211,7 +211,7 @@ has the size of what replaces it, so nothing shifts (CLS 0).
 | Loading               | Each section's skeleton: the grid's two rows (the phone's strip), three entry rows                   |
 | Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                  |
 | Jump back in, empty   | "The documents you use most and last will gather here."                                              |
-| What happened, empty  | "Nothing from others in the last 14 days." (See all activity stays.)                                 |
+| What happened, empty  | "Nothing from others in the last 14 days." (See timeline stays.)                                     |
 | Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body |
 
 Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
@@ -230,7 +230,7 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 
 ## Help
 
-The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump back in, What happened) and All activity.
+The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump back in, What happened) and the Timeline.
 
 ## Accessibility
 

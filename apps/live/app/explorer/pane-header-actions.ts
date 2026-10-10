@@ -11,8 +11,8 @@ type Kind = SelectedNode['kind'];
 // first screen is never a dead end), as are the aggregate views (Recent, Favourites, Search
 // results), whose New document simply files at the root.
 const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
-  // Activity is an inbox of open actions and threads (docs/specs/013-workspace/activity-page.md §1).
-  'activity',
+  // The Inbox lists open actions and threads (docs/specs/013-workspace/inbox.md §1).
+  'inbox',
   'shared',
   'gallery',
   'themes',

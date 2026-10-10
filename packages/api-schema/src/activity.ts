@@ -1,4 +1,4 @@
-// Activity page wire format (docs/specs/013-workspace/activity-page.md): the cross-document list of what
+// Inbox wire format (docs/specs/013-workspace/inbox.md): the cross-document list of what
 // is outstanding for one reader — open actions assigned to them, open
 // actions they assigned to others, and unresolved comment threads they
 // are in.
@@ -30,7 +30,7 @@ export type ActivityPlace = {
 
 // An open action (docs/specs/012-collaboration/assigned-actions.md) the reader assigned or was assigned. The two
 // flags are resolved server-side against the reader's identity AND the
-// identities it used to be (docs/specs/013-workspace/activity-page.md §2.2), so a self-assignment made as
+// identities it used to be (docs/specs/013-workspace/inbox.md §2.2), so a self-assignment made as
 // a guest still reads as "mine" after signing up.
 export type ActivityAction = ActivityPlace & {
   id: string;
@@ -58,7 +58,7 @@ export type ActivityThread = ActivityPlace & {
 };
 
 // An open Plan card (docs/specs/026-plan/items.md) whose Assignee is the reader (docs/specs/013-workspace/
-// activity-page.md §2.4). Not an ActivityPlace: a card is an item, not an element, and `board` (where the row
+// inbox.md §2.4). Not an ActivityPlace: a card is an item, not an element, and `board` (where the row
 // opens it) is null when no board in its document shows it.
 export type ActivityCard = {
   documentId: string;
@@ -75,7 +75,7 @@ export type ActivityCard = {
   updatedAt: number;
 };
 
-// A Plan card's unresolved comment thread the reader is in (docs/specs/013-workspace/activity-page.md §2.5):
+// A Plan card's unresolved comment thread the reader is in (docs/specs/013-workspace/inbox.md §2.5):
 // the card's identity and place, and the thread's facts as ActivityThread has them. Author ids never travel.
 export type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
   commentCount: number;

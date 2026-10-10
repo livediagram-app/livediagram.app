@@ -39,8 +39,8 @@ import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 import { ARRIVED_ON_TIMELINE } from './entry-path';
 
-// Was All activity where this page load STARTED, or somewhere the user
-// went afterwards (Home's See all activity)? See ./entry-path.ts.
+// Was the Timeline where this page load STARTED, or somewhere the user
+// went afterwards (its sidebar row, Home's See timeline)? See ./entry-path.ts.
 
 // `#event=<id>` on the Timeline URL. Read once at module scope for the
 // same reason ENTRY_PATH (./entry-path.ts) is: the hash is what the page was OPENED with,
