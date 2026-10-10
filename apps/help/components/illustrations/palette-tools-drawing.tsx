@@ -74,16 +74,17 @@ export function PolygonDraw() {
     [268, 62],
     [330, 118],
   ];
-  const cursor: [number, number] = [136, 158];
+  // Inside the 12px snap range that shows the ring (POLYGON_CLOSE_PX).
+  const cursor: [number, number] = [128, 157];
   return (
     <Scene w={420} h={220}>
-      {/* Mode banner */}
-      <Panel x={86} y={14} w={248} h={30}>
-        <circle cx={104} cy={29} r={6} className="fill-brand-500" />
-        <Label x={118} y={30} size={11} weight={600} tone="body">
-          Click to place points
+      {/* Mode banner, with the editor's exact desktop wording (lib/draw-mode.ts) */}
+      <Panel x={8} y={14} w={404} h={30}>
+        <circle cx={22} cy={29} r={5} className="fill-brand-500" />
+        <Label x={33} y={30} size={9.5} weight={600} tone="body">
+          Click to place points, click the start to close, double-click to finish
         </Label>
-        <Label x={296} y={30} size={11} weight={600} tone="muted">
+        <Label x={370} y={30} size={9.5} weight={600} tone="muted">
           Cancel
         </Label>
       </Panel>
@@ -117,7 +118,8 @@ export function PolygonDraw() {
         />
       ))}
       <Cursor x={cursor[0]} y={cursor[1]} colour="brand" />
-      <Label x={120} y={178} anchor="middle" size={11} tone="muted">
+      {/* Below the cursor, clear of the ring and the pointer */}
+      <Label x={120} y={200} anchor="middle" size={11} tone="muted">
         click the start to close
       </Label>
     </Scene>

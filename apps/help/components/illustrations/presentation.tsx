@@ -3,6 +3,7 @@
 // HUD strip. Composed from the shared primitives, with raw shapes only for the
 // motifs the kit lacks (the HUD's dark strip, the jump grid glyph).
 
+import { useId } from 'react';
 import { Scene, Shape, Panel, Label, Button, TextBar } from './primitives';
 
 /** One row of the Slide Deck panel: position, name, tab and element count. */
@@ -121,29 +122,48 @@ export function SlideMenu() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {quick.map((label, i) => (
-        <g key={label}>
-          <rect
-            x={150 + i * 61}
-            y={72}
-            width={57}
-            height={34}
-            rx={6}
-            className={i === 3 ? 'fill-rose-50 stroke-rose-200' : 'fill-slate-50 stroke-slate-200'}
-            strokeWidth={1.2}
-          />
-          <Label
-            x={178.5 + i * 61}
-            y={89}
-            size={10}
-            anchor="middle"
-            weight={600}
-            className={i === 3 ? 'fill-rose-500 dark:fill-rose-400' : 'fill-slate-600'}
-          >
-            {label}
-          </Label>
-        </g>
-      ))}
+      {/* The quick actions are icon-only buttons (MenuTiles.tsx), named in hover cards:
+          Rename, Add notes, Duplicate, then Delete held apart at the right edge. */}
+      {quick.map((label, i) => {
+        const bx = i === 3 ? 360 : 150 + i * 38;
+        const cx = bx + 16;
+        const cy = 89;
+        return (
+          <g key={label} aria-label={label}>
+            <rect
+              x={bx}
+              y={73}
+              width={32}
+              height={32}
+              rx={7}
+              className="fill-slate-50 stroke-slate-200"
+              strokeWidth={1.2}
+            />
+            <g
+              className="stroke-slate-500"
+              strokeWidth={1.6}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {i === 0 && <path d={`M${cx - 6} ${cy + 6} l2 -6 l8 -8 l4 4 l-8 8 z`} />}
+              {i === 1 && (
+                <path
+                  d={`M${cx - 6} ${cy - 7} h12 v14 h-12 z M${cx - 3} ${cy - 3} h6 M${cx - 3} ${cy + 1} h6`}
+                />
+              )}
+              {i === 2 && (
+                <path d={`M${cx - 6} ${cy - 3} h9 v10 h-9 z M${cx - 3} ${cy - 6} h9 v10`} />
+              )}
+              {i === 3 && (
+                <path
+                  d={`M${cx - 7} ${cy - 5} h14 M${cx - 5} ${cy - 5} l1 12 h8 l1 -12 M${cx - 2} ${cy - 8} h4`}
+                />
+              )}
+            </g>
+          </g>
+        );
+      })}
       <rect x={150} y={116} width={242} height={34} rx={6} className="fill-brand-50" />
       <Label x={162} y={127} size={10} weight={700} tone="accent">
         Selection
@@ -170,50 +190,57 @@ export function SlideMenu() {
   );
 }
 
-/** The transition: the outgoing slide leaving left, the next arriving right. */
+/** The default Slide transition, mid-move: the screen already holds the new slide, which sweeps in
+ *  from the right (canvas-motion.css translates only the incoming canvas). The old slide does not
+ *  travel; it is simply replaced. */
 export function SlideTransition() {
+  const clip = `st-${useId().replace(/:/g, '')}`;
   return (
     <Scene w={420} h={230} bg="none">
-      {/* Outgoing */}
-      <g opacity={0.45}>
-        <rect
-          x={-40}
-          y={40}
-          width={190}
-          height={150}
-          rx={10}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Shape x={-16} y={70} w={80} h={36} label="Step one" />
-        <Shape x={-16} y={124} w={80} h={36} label="Step two" />
-      </g>
-      {/* Incoming */}
+      <defs>
+        <clipPath id={clip}>
+          <rect x={60} y={28} width={280} height={166} rx={10} />
+        </clipPath>
+      </defs>
+      {/* The screen */}
       <rect
-        x={186}
-        y={40}
-        width={230}
-        height={150}
+        x={60}
+        y={28}
+        width={280}
+        height={166}
         rx={10}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
+        className="fill-slate-100 stroke-slate-300 dark:fill-slate-800"
+        strokeWidth={1.5}
       />
-      <Shape x={216} y={72} w={92} h={40} kind="rect" label="Cause" />
-      <Shape x={324} y={72} w={68} h={40} kind="circle" accent label="Fix" />
-      <TextBar x={216} y={140} w={130} h={7} />
-      <TextBar x={216} y={156} w={92} h={7} tone="faint" />
-      {/* Travel arrows */}
+      {/* The incoming slide, a third of the way in, clipped by the screen's edge */}
+      <g clipPath={`url(#${clip})`}>
+        <g transform="translate(84 0)">
+          <rect
+            x={60}
+            y={28}
+            width={280}
+            height={166}
+            rx={10}
+            className="fill-white stroke-brand-300"
+            strokeWidth={2}
+          />
+          <Shape x={92} y={64} w={92} h={40} kind="rect" label="Cause" />
+          <Shape x={206} y={64} w={72} h={40} kind="circle" accent label="Fix" />
+          <TextBar x={92} y={136} w={150} h={7} />
+          <TextBar x={92} y={152} w={100} h={7} tone="faint" />
+        </g>
+      </g>
+      {/* The direction it is travelling */}
       <path
-        d="M168 118 L120 118"
-        className="stroke-slate-300"
-        strokeWidth={2}
-        strokeDasharray="5 5"
+        d="M404 111 H364"
+        className="stroke-brand-400"
+        strokeWidth={2.5}
         strokeLinecap="round"
         fill="none"
       />
-      <path d="M112 118 l8 -5 v10 z" className="fill-slate-300" />
-      <Label x={210} y={210} size={10} tone="muted">
-        The whole screen travels, backdrop and all
+      <path d="M352 111 l12 -7 v14 z" className="fill-brand-400" />
+      <Label x={200} y={214} anchor="middle" size={10} tone="muted">
+        The next slide sweeps in from the right, backdrop and all
       </Label>
     </Scene>
   );
