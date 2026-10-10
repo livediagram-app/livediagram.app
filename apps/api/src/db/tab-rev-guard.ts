@@ -1,5 +1,5 @@
 // A tab's derived-index writes made only while the tab still holds the revision they were derived
-// from (docs/specs/013-workspace/activity-page.md §2.3). A save writes its index in the blob's own
+// from (docs/specs/013-workspace/inbox.md §2.3). A save writes its index in the blob's own
 // batch and needs no guard; a reader that derives the index from a blob it read EARLIER (the
 // collaboration index backfill) does, or a save landing between its read and its write would be
 // reverted to the older blob's rows.
