@@ -427,6 +427,24 @@ describe('addBoard', () => {
     expect(saved.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug', 'story']);
   });
 
+  // docs/specs/026-plan/item-types.md "Storage and sync": the types a board brings are saved against the revision read.
+  it('saves the brought card types against the revision the document was read at', async () => {
+    const { api: a, seen } = api({
+      [`/documents/${D}`]: {
+        document: {
+          id: D,
+          itemTypes: { version: 1, types: [...ITEM_TYPES, BUG] },
+          itemTypesRev: 3,
+          tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }],
+        },
+      },
+    });
+    const r = await addBoard(a, D, { preset: 'sprint' }, 'mcp');
+    if (!r.ok) throw new Error(r.message);
+    const put = seen.find((s) => s.method === 'PUT')!;
+    expect((put.body as { expectedRev: number }).expectedRev).toBe(3);
+  });
+
   it('takes a tab, and refuses an unknown tab, type or preset', async () => {
     const { api: a } = api();
     expect(await addBoard(a, D, { tabId: 't2', preset: 'todo' }, 'cli')).toMatchObject({
