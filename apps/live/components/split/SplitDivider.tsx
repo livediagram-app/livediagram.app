@@ -91,7 +91,7 @@ export function SplitDivider({
         aria-hidden
         className={`absolute top-1/2 flex h-10 w-2.5 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-colors duration-150 ${
           dragging
-            ? 'border-brand-500 bg-brand-500 text-white dark:bg-brand-600'
+            ? 'border-brand-700 bg-brand-700 text-white dark:bg-brand-600'
             : 'border-slate-200 bg-white text-slate-400 group-hover:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
         }`}
       >

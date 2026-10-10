@@ -158,7 +158,7 @@ export function OptionRows({
                 aria-hidden
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded ${
                   on
-                    ? 'bg-brand-500 text-white dark:bg-brand-600'
+                    ? 'bg-brand-700 text-white dark:bg-brand-600'
                     : 'border border-slate-300 dark:border-slate-600'
                 }`}
               >

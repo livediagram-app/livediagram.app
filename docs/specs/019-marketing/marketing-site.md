@@ -92,7 +92,7 @@ Beyond that:
 
 ## Tone & brand
 
-- Product name **livediagram** (lowercase). Brand colour sky-blue `#0EA5E9` (`brand-500`), see [01-color-scheme](../004-interface-design/color-scheme.md).
+- Product name **livediagram** (lowercase). Brand colour sky-blue `#0EA5E9` (`brand-500`), see [01-color-scheme](../004-interface-design/color-scheme.md); primary buttons and the closing call-to-action band sit two steps deeper on `brand-700` so their white text meets AA.
 - Fast, clean, structured. Plain and confident; not cutesy, not enterprise-jargon.
 - Positioning: multiplayer-from-the-start diagramming for teams who think visually, between casual whiteboards and heavyweight suites (see [00-purpose](../001-project-vision/purpose.md)).
 

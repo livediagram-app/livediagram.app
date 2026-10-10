@@ -49,7 +49,7 @@ export function TimelineControls({ controls }: { controls: Controls }) {
             onClick={() => setMode(value)}
             className={`optical-edges inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
               mode === value
-                ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                ? `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
             }`}
           >

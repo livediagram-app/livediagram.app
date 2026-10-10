@@ -189,7 +189,7 @@ export function EditorHeader({
               onClick={onOpenShare}
               className={`${HEADER_ACTION_BTN} ${
                 shareable
-                  ? `bg-brand-500 text-white hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`
                   : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
               aria-pressed={shareable}

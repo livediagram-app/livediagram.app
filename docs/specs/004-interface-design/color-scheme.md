@@ -6,21 +6,22 @@ The livediagram brand color is **light blue**. Everything below builds on that.
 
 A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
 
-| Token           | Hex           | Usage                                                 |
-| --------------- | ------------- | ----------------------------------------------------- |
-| `brand-50`      | `#F0F9FF`     | App backgrounds, faint tints, hover surfaces          |
-| `brand-100`     | `#E0F2FE`     | Subtle fills, selected-row backgrounds                |
-| `brand-200`     | `#BAE6FD`     | Accents, soft borders, collaborator cursor tints      |
-| `brand-300`     | `#7DD3FC`     | Decorative accents, secondary indicators              |
-| `brand-400`     | `#38BDF8`     | Light brand surfaces, illustrations                   |
-| **`brand-500`** | **`#0EA5E9`** | **Primary brand color — buttons, links, focus rings** |
-| `brand-600`     | `#0284C7`     | Hover state for primary                               |
-| `brand-700`     | `#0369A1`     | Active/pressed state, emphasised text on light bg     |
-| `brand-800`     | `#075985`     | High-contrast emphasis                                |
-| `brand-900`     | `#0C4A6E`     | Dark mode brand text                                  |
-| `brand-950`     | `#082F49`     | Dark mode surfaces                                    |
+| Token           | Hex           | Usage                                                      |
+| --------------- | ------------- | ---------------------------------------------------------- |
+| `brand-50`      | `#F0F9FF`     | App backgrounds, faint tints, hover surfaces               |
+| `brand-100`     | `#E0F2FE`     | Subtle fills, selected-row backgrounds                     |
+| `brand-200`     | `#BAE6FD`     | Accents, soft borders, collaborator cursor tints           |
+| `brand-300`     | `#7DD3FC`     | Decorative accents, secondary indicators                   |
+| `brand-400`     | `#38BDF8`     | Light brand surfaces, illustrations                        |
+| **`brand-500`** | **`#0EA5E9`** | **Primary brand color — accents, focus rings, decoration** |
+| `brand-600`     | `#0284C7`     | Wordmark, brand ink on tinted fills                        |
+| `brand-700`     | `#0369A1`     | **Solid fills under white text**, emphasised text          |
+| `brand-800`     | `#075985`     | Hover on a solid fill, high-contrast emphasis              |
+| `brand-900`     | `#0C4A6E`     | Dark mode brand text                                       |
+| `brand-950`     | `#082F49`     | Dark mode surfaces                                         |
 
-`brand-500` (`#0EA5E9`) is the canonical "livediagram blue": the color of primary buttons and selection highlights. The logo draws on its own prism palette, sky into deep indigo ([Brand mark](./brand-mark.md)).
+`brand-500` (`#0EA5E9`) is the canonical "livediagram blue": the color of selection highlights, accents and focus rings. It
+carries no white text: white on it is 2.8:1, so a primary button sits two steps deeper, on `brand-700`. The logo draws on its own prism palette, sky into deep indigo ([Brand mark](./brand-mark.md)).
 
 ## Neutrals — Slate
 
@@ -55,7 +56,14 @@ Reserved for status — never used decoratively.
 
 ## Usage rules
 
-- **Primary actions** (Save, Share, Create) use `brand-500` filled, white text. Hover → `brand-600`, active → `brand-700`.
+- **Primary actions** (Save, Share, Create) use `brand-700` filled, white text. Hover → `brand-800`.
+- **Solid brand fill with white text** (primary buttons, active segments, filled step circles, avatar discs, count
+  badges, the closing call-to-action band) sits on `brand-700` in light mode, and a control hovers to `brand-800`: white
+  on `#0369a1` is 5.9:1 and on `#075985` 7.6:1, both above WCAG 2.2 AA's 4.5:1 for small text. Neither lighter step
+  carries white text: white on `brand-500` is 2.8:1 and on `brand-600` 4.1:1. Dark mode keeps its own pairing
+  (`brand-600`, through `SOLID_BRAND_DARK` / `SOLID_BRAND_DARK_CONTROL`, [below](#rules)). `apps/live/app/light-palette.test.ts`
+  reads every app's and package's source and fails a light `bg-brand-500` or `bg-brand-600` under white text. Tinted
+  fills (`brand-500/10`) and decoration with no text on it (progress bars, dots, underlines) keep `brand-500`.
 - **Secondary actions** use a `slate-200` border with `slate-700` text on white. No filled neutrals as buttons.
 - **Links** are `brand-600` with underline on hover.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
@@ -116,13 +124,14 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
 - **Solid brand fill with white text** (primary buttons, active segments, filled step circles, avatar discs, count
   badges) sits on `brand-600` in dark mode, and a control hovers to `brand-700`: white on `#3a6599` is 6.0:1. The
   pairing lives in two shared class constants in `@livediagram/ui`, `SOLID_BRAND_DARK` for a static fill and
-  `SOLID_BRAND_DARK_CONTROL` for a control, never re-typed per component.
+  `SOLID_BRAND_DARK_CONTROL` for a control, never re-typed per component. In light mode the same fill is `brand-700`
+  ([Usage rules](#usage-rules)).
 - **The selected segment of a segmented control** (a two- or more-way switch, a tab strip drawn as segments) is
   that solid fill, in both appearances: `ACTIVE_SEGMENT` in `@livediagram/ui`. A fill that only lifts off the
   track (white on `slate-100`, `slate-900` on `slate-800`) is about 1.1:1 and does not mark a state; the
   selection is held to 3:1 against its track (WCAG 2.2 SC 1.4.11), measured in the Home switch's end-to-end test. The
   track is `SEGMENT_TRACK`, the deepest surface in dark mode (`slate-950`): `brand-600` reads 3.2:1 there, 2.7:1 on
-  `slate-800`.
+  `slate-800`. In light mode the selection is `brand-700` on `slate-100`, 5.4:1.
 - **White text on an identity colour** (avatar initials, cursor and presence labels, a comment author's disc, a
   team's tile: a participant's or team's colour under white text) sits on a **deeper shade of the same hue** in dark
   mode (`identityDeep`): each participant colour's own Tailwind 700 step (5.0 to 7.9:1 under white), and for any
@@ -153,7 +162,10 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
   ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74),
-  which stays open for the light half.
+  which stays open for the light half's brand-coloured text on white (the wordmark, `brand-600` links and pills).
+- **Contrast guard (light mode, solid fills).** The fill half of #74 is settled: white text on a solid brand fill is
+  `brand-700` ([Usage rules](#usage-rules)), held by `apps/live/app/light-palette.test.ts`, which reads every app's and
+  package's source and checks the light ramp's ratios under white.
 
 ## Tailwind integration
 

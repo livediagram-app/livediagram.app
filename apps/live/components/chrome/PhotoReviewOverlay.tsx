@@ -446,7 +446,7 @@ export function PhotoReviewOverlay({
             type="button"
             onClick={confirm}
             disabled={edits.ticked.size === 0}
-            className={`pointer-events-auto rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
+            className={`pointer-events-auto rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-800 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
           </button>

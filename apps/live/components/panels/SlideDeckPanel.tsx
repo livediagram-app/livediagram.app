@@ -561,7 +561,7 @@ export function SlideDeckPanel({
           type="button"
           onClick={() => void start()}
           disabled={runnable.length === 0 || startingDeck}
-          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
+          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-700 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-800 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlayIcon />
           {startingDeck ? 'Loading…' : 'Present'}

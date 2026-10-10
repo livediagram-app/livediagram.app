@@ -11,7 +11,7 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
   return (
     <section
       id="get-started"
-      className="border-t border-slate-200/70 bg-brand-500 dark:border-slate-800/70 dark:bg-brand-600"
+      className="border-t border-slate-200/70 bg-brand-700 dark:border-slate-800/70 dark:bg-brand-600"
     >
       <div className="mx-auto max-w-6xl px-6 py-20 text-center sm:py-24">
         <StartDrawingArt />
