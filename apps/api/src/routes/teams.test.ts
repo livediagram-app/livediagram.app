@@ -54,7 +54,11 @@ vi.mock('../email/notifications', () => ({
 }));
 
 import type { RouteContext } from './context';
-import { notifyActionAssigned, notifyMentioned } from '../email/notifications';
+import {
+  notifyActionAssigned,
+  notifyInviteResponse,
+  notifyMentioned,
+} from '../email/notifications';
 import { handleTeams } from './teams';
 
 // Clerk-session context ('user-1'); verifiedUserId may diverge for the
@@ -207,6 +211,20 @@ describe('POST /api/teams/:id/members/:memberId/accept', () => {
     const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
     expect(res.status).toBe(200);
     expect(db.acceptTeamMember).toHaveBeenCalledWith({}, 'm1');
+  });
+
+  it('tells the admins only when this accept is the one that flipped the row', async () => {
+    db.getMembership.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    db.getTeamMember.mockResolvedValue(member({ role: 'member', status: 'invited' }));
+    vi.mocked(notifyInviteResponse).mockClear();
+    db.acceptTeamMember.mockResolvedValueOnce(true);
+    await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
+    // A concurrent accept read 'invited' too, but lost the guarded write.
+    db.acceptTeamMember.mockResolvedValueOnce(false);
+    const res = await handleTeams(makeCtx('POST', '/api/teams/t1/members/m1/accept'));
+    expect(res.status).toBe(200);
+    expect(notifyInviteResponse).toHaveBeenCalledOnce();
   });
 
   it("403 not_your_invite on someone else's row", async () => {

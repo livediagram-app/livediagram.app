@@ -354,8 +354,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (member.userId === null || member.userId !== userId) {
       return forbidden('not_your_invite');
     }
-    if (member.status === 'invited') {
-      await acceptTeamMember(env, member.id);
+    // Only the accept that flips the row announces it: a double-click or a
+    // second tab racing this one finds the row already joined and stays quiet.
+    if (member.status === 'invited' && (await acceptTeamMember(env, member.id))) {
       // After the flip, so audienceForTeam already counts the new
       // member and they see their own arrival.
       ctx.waitUntil?.(recordInviteAccepted(env, team, userId, member.email ?? null));
