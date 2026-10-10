@@ -36,8 +36,11 @@ import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
   articlePasteIsCanvas,
+  clipboardWriteFor,
+  copyTooLargeMessage,
+  IN_APP_COPY_ELSEWHERE,
+  inAppCopyIdOf,
   parseElementsPayload,
-  serialiseElements,
   takeSheetSeeds,
   stripIdentity,
 } from '@/lib/clipboard-payload';
@@ -147,6 +150,10 @@ export function useClipboard(deps: ClipboardDeps) {
   // write was refused, that buffer is the only record of the copy and has to
   // keep working.
   const osWriteOk = useRef(false);
+  // Names the copy in the in-app buffer, so a too-large copy's clipboard
+  // marker (lib/clipboard-payload.ts `clipboardWriteFor`) is recognised as
+  // this window's own and not another's.
+  const copyId = useRef('');
 
   const copySelection = () => {
     if (isReadOnly) return;
@@ -180,9 +187,16 @@ export function useClipboard(deps: ClipboardDeps) {
     // focused or permission is denied, and there is nothing useful to say to
     // the user about it — the in-app buffer above still pastes in this
     // window, which is what they were about to do anyway.
+    //
+    // A selection too large for the system clipboard writes a marker instead,
+    // pastes from the buffer in this window, and says so: it cannot reach
+    // another window, and a paste there must not land part of it.
     osWriteOk.current = false;
+    copyId.current = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    const write = clipboardWriteFor(snapshot, copyId.current);
+    if (write.inAppOnly) toast.info(copyTooLargeMessage(snapshot.length));
     void navigator.clipboard
-      ?.writeText?.(serialiseElements(snapshot))
+      ?.writeText?.(write.text)
       .then(() => {
         osWriteOk.current = true;
       })
@@ -303,8 +317,16 @@ export function useClipboard(deps: ClipboardDeps) {
   // event listener is only re-registered when isReadOnly/editingId
   // changes, so without this the listener would call stale closures
   // that see clipboard=null even after the user has copied elements.
+  // A too-large copy's marker: this window's own copy pastes from the buffer;
+  // another window's cannot be reached from here, and says so.
+  const pasteInAppCopy = (id: string) => {
+    if (id === copyId.current) pasteFromClipboard();
+    else toast.info(IN_APP_COPY_ELSEWHERE);
+  };
+
   const pasteRef = useLatest({
     pasteFromClipboard,
+    pasteInAppCopy,
     pasteImageFile,
     // A photo read onto the board adds notes, so the creation guard applies.
     onPastePhoto:
@@ -462,6 +484,12 @@ export function useClipboard(deps: ClipboardDeps) {
         pasteRef.current.pasteFromClipboard(fromOs);
         return;
       }
+      const inAppCopy = inAppCopyIdOf(text);
+      if (inAppCopy !== null) {
+        e.preventDefault();
+        pasteRef.current.pasteInAppCopy(inAppCopy);
+        return;
+      }
       // Text on the clipboard that isn't ours, and our own copy DID reach the
       // clipboard: the user has copied something else since, so the in-app
       // buffer is stale. Pasting it would drop elements the user copied ten
@@ -506,13 +534,16 @@ export function useClipboard(deps: ClipboardDeps) {
         void pasteRef.current.pasteExcalidrawText(excalidraw);
         return;
       }
-      const elements = parseElementsPayload(e.clipboardData?.getData('text/plain'));
-      if (!elements) return;
-      takeSheetSeeds(e.clipboardData?.getData('text/plain'));
+      const text = e.clipboardData?.getData('text/plain');
+      const elements = parseElementsPayload(text);
+      const inAppCopy = elements ? null : inAppCopyIdOf(text);
+      if (!elements && inAppCopy === null) return;
+      takeSheetSeeds(text);
       e.preventDefault();
       e.stopPropagation();
       setEditingId(null);
-      pasteRef.current.pasteFromClipboard(elements);
+      if (elements) pasteRef.current.pasteFromClipboard(elements);
+      else if (inAppCopy !== null) pasteRef.current.pasteInAppCopy(inAppCopy);
     };
     document.addEventListener('paste', onPasteIntoLabel, true);
     return () => document.removeEventListener('paste', onPasteIntoLabel, true);

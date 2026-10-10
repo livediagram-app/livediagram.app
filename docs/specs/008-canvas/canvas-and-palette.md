@@ -1458,9 +1458,22 @@ clipboard write that works from a keydown handler in every browser we support.
 **Reading is defensive**, because this is the only place the editor parses a
 string it did not write, on every `⌘V`. `parseElementsPayload` never throws and
 returns null for anything that isn't ours; it caps bytes before parsing and
-element count after, runs every element through `isValidElement` (dropping
-failures individually rather than refusing the whole paste), and de-duplicates
-ids.
+element count after (a payload past either cap is refused whole, never pasted
+in part), runs every element through `isValidElement` (dropping failures
+individually rather than refusing the whole paste), and de-duplicates ids.
+
+**A copy too large for the system clipboard stays in its window.** A selection
+past either cap (`MAX_CLIPBOARD_ELEMENTS`, `MAX_CLIPBOARD_BYTES`) would paste cut
+short, dropping elements and leaving arrows without ends, so it is never
+written. The clipboard gets a small marker naming the copy instead
+(`clipboardWriteFor`), and the copy says so: "Copied N elements. That is too
+large for the system clipboard, so it pastes in this window only." In that
+window a paste of the marker lands the whole in-app buffer, every element and
+arrow (a cut of it too, since the buffer is filled before the delete). In
+another window the marker pastes nothing and says: "That copy was too large to
+leave the window it was made in. Paste it there, or copy fewer elements." The
+marker still displaces a stale image, and anything copied after it replaces it
+as usual.
 
 **Identity does not travel.** `commentThread`, `responses` ([Per-participant responses](../012-collaboration/participant-responses.md)) and an
 assigned `action` ([Assigned actions](../012-collaboration/assigned-actions.md)) are stripped on the way out, on the OS clipboard and
