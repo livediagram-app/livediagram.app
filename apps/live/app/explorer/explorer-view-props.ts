@@ -126,3 +126,35 @@ export type DocumentEntryProps = {
   // row there is a team document (CardView's showVisibilityBadge, as a row).
   showVisibility?: boolean;
 };
+
+/**
+ * The per-document props a view hands each entry, bound from the view's own props. One binding for
+ * every view (list, card, details), so an action added here reaches each of them and none can
+ * forget it.
+ */
+export function documentEntryPropsFor(
+  view: ExplorerViewProps,
+  d: PaneDocument,
+): DocumentEntryProps {
+  return {
+    document: d,
+    ownerId: view.ownerId,
+    showOwner: view.showOwner ?? false,
+    renaming: view.renamingDocumentId === d.id,
+    onStartRename: () => view.onStartRenameDocument(d.id),
+    onCommitRename: (name) => view.onCommitRenameDocument(d.id, name),
+    onCancelRename: view.onCancelRenameDocument,
+    onDuplicate: () => view.onDuplicateDocument(d.id),
+    onDelete: () => view.onDeleteDocument(d.id),
+    onMove: (anchor) => view.onMoveDocument(d.id, anchor),
+    onDismiss: d.shared && view.onDismissShared ? () => view.onDismissShared!(d.id) : undefined,
+    folderChip: view.folderChipFor?.(d) ?? null,
+    favourite: view.favouriteIds?.has(d.id) === true,
+    onToggleFavourite: view.onToggleFavourite ? () => view.onToggleFavourite!(d.id) : undefined,
+    recentExcluded: view.recentExcludedIds?.includes(d.id) === true,
+    onShowHistory: view.onShowHistory ? () => view.onShowHistory!(d.id) : undefined,
+    onToggleRecentExclusion: view.onToggleRecentExclusion
+      ? () => view.onToggleRecentExclusion!(d.id)
+      : undefined,
+  };
+}

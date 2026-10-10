@@ -42,10 +42,14 @@ by any column.
   ("10 Oct 2026, 16:02").
 - **Not yet counted.** A document whose tabs are not all counted yet (see "Where the numbers come
   from") shows **–** in Type, Comments and Size, with the tooltip "Not counted yet". So does a document
-  with no tabs, a document shared with the reader, and a document in this browser, whose tabs never
-  reach the api.
+  with no tabs, and a document shared with the reader, whose library is not the reader's.
+- **Documents in this browser** are counted in the browser from their own tabs, by the same rule.
+  This browser keeps no time per tab, so their Type is the mode of their first tab.
+- A Created date the list does not carry (a document shared with the reader) shows **–** with the
+  tooltip "Not known".
 - A `⋯` ends every row, shown on hover or keyboard focus (always on touch), opening the same menu
   as the list and card views; a right-click opens it too.
+- The table is named "Folders and documents" for assistive technology.
 
 ## Sorting
 
@@ -106,4 +110,4 @@ by any column.
 
 - Grouping and categories (by type, by date): the view is one flat list.
 - Choosing, ordering or resizing columns.
-- Counting documents in this browser or shared with the reader.
+- Counting documents shared with the reader.

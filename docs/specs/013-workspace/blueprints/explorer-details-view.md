@@ -3,28 +3,33 @@
 Derived from [Explorer Details view](../explorer-details-view.md) and the Preview hint of
 [Tooltips, hover cards and popovers](../../004-interface-design/tooltips-hover-cards-popovers.md#preview).
 The spec decides; this file adds engineering precision. Defaults are ledgered in
-[DEFAULTS.md](DEFAULTS.md) as `D145` to `D151`.
+[DEFAULTS.md](DEFAULTS.md) as `D145` to `D153`.
 
-| File                                                      | Role                                                                                    |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0084_tab_stats.sql`                  | The `tab_stats` table                                                                   |
-| `apps/api/src/db/tab-stats.ts`                            | `tabStatsOf`, `tabStatsStatement`, `DOCUMENT_STATS_SQL`, `readDocumentStats`            |
-| `apps/api/src/tab-stats-backfill.ts`                      | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
-| `apps/api/src/db/tabs.ts`, `apps/api/src/db/documents.ts` | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
-| `apps/api/src/participant-write.ts`, `qa-board-write.ts`  | Hand `swapTabData` the next body's stats                                                |
-| `packages/api-schema/src/index.ts`                        | `DocumentStats`, `DocumentSummary.stats`                                                |
-| `packages/ui/src/hint/*`                                  | Hint kind `preview`: delay, warm-up, look; `PreviewHint`                                |
-| `apps/live/app/explorer/useExplorerViewMode.ts`           | `ExplorerViewMode` gains `'details'`                                                    |
-| `apps/live/app/explorer/ViewToggle.tsx`                   | The third button                                                                        |
-| `apps/live/app/explorer/details/DetailsView.tsx`          | The table: header, folder rows, document rows                                           |
-| `apps/live/app/explorer/details/DetailsHeader.tsx`        | Sortable column headers                                                                 |
-| `apps/live/app/explorer/details/DetailsDocumentRow.tsx`   | One document row: drag source, preview, `⋯`                                             |
-| `apps/live/app/explorer/details/DetailsFolderRow.tsx`     | One folder row: drop target, `⋯`                                                        |
-| `apps/live/app/explorer/details/details-columns.ts`       | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
-| `apps/live/app/explorer/details/details-format.ts`        | `formatObjects`, `formatBytes`, `formatDateTime`, `formatItems`                         |
-| `apps/live/app/explorer/details/useDetailsSort.ts`        | The device-local sort                                                                   |
-| `apps/live/app/explorer/details/useSnapshotPrefetch.ts`   | Asks for a row's snapshot as it nears the viewport                                      |
-| `apps/live/lib/document-space.ts`                         | `readerAccessOf`                                                                        |
+| File                                                        | Role                                                                                    |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `apps/api/migrations/0084_tab_stats.sql`                    | The `tab_stats` table                                                                   |
+| `packages/document/src/tab-stats.ts`                        | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
+| `apps/api/src/db/tab-stats.ts`                              | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
+| `apps/api/src/tab-stats-backfill.ts`                        | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
+| `apps/api/src/db/tabs.ts`, `apps/api/src/db/documents.ts`   | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
+| `apps/api/src/participant-write.ts`, `qa-board-write.ts`    | Hand `swapTabData` the next body's stats                                                |
+| `packages/api-schema/src/index.ts`                          | `DocumentStats`, `DocumentSummary.stats`                                                |
+| `packages/ui/src/hint/*`, `packages/ui/src/PreviewHint.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `PreviewHint`        |
+| `apps/live/app/explorer/useExplorerViewMode.ts`             | `ExplorerViewMode` gains `'details'`                                                    |
+| `apps/live/app/explorer/ViewToggle.tsx`                     | The third button                                                                        |
+| `apps/live/app/explorer/details/DetailsView.tsx`            | The table: header, folder rows, document rows                                           |
+| `apps/live/app/explorer/details/DetailsHeader.tsx`          | Sortable column headers                                                                 |
+| `apps/live/app/explorer/details/DetailsDocumentRow.tsx`     | One document row: drag source, preview, `⋯`                                             |
+| `apps/live/app/explorer/details/DetailsFolderRow.tsx`       | One folder row: drop target, `⋯`                                                        |
+| `apps/live/app/explorer/details/details-columns.ts`         | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
+| `apps/live/app/explorer/details/details-format.ts`          | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
+| `apps/live/app/explorer/details/details-cells.tsx`          | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
+| `apps/live/app/explorer/explorer-view-props.ts`             | `documentEntryPropsFor`: the per-document bindings every view shares                    |
+| `apps/live/lib/offline/offline-stats.ts`                    | `offlineDocumentStats`: a document in this browser counted from its record              |
+| `apps/live/components/panels/TeamSharedDocuments.tsx`       | The team library's Details branch                                                       |
+| `apps/live/app/explorer/details/useDetailsSort.ts`          | The device-local sort                                                                   |
+| `apps/live/app/explorer/details/useSnapshotPrefetch.ts`     | Asks for a row's snapshot as it nears the viewport                                      |
+| `apps/live/lib/document-space.ts`                           | `readerAccessOf`                                                                        |
 
 ## Domain and naming
 
@@ -43,16 +48,19 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 ### Tab stats
 
-- `tabStatsOf(body, data)` is pure. `mode = opensInOf(body)`; `elementCount = body.elements.length`
-  (0 when not an array); `commentCount` sums `commentThread.comments.length` over the elements
-  (`commentThreadOf`, shared with the collaboration index); `dataBytes = byteLength(data)`.
+- `tabStatsOf(body, data)` (`@livediagram/document`) is pure. `mode = opensInOf(body)`;
+  `elementCount = body.elements.length` (0 when not an array); `commentCount` sums
+  `commentThread.comments.length` over the elements; `dataBytes` is the UTF-8 length of `data`.
+- `tabStatsOfData(data)` (api) parses a stored body and counts it; a body that is not a JSON object
+  counts as an empty Diagram tab with its bytes, flagged `corrupt`.
 - `tabStatsStatement(env, tabId, stats, writtenAt)` is
   `INSERT INTO tab_stats (...) VALUES (...) ON CONFLICT(tab_id) DO UPDATE SET` every column. It is
   placed in each batch **after** the `tabs` upsert (the foreign key needs the row):
-  `tabWriteStatements`, `seedTabs` (per tab), `swapTabData` (with `nextStats`), `copyDocument` (the
-  copied tab's stats re-derived from its body).
+  `tabWriteStatements`, `seedTabs` (per tab), `swapTabData` (with `nextStats`, guarded by
+  `ifStoredData` so it lands only when the swap does), `copyDocument` (re-derived from the copied body
+  with `tabStatsOfData`, since a Community copy's redaction drops comments).
 - `renameTab` writes no stats: a rename is not work in a mode.
-- `DOCUMENT_STATS_SQL(idSql)` is a scalar subquery over `document_tabs LEFT JOIN tab_stats`:
+- `documentStatsSql(idSql)` is a scalar subquery over `document_tabs LEFT JOIN tab_stats`:
   `NULL` when the document has no linked tab or any linked tab lacks a row, else
   `json_object('mode', <mode of the row with the greatest written_at, ties by order_index>, 'elements',
 SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
@@ -66,7 +74,7 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 
 1. `SELECT t.id, t.data FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
    with `TAB_STATS_BACKFILL_PAGE_ROWS`.
-2. Each body parses to `tabStatsOf`; a body that fails to parse counts as Diagram with no elements
+2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Diagram with no elements
    and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
 3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`: a write that landed since step 1
    already wrote the newer stats, which stay.
@@ -91,7 +99,7 @@ cron runs it in `waitUntil` beside the other sweeps, its failure logged as
 
 ### Preview hint
 
-- `useHint('preview')`: pointer enter starts `PREVIEW_OPEN_DELAY_MS`, unless `isPreviewWarm(now)`
+- `useHint('preview')`: pointer enter starts `PREVIEW_OPEN_DELAY_MS`, unless `isHintWarm('preview', now)`
   (a preview open, or one closed less than `PREVIEW_WARMUP_MS` ago), then it opens at once. Focus
   opens at once. Touch long press follows the existing rule (visible text: none).
 - `releaseHint` records the close time per warm kind (`tooltip`, `preview`).
@@ -110,7 +118,8 @@ stats: DocumentStats | null;
 
 - `GET /api/documents` and each team library list carry `stats` on every row. Shared-with-you rows
   (`SharedWithItem`) carry none; the client treats them as not counted.
-- The live client's offline rows and the team sweep set `stats: null` / copy `stats`.
+- `DocumentListItem` gains optional `createdAt` and `stats`. The team sweep copies both; offline rows
+  carry `offlineDocumentStats(record)`, cached per `id:savedAt`, with the first tab's mode (`D152`).
 
 ## Data and persistence
 
@@ -141,7 +150,8 @@ CREATE TABLE tab_stats (
 | Legacy mode `infographic`            | Illustrate (`opensInOf` reads through `parseEditorMode`)  |
 | Corrupt tab body in the backfill     | Counted empty, warned                                     |
 | Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
-| Shared row, offline row              | `stats` null or absent: `–`                               |
+| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
+| Offline row                          | Counted in the browser, the first tab's mode (`D152`)     |
 | Unknown stored sort or view mode     | Defaults                                                  |
 | Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those |
 
@@ -176,7 +186,7 @@ CREATE TABLE tab_stats (
 
 ## Accessibility
 
-- The table has an accessible name: "Contents of <view title>".
+- The table has an accessible name: "Folders and documents".
 - `aria-sort` on the sorted `th` only. The header button's name is the column's label; a sorted
   column's button adds ", sorted ascending" or ", sorted descending" visually hidden.
 - Rows keep the list's interactive parts: the name link, the `⋯` (reveal on hover, row focus or
@@ -203,17 +213,22 @@ CREATE TABLE tab_stats (
 
 ## Testing
 
-| Rule                                                     | Test                                                      |
-| -------------------------------------------------------- | --------------------------------------------------------- |
-| Stats of a body: mode, elements, comments, bytes         | `apps/api/src/db/tab-stats.test.ts`                       |
-| Every write path leaves a matching stats row             | `apps/api/src/db/tab-stats-writers.test.ts`               |
-| Document stats sum, latest mode, null when uncounted     | `apps/api/src/db/tab-stats.test.ts`                       |
-| Backfill counts, keeps a racing write, logs, stops       | `apps/api/src/tab-stats-backfill.test.ts`                 |
-| Preview delay, warm-up, focus                            | `packages/ui/src/hint/useHint.test.tsx`                   |
-| Sort: natural direction, toggle, folders first, `–` last | `apps/live/app/explorer/details/details-columns.test.ts`  |
-| Formats                                                  | `apps/live/app/explorer/details/details-format.test.ts`   |
-| Stored sort and mode read back, defaults                 | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx` |
-| Table renders columns, aria-sort, `–`, menu, drag        | `apps/live/app/explorer/details/DetailsView.test.tsx`     |
+| Rule                                                     | Test                                                          |
+| -------------------------------------------------------- | ------------------------------------------------------------- |
+| Stats of a body: mode, elements, comments, bytes         | `packages/document/src/tab-stats.test.ts`                     |
+| A corrupt body counts empty                              | `apps/api/src/db/tab-stats.test.ts`                           |
+| A document in this browser is counted, cached per save   | `apps/live/lib/offline/offline-stats.test.ts`                 |
+| The snapshot prefetch asks once, near the viewport       | `apps/live/app/explorer/details/useSnapshotPrefetch.test.tsx` |
+| Reader access                                            | `apps/live/lib/document-space.test.ts`                        |
+| Warm-up per kind                                         | `packages/ui/src/hint/hint-registry.test.ts`                  |
+| Every write path leaves a matching stats row             | `apps/api/src/db/tab-stats-writers.test.ts`                   |
+| Document stats sum, latest mode, null when uncounted     | `apps/api/src/db/tab-stats.test.ts`                           |
+| Backfill counts, keeps a racing write, logs, stops       | `apps/api/src/tab-stats-backfill.test.ts`                     |
+| Preview delay, warm-up, focus                            | `packages/ui/src/hint/useHint.test.tsx`                       |
+| Sort: natural direction, toggle, folders first, `–` last | `apps/live/app/explorer/details/details-columns.test.ts`      |
+| Formats                                                  | `apps/live/app/explorer/details/details-format.test.ts`       |
+| Stored sort and mode read back, defaults                 | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`     |
+| Table renders columns, aria-sort, `–`, menu, drag        | `apps/live/app/explorer/details/DetailsView.test.tsx`         |
 
 ## Constants and configuration
 
@@ -228,4 +243,4 @@ CREATE TABLE tab_stats (
 
 ## Defaults ledger
 
-`D145` to `D151` in [DEFAULTS.md](DEFAULTS.md).
+`D145` to `D153` in [DEFAULTS.md](DEFAULTS.md).

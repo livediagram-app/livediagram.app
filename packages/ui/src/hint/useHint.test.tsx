@@ -5,6 +5,8 @@ import {
   HINT_CLOSE_GRACE_MS,
   HINT_LONG_PRESS_MS,
   HINT_TOUCH_LINGER_MS,
+  PREVIEW_OPEN_DELAY_MS,
+  PREVIEW_WARMUP_MS,
   TOOLTIP_OPEN_DELAY_MS,
   type HintKind,
 } from './hint-constants';
@@ -105,6 +107,45 @@ describe('useHint, hover card on pointer', () => {
   it('opens at once', () => {
     render(<Harness kind="hover-card" />);
     fireEvent.pointerEnter(wrapper(), mouse);
+    expect(tip()).not.toBeNull();
+  });
+});
+
+describe('useHint, preview on pointer', () => {
+  it('opens after the longer preview delay, not before', () => {
+    render(<Harness kind="preview" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    advance(PREVIEW_OPEN_DELAY_MS - 1);
+    expect(tip()).toBeNull();
+    advance(1);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('opens the next preview at once while warm, and waits again once cool', () => {
+    render(
+      <>
+        <Harness kind="preview" />
+      </>,
+    );
+    fireEvent.pointerEnter(wrapper(), mouse);
+    advance(PREVIEW_OPEN_DELAY_MS);
+    fireEvent.pointerLeave(wrapper(), mouse);
+    advance(HINT_CLOSE_GRACE_MS);
+    expect(tip()).toBeNull();
+    fireEvent.pointerEnter(wrapper(), mouse);
+    expect(tip()).not.toBeNull();
+    fireEvent.pointerLeave(wrapper(), mouse);
+    advance(HINT_CLOSE_GRACE_MS + PREVIEW_WARMUP_MS);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    expect(tip()).toBeNull();
+    advance(PREVIEW_OPEN_DELAY_MS);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('opens at once on keyboard-visible focus', () => {
+    focusVisible(true);
+    render(<Harness kind="preview" />);
+    fireEvent.focus(button());
     expect(tip()).not.toBeNull();
   });
 });

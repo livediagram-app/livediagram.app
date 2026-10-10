@@ -6,10 +6,11 @@ import {
   HINT_LONG_PRESS_MS,
   HINT_LONG_PRESS_SLOP_PX,
   HINT_TOUCH_LINGER_MS,
+  PREVIEW_OPEN_DELAY_MS,
   TOOLTIP_OPEN_DELAY_MS,
   type HintKind,
 } from './hint-constants';
-import { claimHint, isTooltipWarm, releaseHint, type HintToken } from './hint-registry';
+import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
 import { hasVisibleText } from './trigger-text';
 
 export type HintOpenSource = 'pointer' | 'focus' | 'touch';
@@ -47,6 +48,13 @@ export type HintState = {
   anchor: () => Element | null;
   triggerProps: HintTriggerProps;
   surfaceProps: HintSurfaceProps;
+};
+
+// How long a pointer rests before each kind opens: a hover card at once.
+const OPEN_DELAY_MS: Record<HintKind, number> = {
+  tooltip: TOOLTIP_OPEN_DELAY_MS,
+  'hover-card': 0,
+  preview: PREVIEW_OPEN_DELAY_MS,
 };
 
 type Timer = ReturnType<typeof setTimeout> | null;
@@ -172,9 +180,9 @@ export function useHint(kind: HintKind): HintState {
       m.overTrigger = true;
       clearTimers(m, 'closeTimer');
       if (m.open || m.dismissed || m.openTimer !== null) return;
-      const warm = kind === 'hover-card' || isTooltipWarm(Date.now());
-      if (warm) show('pointer');
-      else m.openTimer = setTimeout(() => show('pointer'), TOOLTIP_OPEN_DELAY_MS);
+      const delay = OPEN_DELAY_MS[kind];
+      if (delay === 0 || isHintWarm(kind, Date.now())) show('pointer');
+      else m.openTimer = setTimeout(() => show('pointer'), delay);
     },
     onPointerLeave: (e) => {
       if (e.pointerType === 'touch') return;

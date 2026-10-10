@@ -6,6 +6,7 @@ import { useExplorer } from './ExplorerContext';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
+import { DetailsView } from './details/DetailsView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { ViewInfo } from './ViewInfo';
@@ -20,6 +21,9 @@ import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
 import { VIEW_TITLES } from './view-titles';
 import { paneHeaderActions } from './pane-header-actions';
+
+// The three layouts of a browse section, by the toggle.
+const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
 
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
@@ -338,9 +342,10 @@ export function ExplorerPane() {
         />
       ) : (
         (() => {
-          // List and Card take the SAME props (docs/specs/006-document/document-snapshots.md), so build them
-          // once and pick the component by the toggle.
-          const ViewComponent = viewMode === 'card' ? CardView : ListView;
+          // List, Card and Details take the SAME props (docs/specs/006-document/document-snapshots.md,
+          // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component
+          // by the toggle.
+          const ViewComponent = VIEW_COMPONENTS[viewMode];
           return (
             <ViewComponent
               folders={paneContent.folders}
