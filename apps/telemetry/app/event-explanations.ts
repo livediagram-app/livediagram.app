@@ -38,6 +38,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
   'Editor|Changed|ModePlan':
     'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
+  'Editor|Changed|ModeFacilitate':
+    'Someone switched a tab to Facilitate mode, to run a session with their team: timers, votes, polls and reveals.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -1251,6 +1253,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
   'UI|Toggled|TemplateModePlan':
     'Someone narrowed the New Document templates to the ones that open in Plan mode.',
+  'UI|Toggled|TemplateModeFacilitate':
+    'Someone narrowed the New Document templates to the ones that open in Facilitate mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':

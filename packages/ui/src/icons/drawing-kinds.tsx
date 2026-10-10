@@ -1,4 +1,5 @@
 import { lucideLayoutGrid, lucideWorkflow } from '@livediagram/icons/lucide';
+import type { EditorMode } from '@livediagram/document';
 import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';
@@ -48,6 +49,19 @@ export function PlanIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
+// Facilitate mode's mark (docs/specs/012-collaboration/facilitate-mode.md): a flipchart on an
+// easel, its pad holding two lines of writing, on the 24-unit grid.
+export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
+  return (
+    <Glyph size={size} units={24} {...rest}>
+      <path d="M3 3.5H21" />
+      <rect x="4.5" y="3.5" width="15" height="12" rx="1" />
+      <path d="M8 8H16M8 11.5H13" />
+      <path d="M12 15.5V21M8 15.5L5.5 21M16 15.5L18.5 21" />
+    </Glyph>
+  );
+}
+
 // Plan mode's Cards category (docs/specs/026-plan/plan-mode.md "The palette"): two item cards, one
 // behind the other, each with its type stripe, on the 24-unit grid.
 export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
@@ -78,13 +92,12 @@ export function MindmapIcon({ size = 16, ...rest }: IconProps) {
 // Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
 // mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
 // and the marketing site's mode pictures.
-export const EDITOR_MODE_ICONS: Readonly<
-  Record<'diagram' | 'draw' | 'illustrate' | 'plan', ComponentType<IconProps>>
-> = {
+export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconProps>>> = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
   illustrate: IllustrateIcon,
   plan: PlanIcon,
+  facilitate: FlipchartIcon,
 };
 
 // "Everything", every mode at once, in the template mode filter: a grid.

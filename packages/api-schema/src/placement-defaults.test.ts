@@ -16,12 +16,13 @@ import {
 // lists, the creation intent a create carries, and the order a create's keys are tried in.
 
 describe('PLACEMENT_DEFAULT_KEYS', () => {
-  it('holds the seven keys in the order the list shows them', () => {
+  it('holds the eight keys in the order the list shows them', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
       'mode:draw',
       'mode:illustrate',
       'mode:plan',
+      'mode:facilitate',
       'kind:event-storming',
       'template:retrospective',
       'template:kanban',
@@ -194,6 +195,7 @@ describe('placementDefaultTelemetryType', () => {
       'DefaultModeDraw',
       'DefaultModeIllustrate',
       'DefaultModePlan',
+      'DefaultModeFacilitate',
       'DefaultKindEventStorming',
       'DefaultTemplateRetrospective',
       'DefaultTemplateKanban',

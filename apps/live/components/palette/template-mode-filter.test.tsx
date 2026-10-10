@@ -82,7 +82,7 @@ afterEach(() => {
 });
 
 describe('the mode filter', () => {
-  it('offers Everything, Diagram, Draw, Illustrate and Plan, Everything chosen, with their counts', () => {
+  it('offers Everything and every editor mode, Everything chosen, with their counts', () => {
     render(<Step />);
     expect(chip().getAttribute('aria-label')).toBe('Show templates for: Everything');
     fireEvent.click(chip());
@@ -93,6 +93,7 @@ describe('the mode filter', () => {
       'Draw',
       'Illustrate',
       'Plan',
+      'Facilitate',
     ]);
     expect(rows[0]!.getAttribute('aria-checked')).toBe('true');
     const draw = TEMPLATES.filter((t) => templateEditorMode(t.kind) === 'draw').length;

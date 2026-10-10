@@ -16,6 +16,7 @@ import {
   FlowchartIcon,
   IllustrateIcon,
   PlanIcon,
+  FlipchartIcon,
   MarkerIcon,
   type IconProps,
 } from './icons';
@@ -59,6 +60,13 @@ const BLANKS: {
     href: '/new?template=blank-plan',
     slot: 'HeaderPlan',
     Icon: PlanIcon,
+  },
+  {
+    label: 'Blank Session',
+    desc: 'Run a retro or workshop with your team',
+    href: '/new?template=blank-session',
+    slot: 'HeaderSession',
+    Icon: FlipchartIcon,
   },
 ];
 

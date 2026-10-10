@@ -18,6 +18,7 @@ const MODE_WORDS: Record<EditorMode, Words> = {
   draw: { label: 'Whiteboards', noun: 'whiteboards' },
   illustrate: { label: 'Illustrate pages', noun: 'Illustrate pages' },
   plan: { label: 'Plan boards', noun: 'Plan boards' },
+  facilitate: { label: 'Sessions', noun: 'sessions' },
 };
 
 const KIND_WORDS: Record<SpecificTabKind, Words> = {

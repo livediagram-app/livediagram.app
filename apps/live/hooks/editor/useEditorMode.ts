@@ -36,6 +36,7 @@ const MODE_EVENT: Record<EditorMode, string> = {
   draw: 'ModeDraw',
   illustrate: 'ModeIllustrate',
   plan: 'ModePlan',
+  facilitate: 'ModeFacilitate',
 };
 
 /** Reports a switch into `next`, before it applies (docs/specs/007-editor/editor-modes.md
