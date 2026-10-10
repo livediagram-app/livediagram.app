@@ -17,7 +17,13 @@ import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chro
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  'readOnly' | 'participantPalette' | 'pendingDraw' | 'onCancelDraw' | 'onExitFormatTool' | 'canvasTool' | 'formatSourceId'
+  | 'readOnly'
+  | 'participantPalette'
+  | 'pendingDraw'
+  | 'onCancelDraw'
+  | 'onExitFormatTool'
+  | 'canvasTool'
+  | 'formatSourceId'
 > & {
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.

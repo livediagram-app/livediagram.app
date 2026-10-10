@@ -1,7 +1,7 @@
 'use client';
 
 import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/document';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@/hooks/ui/useNow';
@@ -169,9 +169,9 @@ function CountBadge({ count, icon }: { count: number; icon: React.ReactNode }) {
       {icon}
       <span
         aria-hidden
-        className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900"
+        className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900 ${SOLID_BRAND_DARK}`}
       >
-        {count}
+        <span className="text-optical-centre">{count}</span>
       </span>
     </span>
   );
