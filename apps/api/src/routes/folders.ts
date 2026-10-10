@@ -8,17 +8,17 @@
 import {
   createFolder,
   deleteFolder,
-  folderMoveWouldCycle,
   getFolder,
   getMembership,
   listFoldersByOwner,
-  updateFolder,
+  moveFolder,
+  renameFolder,
 } from '../db';
 import type { FolderDTO } from '../types';
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
 import { requireOwner, type RouteContext, readBody } from './context';
-import { MAX_NAME_LEN } from '../limits';
 import { recordFolderCreated, recordFolderDeleted } from '../timeline';
+import { readFolderName, readParentId } from './folder-body';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 
 // Joined-member check for team-scoped folder verbs. Membership is
@@ -55,16 +55,17 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
-      const body = read as {
-        id?: string;
-        name?: string;
-        parentId?: string | null;
-        teamId?: string | null;
-      };
-      if (!body.id || !body.name) return badRequest('missing id/name');
-      if (body.name.length > MAX_NAME_LEN) return badRequest('name too long');
-      const parentId = body.parentId ?? null;
-      const teamId = body.teamId ?? null;
+      const body = read as Record<string, unknown>;
+      const newId = body.id;
+      if (typeof newId !== 'string' || !newId) return badRequest('missing id/name');
+      const name = readFolderName(body.name);
+      if (name === undefined) return badRequest('missing id/name');
+      if (name instanceof Response) return name;
+      const parentId = readParentId(body.parentId);
+      if (parentId instanceof Response) return parentId;
+      if (body.teamId != null && typeof body.teamId !== 'string')
+        return badRequest('invalid teamId');
+      const teamId = (body.teamId as string | null | undefined) ?? null;
       if (teamId && !(await canManageTeamFolder(ctx, teamId))) return forbidden();
       // Parent must exist and live in the same scope before we accept
       // it — otherwise the tree could grow into another user's (or
@@ -76,10 +77,10 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
           return notFound();
       }
       const folder = await createFolder(env, {
-        id: body.id,
+        id: newId,
         ownerId: owner,
-        parentId,
-        name: body.name,
+        parentId: parentId ?? null,
+        name,
         teamId,
       });
       ctx.waitUntil?.(recordFolderCreated(env, { id: folder.id, name: folder.name }, owner));
@@ -96,18 +97,16 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
     if (request.method === 'PUT') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
-      const body = read as {
-        name?: string;
-        parentId?: string | null;
-      };
-      if (typeof body.name === 'string' && body.name.length > MAX_NAME_LEN) {
-        return badRequest('name too long');
-      }
-      // Cycle check on reparent: refusing here keeps the tree
-      // walk in the list consumers bounded. The new parent must
-      // stay inside the folder's own scope.
-      if (body.parentId !== undefined && body.parentId !== null) {
-        const newParent = await getFolder(env, body.parentId);
+      const body = read as Record<string, unknown>;
+      // Validate the whole body before writing any of it, so a bad parentId never leaves a
+      // half-applied rename behind.
+      const name = readFolderName(body.name);
+      if (name instanceof Response) return name;
+      const parentId = readParentId(body.parentId);
+      if (parentId instanceof Response) return parentId;
+      // The new parent must stay inside the folder's own scope.
+      if (parentId) {
+        const newParent = await getFolder(env, parentId);
         if (!newParent) return notFound();
         if (
           existing.teamId
@@ -115,11 +114,13 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
             : newParent.teamId !== null || newParent.ownerId !== owner
         )
           return notFound();
-        if (await folderMoveWouldCycle(env, id, body.parentId)) {
-          return conflict('cycle');
-        }
       }
-      await updateFolder(env, id, { name: body.name, parentId: body.parentId });
+      // The cycle check lives inside the move's own UPDATE (db/folders.ts moveFolder), so two
+      // crossing moves cannot both pass it; nothing changed means it refused.
+      if (parentId !== undefined && !(await moveFolder(env, id, parentId))) {
+        return conflict('cycle');
+      }
+      if (name !== undefined) await renameFolder(env, id, name);
       const updated = await getFolder(env, id);
       return json({ folder: updated });
     }

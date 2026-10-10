@@ -35,6 +35,12 @@ Input is treated as a hierarchical outline:
   italic, strikethrough, inline code, links (→ link text), images
   (→ alt text), and raw HTML tags are removed. Long labels are capped.
 
+**Limits.** A list nests at most `MAX_LIST_DEPTH` (24) levels; a deeper item becomes a sibling of
+the deepest, so every item is kept and the layout's recursion stays shallow (12 000 ever-deeper
+lines used to overflow the stack). A table larger than a table element holds (`MAX_TABLE_ROWS`,
+`MAX_TABLE_COLS`, `MAX_TABLE_CELLS`, `packages/document`) keeps its first columns, then as many of
+its first rows as fit; the rest is left out.
+
 If the document has a single top-level node it becomes the diagram's
 root; otherwise a synthetic root (named from the file) holds the
 top-level nodes so the result is one connected diagram.

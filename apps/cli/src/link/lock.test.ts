@@ -107,7 +107,7 @@ describe('a stale lock another pass takes first', () => {
     const remove = io.files.remove;
     io.files.remove = async (path) => {
       await remove(path);
-      if (path === LOCK && !io.alive.has(88)) {
+      if (path.startsWith(`${LOCK}.stale`) && !io.alive.has(88)) {
         io.alive.add(88);
         io.fileMap.set(LOCK, { data: holder(88), mode: 0o600 });
       }
@@ -134,5 +134,46 @@ describe('a lock that vanished or names no process', () => {
       ).catch((err: unknown) => (err as CliError).failure);
       expect(failure).toMatchObject({ hint: 'wait for it, or stop process ?' });
     }
+  });
+});
+
+// Two passes waiting on the same dead holder (RL34): the slower one used to remove, by name, the lock the faster had
+// just taken over, and both ran. The stale lock is now renamed aside and checked before anything is created.
+describe('two passes taking over the same stale lock', () => {
+  it('lets one take it; the other puts the lock back and waits', async () => {
+    const first = fakeIo({ files: { [LOCK]: holder(77) } });
+    first.alive.add(5555);
+    first.alive.add(4242);
+    let firstDone: Promise<unknown> = Promise.resolve();
+    // The second pass judges 77 dead, then stalls until the first has taken the lock over.
+    const stall = async () => void (await firstDone);
+    const second = {
+      ...first,
+      pid: 5555,
+      files: {
+        ...first.files,
+        remove: async (path: string) => {
+          if (path === LOCK) await stall();
+          return first.files.remove(path);
+        },
+        move: async (from: string, to: string) => {
+          if (from === LOCK) await stall();
+          return first.files.move(from, to);
+        },
+      },
+    };
+    const secondLogs: string[] = [];
+    const secondRun = acquireLinkLock(second, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+      secondLogs.push(l),
+    ).catch((err: unknown) => (err as CliError).failure);
+    firstDone = acquireLinkLock(first, '/state', '/repo/livediagram.toml', 'sync', () => {});
+    await firstDone;
+    expect(await secondRun).toMatchObject({
+      code: 'lock_held',
+      hint: 'wait for it, or stop process 4242',
+    });
+    expect(JSON.parse(first.fileMap.get(LOCK)!.data).pid).toBe(4242);
+    expect([...first.fileMap.keys()].filter((k) => k.startsWith(LOCK))).toEqual([LOCK]);
+    expect(secondLogs.slice(0, 2)).toEqual(['lock stale 77', 'lock stale already taken']);
   });
 });

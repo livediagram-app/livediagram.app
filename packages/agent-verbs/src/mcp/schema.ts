@@ -24,6 +24,8 @@ import {
   ELEMENT_TYPES,
   ENTITY_MAX_FIELDS,
   GRAPH_LABEL_MAX,
+  GRAPH_LAYOUT_MAX_EDGES,
+  GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
   SHAPE_KINDS,
   STICKY_PRESETS,
@@ -280,7 +282,11 @@ const graphField = z
         }),
       )
       .min(1)
-      .describe('The nodes (boxes). Each needs a unique id.'),
+      .max(GRAPH_LAYOUT_MAX_NODES)
+      .describe(
+        `The nodes (boxes), at most ${GRAPH_LAYOUT_MAX_NODES}. Each needs a unique id. ` +
+          'A larger diagram is better split into several.',
+      ),
     edges: z
       .array(
         z.object({
@@ -292,7 +298,11 @@ const graphField = z
             .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
         }),
       )
-      .describe('Directed connections between ids. An edge to an unknown id is dropped.'),
+      .max(GRAPH_LAYOUT_MAX_EDGES)
+      .describe(
+        `Directed connections between ids, at most ${GRAPH_LAYOUT_MAX_EDGES}. An edge to an ` +
+          'unknown id is dropped.',
+      ),
     groups: z
       .array(
         z.object({

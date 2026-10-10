@@ -206,7 +206,10 @@ report and the changeset's summary.
   listened to again at the next coverage read, so its changes keep arriving live. A rate-limited ticket (`429`) is
   retried, never treated as a refusal.
 - One sync runs at a time per link: a lock in the local sync state makes a second wait for it, or fail after
-  `SYNC_LOCK_WAIT_MS` naming the holder's process id.
+  `SYNC_LOCK_WAIT_MS` naming the holder's process id. Of two syncs waiting on the same crashed holder, exactly
+  one takes the lock over.
+- A sync never writes over or removes a mirror file edited while it runs: a file whose bytes changed since the
+  sync's scan is refused, as `diverged` (or kept, for a removal), and the edit stays for `push`.
 
 ## Git
 

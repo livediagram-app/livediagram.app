@@ -33,7 +33,7 @@ type DocumentActionsDeps = {
   ownerId: string;
   // useFolders' delete, wrapped by the shared hook with a
   // document-side re-bucket.
-  hookDeleteFolder: (id: string) => void;
+  hookDeleteFolder: (id: string) => Promise<boolean>;
   // The personal folders, so a folder delete can say where its contents go.
   folders: readonly FolderNode[];
   // Shared-with-you list, for the dismiss action surfaced in the

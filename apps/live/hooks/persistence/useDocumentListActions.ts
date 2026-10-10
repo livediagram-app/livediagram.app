@@ -52,7 +52,7 @@ type DocumentListActionsDeps = {
   // parent instead of waiting for the next list refresh. Only DIRECT
   // children move, mirroring the server (docs/specs/013-workspace/folders.md
   // "Deleting a folder": subfolders keep their own contents).
-  deleteFolderFromHook: (id: string) => void;
+  deleteFolderFromHook: (id: string) => Promise<boolean>;
   // The personal folders, so the confirmation names the parent. Absent = [].
   folders?: readonly FolderNode[];
   // The document currently open in the editor, if the surface has
@@ -210,11 +210,17 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       }),
     );
     if (!ok) return false;
+    const movedUp = new Set(documentList.filter((d) => d.folderId === id).map((d) => d.id));
     setDocumentList((prev) =>
       prev.map((d) => (d.folderId === id ? { ...d, folderId: parentId } : d)),
     );
-    deleteFolderFromHook(id);
-    return true;
+    if (await deleteFolderFromHook(id)) return true;
+    // Refused: useFolders put the folder back; its documents go back into it too.
+    setDocumentList((prev) =>
+      prev.map((d) => (movedUp.has(d.id) && d.folderId === parentId ? { ...d, folderId: id } : d)),
+    );
+    toast.error('Could not delete the folder. Try again.');
+    return false;
   };
 
   const moveDocumentToFolder = (id: string, folderId: string | null) => {

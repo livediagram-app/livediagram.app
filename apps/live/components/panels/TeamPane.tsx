@@ -4,13 +4,14 @@ import { PencilIcon, PlusIcon, TrashIcon } from '@/components/primitives/explore
 import { useCallback, useEffect, useState, type ComponentProps } from 'react';
 import { Button, CircleXIcon } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { apiGetTeam, type TeamMember } from '@/lib/api-client';
+import { apiGetTeam } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile } from '@/components/primitives/MenuTiles';
 import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
+import { lastAdminPinner } from './team-last-admin';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
 import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
@@ -175,12 +176,12 @@ export function TeamPane({
 
   const { team, members, myRole } = detail;
   const isAdmin = myRole === 'admin';
-  const adminCount = members.filter((m) => m.role === 'admin').length;
   const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
   // The one rule the whole surface bends around: a team always keeps
   // at least one Admin (docs/specs/013-workspace/teams.md). When that's you, leaving, removing
-  // your row, and demoting yourself all disappear as options.
-  const isLastAdmin = (m: TeamMember) => m.role === 'admin' && adminCount <= 1;
+  // your row, and demoting yourself all disappear as options. Only JOINED admins count, as on the
+  // server (team-last-admin.ts).
+  const isLastAdmin = lastAdminPinner(members);
   const canLeave = selfRow !== null && !isLastAdmin(selfRow);
 
   const joinedCount = members.filter((m) => m.status === 'joined').length;

@@ -165,6 +165,22 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   flowchart representation and are dropped with the graph preserved — the
   export is the connection graph, faithfully.
 
+## Limits
+
+A graph is laid out only within `GRAPH_LAYOUT_MAX_NODES` (500 nodes) and `GRAPH_LAYOUT_MAX_EDGES`
+(1 000 connections), `packages/document/src/graph-limits.ts`. The layered layout's crossing
+reduction grows faster than linearly with the connections: a random 1 000-node / 1 000-edge graph
+took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119` took 21 s. So:
+
+- `parseMermaid` refuses a graph over either cap with "The diagram is too large to lay out (<n>
+  nodes, <m> connections): up to 500 nodes and 1000 connections are supported. Split it into
+  several diagrams." A fan-out line is checked before its pairs are built, so the refusal costs no
+  more than reading the line.
+- The MCP's `graph` input carries the same caps in its schema and in `resolveGraphInput`
+  ([MCP server](../015-api/mcp-server.md) §4.7).
+- draw.io's graph-only JSON export is truncated to the caps rather than refused
+  ([draw.io import](drawio-import.md#the-json-export)).
+
 ## Import & export UX — file **or** text
 
 Mermaid introduced a **two-step** panel (pasting/copying text is as common as a

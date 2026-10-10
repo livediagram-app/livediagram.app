@@ -54,7 +54,7 @@ export async function updateCustomTheme(
 ): Promise<void> {
   const now = Date.now();
   // Partial UPDATE so an absent field is left alone (same "undefined =
-  // leave" semantic as updateFolder). name + definition can change
+  // leave" semantic as a partial update). name + definition can change
   // independently, so they're separate statements.
   if (patch.name !== undefined) {
     await env.DB.prepare('UPDATE custom_themes SET name = ?, updated_at = ? WHERE id = ?')

@@ -349,31 +349,45 @@ export async function setDocumentItemTypes(
 // write: a joined member moving a team document out into their own
 // personal library becomes its owner (docs/specs/013-workspace/team-shared-documents.md), and folders are
 // owner-scoped so the row must follow them. Omit to keep the owner.
+//
+// The folder's existence and scope are checked INSIDE the UPDATE, not only by the caller's read
+// beforehand: a folder deleted (or moved to the other space) between that read and this write would
+// otherwise leave the document filed under a folder that is gone. Answers whether the row changed;
+// false means the folder (or the document) is not there any more, and the caller answers 404.
 export async function setDocumentFolder(
   env: Env,
   id: string,
   folderId: string | null,
   teamId: string | null = null,
   newOwnerId?: string,
-): Promise<void> {
-  if (newOwnerId !== undefined) {
-    // The previous owner's images in it keep serving once it is the new owner's.
-    await env.DB.batch([
-      imageGrantOwnerChangeStatement(
-        env,
-        'd.id = ?2 AND d.owner_id <> ?3',
-        [id, newOwnerId],
-        Date.now(),
-      ),
-      env.DB.prepare(
-        'UPDATE documents SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?',
-      ).bind(folderId, teamId, newOwnerId, id),
-    ]);
-    return;
+): Promise<boolean> {
+  const owner = newOwnerId ?? null;
+  const update = env.DB.prepare(
+    `UPDATE documents SET folder_id = ?2, team_id = ?3, owner_id = COALESCE(?4, owner_id)
+     WHERE id = ?1
+       AND (?2 IS NULL OR EXISTS (
+         SELECT 1 FROM folders f
+         WHERE f.id = ?2
+           AND f.team_id IS ?3
+           AND (?3 IS NOT NULL OR f.owner_id = COALESCE(?4, documents.owner_id))
+       ))`,
+  ).bind(id, folderId, teamId, owner);
+  if (newOwnerId === undefined) {
+    const res = await update.run();
+    return (res.meta.changes ?? 0) > 0;
   }
-  await env.DB.prepare('UPDATE documents SET folder_id = ?, team_id = ? WHERE id = ?')
-    .bind(folderId, teamId, id)
-    .run();
+  // An owner change: the previous owner's images in it keep serving once it is the new owner's, granted in
+  // the same batch (a refused move leaves only a redundant grant, the old owner still owning it).
+  const [, res] = await env.DB.batch([
+    imageGrantOwnerChangeStatement(
+      env,
+      'd.id = ?2 AND d.owner_id <> ?3',
+      [id, newOwnerId],
+      Date.now(),
+    ),
+    update,
+  ]);
+  return (res?.meta.changes ?? 0) > 0;
 }
 
 // Toggle the shareable flag on a document. The actual codes live in

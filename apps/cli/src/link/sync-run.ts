@@ -18,7 +18,13 @@ import { indexEntriesOf, type MirrorHeld } from './index-entries';
 import { indexFileText } from './index-file';
 import type { LinkFile } from './link-file';
 import { acquireLinkLock } from './lock';
-import { linkStateDir, saveReport, writeLinkState, type LinkState } from './local-state';
+import {
+  linkStateDir,
+  prepareLinkStateDir,
+  saveReport,
+  writeLinkState,
+  type LinkState,
+} from './local-state';
 import { mirrorFileText, type MirrorFile } from './mirror-file';
 import { outlinePathOf } from './mirror-paths';
 import type { ScannedFile } from './mirror-scan';
@@ -28,6 +34,7 @@ import { remoteTabsOf, type RemoteFact } from './remote';
 import { actionLine, totalsLine, type Totals } from './sync-lines';
 import type { PlanInput, SyncAction } from './sync-plan';
 import { surveyLink } from './sync-survey';
+import { sha256 } from '../sync/pull-file';
 
 export type PassOptions = {
   io: CliIo;
@@ -74,6 +81,9 @@ const outlineOf = (file: MirrorFile) =>
 export async function runSyncPass(options: PassOptions): Promise<PassResult> {
   const { io, ctx, link, dryRun } = options;
   const stateDir = await linkStateDir(io, link);
+  // The state directory is made private (0700) before the lock's O_EXCL create, which would otherwise make it with
+  // the default mode first, readable by every account on the machine.
+  if (!dryRun) await prepareLinkStateDir(io, stateDir);
   const lock = dryRun
     ? null
     : await acquireLinkLock(io, stateDir, link.path, options.command, ctx.log);
@@ -94,9 +104,35 @@ type Acting = {
   mirrors: Map<string, MirrorHeld>;
   // Where a relocation moved a document's files.
   moved: Map<string, string>;
+  // The SHA-256 of each scanned file's bytes, by its path at scan time: the file the plan judged.
+  scanned: ReadonlyMap<string, string>;
   // A path relative to the mirror directory, as the working directory reaches it.
   pathOf: (rel: string) => string;
   now: number;
+};
+
+// Whether the file at `now` still holds the bytes the scan read at `scanned` (absent then: absent now). The plan
+// judged the scan; an edit saved while the pass ran is the person's, and is never written over or removed.
+async function unchangedSinceScan(acting: Acting, scanned: string | null, now: string) {
+  const expected = scanned === null ? null : (acting.scanned.get(scanned) ?? null);
+  const text = await acting.tree.read(now);
+  return (text === null ? null : await sha256(text)) === expected;
+}
+
+const changedHere = (
+  acting: Acting,
+  action: { documentId: string },
+  path: string,
+  reason: 'diverged' | 'gone-changed' | 'lowered-changed',
+): SyncAction => {
+  acting.options.ctx.log(`changed-during-pass ${action.documentId}`);
+  return {
+    kind: 'refuse',
+    documentId: action.documentId,
+    path,
+    reason,
+    detail: reason === 'lowered-changed' ? acting.options.link.mirror.level : null,
+  };
 };
 
 const record = (acting: Acting, id: string, name: string, revs: Record<string, number>) => {
@@ -169,6 +205,8 @@ async function writeAct(
     };
   }
   const path = acting.moved.get(action.documentId) ?? action.path!;
+  if (!(await unchangedSinceScan(acting, action.path, path)))
+    return changedHere(acting, action, path, 'diverged');
   await acting.tree.write(path, mirrorFileText(file));
   if (!(await acting.tree.writeGenerated(outlinePathOf(path), outlineOf(file))))
     ctx.log(`kept ${outlinePathOf(path)}: not generated`);
@@ -219,8 +257,15 @@ async function inStepAct(acting: Acting, action: Extract<SyncAction, { kind: 'no
 async function removeAct(
   acting: Acting,
   action: Extract<SyncAction, { kind: 'remove' | 'lower' }>,
-) {
+): Promise<SyncAction> {
   const { ctx } = acting.options;
+  if (action.path && !(await unchangedSinceScan(acting, action.path, action.path)))
+    return changedHere(
+      acting,
+      action,
+      action.path,
+      action.kind === 'remove' ? 'gone-changed' : 'lowered-changed',
+    );
   ctx.log(
     action.kind === 'remove'
       ? `gone ${action.documentId} ${action.reason}`
@@ -231,6 +276,7 @@ async function removeAct(
     await acting.tree.remove(outlinePathOf(action.path), true);
   }
   if (action.kind === 'remove') delete acting.state.documents[action.documentId];
+  return action;
 }
 
 // The acts in their order, each action's outcome in its place: relocations, then writes, then removals.
@@ -248,8 +294,8 @@ async function act(acting: Acting, actions: readonly SyncAction[]): Promise<Sync
     if (a.kind === 'write' && !stuck.has(a.documentId)) outcome[i] = await writeAct(acting, a);
     if (a.kind === 'none') await inStepAct(acting, a);
   }
-  for (const a of actions)
-    if (a.kind === 'remove' || a.kind === 'lower') await removeAct(acting, a);
+  for (const [i, a] of actions.entries())
+    if (a.kind === 'remove' || a.kind === 'lower') outcome[i] = await removeAct(acting, a);
   return outcome;
 }
 
@@ -329,6 +375,9 @@ async function pass(options: PassOptions, stateDir: string): Promise<PassResult>
     remote,
     mirrors: new Map(),
     moved: new Map(),
+    scanned: new Map(
+      scan.flatMap((s) => (s.bytes === undefined ? [] : [[s.path, s.bytes] as const])),
+    ),
     pathOf,
     now: io.now(),
   };

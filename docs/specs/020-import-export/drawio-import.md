@@ -81,6 +81,11 @@ the graph (`layer`, `node` with `label`, `html` and `metadata.link`, `edge` with
   end on a node is left out. Both count as connections that couldn't stay attached. The report says once per import that positions and
   styles were not in the file ("Positions and styles weren't in the file; the layout is
   automatic"), counting the pages laid out.
+- A page is held to the layout's caps (`GRAPH_LAYOUT_MAX_NODES`, 500 nodes, and
+  `GRAPH_LAYOUT_MAX_EDGES`, 1 000 connections; [Mermaid](mermaid.md#limits)) **before** it is laid
+  out: the first nodes and connections in the export are kept, and the rest, with every connection
+  to a node left out, are counted as content that didn't fit. A 12 000-node export laid out whole
+  froze the tab for 58 s; capped it imports in about 20 ms.
 - A page with no cells imports as an empty tab.
 
 ## Shape libraries

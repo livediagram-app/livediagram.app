@@ -4,6 +4,8 @@
 // style), which is laid out by the layered layout Mermaid import uses.
 
 import {
+  GRAPH_LAYOUT_MAX_EDGES,
+  GRAPH_LAYOUT_MAX_NODES,
   isRecord,
   layoutClusteredGraph,
   type ArrowElement,
@@ -97,13 +99,25 @@ function looseArrow(edge: LooseEdge, node: BoxedElement): ArrowElement {
  * are minted fresh. Links follow the XML path's rule (web and email, and pages of the same export as
  * tab links). An edge with one end on a node keeps it, its free end drawn a short way out; an edge
  * with neither is left out. Both count as loosened connections.
+ *
+ * The page is held to the layout's caps (GRAPH_LAYOUT_MAX_NODES / _EDGES, far below the tab's
+ * MAX_ELEMENTS_PER_TAB) BEFORE the layout runs: a 12,000-node export laid out whole froze the tab for
+ * 58 s. The first nodes and connections in the export are kept; the rest, and every connection to a
+ * node left out, count as content-truncated.
  */
 export function jsonPageElements(page: JsonExportPage, ctx: ConvertContext): Element[] {
   const ids = new Map<string, string>();
   const links = new Map<string, ElementLink>();
   const nodes: GraphNode[] = [];
+  const dropped = new Set<string>();
+  let truncated = 0;
   for (const cell of page.cells) {
     if (cell.type !== 'node' || typeof cell.id !== 'string') continue;
+    if (nodes.length >= GRAPH_LAYOUT_MAX_NODES) {
+      dropped.add(cell.id);
+      truncated += 1;
+      continue;
+    }
     const id = crypto.randomUUID();
     ids.set(cell.id, id);
     const raw = typeof cell.metadata?.link === 'string' ? cell.metadata.link : undefined;
@@ -116,6 +130,14 @@ export function jsonPageElements(page: JsonExportPage, ctx: ConvertContext): Ele
   const loose: LooseEdge[] = [];
   for (const cell of page.cells) {
     if (cell.type !== 'edge') continue;
+    const ends = [cell.source, cell.target];
+    if (
+      edges.length + loose.length >= GRAPH_LAYOUT_MAX_EDGES ||
+      ends.some((end) => typeof end === 'string' && dropped.has(end))
+    ) {
+      truncated += 1;
+      continue;
+    }
     const from = typeof cell.source === 'string' ? ids.get(cell.source) : undefined;
     const to = typeof cell.target === 'string' ? ids.get(cell.target) : undefined;
     const label = labelOf(cell);
@@ -124,6 +146,7 @@ export function jsonPageElements(page: JsonExportPage, ctx: ConvertContext): Ele
     else if (to) loose.push({ nodeId: to, free: 'from', label });
     ctx.tally.add('connection-loosened', from && to ? 0 : 1);
   }
+  ctx.tally.add('content-truncated', truncated);
   if (nodes.length === 0) return [];
   ctx.tally.add('auto-layout');
   const laid = layoutClusteredGraph({ nodes, edges }).map((el) => {

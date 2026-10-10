@@ -125,6 +125,56 @@ describe('useCanvasPanAndMarquee additive marquee', () => {
   });
 });
 
+// A rotated element is selected by the box it is drawn in (docs/specs/008-canvas/canvas-and-palette.md
+// "Rotation"): its turned corners, not its unrotated box.
+describe('useCanvasPanAndMarquee rotated elements', () => {
+  // A 60 x 10 bar centred on (50, 50), stood upright: drawn across x 45..55, y 20..80.
+  const bar = {
+    id: 'r',
+    type: 'shape',
+    shape: 'square',
+    x: 20,
+    y: 45,
+    width: 60,
+    height: 10,
+    rotation: 90,
+  };
+  function sweep(from: [number, number], to: [number, number]) {
+    const deps = {
+      viewportZoom: 1,
+      setViewportOffset: vi.fn(),
+      elements: [bar] as never,
+      wrapperRef: {
+        current: { getBoundingClientRect: () => ({ left: 0, top: 0, width: 500, height: 500 }) },
+      } as never,
+      onDeselect: vi.fn(),
+      onSelectMarquee: vi.fn(),
+    };
+    const hook = renderHook(() => useCanvasPanAndMarquee(deps));
+    act(() =>
+      hook.result.current.setMarquee({
+        startX: from[0],
+        startY: from[1],
+        currentX: from[0],
+        currentY: from[1],
+      }),
+    );
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointermove', { clientX: to[0], clientY: to[1] }));
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: to[0], clientY: to[1] }));
+    });
+    return deps.onSelectMarquee.mock.calls[0]![0] as Set<string>;
+  }
+
+  it('selects it when the box holds its drawn corners', () => {
+    expect(sweep([40, 15], [60, 85])).toEqual(new Set(['r']));
+  });
+
+  it('leaves it when the box holds only its unrotated footprint', () => {
+    expect(sweep([15, 40], [85, 60])).toEqual(new Set());
+  });
+});
+
 // docs/specs/008-canvas/canvas-performance.md: a pan and a marquee are canvas gestures.
 describe('useCanvasPanAndMarquee gestures', () => {
   afterEach(() => resetCanvasGesturesForTests());

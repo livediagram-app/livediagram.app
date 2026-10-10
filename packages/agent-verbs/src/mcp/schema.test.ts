@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import {
+  GRAPH_LAYOUT_MAX_EDGES,
+  GRAPH_LAYOUT_MAX_NODES,
+  NAME_MAX_LENGTH,
+} from '@livediagram/document';
 import {
   addTabShape,
   createDocumentShape,
@@ -130,5 +134,40 @@ describe('name fields', () => {
         `at most ${NAME_MAX_LENGTH} characters`,
       );
     }
+  });
+});
+
+// The graph input is held to the layout's caps (docs/specs/015-api/mcp-server.md §4.7): a model
+// asking for a larger graph hears so from the schema rather than stalling the worker on the layout.
+describe('graph input caps', () => {
+  const s = z.object(addTabShape);
+  const nodes = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `n${i}` }));
+  const edges = (n: number) => Array.from({ length: n }, () => ({ from: 'n0', to: 'n1' }));
+
+  it('accepts a graph at the caps', () => {
+    expect(() =>
+      s.parse({
+        documentId: 'd',
+        name: 't',
+        graph: { nodes: nodes(GRAPH_LAYOUT_MAX_NODES), edges: edges(GRAPH_LAYOUT_MAX_EDGES) },
+      }),
+    ).not.toThrow();
+  });
+
+  it('refuses one node or one edge more', () => {
+    expect(() =>
+      s.parse({
+        documentId: 'd',
+        name: 't',
+        graph: { nodes: nodes(GRAPH_LAYOUT_MAX_NODES + 1), edges: [] },
+      }),
+    ).toThrow();
+    expect(() =>
+      s.parse({
+        documentId: 'd',
+        name: 't',
+        graph: { nodes: nodes(2), edges: edges(GRAPH_LAYOUT_MAX_EDGES + 1) },
+      }),
+    ).toThrow();
   });
 });
