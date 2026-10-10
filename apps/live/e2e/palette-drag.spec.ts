@@ -32,7 +32,7 @@ async function dragTileOntoCanvas(page: Page, tileName: string, at: { x: number;
 
 test.describe('Toolbar strip drag', () => {
   for (const { category, query, tile, placedAs } of [
-    { category: 'shapes', query: undefined, tile: 'Add speech bubble', placedAs: /speech bubble/i },
+    { category: 'shapes', query: undefined, tile: 'Add Speech Bubble', placedAs: /speech bubble/i },
     { category: 'icons', query: 'speech', tile: 'Add Message', placedAs: /^Icon$/ },
     { category: 'stickers', query: 'speech', tile: 'Speech balloon', placedAs: /^Sticker$/ },
   ]) {

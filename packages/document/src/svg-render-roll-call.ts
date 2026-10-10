@@ -62,7 +62,7 @@ export function svgRollCall(
       PAD_X,
       barY,
       inner,
-      entries.length ? 'Take again' : 'Take roll',
+      entries.length ? 'Take Again' : 'Take Roll',
       a,
       GLYPH.roll,
     );

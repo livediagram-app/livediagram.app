@@ -39,7 +39,7 @@ export type Option = {
 // Rail-only action appended to the menu when onAddRailPoint is set (docs/specs/009-elements/timeline-rail.md).
 export const ADD_POINT_OPTION: Option = {
   kind: 'add-point',
-  label: 'Add point',
+  label: 'Add Point',
   description: 'Add another point to the timeline rail.',
   icon: <AddPointIcon />,
 };
@@ -54,13 +54,13 @@ export function webRowOption(label: string, description: string): Option {
 // Table structural adds (docs/specs/008-canvas/canvas-and-palette.md): offered on the matching side's ring.
 export const ADD_ROW_OPTION: Option = {
   kind: 'add-row',
-  label: 'Add row',
+  label: 'Add Row',
   description: 'Append a row at the bottom of the table.',
   icon: <AddRowIcon />,
 };
 export const ADD_COLUMN_OPTION: Option = {
   kind: 'add-column',
-  label: 'Add column',
+  label: 'Add Column',
   description: 'Append a column on the right of the table.',
   icon: <AddColumnIcon />,
 };
@@ -76,13 +76,13 @@ export const ADD_COLUMN_OPTION: Option = {
 // underneath the very "+" these options now live in.
 export const MIND_CHILD_OPTION: Option = {
   kind: 'mind-child',
-  label: 'Add child',
+  label: 'Add Child',
   description: 'Branch a new node off this one. Shortcut: Tab.',
   icon: <MindChildIcon />,
 };
 export const MIND_SIBLING_OPTION: Option = {
   kind: 'mind-sibling',
-  label: 'Add sibling',
+  label: 'Add Sibling',
   description: 'Add a node beside this one, under the same parent. Shortcut: Enter.',
   icon: <MindSiblingIcon />,
 };

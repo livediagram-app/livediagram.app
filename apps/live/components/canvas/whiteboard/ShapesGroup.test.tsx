@@ -68,14 +68,14 @@ describe('the pinned side', () => {
       ['Rectangle', 'R', 'R'],
       ['Star', null, ''],
       ['Line', 'L', 'L'],
-      ['Sticky note', 'N', 'N'],
+      ['Sticky Note', 'N', 'N'],
     ]);
   });
 
   it('presses a pinned sticky note while one is in hand', () => {
     renderDock(model('sticky', { pinnedShapes: ['sticky'], armedShape: 'sticky' }));
     expect(
-      within(shapesBar()).getByRole('button', { name: 'Sticky note' }).getAttribute('aria-pressed'),
+      within(shapesBar()).getByRole('button', { name: 'Sticky Note' }).getAttribute('aria-pressed'),
     ).toBe('true');
   });
 

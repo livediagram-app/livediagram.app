@@ -246,8 +246,8 @@ export function RoundAction({
 }
 
 // The one facilitator action a board offers above its rows, as a dashed bar
-// in the accent: the Q&A board's "Discuss the top note", the Idea box's "Open
-// the box" and "Scatter to sticky notes" (docs/specs/012-collaboration/idea-box.md "The look").
+// in the accent: the Q&A board's "Discuss the Top Note", the Idea box's "Open
+// the Box" and "Scatter to Sticky Notes" (docs/specs/012-collaboration/idea-box.md "The look").
 export function AccentBar({
   onPress,
   icon,

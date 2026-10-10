@@ -245,7 +245,7 @@ holds.
 
 Today the two layouts differ as below. Within the shared categories,
 Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
-**Annotation**, its **Build** leaves out **Mind node**, **Lane** and **Frame**
+**Annotation**, its **Build** leaves out **Mind Node**, **Lane** and **Frame**
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
@@ -326,7 +326,7 @@ actions, snapping, export, putting content onto a page, page slides) is
   **page panel** ([Illustrate pages](illustrate-pages.md) "The page panel").
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
-- **Adding a page:** a round **+** (tooltip **Add page**) sits in the gap's
+- **Adding a page:** a round **+** (tooltip **Add Page**) sits in the gap's
   width to the right of the last page, on the row's axis. It opens **Add a
   page**, choosing the new page's kind ([Illustrate pages](illustrate-pages.md)
   "Page kinds"); the page goes after the last; the + is gone at the limit,

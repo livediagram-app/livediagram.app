@@ -176,7 +176,7 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 - **Lit** (linked): bloom 0.45, full rim, motes visible; hover `brightness(1.12)` (desktop),
   press scale 0.97. **Dead** (unlinked): bloom 0.1, dim rim, motes at 0.35, `cursor-default`.
 - **No caption:** the name never renders on the canvas.
-- **Palette:** tile `tools:door` ("Add portal") in the **Navigate** accordion
+- **Palette:** tile `tools:door` ("Add Portal") in the **Navigate** accordion
   (`tileGroup: 'move'`) of the Behaviours category.
 - **Hover cards** (`HoverCard`, wrapping the whole face): linked: title "Go to <far name>",
   description "Click to travel, or walk your Avatar-mode character into it. The link works both

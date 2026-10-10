@@ -124,9 +124,28 @@ Every item an element's menus print is **Title Case**: the element menu and the 
 cell menu, the locked element menu, the selection filter menu and the element quick menus. Short
 articles, conjunctions and prepositions (a, an, the, and, or, of, to, in, on, for, at, by, with,
 from, as) stay lowercase unless they lead: "Empty the Box", "Reset to Theme", "Start at Exact
-Anchor", "A List". Captions inside a section ("Picks from", "Move to layer"), hints, tooltips,
-aria-labels and the Explorer's folder actions are not item labels and keep sentence case. A help
-article that names an item in bold spells it exactly as the menu does
+Anchor", "A List".
+
+The same rule covers the close cousins of a menu item, the controls that name an action on an
+element or add one:
+
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky
+  Note", "Add Domain Event Note"), the Toolbar strip's **Add Page** and **Add from Photo**, and
+  the Draw dock's shapes. A catalogue entry (an icon, a sticker, a technology, an Event Storming
+  note kind) keeps its own sentence-case name and its tile Title Cases it on the way
+  (`headlineCase` in `@livediagram/api-schema`).
+- **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
+  Point", "Add Stat".
+- **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
+  Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
+  Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
+  export draws an accent bar with the same words.
+
+Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
+control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
+for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
+case. An element's own name in prose ("a Done check") stays sentence case too. A help article
+that names an item in bold spells it exactly as the editor does
 (`apps/help/lib/ui-labels-in-articles.test.ts`).
 
 ## The menus

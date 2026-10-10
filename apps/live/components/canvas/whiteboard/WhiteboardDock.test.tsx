@@ -42,7 +42,7 @@ describe('WhiteboardDock groups', () => {
       'path',
       'eraser',
     ]);
-    expect(screen.queryByRole('button', { name: 'Sticky note' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sticky Note' })).toBeNull();
   });
 
   it('gives the cog a group of its own, last', () => {

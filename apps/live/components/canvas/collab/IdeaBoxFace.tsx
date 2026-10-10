@@ -122,12 +122,12 @@ export function IdeaBoxFace({
       >
         {!open && onReveal && cards.length > 0 ? (
           <AccentBar onPress={onReveal} icon={<EyeGlyph />} count={cards.length}>
-            Open the box
+            Open the Box
           </AccentBar>
         ) : null}
         {open && onScatter && cards.length > 0 ? (
           <AccentBar onPress={onScatter} icon={<ScatterGlyph />}>
-            Scatter to sticky notes
+            Scatter to Sticky Notes
           </AccentBar>
         ) : null}
 

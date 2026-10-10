@@ -272,7 +272,7 @@ The strip leads with the canvas-tool picker, then the **category picker** ([Tool
 - **Triangle** — adds a 130×120 upward triangle (SVG polygon).
 - **Trapezoid** — adds a 160×110 trapezoid (wider at the base; flowchart manual operation).
 - **Star** — adds a 130×130 five-pointed star.
-- **Speech bubble** — adds a 180×130 callout: a rounded body with a tail dropping from the bottom-left.
+- **Speech Bubble** — adds a 180×130 callout: a rounded body with a tail dropping from the bottom-left.
 
 The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent outlined container with a "Frame" label in the top-right, drawn around a cluster of elements (a FigJam-style section). Its body is rendered fill-less so the elements inside show through.
 
@@ -286,8 +286,8 @@ The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent out
 
 **Devices tab** (UI-device frames for wireframing). Each renders as the device's silhouette so users can drop them on the canvas as containers and arrange interface elements inside:
 
-- **Web browser** — adds a 240×160 browser window (tab strip + URL bar + viewport).
-- **Computer monitor** — adds a 220×170 desktop monitor with stand.
+- **Web Browser** — adds a 240×160 browser window (tab strip + URL bar + viewport).
+- **Computer Monitor** — adds a 220×170 desktop monitor with stand.
 - **Laptop** — adds a 240×150 laptop (screen + keyboard base).
 - **Phone** — adds a 90×170 phone (tall portrait with rounded corners).
 - **Tablet** — adds a 140×180 tablet (medium portrait with rounded corners).
@@ -309,16 +309,16 @@ The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent out
 **Tools tab** (other element kinds):
 
 - **Text** — adds a free-floating text element (see [Text element](#text-element)).
-- **Arrow** ("Add arrow") — drops / draws a straight connector **with a pointer at its end**, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
+- **Arrow** ("Add Arrow") — drops / draws a straight connector **with a pointer at its end**, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
 - **Line** — the same tool without the heads (`arrowEnds: 'none'`): the same element, gesture and click-to-connect, so a plain line and an arrow are both one tile away. No key (`A` is the Arrow). Its pointers are added in the Pointer accordion like any arrow's. Telemetry: `Element·Added·Line`.
 - **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
 - **Annotation** — drops a note marker (a fixed-size themed circle + note glyph) at the viewport centre: hover to read its note above everything, click to edit it. See [Annotations](../009-elements/annotations.md).
-- **Link card** — draws a rectangular bookmark (same tap-or-drag gesture as a shape); double-click to set its URL (the normal link picker), and the worker unfurls a preview (favicon / title / site / image). See [Link cards](../009-elements/link-cards.md).
+- **Link Card** — draws a rectangular bookmark (same tap-or-drag gesture as a shape); double-click to set its URL (the normal link picker), and the worker unfurls a preview (favicon / title / site / image). See [Link cards](../009-elements/link-cards.md).
 - **Avatar** — a single **circular image** (`createAvatar`: a square, aspect-locked image with a `full` corner radius + `cover` fit). Sits beside Image because it's one element, not a composite, but arms the same tap-or-drag gesture as the components; double-click it to pick / upload a photo. Hidden when image upload is unavailable (same gate as Image).
 
 ### Components category
 
-A dedicated palette category **after Tools**, holding ready-made **web components** that beautify a diagram: **Banner**, **Callout**, **Stat row**, **Process steps**, **Hero** and **Header**. Each is **one element** ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)): the first five are their own shape kinds (`banner`, `callout`, `stat-row`, `process`, `site-header`) that lay themselves out from their size, and the Hero is an image carrying a caption card (`ImageElement.heroCaption`). They used to be bundles of primitives held together by a `groupId`; [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md) has why that changed. The catalogue is unified by `ComponentKind` + `createComponent` + a `COMPONENT_SIZE` map in the document package (`component-factories.ts`), so every component flows through one code path, and the layouts live in `web-components.ts`, shared by the canvas faces and the headless SVG renderer.
+A dedicated palette category **after Tools**, holding ready-made **web components** that beautify a diagram: **Banner**, **Callout**, **Stat Row**, **Process Steps**, **Hero** and **Header**. Each is **one element** ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)): the first five are their own shape kinds (`banner`, `callout`, `stat-row`, `process`, `site-header`) that lay themselves out from their size, and the Hero is an image carrying a caption card (`ImageElement.heroCaption`). They used to be bundles of primitives held together by a `groupId`; [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md) has why that changed. The catalogue is unified by `ComponentKind` + `createComponent` + a `COMPONENT_SIZE` map in the document package (`component-factories.ts`), so every component flows through one code path, and the layouts live in `web-components.ts`, shared by the canvas faces and the headless SVG renderer.
 
 All follow the **active tab theme**. Two looks, both legible by construction: solid-accent bars with white text (**Banner / Header**, which paint in `fillColor` falling back to the stroke, and retheme only their stroke), and light cards using the theme's `elementFill` (surface) + `elementText` (ink) pair with the accent for emphasis (**Callout / Stat row / Process**). The Hero's caption card is the image's `fillColor`. The theme → `{accent, surface, ink}` mapping lives in `buildDrawnComponent` (the diagram factories stay theme-agnostic, taking colours).
 
@@ -390,8 +390,8 @@ There are three ways to create an arrow:
    - **Press-and-drag** from the ring's Arrow option to start creating an arrow: the `from` endpoint is immediately pinned to that anchor, and the `to` endpoint follows the cursor. An arrow drawn this way takes the **tab theme's** element stroke (so it matches the theme, not black, and not the source shape: a red box used to sprout red arrows, which stopped connectors reading as one system).
    - Release on **another element's anchor** (within snap distance, ~24 px) → that endpoint becomes pinned. Release on **empty canvas** → that endpoint stays free.
    - Releasing without any drag movement creates a tiny "stub" arrow at that anchor.
-2. **The palette "Add arrow" button** with nothing selected: drops / draws (draw-to-size) a connector with free endpoints and **a pointer at its end** (`arrowEnds: 'to'`; the **Line** tile draws the same with none) — drag the endpoints onto shapes afterwards to pin them.
-3. **Click-to-connect**: with a shape **selected**, pick the palette **Add arrow** tool (or press `A`) to arm a connect gesture — a hint banner appears — then **click another shape** and a pinned connector is drawn between the two, anchored on the facing sides (`bestAnchorTowards`) and inheriting the source's stroke. Clicking empty canvas (or the banner) cancels.
+2. **The palette "Add Arrow" button** with nothing selected: drops / draws (draw-to-size) a connector with free endpoints and **a pointer at its end** (`arrowEnds: 'to'`; the **Line** tile draws the same with none) — drag the endpoints onto shapes afterwards to pin them.
+3. **Click-to-connect**: with a shape **selected**, pick the palette **Add Arrow** tool (or press `A`) to arm a connect gesture — a hint banner appears — then **click another shape** and a pinned connector is drawn between the two, anchored on the facing sides (`bestAnchorTowards`) and inheriting the source's stroke. Clicking empty canvas (or the banner) cancels.
 
 Snapping during the drag considers every anchor each shape offers (sixteen on a box), so an arrow drag from a midpoint can still snap to and pin at a corner or a quarter point ([Arrow anchors and auto-rebind](arrow-anchors.md)).
 
@@ -811,7 +811,7 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
    **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:eraser`, `tool:format`, `tool:laser`, `tool:spotlight`, `tool:avatar`, `tool:slide-deck`, `tool:isometric`), which were previously reachable only from the palette's tool dropdown. The tool already in force is dropped (offering "Hand tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, Spotlight and Slide Deck are desktop-only, and the two that write to the document (Eraser, Format painter) are withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
 
    The catalogue is **contextual**:
-   - **With a selection** (`selectedId` or a multi-selection): **Delete**, **Duplicate**, **Lock / Unlock**, **Bring to front**, **Send to back**, and (single, boxed) **Rotate 90° / 180° / 270°** + **Reset rotation** (not on an annotation marker), **Add / edit note**, **Add comment**, plus **Clear animation** (when the element has one) and, for a shape, **Clear marker** (when set) / **Add marker** (the `SHAPE_MARKERS` set). Selection commands rank first so they stay in context with what's selected.
+   - **With a selection** (`selectedId` or a multi-selection): **Delete**, **Duplicate**, **Lock / Unlock**, **Bring to Front**, **Send to Back**, and (single, boxed) **Rotate 90° / 180° / 270°** + **Reset rotation** (not on an annotation marker), **Add / edit note**, **Add comment**, plus **Clear animation** (when the element has one) and, for a shape, **Clear marker** (when set) / **Add marker** (the `SHAPE_MARKERS` set). Selection commands rank first so they stay in context with what's selected.
    - **Always (in-document)**: **Create new tab** (the old hard-coded create-tab action, now just one command — keywords "tab / new / page / ..."), **Rename document**, **Delete document**, **Rename tab**, **Open theme** / **Open canvas options** (the `CanvasThemeDialog` tabs), and **Share** (owner only). Rename commands drive the existing inline-rename affordances via a request nonce on `useEditorDialogs` that `EditorHeader` (document) and `TabBar` (active tab) watch.
 
 8. **Add to canvas** — palette tiles / icons / tech icons / stickers matching the query (editor only, non-empty query); picking one arms the same tap-to-drop placement the palette uses. The shape entries are **derived from `PALETTE_TILES`** (the shared tile catalogue, `palette-tile-defs.tsx`), not restated: `lib/palette-search.ts` maps every shape-placing tile and adds only a synonym line per kind ("database" finds the cylinder, "swimlane" the lane). It used to hold its own list of shapes and had silently fallen 22 kinds behind the palette, so every Devices / Data / Media / Behaviour element was unfindable from search; a test now fails if a shape tile has no search entry. **Every other tile is searchable too** (Text, Arrow, Sticky note, Table, Image, the pens, embeds, web components, event-storming notes): each is keyed `tile:<tileId>`, matched on its label, blurb and description, and picking it runs the tile's own handler (`tileHandler`, the same one the palette grid calls), so a search add can never behave differently from clicking the tile. The image-upload tiles (Image, Avatar, Hero) are left out when the editor has no image support, as the palette's grids leave them out. Only the dynamic icon / sticker / Technology tiles are excluded, because their catalogues are enumerated entry by entry instead; a test fails if any other tile has no search entry.
@@ -896,11 +896,11 @@ Action set (grouped by a thin divider):
 
 Text + duplication:
 
-- **Edit text / Add text** — enters inline text-edit mode on the selected element (the same path as a double-click). A serif-`T` icon. **Shown on every text-CAPABLE element** (`elementSupportsText` in `packages/document`: shapes minus the self-drawing data shapes, text / sticky / freehand / link-cards / arrows) — including elements with no label yet, where it reads **Add text** so the affordance teaches that text can be added; with a label it reads **Edit text**. Absent for kinds with no `label` (tables, images, annotation markers, data shapes).
+- **Edit Text / Add Text** — enters inline text-edit mode on the selected element (the same path as a double-click). A serif-`T` icon. **Shown on every text-CAPABLE element** (`elementSupportsText` in `packages/document`: shapes minus the self-drawing data shapes, text / sticky / freehand / link-cards / arrows) — including elements with no label yet, where it reads **Add Text** so the affordance teaches that text can be added; with a label it reads **Edit Text**. Absent for kinds with no `label` (tables, images, annotation markers, data shapes).
 - **Add child / Add sibling** — on a **mind node** only, grow the map from it: the same actions as Tab and Enter ([The mind node](../009-elements/mind-node.md)). Hidden on a locked node and in view-role.
 - **Duplicate** — clones the selected element(s) in place (offset slightly; on an event-storming board a selection holding a workshop note staggers along its lane, 24px right and no lower, [Event storming](../021-event-storming/event-storming.md#always-on-a-lane)). Arrows in the selection copy too (`duplicateElements` in `packages/document/src/duplicate.ts`): a free endpoint translates with the offset, a pinned endpoint follows its duplicate when the target was copied or else keeps its original pin (still a real element, so never orphaned); an arrow whose pinned target no longer exists (e.g. a cross-tab paste) is dropped rather than dangled. The same helper backs Cmd-C / Cmd-V (`useClipboard`), so copy-pasting a selection that includes arrows (including free-floating ones) now carries them with their styling + label intact.
 
-There is **no paintbrush** on the popover: the slot it once held went to **Edit text** when the Format tool arrived, and copying a look is the Format tool's job ([Format painter](#format-painter)).
+There is **no paintbrush** on the popover: the slot it once held went to **Edit Text** when the Format tool arrived, and copying a look is the Format tool's job ([Format painter](#format-painter)).
 
 Relationships:
 
@@ -1081,7 +1081,7 @@ Groups were removed in [Web components are elements; groups are gone](../009-ele
 
 A way to copy an element's **formatting** (size, eventually colour and style) onto another element — same mental model as Word/Figma's format painter.
 
-The painter is the **Format** canvas tool in the palette tool dropdown (next to Eraser, see the tool list above). There is no one-off brush on the selection popover: it was replaced by **Edit text** when the persistent tool arrived, so the tool is the single way in.
+The painter is the **Format** canvas tool in the palette tool dropdown (next to Eraser, see the tool list above). There is no one-off brush on the selection popover: it was replaced by **Edit Text** when the persistent tool arrived, so the tool is the single way in.
 
 ### Using the Format tool
 
@@ -1296,8 +1296,8 @@ Every palette tile and selection-popover button carries a hint, as defined in
   ~60 glyphs is noise, and the name is all a glyph needs.
 
 ```tsx
-<HoverCard title="Add square" description="Drop a new square shape on the canvas.">
-  <button aria-label="Add square">…</button>
+<HoverCard title="Add Square" description="Drop a new square shape on the canvas.">
+  <button aria-label="Add Square">…</button>
 </HoverCard>
 
 <Tooltip label="Rectangle">

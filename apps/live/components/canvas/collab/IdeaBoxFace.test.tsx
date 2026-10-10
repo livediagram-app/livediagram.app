@@ -38,8 +38,8 @@ describe('IdeaBoxFace', () => {
     show(box({ ideaCards: ['Flaky CI', 'Too many meetings'] }), { onReveal: vi.fn() });
     expect(screen.getByText('ideas sealed')).toBeTruthy();
     expect(screen.queryByText('Flaky CI')).toBeNull();
-    expect(screen.getByText('Open the box')).toBeTruthy();
-    expect(screen.queryByText(/Open the box \(/)).toBeNull();
+    expect(screen.getByText('Open the Box')).toBeTruthy();
+    expect(screen.queryByText(/Open the Box \(/)).toBeNull();
   });
 
   it('shows every idea once open, and offers the scatter instead', () => {
@@ -48,8 +48,8 @@ describe('IdeaBoxFace', () => {
       onScatter: vi.fn(),
     });
     expect(screen.getByText('Flaky CI')).toBeTruthy();
-    expect(screen.queryByText(/Open the box/)).toBeNull();
-    expect(screen.getByText('Scatter to sticky notes')).toBeTruthy();
+    expect(screen.queryByText(/Open the Box/)).toBeNull();
+    expect(screen.getByText('Scatter to Sticky Notes')).toBeTruthy();
   });
 
   it('adds an idea from the composer, which says it is anonymous', () => {

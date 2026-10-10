@@ -149,7 +149,7 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
   corners; the sweep is motion and stays out.
 - **Menu:** accordion **Reveal**, hint "Anyone can click the cover to peek for themselves. This
   takes it off for everyone." [QF14], tiles **Reveal for All** / **Hide for All** [QF14].
-- **Palette:** tile `tools:reveal` ("Add reveal zone") in the **Tools** accordion
+- **Palette:** tile `tools:reveal` ("Add Reveal Zone") in the **Tools** accordion
   (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads "Click
   it to uncover it just for you" although a single click never uncovers [QF14].
 - **Telemetry:** placing emits `Element·Added·Reveal`; both menu tiles emit

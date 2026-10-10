@@ -63,7 +63,7 @@ type QuickConnectRingProps = {
   // Enter freehand (pencil) draw mode.
   onPencil: () => void;
   // Timeline rail (docs/specs/009-elements/timeline-rail.md): when set (the selected element is a rail), the
-  // ring gains an "Add point" action that appends a point to the rail.
+  // ring gains an "Add Point" action that appends a point to the rail.
   onAddRailPoint?: () => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): when set (the selected element is a stat row,
   // process or header with room for more), the ring gains an action that
@@ -163,7 +163,7 @@ export function QuickConnectRing({
   onGrowMind,
   onAddTableColumn,
 }: QuickConnectRingProps) {
-  // The rail "Add point" action only appears when the selected element is a
+  // The rail "Add Point" action only appears when the selected element is a
   // timeline rail (onAddRailPoint set), appended after the standard actions.
   // The table variant slims to Arrow + this side's structural add (Add Row
   // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Pencil / Text

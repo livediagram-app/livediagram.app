@@ -174,7 +174,7 @@ export function QaBoardFace({
           />
         ) : running && queue.length > 0 ? (
           <AccentBar onPress={() => actions.discuss!(queue[0]!.id)} icon={<DiscussGlyph />}>
-            Discuss the top note
+            Discuss the Top Note
           </AccentBar>
         ) : null}
 

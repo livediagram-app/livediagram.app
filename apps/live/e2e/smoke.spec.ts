@@ -66,13 +66,13 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   await dismissQuickTour(page);
 
   // The palette is open by default on desktop; its shape tiles are
-  // aria-labelled ("Add square"). Arm the Square, then drop it on the
+  // aria-labelled ("Add Square"). Arm the Square, then drop it on the
   // canvas with a single click. Element views carry a role=img label
   // (docs/specs/004-interface-design/canvas-accessibility.md), so the placed square is addressable without reaching
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
-  await page.getByRole('button', { name: 'Add square', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
   await canvas.click({ position: { x: 420, y: 300 } });
   await expect(square).toHaveCount(1);
 

@@ -77,7 +77,7 @@ export function EstimateFace({
             ) : null}
             {revealed && onClear ? (
               <AccentBar onPress={onClear} icon={<ReopenGlyph />}>
-                New round
+                New Round
               </AccentBar>
             ) : null}
           </>

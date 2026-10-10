@@ -86,7 +86,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
 
   // A peer's edit reaches the owner live.
   await peerPage
-    .getByRole('button', { name: 'Add square', exact: true })
+    .getByRole('button', { name: 'Add Square', exact: true })
     .first()
     .dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
   await peerPage.keyboard.press('Escape');
@@ -94,7 +94,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
 
   // The owner edits too; the autosave keeps both, and a reload shows both.
   await ownerPage
-    .getByRole('button', { name: 'Add square', exact: true })
+    .getByRole('button', { name: 'Add Square', exact: true })
     .first()
     .dragTo(ownerPage.locator(CANVAS), { targetPosition: { x: 300, y: 600 } });
   await ownerPage.keyboard.press('Escape');

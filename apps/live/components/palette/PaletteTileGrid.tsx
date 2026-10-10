@@ -43,7 +43,7 @@ export type PaletteTileActions = {
   addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
-  // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add sticky note" passes nothing.
+  // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add Sticky Note" passes nothing.
   addSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
   addTable: () => void;
   addImage: () => void;

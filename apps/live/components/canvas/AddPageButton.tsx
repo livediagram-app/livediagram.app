@@ -37,11 +37,11 @@ export function AddPageButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <Tooltip label="Add page">
+      <Tooltip label="Add Page">
         <button
           ref={button}
           type="button"
-          aria-label="Add page"
+          aria-label="Add Page"
           aria-haspopup="dialog"
           aria-expanded={open}
           data-add-page-trigger

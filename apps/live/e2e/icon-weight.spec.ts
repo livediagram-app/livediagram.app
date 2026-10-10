@@ -55,7 +55,7 @@ test.describe('Chrome glyph weight', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await startBlankDocument(page);
     const glyph = page
-      .getByRole('button', { name: 'Add square', exact: true })
+      .getByRole('button', { name: 'Add Square', exact: true })
       .locator('svg.lvd-glyph')
       .first();
     await expect(glyph).toHaveAttribute('stroke-width', '1.25');

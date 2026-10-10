@@ -17,11 +17,11 @@ import { searchArticles } from './articles';
 // Most tiles carry a `caption` — the short name shown under the tile ("Note",
 // "Idea box", "Dot vote"), which is what somebody types when they go looking
 // for help about it. SHAPE tiles carry none: the grid shows the glyph, and the
-// shape's name lives in its label as "Add hexagon". So the shapes section
+// shape's name lives in its label as "Add Hexagon". So the shapes section
 // contributes its label with the "Add " stripped.
 //
 // Other sections' labels are deliberately NOT checked. Theirs are phrases
-// ("Add Avatar mode button"), nobody searches a whole sentence, and requiring
+// ("Add Avatar Mode Button"), nobody searches a whole sentence, and requiring
 // them would push noise into the keywords rather than find real gaps. The
 // first version of this guard checked captions alone and would have passed
 // while "hexagon" returned nothing, which is what prompted the split.

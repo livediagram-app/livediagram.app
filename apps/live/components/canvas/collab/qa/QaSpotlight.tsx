@@ -95,7 +95,7 @@ export function QaSpotlight({
             className="pointer-events-auto ml-auto cursor-pointer text-[10px] font-medium opacity-50 transition hover:opacity-90"
             style={{ color: textColor }}
           >
-            Back to queue
+            Back to Queue
           </button>
         ) : null}
       </div>

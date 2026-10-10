@@ -107,7 +107,7 @@ function stickyEntry(): WhiteboardShapeEntry {
   const tile = PALETTE_TILES.find((t) => t.action.type === 'sticky' && !('fill' in t.action));
   return {
     key: 'sticky',
-    label: 'Sticky note',
+    label: 'Sticky Note',
     keywords: `sticky note post-it postit memo card ${tile?.description ?? ''}`,
     group: tile ? tileCategory(tile) : 'write',
     intent: { type: 'sticky' },

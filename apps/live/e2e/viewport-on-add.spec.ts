@@ -21,7 +21,7 @@ test.describe('Viewport on add', () => {
     const box = (await canvas.boundingBox())!;
     const drop = { x: 200, y: 260 };
     await page
-      .getByRole('button', { name: 'Add square', exact: true })
+      .getByRole('button', { name: 'Add Square', exact: true })
       .first()
       .dragTo(canvas, { targetPosition: drop });
     const square = canvas.getByRole('img', { name: 'Square', exact: true });
@@ -40,7 +40,7 @@ test.describe('Viewport on add', () => {
     // Dropped at the far corner, so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;
     await page
-      .getByRole('button', { name: 'Add square', exact: true })
+      .getByRole('button', { name: 'Add Square', exact: true })
       .first()
       .dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
     await page.keyboard.press('Escape');

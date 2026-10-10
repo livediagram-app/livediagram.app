@@ -135,7 +135,7 @@ export function svgQaBoard(el: Face, title: string, color: string, a: CollabAcce
         return out;
       }
       if (!discussing && queue.length > 0) {
-        out += accentBar(x, y, width, 'Discuss the top note', a, GLYPH.bubble);
+        out += accentBar(x, y, width, 'Discuss the Top Note', a, GLYPH.bubble);
         y += ACCENT_BAR_H + BODY_GAP;
       }
       const maxVotes = queue.reduce((m, n) => Math.max(m, n.voters.length), 0);
@@ -204,7 +204,7 @@ export function svgIdeaBox(el: Face, title: string, color: string, a: CollabAcce
         return out;
       }
       if (!open) {
-        out += accentBar(x, y, width, `Open the box (${count})`, a, GLYPH.eye);
+        out += accentBar(x, y, width, `Open the Box (${count})`, a, GLYPH.eye);
         y += ACCENT_BAR_H + BODY_GAP;
         // The sealed plate (IdeaSealed): the lock in its disc, the count.
         const ph = 138;
@@ -227,7 +227,7 @@ export function svgIdeaBox(el: Face, title: string, color: string, a: CollabAcce
           });
         return out;
       }
-      out += accentBar(x, y, width, 'Scatter to sticky notes', a, GLYPH.scatter);
+      out += accentBar(x, y, width, 'Scatter to Sticky Notes', a, GLYPH.scatter);
       y += ACCENT_BAR_H + BODY_GAP;
       for (let i = 0; i < cards.length; i++) {
         const r = row(

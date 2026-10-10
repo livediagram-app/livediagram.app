@@ -48,7 +48,7 @@ made with: the pen, the pencil, text, the basic shapes and your markers."
 
 - **Pen**: the Path tool (click for corners, drag for curves), the same tool Draw mode's dock
   holds.
-- **Freehand pencil**.
+- **Freehand Pencil**.
 - **Text**, and the basic shapes: **Square**, **Circle** and **Diamond** (the same tiles as
   elsewhere; the rest stay in their own categories).
 - **Markers**: Draw mode's three (**Marker 1**, **Marker 2**, **Marker 3**), each in the colour and

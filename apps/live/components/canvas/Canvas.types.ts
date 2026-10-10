@@ -634,7 +634,7 @@ export type CanvasProps = {
   ) => void;
   onCancelEdit: () => void;
   // Append a point to the selected timeline rail (docs/specs/009-elements/timeline-rail.md) — the rail's
-  // "Add point" action on the quick-connect "+".
+  // "Add Point" action on the quick-connect "+".
   onAddRailPoint: () => void;
   // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
   // selected table from the bottom / right plus.

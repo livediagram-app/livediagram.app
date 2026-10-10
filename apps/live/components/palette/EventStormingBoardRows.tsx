@@ -39,7 +39,7 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-              Add from photo
+              Add from Photo
             </span>
             {/* A disabled button takes no focus and may get no hover, so the
                 reason is the row's own second line rather than a hint. */}

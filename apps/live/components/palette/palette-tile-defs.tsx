@@ -1,3 +1,4 @@
+import { headlineCase } from '@livediagram/api-schema';
 import type { BoardWidgetKind } from '@livediagram/items';
 import type { PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
@@ -53,6 +54,7 @@ import {
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
+import { tileCaption } from './tile-caption';
 
 import {
   CodeBlockTileArt,
@@ -278,7 +280,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:square',
     section: 'shapes',
-    label: 'Add square',
+    label: 'Add Square',
     description: 'Drop a new square shape on the canvas.',
     shortcut: 'R',
     filled: true,
@@ -292,7 +294,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:circle',
     section: 'shapes',
-    label: 'Add circle',
+    label: 'Add Circle',
     description: 'Drop a new circle shape on the canvas.',
     shortcut: 'O',
     filled: true,
@@ -306,7 +308,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:diamond',
     section: 'shapes',
-    label: 'Add diamond',
+    label: 'Add Diamond',
     description: 'Diamond. Decision node.',
     shortcut: 'D',
     filled: true,
@@ -321,7 +323,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:cylinder',
     section: 'shapes',
-    label: 'Add cylinder',
+    label: 'Add Cylinder',
     description: 'Cylinder. Flowchart database / storage.',
     shortcut: 'C',
     filled: true,
@@ -336,7 +338,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:parallelogram',
     section: 'shapes',
-    label: 'Add parallelogram',
+    label: 'Add Parallelogram',
     description: 'Parallelogram. Flowchart input / output.',
     shortcut: 'G',
     filled: true,
@@ -350,7 +352,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:hexagon',
     section: 'shapes',
-    label: 'Add hexagon',
+    label: 'Add Hexagon',
     description: 'Hexagon. Preparation / milestone.',
     filled: true,
     action: { type: 'shape', kind: 'hexagon' },
@@ -363,7 +365,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:document',
     section: 'shapes',
-    label: 'Add document',
+    label: 'Add Document',
     description: 'Document shape. Flowchart output.',
     filled: true,
     action: { type: 'shape', kind: 'document' },
@@ -376,7 +378,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:stadium',
     section: 'shapes',
-    label: 'Add stadium',
+    label: 'Add Stadium',
     description: 'Stadium shape. Flowchart Start / End.',
     filled: true,
     dividerAfter: true,
@@ -390,7 +392,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:cloud',
     section: 'shapes',
-    label: 'Add cloud',
+    label: 'Add Cloud',
     description: 'Cloud. Networking / architecture.',
     filled: true,
     action: { type: 'shape', kind: 'cloud' },
@@ -403,7 +405,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:triangle',
     section: 'shapes',
-    label: 'Add triangle',
+    label: 'Add Triangle',
     description: 'Triangle. A basic shape.',
     filled: true,
     action: { type: 'shape', kind: 'triangle' },
@@ -416,7 +418,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:trapezoid',
     section: 'shapes',
-    label: 'Add trapezoid',
+    label: 'Add Trapezoid',
     description: 'Trapezoid. Flowchart manual operation.',
     filled: true,
     action: { type: 'shape', kind: 'trapezoid' },
@@ -429,7 +431,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:star',
     section: 'shapes',
-    label: 'Add star',
+    label: 'Add Star',
     description: 'Star. Highlight or rating.',
     filled: true,
     action: { type: 'shape', kind: 'star' },
@@ -442,7 +444,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'shapes:speech-bubble',
     section: 'shapes',
-    label: 'Add speech bubble',
+    label: 'Add Speech Bubble',
     caption: 'Bubble',
     description: 'Speech bubble. A callout with a tail.',
     filled: true,
@@ -457,9 +459,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:mind-node',
     blurb: 'Tab adds a child, Enter a sibling',
-    caption: 'Mind node',
+    caption: 'Mind Node',
     section: 'build',
-    label: 'Add mind node',
+    label: 'Add Mind Node',
     description:
       'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below, each connected and ready to type into.',
     action: { type: 'shape', kind: 'mind-node' },
@@ -482,7 +484,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A paper-shaped page for prose',
     section: 'tools',
     toolGroup: 'write',
-    label: 'Add page',
+    label: 'Add Page',
     caption: 'Page',
     description: 'A paper-sized surface for rich text. Double-click to write.',
     action: { type: 'shape', kind: 'page' },
@@ -498,7 +500,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A free-standing text label',
     section: 'tools',
     toolGroup: 'write',
-    label: 'Add text',
+    label: 'Add Text',
     description: 'Text element. Double-click to edit.',
     shortcut: 'T',
     dividerAfter: true,
@@ -528,7 +530,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'draw',
     caption: 'Freehand',
-    label: 'Freehand pencil',
+    label: 'Freehand Pencil',
     description:
       'Sketch a freehand stroke, kept exactly as you drew it. Drag to draw; release near the start to close the shape.',
     shortcut: 'P',
@@ -553,7 +555,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'draw',
     caption: 'Shape Pen',
-    label: 'Shape pen',
+    label: 'Shape Pen',
     description:
       'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
     shortcut: '6',
@@ -598,7 +600,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A connector you place by hand',
     section: 'tools',
     toolGroup: 'draw',
-    label: 'Add arrow',
+    label: 'Add Arrow',
     description:
       'A connector with a pointer at its end. Change its pointers in the Pointer accordion.',
     shortcut: 'A',
@@ -630,7 +632,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A coloured note card',
     section: 'tools',
     toolGroup: 'write',
-    label: 'Add sticky note',
+    label: 'Add Sticky Note',
     caption: 'Note',
     description: 'Sticky note for short annotations.',
     shortcut: 'N',
@@ -648,7 +650,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:table',
     blurb: 'An editable grid of cells',
     section: 'build',
-    label: 'Add table',
+    label: 'Add Table',
     description: 'Editable grid. Double-click a cell to type.',
     dividerAfter: true,
     action: { type: 'table' },
@@ -662,7 +664,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:code-block',
     blurb: 'Syntax-highlighted code card',
     section: 'components',
-    label: 'Add code block',
+    label: 'Add Code Block',
     caption: 'Code',
     description: 'Monospace code snippet with syntax highlighting. Double-click to edit.',
     noTint: true,
@@ -679,7 +681,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Avatar',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Avatar mode button',
+    label: 'Add Avatar Mode Button',
     description:
       'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -696,7 +698,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Select',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Select mode button',
+    label: 'Add Select Mode Button',
     description:
       'A button that switches whoever presses it into Select mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -713,7 +715,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Hand',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Hand mode button',
+    label: 'Add Hand Mode Button',
     description:
       'A button that switches whoever presses it into Hand mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -730,7 +732,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Laser',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Laser mode button',
+    label: 'Add Laser Mode Button',
     description:
       'A button that switches whoever presses it into Laser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -747,7 +749,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Spotlight',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Spotlight mode button',
+    label: 'Add Spotlight Mode Button',
     description:
       'A button that switches whoever presses it into Spotlight mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -764,7 +766,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Eraser',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Eraser mode button',
+    label: 'Add Eraser Mode Button',
     description:
       'A button that switches whoever presses it into Eraser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -781,7 +783,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Format',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Format mode button',
+    label: 'Add Format Mode Button',
     description:
       'A button that switches whoever presses it into Format mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -798,7 +800,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Isometric',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Isometric mode button',
+    label: 'Add Isometric Mode Button',
     description:
       'A button that switches whoever presses it into Isometric mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
@@ -818,7 +820,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Step through to its linked portal',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add portal',
+    label: 'Add Portal',
     caption: 'Portal',
     description:
       'Click it, or walk your Avatar character into it, and you come out of the portal it is linked to. Link a pair from the element menu.',
@@ -844,7 +846,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Timer',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add timer button',
+    label: 'Add Timer Button',
     description:
       'A button that starts a countdown for everyone in the room. Pressing it again pauses, and again continues. Set the minutes from its right-click menu.',
     filled: true,
@@ -858,7 +860,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Stopwatch',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add stopwatch button',
+    label: 'Add Stopwatch Button',
     description:
       'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set: a stopwatch has no length.',
     filled: true,
@@ -869,10 +871,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:session-vote',
     tileGroup: 'ask',
     blurb: 'Dot voting, a few dots each',
-    caption: 'Dot vote',
+    caption: 'Dot Vote',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add dot vote button',
+    label: 'Add Dot Vote Button',
     description:
       'A button that starts a dot vote for everyone in the room: each person gets a few dots to place on whatever they think matters. Set how many from its right-click menu.',
     filled: true,
@@ -886,7 +888,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Poll',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add poll button',
+    label: 'Add Poll Button',
     description:
       'A button that opens a poll you have written in advance, so the press asks the question rather than opening a composer. Write it from its right-click menu.',
     filled: true,
@@ -900,7 +902,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Double-click to look underneath',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add reveal zone',
+    label: 'Add Reveal Zone',
     caption: 'Reveal',
     description:
       'A cover over part of the canvas. Double-click it to uncover it just for you, or reveal it for everyone from the menu.',
@@ -916,7 +918,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Done',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add done check',
+    label: 'Add Done Check',
     description:
       'Everyone marks themselves done and the card shows who has and who has not, from whoever is actually in the room. It flashes when the last person finishes. Reset it for the next round from its own menu.',
     filled: true,
@@ -941,7 +943,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Confetti',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add confetti pad',
+    label: 'Add Confetti Pad',
     description:
       'Press it, or walk a character onto it in Avatar mode, and confetti bursts up and falls for everyone in the room. A result worth celebrating.',
     filled: true,
@@ -955,7 +957,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Sparkles',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add sparkles pad',
+    label: 'Add Sparkles Pad',
     description:
       'Press it, or walk a character onto it in Avatar mode, and a slow twinkle around the pad for everyone in the room. A good idea, nicely done.',
     filled: true,
@@ -969,7 +971,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Hearts',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add hearts pad',
+    label: 'Add Hearts Pad',
     description:
       'Press it, or walk a character onto it in Avatar mode, and hearts rise and drift for everyone in the room. Warmth for a person, not a result.',
     filled: true,
@@ -983,7 +985,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Applause',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add applause pad',
+    label: 'Add Applause Pad',
     description:
       'Press it, or walk a character onto it in Avatar mode, and rings of sound spread out for everyone in the room. Thanks for the talk or the demo.',
     filled: true,
@@ -997,7 +999,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Fireworks',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add fireworks pad',
+    label: 'Add Fireworks Pad',
     description:
       'Press it, or walk a character onto it in Avatar mode, and shells burst one after another for everyone in the room. It shipped.',
     filled: true,
@@ -1011,7 +1013,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Pick someone at random',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add picker',
+    label: 'Add Picker',
     caption: 'Picker',
     description:
       'Press it to choose at random: one of the people in the room, or one of the options you write on it.',
@@ -1027,7 +1029,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Ask everyone to look here',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add bring focus',
+    label: 'Add Bring Focus',
     caption: 'Bring Focus',
     description:
       'Bring Focus. Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab.',
@@ -1050,7 +1052,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A chair for Avatars to sit in',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add chair',
+    label: 'Add Chair',
     caption: 'Chair',
     description:
       'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
@@ -1070,7 +1072,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'behaviour',
     tileGroup: 'record',
-    label: 'Add comment panel',
+    label: 'Add Comment Panel',
     description:
       'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
     filled: true,
@@ -1091,7 +1093,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'behaviour',
     tileGroup: 'record',
-    label: 'Add action panel',
+    label: 'Add Action Panel',
     description:
       'A card that carries a list of assigned actions: what needs doing, who owns each, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
     filled: true,
@@ -1114,7 +1116,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Quiz',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add quiz',
+    label: 'Add Quiz',
     description:
       'One multiple-choice question for the room. Start it and the answers fan out around the question for everyone to pick; it locks when the time runs out, then Reveal turns the right answer green and names who got it.',
     filled: true,
@@ -1143,7 +1145,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Estimate',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add estimate card',
+    label: 'Add Estimate Card',
     description:
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Choose Fibonacci, T-shirt sizes or powers of two on the card once it is placed.',
     filled: true,
@@ -1156,7 +1158,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Fist of five: how does the room feel?',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add temperature check',
+    label: 'Add Temperature Check',
     caption: 'Temperature',
     description:
       'A fist-of-five gauge. Everyone registers 1 to 5 and the bars and average move as the answers land.',
@@ -1170,8 +1172,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Anonymous ideas, held until you open it',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add idea box',
-    caption: 'Idea box',
+    label: 'Add Idea Box',
+    caption: 'Idea Box',
     description:
       'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
     filled: true,
@@ -1184,8 +1186,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Notes the room upvotes, best on top',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add Q&A board',
-    caption: 'Q&A board',
+    label: 'Add Q&A Board',
+    caption: 'Q&A Board',
     description:
       'Anyone can add a note, named or anonymous, and upvote others. The most wanted rise to the top; the facilitator spotlights one to discuss.',
     filled: true,
@@ -1198,7 +1200,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Segments with minutes that start the timer',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add agenda',
+    label: 'Add Agenda',
     caption: 'Agenda',
     description:
       'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
@@ -1212,8 +1214,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'What was decided, why, and whether it stands',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add decision record',
-    caption: 'Decision record',
+    label: 'Add Decision Record',
+    caption: 'Decision Record',
     description:
       'A decision on the canvas beside the thing it decided: the statement, a status, the date, and what drove it.',
     filled: true,
@@ -1226,8 +1228,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Freezes who was in the room, right now',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add roll call',
-    caption: 'Roll call',
+    label: 'Add Roll Call',
+    caption: 'Roll Call',
     description:
       'Press Take roll and it records everyone in the room at that moment, and keeps them after they leave.',
     filled: true,
@@ -1238,7 +1240,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:checklist',
     blurb: 'Tickable to-do rows',
     section: 'components',
-    label: 'Add checklist',
+    label: 'Add Checklist',
     caption: 'Checklist',
     description: 'Checkable to-do rows. Tick boxes on the canvas; edit rows from the menu.',
     filled: true,
@@ -1257,7 +1259,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:image',
     blurb: 'Place an uploaded picture',
     section: 'media',
-    label: 'Add image',
+    label: 'Add Image',
     description: 'Drop an image placeholder + pick / upload a file.',
     shortcut: '9',
     noTint: true,
@@ -1276,7 +1278,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A YouTube video',
     caption: 'YouTube',
     section: 'media',
-    label: 'Add YouTube embed',
+    label: 'Add YouTube Embed',
     description:
       'Embeds a YouTube link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'youtube' },
@@ -1288,7 +1290,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A Vimeo video',
     caption: 'Vimeo',
     section: 'media',
-    label: 'Add Vimeo embed',
+    label: 'Add Vimeo Embed',
     description:
       'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'vimeo' },
@@ -1300,7 +1302,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A Loom recording',
     caption: 'Loom',
     section: 'media',
-    label: 'Add Loom embed',
+    label: 'Add Loom Embed',
     description:
       'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'loom' },
@@ -1312,7 +1314,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A Figma file or prototype',
     caption: 'Figma',
     section: 'media',
-    label: 'Add Figma embed',
+    label: 'Add Figma Embed',
     description:
       'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'figma' },
@@ -1324,7 +1326,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A Doc, Sheet or Slide deck',
     caption: 'Google Docs',
     section: 'media',
-    label: 'Add Google Docs embed',
+    label: 'Add Google Docs Embed',
     description:
       'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'gdocs' },
@@ -1340,7 +1342,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Any site, framed on the canvas',
     caption: 'Website',
     section: 'media',
-    label: 'Add website embed',
+    label: 'Add Website Embed',
     description:
       'Embeds any website on the canvas. Double-click it to set the address; it loads when you press play. Some sites refuse to be framed and will come up blank.',
     dividerAfter: true,
@@ -1355,7 +1357,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:avatar',
     blurb: 'A circular photo of a person',
     section: 'media',
-    label: 'Add avatar',
+    label: 'Add Avatar',
     description:
       'Avatar. A circular image. Tap to drop or drag to size; double-click it to pick / upload a photo.',
     noTint: true,
@@ -1374,7 +1376,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A class or table: title over fields',
     caption: 'Entity',
     section: 'components',
-    label: 'Add entity',
+    label: 'Add Entity',
     description:
       'A UML class or ER entity: a title bar over a list of name / type fields. Edit the fields from its right-click menu.',
     dividerAfter: true,
@@ -1392,7 +1394,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A titled band that carries its steps',
     caption: 'Lane',
     section: 'build',
-    label: 'Add lane',
+    label: 'Add Lane',
     description:
       'A swimlane: a horizontal band with a title down its left edge. Dragging it carries everything inside, like a frame.',
     action: { type: 'shape', kind: 'lane' },
@@ -1409,7 +1411,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:frame',
     blurb: 'A labelled box that groups a section',
     section: 'build',
-    label: 'Add frame',
+    label: 'Add Frame',
     description: 'Frame. A titled container you draw around a cluster of elements.',
     shortcut: 'F',
     action: { type: 'shape', kind: 'frame' },
@@ -1430,7 +1432,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // so Write is where it lives — ordered last, after the three surfaces,
     // which is the distinction the row order now carries.
     toolGroup: 'write',
-    label: 'Add annotation',
+    label: 'Add Annotation',
     description: 'Annotation. A note marker: hover to read it, click to edit.',
     filled: true,
     action: { type: 'annotation' },
@@ -1454,7 +1456,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'behaviour',
     tileGroup: 'move',
-    label: 'Add link card',
+    label: 'Add Link Card',
     description: "Link card. A bookmark preview with the page's title, favicon, and image.",
     noTint: true,
     action: { type: 'link-card' },
@@ -1469,7 +1471,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:timeline',
     blurb: 'A track for sequencing events',
     section: 'build',
-    label: 'Add timeline rail',
+    label: 'Add Timeline Rail',
     caption: 'Timeline',
     description: 'A line with points above it. Add more points from its right-end button.',
     filled: true,
@@ -1488,7 +1490,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:pie',
     blurb: 'Proportions of a whole',
     section: 'data',
-    label: 'Add pie chart',
+    label: 'Add Pie Chart',
     caption: 'Pie',
     description: 'A pie chart. Edit its labels + values from the Data menu.',
     filled: true,
@@ -1504,7 +1506,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:bar',
     blurb: 'Compare values side by side',
     section: 'data',
-    label: 'Add bar chart',
+    label: 'Add Bar Chart',
     caption: 'Bar',
     description: 'A bar chart. Edit its labels + values from the Data menu.',
     filled: true,
@@ -1521,7 +1523,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:line',
     blurb: 'A trend over time',
     section: 'data',
-    label: 'Add line chart',
+    label: 'Add Line Chart',
     caption: 'Line',
     description:
       'A multi-series line chart. Edit the data grid or import a CSV from the Data menu.',
@@ -1537,7 +1539,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:legend',
     blurb: 'A key for your colours',
     section: 'data',
-    label: 'Add legend',
+    label: 'Add Legend',
     caption: 'Legend',
     description:
       'A key: a colour-coded dot and a label per row. Edit the colours and words from the Legend menu.',
@@ -1557,7 +1559,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:progress-bar',
     blurb: 'How far along something is',
     section: 'data',
-    label: 'Add progress bar',
+    label: 'Add Progress Bar',
     caption: 'Progress',
     description: 'Horizontal progress bar. Set the percentage from its menu.',
     filled: true,
@@ -1573,7 +1575,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:progress-ring',
     blurb: 'The same, as a donut meter',
     section: 'data',
-    label: 'Add progress ring',
+    label: 'Add Progress Ring',
     caption: 'Donut',
     description: 'Donut progress ring. Set the percentage from its menu.',
     filled: true,
@@ -1589,7 +1591,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:rating',
     blurb: 'A score out of five stars',
     section: 'data',
-    label: 'Add rating',
+    label: 'Add Rating',
     caption: 'Rating',
     description: 'A 1–5 star rating. Set the score + an animation from its menu.',
     filled: true,
@@ -1607,7 +1609,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A themed title block for the top',
     caption: 'Banner',
     section: 'components',
-    label: 'Add banner',
+    label: 'Add Banner',
     description:
       'Banner. A themed title block (an accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
     noTint: true,
@@ -1626,7 +1628,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A note box with an icon and title',
     caption: 'Callout',
     section: 'components',
-    label: 'Add callout',
+    label: 'Add Callout',
     description:
       'Callout. A soft note box with an icon badge, a heading, and a body for annotating a diagram. Tap to drop or drag to size; double-click to edit the body.',
     noTint: true,
@@ -1643,9 +1645,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'components:stat',
     tileGroup: 'web',
     blurb: 'Three KPI cards side by side',
-    caption: 'Stat row',
+    caption: 'Stat Row',
     section: 'components',
-    label: 'Add stat row',
+    label: 'Add Stat Row',
     description:
       'Stat row. KPI cards (big number + caption) for dashboards and summaries. Resize to spread the cards; click a number to edit it, and add or remove stats from its menu.',
     noTint: true,
@@ -1665,7 +1667,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Numbered steps joined by arrows',
     caption: 'Process',
     section: 'components',
-    label: 'Add process steps',
+    label: 'Add Process Steps',
     description:
       'Process steps. Numbered circles joined by arrows with captions, for flows. Resize to spread the steps; click a caption to edit it, and add or remove steps from its menu.',
     noTint: true,
@@ -1685,7 +1687,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A big image with a title card',
     caption: 'Hero',
     section: 'components',
-    label: 'Add hero',
+    label: 'Add Hero',
     description:
       'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it, click the caption to edit it.',
     noTint: true,
@@ -1705,7 +1707,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'A website-style nav bar',
     caption: 'Header',
     section: 'components',
-    label: 'Add header',
+    label: 'Add Header',
     description:
       'Header. A website-style bar with a logo, brand name, and nav links. Resize to make room for more links; drop an icon on it to set the logo.',
     noTint: true,
@@ -1723,7 +1725,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:browser',
     blurb: 'A desktop web page frame',
     section: 'devices',
-    label: 'Add web browser',
+    label: 'Add Web Browser',
     caption: 'Browser',
     description: 'Browser window. Wireframe a web page or a web-app screen.',
     filled: true,
@@ -1739,7 +1741,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:monitor',
     blurb: 'A full-screen desktop layout',
     section: 'devices',
-    label: 'Add computer monitor',
+    label: 'Add Computer Monitor',
     caption: 'Monitor',
     description: 'Desktop monitor with stand. Wireframe a desktop app.',
     filled: true,
@@ -1756,7 +1758,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:laptop',
     blurb: 'A portable-screen view',
     section: 'devices',
-    label: 'Add laptop',
+    label: 'Add Laptop',
     description: 'Laptop. Screen plus keyboard base.',
     filled: true,
     dividerAfter: true,
@@ -1772,7 +1774,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:phone',
     blurb: 'A mobile app or page',
     section: 'devices',
-    label: 'Add phone',
+    label: 'Add Phone',
     description: 'Phone. Wireframe a mobile screen.',
     filled: true,
     action: { type: 'shape', kind: 'phone' },
@@ -1786,7 +1788,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:tablet',
     blurb: 'A larger touch layout',
     section: 'devices',
-    label: 'Add tablet',
+    label: 'Add Tablet',
     description: 'Tablet. Larger than a phone, smaller than a laptop screen.',
     filled: true,
     action: { type: 'shape', kind: 'tablet' },
@@ -1800,7 +1802,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:foldable',
     blurb: 'A foldable phone, opened out',
     section: 'devices',
-    label: 'Add foldable',
+    label: 'Add Foldable',
     caption: 'Foldable',
     description: 'Foldable phone, unfolded. A book-style phone opened to its inner screen.',
     filled: true,
@@ -1816,7 +1818,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'devices:smartwatch',
     blurb: 'A compact wearable screen',
     section: 'devices',
-    label: 'Add smartwatch',
+    label: 'Add Smartwatch',
     caption: 'Watch',
     description: 'Smartwatch. A wrist-device frame for watch-app wireframes.',
     filled: true,
@@ -1840,8 +1842,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
     id: `tools:es-${note.kind}`,
     section: 'event-storming',
-    label: `Add ${note.label} note`,
-    caption: note.label,
+    label: `Add ${headlineCase(note.label)} Note`,
+    caption: headlineCase(note.label),
     blurb: note.blurb,
     description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
     noTint: true,
@@ -1873,15 +1875,10 @@ export function tileById(id: string): PaletteTileDef | undefined {
 
 // The tile's short human name: the explicit caption where one is set,
 // otherwise derived from the action label the same way IconButton derives
-// its tile caption ("Add web browser" → "Web browser", "Pencil (freehand)"
+// its tile caption ("Add Web Browser" → "Web Browser", "Pencil (freehand)"
 // → "Pencil"). Used by the Search panel's add-to-canvas entries.
 export function tileDisplayName(def: PaletteTileDef): string {
-  if (def.caption) return def.caption;
-  const base = def.label
-    .replace(/^add\s+/i, '')
-    .replace(/\s*\([^)]*\)/g, '')
-    .trim();
-  return base.charAt(0).toUpperCase() + base.slice(1);
+  return tileCaption(def.label, def.caption);
 }
 
 /**

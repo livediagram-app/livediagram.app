@@ -16,7 +16,7 @@ const INSTANT_MS = 300;
 // The captioned Square tile in the Shapes category's More popover: the strip's own tiles are
 // icon-only and name themselves in a hover card, so the tooltip lives on the popover's tiles.
 const squareTile = (page: Page) =>
-  page.locator('[data-toolbar-more]').getByRole('button', { name: 'Add square', exact: true });
+  page.locator('[data-toolbar-more]').getByRole('button', { name: 'Add Square', exact: true });
 
 // A blank document with the quick tour out of the way (its dialog would cover
 // the palette mid-hover), and the Palette on Shapes with its More popover open.
@@ -53,7 +53,7 @@ test.describe('Tooltip on a palette tile', () => {
 
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: 1_500 });
-    await expect(tooltip).toHaveText('Add square');
+    await expect(tooltip).toHaveText('Add Square');
     expectNoPageErrors(pageErrors);
   });
 
@@ -65,7 +65,7 @@ test.describe('Tooltip on a palette tile', () => {
 
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: INSTANT_MS });
-    await expect(tooltip).toHaveText('Add square');
+    await expect(tooltip).toHaveText('Add Square');
 
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);

@@ -81,8 +81,8 @@ shape kind.
    (`setWebRowsSelected`). Both go through `withWebRows`: each string `clampWebText` (`D4`),
    the array sliced to the kind's max, and dropped entirely when below the kind's min; a field
    lands only on its own kind.
-4. **Append.** The ring's add action on a selected stat row, process or header ("Add stat", "Add
-   step", "Add link") calls `appendWebRowTo(id)`, offered only while `canAppendWebRow` [QA1] (`D5`).
+4. **Append.** The ring's add action on a selected stat row, process or header ("Add Stat", "Add
+   Step", "Add Link") calls `appendWebRowTo(id)`, offered only while `canAppendWebRow` [QA1] (`D5`).
 5. **Menu.** "Stats" / "Steps" / "Links" section in the Tools flyout: per-row inputs committing on
    blur, ↑ / ↓ reorder, × remove (disabled at the min), Add (disabled at the max) [QA4].
 6. **Masthead.** `setPageHeading(id, field, value)` on `page`, `banner`, `callout`; an empty line

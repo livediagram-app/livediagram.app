@@ -72,7 +72,7 @@ test.describe('Appearance', () => {
     // what it is drawn in is entirely the canvas's ink — the thing the merge
     // depends on, and the thing a unit test can't see reach a memoised view.
     const square = page.getByRole('img', { name: 'Square', exact: true });
-    await page.getByRole('button', { name: 'Add square', exact: true }).click();
+    await page.getByRole('button', { name: 'Add Square', exact: true }).click();
     await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
     await expect(square).toHaveCount(1);
     await expect

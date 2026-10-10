@@ -270,7 +270,7 @@ their bottom-row buttons. What changes to fit the width:
   - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
-  the board's **Add from photo** (an icon button with a hover card) where the deployment offers
+  the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
   photo import.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.

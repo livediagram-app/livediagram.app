@@ -62,7 +62,7 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('>Again<');
   });
 
-  it('writes a roll call with the stack, the chips and the Take again bar', () => {
+  it('writes a roll call with the stack, the chips and the Take Again bar', () => {
     const at = Date.now();
     const svg = svgOf(
       shape('roll-call', {
@@ -72,7 +72,7 @@ describe('Behaviour face export', () => {
         ],
       }),
     );
-    for (const s of ['>2<', '>PRESENT<', '>Priya Kaur<', '>Sam Lee<', '>Take again<'])
+    for (const s of ['>2<', '>PRESENT<', '>Priya Kaur<', '>Sam Lee<', '>Take Again<'])
       expect(svg).toContain(s);
   });
 

@@ -86,7 +86,7 @@ async function toggle(page: Page, name: string): Promise<void> {
 }
 
 async function tourTheChrome(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Add square', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
   await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
   const square = page.getByRole('img', { name: 'Square', exact: true });
   await expect(square).toHaveCount(1);

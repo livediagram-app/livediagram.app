@@ -8,9 +8,9 @@ type Bounds = { x: number; y: number; width: number; height: number };
 
 // The ring action each row-carrying web component offers (docs/specs/009-elements/web-components-and-no-groups.md).
 const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
-  'stat-row': { label: 'Add stat', description: 'Add another KPI card to the row.' },
-  process: { label: 'Add step', description: 'Add another step to the end of the process.' },
-  'site-header': { label: 'Add link', description: 'Add another link to the header.' },
+  'stat-row': { label: 'Add Stat', description: 'Add another KPI card to the row.' },
+  process: { label: 'Add Step', description: 'Add another step to the end of the process.' },
+  'site-header': { label: 'Add Link', description: 'Add another link to the header.' },
 };
 
 // The four quick-connect "+" buttons around a single selected element (docs/specs/008-canvas/canvas-and-palette.md),
@@ -46,7 +46,7 @@ export function QuickConnectPluses({
   onAppendWebRow?: (elementId: string) => void;
 }) {
   const growMind = useMindGrow();
-  // A timeline rail's "+" gains "Add point" (docs/specs/009-elements/timeline-rail.md).
+  // A timeline rail's "+" gains "Add Point" (docs/specs/009-elements/timeline-rail.md).
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
   const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
