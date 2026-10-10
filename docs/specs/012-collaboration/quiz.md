@@ -138,6 +138,11 @@ Presses that run the round (start, lock, reveal, reset) write through the
 non-history path like the estimate card's Reveal, and `quizStartedAt`,
 `quizLockedAt` and `quizRevealed` are re-grafted onto undo snapshots with the
 other live fields, so one person's Ctrl+Z cannot un-start somebody's round.
+The one exception is **undoing an edit**: when the undo brings back a different
+question, answers or correct answer while the card has picks or a round in play,
+the card returns to `ready` with a new round (`reconcileRestoredElement` in
+`undo-live-reconcile.ts`), exactly as saving the edit did. Otherwise the old
+options came back under picks cast against the new ones.
 
 ## Limits, stated plainly
 
