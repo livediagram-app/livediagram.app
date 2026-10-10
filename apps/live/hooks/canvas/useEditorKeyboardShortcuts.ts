@@ -184,7 +184,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !inText &&
         !mod &&
         !e.shiftKey &&
-        !live.isReadOnly &&
+        (!live.isReadOnly || live.participant) &&
         live.editingId === null &&
         selectedId !== null &&
         multiSelectedIds.size === 0 &&

@@ -558,7 +558,7 @@ describe('DocumentRoom op-role enforcement', () => {
   const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
-  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
+  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
   const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer'];
@@ -750,6 +750,24 @@ describe('DocumentRoom op-role enforcement', () => {
     const received = opsReceived(other.ws);
     expect(received).toHaveLength(1);
     expect(received[0]).not.toHaveProperty('seq');
+  });
+
+  // docs/specs/012-collaboration/bring-focus.md + share-roles.md: moving everyone's view runs the session.
+  it("relays an editor's Bring Focus and drops a Viewer's and a Participant's", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const participant = connect(room, 'participant', 'participate');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    const op = { kind: 'focus-here', tabId: 't', at: { x: 10, y: 20 }, zoom: 1 };
+
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    sendFrame(room, participant.ws, { kind: 'op', op });
+    expect(opsReceived(other.ws)).toHaveLength(0);
+
+    sendFrame(room, editor.ws, { kind: 'op', op });
+    expect(opsReceived(other.ws)).toHaveLength(1);
   });
 
   it('keeps viewports out of the catch-up log entirely', () => {

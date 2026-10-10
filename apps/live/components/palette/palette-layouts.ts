@@ -247,8 +247,10 @@ export function paletteLandingCategory(mode: EditorMode, esBoard: boolean): stri
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
 // Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
-// notation's coloured notes; elsewhere the landing category's sticky and text tiles, else the Sticky and Text tiles.
+// notation's coloured notes; elsewhere the landing category's sticky and text tiles, else the Sticky and Text tiles;
+// then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
 const PARTICIPANT_FALLBACK_TILES = ['tools:sticky', 'tools:text'] as const;
+const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
 export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
   const landing = paletteLandingCategory(mode, esBoard);
@@ -256,10 +258,14 @@ export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTil
   const tiles = (category?.tiles ?? []).filter(
     (t) => t.action.type === 'sticky' || t.action.type === 'text',
   );
-  if (tiles.length > 0) return tiles;
-  return PARTICIPANT_FALLBACK_TILES.map(tileById).filter(
-    (t): t is PaletteTileDef => t !== undefined,
-  );
+  const base =
+    tiles.length > 0
+      ? tiles
+      : PARTICIPANT_FALLBACK_TILES.map(tileById).filter(
+          (t): t is PaletteTileDef => t !== undefined,
+        );
+  const image = tileById(PARTICIPANT_IMAGE_TILE);
+  return image ? [...base, image] : base;
 }
 
 export function participantPaletteCategories(

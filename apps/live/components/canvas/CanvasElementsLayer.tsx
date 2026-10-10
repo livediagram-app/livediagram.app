@@ -170,6 +170,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCastVote,
     onRetractVote,
     readOnly,
+    canMove,
+    canWriteText,
+    canResize,
     canvasTool,
     onEnterPortal,
     onFireReaction,
@@ -592,6 +595,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 tabLocked={tabLocked}
                 tabSummaries={tabSummaries}
                 readOnly={readOnly}
+                movable={!readOnly || canMove?.(element) === true}
+                writable={!readOnly || canWriteText?.(element) === true}
+                resizable={!readOnly || canResize?.(element) === true}
                 onBeginDrag={h.onBeginDrag}
                 onShiftSelect={h.onShiftSelect}
                 vote={tabVote}

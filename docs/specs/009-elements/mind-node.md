@@ -15,7 +15,9 @@ node the ring holds only those two and Duplicate: a free arrow, a freehand
 sketch or a loose text label is not how a map grows, so Arrow, Pencil and Text
 are left off it (they stay on every other element's ring). Each names
 its shortcut in its hover card. The toolbar buttons are not offered on a locked
-node (growing re-lays the map) or to a view-role visitor.
+node (growing re-lays the map) or to a Viewer. A Participant grows a map from the keyboard, Tab and Enter
+on a selected node or in its label ([Share roles](../013-workspace/share-roles.md)); the toolbar and ring are an
+Editor's.
 
 Each new node is placed in the map, connected to its parent with a pinned
 arrow, selected, and put straight into label editing, so a whole branch is

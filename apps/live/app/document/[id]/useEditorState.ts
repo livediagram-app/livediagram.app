@@ -2670,8 +2670,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     refreshRecentImages,
     closeImagePicker,
   } = useEditorImages({
-    editsBlocked: structureBlocked,
-    isReadOnly,
+    // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
+    editsBlocked: participant.participating
+      ? editsBlocked || !participant.can.addContent
+      : structureBlocked,
+    isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
@@ -2752,7 +2755,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
   const { canGrowMindNode, growMindNode, abandonMindNode } = useMindGrowth({
-    editsBlocked: structureCreateBlocked,
+    // A Participant grows a mind map (docs/specs/013-workspace/share-roles.md): branches are content.
+    editsBlocked: participant.participating
+      ? createBlocked || !participant.can.addContent
+      : structureCreateBlocked,
+    participating: participant.participating,
     activeId,
     activeTab,
     commitTabs,
@@ -3317,6 +3324,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editingId,
     isReadOnly,
     canMove: participant.can.move,
+    canResize: participant.can.resize,
     formatSourceId,
     applyFormatFromSource,
     formatToolActive,

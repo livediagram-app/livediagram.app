@@ -27,6 +27,7 @@ import {
   FOREVER_LABEL,
   ImageGlyph,
   MarkdownGlyph,
+  PASS_BIN_CLASS,
   ScopeOptions,
 } from './share-dialog-parts';
 
@@ -127,176 +128,181 @@ export function ActiveSharePass({
         </Tooltip>
       </div>
 
-      {/* Line 2: what the pass is printed with. */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
-        {/* Opens only when there is a choice to make: on a single-tab
+      {/* Lines 2 and 3 share one row from sm up: what the pass is printed with, then the other ways to hand
+          it over. A phone stacks them. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        {/* Line 2: what the pass is printed with. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+          {/* Opens only when there is a choice to make: on a single-tab
             document every pass opens every tab, so saying so is noise. */}
-        {onRescope ? (
-          <span className="inline-flex items-center gap-1.5">
-            <span className={metaLabel}>Opens</span>
-            <HoverCard
-              title="Tabs"
-              description="Which tabs this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice."
-            >
-              <Select
-                size="sm"
-                variant="ghost"
-                value={link.tabId ?? ''}
-                onChange={(e) => onRescope(link.code, e.target.value || null)}
-                disabled={busy}
-                aria-label={`Tabs link ${link.code} opens`}
-                className="max-w-36"
+          {onRescope ? (
+            <span className="inline-flex items-center gap-1.5">
+              <span className={metaLabel}>Opens</span>
+              <HoverCard
+                title="Tabs"
+                description="Which tabs this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice."
               >
-                <ScopeOptions tabs={tabs} />
-              </Select>
-            </HoverCard>
+                <Select
+                  size="sm"
+                  variant="ghost"
+                  value={link.tabId ?? ''}
+                  onChange={(e) => onRescope(link.code, e.target.value || null)}
+                  disabled={busy}
+                  aria-label={`Tabs link ${link.code} opens`}
+                  className="max-w-36"
+                  // Sized to the chosen tab, not the longest option, so the caret sits by the name.
+                  selectClassName="[field-sizing:content]"
+                >
+                  <ScopeOptions tabs={tabs} />
+                </Select>
+              </HoverCard>
+            </span>
+          ) : null}
+          <span className="inline-flex items-center gap-1.5">
+            <span className={metaLabel}>Valid</span>
+            {link.expiresAt !== null ? (
+              <HoverCard
+                title="Expiring pass"
+                description={`Issued with a ${
+                  link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
+                } lifetime. When it runs out the link stops working and moves to Expired, where you can extend it.`}
+              >
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
+                  <ClockIcon />
+                  {formatTimeLeftCompact(link.expiresAt - now)}
+                </span>
+              </HoverCard>
+            ) : (
+              <span className="font-medium">{FOREVER_LABEL}</span>
+            )}
           </span>
-        ) : null}
-        <span className="inline-flex items-center gap-1.5">
-          <span className={metaLabel}>Valid</span>
-          {link.expiresAt !== null ? (
-            <HoverCard
-              title="Expiring pass"
-              description={`Issued with a ${
-                link.expiry === 'never' ? '' : EXPIRY_LABELS[link.expiry]
-              } lifetime. When it runs out the link stops working and moves to Expired, where you can extend it.`}
-            >
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
-                <ClockIcon />
-                {formatTimeLeftCompact(link.expiresAt - now)}
-              </span>
-            </HoverCard>
-          ) : (
-            <span className="font-medium">{FOREVER_LABEL}</span>
-          )}
-        </span>
-        {sharePasswordSet ? (
-          <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300">
-            <LockIcon size={11} />
-            Password
-          </span>
-        ) : null}
-      </div>
+          {sharePasswordSet ? (
+            <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300">
+              <LockIcon size={11} />
+              Password
+            </span>
+          ) : null}
+        </div>
 
-      {/* Line 3: the other ways to hand it over, revoke apart at the far edge. */}
-      <div className="flex items-center gap-1.5">
-        {/* Embed (docs/specs/013-workspace/embeds.md): copy the embed as a raw URL or an
+        {/* Line 3: the other ways to hand it over, then revoke, grouped at the right from sm up. */}
+        <div className="flex items-center gap-1.5 sm:flex-1 sm:justify-end">
+          {/* Embed (docs/specs/013-workspace/embeds.md): copy the embed as a raw URL or an
             <iframe> snippet. Embeds honour the link's role, so the hover card
             says which one this pass hands out. */}
-        <ShareCopyMenu
-          label="Embed"
-          hoverCardTitle="Embed"
-          hoverCardDescription={`Copy an embed of this document as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
-            link.role === 'edit'
-              ? 'This edit pass embeds an editable canvas.'
-              : 'This pass embeds a look-only canvas.'
-          }`}
-          trackType="EmbedCode"
-          items={[
-            {
-              label: 'Copy embed URL',
-              icon: <LinkIcon />,
-              text: embedUrlFor(origin, link.code),
-              what: 'embed URL',
-            },
-            {
-              label: 'Copy iframe',
-              icon: <CodeGlyph />,
-              text: buildEmbedSnippet(origin, link.code),
-              what: 'iframe',
-            },
-          ]}
-        />
-        {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md):
-            an <img>-able SVG URL. Hidden while a password is set: an <img>
-            can't supply one, so the server refuses an image for gated shares
-            and offering it here would mislead. */}
-        {sharePasswordSet ? null : (
           <ShareCopyMenu
-            label="Live image"
-            hoverCardTitle="Live image"
-            hoverCardDescription="An <img>-able SVG URL that re-renders this document, so an embed in a README, wiki, or doc stays up to date."
-            trackType="LiveImage"
-            header={
-              // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing
-              // when there's more than one tab. Selecting the first tab
-              // clears back to the cached default (null → no `?tab=`).
-              tabs.length > 1 && !scoped ? (
-                <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  Tab
-                  <Select
-                    size="sm"
-                    value={liveImageTabId ?? firstTabId ?? ''}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      const next = id === firstTabId ? null : id;
-                      setLiveImageTabId(next);
-                      if (next) track('UI', 'Selected', 'LiveImageTab');
-                    }}
-                    className="min-w-0 flex-1"
-                  >
-                    {tabs.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-              ) : null
-            }
+            label="Embed"
+            hoverCardTitle="Embed"
+            hoverCardDescription={`Copy an embed of this document as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
+              link.role === 'edit'
+                ? 'This edit pass embeds an editable canvas.'
+                : 'This pass embeds a look-only canvas.'
+            }`}
+            trackType="EmbedCode"
             items={[
               {
-                label: 'Copy image URL',
-                icon: <ImageGlyph />,
-                text: liveImageUrlFor(origin, link.code, imageTabParam),
-                what: 'image URL',
+                label: 'Copy embed URL',
+                icon: <LinkIcon />,
+                text: embedUrlFor(origin, link.code),
+                what: 'embed URL',
               },
               {
-                label: 'Copy Markdown',
-                icon: <MarkdownGlyph />,
-                text: liveImageMarkdown(origin, link.code, imageTabParam),
-                what: 'Markdown',
-              },
-              {
-                label: 'Copy HTML',
+                label: 'Copy iframe',
                 icon: <CodeGlyph />,
-                text: liveImageHtml(origin, link.code, imageTabParam),
-                what: 'HTML',
+                text: buildEmbedSnippet(origin, link.code),
+                what: 'iframe',
               },
             ]}
           />
-        )}
-        <span className="flex-1" />
-        <HoverCard
-          title="Revoke link"
-          description="The URL stops working immediately for everyone holding it."
-        >
-          <button
-            type="button"
-            onClick={(e) => setRevokeAnchor(e.currentTarget)}
-            disabled={busy}
-            aria-label="Revoke link"
-            aria-expanded={revokeAnchor !== null}
-            className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md):
+            an <img>-able SVG URL. Hidden while a password is set: an <img>
+            can't supply one, so the server refuses an image for gated shares
+            and offering it here would mislead. */}
+          {sharePasswordSet ? null : (
+            <ShareCopyMenu
+              label="Live image"
+              hoverCardTitle="Live image"
+              hoverCardDescription="An <img>-able SVG URL that re-renders this document, so an embed in a README, wiki, or doc stays up to date."
+              trackType="LiveImage"
+              header={
+                // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing
+                // when there's more than one tab. Selecting the first tab
+                // clears back to the cached default (null → no `?tab=`).
+                tabs.length > 1 && !scoped ? (
+                  <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    Tab
+                    <Select
+                      size="sm"
+                      value={liveImageTabId ?? firstTabId ?? ''}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        const next = id === firstTabId ? null : id;
+                        setLiveImageTabId(next);
+                        if (next) track('UI', 'Selected', 'LiveImageTab');
+                      }}
+                      className="min-w-0 flex-1"
+                    >
+                      {tabs.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                ) : null
+              }
+              items={[
+                {
+                  label: 'Copy image URL',
+                  icon: <ImageGlyph />,
+                  text: liveImageUrlFor(origin, link.code, imageTabParam),
+                  what: 'image URL',
+                },
+                {
+                  label: 'Copy Markdown',
+                  icon: <MarkdownGlyph />,
+                  text: liveImageMarkdown(origin, link.code, imageTabParam),
+                  what: 'Markdown',
+                },
+                {
+                  label: 'Copy HTML',
+                  icon: <CodeGlyph />,
+                  text: liveImageHtml(origin, link.code, imageTabParam),
+                  what: 'HTML',
+                },
+              ]}
+            />
+          )}
+          <HoverCard
+            title="Revoke link"
+            description="The URL stops working immediately for everyone holding it."
           >
-            <TrashIcon />
-          </button>
-        </HoverCard>
-        {/* Revoking cuts off everyone holding the pass and can't be undone
+            <button
+              type="button"
+              onClick={(e) => setRevokeAnchor(e.currentTarget)}
+              disabled={busy}
+              aria-label="Revoke link"
+              aria-expanded={revokeAnchor !== null}
+              className={PASS_BIN_CLASS}
+            >
+              <TrashIcon />
+            </button>
+          </HoverCard>
+          {/* Revoking cuts off everyone holding the pass and can't be undone
             (a new pass is a new URL), so it confirms right beside the bin
             (docs/specs/007-editor/live-app.md "Destructive actions"). */}
-        {revokeAnchor ? (
-          <ConfirmPopover
-            anchor={revokeAnchor}
-            message="Revoke this pass? The link stops working at once for everyone holding it."
-            confirmLabel="Revoke"
-            onConfirm={() => {
-              setRevokeAnchor(null);
-              exit.leave();
-            }}
-            onCancel={() => setRevokeAnchor(null)}
-          />
-        ) : null}
+          {revokeAnchor ? (
+            <ConfirmPopover
+              anchor={revokeAnchor}
+              message="Revoke this pass? The link stops working at once for everyone holding it."
+              confirmLabel="Revoke"
+              onConfirm={() => {
+                setRevokeAnchor(null);
+                exit.leave();
+              }}
+              onCancel={() => setRevokeAnchor(null)}
+            />
+          ) : null}
+        </div>
       </div>
     </SharePassTicket>
   );

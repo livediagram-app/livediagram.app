@@ -95,21 +95,29 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
 `applyParticipantOp(tab, op, adderKey)` (pure), returning `{ result: 'applied', tab, op } | { result: 'refused',
 correction: ElementOp | null, reason }`:
 
-| Op        | Applied when                                                                                                  | Result                                                                                                                                                                              | Refusal correction                       |
-| --------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `add`     | `element.type ∈ PARTICIPANT_ADDABLE_TYPES`; `adderKey` present; id unused; layer (if any) exists and unlocked | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
-| `update`  | The stored element exists, same type, not `locked`, its layer not locked                                      | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
-| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked`                                               | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
-| `reorder` | never                                                                                                         | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
+| Op        | Applied when                                                                                 | Result                                                                                                                                                                              | Refusal correction                       |
+| --------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused; layer (if any) exists and unlocked | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
+| `update`  | The stored element exists, same type, not `locked`, its layer not locked                     | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
+| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked`                              | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
+| `reorder` | never                                                                                        | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
 
 Permitted fields on another's element:
 
-| Element                   | Fields                                                                                                |
-| ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`)                                                       |
-| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                     |
-| `sticky`                  | also `x`, `y`, `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`) |
-| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                         |
+| Element                   | Fields                                                                                                            |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`) |
+| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                 |
+| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)       |
+| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                       |
+| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                     |
+| mind node                 | also `x`, `y` (`PARTICIPANT_MIND_FIELDS`): growing a map re-lays it                                               |
+| mind connector            | the `anchor` of `from` and `to`, each end still pinned to the same node                                           |
+| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture        |
+
+`addableOn(tab, el)`: `sticky`, `text` and `image` anywhere; a `shape` only as a mind node whose `mindParentId` names
+a mind node on the tab; an `arrow` only pinned at both ends to mind nodes on the tab (a mind connector). An own
+element's update must leave it `addableOn` the tab, else `refused` (`not-holdable`).
 
 - An `update` whose merge equals the stored element is `applied` with no write (`unchanged`) and no relay.
 - The applied tab must pass `isValidTab`; one that does not is refused with the stored element as correction.
@@ -153,8 +161,9 @@ Editor state:
 | --------------- | --------------------------------------------- | ----- |
 | `takePart`      | true                                          | false |
 | `addContent`    | true (sticky and text)                        | false |
-| `writeText(el)` | true unless `el.locked`                       | false |
-| `move(el)`      | `el.type === 'sticky'` or own, and not locked | false |
+| `writeText(el)` | true unless `el.locked` or a Behaviour        | false |
+| `move(el)`      | a sticky, image, mind node or own; not locked | false |
+| `resize(el)`    | a sticky, image or own; not locked            | false |
 | `recolour(el)`  | `el.type === 'sticky'` or own                 | false |
 | `remove(el)`    | own (`el.addedBy === selfAdderKey`)           | false |
 | `planCards`     | true                                          | false |
@@ -213,11 +222,22 @@ export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 
 `packages/document/src/participant-content.ts`:
 
 ```ts
-export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text'];
+export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image', 'shape', 'arrow'];
+export const PARTICIPANT_MIND_FIELDS: readonly ['x', 'y'];
+export const PARTICIPANT_IMAGE_FIELDS: readonly [
+  'imageId',
+  'naturalWidth',
+  'naturalHeight',
+  'alt',
+  'credit',
+];
+export function addableOn(tab: Tab, el: Element): boolean;
+export function participantWritesOn(el: Element): boolean;
 export const PARTICIPANT_TEXT_FIELDS: readonly ['label', 'richText'];
+export const PARTICIPANT_PLACE_TYPES: readonly ['sticky', 'image'];
+export const PARTICIPANT_PLACE_FIELDS: readonly ['x', 'y', 'width', 'height'];
+export function isParticipantPlaceable(el: Element): boolean;
 export const PARTICIPANT_STICKY_FIELDS: readonly [
-  'x',
-  'y',
   'fillColor',
   'strokeColor',
   'textColor',
@@ -409,18 +429,18 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 
 ## Constants and configuration
 
-| Constant                    | Value                             | Provenance                     | Safe range          |
-| --------------------------- | --------------------------------- | ------------------------------ | ------------------- |
-| `ACCESS_LEVELS`             | `['view', 'participate', 'edit']` | Spec, ascending                | fixed               |
-| `DEFAULT_LINK_LEVEL`        | `'edit'`                          | Spec: an omitted role is edit  | fixed               |
-| `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                   | Spec                           | fixed               |
-| `LEVEL_ORDER`               | `['edit', 'participate', 'view']` | Spec's card order              | fixed               |
-| `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text']`              | Spec                           | grows with the spec |
-| `TAB_CAS_MAX_ATTEMPTS`      | 8                                 | The Q&A write's existing bound | 3 to 20             |
-| `ADDER_KEY_LENGTH`          | 32                                | 128 bits of hex (SR4)          | 16 to 64            |
-| `ANSWERS_FLUSH_MS`          | 1500                              | SR9                            | 250 to 10000        |
-| `PARTICIPANT_PENDING_MAX`   | 64                                | SR12                           | 8 to 512            |
-| `HELD_BACK_NOTICE_MS`       | 4000                              | SR13                           | 1000 to 30000       |
+| Constant                    | Value                                           | Provenance                                     | Safe range          |
+| --------------------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------- |
+| `ACCESS_LEVELS`             | `['view', 'participate', 'edit']`               | Spec, ascending                                | fixed               |
+| `DEFAULT_LINK_LEVEL`        | `'edit'`                                        | Spec: an omitted role is edit                  | fixed               |
+| `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                                 | Spec                                           | fixed               |
+| `LEVEL_ORDER`               | `['edit', 'participate', 'view']`               | Spec's card order                              | fixed               |
+| `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text', 'image', 'shape', 'arrow']` | Spec (shape and arrow narrowed by `addableOn`) | grows with the spec |
+| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | The Q&A write's existing bound                 | 3 to 20             |
+| `ADDER_KEY_LENGTH`          | 32                                              | 128 bits of hex (SR4)                          | 16 to 64            |
+| `ANSWERS_FLUSH_MS`          | 1500                                            | SR9                                            | 250 to 10000        |
+| `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |
+| `HELD_BACK_NOTICE_MS`       | 4000                                            | SR13                                           | 1000 to 30000       |
 
 No new environment variable or binding; self-hosting needs migration 0080.
 

@@ -66,8 +66,8 @@ export function useBoxedDragHandlers({
     // Selection above still lands so viewers can inspect; the drag
     // itself is blocked for a locked element or a read-only session.
     if (element.locked === true) return;
-    // A Participant moves only a sticky or its own work, and never resizes (no handles reach here for it).
-    if (d.isReadOnly && (mode !== 'move' || !d.canMove?.(element))) return;
+    // A Participant moves and resizes only what it may (docs/specs/013-workspace/share-roles.md).
+    if (d.isReadOnly && !(mode === 'move' ? d.canMove : d.canResize)?.(element)) return;
 
     // A multi-selection drags in lockstep: for 'move' the whole set
     // translates together, for 'resize-*' the whole set scales together

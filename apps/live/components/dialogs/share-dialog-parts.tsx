@@ -29,19 +29,23 @@ const ParticipatePassIcon = lucideGlyph(lucideVote, 18);
 const ViewPassIcon = lucideGlyph(lucideEye, 18);
 export const ClockIcon = lucideGlyph(lucideClock, 12);
 
-// One entry per role. The stub colour is the role at a glance, so the
-// composer's role card, the pass stub and nothing else use it: brand for
+// A pass's delete button: bordered like its hand-over buttons beside it, rose on hover.
+export const PASS_BIN_CLASS =
+  'inline-flex items-center rounded-md border border-slate-200 px-1.5 py-1 text-slate-500 transition hover:border-rose-300 hover:text-rose-600 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:border-rose-400/60 dark:hover:text-rose-300';
+
+// One entry per role. The band colour is the role at a glance, so the
+// composer's role card, the pass header band and nothing else use it: brand for
 // edit, teal for participate, violet for view (docs/specs/013-workspace/share-roles.md).
 // Keyed in LEVEL_ORDER, the cards' order.
 export const ROLE_PASS: Record<
   ShareRole,
   {
-    // The word printed on the pass stub.
+    // The word printed on the pass header band.
     stamp: string;
     title: string;
     blurb: string;
     Icon: typeof EditPassIcon;
-    // Solid fill: the pass stub and the role card's icon tile.
+    // Solid fill: the pass header band and the role card's icon tile.
     solid: string;
     // The selected role card's border + tint.
     selected: string;

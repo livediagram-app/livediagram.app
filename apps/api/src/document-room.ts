@@ -829,6 +829,9 @@ export class DocumentRoom implements DurableObject {
       // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a poll answer and a
       // reaction are taking part, so they need a Participant.
       if (level === 'view' && (opKind === 'poll-answer' || opKind === 'reaction')) return;
+      // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
+      // Editor's alone.
+      if (opKind === 'focus-here' && level !== 'edit') return;
       if (!isPresenceOp && level !== 'edit') {
         if (level !== 'participate') return;
         if (opKind === 'el') {

@@ -514,6 +514,9 @@ export function EditorCanvasHost() {
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
         participantPalette={participating && can.addContent}
+        canMove={can.move}
+        canWriteText={can.writeText}
+        canResize={can.resize}
         documentName={documentName}
         tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
         tabBackgroundColor={backdrop.backgroundColor}
@@ -577,7 +580,7 @@ export function EditorCanvasHost() {
         // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
         // stop and listen". Undefined renders the face inert, which is what a
         // read-only surface already gets.
-        onPressFocusButton={runBlocked ? undefined : pressFocusButton}
+        onPressFocusButton={isReadOnly || runBlocked ? undefined : pressFocusButton}
         reactionBursts={reactionBursts}
         onReactionBurstDone={clearReactionBurst}
         laserTrails={laserTrailRows}
@@ -654,7 +657,8 @@ export function EditorCanvasHost() {
                 reopen: reopenAction,
               }
         }
-        onRollPicker={pickerFor}
+        // Rolling is running the session (docs/specs/013-workspace/share-roles.md): an Editor's alone.
+        onRollPicker={isReadOnly ? undefined : pickerFor}
         // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
         // so the pill doesn't have to look one up.
         followingName={

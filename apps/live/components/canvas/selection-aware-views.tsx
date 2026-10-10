@@ -35,6 +35,7 @@ export const SelectableBoxedView = memo(function SelectableBoxedView({
     isPaintMode: props.isPaintMode === true,
     tabLocked: props.tabLocked === true,
     readOnly: props.readOnly === true,
+    resizable: props.resizable,
   });
   return (
     <BoxedElementView

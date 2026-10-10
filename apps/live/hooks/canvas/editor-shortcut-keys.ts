@@ -286,11 +286,11 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     live.onOpenSearch();
     return true;
   }
-  // A view-role visitor gets the zoom + search chords above and nothing
-  // below. Nothing was dispatched, so this is `false` — the caller
-  // swallows the key either way.
-  if (live.isReadOnly) return false;
-  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z.
+  // A Viewer gets the zoom + search chords above and nothing below. Nothing was dispatched, so this is `false`:
+  // the caller swallows the key either way.
+  if (live.isReadOnly && !live.participant) return false;
+  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z. A Participant undoes and redoes its own changes too
+  // (docs/specs/013-workspace/share-roles.md); the room puts back any part it may not make.
   if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
     e.preventDefault();
     live.redo();
@@ -301,6 +301,8 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     live.undo();
     return true;
   }
+  // Every chord below is an Editor's.
+  if (live.isReadOnly) return false;
   if (lower === 'c') {
     // Text selected on the page (a comment, a share link, a panel) is the browser's to copy: the
     // canvas copy would copy nothing, or the selected elements instead of what was highlighted.

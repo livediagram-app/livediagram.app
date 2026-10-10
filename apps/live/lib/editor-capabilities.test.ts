@@ -30,13 +30,23 @@ describe('resolveEditorCapabilities', () => {
     expect(can.takePart && can.addContent && can.planCards && can.sheetCells).toBe(true);
     expect(can.writeText(shape())).toBe(true);
     expect(can.writeText(shape({ locked: true }))).toBe(false);
+    expect(can.writeText(shape({ shape: 'session-button', label: 'Poll' }))).toBe(false);
     expect(can.move(sticky())).toBe(true);
     expect(can.move(shape())).toBe(false);
+    expect(can.move(shape({ shape: 'mind-node' }))).toBe(true);
+    expect(can.resize(sticky())).toBe(true);
+    expect(can.resize(shape())).toBe(false);
+    expect(can.resize(shape({ addedBy: ME }))).toBe(true);
+    expect(can.resize(sticky({ locked: true }))).toBe(false);
+    const text = { id: 'x', type: 'text', ...box } as Element;
+    expect(can.move(text) || can.resize(text)).toBe(false);
+    expect(can.move({ ...text, addedBy: ME } as Element)).toBe(true);
     expect(can.recolour(sticky())).toBe(true);
     expect(can.recolour(shape())).toBe(false);
     expect(can.remove(sticky())).toBe(false);
     expect(can.remove(sticky({ addedBy: 'b'.repeat(32) }))).toBe(false);
     expect(can.remove(sticky({ addedBy: ME }))).toBe(true);
+    expect(can.remove(shape({ shape: 'mind-node', addedBy: ME }))).toBe(true);
     expect(can.remove(sticky({ addedBy: ME, locked: true }))).toBe(false);
   });
 

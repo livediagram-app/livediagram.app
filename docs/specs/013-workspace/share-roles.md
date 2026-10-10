@@ -16,11 +16,11 @@ Participant level is the middle: take part in the board, never reshape it.
 
 ## The levels
 
-| Level           | Wire name     | May                                                                                                                                                                                                                                                                                                             |
-| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment, poll answer, Q&A note or upvote, vote, answer or reaction.                                  |
-| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; answer live polls; add to and upvote on Q&A boards; react; take part in session tools; add, write and arrange stickies and text; write on any element; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
-| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                                                                                               |
+| Level           | Wire name     | May                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment, poll answer, Q&A note or upvote, vote, answer or reaction.                                                                                                                                  |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; answer live polls; add to and upvote on Q&A boards; react; take part in session tools; add, write and arrange stickies and text; place images and swap their pictures; grow mind maps; write on any element but a Behaviour, a table's cells included; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
+| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                                                                                                                                                                                               |
 
 - **The levels are a ladder**: every level holds everything below it.
 - **A Viewer only looks.** A comment, a poll answer, a Q&A note or upvote, a vote and a reaction are all taking
@@ -35,22 +35,24 @@ Participant level is the middle: take part in the board, never reshape it.
 
 A Participant changes the board's **content**, never its **shape**.
 
-| May                                                                                                                                                   | Never                                                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Take part in session tools: cast and withdraw dots, answer estimate cards, temperature checks, the Done check and quizzes, drop ideas in the idea box | Start, end, reveal, clear or configure a session tool; take the roll; hold the baton                            |
-| Add a sticky or a text element                                                                                                                        | Add any other element: shapes, connectors, frames, images, templates, kits                                      |
-| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                                                                  | Change any other field of an element it did not add: size, style, rotation, layer, lock                         |
-| Move and recolour any sticky                                                                                                                          | Move or restyle anything else                                                                                   |
-| Delete a sticky or text element it added itself                                                                                                       | Delete anything someone else added                                                                              |
-| Change anything about a sticky or text element it added (size, style, text)                                                                           | Reorder layers; group; lock                                                                                     |
-| On a Plan board: add a card, edit its fields, move it between columns                                                                                 | Columns, card types, custom fields, board settings; delete, trash or archive a card; restore one with its votes |
-| On a Sheet: write cells                                                                                                                               | Rows and columns, the Sheet's title, adding or removing a Sheet                                                 |
-| Nothing about tabs                                                                                                                                    | Add, rename, reorder or delete tabs; change a tab's mode, theme or canvas; rename the document                  |
+| May                                                                                                                                                                        | Never                                                                                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Take part in session tools: cast and withdraw dots, answer estimate cards, temperature checks, the Done check and quizzes, drop ideas in the idea box                      | Start, end, reveal, clear or configure a session tool; take the roll; spin a Picker; press Bring Focus; hold the baton                                                |
+| Add a sticky, a text element or an image; grow a mind map (a node as a branch of one already there, with the connector joining them)                                       | Add any other element: shapes, free connectors, frames, templates, kits; a mind node with no branch to grow from                                                      |
+| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                                                                                       | Change any other field of an element it did not add: size, style, rotation, layer, lock; write on a Behaviour (a poll's question, a timer's or mode button's caption) |
+| Move and resize any sticky or image; recolour any sticky; move any mind node, and turn a mind connector's faces, so a growing map re-lays itself; swap any image's picture | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                                 |
+| Delete anything it added itself                                                                                                                                            | Delete anything someone else added                                                                                                                                    |
+| Change anything about what it added (size, style, text), so long as it stays something it could add                                                                        | Reorder layers; group; lock; point its connector at anything but two mind nodes                                                                                       |
+| On a Plan board: add a card, edit its fields, move it between columns                                                                                                      | Columns, card types, custom fields, board settings; delete, trash or archive a card; restore one with its votes                                                       |
+| On a Sheet: write cells                                                                                                                                                    | Rows and columns, the Sheet's title, adding or removing a Sheet                                                                                                       |
+| Undo and redo its own changes (the room puts back any part it may not make)                                                                                                | Undo or redo anyone else's                                                                                                                                            |
+| Nothing about tabs                                                                                                                                                         | Add, rename, reorder or delete tabs; change a tab's mode, theme or canvas; rename the document                                                                        |
 
 - **"It added"** means the server recorded the Participant as the element's adder when the element was created.
   An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
-- **A text box that sizes to its words follows them**: writing on someone else's grows or shrinks it, since the
-  box is its words' size, not a choice.
+- **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
+  them. Shapes, frames, connectors and someone else's text boxes (which often label the structure) stay where
+  their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or
   delete is refused. A stale screen therefore never writes an old copy of the board over a newer one.
@@ -60,8 +62,9 @@ A Participant changes the board's **content**, never its **shape**.
 ## The Participant palette
 
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: the
-  landing category's sticky and text tiles, an Event Storming board's coloured notes, else Sticky and Text. On
-  every mode, Draw included. No Search, no More.
+  landing category's sticky and text tiles, an Event Storming board's coloured notes, else Sticky and Text; then
+  Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter), not
+  from a tile.
 - **The selection modes it needs**: Select, Hand, Laser, Spotlight, Avatar, Isometric and Zen. Eraser, Format
   Painter and Slide Deck are an Editor's.
 
@@ -76,7 +79,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 
 - The Share dialog offers three role cards, in this order: **Editor** ("Draws with you in real time."),
   **Participant** ("Adds stickies, writes and votes. Can't reshape the board.") and **Viewer** ("Watches, pans and
-  zooms. Can't comment, vote or change a thing."). A pass's stub prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
+  zooms. Can't comment, vote or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
 - `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
 - The editor's role pill reads Editing, Participating or Viewing.

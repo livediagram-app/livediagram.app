@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { createImage, createPinnedArrow, createShape } from './factories';
 import type { Element, Tab } from './index';
+import { applyMindMoves, planMindGrowth } from './mind-grow';
 import {
   applyParticipantOp,
   participantTabChange,
@@ -10,6 +12,7 @@ import {
 const ME = 'a'.repeat(32);
 const THEM = 'b'.repeat(32);
 const box = { x: 10, y: 20, width: 120, height: 80 };
+type Endpoint = { kind: string; elementId?: string; anchor?: unknown };
 
 const sticky = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({ id, type: 'sticky', ...box, label: 'Went well', fillColor: '#fef08a', ...extra }) as Element;
@@ -159,6 +162,19 @@ describe("applyParticipantOp: update someone else's element", () => {
     expect(r.changed).toBe(true);
   });
 
+  it("never writes on a Behaviour's words, a poll's question among them", () => {
+    const stored = shape('poll', { shape: 'session-button', label: 'Lunch?' });
+    const tab = tabOf([stored]);
+    const r = applied(
+      applyParticipantOp(tab, { kind: 'update', element: { ...stored, label: 'Mine' } }, ME),
+    );
+    expect(r.tab.elements[0]).toEqual(stored);
+    expect(r.changed).toBe(false);
+    expect(
+      participantTabChange(tab, tabOf([{ ...stored, label: 'Mine' } as Element]), ME),
+    ).toBeNull();
+  });
+
   it('clears the words when the sender cleared them', () => {
     const r = applied(
       applyParticipantOp(
@@ -170,14 +186,22 @@ describe("applyParticipantOp: update someone else's element", () => {
     expect(r.tab.elements[0]).not.toHaveProperty('label');
   });
 
-  it("moves and recolours anyone's sticky, never resizes it", () => {
+  it("moves, resizes and recolours anyone's sticky, never turns it", () => {
     const stored = sticky('s', { addedBy: THEM });
     const r = applied(
       applyParticipantOp(
         tabOf([stored]),
         {
           kind: 'update',
-          element: sticky('s', { x: 300, y: 40, fillColor: '#bae6fd', width: 400, addedBy: ME }),
+          element: sticky('s', {
+            x: 300,
+            y: 40,
+            fillColor: '#bae6fd',
+            width: 400,
+            height: -5,
+            rotation: 45,
+            addedBy: ME,
+          }),
         },
         ME,
       ),
@@ -186,9 +210,12 @@ describe("applyParticipantOp: update someone else's element", () => {
       x: 300,
       y: 40,
       fillColor: '#bae6fd',
-      width: 120,
+      width: 400,
+      // A size that is not positive keeps the stored one.
+      height: 80,
       addedBy: THEM,
     });
+    expect(r.tab.elements[0]).not.toHaveProperty('rotation');
   });
 
   it('keeps a stored place for a malformed position', () => {
@@ -241,7 +268,7 @@ describe("applyParticipantOp: update someone else's element", () => {
     expect(grown.changed).toBe(false);
   });
 
-  it('lets a text box that hugs its words follow them, and no other', () => {
+  it('lets a text box that hugs its words follow them, and no other, nor a shape', () => {
     const hug = { id: 'tx', type: 'text', ...box, label: 'Hi', sizing: 'fit' } as Element;
     const fixed = { id: 'fx', type: 'text', ...box, label: 'Hi' } as Element;
     const tab = tabOf([hug, fixed]);
@@ -253,14 +280,27 @@ describe("applyParticipantOp: update someone else's element", () => {
       ),
     );
     expect(grown.tab.elements[0]).toMatchObject({ label: 'Hello there', width: 200 });
-    const kept = applied(
+    const resized = applied(
       applyParticipantOp(
         tab,
         { kind: 'update', element: { ...fixed, label: 'Hello', width: 200 } as Element },
         ME,
       ),
     );
-    expect(kept.tab.elements[1]).toMatchObject({ label: 'Hello', width: 120 });
+    expect(resized.tab.elements[1]).toMatchObject({ label: 'Hello', width: 120 });
+    const nudged = applied(
+      applyParticipantOp(tab, { kind: 'update', element: { ...fixed, x: 500 } as Element }, ME),
+    );
+    expect(nudged.tab.elements[1]).toMatchObject({ x: 10 });
+    const col = shape('col');
+    const shaped = applied(
+      applyParticipantOp(
+        tabOf([col]),
+        { kind: 'update', element: { ...col, width: 999 } as Element },
+        ME,
+      ),
+    );
+    expect(shaped.tab.elements[0]).toMatchObject({ width: 120 });
   });
 
   it('answers unchanged when nothing permitted moved', () => {
@@ -489,5 +529,103 @@ describe('copies drop the adder', () => {
     );
     expect((newElements[0] as { addedBy?: string }).addedBy).toBeUndefined();
     expect(JSON.parse(JSON.stringify(newElements[0]))).not.toHaveProperty('addedBy');
+  });
+});
+
+describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () => {
+  const node = (id: string, parent: string | undefined, x: number, y: number): Element =>
+    ({
+      ...createShape('mind-node', x, y),
+      id,
+      label: id,
+      ...(parent ? { mindParentId: parent } : {}),
+    }) as Element;
+  const map = (): Element[] => [
+    node('root', undefined, 0, 0),
+    node('c1', 'root', 400, 0),
+    { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a1' } as Element,
+  ];
+
+  it('grows a branch, re-laying the nodes someone else added', () => {
+    const before = tabOf(map());
+    const plan = planMindGrowth(before.elements, 'root', 'child', { node: 'n2', arrow: 'a2' });
+    if (!plan || !plan.arrow) throw new Error('no plan');
+    const elements = [
+      ...applyMindMoves(before.elements, plan.moves, plan.reanchored),
+      plan.node,
+      plan.arrow,
+    ];
+    const allowed = participantTabChange(before, tabOf(elements), ME);
+    expect(allowed).not.toBeNull();
+    const added = allowed!.elements.filter((e) => (e as { addedBy?: string }).addedBy === ME);
+    expect(added.map((e) => e.id).sort()).toEqual(['a2', 'n2']);
+  });
+
+  it('refuses a mind node with no branch to grow from, and an arrow off the map', () => {
+    const tab = tabOf(map());
+    const loose = node('n9', undefined, 0, 400);
+    expect(applyParticipantOp(tab, { kind: 'add', element: loose, at: 3 }, ME).result).toBe(
+      'refused',
+    );
+    const stray = { ...createPinnedArrow('root', 'e', 's1', 'w'), id: 'a9' } as Element;
+    const withSticky = tabOf([...map(), sticky('s1')]);
+    expect(applyParticipantOp(withSticky, { kind: 'add', element: stray, at: 4 }, ME).result).toBe(
+      'refused',
+    );
+  });
+
+  it("moves anyone's mind node and turns a connector's faces, never its ends or its size", () => {
+    const tab = tabOf(map());
+    const moved = { ...map()[1]!, x: 420, y: 90, width: 999 } as Element;
+    const r = applied(applyParticipantOp(tab, { kind: 'update', element: moved }, ME));
+    expect(r.tab.elements[1]).toMatchObject({
+      x: 420,
+      y: 90,
+      width: (map()[1] as { width: number }).width,
+    });
+    const arrow = map()[2] as Element & { from: Endpoint; to: Endpoint };
+    const turned = {
+      ...arrow,
+      from: { ...arrow.from, anchor: 's' },
+      to: { kind: 'pinned', elementId: 'root', anchor: 'n' },
+    } as Element;
+    const t = applied(applyParticipantOp(tab, { kind: 'update', element: turned }, ME));
+    expect((t.tab.elements[2] as { from: Endpoint }).from.anchor).toBe('s');
+    expect((t.tab.elements[2] as { to: Endpoint }).to).toEqual(arrow.to);
+  });
+
+  it('keeps what it added addable: its connector stays on the map, its node stays one', () => {
+    const own = { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a2', addedBy: ME };
+    const tab = tabOf([...map(), sticky('s1'), own as Element]);
+    const repointed = { ...own, to: { kind: 'pinned', elementId: 's1', anchor: 'w' } };
+    expect(
+      applyParticipantOp(tab, { kind: 'update', element: repointed as Element }, ME),
+    ).toMatchObject({ result: 'refused', reason: 'not-holdable' });
+  });
+
+  it("adds an image, and swaps the picture on and resizes anyone's image, never restyling it", () => {
+    const tab = tabOf([]);
+    const img = { ...createImage(0, 0), id: 'i1' } as Element;
+    expect(applied(applyParticipantOp(tab, { kind: 'add', element: img, at: 0 }, ME)).changed).toBe(
+      true,
+    );
+    const theirs = tabOf([{ ...img, imageId: 'old' } as Element]);
+    const swapped = {
+      ...img,
+      imageId: 'new',
+      naturalWidth: 640,
+      naturalHeight: 480,
+      width: 5,
+      objectFit: 'cover',
+    };
+    const r = applied(
+      applyParticipantOp(theirs, { kind: 'update', element: swapped as Element }, ME),
+    );
+    expect(r.tab.elements[0]).toMatchObject({
+      imageId: 'new',
+      naturalWidth: 640,
+      width: 5,
+    });
+    expect(r.tab.elements[0]).not.toHaveProperty('objectFit');
   });
 });

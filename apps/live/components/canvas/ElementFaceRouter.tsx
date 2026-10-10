@@ -70,6 +70,7 @@ type ElementFaceRouterProps = Pick<
   | 'isEditing'
   | 'isSelected'
   | 'readOnly'
+  | 'writable'
   | 'fontFamily'
   | 'activeMode'
   | 'collab'
@@ -128,6 +129,7 @@ export function ElementFaceRouter({
   isEditing,
   isSelected,
   readOnly,
+  writable = true,
   fontFamily,
   activeMode,
   collab,
@@ -438,7 +440,8 @@ export function ElementFaceRouter({
         <TableView
           element={element}
           isSelected={isSelected}
-          readOnly={isLocked || readOnly}
+          readOnly={isLocked || (readOnly && !writable)}
+          cellsOnly={readOnly}
           tabSummaries={tabSummaries}
           onCommitTable={onCommitTable}
           onLinkCell={onLinkCell}

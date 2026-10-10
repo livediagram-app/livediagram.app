@@ -6,18 +6,25 @@
 // full palette, connectors, frames, layers, templates) stays shut without a change; these flags open the few
 // content gestures a Participant has.
 
-import { addedByAdder, isParticipantAddable, type Element } from '@livediagram/document';
+import {
+  addedByAdder,
+  isMindNode,
+  isParticipantPlaceable,
+  participantWritesOn,
+  type Element,
+} from '@livediagram/document';
 import type { AccessLevel } from '@livediagram/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;
   // Session tools: dots, estimates, temperature checks, the Done check, quizzes, ideas.
   takePart: boolean;
-  // Add a sticky or a text element (PARTICIPANT_ADDABLE_TYPES).
+  // Add a sticky, text or image, or grow a mind map (PARTICIPANT_ADDABLE_TYPES, `addableOn`).
   addContent: boolean;
   // Every content flag is an Editor's beyond this point; for a Participant it follows the participant rule.
   writeText: (el: Element) => boolean;
   move: (el: Element) => boolean;
+  resize: (el: Element) => boolean;
   recolour: (el: Element) => boolean;
   remove: (el: Element) => boolean;
   // Plan cards (add, edit, move) and Sheet cells.
@@ -44,6 +51,7 @@ export function resolveEditorCapabilities(input: {
       addContent: true,
       writeText: always,
       move: always,
+      resize: always,
       recolour: always,
       remove: always,
       planCards: true,
@@ -57,6 +65,7 @@ export function resolveEditorCapabilities(input: {
       addContent: false,
       writeText: never,
       move: never,
+      resize: never,
       recolour: never,
       remove: never,
       planCards: false,
@@ -69,10 +78,11 @@ export function resolveEditorCapabilities(input: {
     takePart: true,
     // Nothing added without a key could be proven the Participant's later, so the room refuses it (SR5).
     addContent: adderKey !== null,
-    writeText: (el) => !isLocked(el),
-    move: (el) => !isLocked(el) && (el.type === 'sticky' || own(el)),
+    writeText: (el) => !isLocked(el) && participantWritesOn(el),
+    move: (el) => !isLocked(el) && (isParticipantPlaceable(el) || isMindNode(el) || own(el)),
+    resize: (el) => !isLocked(el) && (isParticipantPlaceable(el) || own(el)),
     recolour: (el) => !isLocked(el) && (el.type === 'sticky' || own(el)),
-    remove: (el) => !isLocked(el) && own(el) && isParticipantAddable(el.type),
+    remove: (el) => !isLocked(el) && own(el),
     planCards: true,
     sheetCells: true,
   };

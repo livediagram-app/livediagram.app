@@ -1,33 +1,50 @@
 // The participant content rule (docs/specs/013-workspace/share-roles.md "What a Participant changes"; blueprint
-// "Behaviour and state"). A Participant changes a board's content, never its shape: it adds stickies and text,
-// writes on any element, moves and recolours stickies, and removes only what it added. The server applies each of
+// "Behaviour and state"). A Participant changes a board's content, never its shape: it adds stickies, text, images
+// and mind-map branches, writes on any element but a Behaviour, moves and recolours stickies, re-lays a mind map,
+// swaps an image's picture, and removes only what it added. The server applies each of
 // a Participant's element ops to the STORED tab through this one pure function, so a stale screen can never write
 // an old copy of the board back: a permitted field lands, a forbidden field stays as stored, a forbidden add or
 // remove is refused with the op that puts the sender's screen back.
 
+import { isBehaviourShape } from './behaviour-shapes';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
+import { isMindNode } from './mind-map';
 import { isValidElement } from './validate';
 
-// The element types a Participant may add.
-export const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text'] as const;
+// The element types a Participant may add. A `shape` only as a mind node grown from another, an `arrow` only as
+// the connector between two mind nodes (`addableOn`).
+export const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image', 'shape', 'arrow'] as const;
 // The fields a Participant may change on an element someone else added: its words.
 export const PARTICIPANT_TEXT_FIELDS = ['label', 'richText'] as const;
 // What else a Participant may change on anyone's sticky: where it sits and its colour.
 export const PARTICIPANT_STICKY_FIELDS = [
-  'x',
-  'y',
   'fillColor',
   'strokeColor',
   'textColor',
   'penTextColour',
 ] as const;
+// The elements a Participant may place on anyone's behalf: move and resize, since they are the content itself. A
+// text box is not one: it often labels the board's structure, so it stays where its author put it.
+export const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
+export const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
+// What a Participant may change on anyone's mind node: where it sits, so growing a map re-lays it tidily.
+export const PARTICIPANT_MIND_FIELDS = ['x', 'y'] as const;
+// What a Participant may change on anyone's image: the picture it shows.
+export const PARTICIPANT_IMAGE_FIELDS = [
+  'imageId',
+  'naturalWidth',
+  'naturalHeight',
+  'alt',
+  'credit',
+] as const;
 
 export type ParticipantRefusal =
   | 'tab-locked'
   | 'not-addable'
+  | 'not-holdable'
   | 'no-adder'
   | 'id-taken'
   | 'missing'
@@ -47,8 +64,47 @@ export type ParticipantOpResult =
 
 type Bag = Record<string, unknown>;
 
+// Whether a Participant may write on an element someone else added. A Behaviour's words (a poll's question, a
+// timer's or mode button's caption) are how the facilitator runs the session, so they stay an Editor's.
+export function participantWritesOn(el: Element): boolean {
+  return !(el.type === 'shape' && isBehaviourShape(el.shape));
+}
+
 export function isParticipantAddable(type: string): boolean {
   return (PARTICIPANT_ADDABLE_TYPES as readonly string[]).includes(type);
+}
+
+// Whether a Participant may move and resize this element whoever added it (PARTICIPANT_PLACE_TYPES).
+export function isParticipantPlaceable(el: Element): boolean {
+  return (PARTICIPANT_PLACE_TYPES as readonly string[]).includes(el.type);
+}
+
+type Endpoint = { kind: string; elementId?: string; anchor?: unknown };
+
+function mindNodeOn(tab: Tab, id: unknown): boolean {
+  return tab.elements.some((e) => e.id === id && isMindNode(e));
+}
+
+// A connector pinned at both ends to mind nodes on the tab: how a mind map's branches are drawn.
+function isMindConnectorOn(tab: Tab, el: Element): boolean {
+  if (el.type !== 'arrow') return false;
+  const from = (el as { from: Endpoint }).from;
+  const to = (el as { to: Endpoint }).to;
+  return (
+    from.kind === 'pinned' &&
+    to.kind === 'pinned' &&
+    mindNodeOn(tab, from.elementId) &&
+    mindNodeOn(tab, to.elementId)
+  );
+}
+
+// Whether a Participant may add this element to the tab, or hold it there as its own after a change: a sticky,
+// text or image anywhere; a mind node only as a branch of one already on the tab; an arrow only between two.
+export function addableOn(tab: Tab, el: Element): boolean {
+  if (!isParticipantAddable(el.type)) return false;
+  if (el.type === 'shape') return isMindNode(el) && mindNodeOn(tab, (el as Bag).mindParentId);
+  if (el.type === 'arrow') return isMindConnectorOn(tab, el);
+  return true;
 }
 
 // Whether an element was added by the Participant holding this adder key.
@@ -100,12 +156,14 @@ function keepLiveFields(target: Bag, stored: Bag): void {
 
 // What a Participant's update turns another person's element into: the stored element with the permitted fields
 // copied from incoming.
-function mergeOthers(stored: Element, incoming: Element): Element {
+function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
   const s = stored as Bag;
   const inc = incoming as Bag;
   const next: Bag = { ...s };
-  for (const field of PARTICIPANT_TEXT_FIELDS) {
-    if (field in s || field in inc) copyField(next, inc, field);
+  if (participantWritesOn(stored)) {
+    for (const field of PARTICIPANT_TEXT_FIELDS) {
+      if (field in s || field in inc) copyField(next, inc, field);
+    }
   }
   if (stored.type === 'table' && sameCellShape(s.cells, inc.cells)) next.cells = inc.cells;
   // A text box that sizes to its text (`sizing` set) follows its words: writing on it resizes it.
@@ -114,11 +172,34 @@ function mergeOthers(stored: Element, incoming: Element): Element {
       if (isPositive(inc[field])) next[field] = inc[field];
     }
   }
+  if (isParticipantPlaceable(stored)) {
+    // A malformed place or size keeps the stored one.
+    for (const field of PARTICIPANT_PLACE_FIELDS) {
+      const v = inc[field];
+      const ok = field === 'x' || field === 'y' ? Number.isFinite(v) : isPositive(v);
+      if (ok && typeof v === 'number') next[field] = v;
+    }
+  }
   if (stored.type === 'sticky') {
     for (const field of PARTICIPANT_STICKY_FIELDS) copyField(next, inc, field);
-    // Position must stay a number; a malformed one keeps the stored place.
-    if (typeof next.x !== 'number' || !Number.isFinite(next.x)) next.x = s.x;
-    if (typeof next.y !== 'number' || !Number.isFinite(next.y)) next.y = s.y;
+  }
+  if (isMindNode(stored)) {
+    for (const field of PARTICIPANT_MIND_FIELDS) {
+      if (typeof inc[field] === 'number' && Number.isFinite(inc[field])) next[field] = inc[field];
+    }
+  }
+  if (stored.type === 'image') {
+    for (const field of PARTICIPANT_IMAGE_FIELDS) copyField(next, inc, field);
+  }
+  // A re-laid map turns its connectors to face the way it now grows: the faces move, never the ends.
+  if (isMindConnectorOn(tab, stored)) {
+    for (const end of ['from', 'to'] as const) {
+      const was = s[end] as Endpoint;
+      const now = inc[end] as Endpoint | undefined;
+      if (now?.kind === 'pinned' && now.elementId === was.elementId) {
+        next[end] = { ...was, anchor: now.anchor };
+      }
+    }
   }
   return next as Element;
 }
@@ -198,10 +279,11 @@ export function applyParticipantOp(
   const restore: ElementOp = { kind: 'update', element: stored };
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
   if (isHeld(tab, stored)) return refuse('locked', restore);
-  const merged = addedByAdder(stored, adderKey)
-    ? mergeOwn(stored, incoming)
-    : mergeOthers(stored, incoming);
+  const own = addedByAdder(stored, adderKey);
+  const merged = own ? mergeOwn(stored, incoming) : mergeOthers(tab, stored, incoming);
   if (!isValidElement(merged)) return refuse('invalid', restore);
+  // What it added stays something it could add: its connector keeps joining two mind nodes, its node stays one.
+  if (own && !addableOn(tab, merged)) return refuse('not-holdable', restore);
   // Its own element moved onto a locked layer would be one it could never touch again.
   if (isHeld(tab, merged)) return refuse('locked', restore);
   const changed = !sameValue(merged, stored);
@@ -232,7 +314,7 @@ function applyAdd(
   const undo: ElementOp | null = taken ? null : { kind: 'remove', id: element.id };
   if (taken) return refuse('id-taken', undo);
   if (tab.locked === true) return refuse('tab-locked', undo);
-  if (!isParticipantAddable(element.type)) return refuse('not-addable', undo);
+  if (!addableOn(tab, element)) return refuse('not-addable', undo);
   if (adderKey === null || adderKey === '') return refuse('no-adder', undo);
   const stamped: Bag = { ...(element as Bag), addedBy: adderKey };
   // A new element carries no answers or threads of its own yet, and a Participant cannot lock what it adds.
