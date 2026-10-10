@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react';
-import { PreviewHint } from '@livediagram/ui';
+import { useCallback, useRef } from 'react';
+import { useRowPreview } from '@livediagram/ui';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
@@ -29,7 +29,7 @@ import { formatSize } from './details-format';
 import { useSnapshotPrefetch } from './useSnapshotPrefetch';
 
 // One document in the Details view (docs/specs/013-workspace/explorer-details-view.md): its columns,
-// the preview on a resting hover over its name, the drag source, and the `⋯` menu shown on hover.
+// the preview on a resting hover over the row, the drag source, and the `⋯` menu shown on hover.
 export function DetailsDocumentRow(props: DocumentEntryProps) {
   const {
     document: doc,
@@ -55,12 +55,25 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
       : null,
   );
 
+  // The whole row is the preview's trigger (the spec's "resting the pointer on a document row");
+  // only the name link's keyboard focus opens it, not the row's other controls.
+  const preview = useRowPreview(<DocumentPreview doc={doc} ownerId={ownerId} />);
+  const { rowRef: attachPreview } = preview;
+  const attachRow = useCallback(
+    (el: HTMLTableRowElement | null) => {
+      rowRef.current = el;
+      attachPreview(el);
+    },
+    [attachPreview],
+  );
+
   const stats = doc.stats;
   return (
     <tr
-      ref={rowRef}
+      ref={attachRow}
       className="group transition hover:bg-slate-50 dark:hover:bg-slate-700/60"
       onContextMenu={menu.onContextMenu}
+      {...(renaming ? {} : preview.rowProps)}
       {...documentDragProps(doc, renaming)}
     >
       <td className={`${CELL_CLASS} max-w-0`}>
@@ -74,14 +87,13 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
               className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
             />
           ) : (
-            <PreviewHint preview={<DocumentPreview doc={doc} ownerId={ownerId} />}>
-              <Link
-                href={href}
-                className="truncate text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
-              >
-                {doc.name}
-              </Link>
-            </PreviewHint>
+            <Link
+              href={href}
+              {...preview.focusProps}
+              className="truncate text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
+            >
+              {doc.name}
+            </Link>
           )}
           {local ? <LocalOnlyPill /> : null}
           {isMadeByAi(doc) ? <MadeByAiPill /> : null}
@@ -124,6 +136,7 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
         {menu.open ? (
           <DocumentEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
         ) : null}
+        {renaming ? null : preview.surface}
       </td>
     </tr>
   );
