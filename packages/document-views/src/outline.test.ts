@@ -3,11 +3,15 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { arrowBetween, shapeAt, strokeAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
+import { golden } from './__fixtures__/golden-path';
 import { estimateTokens } from './budget';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
 
-const golden = (name: string) => new URL(`./__fixtures__/golden/${name}`, import.meta.url).pathname;
+// The shared helper, not a second copy: this file's own `new URL(...).pathname`
+// answered "/G:/…" on Windows, which the snapshot writer resolved into
+// "G:\G:\…" and died on (ENOENT mkdir) — the whole file's snapshots then went
+// unwritten and its 16 cases never ran.
 const checkout = () => buildViewModel(checkoutTab(), { rev: CHECKOUT_REV });
 const tabOf = (elements: Element[], extra: Partial<Tab> = {}): Tab => ({
   id: 'tab-1',
