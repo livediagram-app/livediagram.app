@@ -625,7 +625,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Diagram has all three, Plan its Timer and
                 Vote; Draw and Illustrate keep their bottom bar to their own tools. */}
-            {props.sessionTools && sessionStripTools(props.editorMode) ? (
+            {props.sessionTools && sessionStripTools(props.editorMode, props.esBoard === true) ? (
               <div className="contents phone:order-first phone:flex phone:basis-full phone:justify-end">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
@@ -643,7 +643,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
                   canStart={!readOnly}
-                  offersPoll={!!sessionStripTools(props.editorMode)?.poll}
+                  offersPoll={!!sessionStripTools(props.editorMode, props.esBoard === true)?.poll}
                   open={
                     activeDockPanel === 'session-timer' ||
                     activeDockPanel === 'session-vote' ||

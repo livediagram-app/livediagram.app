@@ -3,6 +3,7 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
+  openBlankSession,
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
@@ -327,9 +328,8 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    await startBlankDocument(page);
-    // A fresh guest gets the tour offer over a scrim that eats taps, a beat after the canvas.
-    await dismissQuickTour(page);
+    // The strip is Facilitate's (docs/specs/012-collaboration/facilitate-mode.md), so a Blank Session.
+    await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
     const undo = page.getByRole('button', { name: /^undo/i });

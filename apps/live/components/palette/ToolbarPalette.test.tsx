@@ -227,8 +227,8 @@ describe('ToolbarPalette', () => {
   });
 
   it('only offers More when the category has more than the strip shows', () => {
-    show();
-    // Collaborate always has More: its group browser lives there.
+    // Collaborate always has More: its group browser lives there. It is Facilitate's.
+    show({ mode: 'facilitate' });
     pickCategory('behaviour');
     expect(screen.getByRole('button', { name: 'More Collaborate' })).toBeTruthy();
     cleanup();
@@ -255,6 +255,23 @@ describe('ToolbarPalette', () => {
     expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
   });
 
+  // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
+  it('offers Stickers and Collaborate in Facilitate, not in Diagram, and Icons in both', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="icons"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).not.toBeNull();
+    cleanup();
+    show({ mode: 'facilitate' });
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="behaviour"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="icons"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
+  });
+
   it("opens the category's full body under More, and closes it when a tile is used", () => {
     const { h } = show();
     pickCategory('shapes');
@@ -267,7 +284,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('focuses the search field when More opens (docs/specs/007-editor/toolbar-layout.md)', () => {
-    show();
+    show({ mode: 'facilitate' });
     pickCategory('behaviour');
     fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
@@ -278,7 +295,7 @@ describe('ToolbarPalette', () => {
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
-    show();
+    show({ mode: 'facilitate' });
     pickCategory('behaviour');
     fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
@@ -288,7 +305,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('closes More when the category changes, since it showed the old one', () => {
-    show();
+    show({ mode: 'facilitate' });
     pickCategory('behaviour');
     fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     expect(document.querySelector('[data-toolbar-more]')).not.toBeNull();
@@ -297,7 +314,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('closes More on Escape', () => {
-    show();
+    show({ mode: 'facilitate' });
     pickCategory('behaviour');
     fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     act(() => {
@@ -486,7 +503,7 @@ describe('ToolbarPalette', () => {
     });
 
     it('is one strip menu at a time with More, and closes on Escape', () => {
-      show();
+      show({ mode: 'facilitate' });
       pickCategory('behaviour');
       fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
       const searchButton = screen.getByRole('button', { name: 'Search elements' });

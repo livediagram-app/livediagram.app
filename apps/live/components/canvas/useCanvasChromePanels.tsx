@@ -414,7 +414,7 @@ export function useCanvasChromePanels({
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const stripTools = sessionStripTools(props.editorMode);
+  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true);
   const sessionTools = stripTools ? props.sessionTools : undefined;
   const sessionButtonGone =
     sessionSegment !== null &&
