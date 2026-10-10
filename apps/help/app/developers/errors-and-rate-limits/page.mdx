@@ -24,35 +24,35 @@ When a request fails, the API replies with the matching HTTP status and a small 
 ```
 
 ```json
-{ "error": "bad_request", "message": "tab exceeds the maximum size" }
+{ "error": "bad_request", "message": "missing id/name" }
 ```
 
 Branch on the status code and the `error` token, not on `message`.
 
 ## Status codes
 
-| Code          | Meaning                                                                                                                                                                                                                                       |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `200` / `201` | Success. `201` is returned when a resource was created.                                                                                                                                                                                       |
-| `204`         | Success with no body (for example a delete, or a folder move).                                                                                                                                                                                |
-| `400`         | The request was malformed or failed validation. For a changeset in the line form, `parse_error` names the line and column.                                                                                                                    |
-| `401`         | Missing, malformed, expired, or revoked credential.                                                                                                                                                                                           |
-| `403`         | Authenticated, but not allowed to touch this resource. A write with a read-only token answers `read_only_token`.                                                                                                                              |
-| `404`         | No such resource (or it is hidden from you, which reads the same).                                                                                                                                                                            |
-| `405`         | `use_changesets`: tokens change tabs with changesets, not a whole-tab `PUT`.                                                                                                                                                                  |
-| `409`         | A conflict, such as creating an 11th token, or a folder cycle. For a changeset: `changeset_conflict` (an element changed since your `base`), `elements_held` (somebody has it selected) or `tab_busy` (the tab kept changing; read it again). |
-| `410`         | `document_trashed`: the document is in the Trash. Restore it (`POST /trash/{id}/restore`) to use it again.                                                                                                                                    |
-| `412`         | `stale_tab`: a changeset sent with `"strict": true` on a tab that moved since its `base`.                                                                                                                                                     |
-| `413`         | The request body is over the size cap.                                                                                                                                                                                                        |
-| `422`         | A changeset the edit operations refuse (an element nothing matches, a field the element does not have, a frame that would take in what you did not name, a `test` that found another value); `text` says what and how to fix it.              |
-| `429`         | Rate limited. Slow down and retry.                                                                                                                                                                                                            |
-| `5xx`         | A server-side error. Safe to retry idempotent reads after a pause.                                                                                                                                                                            |
+| Code          | Meaning                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `200` / `201` | Success. `201` is returned when a resource was created.                                                                                                                                                                                                                                                                                                                                              |
+| `204`         | Success with no body (for example a delete, or a folder move).                                                                                                                                                                                                                                                                                                                                       |
+| `400`         | The request was malformed or failed validation. For a changeset in the line form, `parse_error` names the line and column. Also the answer when no credential was sent, or the bearer is not an API token (`authentication required`).                                                                                                                                                               |
+| `401`         | `invalid_token`: an `lvd_` token that is unknown, expired, or revoked.                                                                                                                                                                                                                                                                                                                               |
+| `403`         | Authenticated, but not allowed to touch this resource. A write with a read-only token answers `read_only_token`.                                                                                                                                                                                                                                                                                     |
+| `404`         | No such resource (or it is hidden from you, which reads the same).                                                                                                                                                                                                                                                                                                                                   |
+| `405`         | `use_changesets`: tokens change tabs with changesets, not a whole-tab `PUT`.                                                                                                                                                                                                                                                                                                                         |
+| `409`         | A conflict, such as creating an 11th token (`token_limit_reached`), a folder cycle, deleting a document's only tab with a token (`last_tab`), or a `replace` on a new tab id another document holds (`tab_id_taken`). For a changeset: `changeset_conflict` (an element changed since your `base`), `elements_held` (somebody has it selected) or `tab_busy` (the tab kept changing; read it again). |
+| `410`         | `document_trashed`: the document is in the Trash. Restore it (`POST /trash/{id}/restore`) to use it again.                                                                                                                                                                                                                                                                                           |
+| `412`         | `stale_tab`: a changeset sent with `"strict": true` on a tab that moved since its `base`.                                                                                                                                                                                                                                                                                                            |
+| `413`         | The request body is over the size cap.                                                                                                                                                                                                                                                                                                                                                               |
+| `422`         | A changeset the edit operations refuse (an element nothing matches, a field the element does not have, a frame that would take in what you did not name, a `test` that found another value); `text` says what and how to fix it.                                                                                                                                                                     |
+| `429`         | Rate limited. Slow down and retry.                                                                                                                                                                                                                                                                                                                                                                   |
+| `5xx`         | A server-side error. Safe to retry idempotent reads after a pause.                                                                                                                                                                                                                                                                                                                                   |
 
 ## Rate limits
 
 The API is rate limited to keep one client from starving others. Writes (`POST` / `PUT` / `DELETE`) and reads under a token each have their own budget, keyed on the **token**, so a runaway integration is throttled independently of your interactive use of the editor. Over the budget, a request returns `429`; back off and retry.
 
-On the hosted service the budgets are **300 writes a minute** and **120 token reads a minute**, per token. A few endpoints carry their own tighter limit: 30 share-code attempts a minute (which is also the brute-force guard on a share password), 60 link unfurls, and 20 AI requests. A self-hosted deployment sets its own, or none at all: with the limiter binding absent, every request is allowed.
+On the hosted service the budgets are **300 writes a minute** and **120 token reads a minute**, per token. A few endpoints carry their own tighter limit: 30 share-code attempts a minute (which is also the brute-force guard on a share password), 60 link unfurls, and 20 AI requests, each counted per IP rather than per token. A self-hosted deployment sets its own, or none at all: with the limiter binding absent, every request is allowed.
 
 <Tip>
   Treat `429` as routine for bulk work: pause and retry rather than hammering. Spread large imports
@@ -61,13 +61,13 @@ On the hosted service the budgets are **300 writes a minute** and **120 token re
 
 ## Payload size
 
-Request bodies are capped, and individual tabs have their own byte limit. An oversized body is rejected with `413` before it is processed. If you hit this, split the work across more, smaller tabs or documents.
+Request bodies are capped at 8 MB (image uploads have their own cap), and one tab's data at about 1.9 MB. A body that declares a larger size is rejected with `413 payload_too_large` before it is read; an oversized tab or changeset is rejected with `413` when it is checked. If you hit this, split the work across more, smaller tabs or documents.
 
 ## Token expiry and revocation
 
-Every [API token](/help/account-and-data/api-tokens/) lasts **six months**, then expires. After that, requests with it fail with `401`, the same as a [revoked](/help/account-and-data/api-tokens/) token. There is no never-expires option, so build rotation in: create a fresh token before the old one lapses, update your integration, then revoke the old one.
+Every [API token](/help/account-and-data/api-tokens/) lasts **six months**, then expires. After that, requests with it fail with `401 invalid_token`, the same as a [revoked](/help/account-and-data/api-tokens/) token. There is no never-expires option, so build rotation in: create a fresh token before the old one lapses, update your integration, then revoke the old one.
 
-You can hold up to **10** live tokens at once. Asking for an 11th returns `409` until you revoke one or let it expire.
+You can hold up to **10** live tokens at once. Asking for an 11th returns `409 token_limit_reached` until you revoke one or let it expire.
 
 <Note>
   Revocation takes effect immediately. The next request a revoked token makes is rejected, so revoke

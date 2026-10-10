@@ -34,7 +34,7 @@ curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read but every write is refused.
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read (except a document's share-link list, which would hand it edit links), and every write is refused except revoking itself.
 
 ## Check or retire the token you are using
 
@@ -51,7 +51,7 @@ API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time 
 
 ## Tokens versus the guest path
 
-The editor itself does not use a token. When you are not signed in, the app identifies you with a per-browser [guest id](/help/account-and-data/guest-identity/) sent in an `X-Owner-Id` header. That path is for the first-party app only: it is not a credential you should build integrations on, and it cannot be minted or used like a token. For anything outside the editor, use a bearer token.
+The editor itself does not use a token. When you are not signed in, the app identifies you with a per-browser [guest id](/help/account-and-data/guest-identity/) sent in an `X-Owner-Id` header, with a server signature alongside it. That path is for the first-party app only: it is not a credential you should build integrations on, and it is not used like a token. For anything outside the editor, use a bearer token.
 
 ## Keep tokens safe
 
@@ -64,6 +64,6 @@ The editor itself does not use a token. When you are not signed in, the app iden
 
 ## Errors
 
-A request with a missing, malformed, expired, or revoked token is rejected. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the status codes and the error response shape.
+A request with no credential, or a bearer that is not an API token, is refused with `400`; an `lvd_` token that is unknown, expired, or revoked is refused with `401 invalid_token`. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the status codes and the error response shape.
 
 </ArticleLayout>
