@@ -57,7 +57,16 @@ function frontMatterOf(text: string): { title?: string; subtitle?: string; body:
 }
 
 const TABLE_ROW = /^\s*\|.*\|\s*$/;
-const TABLE_RULE = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
+const RULE_CELL = /^:?-{3,}:?$/;
+// A table's rule row (`| --- | :-: |`), checked cell by cell: one regex with `\s*` on both sides of
+// each pipe backtracks quadratically on a long run of spaces.
+const isTableRule = (line: string) =>
+  line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .every((cell) => RULE_CELL.test(cell.trim()));
 const cellsOf = (row: string) =>
   row
     .trim()
@@ -73,7 +82,7 @@ function tablesAsLists(lines: readonly string[], found: () => void): string[] {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
     if (/^```/.test(line.trim())) fenced = !fenced;
-    if (fenced || !TABLE_ROW.test(line) || !TABLE_RULE.test(lines[i + 1] ?? '')) {
+    if (fenced || !TABLE_ROW.test(line) || !isTableRule(lines[i + 1] ?? '')) {
       out.push(line);
       continue;
     }
@@ -178,8 +187,9 @@ function runsMarkdown(runs: readonly ArticleRun[]): string {
   return runs
     .map((run) => {
       if (!run.b && !run.i && !run.s && !run.href) return runMarkdown(run);
-      const lead = /^\s*/.exec(run.text)![0];
-      const tail = /\s*$/.exec(run.text)![0];
+      // trimStart/trimEnd, not `/\s*$/`: that regex retries from every offset, quadratic in spaces.
+      const lead = run.text.slice(0, run.text.length - run.text.trimStart().length);
+      const tail = run.text.slice(run.text.trimEnd().length);
       const inner = run.text.slice(lead.length, run.text.length - tail.length);
       return inner ? lead + runMarkdown({ ...run, text: inner }) + tail : run.text;
     })

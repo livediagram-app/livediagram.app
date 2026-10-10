@@ -97,6 +97,18 @@ describe('a Markdown table', () => {
       { type: 'code', text: '| a | b |\n|---|---|' },
     ]);
   });
+
+  it('takes a rule with or without outer pipes and alignment colons, and nothing else', () => {
+    const tables = (rule: string) => {
+      const out = articleFromMarkdown(`| a | b |\n${rule}\n| 1 | 2 |`);
+      if (!('blocks' in out)) throw new Error('refused');
+      return out.tables;
+    };
+    for (const rule of ['|---|---|', '  | :--- | ---: |  ', ':---: | ---', '|----|'])
+      expect(tables(rule), rule).toBe(1);
+    for (const rule of ['| -- | --- |', '|---||', '||', '| --- | a |', '| :-:- |', '|', ''])
+      expect(tables(rule), rule).toBe(0);
+  });
 });
 
 describe('a paragraph too long for a block', () => {
@@ -213,5 +225,20 @@ describe('worst case', () => {
     expect(blocks.length).toBeGreaterThan(1000);
     // Measured 77 to 346 ms on a loaded machine; held at 1,000 ms for CI under load.
     expect(took).toBeLessThan(1000);
+  });
+
+  it('stays linear on a long run of spaces (no regex backtracking)', () => {
+    const spaces = ' '.repeat(50_000);
+    const started = performance.now();
+    const md = articleToMarkdown({
+      blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: `${spaces}x${spaces}y`, b: true }] }],
+    });
+    const out = articleFromMarkdown(`| a | b |\n|${spaces}x\n| 1 | 2 |`);
+    const took = performance.now() - started;
+    expect(md).toBe(`${spaces}**x${spaces}y**\n`);
+    // Not a table rule, so the line stays a paragraph, then refused as longer than a block takes.
+    expect('blocks' in out).toBe(false);
+    // Measured under 5 ms; the quadratic regexes this guards took about 3 s each.
+    expect(took).toBeLessThan(250);
   });
 });
