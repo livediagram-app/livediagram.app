@@ -72,11 +72,13 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 `runTabStatsBackfill(env, clock)` loops while under `TAB_STATS_BACKFILL_BUDGET_MS` and
 `TAB_STATS_BACKFILL_MAX_ROWS`:
 
-1. `SELECT t.id, t.data FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
+1. `SELECT t.id, t.data, t.updated_at FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
    with `TAB_STATS_BACKFILL_PAGE_ROWS`.
 2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Diagram with no elements
    and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
-3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`: a write that landed since step 1
+3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`, `written_at` set to the tab's own
+   `updated_at` (never the run's time, which would make the backfilled tab the document's newest and
+   so its Type). A write that landed since step 1
    already wrote the newer stats, which stay.
 4. A page shorter than the page size ends the loop: `left=none`; otherwise `left=more`.
 
