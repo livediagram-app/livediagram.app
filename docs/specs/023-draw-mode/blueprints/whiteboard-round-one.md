@@ -622,6 +622,10 @@ RDP commit (`simplifyPenStroke`) and the Catmull-Rom path. The recipe is Excalid
 4. `pointercancel` from the stroke's pointer: clear `penStroke`, commit nothing
    (`[whiteboard] stroke discarded: cancel`). The pen intent leaving mid-stroke (Escape, another
    tool) does the same (`[whiteboard] stroke discarded: pen put down`).
+   The tab leaving Draw mode mid-stroke (`whiteboard` true to false) instead commits the stroke as
+   drawn so far, in an effect that runs before the editor's mode-change effect puts the pen down
+   (child effects run first), so `commitFreehand` still sees the pen intent
+   (`[whiteboard] stroke finished: mode switched`). Cost: one boolean compare per render.
 5. Every committed stroke logs `[whiteboard] stroke <pointer> samples=<n> pressure=<yes|no>` at
    `console.debug`.
 
@@ -861,6 +865,8 @@ their `strokeColor`.
 - Storage unavailable: prefs fall back to defaults (`readLocalStorageSafe`), nothing throws.
 - Narrow viewport: the dock scrolls horizontally; flyouts clamp to the viewport.
 - A pen stroke's pointer is cancelled by the browser: the stroke is discarded and logged.
+- The tab leaves Draw mode mid-stroke: the stroke lands as drawn so far; the lift that follows adds
+  nothing.
 - Another pointer's move or release during a stroke: ignored by the stroke.
 - Zoom or pan mid-stroke (wheel): samples convert with the zoom and rect of their event, so ink stays
   under the pen; `LiveInk` moves and zooms with the canvas layer.
@@ -978,6 +984,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Partial erase keeps the kept ink in place and never grows the point count             | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Partial erase frees arrow ends pinned to a split stroke, drops those of an erased one | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
 | The whiteboard eraser sweeps whatever the Diagram Tap setting                         | `apps/live/hooks/canvas/useCanvasEraser.test.tsx`                                        |
+| A mode switch mid-stroke lands the stroke; Escape still discards it                   | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
 | Live stroke samples and pressures                                                     | `apps/live/lib/live-stroke.test.ts`                                                      |
 | Pen gesture: pressure, pointer, cancel, commit                                        | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
 | Live ink laid out as it lands, recognition preview                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                   |

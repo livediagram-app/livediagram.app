@@ -594,6 +594,11 @@ author sets on an element on purpose still plays.
   fragment.
 - A stroke the browser cancels (`pointercancel`, for example when the system
   takes the touch over) is discarded.
+- A stroke the tab leaves Draw mode during (one's own Shift+D or switch, a
+  collaborator's switch, an undo or redo that switches) is finished first: it
+  lands as drawn so far ([Editor modes](../007-editor/editor-modes.md)
+  "Everyone follows a switch"). Putting the pen down mid-stroke (Escape,
+  another tool) discards it.
 - Only the pointer that started a stroke draws it; another finger landing
   meanwhile is a pinch or pan, never part of the stroke.
 - Palm rejection beyond this is the browser's; no timing heuristics.
