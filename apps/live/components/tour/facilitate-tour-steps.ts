@@ -1,10 +1,10 @@
 // The steps of the Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md "The steps"): a welcome
-// card, then the session kit (the palette strip) → the Collaborate categories (the category picker, open) →
-// the Session strip → Share → the mode switch, then the outro. It places nothing, so its steps only point at
-// the chrome and open the one menu they explain.
+// card (or the welcome tour's closing card, which can start it), then the Collaborate band of the category
+// picker → the Session strip → Share, then the outro. The palette itself is the welcome tour's. It places
+// nothing, so its steps only point at the chrome and open the one menu they explain.
 
 import { closeDropdown, ensurePaletteOpen } from './tour-steps';
-import { clickTour, findTour } from './tour-dom';
+import { clickTour, findTour, waitForTour } from './tour-dom';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
 
 // Nothing to drive beyond the DOM: the tour makes no content (spec "Tour content").
@@ -20,21 +20,17 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
     body: 'Facilitate is for running a session with your team: a retro, a workshop or a town hall. Want a quick look at where everything is?',
   },
   {
-    id: 'kit',
-    title: 'Your session kit',
-    body: 'Popular holds what a session is run with: sticky notes, the timer, vote and poll buttons, a reveal zone, an agenda, an idea box and more.',
-    target: 'palette',
-    prepare: () => ensurePaletteOpen(),
-  },
-  {
     id: 'collaborate',
     title: 'Collaborate',
-    body: 'Under Collaborate, Ask, Tools, Record, React, Selection Mode and Navigate hold every element that comes alive with the room.',
-    target: 'palette-category-menu',
-    alsoHighlight: 'palette-category',
+    body: 'The session kit lives under Collaborate: Ask, Tools, Record, React, Selection Mode and Navigate hold every element that comes alive with the room.',
+    // The Collaborate band only, from its heading to its last category, inside the open picker.
+    target: 'band-collaborate',
+    alsoHighlight: 'option-collab-navigate',
+    ringOverMenu: true,
     prepare: async () => {
       await ensurePaletteOpen();
       if (!findTour('palette-category-menu')) clickTour('palette-category');
+      await waitForTour('band-collaborate');
     },
     cleanup: () => closeDropdown('palette-category-menu', 'palette-category'),
   },
@@ -51,12 +47,6 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
     target: 'share',
   },
   {
-    id: 'modes',
-    title: 'Switch modes',
-    body: 'The mode belongs to the tab, so everyone on it follows. Diagram is a click away when the session is done.',
-    target: 'editor-mode',
-  },
-  {
     id: 'outro',
     card: 'outro',
     title: "You're ready to facilitate",
@@ -66,8 +56,17 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
 
 // The steps this surface has chrome for, filtered up front so the count stays honest (spec "The steps"):
 // the Share button is not on every surface (a phone header, someone who may not share).
-export function facilitateTourSteps({ canShare }: { canShare: boolean }): FacilitateTourStep[] {
-  return FACILITATE_TOUR_STEPS.filter((step) => canShare || step.id !== 'share');
+// Started from the welcome tour's closing card, it has no welcome card of its own: that card just asked.
+export function facilitateTourSteps({
+  canShare,
+  withWelcome = true,
+}: {
+  canShare: boolean;
+  withWelcome?: boolean;
+}): FacilitateTourStep[] {
+  return FACILITATE_TOUR_STEPS.filter(
+    (step) => (canShare || step.id !== 'share') && (withWelcome || step.card !== 'welcome'),
+  );
 }
 
 // Telemetry `type` token for a step-viewed event: 'session-strip' → 'FacilitateTourStepSessionStrip'.

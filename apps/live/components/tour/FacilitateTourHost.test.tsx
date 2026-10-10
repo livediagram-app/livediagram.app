@@ -5,7 +5,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
+import { requestFacilitateTourRelaunch, requestFacilitateTourStart } from '@/lib/facilitate-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
@@ -218,12 +218,32 @@ describe('FacilitateTourHost end', () => {
   it('leaves the Share step out where there is no Share button', () => {
     dom.share = false;
     start();
-    expect(stage.engine!.countableSteps).toBe(4);
+    expect(stage.engine!.countableSteps).toBe(2);
   });
 
   it('keeps the Share step where there is one', () => {
     start();
-    expect(stage.engine!.countableSteps).toBe(5);
+    expect(stage.engine!.countableSteps).toBe(3);
+  });
+
+  // The offer rides on the welcome tour's closing card: its "Show me Facilitate" starts the steps directly.
+  it('starts straight into its steps from the welcome tour, though the welcome tour marked it seen', () => {
+    editor({ userPreferences: { tourSeen: true, facilitateTourSeen: true } });
+    render(<FacilitateTourHost />);
+    act(() => requestFacilitateTourStart());
+    expect(stage.engine?.active).toBe(true);
+    expect(stage.engine?.step?.id).toBe('collaborate');
+    expect(stage.engine?.hasWelcome).toBe(false);
+    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'FacilitateTourFromWelcome');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'FacilitateTour');
+    expect(offered()).toBe(false);
+  });
+
+  it('ignores the welcome tour asking outside Facilitate', () => {
+    editor({ editorMode: { mode: 'diagram' } });
+    render(<FacilitateTourHost />);
+    act(() => requestFacilitateTourStart());
+    expect(stage.engine?.active).toBe(false);
   });
 
   it('ends as skipped when the person leaves Facilitate or the tab', () => {

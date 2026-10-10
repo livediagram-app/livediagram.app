@@ -27,12 +27,19 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
   other tour active (`useActiveTour()` is null or `'facilitate'`) and `hasTourPending()` false.
 - **Welcome tour first:** `TourHost` treats its offer as owed (`owedByFacilitate`) while the tab's mode is
   `facilitate` and `facilitateTourSeen` is not true, beside the `/new` handoff flag; its `tourSeen` check
-  still applies. Answering it sets `tourSeen`, which re-runs this host's offer effect.
+  still applies.
+- **Offer on the closing card:** while `owedByFacilitate`, `TourHost` passes `TourStage` an `outroChoice`
+  ("Show me Facilitate"), rendered by `TourPopover` as the primary button with the finish button
+  (`secondary`) beside it. Picking it finishes the welcome tour (`completed`) and sends
+  `FACILITATE_TOUR_START_EVENT` (`requestFacilitateTourStart`); this host answers it while in Facilitate and
+  `canWork`, ignoring the seen-guard, with `facilitateTourSteps({ canShare, withWelcome: false })`.
+- **Answered with the welcome tour:** `TourHost.endTour` writes `facilitateTourSeen: true` beside `tourSeen`
+  whenever `owedByFacilitate`, whatever the outcome, so the standalone offer never follows it.
 - **One tour at a time:** each of `TourHost`, `PlanTourHost`, `FacilitateTourHost` treats any other
   active tour as blocking and publishes itself with `setActiveTour` while active.
-- **Steps:** `welcome` (card) → `kit` (`palette`) → `collaborate` (`palette-category-menu`, opens the
-  picker, closes it on cleanup) → `session-strip` (`session-tools`) → `share` (`share`, the
-  `EditorHeader` Share button) → `modes` (`editor-mode`) → `outro` (card). `share` is filtered out
+- **Steps:** `welcome` (card) → `collaborate` (`band-collaborate` with `alsoHighlight`
+  `option-collab-navigate`: the band's heading to its last tile; opens the picker, closes it on cleanup) → `session-strip` (`session-tools`) → `share` (`share`, the
+  `EditorHeader` Share button) → `outro` (card). `share` is filtered out
   when `findTour('share')` is null as the offer starts.
 - **End** (any outcome) writes `facilitateTourSeen: true` through `rebaseUserPreferences`, then
   `setUserPreferences` and `writeUserPreferences`.
@@ -91,6 +98,7 @@ helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and n
 | Waits for the welcome tour (shown or owed), offered as it ends; never beside the Plan tour        | `FacilitateTourHost.test.tsx`                                                |
 | Rerun in Facilitate only                                                                          | `FacilitateTourHost.test.tsx`                                                |
 | Decline and completion mark it seen and send telemetry; leaving ends as skipped                   | `FacilitateTourHost.test.tsx`                                                |
+| The welcome tour's closing card offers it; picking it starts it; ending without it answers it     | `TourHost.test.tsx`, `FacilitateTourHost.test.tsx`                           |
 | Step order, anchors, Share filter, telemetry tokens                                               | `facilitate-tour-steps.test.ts`                                              |
 | Settings row inverted, after Show Plan Tour                                                       | `settings-catalogue.test.ts`                                                 |
 | Power user mode marks it seen                                                                     | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |

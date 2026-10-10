@@ -15,6 +15,7 @@ import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
+import { requestFacilitateTourStart } from '@/lib/facilitate-tour';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourStage } from './TourStage';
@@ -88,7 +89,12 @@ export function TourHost() {
     // included: it is a real view). The welcome card's view is already
     // covered by Opened/TourOffer; the last View before an
     // Ended/TourSkipped marks the drop-off stage on the dashboard.
-    onStepView: (step) => track('UI', 'View', tourStepTelemetryType(step.id)),
+    onStepView: (step) => {
+      track('UI', 'View', tourStepTelemetryType(step.id));
+      // The closing card carries the Facilitate tour's offer while it is owed.
+      if (step.card === 'outro' && owedByFacilitateRef.current)
+        track('UI', 'Opened', 'FacilitateTourOffer');
+    },
     onStart: () => track('UI', 'Started', 'Tour'),
     onFinish: (outcome) => endTour(outcome),
   });
@@ -124,6 +130,9 @@ export function TourHost() {
   const ready =
     ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode && !otherTour;
   const offerRef = useLatest(offer);
+  const owedByFacilitateRef = useLatest(owedByFacilitate);
+  // Whether "Show me Facilitate" ended this run, so its end is not counted as turning that tour down.
+  const pickedFacilitateRef = useRef(false);
   useEffect(() => {
     offerPendingRef.current ??= hasTourPending();
     if (!(offerPendingRef.current || owedByFacilitate) || active || !ready) return;
@@ -166,15 +175,35 @@ export function TourHost() {
     apiRef.current.closeContextMenu();
     clearTourPending();
     // Onto the freshest preferences, not this render's: the whole blob is written.
+    // In Facilitate the Facilitate tour's offer rode on this tour's closing card
+    // (docs/specs/012-collaboration/facilitate-tour.md), so ending this tour answers it too: it never pops
+    // up on its own afterwards. "Show me Facilitate" starts it straight away.
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
       tourSeen: true,
+      ...(owedByFacilitate ? { facilitateTourSeen: true } : {}),
     });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
+    if (owedByFacilitate && outcome === 'completed' && !pickedFacilitateRef.current)
+      track('UI', 'Closed', 'FacilitateTourOffer');
+    pickedFacilitateRef.current = false;
   };
 
-  return <TourStage engine={engine} />;
+  const showFacilitate = () => {
+    pickedFacilitateRef.current = true;
+    engine.next();
+    requestFacilitateTourStart();
+  };
+
+  return (
+    <TourStage
+      engine={engine}
+      {...(owedByFacilitate
+        ? { outroChoice: { label: 'Show me Facilitate', onPick: showFacilitate } }
+        : {})}
+    />
+  );
 }

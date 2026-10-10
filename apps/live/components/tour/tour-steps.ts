@@ -78,7 +78,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'categories',
-    title: 'Shape categories',
+    title: 'Palette Categories',
     body: 'The palette is organised into categories: Popular holds the tiles most reached for, then the other categories provide unique opportunities to personalise your diagram.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
@@ -94,7 +94,7 @@ export const TOUR_STEPS: TourStep[] = [
     // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"), beside the
     // menu button. Opens its menu, switches nobody's mode.
     id: 'editor-mode',
-    title: 'Diagram & Draw',
+    title: 'Change Tab Mode',
     body: 'Each tab works in one of five modes: Diagram for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand, Illustrate for pages, Plan for boards of items and Facilitate for running a session. Switch here, or press Shift+D.',
     target: 'editor-mode-menu',
     alsoHighlight: 'editor-mode',

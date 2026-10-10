@@ -280,6 +280,14 @@ export const FACILITATE_TOURS_STARTED = chart(
   { types: ['FacilitateTour'] },
 );
 
+export const FACILITATE_TOURS_FROM_WELCOME = chart(
+  'UI',
+  'Selected',
+  'Facilitate Tours from the Welcome Tour',
+  "Show me Facilitate pressed on the welcome tour's closing card.",
+  { types: ['FacilitateTourFromWelcome'] },
+);
+
 export const FACILITATE_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
@@ -308,11 +316,12 @@ export const FACILITATE_TOUR: MetricStack = {
   stack: true,
   title: 'Facilitate Tour',
   blurb:
-    'The first time in Facilitate mode: the Facilitate tour offered, stepped through, finished or skipped.',
+    "The first time in Facilitate mode: the Facilitate tour offered (on the welcome tour's closing card, or its own), stepped through, finished or skipped.",
   members: [
     FACILITATE_TOUR_OFFERED,
     FACILITATE_TOUR_DECLINED,
     FACILITATE_TOURS_STARTED,
+    FACILITATE_TOURS_FROM_WELCOME,
     FACILITATE_TOUR_STEPS_VIEWED,
     FACILITATE_TOURS_COMPLETED,
     FACILITATE_TOURS_SKIPPED,

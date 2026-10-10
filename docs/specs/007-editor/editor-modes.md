@@ -45,7 +45,7 @@ where it is and changes only how the next mark is made.
     ([Toolbar layout](toolbar-layout.md)), icon-only.
   - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
     button alone. A phone switches mode from the tab menu's mode rows (below); Shift+D needs a
-    keyboard. The tour's Diagram & Draw step is skipped there.
+    keyboard. The tour's Change Tab Mode step is skipped there.
   - It stays up in Draw mode, so the switch never moves when the mode
     changes.
   - Not in the tab bar or the Explorer.

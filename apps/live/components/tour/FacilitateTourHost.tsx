@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
-import { FACILITATE_TOUR_RELAUNCH_EVENT } from '@/lib/facilitate-tour';
+import { FACILITATE_TOUR_RELAUNCH_EVENT, FACILITATE_TOUR_START_EVENT } from '@/lib/facilitate-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
@@ -41,7 +41,12 @@ export function FacilitateTourHost() {
 
   // Whether the header's Share button is on this surface, read when the tour starts.
   const [canShare, setCanShare] = useState(true);
-  const steps = useMemo(() => facilitateTourSteps({ canShare }), [canShare]);
+  // Started from the welcome tour's closing card: straight into the steps, no welcome card of its own.
+  const [fromWelcome, setFromWelcome] = useState(false);
+  const steps = useMemo(
+    () => facilitateTourSteps({ canShare, withWelcome: !fromWelcome }),
+    [canShare, fromWelcome],
+  );
   const engine = useTourEngine<FacilitateTourApi>({
     steps,
     apiRef,
@@ -110,6 +115,7 @@ export function FacilitateTourHost() {
       setArmed(false);
       debugLog('[facilitate-tour] offer');
       setCanShare(findTour('share') !== null);
+      setFromWelcome(false);
       engineRef.current.start();
       track('UI', 'Opened', 'FacilitateTourOffer');
     }, OFFER_DELAY_MS);
@@ -126,6 +132,24 @@ export function FacilitateTourHost() {
     window.addEventListener(FACILITATE_TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(FACILITATE_TOUR_RELAUNCH_EVENT, onRelaunch);
   }, [inFacilitateRef]);
+
+  // The welcome tour's closing card ("Show Me Facilitate"): starts at the first step, whatever the seen-guard
+  // says (the welcome tour has just marked this tour answered, so it never pops up again on its own).
+  const canStartRef = useLatest(inFacilitate && canWork);
+  useEffect(() => {
+    const onStart = () => {
+      if (!canStartRef.current) return;
+      setArmed(false);
+      setCanShare(findTour('share') !== null);
+      setFromWelcome(true);
+      engineRef.current.start();
+      debugLog('[facilitate-tour] start from the welcome tour');
+      track('UI', 'Selected', 'FacilitateTourFromWelcome');
+      track('UI', 'Started', 'FacilitateTour');
+    };
+    window.addEventListener(FACILITATE_TOUR_START_EVENT, onStart);
+    return () => window.removeEventListener(FACILITATE_TOUR_START_EVENT, onStart);
+  }, [canStartRef, engineRef]);
 
   // Ends as skipped when the tour can no longer run where it started: edit rights gone, Facilitate left,
   // or another tab opened.

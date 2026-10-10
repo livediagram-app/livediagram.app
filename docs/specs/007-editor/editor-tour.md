@@ -33,7 +33,8 @@ card were removed once this tour proved the better introduction.
   tours also wait while this tour's offer is still owed. In Facilitate this
   tour is also owed to someone who has answered neither it nor the Facilitate
   tour, without the `/new` handoff, so a newcomer there is offered this tour
-  first and the Facilitate tour when it ends.
+  first, and its closing card offers the Facilitate tour (**Show me Facilitate**),
+  which counts as answered however this tour ends.
 
 ## Handoff
 
@@ -66,11 +67,11 @@ live in `apps/live/components/tour/tour-steps.ts`):
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
    Eraser / ...) and explains mode switching. No "default" claim in the
    copy — desktop defaults to Select but mobile to Hand.
-3. **Shape categories**: opens the palette-category dropdown (Popular /
+3. **Palette Categories**: opens the palette-category dropdown (Popular /
    Shapes / Tools / Components / Devices / Icons / Technology). A
    dedicated "Tools category" step existed briefly and was cut — the
    category dropdown already tells that story.
-4. **Diagram & Draw**: opens the editor mode switch's menu
+4. **Change Tab Mode**: opens the editor mode switch's menu
    ([Editor modes](editor-modes.md#the-mode-switch)) and highlights the switch
    and its menu as one region, beside the menu button. The copy says
    what each mode is for and that Shift+D steps through them; the step

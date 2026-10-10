@@ -34,8 +34,8 @@ describe('tourStepsFor', () => {
     expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
-  // docs/specs/007-editor/editor-tour.md "The steps": Diagram & Draw follows Shape categories.
-  it('shows the Diagram & Draw step after Shape categories, opening the switch menu', () => {
+  // docs/specs/007-editor/editor-tour.md "The steps": Change Tab Mode follows Palette Categories.
+  it('shows the Change Tab Mode step after Palette Categories, opening the switch menu', () => {
     const desktop = ids({ mobile: false, esBoard: false });
     expect(desktop.indexOf('editor-mode')).toBe(desktop.indexOf('categories') + 1);
     const step = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;

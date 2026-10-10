@@ -7,3 +7,12 @@ export function requestFacilitateTourRelaunch(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(FACILITATE_TOUR_RELAUNCH_EVENT));
 }
+
+// The welcome tour's closing card can start the Facilitate tour straight into its steps (its own welcome card
+// would ask the same question twice): "Show Me Facilitate" sends this, FacilitateTourHost answers it.
+export const FACILITATE_TOUR_START_EVENT = 'livediagram:facilitate-tour-start';
+
+export function requestFacilitateTourStart(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(FACILITATE_TOUR_START_EVENT));
+}

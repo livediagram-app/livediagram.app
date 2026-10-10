@@ -24,6 +24,10 @@ export type TourCardCopy = {
 // its own way, in place of the single accept button.
 export type TourWelcomeChoice = { id: string; label: string; onPick: () => void };
 
+// The closing card's offer of another tour (the welcome tour's "Show Me Facilitate",
+// docs/specs/012-collaboration/facilitate-tour.md): the primary button, with the finish button beside it.
+export type TourOutroChoice = { label: string; onPick: () => void };
+
 export const WELCOME_TOUR_COPY: TourCardCopy = {
   welcomeEyebrow: 'Quick tour',
   accept: 'Show me around',
@@ -61,6 +65,7 @@ export function TourPopover({
   copy: copyOverrides,
   welcomeArt,
   welcomeChoices,
+  outroChoice,
   onBack,
   onNext,
   onSkip,
@@ -86,6 +91,7 @@ export function TourPopover({
   // The welcome card's illustration; the welcome tour's own by default.
   welcomeArt?: ReactNode;
   welcomeChoices?: readonly TourWelcomeChoice[];
+  outroChoice?: TourOutroChoice;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -222,7 +228,9 @@ export function TourPopover({
                 )}
               </div>
             ) : (
-              <div className="mt-2 flex items-center justify-between gap-2">
+              // The buttons never break mid-label: with a second tour on offer the pair takes its own
+              // right-aligned row under the help link when the card is too narrow for all three.
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 <a
                   href={copy.helpHref}
                   target="_blank"
@@ -231,9 +239,20 @@ export function TourPopover({
                 >
                   {copy.helpLabel}
                 </a>
-                <Button size="xs" onClick={onNext}>
-                  {copy.finish}
-                </Button>
+                <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
+                  <Button
+                    size="xs"
+                    variant={outroChoice ? 'secondary' : 'primary'}
+                    onClick={onNext}
+                  >
+                    {copy.finish}
+                  </Button>
+                  {outroChoice ? (
+                    <Button size="xs" onClick={outroChoice.onPick}>
+                      {outroChoice.label}
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             )}
           </>
