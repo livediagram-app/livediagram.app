@@ -135,7 +135,8 @@ Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `p
 
 **Blank Session** (kind `blank-session`) is Facilitate's blank: a general tab that opens in
 Facilitate with nothing on it, the document named "Untitled Session". It joins the blanks
-leading Popular in the template picker and Quick Start, which become five.
+leading Popular in the template picker and Quick Start, which become five, and is the fifth row of the
+sites' Start Blank menu (funnel slot `HeaderSession`, [Landing funnel](../019-marketing/landing-funnel.md)).
 
 ## Share roles
 
