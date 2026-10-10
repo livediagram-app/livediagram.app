@@ -110,14 +110,20 @@ describe('usePlanItems comments', () => {
   // docs/specs/026-plan/items.md "Comments": a card comment's mentions reach people once it has landed.
   it('notifies the mentioned once the comment lands, never for a refused one', async () => {
     const mentions = [{ userId: 'u2', name: 'Priya', handle: 'priya' }];
-    api.writeItemComment.mockResolvedValue({ upserts: [], removed: [], rev: 2 });
+    api.writeItemComment.mockResolvedValue({
+      upserts: [],
+      removed: [],
+      rev: 2,
+      commentId: 'c-srv',
+    });
     const { result, onMentioned } = setup();
     await waitFor(() => expect(result.current.status).toBe('ready'));
     await waitFor(() => expect(result.current.self).not.toBeNull());
     await act(async () => {
       await result.current.comment('item-one', { kind: 'add', text: 'Hi @priya', mentions });
     });
-    expect(onMentioned).toHaveBeenCalledWith('Hi @priya', mentions, 'item-one');
+    // The stored comment's id goes with it, so the api quotes what was stored.
+    expect(onMentioned).toHaveBeenCalledWith('Hi @priya', mentions, 'item-one', 'c-srv');
     onMentioned.mockClear();
     await act(async () => {
       await result.current.comment('item-one', { kind: 'add', text: 'No one' });

@@ -103,7 +103,13 @@ export function usePlanItems(opts: {
   onError: (message: string) => void;
   // A card comment with mentions has landed: notify the mentioned people, as a canvas comment does
   // (docs/specs/012-collaboration/comment-mentions.md "The email").
-  onMentioned?: (text: string, mentions: CommentMention[], itemId: string) => void;
+  // `commentId` names the stored comment the mention email quotes (absent offline, where no email goes).
+  onMentioned?: (
+    text: string,
+    mentions: CommentMention[],
+    itemId: string,
+    commentId?: string,
+  ) => void;
 }): PlanItems {
   const { documentId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
@@ -350,7 +356,7 @@ export function usePlanItems(opts: {
         }
         // Only once the comment has landed, so a refused comment never emails anyone.
         if (action.kind === 'add' && action.mentions?.length) {
-          callbacks.current.onMentioned?.(action.text, action.mentions, itemId);
+          callbacks.current.onMentioned?.(action.text, action.mentions, itemId, answer?.commentId);
         }
         return true;
       } catch (err) {

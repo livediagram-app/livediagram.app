@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
+import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import type { CommentThread } from '@livediagram/document';
 import type { Item } from '@livediagram/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -98,6 +98,14 @@ describe('adding', () => {
     const out = relayed.find((r) => r.op?.upserts)!.op!.upserts![0]!;
     expect(thread(out)!.comments[0]!.authorId).toBeUndefined();
     expect(thread(out)!.comments[0]!.text).toBe('Looks good');
+  });
+
+  // docs/specs/012-collaboration/comment-mentions.md "The email": the mention request names the stored comment.
+  it('names the comment it wrote, the one the card now holds', async () => {
+    const res = await post('Names it');
+    expect(res.status).toBe(200);
+    const body = res.body as ItemCommentAddResponse;
+    expect(body.commentId).toBe(thread(body.item)!.comments[0]!.id);
   });
 
   it('refuses empty or overlong text, and a patch that tries to write comments', async () => {

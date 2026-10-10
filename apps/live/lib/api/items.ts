@@ -2,7 +2,7 @@
 // Each call dispatches an offline document to its local store (../offline/offline-items) and a
 // cloud document to the api. A session on a tab-scoped link names its tab on every call.
 
-import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
+import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import {
   ITEM_BULK_MAX,
   type Item,
@@ -201,7 +201,7 @@ export async function writeItemComment(
   itemId: string,
   action: ItemCommentAction,
   who: ItemCommenter,
-): Promise<ItemWriteAnswer | null> {
+): Promise<(ItemWriteAnswer & { commentId?: string }) | null> {
   if (await isOfflineId(scope.documentId)) {
     const change =
       action.kind === 'add'
@@ -224,7 +224,9 @@ export async function writeItemComment(
       text: action.text,
       ...(action.mentions?.length ? { mentions: action.mentions } : {}),
     };
-    return one(await post(scope, base, body, 'item comment'));
+    // The api names the comment it wrote, for the mention email (docs/specs/012-collaboration/comment-mentions.md).
+    const added = await post<ItemCommentAddResponse>(scope, base, body, 'item comment');
+    return { ...one(added), commentId: added.commentId };
   }
   const res = await apiFetch(
     itemsUrl(

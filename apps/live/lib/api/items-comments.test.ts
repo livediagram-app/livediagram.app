@@ -29,7 +29,7 @@ const sent = (fetch: ReturnType<typeof stub>, n = 0) => {
 
 describe('writeItemComment', () => {
   it('posts a new comment with its mentions, naming the tab', async () => {
-    const fetch = stub(async () => Response.json({ item, rev: 9 }));
+    const fetch = stub(async () => Response.json({ item, rev: 9, commentId: 'c-new' }));
     const mention = { userId: 'u1', name: 'Ann', handle: 'ann' };
     const answer = await writeItemComment(
       scope,
@@ -37,7 +37,7 @@ describe('writeItemComment', () => {
       { kind: 'add', text: 'Hi @ann', mentions: [mention] },
       who,
     );
-    expect(answer).toEqual({ upserts: [item], removed: [], rev: 9 });
+    expect(answer).toEqual({ upserts: [item], removed: [], rev: 9, commentId: 'c-new' });
     const { url, init } = sent(fetch);
     expect(url.pathname).toBe('/api/documents/doc-cloud/items/item-one/comments');
     expect(url.searchParams.get('tabId')).toBe('t1');

@@ -38,6 +38,10 @@ export type ItemsResponse = { items: Item[]; rev: number };
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
 export type ItemResponse = { item: Item; rev: number };
 
+// A card comment add's answer also names the comment it wrote, so the editor can point the mention email at
+// the stored comment (docs/specs/012-collaboration/comment-mentions.md "The email").
+export type ItemCommentAddResponse = ItemResponse & { commentId: string };
+
 // What a patch or a move may add to its change: the write is an undo or redo, so a card type's left-out
 // statuses do not refuse it (docs/specs/026-plan/item-types.md "An item type").
 type ItemUndoFlag = {

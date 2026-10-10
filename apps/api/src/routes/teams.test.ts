@@ -51,6 +51,7 @@ vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
   notifyMentioned: vi.fn().mockResolvedValue(undefined),
   notifyInviteResponse: vi.fn().mockResolvedValue(undefined),
+  NOTIFY_EMAIL_DEDUPE_MS: 24 * 60 * 60 * 1000,
 }));
 
 import type { RouteContext } from './context';
@@ -936,20 +937,64 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
     expect(res.status).toBe(401);
   });
 
-  it("passes a card's id on, so the email opens the card", async () => {
-    db.readItem.mockResolvedValue({ id: 'item0001' });
-    const res = await post({ ...body, itemId: 'item0001' });
+  // A card's comment is read from the card by id: its stored text and mentions, never the body's.
+  const cardComment = (over: Record<string, unknown> = {}) => ({
+    id: 'item0001',
+    fields: {
+      comments: {
+        resolved: false,
+        comments: [
+          {
+            id: 'c1',
+            text: 'Stored words, @priya',
+            createdAt: Date.now(),
+            authorName: 'Sam',
+            authorColor: '#f00',
+            authorId: 'user-1',
+            mentions: [{ userId: 'user-2', memberId: 'm2', name: 'Priya', handle: 'priya' }],
+            ...over,
+          },
+        ],
+      },
+    },
+  });
+  const cardBody = { documentId: 'd1', itemId: 'item0001', commentId: 'c1' };
+
+  it("emails a card's stored comment, so the email opens the card", async () => {
+    db.readItem.mockResolvedValue(cardComment());
+    const res = await post({
+      ...cardBody,
+      commentText: 'Reworded',
+      mentions: [{ memberId: 'm3' }],
+    });
     expect(res.status).toBe(202);
     expect(db.readItem).toHaveBeenCalledWith({}, 'd1', 'item0001');
-    expect(vi.mocked(notifyMentioned).mock.calls[0]![1].itemId).toBe('item0001');
+    expect(notifyMentioned).toHaveBeenCalledOnce();
+    const sent = vi.mocked(notifyMentioned).mock.calls[0]![1];
+    expect(sent).toMatchObject({
+      itemId: 'item0001',
+      commentId: 'c1',
+      commentText: 'Stored words, @priya',
+      recipientUserId: 'user-2',
+    });
   });
 
-  it('404 for a card that is not in the document, 400 for a malformed card id', async () => {
-    db.readItem.mockResolvedValue(null);
-    expect((await post({ ...body, itemId: 'item0001' })).status).toBe(404);
+  it("404 for someone else's card comment, a missing one, or one past the dedupe window", async () => {
+    db.readItem.mockResolvedValue(cardComment({ authorId: 'user-2' }));
+    expect((await post(cardBody)).status).toBe(404);
+    expect((await post({ ...cardBody, commentId: 'c9' })).status).toBe(404);
+    db.readItem.mockResolvedValue(cardComment({ createdAt: Date.now() - 25 * 60 * 60 * 1000 }));
+    expect((await post(cardBody)).status).toBe(404);
     expect(notifyMentioned).not.toHaveBeenCalled();
-    expect((await post({ ...body, itemId: 'no' })).status).toBe(400);
-    expect((await post({ ...body, itemId: 7 })).status).toBe(400);
+  });
+
+  it('404 for a card that is not in the document, 400 for a malformed card or missing comment id', async () => {
+    db.readItem.mockResolvedValue(null);
+    expect((await post(cardBody)).status).toBe(404);
+    expect(notifyMentioned).not.toHaveBeenCalled();
+    expect((await post({ ...cardBody, itemId: 'no' })).status).toBe(400);
+    expect((await post({ ...cardBody, itemId: 7 })).status).toBe(400);
+    expect((await post({ ...body, itemId: 'item0001' })).status).toBe(400);
   });
 
   it('400 on a missing or oversized body', async () => {
