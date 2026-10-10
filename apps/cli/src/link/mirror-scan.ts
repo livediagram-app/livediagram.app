@@ -48,6 +48,9 @@ async function classifyText(text: string, rel: string, host: string): Promise<Sc
     return { class: 'invalid', path: rel, message: parsed.message };
   }
   const { file } = parsed;
+  // A host edited into something that is not a URL refuses this one file; it never stops the pass (E5a).
+  if (!URL.canParse(file.livediagramSync.host))
+    return { class: 'invalid', path: rel, message: 'livediagramSync.host is not a URL' };
   if (!sameHost(file.livediagramSync.host, host))
     return { class: 'foreign-host', path: rel, host: file.livediagramSync.host };
   const hashes: TabHashes = {};

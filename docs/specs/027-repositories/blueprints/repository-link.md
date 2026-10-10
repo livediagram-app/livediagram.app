@@ -180,13 +180,13 @@ Every regular file under `<root>/<dir>` whose name ends in `.livediagram.json`, 
 skipping any subdirectory that holds its own `livediagram.toml` (that link's files are its own, RL4). Each is
 classified, in this order:
 
-| Classification | Test                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------- |
-| `conflicted`   | `hasConflictMarkers(text)`: a line starting `<<<<<<< `, `=======` alone, or `>>>>>>> `    |
-| `invalid`      | `parseDocumentEnvelope` fails, or `livediagramSync` is present and not a valid `PullSync` |
-| `local-new`    | A valid envelope with no `livediagramSync` key                                            |
-| `foreign-host` | `livediagramSync.host` is not the link's host (as origins, `www.` ignored)                |
-| `tracked`      | A valid envelope with a valid `livediagramSync`, naming `document.id`                     |
+| Classification | Test                                                                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conflicted`   | `hasConflictMarkers(text)`: a line starting `<<<<<<< `, `=======` alone, or `>>>>>>> `                                                                           |
+| `invalid`      | `parseDocumentEnvelope` fails, or `livediagramSync` is present and not a valid `PullSync`, or its `host` is not a URL (`livediagramSync.host is not a URL`, E5a) |
+| `local-new`    | A valid envelope with no `livediagramSync` key                                                                                                                   |
+| `foreign-host` | `livediagramSync.host` is not the link's host (as origins, `www.` ignored)                                                                                       |
+| `tracked`      | A valid envelope with a valid `livediagramSync`, naming `document.id`                                                                                            |
 
 Two `tracked` files naming one document id are both `duplicate` and refused (RL11). At `index` and `none` every
 `tracked` file is a lowered file, unchanged when its tabs hash to its recorded hashes and locally changed
@@ -706,6 +706,8 @@ No api change, no D1 table, no migration. Local files:
 - **E3** Two links covering one document: each keeps its own file, its own state dir and its own lock (spec).
 - **E4** A mirror file reformatted by a formatter: hashes alike (`canonicalJson`), stays `in-step`, not rewritten.
 - **E5** A mirror file edited into invalid JSON: `invalid`, refused, exit 1; the document's other files untouched.
+- **E5a** A mirror file whose `livediagramSync.host` is not a URL: `invalid`, refused with `livediagramSync.host is
+not a URL`; `sync`, `link status` and `sync --watch` go on with every other file (never a crash, never exit 7).
 - **E6** A mirror file with git's conflict markers: `conflicted`, refused naming `git checkout --ours|--theirs`,
   exit 1; the rest of the pass proceeds.
 - **E6a** A covered document whose mirror path a conflicted or invalid file holds: `held`, refused naming the file

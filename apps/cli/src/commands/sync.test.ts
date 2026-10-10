@@ -133,6 +133,27 @@ describe('sync at files', () => {
     expect(file(io, OUTLINE)).toContain('# Start screen');
   });
 
+  it('refuses a mirror file whose host is not a URL, and the rest proceeds', async () => {
+    const { io, host } = setup('files', [home(), menu()]);
+    await sync(io);
+    const text = file(io, MIRROR)!.replace(
+      '"host": "https://livediagram.app"',
+      '"host": "not a url"',
+    );
+    expect(text).toContain('"not a url"');
+    io.fileMap.set(MIRROR, { data: text, mode: 0o644 });
+    host.edit('d-menu');
+    const result = await sync(io);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: livediagramSync.host is not a URL',
+    );
+    expect(result.out).toContain('~ diagrams/menu.livediagram.json');
+    expect(file(io, MIRROR)).toBe(text);
+    const status = await run(['link', 'status'], io);
+    expect(status).toBe(0);
+  });
+
   it('refuses ahead and diverged documents naming push, and the rest proceeds', async () => {
     const { io, host } = setup('files', [home(), menu()]);
     await sync(io);
