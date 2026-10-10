@@ -539,6 +539,22 @@ A sheet maximises exactly as a board does ([Maximised board](../026-plan/plan-bo
 - On a touch screen, a finger on the maximised grid scrolls it.
 - Telemetry: `Plan · Toggled · SheetMaximised` and `Plan · Toggled · SheetRestored`.
 
+## Zoom
+
+While a Sheet covers the canvas (maximised, or filling its tab), the canvas cannot zoom, so the bottom-right zoom
+controls zoom the **sheet's cells** instead of standing down as they do for a board or view
+([Maximised board](../026-plan/plan-board.md#maximised-board)):
+
+- **Zoom out** and **Zoom in** step it by 10%, the level's menu offers its presets, and **Fit** (the level on a
+  desktop, the Fit button on a phone) puts it back to **100%**. It runs from 50% to 200%; the level shows it.
+- The column letters, row numbers and cells grow or shrink together inside the grid's frame; the header, toolbar,
+  formula bar and status bar keep their size. Everything in the grid works as at 100%: selecting, dragging, editing,
+  panning, menus.
+- Their hover cards say what they zoom: "Zoom the sheet in by 10%.", "Zoom the sheet out by 10%.", "Show the sheet at
+  100%."
+- It is the person's own view, like maximising: never saved, sent or undone. It goes back to 100% the moment no Sheet
+  covers the canvas, so the next one opens at its own size.
+
 ## Fill Tab
 
 A Sheet can fill its tab for good, exactly as a board can ([Fill Tab](../026-plan/plan-board.md#fill-tab)):

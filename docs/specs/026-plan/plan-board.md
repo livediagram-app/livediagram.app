@@ -526,7 +526,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
 - **Zoom stands down**: while a board, view or Sheet is maximised or fills its tab, the canvas cannot zoom, so the
   bottom-right zoom controls (Zoom out, the zoom level and its menu, Zoom in, and a phone's Fit) stay where they
   are but are disabled, each hover card saying why: "Zoom is off while a board, view or sheet fills the canvas." They
-  come back the moment it is restored.
+  come back the moment it is restored. A Sheet is the exception: covering the canvas, the controls zoom its cells
+  instead ([Zoom](../029-sheets/sheet.md#zoom)).
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
   (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot, so a phone scrolls sooner); a column
   set wider takes its slots and the gaps between them. A board of five slots or fewer fills the width as on the

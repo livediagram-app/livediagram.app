@@ -41,6 +41,8 @@ import type { PointRef } from './useSheetPointer';
 import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { listenForSheetSelect } from '@/lib/sheet-select-request';
+import { useFillsTab } from '@/hooks/plan/plan-cover-store';
+import { useSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 const RADIUS = 12;
 
@@ -319,6 +321,10 @@ function SheetParts({
   );
   // The cog's settings for the element menu's Sheet flyout (sheet-settings-registry).
   usePublishSheetSettings(element.id, { controller: c, actions, onImportCsv });
+  // Covering the canvas (maximised, or filling its tab), the zoom controls zoom its cells (sheet-zoom.ts).
+  const fillsTab = useFillsTab(element.id);
+  const sheetZoom = useSheetZoom();
+  const zoom = c.maximised || fillsTab ? sheetZoom : 1;
   const readFile = async (f: File) => {
     const text = await f.text();
     if (c.sheet.cells.size === 0) importCsvText(c, text, 'replace');
@@ -361,6 +367,7 @@ function SheetParts({
             pointRef={pointRef}
             peers={bridge.peers}
             fontFamily={fontFamily}
+            zoom={zoom}
           />
           {interactive ? <SheetStatusBar /> : null}
         </>
