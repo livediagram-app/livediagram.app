@@ -5,7 +5,7 @@
 // each named for what it does to this selection, with the rarer verbs in side flyouts. Someone who may only view gets
 // the header and Copy alone.
 import { useState } from 'react';
-import { mergeRange, unmergeRange } from '@livediagram/sheets';
+import { unmergeRange } from '@livediagram/sheets';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { CopyIcon, CutIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -82,7 +82,8 @@ export function SheetCellMenu({
     if (!asked) onClose();
   };
   // Merge for a selection of more than one cell; Unmerge where it touches a merge.
-  const canMerge = c.canEdit && mergeRange(c.sheet, range, 'all') !== null;
+  // A cheap test: building the merge would walk every cell of a large selection on each render.
+  const canMerge = c.canEdit && (range.r1 !== range.r2 || range.c1 !== range.c2);
   const canUnmerge = c.canEdit && unmergeRange(c.sheet, range) !== null;
   const row = (label: string, icon: React.ReactNode, run: () => void) => (
     <MenuActionRow plain label={label} icon={icon} onClick={run} />
