@@ -11,11 +11,11 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Keyboard Shortcuts" description="Work faster on the canvas with single-key tools and the shortcut reference in Settings, and switch shortcuts off whenever you need to." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
 
-Keyboard shortcuts let you switch tools and run common actions without reaching for the palette. The canvas tools all sit on single keys, so you can move between selecting, panning, and pointing in a single tap, and the built-in shortcut reference in Settings lists everything in one place. `⌘` below is the Command key on a Mac; on Windows and Linux use Ctrl.
+Keyboard shortcuts let you switch tools and run common actions without reaching for the palette. The main canvas tools sit on single keys, so you can move between selecting, panning, and pointing in a single tap, and the built-in shortcut reference in Settings lists everything in one place. `⌘` below is the Command key on a Mac; on Windows and Linux use Ctrl.
 
 ## The shortcut reference
 
-Run **Keyboard shortcuts** from [search](/help/search-panel/) (`⌘K`) and [Settings](/help/user-interface/settings/) opens on its **Keyboard** category. Below the on/off switch, **All Shortcuts** lists every binding the editor knows, in collapsible groups by purpose, so you never have to memorise the full set. You can also get there yourself: open **Settings** from the gear at the bottom-right of the editor and pick **Keyboard**.
+Run **Keyboard shortcuts** from [search](/help/search-panel/) (`⌘K`) and [Settings](/help/user-interface/settings/) opens on its **Keyboard** category. Below the on/off switch, **All Shortcuts** lists every binding the editor knows, in collapsible groups by purpose, so you never have to memorise the full set. You can also get there yourself: open **Settings** from the gear in the editor's bottom bar and pick **Keyboard**.
 
 The most useful canvas-tool keys are:
 
@@ -25,11 +25,11 @@ The most useful canvas-tool keys are:
 - `F` to draw a **Frame**, the section backdrop that carries what you draw inside it.
 - `K` for the **Laser** pointer, for drawing attention while you present.
 - `E` for the **Eraser**, to delete elements by pressing or dragging over them.
-- `Z` to toggle [Zen mode](/help/tools/zen-mode/) on and off, with `Escape` to exit it.
+- `Z` to toggle [Zen mode](/help/tools/zen-mode/) on and off. `Escape` exits it too, once nothing is selected (the first press clears the selection).
 
 Two more switch mode rather than tool, and have articles of their own: `I` for [Isometric mode](/help/selection-modes/isometric-mode/) (hold Shift and drag to rotate its camera) and `W` for [Avatar mode](/help/selection-modes/avatar-mode/).
 
-The reference stays available in every role. On a view-only link, only the keys that change nothing still work: `V`, `H`, `K`, `I`, `W` and `Z`, zoom, and search. Everything that edits is switched off.
+The reference in Settings stays available in every role. On a view-only link, only the keys that change nothing still work: `V` (or `S` or `1`), `H`, `K`, `I`, `W` and `Z`, zoom and zoom to fit, search, `Tab` to step through elements, and `Escape`. Everything that edits is switched off. A [Participant](/help/collaboration/sharing/) sits in between: they can type into labels, delete and undo, but the tool keys that add elements stay off.
 
 <Figure caption="The shortcut reference in Settings pairs each single-key tool with what it does.">
   <KeyboardShortcuts />
@@ -39,18 +39,18 @@ The reference stays available in every role. On a view-only link, only the keys 
 
 These are the chords that edit the selection.
 
-| Keys           | Does                             |
-| -------------- | -------------------------------- |
-| `⌘Z`           | Undo                             |
-| `⌘⇧Z`          | Redo (Ctrl Y works too)          |
-| `⌘X`           | Cut the selection                |
-| `⌘C`           | Copy the selection               |
-| `⌘V`           | Paste, offset from the original  |
-| `⌘D`           | Duplicate the selection in place |
-| `⌘⇧L`          | Lock or unlock the selection     |
-| `⌘A`           | Select everything on the tab     |
-| `Delete` / `⌫` | Delete the selection             |
-| `⌘⇧]` / `⌘⇧[`  | Bring to front / send to back    |
+| Keys           | Does                                                          |
+| -------------- | ------------------------------------------------------------- |
+| `⌘Z`           | Undo                                                          |
+| `⌘⇧Z`          | Redo (Ctrl Y works too)                                       |
+| `⌘X`           | Cut the selection                                             |
+| `⌘C`           | Copy the selection                                            |
+| `⌘V`           | Paste, offset from the original                               |
+| `⌘D`           | Duplicate the selection, offset                               |
+| `⌘⇧L`          | Lock or unlock the selection                                  |
+| `⌘A`           | Select everything on the tab (hidden and locked layers aside) |
+| `Delete` / `⌫` | Delete the selection                                          |
+| `⌘⇧]` / `⌘⇧[`  | Bring to front / send to back                                 |
 
 **Cut, copy and paste use your operating system's clipboard**, not a private one, so a selection copied on one tab pastes onto another, into a different document, or into a second browser window. A paste lands offset from the original rather than exactly on top of it, so you can see what arrived, and arrows between copied elements come along and reconnect to the copies.
 
@@ -63,7 +63,7 @@ These are the chords that edit the selection.
 | `⌘0`            | Reset the zoom to 100%                                                                      |
 | `⇧1`            | Zoom to fit everything on the tab                                                           |
 | `⇧D`            | Move to the next [editor mode](/help/canvas/editor-modes/): Diagram, Draw, Illustrate, Plan |
-| `Tab`           | Select the next element (Shift for the previous one)                                        |
+| `Tab`           | Select the next element while the canvas has focus (Shift for the previous one)             |
 | `Tab` / `Enter` | On a [mind map](/help/palette/mind-maps/) node: add a child / a sibling                     |
 | Arrow keys      | Nudge the selection 1px, or 10px with Shift                                                 |
 | `⇧` + click     | Add an element to the selection, or take it out                                             |
@@ -76,7 +76,7 @@ These are the chords that edit the selection.
 
 ## Keys that place an element
 
-The rest of the letters drop something on the canvas at your pointer, so a diagram can be built without visiting the palette at all:
+The rest of the letters pick up an element, ready to place: click the canvas to drop it at its default size, or drag to draw it to the size you want. A diagram can be built without visiting the palette at all:
 
 - `R` a **square**, `O` a **circle**, `D` a **diamond**, `C` a **cylinder**, `G` a **parallelogram**.
 - `A` an **arrow**, `T` a **text** label, `N` a **sticky note**.
@@ -95,9 +95,9 @@ Every tool also sits on a digit, along the top of the keyboard:
 
 The digits are deliberately laid out to mirror Excalidraw's tool row, so if you have that muscle memory it carries straight over. That matters most right after an [Excalidraw import](/help/tabs/import-tabs/), when you are working on a diagram you drew somewhere else. The one slot that differs is `6`, which Excalidraw gives to its line tool and livediagram gives to the [Shape Pen](/help/palette/tools/drawing/shape-recognition/).
 
-`9` needs somewhere to put the file, so it is absent on a self-hosted deploy running without the api worker.
+`9` does nothing in an embedded diagram, where images can't be uploaded.
 
-`⇧D` is not offered on a view-only link or an [Event Storming board](/help/canvas/event-storming-boards/), and in [Draw mode](/help/canvas/draw-mode/) the letters and digits work differently (see below).
+`⇧D` is not offered on a view-only link, a locked tab or an [Event Storming board](/help/canvas/event-storming-boards/), and in [Draw mode](/help/canvas/draw-mode/) the letters and digits work differently (see below).
 
 ## In Draw mode
 
@@ -115,11 +115,11 @@ On a tab you are working on in [Draw mode](/help/canvas/draw-mode/), the plain k
 | `S`                          | Open the Shapes flyout with its search focused                         |
 | `Z`                          | Zen mode                                                               |
 
-The chords (undo, copy, zoom and the rest) are the same in every mode.
+The chords (undo, copy, zoom and the rest) are the same in every mode. While a [Plan](/help/canvas/editor-modes/) board fills the canvas, the tool keys and the chords that act on canvas elements (`⌘D`, `⌘A`, lock, front and back, zoom) stand down; undo, redo, search, Zen and `⇧D` still work.
 
 ## Hold Shift for the power moves
 
-Shift is the editor's power modifier. While you hold it, a small hint bar at the top of the canvas names what Shift is doing right then, so none of these stay hidden:
+Shift is the editor's power modifier. While you hold it, a small hint bar near the top of the canvas names what Shift is doing right then, so these are easy to discover:
 
 - **Shift-click elements** to build a [multi-selection](/help/canvas/selecting-and-grouping/multi-select/); Shift-click again to remove one.
 - **Shift-click table cells** to select several cells and style or clear them together.
@@ -133,15 +133,17 @@ Shift is the editor's power modifier. While you hold it, a small hint bar at the
 
 A running [slide deck](/help/selection-modes/slide-deck/) has its own set, and only its own set: the editor's shortcuts are switched off for the duration, so a stray `R` cannot drop a rectangle onto the canvas behind the slide.
 
-| Keys                                           | Does                            |
-| ---------------------------------------------- | ------------------------------- |
-| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                      |
-| `←` or `Page Up`                               | Previous slide                  |
-| `Home` / `End`                                 | Jump to the first or last slide |
-| `G`                                            | Open the jump-to-slide list     |
-| `N`                                            | Show or hide presenter notes    |
-| `L` / `S`                                      | Arm the laser / the spotlight   |
-| `Esc`                                          | Leave the presentation          |
+| Keys                                           | Does                                                    |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                                              |
+| `←` or `Page Up`                               | Previous slide                                          |
+| `Home` / `End`                                 | Jump to the first or last slide                         |
+| `G`                                            | Open the jump-to-slide list                             |
+| `N`                                            | Show or hide presenter notes (on a slide that has them) |
+| `L` / `S`                                      | Arm the laser / the spotlight                           |
+| `Esc`                                          | Leave the presentation                                  |
+
+A click on empty slide advances; a click on an element that carries a note or comments opens them instead. Click-to-advance can be switched off in the deck's settings, and it pauses while the laser or spotlight is armed, so a click points rather than turns the page.
 
 ## Turning shortcuts off
 
@@ -151,7 +153,7 @@ Shortcuts are handy, but they are not for everyone: if you dictate into the brow
   <ShortcutsToggle />
 </Figure>
 
-Turning them off switches off **every** editor shortcut, not just the single letters: the tool keys, `Delete`, `Escape`, and the chords such as `⌘Z` and `⌘C` all stop, and the browser's own behaviour for those keys comes back. Pasting with `⌘V` still works, because that goes through the browser's own paste. Use the on-screen controls (undo and redo sit in the bottom-right corner) while they are off. This choice is saved in your browser and, unlike most preferences, deliberately stays per device rather than following you across sign-in: that way you can keep shortcuts on where you have a full keyboard and off on a device where you don't.
+Turning them off switches off the editor's shortcuts, not just the single letters: the tool keys, `Delete`, `Escape`, and the chords such as `⌘Z` and `⌘C` all stop, and the browser's own behaviour for those keys comes back. A few keep working because they are part of how the canvas or a presentation is driven rather than shortcuts: pasting with `⌘V` (it goes through the browser's own paste), `Space` + drag to pan, holding `⌘` to show the palette's badges, and the slide keys while presenting. Use the on-screen controls (undo and redo sit in the bottom-right corner) while they are off. This choice is saved in your browser and, unlike most preferences, deliberately stays per device rather than following you across sign-in: that way you can keep shortcuts on where you have a full keyboard and off on a device where you don't.
 
 The editor is also careful about context: even with shortcuts on, typing into a text label or an input never triggers a tool key. A `z` typed into a label is just a `z`, never a jump into Zen mode.
 
