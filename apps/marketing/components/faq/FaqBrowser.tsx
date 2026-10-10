@@ -91,7 +91,7 @@ export function FaqBrowser({
                 Try another word, or search the{' '}
                 <a
                   href="/help/"
-                  className="font-medium text-brand-600 underline-offset-2 hover:underline dark:text-brand-300"
+                  className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
                 >
                   Help Centre
                 </a>

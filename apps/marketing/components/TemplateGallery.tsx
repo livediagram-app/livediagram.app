@@ -113,7 +113,7 @@ export function TemplateGallery() {
             {mode === 'all' ? '' : ' or Everything'}, or{' '}
             <a
               href={ctaHref('/new?blank=1', 'Home.GalleryDraw')}
-              className="text-brand-600 underline-offset-2 hover:underline dark:text-brand-300"
+              className="text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
             >
               start from a blank canvas
             </a>
