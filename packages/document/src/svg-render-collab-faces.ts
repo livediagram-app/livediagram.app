@@ -56,6 +56,12 @@ const QUIZ_EXPORT_QUESTION_LINE_PX = 16;
 
 // ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
 
+// A decision driver's rhythm (DecisionFace): 11.5px on a snug line, 6px
+// between drivers, and at most this many lines each in an export.
+const DRIVER_LINES = 3;
+const DRIVER_LINE = 15.8;
+const DRIVER_PITCH = 21.8;
+
 export function svgCollabFace(
   el: Face,
   label: string,
@@ -117,30 +123,50 @@ export function svgCollabFace(
             opacity: 0.85,
           });
         const listTop = headerBottom + 29;
-        const body = drivers.length
-          ? drivers
-              .slice(0, 6)
-              .map((d, i) => {
-                const y = listTop + i * 21.8;
-                return (
-                  `<circle cx="${r2(PAD_X + 7)}" cy="${r2(y + 10)}" r="7" fill="${xmlEscape(hue)}" fill-opacity="0.16"/>` +
-                  text(PAD_X + 7, y + 13, '→', {
-                    size: 9,
-                    weight: 700,
-                    color: ink,
-                    anchor: 'middle',
-                  }) +
-                  text(PAD_X + 22, y + 12, d, { size: 11.5, color, opacity: 0.85 })
-                );
-              })
-              .join('')
-          : text(PAD_X, listTop + 12, '+ Add what drove this from the element’s menu.', {
-              size: 11,
-              color,
-              opacity: 0.5,
-            });
         const dateW = (el.decisionDate?.length ?? 0) * 6 + 32;
         const dateY = h - PAD_Y - 20;
+        // Each driver wraps (up to DRIVER_LINES) as the canvas's list does;
+        // the ones that do not fit above the date are counted in a "+N more"
+        // line rather than dropped without a word.
+        const listEnd = (el.decisionDate ? dateY : h - PAD_Y) - 6;
+        let body = '';
+        let y = listTop;
+        let shown = 0;
+        for (const d of drivers) {
+          const lines = wrapLines(d, w - PAD_X * 2 - 22, 11.5, DRIVER_LINES);
+          const itemH = DRIVER_PITCH + (lines.length - 1) * DRIVER_LINE;
+          const reserve = shown + 1 < drivers.length ? DRIVER_PITCH : 0;
+          if (y + itemH + reserve > listEnd) break;
+          body +=
+            `<circle cx="${r2(PAD_X + 7)}" cy="${r2(y + 10)}" r="7" fill="${xmlEscape(hue)}" fill-opacity="0.16"/>` +
+            text(PAD_X + 7, y + 13, '→', { size: 9, weight: 700, color: ink, anchor: 'middle' }) +
+            lines
+              .map((line, i) =>
+                text(PAD_X + 22, y + 12 + i * DRIVER_LINE, line, {
+                  size: 11.5,
+                  color,
+                  opacity: 0.85,
+                }),
+              )
+              .join('');
+          y += itemH;
+          shown += 1;
+        }
+        if (shown < drivers.length) {
+          body += text(PAD_X + 22, y + 12, `+${drivers.length - shown} more`, {
+            size: 11,
+            weight: 600,
+            color,
+            opacity: 0.55,
+          });
+        }
+        if (drivers.length === 0) {
+          body = text(PAD_X, listTop + 12, '+ Add what drove this from the element’s menu.', {
+            size: 11,
+            color,
+            opacity: 0.5,
+          });
+        }
         const date = el.decisionDate
           ? pill(PAD_X, dateY, dateW, 20, color, 0.07) +
             `<g transform="translate(${r2(PAD_X + 7)} ${r2(dateY + 4.5)}) scale(0.69)" fill="none" stroke="${xmlEscape(color)}" stroke-width="2.2" stroke-linecap="round"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3"/></g>` +

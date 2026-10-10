@@ -6,7 +6,14 @@
 // rows at the same size.
 
 import { qaView, type QaNote } from './qa-board';
-import { lockMark, text, wrapLines, type CollabAccent, type Face } from './svg-render-face-kit';
+import {
+  lockMark,
+  rule,
+  text,
+  wrapLines,
+  type CollabAccent,
+  type Face,
+} from './svg-render-face-kit';
 import { collabCard, PAD_X, PAD_Y } from './svg-render-face-kit';
 import {
   ACCENT_BAR_H,
@@ -18,6 +25,7 @@ import {
   COMPOSER_H,
   composer,
   countBox,
+  glyph,
   GLYPH,
   relativeAge,
   roundRect,
@@ -25,6 +33,30 @@ import {
 
 const ROW_GAP = 6;
 const LINE = 16.5;
+// The folded Discussed drawer's header row (QaDiscussed), the state it shows
+// until somebody opens it.
+const DRAWER_H = 22;
+
+function discussedDrawer(x: number, y: number, w: number, count: number, color: string): string {
+  const label = `Discussed · ${count}`;
+  const cy = y + DRAWER_H / 2;
+  // Uppercase 10.5px with 0.08em tracking runs about 0.72em a character.
+  const textEnd = x + 26 + label.length * 10.5 * 0.72;
+  return (
+    `<circle cx="${x + 9}" cy="${cy}" r="8" fill="${color}" fill-opacity="0.1"/>` +
+    glyph(x + 9, cy, 9, color, GLYPH.check) +
+    text(x + 24, cy + 3.7, label, {
+      size: 10.5,
+      weight: 600,
+      color,
+      opacity: 0.7,
+      uppercase: true,
+      tracking: 0.08,
+    }) +
+    rule(textEnd, cy, x + w - 18, color, 0.12) +
+    glyph(x + w - 8, cy, 10, color, 'M4.5 6.5 8 10l3.5-3.5')
+  );
+}
 
 // One row: the box, then the text (up to four lines), the author line, and on
 // the top-voted note a Most Wanted tag and a lit row.
@@ -91,7 +123,9 @@ export function svgQaBoard(el: Face, title: string, color: string, a: CollabAcce
         text(x + 42, composerY + 52.5, 'As you', { size: 10, weight: 600, color, opacity: 0.8 });
       let out = composer(x, composerY, width, 'Add a note…', color, a, meta);
       let y = BODY_TOP;
-      if (queue.length === 0 && !discussing) {
+      // Empty only when nothing was ever discussed either: a board whose
+      // every note is done shows its Discussed drawer, as the canvas does.
+      if (queue.length === 0 && !discussing && done.length === 0) {
         out += text(w / 2, (BODY_TOP + composerY) / 2, 'No notes yet', {
           size: 12.5,
           weight: 600,
@@ -107,6 +141,8 @@ export function svgQaBoard(el: Face, title: string, color: string, a: CollabAcce
       const maxVotes = queue.reduce((m, n) => Math.max(m, n.voters.length), 0);
       const now = Date.now();
       const rows = discussing ? [discussing, ...queue] : queue;
+      // Rows stop short of the drawer, when there is one, so it always shows.
+      const rowsEnd = composerY - BODY_GAP - (done.length > 0 ? DRAWER_H + ROW_GAP : 0);
       for (let i = 0; i < rows.length; i++) {
         const n = rows[i]!;
         const votes = n.voters.length;
@@ -125,10 +161,11 @@ export function svgQaBoard(el: Face, title: string, color: string, a: CollabAcce
           color,
           a,
         );
-        if (y + r.h > composerY - BODY_GAP) break;
+        if (y + r.h > rowsEnd) break;
         out += r.svg;
         y += r.h + ROW_GAP;
       }
+      if (done.length > 0) out += discussedDrawer(x, y, width, done.length, color);
       return out;
     },
   );

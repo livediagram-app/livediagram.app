@@ -121,7 +121,16 @@ composers, accent bars and "Most wanted" rows; the Estimate card's pick cards,
 face-down room cards and Reveal / New Round footer; the Temperature check's
 bars and meter; the Comment panel's grouped bubbles, Resolve chip and composer;
 the Action panel's rings, checks and Add Action bar; the Roll call's avatar
-stack, time chip and Take again bar. The Behaviour faces draw what the canvas
+stack, time chip and Take again bar; the Q&A board's folded "Discussed · N"
+drawer whenever a note is done (a board whose every note is done shows the
+drawer, never "No notes yet").
+
+**Nothing runs off a card.** A Collaborate card's title takes one line in the
+room its aside leaves and ends in an ellipsis (`fitLine`), as the canvas's
+header truncates it; a word wider than a wrapped line is cut the same way; a
+Roll call chip's name is cut to its chip; and a Decision record's drivers wrap
+(up to three lines each), with the ones that do not fit above the date counted
+in a "+N more" line rather than dropped. The Behaviour faces draw what the canvas
 draws: a timer Session button is the idle dial (ticks, "TIMER", its length); a
 Mode button is a keycap with its glyph chip over the label, or "Switch to" and
 the mode's name (`SELECTION_MODE_LABEL`) when it has none; a Portal is its

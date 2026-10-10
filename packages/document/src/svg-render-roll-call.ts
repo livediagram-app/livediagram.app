@@ -13,6 +13,7 @@ import {
   PAD_X,
   PAD_Y,
   personDisc,
+  fitLine,
   pill,
   text,
   wrapLines,
@@ -145,7 +146,12 @@ export function svgRollCall(
       out +=
         pill(x, y, cw, CHIP_H, color, 0.06) +
         personDisc(x + 12, y + CHIP_H / 2, 10, color, person(e)) +
-        text(x + 28, y + 16, e.name, { size: 11, weight: 500, color });
+        // Cut to the chip, as the canvas's chip truncates a long name.
+        text(x + 28, y + 16, fitLine(e.name, cw - 28 - 10, 11, 0.54), {
+          size: 11,
+          weight: 500,
+          color,
+        });
       x += cw + 6;
     }
     return out + foot;
