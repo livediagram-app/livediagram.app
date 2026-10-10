@@ -421,7 +421,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Dead-simple, single-canvas freeform sketching.',
     ],
     usBest: [
-      'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 91 of them.',
+      'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 95 of them.',
       'Keep a whole project together: several tabs in one document, organised in folders, with per-tab layers.',
       '26 themes recolour the whole canvas, shapes and arrows, in one click.',
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
@@ -638,7 +638,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Start from a diagram, not a blank slide',
         paragraphs: [
-          'Slides offers a handful of simple diagram layouts (grids, processes, timelines and the like) sized to a slide. livediagram starts you from 91 real diagram templates (flowcharts, mind maps, kanban boards, org charts, timelines, architecture diagrams and more) and themes the whole canvas in one click, so the result looks deliberate without manual styling.',
+          'Slides offers a handful of simple diagram layouts (grids, processes, timelines and the like) sized to a slide. livediagram starts you from 95 real diagram templates (flowcharts, mind maps, kanban boards, org charts, timelines, architecture diagrams and more) and themes the whole canvas in one click, so the result looks deliberate without manual styling.',
           'The palette is diagram-native too: an icon library, full-colour technology icons for architecture diagrams, charts, freehand sketching with a Shape Pen that tidies rough shapes, and device frames for wireframes. And the canvas is infinite and pannable, with a minimap for navigating big diagrams, instead of a fixed 16:9 rectangle.',
         ],
       },
