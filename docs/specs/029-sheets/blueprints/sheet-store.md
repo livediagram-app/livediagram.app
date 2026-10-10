@@ -339,25 +339,26 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 
 ## Errors and edge cases
 
-| Case                                                | Handling                                                                                       |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Write to a sheet another person deleted             | `404 sheet_not_found`; the store drops it; the element draws "Sheet not found" with **Remove** |
-| Element whose sheet is not in the store             | "Sheet not found" face (dashed outline), offering Remove                                       |
-| Delete with element, removal not saved yet          | Marked `delete_when_unreferenced`; the tab write removing the last reference deletes it        |
-| Undo before the delete lands                        | The restore keeps the stored sheet and clears the mark (200)                                   |
-| Redo of a confirmed delete                          | The element goes without asking; its sheet waits as a Cut's (30 days)                          |
-| Restored title now taken on the tab                 | `uniqueSheetTitle` (the next free title) before the restore is sent                            |
-| Delete before any Sheet has drawn                   | No dialog; the sheet waits as a Cut's                                                          |
-| A sheet whose element never reached the api         | Noted at create (`sheetNoteUnreferencedStatement`), so it expires                              |
-| Agent change past a sheet or document cap           | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                |
-| Agent change whose later part the api refuses       | The landed parts kept and reported as a `partly` line, then the refusal                        |
-| add_sheet fill or placing refused                   | The made sheet deleted, so a retry does not spend the document's cells again                   |
-| Concurrent writes to one sheet                      | Rev-guarded batch, retried up to 3 times, then `409 sheet_busy` (toast, refetch)               |
-| Insert after a row someone deleted                  | The engine resolves to the stored neighbour or the end                                         |
-| Room op before the GET answer                       | Held until the load ends, then merged by rev                                                   |
-| Offline record without `sheets`                     | Empty store                                                                                    |
-| Paste of a sheet into another document over the cap | Refused with the spec toast; nothing is pasted                                                 |
-| A create with a taken title (agent)                 | `409 sheet_title_taken`; the editor picks the next free title itself                           |
+| Case                                                           | Handling                                                                                                                                      |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Write to a sheet another person deleted                        | `404 sheet_not_found`; the store drops it; the element draws "Sheet not found" with **Remove**                                                |
+| Element whose sheet is not in the store                        | "Sheet not found" face (dashed outline), offering Remove                                                                                      |
+| Delete with element, removal not saved yet                     | Marked `delete_when_unreferenced`; the tab write removing the last reference deletes it                                                       |
+| Undo before the delete lands                                   | The restore keeps the stored sheet and clears the mark (200)                                                                                  |
+| Redo of a confirmed delete                                     | The element goes without asking; its sheet waits as a Cut's (30 days)                                                                         |
+| Restored title now taken on the tab                            | `uniqueSheetTitle` (the next free title) before the restore is sent                                                                           |
+| Delete before any Sheet has drawn                              | No dialog; the sheet waits as a Cut's                                                                                                         |
+| A sheet whose element never reached the api                    | Noted at create (`sheetNoteUnreferencedStatement`), so it expires                                                                             |
+| Agent change past a sheet or document cap                      | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                                                               |
+| Agent change whose later part the api refuses                  | The landed parts kept and reported as a `partly` line, then the refusal                                                                       |
+| add_sheet fill or placing refused                              | The made sheet deleted, so a retry does not spend the document's cells again                                                                  |
+| Agent delete of rows or columns past the sheet, or all of them | The line names what `deleteAxis` deleted (`deleted row 4`, `deleted rows 50:99`), and the one kept (`; column Z stays, as a sheet keeps one`) |
+| Concurrent writes to one sheet                                 | Rev-guarded batch, retried up to 3 times, then `409 sheet_busy` (toast, refetch)                                                              |
+| Insert after a row someone deleted                             | The engine resolves to the stored neighbour or the end                                                                                        |
+| Room op before the GET answer                                  | Held until the load ends, then merged by rev                                                                                                  |
+| Offline record without `sheets`                                | Empty store                                                                                                                                   |
+| Paste of a sheet into another document over the cap            | Refused with the spec toast; nothing is pasted                                                                                                |
+| A create with a taken title (agent)                            | `409 sheet_title_taken`; the editor picks the next free title itself                                                                          |
 
 ## Security and trust
 

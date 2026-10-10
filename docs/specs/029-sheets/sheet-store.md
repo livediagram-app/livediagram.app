@@ -184,6 +184,8 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   refused (the sheet busy, a person filling it meanwhile), the answer says how many cells of that change landed.
   `add_sheet` checks its first cells the same way before making the sheet, and deletes the sheet it made when
   filling or placing it fails, so a failed call leaves no unplaced sheet spending the document's cells.
+- A delete of rows or columns says which it deleted: as far as the sheet goes, and never the last one (a sheet keeps
+  one row and one column, and the answer names the one it kept).
 
 ## Limits
 

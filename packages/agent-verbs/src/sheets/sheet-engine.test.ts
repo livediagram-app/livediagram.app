@@ -304,6 +304,25 @@ describe('changing a sheet', () => {
     expect(r.frozen).toEqual({ rows: 1, cols: 0 });
   });
 
+  it('says which rows and columns a delete took, not the span asked for', async () => {
+    const { api } = setup();
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      {
+        sheet: 'Costs',
+        changes: [
+          { op: 'delete_rows', rows: '4' },
+          // The sheet has 100 rows: a span past them deletes as far as they go.
+          { op: 'delete_rows', rows: '50:500' },
+          { op: 'delete_cols', cols: 'C:D' },
+        ],
+      },
+      'mcp',
+    );
+    expect(result.applied).toEqual(['deleted row 4', 'deleted rows 50:99', 'deleted columns C:D']);
+  });
+
   it('sorts, clears and deletes', async () => {
     const { api } = setup();
     const result = await changeSheet(
@@ -405,7 +424,8 @@ describe('changing a sheet', () => {
       },
       'mcp',
     );
-    expect(last.applied).toEqual(['deleted columns A:Z']);
+    // Asked for A:Z of 26 columns: one always stays, so the line names the 25 deleted.
+    expect(last.applied).toEqual(['deleted columns A:Y; column Z stays, as a sheet keeps one']);
     expect(last.refusal).toEqual({
       code: 'range_invalid',
       message: 'A sheet keeps at least one row and one column.',
