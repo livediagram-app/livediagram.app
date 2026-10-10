@@ -10870,6 +10870,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/ElementId"
       },
+      "ideaCardIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "ideaCards": {
         "items": {
           "type": "string"

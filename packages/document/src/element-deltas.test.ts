@@ -4,6 +4,8 @@ import type { Comment, ElementDelta, ShapeElement } from './index';
 import {
   IDEA_MAX_CARDS,
   applyElementDelta,
+  withoutIdeaCard,
+  yieldIdeaToPeer,
   checklistDeltaFor,
   elementChangeIsDeltaOnly,
   mergeIncomingElement,
@@ -81,6 +83,89 @@ describe('applyElementDelta (docs/specs/012-collaboration/collab-race-hardening.
     expect(el.ideaCards).toEqual(['one', 'two']);
     const full = card({ shape: 'idea-box', ideaCards: Array(IDEA_MAX_CARDS).fill('x') });
     expect(applyElementDelta(full, { kind: 'idea', text: 'late' })).toBe(full);
+  });
+
+  // docs/specs/012-collaboration/blueprints/idea-box-race.md "Interfaces and contracts".
+  it('keeps card ids aligned with the cards, padding id-less ones, and drops a replay', () => {
+    const legacy = card({ shape: 'idea-box', ideaCards: ['old'] });
+    expect(apply(legacy, { kind: 'idea', text: 'plain' })).not.toHaveProperty('ideaCardIds');
+    const el = apply(
+      legacy,
+      { kind: 'idea', text: 'one', id: 'a' },
+      { kind: 'idea', text: 'two' },
+      { kind: 'idea', text: 'bad id', id: 'x'.repeat(65) },
+    );
+    expect(el.ideaCards).toEqual(['old', 'one', 'two', 'bad id']);
+    expect(el.ideaCardIds).toEqual(['', 'a', '', '']);
+    expect(applyElementDelta(el, { kind: 'idea', text: 'one', id: 'a' })).toBe(el);
+    // Ids left longer than the cards (an older client emptied the box) are cut at the next card.
+    const stale = card({ shape: 'idea-box', ideaCards: [], ideaCardIds: ['gone', 'gone2'] });
+    expect(apply(stale, { kind: 'idea', text: 'new', id: 'n' }).ideaCardIds).toEqual(['n']);
+  });
+
+  it('takes one card out by its id', () => {
+    const box = card({ shape: 'idea-box', ideaCards: ['a', 'b', 'c'], ideaCardIds: ['1', '2'] });
+    expect(withoutIdeaCard(box, '2')).toMatchObject({
+      ideaCards: ['a', 'c'],
+      ideaCardIds: ['1', ''],
+    });
+    expect(withoutIdeaCard(box, 'nope')).toBe(box);
+    expect(withoutIdeaCard(card({ shape: 'idea-box', ideaCards: ['a'] }), '')).toMatchObject({
+      ideaCards: ['a'],
+    });
+  });
+
+  describe('yieldIdeaToPeer', () => {
+    const fullWith = (...own: string[]) =>
+      card({
+        shape: 'idea-box',
+        ideaCards: [
+          ...Array(IDEA_MAX_CARDS - own.length).fill('x'),
+          ...own.map((id) => `own ${id}`),
+        ],
+        ideaCardIds: [...Array(IDEA_MAX_CARDS - own.length).fill(''), ...own],
+      });
+    const peer: ElementDelta = { kind: 'idea', text: 'peer', id: 'p' };
+
+    it("lets this browser's newest pending card go for a peer's card at the cap", () => {
+      const { el, yielded } = yieldIdeaToPeer(fullWith('o1', 'o2'), peer, ['o1', 'o2']);
+      expect(yielded).toBe('o2');
+      const box = el as ShapeElement;
+      expect(box.ideaCards).toHaveLength(IDEA_MAX_CARDS);
+      expect(box.ideaCards!.slice(-2)).toEqual(['own o1', 'peer']);
+      expect(box.ideaCardIds!.slice(-2)).toEqual(['o1', 'p']);
+    });
+
+    it('applies the delta as usual with nothing pending, under the cap, or for a replay', () => {
+      const full = fullWith('o1');
+      expect(yieldIdeaToPeer(full, peer, [])).toEqual({ el: full, yielded: null });
+      expect(yieldIdeaToPeer(full, peer, ['answered-elsewhere'])).toEqual({
+        el: full,
+        yielded: null,
+      });
+      const roomy = card({ shape: 'idea-box', ideaCards: ['own'], ideaCardIds: ['o1'] });
+      const r = yieldIdeaToPeer(roomy, peer, ['o1']);
+      expect(r.yielded).toBeNull();
+      expect((r.el as ShapeElement).ideaCards).toEqual(['own', 'peer']);
+      expect(
+        yieldIdeaToPeer(full, { kind: 'idea', text: 'own o1', id: 'o1' }, ['o1']).yielded,
+      ).toBe(null);
+      expect(yieldIdeaToPeer(full, { ...peer, round: 'other' }, ['o1']).yielded).toBeNull();
+      expect(
+        yieldIdeaToPeer(full, { kind: 'check', index: 0, text: 'x', done: true }, ['o1']),
+      ).toEqual({
+        el: full,
+        yielded: null,
+      });
+    });
+  });
+
+  it('keeps our card ids with our cards when a peer sends the whole element', () => {
+    const local = card({ shape: 'idea-box', ideaCards: ['a'], ideaCardIds: ['1'] });
+    const incoming = card({ shape: 'idea-box', label: 'Renamed' });
+    const merged = mergeIncomingElement(local, incoming) as ShapeElement;
+    expect(merged).toMatchObject({ label: 'Renamed', ideaCards: ['a'], ideaCardIds: ['1'] });
+    expect(elementChangeIsDeltaOnly(incoming, { ...incoming, ideaCardIds: ['1'] })).toBe(true);
   });
 
   it('ticks different checklist rows from two people without losing either', () => {

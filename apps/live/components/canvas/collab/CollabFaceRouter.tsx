@@ -51,8 +51,9 @@ export type CollabApi = {
   // A new estimate card's scale, chosen on the card (docs/specs/012-collaboration/estimate-card.md).
   chooseEstimateScale?: (element: ShapeElement, scale: EstimateScale) => void;
   clearResponses?: (element: ShapeElement) => void;
-  // Returns whether the idea went in (false when the box is full).
-  addIdea?: (element: ShapeElement, text: string) => boolean;
+  // Whether the idea went in (false when the box is full), or a promise of it: false when the room
+  // numbered another card first (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
+  addIdea?: (element: ShapeElement, text: string) => boolean | Promise<boolean>;
   revealIdeas?: (element: ShapeElement) => void;
   clearIdeas?: (element: ShapeElement) => void;
   scatterIdeas?: (element: ShapeElement) => void;

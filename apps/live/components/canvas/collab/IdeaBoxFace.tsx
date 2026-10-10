@@ -47,7 +47,7 @@ export function IdeaBoxFace({
   /** The card's own fill, for the accent scope. */
   surface: string;
   // Returns whether the idea went in (false when the box is full).
-  onAddIdea?: (text: string) => boolean;
+  onAddIdea?: (text: string) => boolean | Promise<boolean>;
   onReveal?: () => void;
   // Empty the Box: clear it for the next round. It lives in the `…` rather than beside
   // Open the box: opening is the act the element exists for, and a Clear

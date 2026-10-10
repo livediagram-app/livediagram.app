@@ -15,8 +15,11 @@ they typed.
 ## Anonymity is structural
 
 The element has **nowhere to put an author**. Not an author field left blank,
-not an author field the UI hides: `ideaCards` is a list of strings and that is
-the entire schema.
+not an author field the UI hides: `ideaCards` is a list of strings, and its
+companion `ideaCardIds` is a list of random ids minted by whichever browser
+posted each card (see [Posting at once](#posting-at-once)). An id is a fresh
+random UUID per card, so it names the card, never the person: nothing about
+it ties two cards to one poster.
 
 That matters because every other route to a name is one refactor away from
 being reintroduced. The two that had to be closed deliberately:
@@ -50,6 +53,11 @@ rather than bigger ones.
 
 - **`ShapeElement.ideaCards`** — the submissions, in submission order. Bounded
   in `validate.ts` like every other list field.
+- **`ShapeElement.ideaCardIds`**: each card's id, by position: `ideaCardIds[i]`
+  names `ideaCards[i]`. Optional and back-compatible: a box from before ids,
+  a card a template or a poll capture put in, or one the room's ledger
+  restored has no id (the entry is missing or `''`), and is still a card.
+  Same bound as `ideaCards`; each id at most 64 characters.
 - **`ShapeElement.ideasRevealed`** — shared, false by default.
 
 ## Posting at once
@@ -62,15 +70,40 @@ the press, and the composer says so: at the cap its field reads **Box is full**
 and is off, and a post refused because the box filled meanwhile (as this
 viewer's copy shows it) keeps its draft rather than throwing the text away.
 
-Known gap: two posts racing for the last card both land in their posters' own
-copies, but the room's ledger takes only the first (`recordElement` refuses the
-card past the cap), and nothing tells the second poster: an idea delta has no
-acknowledgement, so the room cannot say which card it refused. Their card stays
-on their screen until the box next reloads; a Participant's card, kept only
-through the ledger, is then gone, while an Editor's whole-tab save can carry it
-and leave the other poster's card out instead. Closing it needs the
-room to answer a refused delta to its sender, and the editor to take the card
-back and say so.
+**Racing for the last card.** Two posts can both pass the press check when the
+box holds 299: each poster's own copy takes their card at once. The room
+decides between them by its order: it numbers every delta it relays, answers
+each sender with the number its own delta took (the `cursor` frame), and every
+browser applies the room's deltas in that order, so in every copy but the
+second poster's the first card is the 300th and the second is refused on
+apply. The second poster's copy settles the same way:
+
+- A browser holds its own idea posts as **pending** from the press until the
+  room answers that post's cursor.
+- A peer's card that reaches a full box while one of this browser's own posts
+  to it is pending was numbered before that post (the room relays the peer's
+  card before it reads, numbers and answers the later one, and a socket keeps
+  its frames in order). So the peer's card goes in and this browser's newest
+  pending card comes out, found by its id: the box ends exactly as every other
+  copy has it.
+- The poster is told, as on the [Q&A board](qa-board.md): the toast says
+  **The box filled up before your idea landed.**, and the draft goes back in
+  the composer (unless something new was typed there meanwhile), where the
+  full box now reads **Box is full** with the field off.
+- A post the room answered, or one that never reached it (no live room, a
+  dropped socket, no answer within the room's acknowledgement timeout), stops
+  being pending and is never taken back: a peer's card that reaches a full box
+  after that was numbered later, and is the one refused.
+- A pending card that leaves the box any other way (the box was emptied for a
+  new round, or deleted) is not a refusal and says nothing.
+
+The ledger and the D1 copy agree: the room's ledger records ideas in the same
+order, and a save merged with it appends the first card and refuses the second
+at the cap. An Editor whose copy still held the refused card when it saved
+saves again once the card comes out, and the merge restores the peer's card.
+
+Share roles: an Editor and a Participant post, and either may be the poster
+whose card comes out; a Viewer cannot post, so never has a pending card.
 
 ## Closed and open
 

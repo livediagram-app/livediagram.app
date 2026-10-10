@@ -26,6 +26,34 @@ const vote = (over: Partial<TabVote> = {}): TabVote => ({
 });
 
 describe('applyRoomOpToTabs', () => {
+  // docs/specs/012-collaboration/idea-box.md "Racing for the last card": only with an own pending post.
+  it("lets this browser's pending idea go for a peer's card at a full box, and only then", () => {
+    const full = el('box', {
+      shape: 'idea-box',
+      ideaCards: [...Array(299).fill('x'), 'mine'],
+      ideaCardIds: [...Array(299).fill(''), 'm1'],
+    } as Partial<Element>);
+    const tabs = [tab({ elements: [full] })];
+    const op: RoomOp = {
+      kind: 'el-delta',
+      tabId: 't1',
+      elementId: 'box',
+      delta: { kind: 'idea', text: 'peer', id: 'p1' },
+    };
+    expect(applyRoomOpToTabs(tabs, op)).toBe(tabs);
+    expect(applyRoomOpToTabs(tabs, op, () => [])).toBe(tabs);
+    const asked: string[] = [];
+    const next = applyRoomOpToTabs(tabs, op, (tabId, elementId) => {
+      asked.push(`${tabId}/${elementId}`);
+      return ['m1'];
+    });
+    expect(asked).toEqual(['t1/box']);
+    const box = next[0]!.elements[0] as ShapeElement;
+    expect(box.ideaCards!.at(-1)).toBe('peer');
+    expect(box.ideaCards).not.toContain('mine');
+    expect(box.ideaCardIds!.at(-1)).toBe('p1');
+  });
+
   it('applies an element update by id and leaves the other element alone', () => {
     const tabs = [tab()];
     const next = applyRoomOpToTabs(tabs, {

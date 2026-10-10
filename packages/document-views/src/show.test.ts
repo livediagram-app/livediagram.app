@@ -130,7 +130,15 @@ describe('person ids (security)', () => {
   });
 
   it('leaves no top-level field holding an id unaccounted for', () => {
-    const notPeople = new Set(['layerId', 'iconId', 'stickerId', 'imageId', 'mindParentId']);
+    // An idea card's id is a random UUID per card, never its poster's (docs/specs/012-collaboration/idea-box.md).
+    const notPeople = new Set([
+      'layerId',
+      'iconId',
+      'stickerId',
+      'imageId',
+      'mindParentId',
+      'ideaCardIds',
+    ]);
     const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[]/)[0]));
     const idLike = Object.values(ELEMENT_FIELD_NAMES)
       .flat()

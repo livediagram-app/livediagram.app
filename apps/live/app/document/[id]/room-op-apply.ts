@@ -10,6 +10,7 @@ import {
   applyVoteDelta,
   mergeIncomingElement,
   voteDeltaApplies,
+  yieldIdeaToPeer,
   type ElementDelta,
   type ElementOp,
   type Tab,
@@ -30,7 +31,12 @@ import { markArticleGrow } from '@/lib/article/article-grow-store';
 // Returns `tabs` itself when the op changes nothing (an op for a tab we don't
 // have, an update for a removed element, a dot for a closed round), so callers
 // keep identity and the autosave sees no phantom change.
-export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
+// This browser's own idea posts to a box the room has not answered yet, oldest first
+// (docs/specs/012-collaboration/idea-box.md "Racing for the last card"): only the tabs on screen pass it, so a
+// peer's card that reaches a full box takes the place of the newest of them. The baseline never does.
+export type PendingIdeaIds = (tabId: string, elementId: string) => readonly string[];
+
+export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: PendingIdeaIds): Tab[] {
   switch (op.kind) {
     case 'tab': {
       // A peer's whole tab. A tab we don't have yet (they just added it) is
@@ -52,7 +58,13 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         return elements === tab.elements ? tab : { ...tab, elements };
       });
     case 'el-delta':
-      return applyDeltaToTabs(tabs, op.tabId, op.elementId, op.delta);
+      return applyDeltaToTabs(
+        tabs,
+        op.tabId,
+        op.elementId,
+        op.delta,
+        op.delta.kind === 'idea' ? pendingIdeaIds?.(op.tabId, op.elementId) : undefined,
+      );
     case 'changeset': {
       // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): a tab it
       // created is appended first, then each element op applies exactly as case `el` does. An op
@@ -162,11 +174,15 @@ export function applyDeltaToTabs(
   tabId: string,
   elementId: string,
   delta: ElementDelta,
+  // This browser's own unanswered idea posts to the element (applyRoomOpToTabs above).
+  pendingIdeas?: readonly string[],
 ): Tab[] {
   return updateTab(tabs, tabId, (tab) => {
     const i = tab.elements.findIndex((el) => el.id === elementId);
     if (i === -1) return tab;
-    const next = applyElementDelta(tab.elements[i]!, delta);
+    const next = pendingIdeas?.length
+      ? yieldIdeaToPeer(tab.elements[i]!, delta, pendingIdeas).el
+      : applyElementDelta(tab.elements[i]!, delta);
     if (next === tab.elements[i]) return tab;
     const elements = [...tab.elements];
     elements[i] = next;

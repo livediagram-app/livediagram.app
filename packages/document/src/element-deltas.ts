@@ -33,7 +33,7 @@ import {
   setResponse,
   type ParticipantResponse,
 } from './responses';
-import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
+import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, alignedIdeaCardIds, isIdeaCardId } from './collab-shapes';
 import { MENTIONS_MAX } from './comment-mentions';
 import { applyPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
 
@@ -53,8 +53,9 @@ export type ElementDelta =
       at: number;
       round?: string;
     }
-  // Drop one anonymous idea into the box (docs/specs/012-collaboration/idea-box.md). No author, still.
-  | { kind: 'idea'; text: string; round?: string }
+  // Drop one anonymous idea into the box (docs/specs/012-collaboration/idea-box.md). No author, still: `id`
+  // is the card's own random id, which lets its poster take it back after losing the race for the last card.
+  | { kind: 'idea'; text: string; round?: string; id?: string }
   // Tick or untick one checklist row (docs/specs/009-elements/checklist.md). Rows have no ids, so the row
   // is named by its index AND its text: a peer who reordered or retitled the
   // rows meanwhile gets the row with that text, or nothing.
@@ -125,8 +126,16 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       const text = delta.text.trim();
       if (!text || text.length > IDEA_MAX_TEXT) return el;
       const cards = el.ideaCards ?? [];
+      const id = isIdeaCardId(delta.id) ? delta.id : null;
+      // A card this box already holds (a replay of its delta) is a no-op.
+      if (id && el.ideaCardIds?.includes(id)) return el;
       if (cards.length >= IDEA_MAX_CARDS) return el;
-      return { ...el, ideaCards: [...cards, text] };
+      if (!id && !el.ideaCardIds) return { ...el, ideaCards: [...cards, text] };
+      return {
+        ...el,
+        ideaCards: [...cards, text],
+        ideaCardIds: [...alignedIdeaCardIds(el), id ?? ''],
+      };
     }
     case 'check': {
       if (el.type !== 'shape' || !el.checklistItems) return el;
@@ -194,6 +203,42 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
   }
 }
 
+// The box without the card of this id (both lists), or the same element when it holds no such card.
+export function withoutIdeaCard(el: Element, id: string): Element {
+  if (el.type !== 'shape' || !id || !el.ideaCardIds) return el;
+  const ids = alignedIdeaCardIds(el);
+  const at = ids.indexOf(id);
+  if (at === -1) return el;
+  return {
+    ...el,
+    ideaCards: (el.ideaCards ?? []).filter((_, i) => i !== at),
+    ideaCardIds: ids.filter((_, i) => i !== at),
+  };
+}
+
+// A peer's delta, applied by a browser that may have its own idea posts to this box still waiting for the
+// room's answer (docs/specs/012-collaboration/idea-box.md "Racing for the last card"). A peer's card that
+// reaches a FULL box while one of `pending` (this browser's own unanswered card ids, oldest first) is in it was
+// numbered by the room before that post: so the newest such card comes out and the peer's goes in, and the box
+// ends as every other copy has it. Anything else applies as `applyElementDelta` does, `yielded` null.
+export function yieldIdeaToPeer(
+  el: Element,
+  delta: ElementDelta,
+  pending: readonly string[],
+): { el: Element; yielded: string | null } {
+  const plain = { el: applyElementDelta(el, delta), yielded: null };
+  if (delta.kind !== 'idea' || el.type !== 'shape' || pending.length === 0) return plain;
+  if (!sameRound(el, delta.round) || typeof delta.text !== 'string') return plain;
+  const text = delta.text.trim();
+  if (!text || text.length > IDEA_MAX_TEXT) return plain;
+  if ((el.ideaCards ?? []).length < IDEA_MAX_CARDS) return plain;
+  if (isIdeaCardId(delta.id) && el.ideaCardIds?.includes(delta.id)) return plain;
+  const ids = el.ideaCardIds ?? [];
+  const yielded = [...pending].reverse().find((id) => ids.includes(id));
+  if (!yielded) return plain;
+  return { el: applyElementDelta(withoutIdeaCard(el, yielded), delta), yielded };
+}
+
 // Carry our `done` flags onto an incoming list of checklist rows, matched by
 // position and text the same way a `check` delta finds its row. Rows the peer
 // added, removed or retitled come from them; ticks come from us, because every
@@ -233,6 +278,7 @@ export function mergeIncomingElement(
     if ((local.collabRound ?? undefined) === (shape.collabRound ?? undefined)) {
       patched = keepField(patched, 'responses', local.responses);
       patched = keepField(patched, 'ideaCards', local.ideaCards);
+      patched = keepField(patched, 'ideaCardIds', local.ideaCardIds);
     }
     if (local.checklistItems && shape.checklistItems) {
       const items = keepLocalTicks(local.checklistItems, shape.checklistItems);
@@ -251,7 +297,7 @@ export function mergeIncomingElement(
   return next;
 }
 
-function keepField<K extends 'responses' | 'ideaCards'>(
+function keepField<K extends 'responses' | 'ideaCards' | 'ideaCardIds'>(
   el: ShapeElement,
   key: K,
   value: ShapeElement[K],
@@ -268,6 +314,7 @@ function withoutDeltaFields(el: Element): unknown {
   const {
     responses: _r,
     ideaCards: _i,
+    ideaCardIds: _ii,
     planBoard: _b,
     checklistItems,
     ...shape

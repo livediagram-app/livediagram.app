@@ -109,6 +109,17 @@ describe('diffView (R17, VW36)', () => {
     ]);
   });
 
+  // A card's id moves with its card: the ideas count speaks for both, no "other field".
+  it('reads an idea with its card id as one change to the ideas', () => {
+    const box = { ...shapeAt('idea-box', 'i', 0, 0), ideaCards: ['a'] } as Element;
+    const lines = changeLines(
+      [box],
+      [{ ...box, ideaCards: ['a', 'b'], ideaCardIds: ['', 'x'] } as Element],
+    );
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).not.toContain('other field');
+  });
+
   it('lists removals in the before order and additions under an unlabelled container', () => {
     const frame = shapeAt('frame', 'f', 0, 0, 500, 500, { label: undefined });
     const gone = shapeAt('square', 'gone', 600, 0, 100, 50, { label: 'Gone' });

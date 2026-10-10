@@ -170,6 +170,7 @@ export const LIVE_ELEMENT_FIELDS = [
   'responsesRevealed',
   'collabRound',
   'ideaCards',
+  'ideaCardIds',
   'ideasRevealed',
   'rollCall',
   'agendaCurrent',
@@ -195,6 +196,7 @@ type LiveFieldBag = {
   | 'responsesRevealed'
   | 'collabRound'
   | 'ideaCards'
+  | 'ideaCardIds'
   | 'ideasRevealed'
   | 'rollCall'
   | 'agendaCurrent'
