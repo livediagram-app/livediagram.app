@@ -10,7 +10,7 @@ import { FavouriteMarker } from '@/app/explorer/document-badges';
 import { SidebarRow } from '@/app/explorer/sidebar/SidebarRow';
 import type { PaneDocument } from '@/app/explorer/views';
 import { isLocalOnly } from '@/lib/document-space';
-import { DOCUMENT_DRAG_MIME } from '../explorer-drag-mime';
+import { startDocumentDrag } from '../explorer-drag-mime';
 import { usePanelTree } from './PanelTreeContext';
 
 // A document as a leaf row of the panel's tree
@@ -60,10 +60,8 @@ export function PanelDocumentItem({
         draggable
           ? {
               draggable: true,
-              onDragStart: (e) => {
-                e.dataTransfer.setData(DOCUMENT_DRAG_MIME, doc.id);
-                e.dataTransfer.effectAllowed = 'move';
-              },
+              onDragStart: (e) =>
+                startDocumentDrag(e.dataTransfer, { id: doc.id, localOnly: local }),
             }
           : undefined
       }

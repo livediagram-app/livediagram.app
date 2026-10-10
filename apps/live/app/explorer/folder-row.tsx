@@ -8,6 +8,8 @@ import { FolderActionsMenu } from './folder-actions-menu';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import type { FolderActionBundle } from './explorer-view-props';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
+import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { useExplorerDropTarget } from './useExplorerDropTarget';
 
 // The Explorer's folder row (docs/specs/013-workspace/folders.md), lifted out of views.tsx: the list
 // row (icon, inline rename, child-count badge, relative time, ellipsis /
@@ -32,6 +34,8 @@ export function FolderRow({
   getActionsForAnchor: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
   const menu = useRowMenu({ disabled: renaming });
+  // A document dragged onto the row files into this folder (docs/specs/013-workspace/folders.md).
+  const drop = useExplorerDropTarget({ teamId: folder.teamId ?? null, folderId: folder.id });
 
   // When renaming, the label area is a plain div so the <input>
   // inside it isn't nested in a <button> (which steals focus).
@@ -58,7 +62,8 @@ export function FolderRow({
   );
   return (
     <li
-      className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700"
+      className={`group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 ${drop.isDragOver ? DROP_TARGET_RING : ''}`}
+      {...drop.handlers}
       // Right-click anywhere on the row opens the same actions menu as the
       // ellipsis button (anchored to it).
       onContextMenu={menu.onContextMenu}

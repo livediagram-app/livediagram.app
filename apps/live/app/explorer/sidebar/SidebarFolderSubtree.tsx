@@ -9,6 +9,7 @@ import type { FolderActions } from '../explorer-view-props';
 import { folderMenuHandlers, type SelectedNode } from '../views';
 import { FolderActionsMenu } from '../folder-actions-menu';
 import { SidebarRow } from './SidebarRow';
+import { useExplorerDropTarget } from '../useExplorerDropTarget';
 import { trackSidebar } from './sidebar-telemetry';
 import {
   DefaultFolderMarker,
@@ -50,6 +51,11 @@ export function SidebarFolderSubtree({
   const renaming = renamingFolderId === folder.id;
   const menu = useRowMenu({ disabled: renaming });
   const markerWords = useDefaultFolderDescription(folder.id);
+  // Files a dropped document here; resting on the row opens or closes its subfolders.
+  const drop = useExplorerDropTarget(
+    { teamId: null, folderId: folder.id },
+    { onLongHover: hasKids ? () => onToggleExpand(folder.id) : undefined },
+  );
 
   return (
     <SidebarRow
@@ -79,6 +85,8 @@ export function SidebarFolderSubtree({
       onToggleExpand={() => onToggleExpand(folder.id)}
       renaming={renaming}
       onContextMenu={menu.onContextMenu}
+      rowProps={renaming ? undefined : drop.handlers}
+      highlighted={drop.isDragOver}
       trailing={
         renaming ? null : (
           <>
