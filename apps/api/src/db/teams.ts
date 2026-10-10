@@ -8,6 +8,7 @@
 import type { Team, TeamListItem, TeamMember, TeamRole } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { getParticipant } from './participants';
+import { imageGrantOwnerChangeStatement } from './image-grants';
 
 // TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam are shared with the
 // invite machinery in team-invites.ts.
@@ -299,9 +300,20 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 // owned by somebody who has gone stays open to them. The folders go too, so
 // no team row is left owned by a departed (or deleted) account.
 async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
-  await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
-    .bind(toUserId, fromUserId, teamId)
-    .run();
+  // Their images in these documents keep serving once the documents are someone else's.
+  await env.DB.batch([
+    imageGrantOwnerChangeStatement(
+      env,
+      'd.owner_id = ?2 AND d.team_id = ?3',
+      [fromUserId, teamId],
+      Date.now(),
+    ),
+    env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?').bind(
+      toUserId,
+      fromUserId,
+      teamId,
+    ),
+  ]);
   await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();

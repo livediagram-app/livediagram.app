@@ -18,7 +18,7 @@ import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
 import { redactTabDataForCommunity } from '../community-redact';
 import { redactTabDataAuthors } from '../comments';
-import { imageGrantCopyStatements } from './image-grants';
+import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
 import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
@@ -343,11 +343,18 @@ export async function setDocumentFolder(
   newOwnerId?: string,
 ): Promise<void> {
   if (newOwnerId !== undefined) {
-    await env.DB.prepare(
-      'UPDATE documents SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?',
-    )
-      .bind(folderId, teamId, newOwnerId, id)
-      .run();
+    // The previous owner's images in it keep serving once it is the new owner's.
+    await env.DB.batch([
+      imageGrantOwnerChangeStatement(
+        env,
+        'd.id = ?2 AND d.owner_id <> ?3',
+        [id, newOwnerId],
+        Date.now(),
+      ),
+      env.DB.prepare(
+        'UPDATE documents SET folder_id = ?, team_id = ?, owner_id = ? WHERE id = ?',
+      ).bind(folderId, teamId, newOwnerId, id),
+    ]);
     return;
   }
   await env.DB.prepare('UPDATE documents SET folder_id = ?, team_id = ? WHERE id = ?')

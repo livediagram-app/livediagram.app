@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { copyDocument, setDocumentFolder } from './documents';
+import { handTeamWorkToHeir } from './teams';
 import { documentRemovalStatements } from './document-removal';
 import {
   documentServesImage,
@@ -93,17 +94,48 @@ describe('documentServesImage', () => {
   it("grants an edit collaborator's image, and not a view-only visitor's", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'D', { owner: 'alice' });
+    db.sql.exec("UPDATE documents SET shareable = 1 WHERE id = 'D'");
     image(db.sql, 'editor-img', 'guest-editor');
     image(db.sql, 'viewer-img', 'guest-viewer');
     for (const [owner, role] of [
       ['guest-editor', 'edit'],
       ['guest-viewer', 'view'],
     ] as const) {
-      insert(db.sql, 'shared_with', { owner_id: owner, document_id: 'D', role, last_seen: 0 });
+      insert(db.sql, 'share_links', {
+        code: `CODE-${role}`,
+        document_id: 'D',
+        role,
+        created_at: 0,
+        purpose: 'share',
+      });
+      insert(db.sql, 'shared_with', {
+        owner_id: owner,
+        document_id: 'D',
+        role,
+        last_seen: 0,
+        share_code: `CODE-${role}`,
+      });
     }
     await upsertTab(db.env, 'D', tabWith('t1', 'editor-img', 'viewer-img'), 0);
     expect(await documentServesImage(db.env, 'D', 'editor-img')).toBe(true);
     expect(await documentServesImage(db.env, 'D', 'viewer-img')).toBe(false);
+  });
+
+  it('earns nothing through an edit visit whose link was revoked (a pasted id)', async () => {
+    const db = sqliteD1();
+    liveDoc(db.sql, 'D', { owner: 'mallory' });
+    db.sql.exec("UPDATE documents SET shareable = 1 WHERE id = 'D'");
+    image(db.sql, 'victim-img', 'victim');
+    // Victim once opened Mallory's edit link; the link has since gone.
+    insert(db.sql, 'shared_with', {
+      owner_id: 'victim',
+      document_id: 'D',
+      role: 'edit',
+      last_seen: 0,
+      share_code: 'GONE',
+    });
+    await upsertTab(db.env, 'D', tabWith('t1', 'victim-img'), 0);
+    expect(await documentServesImage(db.env, 'D', 'victim-img')).toBe(false);
   });
 
   it('confines a tab-scoped visitor to their own tab', async () => {
@@ -200,5 +232,35 @@ describe('migration 0075', () => {
     insert(db.sql, 'image_refs', { tab_id: 't1', image_id: 'foreign' });
     migrateFrom(db.sql, '0075');
     expect(grants(db.sql)).toEqual(['D:foreign']);
+  });
+});
+
+// A document changing owner keeps serving the images its previous owner placed (docs/specs/009-elements/images.md
+// "Placement grants": a grant outlives the membership).
+describe('an owner change', () => {
+  it("keeps a team document's images serving once its maker leaves the team", async () => {
+    const db = sqliteD1();
+    team(db.sql, 'T', [
+      ['user_alice', 'joined'],
+      ['user_bob', 'joined'],
+    ]);
+    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
+    image(db.sql, 'alice-img', 'user_alice');
+    await upsertTab(db.env, 'D', tabWith('t1', 'alice-img'), 0);
+    await handTeamWorkToHeir(db.env, 'T', 'user_alice');
+    expect(db.sql.prepare("SELECT owner_id FROM documents WHERE id = 'D'").get()?.owner_id).toBe(
+      'user_bob',
+    );
+    expect(await documentServesImage(db.env, 'D', 'alice-img')).toBe(true);
+  });
+
+  it("keeps them serving when a team document moves into someone else's library", async () => {
+    const db = sqliteD1();
+    team(db.sql, 'T', [['user_bob', 'joined']]);
+    liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
+    image(db.sql, 'alice-img', 'user_alice');
+    await upsertTab(db.env, 'D', tabWith('t1', 'alice-img'), 0);
+    await setDocumentFolder(db.env, 'D', null, null, 'user_bob');
+    expect(await documentServesImage(db.env, 'D', 'alice-img')).toBe(true);
   });
 });

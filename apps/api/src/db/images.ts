@@ -62,7 +62,9 @@ export async function insertImage(
 ): Promise<ImageSummary | null> {
   const createdAt = Date.now();
   const result = await env.DB.prepare(
-    `INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at)
+    // OR IGNORE: a concurrent upload of the same bytes holds (owner_id, sha256) already; nothing is inserted
+    // and the caller answers with that one (routes/images.ts).
+    `INSERT OR IGNORE INTO images (id, owner_id, content_type, byte_size, width, height, sha256, original_name, created_at)
      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
      WHERE (?10 IS NULL OR (SELECT COUNT(*) FROM images WHERE owner_id = ?2) < ?10)
        AND (?11 IS NULL OR (SELECT COALESCE(SUM(byte_size), 0) FROM images WHERE owner_id = ?2) + ?4 <= ?11)`,

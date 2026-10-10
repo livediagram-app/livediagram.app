@@ -55,7 +55,10 @@ export async function apiUploadImage(
   headers.set('X-Image-Sha256', file.sha256);
   headers.set('X-Image-Width', String(file.width));
   headers.set('X-Image-Height', String(file.height));
-  if (file.originalName) headers.set('X-Image-Original-Name', file.originalName);
+  // Percent-encoded: a header holds Latin-1 only, and Headers.set throws on anything past it (a macOS
+  // screenshot's narrow space before AM / PM, a Japanese or emoji name), failing the whole upload.
+  if (file.originalName)
+    headers.set('X-Image-Original-Name', encodeURIComponent(file.originalName));
   const res = await apiFetch(`${API_BASE}/images`, {
     method: 'POST',
     headers,
