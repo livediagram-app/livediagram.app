@@ -27,6 +27,11 @@ export type TabTimer = {
   // The frozen value captured at the last pause: remaining ms for a
   // countdown, elapsed ms for a stopwatch. Undefined before the first run.
   frozenMs?: number;
+  // The instant this run was started (`startTimer`), carried unchanged through
+  // pause, resume and extend, so something that started it (an Agenda
+  // segment, docs/specs/012-collaboration/agenda.md) can tell it is still the
+  // same run. Absent on a timer started before this existed.
+  startedAt?: number;
 };
 
 // The ms a timer should DISPLAY at `now`: remaining for a countdown
@@ -47,7 +52,7 @@ export function timerDone(timer: TabTimer, now: number): boolean {
 }
 
 // m:ss readout for a timer's display ms — the one formatting rule the
-// floating TimerWidget (live ticking clock) and the Session tools
+// Session strip's Timer button (live ticking clock) and the Session tools
 // section (static snapshot) share; each used to carry its own copy.
 export function formatTimerClock(ms: number): string {
   const s = Math.round(ms / 1000);

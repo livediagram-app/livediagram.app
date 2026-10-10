@@ -66,4 +66,33 @@ describe('TemperatureFace', () => {
     expect(screen.getByText('4.0')).toBeTruthy();
     expect(screen.getByText('from 4 people')).toBeTruthy();
   });
+
+  it('resets everyone from its own menu once there are answers', () => {
+    const onClear = vi.fn();
+    const { rerender } = render(
+      <TemperatureFace
+        element={card([])}
+        label=""
+        textColor="#0f172a"
+        selfKey="me"
+        onRespond={vi.fn()}
+        onClear={onClear}
+      />,
+    );
+    // Nothing to reset: no menu of its own.
+    expect(screen.queryByRole('button', { name: 'Temperature check options' })).toBeNull();
+    rerender(
+      <TemperatureFace
+        element={card([['a', '4']])}
+        label=""
+        textColor="#0f172a"
+        selfKey="me"
+        onRespond={vi.fn()}
+        onClear={onClear}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Temperature check options' }));
+    fireEvent.click(screen.getByText('Reset Answers'));
+    expect(onClear).toHaveBeenCalledTimes(1);
+  });
 });

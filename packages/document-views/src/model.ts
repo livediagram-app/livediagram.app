@@ -2,6 +2,9 @@
 // model"), built once per render.
 import {
   computeRefs,
+  illustratePagesOf,
+  opensInOf,
+  pageKindOf,
   isKnownElement,
   kindWordOf,
   tabKindOf,
@@ -60,7 +63,18 @@ function headerFacts(
     unknown: printed.filter((el) => !isKnownElement(el)).length,
     threads: threadCounts(printed),
     rev: rev ?? null,
+    ...illustrateFacts(tab),
   };
+}
+
+// An Illustrate tab's pages by kind, for the header (docs/specs/024-agents/illustrate-for-agents.md
+// "Reading"); nothing for a tab in another mode.
+function illustrateFacts(tab: Tab): Pick<HeaderFacts, 'illustrate'> {
+  if (opensInOf(tab) !== 'illustrate') return {};
+  const pages = illustratePagesOf(tab);
+  const kinds: NonNullable<HeaderFacts['illustrate']>['kinds'] = {};
+  for (const p of pages) kinds[pageKindOf(p)] = (kinds[pageKindOf(p)] ?? 0) + 1;
+  return { illustrate: { pages: pages.length, kinds } };
 }
 
 // A tab's header facts alone, without its tree: what `overview` keeps of each tab body it reads.

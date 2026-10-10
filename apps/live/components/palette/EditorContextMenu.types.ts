@@ -230,7 +230,10 @@ export type EditorContextMenuProps = {
   // check, idea box and roll call carry no settings — everything they do
   // happens on their own faces — so they need no setter here.
   onSetEstimateScale: (scale: EstimateScale) => void;
-  onSetAgendaItems: (items: AgendaItem[]) => void;
+  onSetAgendaItems: (
+    items: AgendaItem[],
+    moveCurrent?: (current: number) => number | undefined,
+  ) => void;
   onSetDecisionStatus: (status: DecisionStatus) => void;
   onSetDecisionDate: (date: string | undefined) => void;
   onSetDecisionDrivers: (drivers: string[]) => void;

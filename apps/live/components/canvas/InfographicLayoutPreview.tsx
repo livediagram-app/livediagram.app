@@ -18,7 +18,7 @@ import {
 import type { PageLayoutId } from '@livediagram/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
-import { buildPageLayout } from '@/lib/page-layout-build';
+import { buildPageLayout } from '@livediagram/templates';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 
 export function InfographicLayoutPreview({

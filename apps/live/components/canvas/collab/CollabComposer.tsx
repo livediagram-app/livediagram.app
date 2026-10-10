@@ -21,6 +21,7 @@ export function CollabComposer({
   maxLength,
   meta,
   mentionScope,
+  full,
   onSubmit,
 }: {
   textColor: string;
@@ -32,7 +33,12 @@ export function CollabComposer({
   // @-mentions (docs/specs/012-collaboration/comment-mentions.md): the Comment panel passes who can be
   // mentioned; the Q&A board and the Idea box are anonymous and pass nothing.
   mentionScope?: MentionScope;
-  onSubmit: (text: string, mentions: CommentMention[]) => void;
+  // Set when the board takes no more ("Box is full"): the field shows it in
+  // place of the placeholder, and the field and send are off.
+  full?: string;
+  // Returns false when the post was refused (the board filled up meanwhile),
+  // so the draft stays for the person to keep; anything else clears it.
+  onSubmit: (text: string, mentions: CommentMention[]) => boolean | void;
 }) {
   const [draft, setDraft] = useState('');
   const fieldRef = useRef<HTMLInputElement>(null);
@@ -46,8 +52,8 @@ export function CollabComposer({
   });
 
   const submit = () => {
-    if (!text) return;
-    onSubmit(text, mentionScope ? mention.take(text) : []);
+    if (!text || full) return;
+    if (onSubmit(text, mentionScope ? mention.take(text) : []) === false) return;
     setDraft('');
   };
 
@@ -84,8 +90,9 @@ export function CollabComposer({
             }
           }}
           {...stopPointer}
-          placeholder={placeholder}
-          aria-label={ariaLabel}
+          placeholder={full ?? placeholder}
+          disabled={!!full}
+          aria-label={full ? `${ariaLabel}: ${full}` : ariaLabel}
           maxLength={maxLength}
           className="pointer-events-auto min-w-0 flex-1 bg-transparent px-2 py-1 text-[12px] outline-none placeholder:opacity-45"
           style={{ color: textColor }}
@@ -97,7 +104,7 @@ export function CollabComposer({
             e.stopPropagation();
             submit();
           }}
-          disabled={!text}
+          disabled={!text || !!full}
           aria-label={sendLabel}
           className="pointer-events-auto inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition hover:scale-105 active:scale-95 disabled:cursor-default disabled:opacity-35"
           style={{ backgroundColor: QA_ACCENT, color: QA_ON_ACCENT }}

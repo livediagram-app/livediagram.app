@@ -124,6 +124,15 @@ describe('writeFieldsOnto', () => {
     );
   });
 
+  it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
+    const icon = { ...square, id: 'ic', iconId: 'clock' } as Element;
+    expect(nextOf(write(icon, { iconId: 'moon' })).iconId).toBe('moon');
+    const out = refusal(icon, { iconId: 'flame' });
+    expect(out.details).toEqual(['iconId="flame": is not an icon']);
+    expect(out.hint).toContain('emoji-fire');
+    expect(refusal(icon, { iconId: 'qqqqzz' }).hint).toContain('plain words');
+  });
+
   it('coerces an off-vocabulary shape with a warning', () => {
     const out = write(square, { shape: 'rectangle' });
     expect(nextOf(out).shape).toBe('square');

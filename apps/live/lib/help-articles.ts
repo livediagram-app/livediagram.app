@@ -86,6 +86,7 @@ export const HELP_ARTICLES = {
   minimap: 'user-interface/minimap',
   sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
+  sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
@@ -310,6 +311,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sessionVoting: {
     title: 'Learn about voting',
     description: 'Tips for running a quick vote across the elements on the canvas.',
+  },
+  sessionTimer: {
+    title: 'Learn about the timer',
+    description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',

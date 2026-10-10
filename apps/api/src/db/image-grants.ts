@@ -10,7 +10,7 @@
 // carries an image its source could serve.
 
 import type { Env } from '../types';
-import { visitLinkSql } from './shared';
+import { visitLinkSql } from './visit-link';
 import { imageRefIndexDocumentStatement, isImageRefIndexComplete } from './image-refs';
 
 // The one predicate every reader shares: document `d` (aliased) may serve image

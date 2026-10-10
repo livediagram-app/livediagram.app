@@ -230,18 +230,17 @@ export function QuizFace({
                 stroke={stroke}
                 surface={surface}
                 onPress={phase === 'open' && actions.answer ? () => actions.answer!(i) : undefined}
-              />
-            ))}
-            {pickers.map((who, i) => (
-              <QuizPickers
-                key={`pickers-${i}`}
-                at={centres[i]!}
-                // Outside the answer, away from the disc (see QuizPickers).
-                side={centres[i]!.y < c - 1 ? 'above' : 'below'}
-                people={who.people}
-                unknown={who.unknown}
-                index={i}
-                textColor={textColor}
+                // Outside the answer, away from the disc (QuizOption places it).
+                pickers={
+                  pickers[i] ? (
+                    <QuizPickers
+                      people={pickers[i]!.people}
+                      unknown={pickers[i]!.unknown}
+                      index={i}
+                      textColor={textColor}
+                    />
+                  ) : undefined
+                }
               />
             ))}
           </div>

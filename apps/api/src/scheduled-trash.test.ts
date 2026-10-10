@@ -6,6 +6,7 @@ import {
 } from '@livediagram/api-schema';
 import { sqliteD1 } from './test-sqlite-d1';
 import worker from './index';
+import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 
 // The daily cron purges the Trash (docs/specs/013-workspace/trash.md, "The
 // purge"): what has waited 30 days goes, and the run says how many. It also
@@ -31,6 +32,29 @@ afterEach(() => {
 });
 
 describe('the 03:00 cron', () => {
+  it('forgets notify-email claims past their dedupe window (docs/specs/012-collaboration/assigned-actions.md §4)', async () => {
+    const { env, sql } = sqliteD1();
+    const now = Date.now();
+    const add = sql.prepare(
+      'INSERT INTO notify_email_claims (claim_key, sender_id, created_at) VALUES (?, ?, ?)',
+    );
+    add.run('stale', 'user_a', now - NOTIFY_EMAIL_DEDUPE_MS - 1000);
+    add.run('fresh', 'user_a', now - 1000);
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await runCron(env, now);
+
+    expect(
+      sql
+        .prepare('SELECT claim_key FROM notify_email_claims')
+        .all()
+        .map((r) => r.claim_key),
+    ).toEqual(['fresh']);
+    expect(log).toHaveBeenCalledWith(
+      `notify_email_claims sweep: deleted 1 rows older than ${now - NOTIFY_EMAIL_DEDUPE_MS}`,
+    );
+  });
+
   it('purges documents 30 days in the Trash and logs the count', async () => {
     const { env, sql } = sqliteD1();
     const now = Date.now();

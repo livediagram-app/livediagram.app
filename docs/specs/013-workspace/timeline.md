@@ -355,7 +355,11 @@ implementation, not two.
   disabled. A step is small enough that
   skipping empty periods would hide the shape of a quiet stretch, which
   is often the thing being looked at, and whichever period you land on is
-  fetched on demand.
+  fetched on demand. The fetch follows the month's cursor to its end, page
+  by page (each merged as it arrives), so a month busier than one page of
+  `TIMELINE_PAGE_MAX` shows all its days; it stops at
+  `TIMELINE_PERIOD_PAGES_MAX` (10) pages, logged, and a month left before
+  its last page (a failed page, or paging away) is fetched again on return.
 
   Month paging used to jump to the nearest month that had events and
   disable itself when there was none, tooltipped "No earlier events" —
@@ -1068,7 +1072,12 @@ snapshot's `documentName`), so renaming a document updates every older entry
 about it, and a separate "Renamed" card would only repeat what those now say.
 Nothing records `document_renamed` any more, and the rows written before this
 change are filtered out of every feed and the unread count. A document that no
-longer exists keeps the name it had. Team renames are still events: a team's
+longer exists keeps the name it had, and so does one the reader can no longer
+open: the override applies only to a document in the reader's visible set (the
+documents they own, their joined teams' documents, and live shares, as
+`VISIBLE_DOCUMENTS_CTES` defines it), so leaving a team or losing a link never
+leaks a later rename. A document feed passed that document's own read gate, so
+its live name always shows there. Team renames are still events: a team's
 name is not re-read onto older entries.
 
 | `eventType`                            | Fires when                                                                                                                                       | Title / description                                             |
@@ -1173,6 +1182,22 @@ email notification in [Transactional & lifecycle email (Resend)](../014-identity
 comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
 as the document itself.)
+
+**A comment event's actor is the comment's author, never simply the saver.** A
+tab save can carry a peer's new comment that reached the saver live before the
+author's own save landed; `rewriteCommentAuthors` stores it without an author
+id, credited by the room's name. Its `comment_added` is recorded with no actor
+then, and the author's own later save, which claims the comment, fills the actor
+in (an emit's conflict update fills a missing actor and never replaces one). An
+author id other than the saver's is never trusted as an actor.
+
+**A deleted comment takes its words with it.** Every path that removes a comment
+deletes its `comment_added` event, and, when it opened its thread, the thread's
+`comment_resolved` event, whose description is that opening comment's text: the
+delete-own comment route, a Plan card's comment delete, and a tab save that drops
+comment ids (one by one, or with their element), diffed by `removedComments`. A
+comment that comes back (an undo) is new again to the next save and is recorded
+afresh.
 
 A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
 `action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no

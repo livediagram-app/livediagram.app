@@ -12,6 +12,7 @@ import {
   type PlanColumn,
   type PlanVisualisation,
 } from '@livediagram/items';
+import type { TemplateStartId } from '@livediagram/sheets';
 
 export const PLAN_TEMPLATE_KINDS = [
   'blank-plan',
@@ -25,6 +26,10 @@ export const PLAN_TEMPLATE_KINDS = [
   'okrs',
   'product-launch',
   'feedback-board',
+  'budget-planner',
+  'timesheet',
+  'contact-list',
+  'task-tracker',
 ] as const;
 export type PlanTemplateKind = (typeof PLAN_TEMPLATE_KINDS)[number];
 
@@ -47,9 +52,14 @@ export type RailItem =
   | { kind: 'picker'; label: string }
   | { kind: 'temperature'; label: string };
 
+// A Sheet made from a template start (plan-templates.md "Spreadsheet templates"), on the canvas at this size or
+// filling its tab.
+export type SheetSpec = { start: TemplateStartId; width: number; height: number; fillTab?: true };
+
 export type PlanTabSpec = {
   name: string;
   board?: BoardSpec;
+  sheet?: SheetSpec;
   metrics?: readonly MetricKind[];
   charts?: readonly PlanVisualisation[];
   // The Gantt chart's card types: the dated cards of the board above it (absent: Projects, the chart's own default).
@@ -744,6 +754,34 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           widgets: ['progress', 'filter'],
         },
       },
+    },
+  ],
+
+  // Spreadsheet templates (plan-templates.md "Spreadsheet templates"): a Sheet each, filling its tab when the sheet is
+  // the whole job, on the canvas when it is one piece of a working space.
+  'budget-planner': [
+    { name: 'Budget', sheet: { start: 'budget-planner', width: 960, height: 560, fillTab: true } },
+  ],
+  timesheet: [
+    { name: 'Timesheet', sheet: { start: 'timesheet', width: 880, height: 440, fillTab: true } },
+  ],
+  'contact-list': [
+    { name: 'Contacts', sheet: { start: 'contact-list', width: 1180, height: 440, fillTab: true } },
+  ],
+  'task-tracker': [
+    {
+      name: 'Tracker',
+      sheet: { start: 'task-tracker', width: 960, height: 420 },
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Add a row for each task',
+            'Set its Status and how much is Done',
+            'Sort or filter by Owner, Status or Due from a column’s menu',
+          ]),
+        },
+      ],
     },
   ],
 };

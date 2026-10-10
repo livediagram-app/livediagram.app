@@ -1002,6 +1002,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
+  'UI|Opened|SessionTimer':
+    'Someone opened the Timer button in the bottom bar: the set-up while no timer runs, the live timer while one does. A timer shared by countdowns and stopwatches, so it appears under both.',
+  'UI|Opened|SessionVote':
+    'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
+  'UI|Opened|SessionPoll':
+    'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
   'UI|Opened|BehaviourGroup':
     "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements).",
   'UI|Opened|CanvasStyle':

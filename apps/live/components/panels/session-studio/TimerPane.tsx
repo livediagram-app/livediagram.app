@@ -39,7 +39,11 @@ type TimerPaneProps = Pick<
   | 'onResetTimer'
   | 'onClearTimer'
   | 'onExtendTimer'
->;
+> & {
+  // The clock alone, for someone who watches the timer but cannot drive it: a view-role visitor
+  // on the Session strip's Timer popover (docs/specs/012-collaboration/session-tools.md).
+  readOnly?: boolean;
+};
 
 export function TimerPane(props: TimerPaneProps) {
   return props.timer ? <LiveTimer {...props} timer={props.timer} /> : <TimerSetup {...props} />;
@@ -67,6 +71,7 @@ function LiveTimer({
   onResetTimer,
   onClearTimer,
   onExtendTimer,
+  readOnly = false,
 }: TimerPaneProps & { timer: TabTimer }) {
   const now = useNow(timer.running);
   const ms = timerDisplayMs(timer, now);
@@ -125,6 +130,41 @@ function LiveTimer({
           {countdown ? 'left' : 'elapsed'}
         </span>
       </TimerDial>
+      {readOnly ? null : (
+        <TimerControls
+          timer={timer}
+          countdown={countdown}
+          done={done}
+          onStartTimer={onStartTimer}
+          onPauseTimer={onPauseTimer}
+          onResumeTimer={onResumeTimer}
+          onResetTimer={onResetTimer}
+          onClearTimer={onClearTimer}
+          onExtendTimer={onExtendTimer}
+        />
+      )}
+    </div>
+  );
+}
+
+// The extensions and the transport, for whoever may drive the timer.
+function TimerControls({
+  timer,
+  countdown,
+  done,
+  onStartTimer,
+  onPauseTimer,
+  onResumeTimer,
+  onResetTimer,
+  onClearTimer,
+  onExtendTimer,
+}: Omit<TimerPaneProps, 'timer' | 'readOnly'> & {
+  timer: TabTimer;
+  countdown: boolean;
+  done: boolean;
+}) {
+  return (
+    <>
       {countdown ? (
         <div className="grid grid-cols-3 gap-1" role="group" aria-label="Add time">
           {EXTENSIONS.map((x) => (
@@ -158,6 +198,6 @@ function LiveTimer({
       <p className="text-center text-[10px] leading-snug text-slate-400">
         A tab runs one timer. End this one to start a different kind.
       </p>
-    </div>
+    </>
   );
 }

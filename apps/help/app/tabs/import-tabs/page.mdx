@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 
 ## Import formats
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab), expand the **Content** section and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to tab** dialog opens with a card per format:
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to tab** dialog opens with a card per format:
 
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie and so on) aren't supported.
@@ -28,7 +28,7 @@ Open the tab's menu (the **⋯** button on the active tab, or right-click the ta
 - **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. In [Draw mode](/help/canvas/draw-mode/) it comes in as pen marks; in Diagram mode as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
 - **draw.io** reads a diagram from [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins): a `.drawio` or `.xml` file, compressed or not, or a PNG or SVG exported with **Include a copy of my diagram** ticked. See [Importing from draw.io](#importing-from-draw-io) below.
 
-<Figure caption="The Content section of the tab menu holds Import, beside Export and Clear.">
+<Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 

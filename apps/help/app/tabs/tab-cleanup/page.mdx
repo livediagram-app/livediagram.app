@@ -1,12 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { CleanupBeforeAfter } from '@/components/illustrations/tabs';
-import { CleanupMenu } from '@/components/illustrations/tools';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'Cleaning Up a Tab',
   description:
-    'The Cleanup section of the tab menu tidies a tab in one click: snap elements to a grid, or auto-lay-out the whole canvas from its arrows as a flowchart, tree or mindmap.',
+    'Tidy a tab from the command palette: snap elements to a grid, or auto-lay-out the whole canvas from its arrows as a flowchart, tree or mindmap.',
   path: '/help/tabs/tab-cleanup/',
 });
 
@@ -17,23 +17,21 @@ export const metadata = helpMetadata({
   categorySlug="tabs"
 >
 
-A canvas that grew organically can end up slightly misaligned or tangled. The **Cleanup** section of the tab menu tidies the active tab in a single click, so you do not have to nudge elements into place by hand.
+A canvas that grew organically can end up slightly misaligned or tangled. The layout tidiers clean up the active tab in one step, so you do not have to nudge elements into place by hand.
 
 ## Two ways to tidy
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab or an empty spot on the canvas) and expand **Cleanup**. It lists one tidier per row:
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`) and type **Auto Layout** or **Auto-align**. The tidiers appear under **Actions**:
 
-- **Auto Layout** recomputes positions from the arrows, laying the diagram out from scratch based on how its elements connect, in the arrangement that best fits its current rough flow. Reach for it when you want the structure rebuilt rather than nudged.
-- **Auto-align** snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your overall arrangement. Reach for it when the layout is basically right but a little ragged.
-- **Flowchart ↓**, **Flowchart →**, **Tree** and **Mindmap** run Auto Layout in that particular style: a flowchart running down or to the right, a tree with parents centred over their children, or a mindmap radiating from a central topic.
+- **Auto Layout (tidy up)** recomputes positions from the arrows, laying the diagram out from scratch based on how its elements connect, in the arrangement that best fits its current rough flow. Reach for it when you want the structure rebuilt rather than nudged.
+- **Auto-align to grid** snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your overall arrangement. Reach for it when the layout is basically right but a little ragged.
+- **Auto Layout: Flowchart (down)**, **Auto Layout: Flowchart (right)**, **Auto Layout: Tree** and **Auto Layout: Mindmap** run Auto Layout in that particular style: a flowchart running down or to the right, a tree with parents centred over their children, or a mindmap radiating from a central topic.
 
-With a mouse, hovering a row previews the result on the canvas behind the menu, and moving off it puts everything back, so you can compare styles before you commit. On touch a tap applies it straight away.
-
-<Figure caption="The Cleanup section of the tab menu: Auto Layout and Auto-align, then one row per layout style.">
-  <CleanupMenu />
+<Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
+  <SearchCommandPalette />
 </Figure>
 
-Every row acts on the whole tab at once, and each is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted. The same tidiers are in the [command palette](/help/search-panel/the-search-panel/command-palette/) as **Auto Layout (tidy up)**, **Auto-align to grid** and one Auto Layout entry per style.
+Every tidier acts on the whole tab at once, and each is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted.
 
 <Figure caption="Cleanup takes a scattered, misaligned canvas and snaps it into tidy rows and columns in one click.">
   <CleanupBeforeAfter />
@@ -41,9 +39,9 @@ Every row acts on the whole tab at once, and each is a single step you can undo 
 
 ## More on layout
 
-Cleanup is the same toolset as the [Layout Cleanup](/help/tools/layout-cleanup/) feature, surfaced right on the tab menu so it is one click away while you work. See that guide for the details of how [Auto-Align](/help/tools/layout-cleanup/auto-align/) and [Auto Layout](/help/tools/layout-cleanup/auto-layout/) decide where things go.
+These are the [Layout Cleanup](/help/tools/layout-cleanup/) tools. See that guide for the details of how [Auto-Align](/help/tools/layout-cleanup/auto-align/) and [Auto Layout](/help/tools/layout-cleanup/auto-layout/) decide where things go.
 
-A [locked tab](/help/tabs/locking-tabs/) can't be tidied until you unlock it, and the tab menu isn't offered on a view-only share link.
+A [locked tab](/help/tabs/locking-tabs/) can't be tidied until you unlock it, and the tidiers aren't offered on a view-only share link.
 
 <Tip>
   Try **Auto-align** first, it is the gentler of the two and keeps your layout recognisable. Fall

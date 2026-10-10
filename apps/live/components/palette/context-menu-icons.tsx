@@ -12,13 +12,10 @@ import {
   Glyph,
   LinkIcon,
   lucideGlyph,
-  MindmapIcon,
   NoteIcon,
-  SparkleIcon,
   TrashIcon,
 } from '@livediagram/ui';
 import {
-  lucideAlignStartVertical,
   lucideArrowRight,
   lucideBaseline,
   lucideBringToFront,
@@ -27,7 +24,6 @@ import {
   lucideClipboardPaste,
   lucideImage,
   lucideLayers,
-  lucideNetwork,
   lucidePalette,
   lucidePaintbrush,
   lucideProportions,
@@ -43,7 +39,6 @@ import {
   lucideTable,
   lucideTimer,
   lucideType,
-  lucideUsers,
   lucideWandSparkles,
   lucideWrench,
 } from '@livediagram/icons/lucide';
@@ -78,75 +73,13 @@ export function LinkMenuIcon() {
 // The "Shape" section: the element's outline.
 export const SquareMenuIcon = lucideGlyph(lucideShapes, MENU_ICON_PX);
 export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
-// Auto align: shapes pulled to one edge.
-export const AutoAlignIcon = lucideGlyph(lucideAlignStartVertical, MENU_ICON_PX);
 // The Timer session-tool category glyph.
 export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
 // The Vote session-tool category glyph (a cast dot-vote).
 export const VoteMenuIcon = lucideGlyph(lucideCircleCheck, MENU_ICON_PX);
-// The Collaborate parent category glyph: the flyout grouping the live session tools.
-export const CollaborateMenuIcon = lucideGlyph(lucideUsers, MENU_ICON_PX);
 // The Poll session-tool category glyph (docs/specs/012-collaboration/live-poll.md, a live tally),
 // distinct from Vote's check: a poll counts answers from people.
 export const PollMenuIcon = lucideGlyph(lucideChartNoAxesColumnIncreasing, MENU_ICON_PX);
-
-// The Cleanup category glyph (tidy / auto-align / auto-layout): the one shared sparkle.
-export function CleanupMenuIcon() {
-  return <SparkleIcon size={MENU_ICON_PX} />;
-}
-
-// The Auto Layout action glyph: a hierarchy of connected nodes.
-export const AutoLayoutMenuIcon = lucideGlyph(lucideNetwork, MENU_ICON_PX);
-
-// Layout-style option previews (flowchart down / right, tree, mindmap). 16-unit drawings at the
-// menu step.
-function LayoutPreview({ children }: { children: React.ReactNode }) {
-  return (
-    <Glyph size={MENU_ICON_PX} units={16}>
-      {children}
-    </Glyph>
-  );
-}
-
-// Two boxes joined by a downward arrow - the Flowchart (down) layout style.
-export function FlowDownMenuIcon() {
-  return (
-    <LayoutPreview>
-      <rect x="4.5" y="1.5" width="7" height="3.4" rx="0.8" />
-      <rect x="4.5" y="11.1" width="7" height="3.4" rx="0.8" />
-      <path d="M8 4.9v6.2M6.2 9.3L8 11.1l1.8-1.8" />
-    </LayoutPreview>
-  );
-}
-
-// Two boxes joined by a rightward arrow - the Flowchart (right) layout style.
-export function FlowRightMenuIcon() {
-  return (
-    <LayoutPreview>
-      <rect x="1.5" y="4.5" width="3.4" height="7" rx="0.8" />
-      <rect x="11.1" y="4.5" width="3.4" height="7" rx="0.8" />
-      <path d="M4.9 8h6.2M9.3 6.2L11.1 8l-1.8 1.8" />
-    </LayoutPreview>
-  );
-}
-
-// Root over three reports - the Tree (org chart) layout style.
-export function TreeMenuIcon() {
-  return (
-    <LayoutPreview>
-      <rect x="5.8" y="1.5" width="4.4" height="3" rx="0.8" />
-      <rect x="1.2" y="11.5" width="3.6" height="3" rx="0.8" />
-      <rect x="6.2" y="11.5" width="3.6" height="3" rx="0.8" />
-      <rect x="11.2" y="11.5" width="3.6" height="3" rx="0.8" />
-      <path d="M8 4.5v2M3 11.5V8.5h10v3M8 8.5v3" />
-    </LayoutPreview>
-  );
-}
-
-// Hub with four spokes - the Mindmap (radial) layout style, the shared mind map glyph.
-export function MindmapMenuIcon() {
-  return <MindmapIcon size={MENU_ICON_PX} />;
-}
 
 // A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the
 // inline-icon placement picker's cross of direction cells.

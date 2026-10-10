@@ -9,6 +9,8 @@ vi.mock('../db/email-lifecycle', () => ({
   markActivationSent: vi.fn(),
   dueForWinback: vi.fn(),
   markWinbackSent: vi.fn(),
+  recordSendFailure: vi.fn(),
+  MAX_SEND_ATTEMPTS: 3,
 }));
 vi.mock('../db', () => ({ getNotificationPrefs: vi.fn() }));
 // Keep emailEnabled + appBaseUrl real; only the network send is mocked.
@@ -25,6 +27,7 @@ import {
   markActivationSent,
   markStageSent,
   markWinbackSent,
+  recordSendFailure,
   recordSighting,
 } from '../db/email-lifecycle';
 import { sendEmail } from './client';
@@ -59,6 +62,7 @@ describe('welcomeOnSighting', () => {
     vi.mocked(sendEmail).mockResolvedValue({ sent: false });
     await welcomeOnSighting(env, 'u', 'a@b.com');
     expect(markStageSent).not.toHaveBeenCalled();
+    expect(recordSendFailure).toHaveBeenCalledWith(env, 'u');
   });
 });
 
@@ -134,5 +138,22 @@ describe('runLifecycleSweep', () => {
     await runLifecycleSweep(env);
     expect(sendEmail).not.toHaveBeenCalled();
     expect(markWinbackSent).toHaveBeenCalledWith(env, 'u4');
+  });
+
+  // docs/specs/014-identity/transactional-email.md §5: a failed send counts against the row, for every stage.
+  it('counts a failed send against the row instead of stamping it', async () => {
+    vi.mocked(dueForStage).mockImplementation(async (_e, stage) =>
+      stage === 'week2' ? [{ ownerId: 'u6', email: 'dead@x.test' }] : [],
+    );
+    vi.mocked(dueForActivation).mockResolvedValue([{ ownerId: 'u7', email: 'dead@y.test' }]);
+    vi.mocked(dueForWinback).mockResolvedValue([{ ownerId: 'u8', email: 'dead@z.test' }]);
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ notifyTips: true } as never);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: false });
+    vi.mocked(recordSendFailure).mockResolvedValue(1);
+    await runLifecycleSweep(env);
+    expect(markStageSent).not.toHaveBeenCalled();
+    expect(markActivationSent).not.toHaveBeenCalled();
+    expect(markWinbackSent).not.toHaveBeenCalled();
+    expect(vi.mocked(recordSendFailure).mock.calls.map((c) => c[1])).toEqual(['u7', 'u6', 'u8']);
   });
 });

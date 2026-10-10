@@ -58,8 +58,12 @@ function Row({ field, color }: { field: EntityField; color: string }) {
       <span className="min-w-0 truncate">{field.name}</span>
       {field.type ? (
         // The type is muted and pushed right: scanning a class is scanning the
-        // NAMES, and a full-strength type column competes with them.
-        <span className="ml-auto shrink-0 truncate text-[10px] opacity-55">{field.type}</span>
+        // NAMES, and a full-strength type column competes with them. It shortens
+        // first and never takes more than half the row, so a long type
+        // (TIMESTAMP WITH TIME ZONE) cannot squeeze the name to an ellipsis.
+        <span className="ml-auto min-w-0 max-w-[50%] truncate text-[10px] opacity-55">
+          {field.type}
+        </span>
       ) : null}
     </div>
   );

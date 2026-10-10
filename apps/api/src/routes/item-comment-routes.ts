@@ -7,7 +7,7 @@
 import { applyItemComment, itemThread, type ItemCommentChange } from '@livediagram/document';
 import type { Item, ItemPerson } from '@livediagram/items';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
-import { recordCommentResolved } from '../timeline';
+import { recordCommentResolved, retractComments } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';
 import { gateEdit, readBody, type RouteContext } from './context';
 import { itemCaller, type ItemCaller } from './item-route-kit';
@@ -70,13 +70,23 @@ async function remove(
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
   const editor = await gateEdit(ctx, documentId, doc.ownerId, doc.teamId, tabId);
   const change = commentWrite({ kind: 'remove', commentId });
+  let opening = false;
   const res = await writeItem(ctx, caller, itemId, (item, by) => {
-    const target = itemThread(item)?.comments.find((c) => c.id === commentId);
+    const comments = itemThread(item)?.comments;
+    const target = comments?.find((c) => c.id === commentId);
     if (target && !editor && target.authorId !== caller.owner) return forbidden();
+    opening = comments?.[0]?.id === commentId;
     return change(item, by);
   });
-  if (res.ok)
+  if (res.ok) {
+    // Its words leave the feed too, and so does the card thread's resolved event when it opened it.
+    ctx.waitUntil?.(
+      retractComments(ctx.env, documentId, [
+        { id: commentId, threadKey: opening ? `${documentId}:item:${itemId}` : null },
+      ]),
+    );
     console.info('[items] comment deleted', { documentId, editor, agent: ctx.token !== null });
+  }
   return res;
 }
 

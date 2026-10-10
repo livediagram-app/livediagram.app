@@ -14,7 +14,6 @@ import {
   type RefObject,
 } from 'react';
 import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
-import { setPaletteSearchOpen } from '@/lib/palette-search-open';
 import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
@@ -43,6 +42,7 @@ import type { PaletteAddHandlers } from './palette-add-handlers';
 import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
+import { useSheetFillingTab } from '@/hooks/plan/plan-cover-store';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -132,7 +132,11 @@ function Divider() {
 }
 
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
+  const { canvasTool, esBoard, themeTint, pendingDraw, leading } = props;
+  // A Sheet filling its tab hides the palette (docs/specs/026-plan/plan-board.md "The palette follows what fills the
+  // screen"): the whole strip, or on a phone only its card, the menu beside it staying.
+  const sheetFilling = useSheetFillingTab();
+  const hidden = props.hidden || (sheetFilling && !leading);
   const participant = !!props.participant;
   // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
   // inside, so pressing anything else on the strip closes it.
@@ -289,11 +293,6 @@ export function ToolbarPalette(props: Props) {
     track('UI', 'Opened', 'ToolbarSearch');
     search.openFrom(button);
   };
-  // The open Search tells the top-centre stack, which stands its timer aside so the panel is not covered.
-  useEffect(() => {
-    setPaletteSearchOpen(search.open);
-    return () => setPaletteSearchOpen(false);
-  }, [search.open]);
   const moreButton = (
     <button
       type="button"
@@ -335,8 +334,14 @@ export function ToolbarPalette(props: Props) {
       // clicks through; the card and the popover take them.
       // Zoomed at the root, which still spans the canvas, so the card stays
       // centred; `top` is restated so the strip keeps its 12px from the top.
-      style={scale === 1 ? undefined : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }}
-      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] flex-col items-center [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
+      // In a maximised element's header band the strip moves to the header's right end (CanvasCover's setStripEnd
+      // sets the two properties on the canvas; centred otherwise, docs/specs/026-plan/plan-board.md).
+      style={{
+        ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
+        alignItems: 'var(--plan-strip-align, center)',
+        paddingRight: 'var(--plan-strip-end, 0px)',
+      }}
+      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -347,169 +352,173 @@ export function ToolbarPalette(props: Props) {
         <PaletteTintProvider tint={themeTint}>
           {/* Whole-pixel wide where centred (see CardWidth). */}
           <StripRow leading={leading} leadingRef={leadingRef}>
-            <CardWidth swipe={swipe}>
-              {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
+            {sheetFilling ? null : (
+              <CardWidth swipe={swipe}>
+                {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
-              <div
-                ref={cardRef}
-                data-tour-id="palette"
-                // Chrome, not canvas: a paste, a drop or a drag ghost over the strip treats it like
-                // any panel (lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
-                data-floating-panel=""
-                // Slides across with the rest of the chrome when a split moves the editor
-                // (docs/specs/007-editor/split-view.md).
-                data-split-chrome=""
-                // Beside the menu card only the rail gives way (and scrolls): the
-                // selection mode, the category picker and More keep their size.
-                className={
-                  swipe ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0` : CARD_CLASS
-                }
-              >
-                {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
+                <div
+                  ref={cardRef}
+                  data-tour-id="palette"
+                  // Chrome, not canvas: a paste, a drop or a drag ghost over the strip treats it like
+                  // any panel (lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
+                  data-floating-panel=""
+                  // Slides across with the rest of the chrome when a split moves the editor
+                  // (docs/specs/007-editor/split-view.md).
+                  data-split-chrome=""
+                  // Beside the menu card only the rail gives way (and scrolls): the
+                  // selection mode, the category picker and More keep their size.
+                  className={
+                    swipe
+                      ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0`
+                      : CARD_CLASS
+                  }
+                >
+                  {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
-                {/* ...and lead with the board's own control instead, as the Event Storming
+                  {/* ...and lead with the board's own control instead, as the Event Storming
                 category's body does. */}
-                {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
-                  <>
-                    <EsPhotoStripButton controls={props.esBoardControls} />
-                    <Divider />
-                  </>
-                ) : null}
-                {esBoard && !participant ? null : (
-                  <>
-                    <PaletteDropdown
-                      ariaLabel="Selection mode"
-                      dataTourId="canvas-tool"
-                      hoverCardTitle="Selection Mode"
-                      hoverCardDescription="Choose how the pointer acts on the canvas."
-                      value={canvasTool}
-                      variant="toolbar"
-                      iconOnly
-                      autoHeight
-                      grid
-                      menuClassName=""
-                      groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-                      onChange={onCanvasToolChange}
-                      options={canvasToolOptions}
-                    />
-                    <Divider />
-                    {/* The category picker sits between the selection mode and the
-                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
-                    Its width follows its label's text, which is fractional:
-                    snapped, so the tiles after it stay on whole pixels. */}
-                    <SnapWidth>
+                  {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
+                    <>
+                      <EsPhotoStripButton controls={props.esBoardControls} />
+                      <Divider />
+                    </>
+                  ) : null}
+                  {esBoard && !participant ? null : (
+                    <>
                       <PaletteDropdown
-                        ariaLabel="Palette category"
-                        dataTourId="palette-category"
-                        value={category?.id ?? defaultId}
+                        ariaLabel="Selection mode"
+                        dataTourId="canvas-tool"
+                        hoverCardTitle="Selection Mode"
+                        hoverCardDescription="Choose how the pointer acts on the canvas."
+                        value={canvasTool}
                         variant="toolbar"
-                        // A phone shows the category's icon alone, so the
-                        // strip has room for more tiles.
-                        iconOnly={isMobile}
+                        iconOnly
                         autoHeight
                         grid
                         menuClassName=""
-                        groupLabels={CATEGORY_BANDS}
-                        onChange={switchCategory}
-                        options={tabs.map((tab) => ({
-                          id: tab.id,
-                          label: tab.label,
-                          icon: tab.icon,
-                          group: tab.group,
-                          fullWidth: tab.fullWidth,
-                        }))}
+                        groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                        onChange={onCanvasToolChange}
+                        options={canvasToolOptions}
                       />
-                    </SnapWidth>
-                    <Divider />
-                  </>
-                )}
-                <ToolbarStripRail
-                  scrollable={swipe}
-                  railKey={category?.id ?? defaultId}
-                  items={[
-                    ...tiles.map((def) => {
-                      const tile = (
-                        <PaletteTile
-                          def={def}
-                          actions={tileActions}
-                          pendingDraw={pendingDraw}
-                          compact
+                      <Divider />
+                      {/* The category picker sits between the selection mode and the
+                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
+                    Its width follows its label's text, which is fractional:
+                    snapped, so the tiles after it stay on whole pixels. */}
+                      <SnapWidth>
+                        <PaletteDropdown
+                          ariaLabel="Palette category"
+                          dataTourId="palette-category"
+                          value={category?.id ?? defaultId}
+                          variant="toolbar"
+                          // A phone shows the category's icon alone, so the
+                          // strip has room for more tiles.
+                          iconOnly={isMobile}
+                          autoHeight
+                          grid
+                          menuClassName=""
+                          groupLabels={CATEGORY_BANDS}
+                          onChange={switchCategory}
+                          options={tabs.map((tab) => ({
+                            id: tab.id,
+                            label: tab.label,
+                            icon: tab.icon,
+                            group: tab.group,
+                            fullWidth: tab.fullWidth,
+                          }))}
                         />
-                      );
-                      // A fixed divider rides with the tile it follows.
-                      return dividersAfter.has(def.id) ? (
-                        <span key={def.id} className="flex items-center">
-                          {tile}
-                          <Divider />
-                        </span>
-                      ) : (
-                        <Fragment key={def.id}>{tile}</Fragment>
-                      );
-                    }),
-                  ]}
-                  leavingItems={
-                    leaving
-                      ? [
-                          ...leaving.tiles.map((def) => (
-                            <span key={def.id} className="flex items-center">
-                              <PaletteTile
-                                def={def}
-                                actions={tileActions}
-                                pendingDraw={null}
-                                compact
-                              />
-                              {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
-                            </span>
-                          )),
-                        ]
-                      : null
-                  }
-                />
-                {/* Outside the rail so it rides the rail's width change rather
+                      </SnapWidth>
+                      <Divider />
+                    </>
+                  )}
+                  <ToolbarStripRail
+                    scrollable={swipe}
+                    railKey={category?.id ?? defaultId}
+                    items={[
+                      ...tiles.map((def) => {
+                        const tile = (
+                          <PaletteTile
+                            def={def}
+                            actions={tileActions}
+                            pendingDraw={pendingDraw}
+                            compact
+                          />
+                        );
+                        // A fixed divider rides with the tile it follows.
+                        return dividersAfter.has(def.id) ? (
+                          <span key={def.id} className="flex items-center">
+                            {tile}
+                            <Divider />
+                          </span>
+                        ) : (
+                          <Fragment key={def.id}>{tile}</Fragment>
+                        );
+                      }),
+                    ]}
+                    leavingItems={
+                      leaving
+                        ? [
+                            ...leaving.tiles.map((def) => (
+                              <span key={def.id} className="flex items-center">
+                                <PaletteTile
+                                  def={def}
+                                  actions={tileActions}
+                                  pendingDraw={null}
+                                  compact
+                                />
+                                {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
+                              </span>
+                            )),
+                          ]
+                        : null
+                    }
+                  />
+                  {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
                 the category has more than the strip shows. */}
-                {hasMore ? (
-                  <>
-                    <Divider />
-                    {moreOpen ? (
-                      moreButton
-                    ) : (
-                      <HoverCard
-                        title={`More ${category?.label ?? ''}`.trim()}
-                        description={category?.description ?? 'Everything in this category.'}
-                      >
-                        {moreButton}
-                      </HoverCard>
-                    )}
-                  </>
-                ) : null}
-                {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
+                  {hasMore ? (
+                    <>
+                      <Divider />
+                      {moreOpen ? (
+                        moreButton
+                      ) : (
+                        <HoverCard
+                          title={`More ${category?.label ?? ''}`.trim()}
+                          description={category?.description ?? 'Everything in this category.'}
+                        >
+                          {moreButton}
+                        </HoverCard>
+                      )}
+                    </>
+                  ) : null}
+                  {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
                     last page) adds one there. */}
-                {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
-                  <>
-                    <Divider />
-                    <EditCardsStripButton />
-                  </>
-                ) : null}
-                {props.onAddPage && !isMobile ? (
-                  <>
-                    <Divider />
-                    <AddPageStripButton onAdd={props.onAddPage} />
-                  </>
-                ) : null}
-                {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
+                  {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
+                    <>
+                      <Divider />
+                      <EditCardsStripButton />
+                    </>
+                  ) : null}
+                  {props.onAddPage && !isMobile ? (
+                    <>
+                      <Divider />
+                      <AddPageStripButton onAdd={props.onAddPage} />
+                    </>
+                  ) : null}
+                  {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
                     "Search: every element type"). Not on an event-storming board, whose notation is
                     its palette. */}
-                {esBoard || participant ? null : (
-                  <>
-                    <Divider />
-                    <div ref={searchButtonRef} className="flex">
-                      <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardWidth>
+                  {esBoard || participant ? null : (
+                    <>
+                      <Divider />
+                      <div ref={searchButtonRef} className="flex">
+                        <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardWidth>
+            )}
           </StripRow>
           {moreOpen && category ? (
             // The category's full Palette body (usePaletteCatalogue).

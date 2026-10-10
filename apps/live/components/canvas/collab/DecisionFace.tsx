@@ -124,7 +124,11 @@ export function DecisionFace({
                 >
                   <span className="text-optical-centre">→</span>
                 </span>
-                <span className="min-w-0 opacity-85">{driver}</span>
+                {/* A long word (a URL, a ticket key) breaks rather than
+                    running out of the card. */}
+                <span className="min-w-0 opacity-85" style={{ overflowWrap: 'anywhere' }}>
+                  {driver}
+                </span>
               </li>
             ))}
           </ul>

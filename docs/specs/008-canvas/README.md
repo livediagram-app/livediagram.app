@@ -6,7 +6,7 @@ Follow the references below only as needed; never upfront.
 - ./arrow-anchors.md - when working on Arrow anchors and auto-rebind: The sixteen anchor ids, the anchors each shape offers and where they sit, outline projection, the creation anchor, the converging fan, and the auto-rebind that moves an end to the facing side (same position class) only when its drawn path runs through a shape, plus same-side crossing swaps
 - ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors, labels, bending, quick style panel)
 - ./isometric-view.md - when working on Isometric view: Navigation tool that tilts the tab into an isometric, extruded-depth view; pans like Hand, read-only
-- ./layout-cleanup.md - when working on Layout cleanup: The tab menu's Cleanup band: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up: fewer crossings, long-edge lanes, neighbour placement, flow-face anchors, two-bend angled lines); locked elements stay put
+- ./layout-cleanup.md - when working on Layout cleanup: the command palette's tidiers: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up: fewer crossings, long-edge lanes, neighbour placement, flow-face anchors, two-bend angled lines); locked elements stay put
 - ./arrow-to-arrow.md - when working on Arrow-to-arrow connections: Snap an arrow endpoint to evenly-spaced points along another arrow's line (sequence-diagram messages)
 - ./minimap.md - when working on Minimap: Bottom-left zoomed-out overview + viewport rect; tap/drag to navigate. Desktop only
 - ./snap-override.md - when working on Snap override (free drag): Hold Cmd/Ctrl while dragging or resizing to disable alignment snapping + guides for a free, off-grid placement

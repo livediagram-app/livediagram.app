@@ -9,11 +9,13 @@ import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
+import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
 import {
   deleteOldEvents,
   deleteOldChangesets,
+  deleteOldNotifyEmailClaims,
   deleteOldSessionSightings,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -543,6 +545,16 @@ const worker = {
         'rows',
         now - CHANGESET_RETENTION_MS,
         deleteOldChangesets,
+      );
+      // docs/specs/012-collaboration/assigned-actions.md §4: a notify-email claim past its dedupe window
+      // decides nothing any more.
+      scheduleSweep(
+        ctx,
+        env,
+        'notify_email_claims',
+        'rows',
+        now - NOTIFY_EMAIL_DEDUPE_MS,
+        deleteOldNotifyEmailClaims,
       );
       // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
       ctx.waitUntil(

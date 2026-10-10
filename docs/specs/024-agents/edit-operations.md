@@ -135,25 +135,26 @@ error target_ambiguous · op 2 · set "Pay" fill=green
 nothing was applied
 ```
 
-| Code                 | When                                                       | Names                            |
-| -------------------- | ---------------------------------------------------------- | -------------------------------- |
-| `parse_error`        | A line does not parse                                      | The column and what was expected |
-| `unknown_operation`  | Not in the vocabulary                                      | The vocabulary                   |
-| `target_not_found`   | A selector matches nothing                                 | The nearest labels and refs      |
-| `target_ambiguous`   | Several matches without `all`                              | The matches                      |
-| `unknown_field`      | A field the kind does not have                             | The kind's fields                |
-| `invalid_value`      | A value outside the vocabulary or range                    | The allowed values               |
-| `id_taken`           | `id=` collides                                             | A free id                        |
-| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again` | The existing arrow               |
-| `not_connected`      | `insert between a b` with no a→b arrow                     | The arrows touching a and b      |
-| `frame_captures`     | `wrap` would capture a non-member                          | The bystanders                   |
-| `element_locked`     | The tab, a target or its layer is locked                   | Each locked element or the tab   |
-| `test_failed`        | A `test` does not hold                                     | Expected and actual              |
-| `changeset_conflict` | A target changed since the base                            | Each element as read and as now  |
-| `elements_held`      | A target is selected by a person                           | Each element and who holds it    |
-| `invalid_result`     | The result fails validation                                | The element, field and rule      |
-| `not_expressible`    | A strict source's tab would hold residue (`422`)           | Each element and field           |
-| `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap             | The cap                          |
+| Code                 | When                                                       | Names                                  |
+| -------------------- | ---------------------------------------------------------- | -------------------------------------- |
+| `parse_error`        | A line does not parse                                      | The column and what was expected       |
+| `unknown_operation`  | Not in the vocabulary                                      | The vocabulary                         |
+| `target_not_found`   | A selector matches nothing                                 | The nearest labels and refs            |
+| `target_ambiguous`   | Several matches without `all`                              | The matches                            |
+| `unknown_field`      | A field the kind does not have                             | The kind's fields                      |
+| `invalid_value`      | A value outside the vocabulary or range                    | The allowed values                     |
+|                      | An `iconId` that names no icon                             | Icons like it (`flame` → `emoji-fire`) |
+| `id_taken`           | `id=` collides                                             | A free id                              |
+| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again` | The existing arrow                     |
+| `not_connected`      | `insert between a b` with no a→b arrow                     | The arrows touching a and b            |
+| `frame_captures`     | `wrap` would capture a non-member                          | The bystanders                         |
+| `element_locked`     | The tab, a target or its layer is locked                   | Each locked element or the tab         |
+| `test_failed`        | A `test` does not hold                                     | Expected and actual                    |
+| `changeset_conflict` | A target changed since the base                            | Each element as read and as now        |
+| `elements_held`      | A target is selected by a person                           | Each element and who holds it          |
+| `invalid_result`     | The result fails validation                                | The element, field and rule            |
+| `not_expressible`    | A strict source's tab would hold residue (`422`)           | Each element and field                 |
+| `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap             | The cap                                |
 
 ## Where the engine lives
 

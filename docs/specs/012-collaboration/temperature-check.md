@@ -60,6 +60,11 @@ graduated gauge plate.
   glides to the average. The track runs from the centre of the first column to the centre of the
   last, so a reading of 4 sits directly under the 4, and a 1 or a 5 rests on the track's end
   inside the card. Under it, the average to one decimal, large, with the respondent count.
+- **A new reading.** Once anyone has answered, the card's own `…` offers **Reset Answers** (beside
+  the way into the element's settings), which clears every answer into a new round, the same
+  `clearResponses` the Done check's Reset everyone and the estimate's New round use. Like them it
+  runs the room, so it is the facilitator's ([Facilitator](facilitator.md)), and absent for a
+  view-role visitor. With nothing to reset the card shows the shared settings `…` instead.
 - **Empty** says "No readings yet" and "Tap the face that fits" over a quiet track with no marker,
   rather than drawing an average of zero, which would read as a very unhappy room.
 

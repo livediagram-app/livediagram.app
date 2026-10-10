@@ -54,12 +54,17 @@ export async function listInvitesByUser(env: Env, userId: string): Promise<TeamI
 }
 
 // The explicit yes (docs/specs/013-workspace/teams.md): flips the caller's own invite row to
-// 'joined'. Row-level authorisation (own row, currently invited)
-// happens in the route; this is the plain write.
-export async function acceptTeamMember(env: Env, memberId: string): Promise<void> {
-  await env.DB.prepare(`UPDATE team_members SET status = 'joined', updated_at = ? WHERE id = ?`)
+// 'joined'. Row-level authorisation (own row) happens in the route; the
+// `status = 'invited'` guard lives in the write so two concurrent accepts
+// race on one row and exactly one wins. True only for the winner, which is
+// the one that announces the arrival (Timeline event, admins' email).
+export async function acceptTeamMember(env: Env, memberId: string): Promise<boolean> {
+  const res = await env.DB.prepare(
+    `UPDATE team_members SET status = 'joined', updated_at = ? WHERE id = ? AND status = 'invited'`,
+  )
     .bind(Date.now(), memberId)
     .run();
+  return res.meta.changes === 1;
 }
 
 // --- Shareable team invite link (docs/specs/013-workspace/teams.md) -----------------------------

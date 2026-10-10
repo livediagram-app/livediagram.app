@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeElement } from '@livediagram/document';
+import { IDEA_MAX_CARDS, type ShapeElement } from '@livediagram/document';
 import { IdeaBoxFace } from './IdeaBoxFace';
 
 afterEach(cleanup);
@@ -68,5 +68,12 @@ describe('IdeaBoxFace', () => {
     expect(screen.getByText('Nothing in the box yet')).toBeTruthy();
     expect(screen.queryByText(/Be the first/)).toBeNull();
     expect(screen.queryByLabelText('Add an anonymous idea')).toBeNull();
+  });
+
+  it('says the box is full at the cap instead of taking an idea it will drop', () => {
+    show(box({ ideaCards: Array.from({ length: IDEA_MAX_CARDS }, (_, i) => `idea ${i}`) }), {
+      onAddIdea: vi.fn(() => false),
+    });
+    expect((screen.getByRole('textbox') as HTMLInputElement).placeholder).toBe('Box is full');
   });
 });

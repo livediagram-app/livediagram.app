@@ -4,13 +4,19 @@
 // already use. Built in the behaviour elements' current look ("The face").
 
 import {
+  agendaOwnsTimer,
+  agendaRemainingMs,
   agendaTotalMinutes,
   clampAgendaMinutes,
-  timerDisplayMs,
   type ShapeElement,
   type TabTimer,
 } from '@livediagram/document';
 import { useNow } from '@/hooks/ui/useNow';
+import {
+  ElementEllipsisMenu,
+  ElementMenuItem,
+  ElementMenuSettingsRow,
+} from '@/components/canvas/ElementEllipsisMenu';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { AgendaStep, type StepState } from './agenda/AgendaStep';
@@ -33,6 +39,8 @@ export function AgendaFace({
   timer,
   canArrange = true,
   onPressItem,
+  onReset,
+  onOpenSettings,
 }: {
   element: ShapeElement;
   label: string;
@@ -46,14 +54,24 @@ export function AgendaFace({
   onPressItem?: (index: number) => void;
   // An Editor is told where segments are added; anyone else that the facilitator adds them.
   canArrange?: boolean;
+  // Back to "not started". Absent for anyone who may not run the room.
+  onReset?: () => void;
+  /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
+  onOpenSettings?: () => void;
 }) {
   const items = element.agendaItems ?? [];
-  const current = element.agendaCurrent;
-  // 4x a second while a countdown runs, as the TimerWidget does; a paused or
-  // absent timer is static, so nothing spins then.
-  const running = timer?.running === true && current !== undefined;
+  // An index past the rows (a peer's edit mid-flight) is no segment at all.
+  const current =
+    element.agendaCurrent !== undefined && element.agendaCurrent < items.length
+      ? element.agendaCurrent
+      : undefined;
+  // The tab timer is the segment's clock only while it is still the run that
+  // segment started, and a countdown: any other timer is somebody else's.
+  // 4x a second while that countdown runs, as the Session strip's Timer does; a paused
+  // or foreign timer is static, so nothing spins then.
+  const running = current !== undefined && agendaOwnsTimer(element, timer) && timer.running;
   const now = useNow(running);
-  const remainingMs = timer && current !== undefined ? timerDisplayMs(timer, now) : null;
+  const remainingMs = current !== undefined ? agendaRemainingMs(element, timer, now) : null;
   const total = agendaTotalMinutes(items);
 
   // How far through the session: the finished segments' minutes plus the
@@ -78,6 +96,39 @@ export function AgendaFace({
         title={label.trim() || 'Agenda'}
         textColor={textColor}
         aside={items.length ? formatMinutes(total) : undefined}
+        // Its own `…` only while there is a run to reset; otherwise the shared
+        // settings button stands there as on every other card.
+        headerExtra={
+          onReset && current !== undefined ? (
+            <ElementEllipsisMenu
+              kind="command"
+              label="Agenda options"
+              color={textColor}
+              align="left"
+            >
+              {(close) => (
+                <>
+                  <ElementMenuItem
+                    onPress={() => {
+                      onReset();
+                      close();
+                    }}
+                  >
+                    Reset Agenda
+                  </ElementMenuItem>
+                  {onOpenSettings ? (
+                    <ElementMenuSettingsRow
+                      onOpen={() => {
+                        onOpenSettings();
+                        close();
+                      }}
+                    />
+                  ) : null}
+                </>
+              )}
+            </ElementEllipsisMenu>
+          ) : undefined
+        }
       >
         {items.length === 0 ? (
           <EmptyRows textColor={textColor} title="No segments yet">
@@ -106,9 +157,13 @@ export function AgendaFace({
                   minutes={clampAgendaMinutes(item.minutes)}
                   state={stateOf(i)}
                   remainingMs={i === current ? remainingMs : null}
+                  running={i === current && running}
                   last={i === items.length - 1}
                   textColor={textColor}
-                  onPress={onPressItem ? () => onPressItem(i) : undefined}
+                  // The running segment is not restarted by a stray press.
+                  onPress={
+                    onPressItem && !(i === current && running) ? () => onPressItem(i) : undefined
+                  }
                 />
               ))}
             </ol>

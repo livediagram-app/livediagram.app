@@ -123,6 +123,23 @@ describe('useTimelineFeed', () => {
     await new Promise((r) => setTimeout(r, 50));
     expect(periodCallsFor('team-a')).toHaveLength(3);
   });
+
+  it('reads every page of a busy month, not only the first', async () => {
+    const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // The month's first page says there is more; its second is the last.
+    apiListTimeline.mockImplementation(async (_owner, opts: { from?: number; cursor?: string }) => {
+      if (opts.from === undefined) return { events: [], nextCursor: undefined };
+      return opts.cursor === 'page-2'
+        ? { events: [event('older', 1_000)], nextCursor: undefined }
+        : { events: [event('newer', 2_000)], nextCursor: 'page-2' };
+    });
+    act(() => result.current.controls.setMode('calendar'));
+    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['newer', 'older']));
+    expect(
+      periodCallsFor('team-a').map(([, opts]) => (opts as { cursor?: string }).cursor),
+    ).toEqual([undefined, 'page-2']);
+  });
 });
 
 // The bug this whole surface was reported for (docs/specs/013-workspace/timeline.md §2.4): a read

@@ -326,3 +326,16 @@ function withNotesRelinked(doc: ArticleFlow, idMap: ReadonlyMap<string, string>)
   });
   return doc.style ? { blocks, style: doc.style } : { blocks };
 }
+
+/** Whether an editor that is not an article's writer grows it to the pages its writing needs
+ *  (docs/specs/024-agents/illustrate-for-agents.md "Pages for the writing"): only when it is waiting
+ *  to (an agent wrote it, or the tab just loaded), never past a lock, and only to add pages. */
+export function shouldGrowForAbsentWriter(state: {
+  local: boolean;
+  pending: boolean;
+  needed: number;
+  have: number;
+  locked: boolean;
+}): boolean {
+  return !state.local && state.pending && !state.locked && state.needed > state.have;
+}

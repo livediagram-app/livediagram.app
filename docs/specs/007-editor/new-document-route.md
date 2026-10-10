@@ -411,8 +411,10 @@ sign-in / theme banners (yielding to the sign-in one) and hides while a draw
 tool is armed or Quick Start is open, and in Illustrate mode (an empty page
 invites a layout in its own title bar, [Infographic pages](illustrate-pages.md)). Editors get a **Quick Start** button on
 it; viewers get a passive "nothing here yet" line. **On a phone** (below `sm`) it is a slim
-one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button, riding above the
-bottom-right cluster rather than over it.
+one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button. On every
+viewport it rides **above the bottom-right cluster** rather than in its row: the cluster carries
+the [Session strip](../012-collaboration/session-tools.md#the-session-strip), which reaches the
+banner's centred slot on a laptop-width screen.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via

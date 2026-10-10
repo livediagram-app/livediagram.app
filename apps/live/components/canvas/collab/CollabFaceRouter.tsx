@@ -51,11 +51,14 @@ export type CollabApi = {
   // A new estimate card's scale, chosen on the card (docs/specs/012-collaboration/estimate-card.md).
   chooseEstimateScale?: (element: ShapeElement, scale: EstimateScale) => void;
   clearResponses?: (element: ShapeElement) => void;
-  addIdea?: (element: ShapeElement, text: string) => void;
+  // Returns whether the idea went in (false when the box is full).
+  addIdea?: (element: ShapeElement, text: string) => boolean;
   revealIdeas?: (element: ShapeElement) => void;
   clearIdeas?: (element: ShapeElement) => void;
   scatterIdeas?: (element: ShapeElement) => void;
   pressAgendaItem?: (element: ShapeElement, index: number) => void;
+  // Back to "not started" (docs/specs/012-collaboration/agenda.md).
+  resetAgenda?: (element: ShapeElement) => void;
   takeRoll?: (element: ShapeElement) => void;
   // The Q&A board (docs/specs/012-collaboration/qa-board.md). Our OWNER id, only so the board can compute our
   // voter id the way the server does (qaVoterId) and know which notes we
@@ -65,7 +68,8 @@ export type CollabApi = {
   selfName?: string;
   // Present for anyone in a live session, view links included: the server
   // owns the board and gates these on read access.
-  addQaNote?: (element: ShapeElement, text: string, anonymous: boolean) => void;
+  // Returns whether the note was sent (false when the board is full).
+  addQaNote?: (element: ShapeElement, text: string, anonymous: boolean) => boolean;
   voteQaNote?: (element: ShapeElement, noteId: string, on: boolean) => void;
   // Whoever is running the board (docs/specs/012-collaboration/facilitator.md): absent for everyone else.
   discussQaNote?: (element: ShapeElement, noteId: string | null) => void;
@@ -94,8 +98,8 @@ export function CollabFaceRouter({
   label: string;
   textColor: string;
   collab: CollabApi | undefined;
-  // The Done check and the Idea box draw their own `…` (their round
-  // controls), so the shared settings button is suppressed for them and this
+  // The Done check, the Idea box, the Temperature check and the Agenda draw
+  // their own `…` (their round controls), so the shared settings button is suppressed for them and this
   // is how their menus still reach the element's full settings (docs/specs/008-canvas/canvas-and-palette.md).
   // Every other card here takes the shared button and never sees this.
   onOpenSettings?: () => void;
@@ -112,7 +116,7 @@ export function CollabFaceRouter({
   const surface = element.fillColor ?? defaultFillColor(element, paper);
   // Bind a verb to this element once, so a face with many deals in its own
   // ids (a Q&A note, a quiz answer) rather than in elements.
-  const bind = <A extends unknown[]>(fn?: (el: ShapeElement, ...args: A) => void) =>
+  const bind = <A extends unknown[], R>(fn?: (el: ShapeElement, ...args: A) => R) =>
     fn ? (...args: A) => fn(element, ...args) : undefined;
 
   if (element.shape === 'done-check') {
@@ -163,6 +167,8 @@ export function CollabFaceRouter({
         textColor={textColor}
         selfKey={api?.selfKey ?? ''}
         onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}
+        onClear={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onOpenSettings={onOpenSettings}
       />
     );
   }
@@ -241,6 +247,8 @@ export function CollabFaceRouter({
         onPressItem={
           api?.pressAgendaItem ? (index) => api.pressAgendaItem!(element, index) : undefined
         }
+        onReset={api?.resetAgenda ? () => api.resetAgenda!(element) : undefined}
+        onOpenSettings={onOpenSettings}
       />
     );
   }

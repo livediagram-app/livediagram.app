@@ -18,9 +18,11 @@ export function EmptyCanvasBanner({
   readOnly,
   participant = false,
   onQuickStart,
-  // On a phone it rides above the bottom-right cluster (16px inset + 44px buttons above the
-  // 48px tab bar) instead of over it.
-  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-16 phone:pb-[7.5rem]',
+  // It rides above the bottom-right cluster (16px inset + 44px buttons above the 48px tab bar)
+  // instead of over it, on every viewport: with the Session strip the cluster reaches the banner's
+  // centred slot on a laptop-width screen too. On a phone the Session strip has a row of its own
+  // above the cluster, so it rides one row (44px + the 8px gap) higher there.
+  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-[7.5rem] phone:pb-[10.75rem]',
 }: {
   tabName: string;
   readOnly: boolean;

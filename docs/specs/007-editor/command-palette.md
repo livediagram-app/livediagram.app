@@ -25,8 +25,8 @@ forks, no drifted telemetry):
 
 - **History:** Undo, Redo — offered only when `canUndo` / `canRedo`.
 - **View:** Toggle zen mode, Fit to screen.
-- **Cleanup:** Auto Layout, Auto-align (the tab menu's Cleanup band,
-  [Layout cleanup](../008-canvas/layout-cleanup.md)).
+- **Cleanup:** Auto Layout (one per style), Auto-align: their only home since the tab menu's
+  Cleanup category was removed ([Layout cleanup](../008-canvas/layout-cleanup.md)).
 - **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts (opens
   Settings on its Keyboard category, [User preferences](user-preferences.md)), Browse templates.
 

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
-import { completedActions, newActions, newComments, newlyResolvedThreads } from './tab-diff';
+import {
+  claimedComments,
+  completedActions,
+  newActions,
+  newComments,
+  newlyResolvedThreads,
+  removedComments,
+} from './tab-diff';
 
 // The diff is the only place that can tell "a comment was added" or "a
 // thread was resolved" (docs/specs/013-workspace/timeline.md §4.3): comments and actions live in
@@ -96,5 +103,39 @@ describe('actions', () => {
     expect(newActions(done, assigned)).toEqual([]);
     expect(completedActions(done, assigned).map((a) => a.id)).toEqual(['act1']);
     expect(completedActions(done, done)).toEqual([]);
+  });
+});
+
+describe('removedComments', () => {
+  it('names each comment gone from the save, with its element and whether it opened the thread', () => {
+    const prev = [
+      shape('a', { commentThread: { comments: [comment('c1', 'q'), comment('c2', 'r')] } }),
+      shape('b', { commentThread: { comments: [comment('c3', 'x')] } }),
+    ];
+    const next = [shape('a', { commentThread: { comments: [comment('c1', 'q')] } })];
+    expect(removedComments(next, prev)).toEqual([
+      { id: 'c2', elementId: 'a', opening: false },
+      { id: 'c3', elementId: 'b', opening: true },
+    ]);
+    expect(removedComments(prev, prev)).toEqual([]);
+  });
+});
+
+describe('claimedComments', () => {
+  it('returns a stored comment without an author id that the save now credits', () => {
+    const prev = [
+      shape('a', { commentThread: { comments: [comment('c1', 'q'), comment('c2', 'r')] } }),
+    ];
+    const next = [
+      shape('a', {
+        commentThread: {
+          comments: [comment('c1', 'q'), { ...comment('c2', 'r'), authorId: 'bea' }],
+        },
+      }),
+    ];
+    expect(claimedComments(next, prev).map((c) => [c.id, c.authorId, c.reply])).toEqual([
+      ['c2', 'bea', true],
+    ]);
+    expect(claimedComments(next, next)).toEqual([]);
   });
 });

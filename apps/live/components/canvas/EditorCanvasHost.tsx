@@ -24,6 +24,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
@@ -49,9 +50,6 @@ export function EditorCanvasHost() {
     activeLayerId,
     layerInertIds,
     layerCounts,
-    pollPanelPosition,
-    setPollPanelPosition,
-    votePanelPosition,
     avatarPanelPosition,
     laserPanelPosition,
     spotlightPanelPosition,
@@ -68,7 +66,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    setVotePanelPosition,
     setAvatarPanelPosition,
     toggleRecentExclusion,
     favouriteIds,
@@ -370,6 +367,8 @@ export function EditorCanvasHost() {
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
   const runBlocked = facilitator.sessionToolsBlocked;
+  // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
+  const sessionTools = useSessionTools();
   // The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/live-app.md).
   // Null when closed. Holders are captured at open time rather than re-read on
   // render: if the holder lets go while the menu is up it closes on the next
@@ -469,6 +468,7 @@ export function EditorCanvasHost() {
     clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
     scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
     pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+    resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
     takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
     // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
     // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
@@ -759,6 +759,7 @@ export function EditorCanvasHost() {
         layers={layers}
         activeLayerId={activeLayerId}
         layerCounts={layerCounts}
+        sessionTools={sessionTools}
         pollPanel={
           // Results are for the host and for anyone who has responded
           // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
@@ -777,16 +778,10 @@ export function EditorCanvasHost() {
               }
             : null
         }
-        pollPanelPosition={pollPanelPosition}
-        onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
-        onResetPollPanel={() => setPollPanelPosition(null)}
         userPreferences={userPreferences}
         onToggleRecentExclusion={toggleRecentExclusion}
         favouriteIds={favouriteIds}
         onToggleFavourite={toggleFavourite}
-        votePanelPosition={votePanelPosition}
-        onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
-        onResetVotePanel={() => setVotePanelPosition(null)}
         avatarPanelPosition={avatarPanelPosition}
         laserPanelPosition={laserPanelPosition}
         spotlightPanelPosition={spotlightPanelPosition}

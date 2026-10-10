@@ -130,14 +130,22 @@ The signal is **a new person opening one of my shared documents for the first
 time**: the share-resolve path (`GET /api/share/<code>`) already records a
 visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
 identifies and isn't the owner. `recordSharedAccess` now reports whether the
-row was **new** (first visit) vs a repeat. On a new visit the worker fires
-`notifyDocumentJoin(env, liveDoc, joinerName)` which:
+row was **new** (first visit) vs a repeat. On a new visit by a **verified**
+visitor (a Clerk session or API token, `ctx.verifiedUserId`) the worker fires
+`notifyDocumentJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
+unproven and free to mint, so every fresh one would be another first visit;
+a guest visit is still recorded in `shared_with` and counted as
+`Document·Joined`, but never emails. `notifyDocumentJoin`:
 
 - no-ops unless `emailEnabled(env)`;
 - resolves the owner's email from `email_lifecycle` (so it only fires for a
   signed-in Clerk owner who has a stored verified address — a guest-owned
   document has no address and is silently skipped);
 - no-ops when the owner's `notifyDocumentJoin` pref is `false`;
+- no-ops unless it wins the per-document throttle: at most one join email per
+  document per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
+  `documents.join_notified_at`, migration 0085; the new-comment email's rule
+  on its own column);
 - otherwise sends the **document-joined** email: "Someone just opened
   _{document name}_", with a CTA back to the document.
 
@@ -146,6 +154,9 @@ them, so including it does not widen the [Transactional & lifecycle email (Resen
 about not leaking _other_ users' content). The joiner's display name is
 included when known (the owner already sees it in live presence and the
 Shared-with-you list); it's HTML-escaped like the team name.
+
+The notification is on by default (an opt-out), so the email says so rather
+than claiming the owner turned it on, and points at the notification settings.
 
 Only the first visit notifies — repeat opens by the same person are silent,
 so an active collaborator doesn't generate a mail per reload. This is the

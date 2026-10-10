@@ -442,7 +442,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Ninety-one starter templates',
+        title: 'Ninety-five starter templates',
         description:
           'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
       },
@@ -980,7 +980,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/plan-mode/#plan-templates',
         title: 'Ten plans, ready to go',
         description:
-          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards, or start from a blank plan.',
+          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; a Budget Planner, Timesheet, Contact List or Task Tracker spreadsheet; or start from a blank plan.',
       },
       {
         art: <McpArt />,

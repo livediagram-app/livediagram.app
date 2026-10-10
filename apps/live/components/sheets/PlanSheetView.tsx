@@ -41,6 +41,8 @@ import type { PointRef } from './useSheetPointer';
 import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { listenForSheetSelect } from '@/lib/sheet-select-request';
+import { useFillsTab } from '@/hooks/plan/plan-cover-store';
+import { useSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 const RADIUS = 12;
 
@@ -100,23 +102,25 @@ function SheetBody({
   const model = useSheetModel(element, bridge, plan);
   const [hint, setHint] = useState(false);
   if (!model.sheet) {
+    // A copy, or a template's Sheet (sheet-store.md "Template starts"), not made yet is on its way, never gone.
+    const pending = !!element.planSheet?.copyOf || !!element.planSheet?.start;
     const loading = model.status === 'loading' || model.status === undefined;
     return (
       <SheetFace
         palette={palette}
         title="Sheet"
-        loading={model.status !== 'error' && (loading || !!element.planSheet?.copyOf)}
+        loading={model.status !== 'error' && (loading || pending)}
         message={
           model.status === 'error'
             ? "Couldn't load this sheet"
-            : loading || element.planSheet?.copyOf
+            : loading || pending
               ? 'Opening Sheet'
               : 'This sheet is no longer in this document'
         }
         action={
           model.status === 'error'
             ? { label: 'Try Again', run: () => void model.store.loadTab(bridge.activeTabId, true) }
-            : !loading && !element.planSheet?.copyOf && bridge.canEdit && bridge.canShape
+            : !loading && !pending && bridge.canEdit && bridge.canShape
               ? {
                   label: 'Remove',
                   run: () =>
@@ -317,6 +321,10 @@ function SheetParts({
   );
   // The cog's settings for the element menu's Sheet flyout (sheet-settings-registry).
   usePublishSheetSettings(element.id, { controller: c, actions, onImportCsv });
+  // Covering the canvas (maximised, or filling its tab), the zoom controls zoom its cells (sheet-zoom.ts).
+  const fillsTab = useFillsTab(element.id);
+  const sheetZoom = useSheetZoom();
+  const zoom = c.maximised || fillsTab ? sheetZoom : 1;
   const readFile = async (f: File) => {
     const text = await f.text();
     if (c.sheet.cells.size === 0) importCsvText(c, text, 'replace');
@@ -359,6 +367,7 @@ function SheetParts({
             pointRef={pointRef}
             peers={bridge.peers}
             fontFamily={fontFamily}
+            zoom={zoom}
           />
           {interactive ? <SheetStatusBar /> : null}
         </>

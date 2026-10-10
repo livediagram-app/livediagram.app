@@ -320,7 +320,14 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
 // (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
 export async function offlineCreateDocument(
   // `itemTypes`: the type catalogue it starts with (a Plan template's brought types), already validated.
-  d: { id: string; name: string; tabs?: Tab[]; itemTypes?: ItemTypeCatalogue | null },
+  // `sheets`: the sheets it starts with (a Plan template's, docs/specs/029-sheets/sheet-store.md "Template starts").
+  d: {
+    id: string;
+    name: string;
+    tabs?: Tab[];
+    itemTypes?: ItemTypeCatalogue | null;
+    sheets?: SheetJson[];
+  },
   now: number,
   extra: {
     createdAt?: number;
@@ -337,6 +344,7 @@ export async function offlineCreateDocument(
     savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
     ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
+    ...(d.sheets?.length ? { sheets: d.sheets } : {}),
     ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
   };
   await offlineBackend().put(rec);

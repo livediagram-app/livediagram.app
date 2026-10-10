@@ -29,7 +29,24 @@ type ZoomControlsProps = {
   // A Plan element covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"): the controls stay in
   // place, disabled, their hover cards saying why.
   zoomOff?: boolean;
+  // What the controls zoom: the canvas, or a Sheet covering it (docs/specs/029-sheets/sheet.md "Zoom"), which only
+  // their hover cards tell apart.
+  zoomScope?: 'canvas' | 'sheet';
 };
+
+// The hover cards' lines, by what the controls zoom.
+const ZOOM_COPY = {
+  canvas: {
+    out: 'Zoom out by 10%.',
+    in: 'Zoom in by 10%.',
+    fit: 'Pan and zoom so everything on the tab fits.',
+  },
+  sheet: {
+    out: 'Zoom the sheet out by 10%.',
+    in: 'Zoom the sheet in by 10%.',
+    fit: 'Show the sheet at 100%.',
+  },
+} as const;
 
 export const ZOOM_OFF_REASON = 'Zoom is off while a board, view or sheet fills the canvas.';
 
@@ -51,7 +68,9 @@ export function ZoomControls({
   zenEnterHere,
   pinchOnly = false,
   zoomOff = false,
+  zoomScope = 'canvas',
 }: ZoomControlsProps) {
+  const copy = ZOOM_COPY[zoomScope];
   const why = (description: string) => (zoomOff ? ZOOM_OFF_REASON : description);
   return (
     <div
@@ -64,7 +83,7 @@ export function ZoomControls({
       className="pointer-events-auto flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {pinchOnly ? null : (
-        <HoverCard title="Zoom out" description={why('Zoom out by 10%.')}>
+        <HoverCard title="Zoom out" description={why(copy.out)}>
           <IconButton onClick={onZoomOut} label="Zoom out" disabled={zoomOff}>
             <Glyph size={14} units={14}>
               <line x1="3" y1="7" x2="11" y2="7" />
@@ -79,7 +98,7 @@ export function ZoomControls({
         {...(zoomOff ? { offReason: ZOOM_OFF_REASON } : {})}
       />
       {pinchOnly ? null : (
-        <HoverCard title="Zoom in" description={why('Zoom in by 10%.')}>
+        <HoverCard title="Zoom in" description={why(copy.in)}>
           <IconButton onClick={onZoomIn} label="Zoom in" disabled={zoomOff}>
             <Glyph size={14} units={14}>
               <line x1="3" y1="7" x2="11" y2="7" />
@@ -95,10 +114,7 @@ export function ZoomControls({
         {pinchOnly ? null : (
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
         )}
-        <HoverCard
-          title="Fit to screen"
-          description={why('Pan and zoom so everything on the tab fits.')}
-        >
+        <HoverCard title="Fit to screen" description={why(copy.fit)}>
           <button
             type="button"
             onClick={onFitToScreen}

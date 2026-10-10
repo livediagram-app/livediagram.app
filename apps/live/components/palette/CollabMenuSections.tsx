@@ -29,6 +29,8 @@ import {
   ESTIMATE_SCALE_LABELS,
   ESTIMATE_SCALE_VALUES,
   clampAgendaMinutes,
+  moveAgendaCurrent,
+  removeAgendaCurrent,
   type AgendaItem,
   type ChairFacing,
   type DecisionStatus,
@@ -119,7 +121,10 @@ export function AgendaMenuSection({
 }: {
   target: ShapeElement | undefined;
   sectionProps: (id: string) => { open: boolean; onToggle: () => void };
-  onSetItems: (items: AgendaItem[]) => void;
+  // `moveCurrent` carries the current segment with its row: given the index
+  // that was current, where it is now (undefined when its row is gone). Left
+  // out for an edit that keeps every row where it was.
+  onSetItems: (items: AgendaItem[], moveCurrent?: (current: number) => number | undefined) => void;
 }) {
   const items = target?.agendaItems ?? NO_AGENDA_ITEMS;
   // The row drafts follow the element's segments when they change, adjusted during render.
@@ -130,7 +135,7 @@ export function AgendaMenuSection({
     const next = [...rows];
     const [moved] = next.splice(from, 1);
     if (moved) next.splice(to, 0, moved);
-    onSetItems(next);
+    onSetItems(next, (current) => moveAgendaCurrent(current, from, to));
   };
 
   return (
@@ -181,7 +186,12 @@ export function AgendaMenuSection({
               <button
                 type="button"
                 aria-label={`Remove segment ${i + 1}`}
-                onClick={() => onSetItems(rows.filter((_, j) => j !== i))}
+                onClick={() =>
+                  onSetItems(
+                    rows.filter((_, j) => j !== i),
+                    (current) => removeAgendaCurrent(current, i),
+                  )
+                }
                 className={removeButtonClass}
               >
                 ×

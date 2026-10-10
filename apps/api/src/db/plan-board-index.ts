@@ -9,6 +9,7 @@ import type { Element } from '@livediagram/document';
 import type { ActivityCard } from '@livediagram/api-schema';
 import { itemPersonId } from '@livediagram/items';
 import { planBoardRowsFromElements } from '../collab-index/plan-board-rows';
+import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
@@ -19,17 +20,29 @@ export function planBoardIndexStatements(
   env: Env,
   tabId: string,
   elements: readonly Element[],
+  guard: TabRevGuard = null,
 ): D1PreparedStatement[] {
+  const and = revGuardAnd(guard);
+  const g = revGuardBinds(guard);
   const stmts: D1PreparedStatement[] = [
-    env.DB.prepare('DELETE FROM plan_board_statuses WHERE tab_id = ?').bind(tabId),
+    env.DB.prepare(`DELETE FROM plan_board_statuses WHERE tab_id = ?${and}`).bind(tabId, ...g),
   ];
   for (const r of planBoardRowsFromElements(elements)) {
     stmts.push(
       env.DB.prepare(
         `INSERT INTO plan_board_statuses
            (tab_id, element_id, board_title, status, done, board_order, position)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(tabId, r.elementId, r.boardTitle, r.status, r.done ? 1 : 0, r.boardOrder, r.position),
+         ${revGuardValues(7, guard)}`,
+      ).bind(
+        tabId,
+        r.elementId,
+        r.boardTitle,
+        r.status,
+        r.done ? 1 : 0,
+        r.boardOrder,
+        r.position,
+        ...g,
+      ),
     );
   }
   return stmts;

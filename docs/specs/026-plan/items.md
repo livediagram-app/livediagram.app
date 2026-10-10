@@ -157,6 +157,14 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   archived, trashed or restored.
 - Flag and Remove Flag send `Plan · Toggled · FlagOn` and `Plan · Toggled · FlagOff`.
 
+## The Plan strip
+
+- Plan mode's bottom-right strip (**Trash**, **New Card**, **Find a Card**, **Card Types**, each below) shows only
+  while the open tab has something that shows cards: a board, a view, or a Sheet holding a card table
+  ([Card tables](../029-sheets/sheet.md#card-tables)). On an empty tab, or one of only diagrams, stickies and plain
+  Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
+  placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
+
 ## Trash
 
 - **Trash** is a status, `trash`, that no board shows (not in a column, not counted, not "not on this board", not

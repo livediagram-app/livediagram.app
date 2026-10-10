@@ -9,17 +9,25 @@
 
 export function withTileActionPreamble<T extends Record<string, unknown>>(
   actions: T,
-  preamble: () => void,
+  // Told which action and its arguments, for a preamble that depends on the tile (restoring a maximised element).
+  preamble: (action: string, args: readonly unknown[]) => void,
 ): T {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(actions)) {
     out[key] =
       typeof value === 'function'
         ? (...args: unknown[]) => {
-            preamble();
+            preamble(key, args);
             return (value as (...a: unknown[]) => unknown)(...args);
           }
         : value;
   }
   return out as T;
+}
+
+// Whether picking this tile restores a maximised Plan element first (docs/specs/026-plan/plan-board.md "The palette
+// follows what fills the screen"): every tile but a card (which lands on the maximised board) and cancelling a draw.
+export function restoresMaximised(action: string, args: readonly unknown[]): boolean {
+  if (action === 'cancelDraw') return false;
+  return !(action === 'addShape' && args[0] === 'plan-card');
 }

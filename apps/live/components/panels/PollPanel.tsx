@@ -1,13 +1,10 @@
 'use client';
 
-// The live POLL panel (docs/specs/012-collaboration/live-poll.md): results for a running poll, on the same
-// shared MovablePanel every other floating panel uses (Collaborate,
-// Layers, Activity) — draggable, resettable, and dockable into a corner
-// stack, rather than a bespoke fixed card of its own.
+// The live POLL panel (docs/specs/012-collaboration/live-poll.md): results for a running poll, a popover
+// over the Session strip's Poll button (docs/specs/012-collaboration/session-tools.md "The Session strip"),
+// on the same shared MovablePanel as Layers and Collaborate.
 //
-// Unlike its neighbours the panel only EXISTS while a poll is running, so
-// it joins and leaves its corner stack (top-right, under the Palette)
-// instead of sitting there permanently. Shown to the host and to anyone who has responded:
+// It only EXISTS while a poll is running. Shown to the host and to anyone who has responded:
 // answering is what buys you the tally, so a participant who hasn't
 // answered can't be nudged by the running numbers.
 //
@@ -18,8 +15,16 @@
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import type { DockAnchor } from '@/lib/canvas-chrome';
+import { buttonClassName, HoverCard } from '@livediagram/ui';
+
+// A popover never moves.
+const NO_MOVE = () => {};
+
+// The shared Button look (its hover and dark-mode states included) at the panel's fixed row height,
+// so a wrapped label can't give two rows different heights.
+const PRIMARY_BTN = buttonClassName({ variant: 'primary', size: 'xs', className: 'h-7 w-full' });
+const QUIET_BTN = buttonClassName({ variant: 'secondary', size: 'xs', className: 'h-7 w-full' });
 
 export function PollPanel({
   poll,
@@ -28,10 +33,9 @@ export function PollPanel({
   onEnd,
   onKeepResults,
   onDismiss,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
+  popoverAnchor,
+  onPopoverClose,
+  dismissOnOutside = true,
 }: {
   poll: LivePoll;
   answers: Map<string, string | null>;
@@ -42,19 +46,28 @@ export function PollPanel({
   // leaves the plain End alone.
   onKeepResults?: () => void;
   onDismiss: () => void;
-} & MovablePanelPlacementProps) {
+  // Where the Poll button sits, for the popover's arrow, and how it asks to close.
+  popoverAnchor?: DockAnchor;
+  onPopoverClose: () => void;
+  // False while the activity runs on a desktop: only the button closes it
+  // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+  dismissOnOutside?: boolean;
+}) {
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
 
   return (
     <MovablePanel
       helpArticle="sessionPolls"
       title="Poll"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      {...dock}
+      position={null}
+      defaultCorner="bottom-right"
+      onMoveTo={NO_MOVE}
+      popoverOpen
+      popoverAnchor={popoverAnchor}
+      asPopover
+      popoverWidth="w-72"
+      dismissOnOutside={dismissOnOutside}
+      onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-2 pb-2">
         <p className="text-[12px] font-medium leading-snug text-slate-800 dark:text-slate-100">
@@ -104,31 +117,19 @@ export function PollPanel({
                   title="Keep Results"
                   description="Drop a chart of the results so far onto the canvas. The poll keeps running."
                 >
-                  <button
-                    type="button"
-                    onClick={onKeepResults}
-                    className={`flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
-                  >
+                  <button type="button" onClick={onKeepResults} className={PRIMARY_BTN}>
                     Keep Results
                   </button>
                 </HoverCard>
               ) : null}
               <HoverCard block title="End Poll" description="End the poll for everyone.">
-                <button
-                  type="button"
-                  onClick={onEnd}
-                  className="flex h-7 w-full items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
-                >
+                <button type="button" onClick={onEnd} className={QUIET_BTN}>
                   End Poll
                 </button>
               </HoverCard>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={onDismiss}
-              className="flex h-7 w-full items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
-            >
+            <button type="button" onClick={onDismiss} className={QUIET_BTN}>
               Dismiss
             </button>
           )}
@@ -144,7 +145,9 @@ function TallyBar({ row }: { row: PollTallyRow }) {
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="truncate text-[11px] text-slate-700 dark:text-slate-200">{row.token}</span>
+        <span className="min-w-0 break-words text-[11px] text-slate-700 dark:text-slate-200">
+          {row.token}
+        </span>
         <span className="shrink-0 text-[11px] font-semibold tabular-nums text-slate-500 dark:text-slate-400">
           {row.count}
         </span>

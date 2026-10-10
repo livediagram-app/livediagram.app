@@ -55,6 +55,19 @@ describe('the grid frame', () => {
     expect(h.grid.getAttribute('aria-activedescendant')).toBe('el1-A1');
   });
 
+  // docs/specs/029-sheets/sheet.md "Zoom": laid out at 1 / zoom of its frame and scaled back up, so it fills the
+  // frame at any zoom; at 100% it is the frame's own size.
+  it('draws at the covering Sheet’s zoom, filling its frame', async () => {
+    const plain = await mountGrid({ rows: 5, cols: 3 });
+    expect(plain.grid.style.transform).toBe('');
+    plain.unmount?.();
+    const h = await mountGrid({ rows: 5, cols: 3, zoom: 1.25 });
+    expect(h.grid.style.transform).toBe('scale(1.25)');
+    expect(h.grid.style.width).toBe('80%');
+    expect(h.grid.style.height).toBe('80%');
+    expect(h.grid.parentElement!.hasAttribute('data-sheet-grid-frame')).toBe(true);
+  });
+
   it('says the active cell and its value to assistive technology', async () => {
     const h = await mountGrid({ cells: { B2: '42' } });
     select(h, 1, 1);

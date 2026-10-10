@@ -4,24 +4,15 @@
 //
 // Setting up, every choice is drawn as the thing it produces: the dot budget
 // is a row of dots you tap, the privacy switches are cards that say what the
-// room will and won't see. Running, the pane becomes a facilitator's console:
-// a three-step track (Voting, Closed, Results) showing where the round is,
-// live turnout, the rules in force, and ONE primary button for the next
-// step, so the flow is always "press the big button".
+// room will and won't see. A running vote opens the Vote panel instead
+// (components/panels/VotePanel.tsx): turnout, the rules in force, the results.
 
 import { useState, type ReactNode } from 'react';
-import {
-  VOTE_DOTS_RANGE,
-  isVoteHost,
-  voteHidesCursors,
-  voteHidesTallies,
-  type TabVote,
-} from '@livediagram/document';
+import { VOTE_DOTS_RANGE } from '@livediagram/document';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
-import { votePhase, voteTurnout, type VotePhase } from './session-studio';
-import { StudioButton, StudioCallout, StudioLabel, StudioSegmented } from './studio-ui';
-import { SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
+import { StudioButton, StudioLabel, StudioSegmented } from './studio-ui';
+import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -36,7 +27,9 @@ type VotePaneProps = Pick<
 > & { selfId: string };
 
 export function VotePane(props: VotePaneProps) {
-  return props.vote ? <LiveVote {...props} vote={props.vote} /> : <VoteSetupForm {...props} />;
+  // A running vote opens the Vote panel instead (docs/specs/012-collaboration/session-tools.md), so this
+  // pane is the set-up alone.
+  return <VoteSetupForm {...props} />;
 }
 
 function VoteSetupForm(props: VotePaneProps) {
@@ -218,7 +211,7 @@ function PrivacyCard({
       className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition ${
         checked
           ? 'border-brand-300 bg-brand-50/60 dark:border-brand-500/50 dark:bg-brand-500/10'
-          : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800'
+          : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500'
       }`}
     >
       <span
@@ -238,149 +231,6 @@ function PrivacyCard({
       </span>
       <ToggleSwitch checked={checked} label={title} presentational />
     </button>
-  );
-}
-
-const PHASES: { phase: Exclude<VotePhase, 'setup'>; label: string }[] = [
-  { phase: 'casting', label: 'Voting' },
-  { phase: 'closed', label: 'Ended' },
-  { phase: 'results', label: 'Results' },
-];
-
-function PhaseTrack({ phase }: { phase: VotePhase }) {
-  const at = PHASES.findIndex((p) => p.phase === phase);
-  return (
-    <ol className="flex items-center" aria-label="Vote progress">
-      {PHASES.map((p, i) => {
-        const done = i < at;
-        const current = i === at;
-        return (
-          <li key={p.phase} className="flex flex-1 items-center last:flex-none">
-            <span className="flex flex-col items-center gap-1">
-              <GlyphDisc
-                size={20}
-                aria-current={current ? 'step' : undefined}
-                className={`text-[10px] font-bold ${
-                  current
-                    ? `bg-brand-500 text-white ring-4 ring-brand-500/15 ${SOLID_BRAND_DARK}`
-                    : done
-                      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
-                      : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-400'
-                }`}
-              >
-                {done ? '✓' : i + 1}
-              </GlyphDisc>
-              <span
-                className={`text-[10px] font-medium ${
-                  current
-                    ? 'text-slate-800 dark:text-slate-100'
-                    : 'text-slate-400 dark:text-slate-400'
-                }`}
-              >
-                {p.label}
-              </span>
-            </span>
-            {i < PHASES.length - 1 ? (
-              <span
-                className={`mx-1 mb-4 h-0.5 flex-1 rounded-full ${
-                  done ? 'bg-brand-300 dark:bg-brand-500/50' : 'bg-slate-200 dark:bg-slate-700'
-                }`}
-              />
-            ) : null}
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-function LiveVote({
-  vote,
-  selfId,
-  facilitating,
-  voteLayers,
-  onEndVote,
-  onRevealVote,
-  onClearVote,
-}: VotePaneProps & { vote: TabVote }) {
-  const phase = votePhase(vote);
-  const { dots, voters } = voteTurnout(vote);
-  const host = isVoteHost(vote, selfId, facilitating);
-  const rules = [
-    `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
-    vote.onePerElement ? 'One per item' : null,
-    vote.voteLayerId
-      ? `${voteLayers.find((l) => l.id === vote.voteLayerId)?.name ?? 'One layer'} only`
-      : null,
-    // Phase-aware: these read what is in force NOW (cursors come back the
-    // moment voting closes), not what was ticked at start.
-    voteHidesCursors(vote) ? 'Cursors hidden' : null,
-    voteHidesTallies(vote) ? 'Counts hidden' : null,
-  ].filter((r): r is string => r !== null);
-
-  return (
-    <div className="flex flex-col gap-3">
-      <PhaseTrack phase={phase} />
-      <div className="grid grid-cols-2 gap-1.5">
-        <Stat value={dots} label={dots === 1 ? 'dot placed' : 'dots placed'} live={vote.active} />
-        <Stat value={voters} label={voters === 1 ? 'person voted' : 'people voted'} />
-      </div>
-      <div className="flex flex-wrap gap-1">
-        {rules.map((r) => (
-          <span
-            key={r}
-            className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-          >
-            {r}
-          </span>
-        ))}
-      </div>
-      {host ? (
-        <div className="flex flex-col gap-1.5">
-          {phase === 'casting' ? (
-            <StudioButton variant="primary" onClick={onEndVote}>
-              End vote
-            </StudioButton>
-          ) : phase === 'closed' ? (
-            <StudioButton variant="primary" onClick={onRevealVote}>
-              Show results
-            </StudioButton>
-          ) : (
-            <StudioButton variant="primary" onClick={onClearVote}>
-              Clear vote
-            </StudioButton>
-          )}
-          {phase !== 'results' ? (
-            <StudioButton onClick={onClearVote}>Clear vote</StudioButton>
-          ) : null}
-          <span className="text-center text-[10px] leading-snug text-slate-400">
-            {phase === 'casting'
-              ? 'Ending keeps every dot; nobody can add more.'
-              : phase === 'closed'
-                ? 'Showing results walks the room through the winners, most dots first.'
-                : 'Clearing takes every dot off the canvas.'}
-          </span>
-        </div>
-      ) : (
-        <StudioCallout>
-          Only the person who started this vote, or the facilitator, can move it on.
-        </StudioCallout>
-      )}
-    </div>
-  );
-}
-
-function Stat({ value, label, live = false }: { value: number; label: string; live?: boolean }) {
-  return (
-    <div className="flex flex-col rounded-lg bg-slate-50 px-2.5 py-2 dark:bg-slate-800/70">
-      <span className="flex items-center gap-1.5 text-[20px] font-semibold leading-none tabular-nums text-slate-800 dark:text-slate-100">
-        {value}
-        {live ? (
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
-        ) : null}
-      </span>
-      <span className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">{label}</span>
-    </div>
   );
 }
 

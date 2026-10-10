@@ -4,8 +4,7 @@ import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
-import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
-import type { TabModeChoice } from './TabModeMenuSection';
+import type { TabModeChoice } from './TabModeMenuRows';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
@@ -33,26 +32,6 @@ export function EllipsisMenuButton({
   modeChoice,
   planTab,
   selfId,
-  facilitatedBy,
-  facilitating,
-  timer,
-  vote,
-  onStartTimer,
-  onPauseTimer,
-  onResumeTimer,
-  onResetTimer,
-  onClearTimer,
-  onExtendTimer,
-  onStartVote,
-  onEndVote,
-  onRevealVote,
-  onClearVote,
-  livePoll,
-  pollHasAudience,
-  onStartPoll,
-  pollCollaborators,
-  voteLayers,
-  activeLayerId,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -81,7 +60,7 @@ export function EllipsisMenuButton({
   onDelete: () => void;
   modeChoice?: TabModeChoice;
   planTab?: boolean;
-} & SessionToolsProps) {
+}) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
   return (
@@ -123,26 +102,6 @@ export function EllipsisMenuButton({
             onDelete={onDelete}
             canDelete={canDelete}
             canClearContent={canClearContent}
-            facilitatedBy={facilitatedBy}
-            facilitating={facilitating}
-            timer={timer}
-            vote={vote}
-            onStartTimer={onStartTimer}
-            onPauseTimer={onPauseTimer}
-            onResumeTimer={onResumeTimer}
-            onResetTimer={onResetTimer}
-            onClearTimer={onClearTimer}
-            onExtendTimer={onExtendTimer}
-            onStartVote={onStartVote}
-            onEndVote={onEndVote}
-            onRevealVote={onRevealVote}
-            onClearVote={onClearVote}
-            livePoll={livePoll}
-            pollHasAudience={pollHasAudience}
-            onStartPoll={onStartPoll}
-            pollCollaborators={pollCollaborators}
-            voteLayers={voteLayers}
-            activeLayerId={activeLayerId}
           />
         </MenuErrorBoundary>
       ) : null}

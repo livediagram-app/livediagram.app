@@ -219,27 +219,11 @@ export function VotePanelProgress() {
   );
 }
 
-/** The results walkthrough: the banner driving the room, the ranked list, and
- *  the pick everyone is looking at. */
+/** The results walkthrough: the Vote panel driving the room (the pick under review with Previous and
+ *  Next, over the ranked list), and the pick everyone is looking at. */
 export function VoteResultsWalkthrough() {
   return (
     <Scene w={420} h={220}>
-      {/* The shared banner */}
-      <g transform="translate(84 10)">
-        <rect width={252} height={26} rx={13} className="fill-brand-500" />
-        <circle cx={16} cy={13} r={4} className="fill-amber-400" />
-        <Label x={28} y={14} size={10} weight={600} tone="onAccent">
-          Top result 1 of 4
-        </Label>
-        <rect x={162} y={5} width={38} height={16} rx={6} className="fill-white/25" />
-        <Label x={181} y={14} anchor="middle" size={9} weight={600} tone="onAccent">
-          Previous
-        </Label>
-        <rect x={206} y={5} width={38} height={16} rx={6} className="fill-white" />
-        <Label x={225} y={14} anchor="middle" size={9} weight={700} tone="accent">
-          Next
-        </Label>
-      </g>
       {/* The pick the room is centred on */}
       <rect
         x={20}
@@ -256,21 +240,43 @@ export function VoteResultsWalkthrough() {
       </g>
       <Avatar cx={168} cy={95} r={12} initial="R" colour="emerald" />
       <Avatar cx={168} cy={124} r={12} initial="P" colour="violet" />
-      <Panel x={200} y={54} w={200} h={144} title="VOTE · RESULTS">
+      <Panel x={196} y={8} w={212} h={204} title="VOTE">
+        {/* The walkthrough, leading the panel */}
+        <rect x={206} y={38} width={192} height={46} rx={7} className="fill-amber-50" />
+        <circle cx={216} cy={50} r={3.5} className="fill-amber-400" />
+        <Label x={224} y={51} size={10} weight={600} tone="body">
+          Top result 1 of 4 · 5 votes
+        </Label>
+        <rect
+          x={212}
+          y={60}
+          width={88}
+          height={18}
+          rx={5}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        <Label x={256} y={69} anchor="middle" size={9} weight={600} tone="body">
+          Previous
+        </Label>
+        <rect x={304} y={60} width={88} height={18} rx={5} className="fill-brand-500" />
+        <Label x={348} y={69} anchor="middle" size={9} weight={700} tone="onAccent">
+          Next
+        </Label>
         {[
-          { name: 'Reduce WIP', votes: 5, winner: true },
+          { name: 'Reduce WIP', votes: 5 },
           { name: 'Auto tests', votes: 3 },
           { name: 'Pair more', votes: 2 },
           { name: 'Trim standup', votes: 1 },
         ].map((r, i) => {
-          const ry = 88 + i * 26;
+          const ry = 92 + i * 28;
           return (
             <g key={r.name}>
               <rect
-                x={212}
+                x={206}
                 y={ry}
-                width={176}
-                height={22}
+                width={192}
+                height={24}
                 rx={7}
                 className={
                   i === 0 ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'
@@ -278,15 +284,15 @@ export function VoteResultsWalkthrough() {
                 strokeWidth={1.5}
               />
               <Label
-                x={222}
-                y={ry + 11}
+                x={216}
+                y={ry + 12}
                 size={10}
                 weight={i === 0 ? 700 : 500}
                 tone={i === 0 ? 'accent' : 'body'}
               >
                 {r.name}
               </Label>
-              <Label x={380} y={ry + 11} anchor="end" size={10} weight={700} tone="muted">
+              <Label x={390} y={ry + 12} anchor="end" size={10} weight={700} tone="muted">
                 {r.votes}
               </Label>
             </g>

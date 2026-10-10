@@ -58,3 +58,14 @@ export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
   };
   return { w, h, data, showLegend, colorAt, area, legend };
 }
+
+// A line chart's x-axis label (9px) fits the gap between its neighbours: only a label wider than that
+// gap is shortened with an ellipsis, never a fixed count, so "January" reads whole on a wide chart.
+// A 9px glyph averages about 5px; no label is cut below CHART_AXIS_LABEL_MIN_CHARS (the old fixed cut).
+const CHART_AXIS_GLYPH_PX = 5;
+const CHART_AXIS_LABEL_MIN_CHARS = 6;
+export function chartAxisLabel(label: string, plotW: number, count: number): string {
+  const slot = count <= 1 ? plotW : plotW / (count - 1);
+  const max = Math.max(CHART_AXIS_LABEL_MIN_CHARS, Math.floor(slot / CHART_AXIS_GLYPH_PX));
+  return label.length > max ? `${label.slice(0, max - 1)}…` : label;
+}

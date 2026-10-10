@@ -176,9 +176,22 @@ CREATE TABLE tab_stats (
 
 - A `<table>` inside `LIST_CARD`; `<thead>` with `<th scope="col">` cells, each holding a button;
   rows `h-10`, the name cell truncating.
-- Type cell: `EDITOR_MODE_ICONS[mode]` at 14 px and `editorModeLabel(mode)`.
-- Access cell: `ROLE_PASS[level].Icon` at 14 px in the role's text colour, wrapped in a `Tooltip`
-  naming `ROLE_PASS[level].title`, with the name as visually hidden text.
+- Icon columns (`DetailsColumn.iconOnly`: type `w-10`, comments `w-12`, access `w-10`, centred): the
+  header button shows `HEADER_ICON[column]` (lucide shapes, message-square, key at 13 px) with the label
+  visually hidden and in a `Tooltip`; each cell is a `NamedIcon` (the icon, a `Tooltip`, the value as
+  visually hidden text).
+- Type cell: `EDITOR_MODE_ICONS[mode]` at 14 px, muted; a folder shows `FolderSolidIcon` (and, below
+  `sm`, where Type is hidden, the folder icon leads its name).
+- Comments cell (`CommentsCell`): one `Glyph` (24 px, 20 dense, weight 1): lucide's message-square in
+  slate 300 / dark slate 600, and the count as SVG `text` in slate 600 / dark slate 300, semibold, 10
+  grid units (8 for `99+`), centred on the bubble's body (`BUBBLE_BODY_CENTRE_Y` 11 of 24, the tail
+  below) with its baseline half a cap height (`CAP_HEIGHT_EM` 0.72) lower so the digits read centred;
+  named "N comments"; nothing for zero.
+- Access cell: `ROLE_PASS[level].Icon` at 12 px in slate 500 / dark slate 400, named
+  `ROLE_PASS[level].title`.
+- Dense rows (`useDenseRows()`: `isPowerUserMode(prefs)` from the Explorer context): `cellClass(true)`
+  drops the vertical padding and the line height, and the `⋯` is `size="sm"`; rows measure about 21 px
+  against 45 px.
 - Numbers right-aligned with tabular figures; dates in `text-xs`.
 - `–` cells carry a `Tooltip` "Not counted yet".
 - The sorted header shows a 10 px chevron (up ascending, down descending).
@@ -231,6 +244,7 @@ CREATE TABLE tab_stats (
 | Formats                                                  | `apps/live/app/explorer/details/details-format.test.ts`       |
 | Stored sort and mode read back, defaults                 | `useDetailsSort.test.tsx`, `useExplorerViewMode.test.tsx`     |
 | Table renders columns, aria-sort, `–`, menu, drag        | `apps/live/app/explorer/details/DetailsView.test.tsx`         |
+| Icon columns, the bubble and `99+`, dense rows           | `apps/live/app/explorer/details/DetailsView.test.tsx`         |
 
 ## Constants and configuration
 

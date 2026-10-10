@@ -17,20 +17,57 @@ export type DetailsColumn = {
   label: string;
   // The direction a first press sorts in.
   natural: SortDirection;
-  // Numbers and dates line up on the right.
-  align: 'start' | 'end';
+  // Numbers line up on the right; the icon columns centre their one icon.
+  align: 'start' | 'center' | 'end';
+  // A narrow column of one icon, headed by an icon rather than its label ("Icon columns").
+  iconOnly: boolean;
   // The narrowest width that shows the column ("Narrow screens").
   shownFrom: 'always' | 'sm' | 'md';
 };
 
 export const DETAILS_COLUMNS: readonly DetailsColumn[] = [
-  { id: 'name', label: 'Name', natural: 'asc', align: 'start', shownFrom: 'always' },
-  { id: 'type', label: 'Type', natural: 'asc', align: 'start', shownFrom: 'sm' },
-  { id: 'comments', label: 'Comments', natural: 'desc', align: 'end', shownFrom: 'md' },
-  { id: 'access', label: 'Access', natural: 'desc', align: 'start', shownFrom: 'md' },
-  { id: 'size', label: 'Size', natural: 'desc', align: 'end', shownFrom: 'sm' },
-  { id: 'created', label: 'Created', natural: 'desc', align: 'start', shownFrom: 'md' },
-  { id: 'updated', label: 'Updated', natural: 'desc', align: 'start', shownFrom: 'always' },
+  {
+    id: 'name',
+    label: 'Name',
+    natural: 'asc',
+    align: 'start',
+    iconOnly: false,
+    shownFrom: 'always',
+  },
+  { id: 'type', label: 'Type', natural: 'asc', align: 'center', iconOnly: true, shownFrom: 'sm' },
+  {
+    id: 'comments',
+    label: 'Comments',
+    natural: 'desc',
+    align: 'center',
+    iconOnly: true,
+    shownFrom: 'md',
+  },
+  {
+    id: 'access',
+    label: 'Access',
+    natural: 'desc',
+    align: 'center',
+    iconOnly: true,
+    shownFrom: 'md',
+  },
+  { id: 'size', label: 'Size', natural: 'desc', align: 'end', iconOnly: false, shownFrom: 'sm' },
+  {
+    id: 'created',
+    label: 'Created',
+    natural: 'desc',
+    align: 'start',
+    iconOnly: false,
+    shownFrom: 'md',
+  },
+  {
+    id: 'updated',
+    label: 'Updated',
+    natural: 'desc',
+    align: 'start',
+    iconOnly: false,
+    shownFrom: 'always',
+  },
 ];
 
 const COLUMN = new Map(DETAILS_COLUMNS.map((c) => [c.id, c]));

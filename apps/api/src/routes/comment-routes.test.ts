@@ -229,6 +229,42 @@ describe('delete-own', () => {
     expect((await threadOf('a'))!.comments.map((c) => c.id)).toEqual(['c2']);
     expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(404);
   });
+
+  it('takes the comment’s words off the Timeline, with its thread’s resolved snippet', async () => {
+    seed([
+      shape('a', {
+        commentThread: { resolved: false, comments: [comment('c1', { authorId: 'owner' })] },
+      }),
+    ]);
+    // Posted and resolved: two events carrying c1's text.
+    const posted = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'reply' } });
+    expect(posted.status).toBe(201);
+    const reply = ((await posted.json()) as { comment: Comment }).comment.id;
+    const insert = sql.sql.prepare(
+      `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
+         description, occurred_at, snapshot, created_at)
+       VALUES (?, 'owner', 'document', ?, ?, 't', 'text c1', 1, ?, 1)`,
+    );
+    insert.run('e-c1', 'c1', 'comment_added', JSON.stringify({ documentId: 'd1' }));
+    insert.run('e-res', 'd1:a', 'comment_resolved', JSON.stringify({ documentId: 'd1' }));
+    // Another document's event under the same comment id is never reached.
+    insert.run('e-other', 'c1', 'comment_resolved', JSON.stringify({ documentId: 'd2' }));
+    await Promise.allSettled(pending);
+    const events = () =>
+      (sql.sql.prepare('SELECT id FROM timeline_events ORDER BY id').all() as { id: string }[]).map(
+        (r) => r.id,
+      );
+    expect(events()).toHaveLength(4);
+
+    // The reply is not the thread's opening comment: only its own event goes.
+    expect((await call({ method: 'DELETE', path: `/tabs/t1/comments/${reply}` })).status).toBe(204);
+    await Promise.allSettled(pending);
+    expect(events()).toEqual(['e-c1', 'e-other', 'e-res']);
+
+    expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(204);
+    await Promise.allSettled(pending);
+    expect(events()).toEqual(['e-other']);
+  });
 });
 
 describe('a lost race', () => {

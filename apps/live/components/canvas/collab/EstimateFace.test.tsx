@@ -86,6 +86,33 @@ describe('EstimateFace', () => {
     expect(screen.queryByText('New round')).toBeNull();
   });
 
+  it('counts the room once per person who can pick', () => {
+    const who = (id: string, key: string, role?: 'view') => ({
+      id,
+      key,
+      name: id,
+      color: '#000',
+      status: 'online' as const,
+      ...(role ? { role } : {}),
+    });
+    render(
+      <EstimateFace
+        element={card({ responses: [answers[0]!] })}
+        label="Login page"
+        textColor="#0f172a"
+        surface="#ffffff"
+        selfKey="me"
+        participants={[
+          who('me', 'me'),
+          who('me-tab-2', 'me'),
+          who('ada', 'a'),
+          who('v', 'v', 'view'),
+        ]}
+      />,
+    );
+    expect(screen.getByText('1/2 answered')).toBeTruthy();
+  });
+
   it('turns the cards face up with the spread once revealed', () => {
     show(card({ responses: answers, responsesRevealed: true }));
     expect(screen.getByText('Spread 3 → 13')).toBeTruthy();

@@ -32,9 +32,22 @@ const inside = (inner: Element, outer: Element) => {
 
 // The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): one Plan board each, the set-up
 // its use wants, and seed items that land in the board's columns. Blank Plan is the exception
-// (docs/specs/026-plan/plan-templates.md "Blank Plan"): an empty tab, so Plan offers Start Planning.
+// (docs/specs/026-plan/plan-templates.md "Blank Plan"): an empty tab, so Plan offers Start Planning; and the
+// spreadsheet templates ("Spreadsheet templates") hold a Sheet in place of a board.
+const SHEET_KINDS = ['budget-planner', 'timesheet', 'contact-list', 'task-tracker'] as const;
 describe('plan templates', () => {
-  const kinds = PLAN_TEMPLATE_KINDS.filter((kind) => kind !== 'blank-plan');
+  const kinds = PLAN_TEMPLATE_KINDS.filter(
+    (kind) => kind !== 'blank-plan' && !(SHEET_KINDS as readonly string[]).includes(kind),
+  );
+
+  it('makes each spreadsheet template a Sheet and no board, opening in Plan', () => {
+    for (const kind of SHEET_KINDS) {
+      const els = buildTemplate(kind, 0, 0);
+      expect(shapesOf(els, 'plan-sheet'), kind).toHaveLength(1);
+      expect(shapesOf(els, 'plan-board'), kind).toHaveLength(0);
+      expect(templateEditorMode(kind), kind).toBe('plan');
+    }
+  });
 
   it('makes Blank Plan an empty tab, opening in Plan', () => {
     expect(buildTemplate('blank-plan', 0, 0)).toEqual([]);

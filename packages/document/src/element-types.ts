@@ -283,6 +283,9 @@ export type ShapeElement = {
   // is in (absent = not started). Only meaningful on 'agenda'.
   agendaItems?: AgendaItem[];
   agendaCurrent?: number;
+  // The `startedAt` of the tab timer the current segment started, so the face
+  // shows that timer's time left only while it is still that run.
+  agendaTimerStartedAt?: number;
   // Decision record (docs/specs/012-collaboration/decision-record.md): the status chip, the day it was taken
   // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
   // element's `label` is the decision STATEMENT, so it needs no extra field.
@@ -1400,7 +1403,13 @@ export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'deta
 // `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
 // one when it is first drawn, then drops the mark (docs/specs/029-sheets/sheet.md "Copying a Sheet element").
 // `fillTab`: the Sheet fills its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), as a board can.
-export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true };
+// `start`: a template's Sheet not yet made (docs/specs/029-sheets/sheet-store.md "Template starts"): the template
+// start its sheet is made from, by whatever makes the tabs (or, failing that, the first editor to draw it), which then
+// drops the mark.
+export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true; start?: string };
+
+// A template start's id (@livediagram/sheets TEMPLATE_STARTS): kebab-case words.
+export const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
 
 // A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
 export function newPlanSheetId(): string {
@@ -1417,18 +1426,24 @@ export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
     sheetId: id,
     copyOf,
     fillTab,
+    start,
     ...rest
   } = v as {
     sheetId?: unknown;
     copyOf?: unknown;
     fillTab?: unknown;
+    start?: unknown;
   };
   // An empty id is a Sheet element not yet given its sheet (the factory's), as a Plan card's empty item id.
   const idOk = typeof id === 'string' && (id === '' || PLAN_SHEET_ID_PATTERN.test(id));
   const copyOk =
     copyOf === undefined || (typeof copyOf === 'string' && PLAN_SHEET_ID_PATTERN.test(copyOf));
   return (
-    idOk && copyOk && (fillTab === undefined || fillTab === true) && Object.keys(rest).length === 0
+    idOk &&
+    copyOk &&
+    (fillTab === undefined || fillTab === true) &&
+    (start === undefined || (typeof start === 'string' && PLAN_SHEET_START_PATTERN.test(start))) &&
+    Object.keys(rest).length === 0
   );
 }
 

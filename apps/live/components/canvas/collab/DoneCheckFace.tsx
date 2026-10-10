@@ -2,7 +2,7 @@
 
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/document';
 
-import { participantKey, type Participant } from '@/lib/identity';
+import { answeringKeys, type Participant } from '@/lib/identity';
 import { CollabPanel } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { DoneButton } from './done/DoneButton';
@@ -65,7 +65,9 @@ export function DoneCheckFace({
   /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
-  const keys = participants.map(participantKey);
+  // One per person who can mark: a second tab of yours, or a view-link
+  // guest who can't press the button, would leave the card waiting forever.
+  const keys = answeringKeys(participants);
   const { done, waiting } = doneSplit(element.responses, keys);
   const mine = isDone(element.responses, selfKey);
   const everyone = allDone(element.responses, keys);

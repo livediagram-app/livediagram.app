@@ -549,6 +549,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/illustrate',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Change the Illustrate pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Illustrate and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: ref('IllustrateRequest'),
+    responseSchema: 'IllustrateAnswer',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
     method: 'DELETE',
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',

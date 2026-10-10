@@ -10,6 +10,7 @@ import {
   withUnitMoved,
 } from './article-pages';
 import { articlesOf } from './article-flow';
+import { shouldGrowForAbsentWriter } from './article-pages';
 import { illustratePagesOf, layOutIllustratePages, type IllustratePage } from './illustrate-page';
 import type { Element } from './index';
 
@@ -199,5 +200,18 @@ describe('a duplicated article keeps its margin notes to itself', () => {
     expect(run.note).toBe(copyMarker.id);
     const original = (articlesOf(out)['f']!.blocks[0] as { runs: { note?: string }[] }).runs[0]!;
     expect(original.note).toBe('m1');
+  });
+});
+
+describe('growing an article for an absent writer', () => {
+  const base = { local: false, pending: true, needed: 3, have: 1, locked: false };
+
+  it('grows only when waiting to, short of pages, unlocked and not the writer', () => {
+    expect(shouldGrowForAbsentWriter(base)).toBe(true);
+    expect(shouldGrowForAbsentWriter({ ...base, local: true })).toBe(false);
+    expect(shouldGrowForAbsentWriter({ ...base, pending: false })).toBe(false);
+    expect(shouldGrowForAbsentWriter({ ...base, locked: true })).toBe(false);
+    expect(shouldGrowForAbsentWriter({ ...base, needed: 1 })).toBe(false);
+    expect(shouldGrowForAbsentWriter({ ...base, needed: 0, have: 2 })).toBe(false);
   });
 });

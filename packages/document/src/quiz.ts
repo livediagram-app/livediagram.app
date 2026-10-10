@@ -184,6 +184,29 @@ export function quizOptionCentres(count: number): { x: number; y: number }[] {
   });
 }
 
+// An answer longer than this many characters is set a size smaller (QuizOption, the export), so the
+// longest one (QUIZ_OPTION_MAX_TEXT) fits about six lines and its pill stays inside the quiz's square.
+export const QUIZ_OPTION_LONG_TEXT = 36;
+
+// Which way an answer grows when its text needs more than the pill's two lines
+// (docs/specs/012-collaboration/quiz.md "Answers"): away from the disc, so it never
+// runs into it. Above the disc it grows up, below it down, level with it both ways
+// (the disc is beside it, not above or below). The canvas and the export share it.
+export type QuizOptionGrowth = 'up' | 'down' | 'both';
+
+export function quizOptionGrowth(at: { y: number }): QuizOptionGrowth {
+  const c = QUIZ_DESIGN_SIZE / 2;
+  return at.y < c - 1 ? 'up' : at.y > c + 1 ? 'down' : 'both';
+}
+
+// The top of an answer `height` tall around its default spot `at`, grown as quizOptionGrowth says.
+export function quizOptionTop(at: { y: number }, height: number): number {
+  const growth = quizOptionGrowth(at);
+  if (growth === 'up') return at.y + QUIZ_OPTION_HEIGHT / 2 - height;
+  if (growth === 'down') return at.y - QUIZ_OPTION_HEIGHT / 2;
+  return at.y - height / 2;
+}
+
 // Tidy an edited set of answers for saving: blank rows dropped, and the right
 // answer's index moved to follow its row. Null when what is left cannot run
 // (fewer than two answers, or the right one was blank), which is what the

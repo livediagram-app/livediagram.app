@@ -71,6 +71,22 @@ elements, its snapshots, its changesets or its room.
   up to 30 seconds, until it lands or the room confirms it. Only a refusal (any other answer) drops it, with a
   toast, and fetches the sheet again.
 
+## Template starts
+
+A Plan template's Sheet ([Spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)) is built as an
+element naming its **start** (`start`, a template start's id: `budget-planner`, `timesheet`, `contact-list`,
+`task-tracker`) and a fresh `sheetId`, and no sheet yet.
+
+- Whatever makes the tabs makes each such sheet from its start at once: its title the start's, its rows and cells
+  the start's, set up as Setup Sheet would (the Header look, the header row frozen, tints for the tab's canvas, light
+  or dark), dates reckoned from that moment. The element's `start` is then dropped, so a template's tabs are never
+  stored with it: the document is created with the sheets beside the tabs, or Quick Start and `add_tab` make the
+  sheets right after the tabs.
+- An element still carrying `start` with no sheet behind it (a path that missed it) is made from the start by the
+  first editor to draw it, as a copy not yet made is, and the mark dropped; until then it shows its loader, never
+  "no longer in this document". A second editor drawing it at the same moment finds it made and loads it.
+- `start` counts as nothing referenced: the sheet is referenced by its `sheetId` once made.
+
 ## Deleting a sheet
 
 A sheet is **referenced** by every element in its document that names it: a Sheet element showing it

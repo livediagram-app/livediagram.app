@@ -198,7 +198,11 @@ theme's text colour where it doesn't (a pale yellow stroke on a cream card).
   (FLIP), and a row that climbs gets a brief glow. The top note wears a small
   crown-rank badge. Motion is off under `prefers-reduced-motion`.
 - **Adding.** A field at the foot with the Anonymous toggle, Enter to post. A
-  freshly posted note drops in with a short settle animation.
+  freshly posted note drops in with a short settle animation. At 200 notes
+  (`QA_MAX_NOTES`) the field reads **Board is full** and is off, and a post
+  refused at the cap keeps its draft. The toggle is a switch named
+  "Anonymous" in both states, its state in `aria-checked`; the visible text
+  still says "As Sam" while off.
 - **Done notes** collapse into a folded "Discussed · N" drawer below the live
   list, most recent first, counts frozen, struck through lightly. The
   facilitator can reopen one from there.

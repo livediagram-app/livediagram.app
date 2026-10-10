@@ -423,7 +423,7 @@ export function MarkdownToTree() {
 
 // --- Layout cleanup ---------------------------------------------------------
 
-/** Before/after for the Cleanup category: a scattered, mis-sized jumble of
+/** Before/after for the layout tidiers: a scattered, mis-sized jumble of
  *  shapes tidied into a neat layout. */
 export function CleanupBeforeAfter() {
   return (
@@ -543,75 +543,6 @@ export function AutoLayoutTidy() {
       <Arrow from={[296, 55]} to={[330, 55]} />
       <Arrow from={[270, 70]} to={[270, 108]} />
       <Arrow from={[270, 138]} to={[270, 176]} />
-    </Scene>
-  );
-}
-
-/** The Cleanup section of the tab / canvas menu, one tidier per row. Resting
- *  the pointer on Tree lays the tab out as a tree behind the menu. */
-export function CleanupMenu() {
-  return (
-    <Scene w={420} h={230}>
-      {/* The tab, previewed as a tree behind the menu. */}
-      <Shape x={80} y={30} w={64} h={30} accent label="CEO" />
-      <Shape x={26} y={100} w={64} h={30} label="Ops" />
-      <Shape x={134} y={100} w={64} h={30} label="Tech" />
-      <Shape x={98} y={166} w={64} h={30} label="Web" />
-      <Shape x={176} y={166} w={64} h={30} label="Data" />
-      <Arrow from={[112, 60]} to={[58, 100]} kind="elbow" />
-      <Arrow from={[112, 60]} to={[166, 100]} kind="elbow" />
-      <Arrow from={[166, 130]} to={[130, 166]} kind="elbow" />
-      <Arrow from={[166, 130]} to={[208, 166]} kind="elbow" />
-      {/* The menu: the Cleanup accordion section, open. */}
-      <rect
-        x={262}
-        y={14}
-        width={146}
-        height={202}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={276} y={34} size={11} weight={700} tone="strong">
-        Cleanup
-      </Label>
-      <line x1={262} y1={48} x2={408} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
-      {['Auto Layout', 'Auto-align', 'Flowchart ↓', 'Flowchart →', 'Tree', 'Mindmap'].map(
-        (item, i) => {
-          const ry = 54 + i * 26;
-          const on = item === 'Tree';
-          return (
-            <g key={item}>
-              {on && (
-                <rect x={268} y={ry} width={134} height={24} rx={6} className="fill-brand-50" />
-              )}
-              <rect
-                x={278}
-                y={ry + 7}
-                width={10}
-                height={10}
-                rx={2}
-                className={on ? 'fill-none stroke-brand-500' : 'fill-none stroke-slate-300'}
-                strokeWidth={1.5}
-              />
-              <Label
-                x={298}
-                y={ry + 13}
-                size={11}
-                weight={on ? 600 : 400}
-                tone={on ? 'accent' : 'body'}
-              >
-                {item}
-              </Label>
-            </g>
-          );
-        },
-      )}
-      <path
-        d="M352 168 L352 183 L356 179.5 L358.5 185 L361 184 L358.5 178.5 L363.5 178 Z"
-        className="fill-slate-800 stroke-white"
-        strokeWidth={1}
-      />
     </Scene>
   );
 }

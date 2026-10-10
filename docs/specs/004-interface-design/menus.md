@@ -146,15 +146,15 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 
 ### Control menus
 
-| Menu                  | Opens from                                                               | Holds                                                                    |
-| --------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| Element menu          | Right-click, long press or Shift+F10 on an element; an element's ⋯       | Accordions, tiles, sliders, colour rows, fields, flyouts, Session Studio |
-| Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts                         |
-| Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                         |
-| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, Opens in, canvas sections, Collaborate flyout  |
-| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                         |
-| Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The Session Studio pane for that tool                                    |
-| Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                  |
+| Menu                  | Opens from                                                               | Holds                                                                   |
+| --------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Element menu          | Right-click, long press or Shift+F10 on an element; an element's ⋯       | Accordions, tiles, sliders, colour rows, fields, flyouts, session panes |
+| Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts                        |
+| Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                        |
+| Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, Opens in, canvas sections                     |
+| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
+| Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The session pane for that tool                                          |
+| Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
 
 Before this spec every one of them was `role="menu"`, so their sliders, fields and toggles sat inside
 a menu that may not own them, and opening one from the keyboard left focus behind.

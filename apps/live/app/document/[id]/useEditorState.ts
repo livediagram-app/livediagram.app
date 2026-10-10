@@ -201,7 +201,6 @@ import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useFormatTool } from './useFormatTool';
-import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
@@ -3195,16 +3194,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onCommitted: styleMemory.recordEdit,
   });
 
-  // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md): hovering a Cleanup row in the tab
-  // menu lays the whole tab out behind it, and the layout only sticks on click.
-  const { previewCleanup, endCleanupPreview } = useCleanupPreview({
-    editsBlocked: structureBlocked,
-    activeId,
-    tabsRef,
-    tickTabs,
-    previewingRef,
-  });
-
   // Element link picker state + the link read/write/follow handlers.
   // See useElementLinks.
   const {
@@ -3753,8 +3742,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     autoLayoutTab,
     // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
-    previewCleanup,
-    endCleanupPreview,
     applyTabFontToAll,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,

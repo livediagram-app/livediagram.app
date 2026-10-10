@@ -142,6 +142,36 @@ describe('rewriteCommentAuthors', () => {
     const [out] = rewriteCommentAuthors([next], [prev], writer) as [ShapeElement];
     expect(out.commentThread!.comments[0]!.authorId).toBe('owner-1');
   });
+
+  it("keeps the stored text and time of someone else's comment, whatever the body says", () => {
+    const prev = mkShape('a', [mkComment('c1', 'Orig', '#10b981', 'I agree', 'owner-1')]);
+    const forged = { ...mkComment('c1', 'Orig', '#10b981', 'I resign', 'owner-1'), createdAt: 99 };
+    const [out] = rewriteCommentAuthors([mkShape('a', [forged])], [prev], writer) as [ShapeElement];
+    expect(out.commentThread!.comments[0]).toMatchObject({ text: 'I agree', createdAt: 1 });
+    // An unattributed (room-credited) comment is locked the same way.
+    const unclaimed = mkShape('a', [mkComment('c2', 'Bea', '#f00', 'hello')]);
+    const [kept] = rewriteCommentAuthors(
+      [mkShape('a', [mkComment('c2', 'Bea', '#f00', 'goodbye')])],
+      [unclaimed],
+      writer,
+    ) as [ShapeElement];
+    expect(kept.commentThread!.comments[0]!.text).toBe('hello');
+  });
+
+  it("lets the writer's own comment carry the text their save sends", () => {
+    const prev = mkShape('a', [mkComment('c1', 'Me', '#000', 'draft', 'writer-id')]);
+    const next = mkShape('a', [mkComment('c1', 'Me', '#000', 'final', 'writer-id')]);
+    const [out] = rewriteCommentAuthors([next], [prev], writer) as [ShapeElement];
+    expect(out.commentThread!.comments[0]!.text).toBe('final');
+    // The claim of a room-credited comment is the author's own save too.
+    const unclaimed = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed')]);
+    const claim = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed!', 'writer-id')]);
+    const [claimed] = rewriteCommentAuthors([claim], [unclaimed], writer) as [ShapeElement];
+    expect(claimed.commentThread!.comments[0]).toMatchObject({
+      text: 'typed!',
+      authorId: 'writer-id',
+    });
+  });
 });
 
 describe('findCommentHost', () => {
@@ -222,27 +252,38 @@ describe('redactTabDataAuthors', () => {
 });
 
 describe('hasNewComments (docs/specs/014-identity/transactional-email.md #1)', () => {
-  const cm = (id: string): Comment => ({
+  const cm = (id: string, authorId: string | null = 'w'): Comment => ({
     id,
     text: 't',
     createdAt: 0,
     authorName: 'a',
     authorColor: '#000',
+    ...(authorId ? { authorId } : {}),
   });
-  it('is true when a comment id appears that was not in prev', () => {
-    expect(hasNewComments([mkShape('e1', [cm('c1'), cm('c2')])], [mkShape('e1', [cm('c1')])])).toBe(
-      true,
-    );
+  it("is true when the writer's own comment id appears that was not in prev", () => {
+    expect(
+      hasNewComments([mkShape('e1', [cm('c1'), cm('c2')])], [mkShape('e1', [cm('c1')])], 'w'),
+    ).toBe(true);
+  });
+  it("is false when the only new comment is a peer's that reached the writer live", () => {
+    // Credited from the room: no author id until its author's own save claims it.
+    const peer = cm('c2', null);
+    expect(
+      hasNewComments([mkShape('e1', [cm('c1'), peer])], [mkShape('e1', [cm('c1')])], 'w'),
+    ).toBe(false);
+    expect(
+      hasNewComments([mkShape('e1', [cm('c1'), cm('c3', 'x')])], [mkShape('e1', [cm('c1')])], 'w'),
+    ).toBe(false);
   });
   it('is false when nothing new was added (a removal)', () => {
-    expect(hasNewComments([mkShape('e1', [cm('c1')])], [mkShape('e1', [cm('c1'), cm('c2')])])).toBe(
-      false,
-    );
+    expect(
+      hasNewComments([mkShape('e1', [cm('c1')])], [mkShape('e1', [cm('c1'), cm('c2')])], 'w'),
+    ).toBe(false);
   });
   it('is false on identical sets and with empty threads', () => {
     const els = [mkShape('e1', [cm('c1')])];
-    expect(hasNewComments(els, els)).toBe(false);
-    expect(hasNewComments([mkShape('e1', [])], [])).toBe(false);
+    expect(hasNewComments(els, els, 'w')).toBe(false);
+    expect(hasNewComments([mkShape('e1', [])], [], 'w')).toBe(false);
   });
 });
 

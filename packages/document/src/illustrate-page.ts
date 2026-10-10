@@ -536,6 +536,23 @@ export function illustratePageAt(
   return pages.find((p) => contains(p.rect, point));
 }
 
+/** The page of a laid-out row (as layOutIllustratePages answers it: left to right, never
+ *  overlapping) a point lies on, found by halving: the walk over a tab's elements asks once each. */
+function rowPageAt(
+  row: readonly LaidOutPage[],
+  point: { x: number; y: number },
+): LaidOutPage | undefined {
+  let lo = 0;
+  let hi = row.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (row[mid]!.rect.x <= point.x) lo = mid;
+    else hi = mid - 1;
+  }
+  const page = row[lo];
+  return page && contains(page.rect, point) ? page : undefined;
+}
+
 /** A new page's id: never one a page has had before, so a page slide (Slide.pageId) of a deleted
  *  page stays empty rather than finding a new page under its old id. Random, checked against the
  *  tab's pages. */
@@ -572,8 +589,19 @@ export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
   const next = withRowAnchorKept(current, nextPages);
   const before = layOutIllustratePages(current);
   const after = new Map(layOutIllustratePages(next).map((p) => [p.id, p.rect]));
+  // A page edit that moves no page (a name, a lock, a paint) moves no element: skip the walk.
+  const still = before.every((p) => {
+    const r = after.get(p.id);
+    return (
+      !r ||
+      (r.x === p.rect.x &&
+        r.y === p.rect.y &&
+        r.width === p.rect.width &&
+        r.height === p.rect.height)
+    );
+  });
   const shift = (point: { x: number; y: number }): { dx: number; dy: number } | null => {
-    const page = illustratePageAt(before, point);
+    const page = rowPageAt(before, point);
     const moved = page && after.get(page.id);
     if (!page || !moved) return null;
     // An article page's content keeps its place from the page's top-left corner, where its
@@ -589,25 +617,29 @@ export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
       : moved.y + moved.height / 2 - (page.rect.y + page.rect.height / 2);
     return dx === 0 && dy === 0 ? null : { dx, dy };
   };
-  const elements = tab.elements.map((el): Element => {
-    if (isBoxed(el)) {
-      const d = shift({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
-      return d ? { ...el, x: el.x + d.dx, y: el.y + d.dy } : el;
-    }
-    // An arrow's free ends move with the page they sit on; pinned ends follow their element.
-    const from = el.from.kind === 'free' ? shift(el.from) : null;
-    const to = el.to.kind === 'free' ? shift(el.to) : null;
-    if (!from && !to) return el;
-    return {
-      ...el,
-      from:
-        from && el.from.kind === 'free'
-          ? { ...el.from, x: el.from.x + from.dx, y: el.from.y + from.dy }
-          : el.from,
-      to:
-        to && el.to.kind === 'free' ? { ...el.to, x: el.to.x + to.dx, y: el.to.y + to.dy } : el.to,
-    };
-  });
+  const elements = still
+    ? tab.elements
+    : tab.elements.map((el): Element => {
+        if (isBoxed(el)) {
+          const d = shift({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
+          return d ? { ...el, x: el.x + d.dx, y: el.y + d.dy } : el;
+        }
+        // An arrow's free ends move with the page they sit on; pinned ends follow their element.
+        const from = el.from.kind === 'free' ? shift(el.from) : null;
+        const to = el.to.kind === 'free' ? shift(el.to) : null;
+        if (!from && !to) return el;
+        return {
+          ...el,
+          from:
+            from && el.from.kind === 'free'
+              ? { ...el.from, x: el.from.x + from.dx, y: el.from.y + from.dy }
+              : el.from,
+          to:
+            to && el.to.kind === 'free'
+              ? { ...el.to, x: el.to.x + to.dx, y: el.to.y + to.dy }
+              : el.to,
+        };
+      });
   const { pageOrientation: _legacy, ...rest } = tab;
   void _legacy;
   return { ...(rest as T), elements, pages: [...next] };

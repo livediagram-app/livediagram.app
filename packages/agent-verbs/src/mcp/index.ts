@@ -4,4 +4,5 @@ export * from './schema';
 export * from './output-schema';
 export * from './plan-schema';
 export * from './sheet-schema';
+export * from './illustrate-schema';
 export * from '../verbs/mcp-tools';
