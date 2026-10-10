@@ -79,8 +79,8 @@ export const AVATARS_CUSTOMISED = chart(
 export const FEED_RETRIES = chart(
   'Activity',
   'Loaded',
-  'Activity Feed Retries',
-  'The activity feed retried after failing to load.',
+  'Inbox Retries',
+  "The Explorer's Inbox retried after failing to load.",
   { rising: 'bad' },
 );
 
@@ -613,7 +613,7 @@ export const STOPWATCHES: MetricStack = {
   headline: STOPWATCHES_STARTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Activity section (docs/specs/013-workspace/activity-page.md).
+// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
 // Timeline·Opened carries four things by type: two ways of arriving on the
 // feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
 // which is how the landing-page change is measured, and two things done in it
@@ -622,7 +622,7 @@ export const TIMELINE_LANDINGS = chart(
   'Timeline',
   'Opened',
   'Timeline Landings',
-  'A page load that started on All activity, the Timeline feed.',
+  'A page load that started on the Timeline.',
   { types: ['Landing'] },
 );
 
@@ -630,7 +630,7 @@ export const TIMELINE_VISITS = chart(
   'Timeline',
   'Opened',
   'Timeline Visits',
-  "The Timeline opened after starting elsewhere, usually from Home's See all activity.",
+  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See timeline.",
   { types: ['Nav'] },
 );
 
@@ -661,15 +661,15 @@ export const TIMELINE_ENTRIES_REMOVED = chart(
 export const ACTIVITY_OPENED = chart(
   'Activity',
   'Opened',
-  'Activity Opened',
-  "The Explorer's Activity section opened, once per visit.",
+  'Inbox Opened',
+  "The Explorer's Inbox opened, once per visit.",
 );
 
 export const ACTIVITY_THREADS = chart(
   'Activity',
   'Selected',
-  'Activity Items Opened',
-  "An action or a comment thread opened from the Explorer's Activity section.",
+  'Inbox Items Opened',
+  "An action, a Plan card or a comment thread opened from the Explorer's Inbox.",
 );
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
@@ -711,7 +711,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
   blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Activity section.",
+    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,

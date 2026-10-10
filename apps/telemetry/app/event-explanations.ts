@@ -107,15 +107,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Resolved|': 'Someone marked an assigned action as done.',
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
   'Activity|Loaded|Retry':
-    'Someone clicked "Try again" after the Explorer\'s Activity section failed to load, retrying the read.',
+    'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
   'Activity|Opened|':
-    "Someone opened the Explorer's Activity section, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
+    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
   'Activity|Selected|Action':
-    "Someone clicked an action row in the Explorer's Activity section, jumping to the element it's assigned on.",
+    "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
   'Activity|Selected|Card':
-    "Someone clicked a Plan card row in the Explorer's Activity section, jumping to the card on its board.",
+    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
   'Activity|Selected|Thread':
-    "Someone clicked a comment-thread row in the Explorer's Activity section, jumping to the element it's on.",
+    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
     'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
   'Canvas|Used|AvatarMode':
@@ -607,10 +607,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
   'Page|View|/explorer/home': "Someone opened the Explorer's Home, its landing section.",
-  'Page|View|/explorer/activity': "Someone navigated to the Explorer's Activity section.",
+  'Page|View|/explorer/activity':
+    "Someone opened the Explorer's old Activity address, which now opens the Inbox. The Inbox was once called Activity; its visits count under /explorer/inbox.",
+  'Page|View|/explorer/inbox': "Someone navigated to the Explorer's Inbox.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline':
-    "Someone navigated to the Explorer's All activity section, the Timeline feed.",
+  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -836,11 +837,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Loaded|Retry':
     'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
   'Timeline|Opened|Landing':
-    'Someone arrived at the Explorer with All activity, the Timeline feed, as the very section that loaded.',
+    'Someone arrived at the Explorer with the Timeline as the very section that loaded.',
   'Timeline|Opened|Menu':
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav':
-    "Someone went to All activity, the Timeline feed, from elsewhere in the Explorer, usually Home's See all activity link.",
+    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See timeline link.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -1066,7 +1067,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PlanTourOffer':
     'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
   'UI|Opened|activity':
-    "Someone opened the help article about the Explorer's Activity section, from a help link or a search result.",
+    "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
     'Someone opened the help article about API tokens, from a help link or a search result.',
   'UI|Opened|changing-theme':
@@ -1101,6 +1102,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked Boards on the Plan tour's first card, touring boards and cards on an example board.",
   'UI|Selected|PlanTourSheets':
     "Someone picked Spreadsheets on the Plan tour's first card, touring Sheets on an example sheet.",
+  // The Inbox was once the Activity row (docs/specs/013-workspace/explorer-structure.md#telemetry).
+  'UI|Selected|Sidebar.Activity':
+    "Someone picked the Activity row in the Explorer's sidebar, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
+  'UI|Selected|ExplorerPanel.Activity':
+    "Someone picked the Activity row in the editor's Explorer panel, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
   'UI|Selected|LiveImageTab':
     "Someone picked a specific tab from the dropdown in the Share dialog's Live Image menu, pointing the live-updating image at that tab instead of the default.",
   'UI|Selected|SignInBanner':
@@ -1331,10 +1337,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
   'Activity|Loaded':
-    "Something happened while loading the Explorer's Activity section (the list of outstanding actions and comment threads).",
-  'Activity|Opened': "Someone opened or interacted with the Explorer's Activity section.",
-  'Activity|Selected':
-    "Someone clicked a row in the Explorer's Activity section, jumping to what it's about.",
+    "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
+  'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
+  'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',
   'Comment|Added': 'A comment was added to an element thread.',
