@@ -73,7 +73,11 @@ only the sweep direction differs).
 - **Labels**: `<br/>` (any spelling) becomes a newline in the element label
   and newlines export back as `<br/>`; `&quot;` / `&amp;` are decoded on
   import and `"` re-escapes as `&quot;` on export, so quoted labels
-  round-trip.
+  round-trip. Mermaid's numeric entity codes (`#124;` is `|`, `#37;` is `%`)
+  decode on import. On export a `|` in an edge label is written `#124;`, a
+  `%%` is written `#37;#37;` (an unquoted edge label would otherwise read it
+  as a comment), and a `#` that would read as an entity code is written
+  `#35;`, so every label round-trips losslessly.
 - **Subgraphs → frames**: a top-level `subgraph id[Title] … end` block imports
   as a **frame** shape ([Canvas and palette](../008-canvas/canvas-and-palette.md)) drawn around its member nodes, laid out as a
   cluster: members are laid out among themselves, the cluster participates in
@@ -89,8 +93,9 @@ only the sweep direction differs).
   whose element carries a URL link exports a matching `click` line. Callback
   forms (`click A someJsFunction`) are skipped — there's no code to call.
 - Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
-  `direction`, comments `%%`) are skipped, not fatal — a real-world paste
-  imports its graph and ignores the decoration.
+  `direction`, comments `%%`) are skipped, not fatal: a real-world paste
+  imports its graph and ignores the decoration. A `%%` inside a
+  double-quoted label is label text, not a comment.
 
 ## State diagram coverage (import)
 
