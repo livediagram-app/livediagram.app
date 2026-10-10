@@ -7,6 +7,7 @@ import {
   pkceChallenge,
   CLI_CLIENT_ID,
   DEVICE_CODE_GRANT,
+  DEVICE_CODE_TTL_S,
   DEVICE_SLOW_DOWN_S,
 } from '@livediagram/api-schema';
 import type { DebugLog } from '../debug';
@@ -97,7 +98,8 @@ export async function loginWithBrowser(
   io.stderr(`Opening ${url} in your browser. If it does not open, open it yourself.\n`);
   if (!(await io.openUrl(url.toString()))) log('oauth browser did not open');
   log(`oauth loopback ${loopback.port}`);
-  // The first callback carrying this state ends the wait; anything else gets a 404 and is ignored.
+  // The first callback carrying this state ends the wait; a callback with another state gets a 400 (E11), any
+  // other path a 404, and both are ignored.
   const callback = async (): Promise<URLSearchParams> => {
     for (;;) {
       const request = await loopback.next();
@@ -106,7 +108,12 @@ export async function loginWithBrowser(
         request.respond(denied ? 403 : 200, denied ? CANCELLED : SIGNED_IN);
         return request.query;
       }
-      request.respond(404, page('Not found', 'This page is not part of the sign-in.'));
+      if (request.path === '/callback')
+        request.respond(
+          400,
+          page('Not this sign-in', 'This link is not from the sign-in under way.'),
+        );
+      else request.respond(404, page('Not found', 'This page is not part of the sign-in.'));
     }
   };
   let query: URLSearchParams;
@@ -155,7 +162,15 @@ export async function loginWithDevice(
       `Or open ${String(started.field('verification_uri_complete'))}\n`,
   );
   let interval = Number(started.field('interval') ?? 5);
+  // The code's own lifetime bounds the wait, so a server that keeps answering pending never holds the CLI forever.
+  const expiresIn = Number(started.field('expires_in') ?? DEVICE_CODE_TTL_S);
+  const expiresAt =
+    io.now() + (Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : DEVICE_CODE_TTL_S) * 1000;
   for (;;) {
+    if (io.now() + interval * 1000 > expiresAt) {
+      log('oauth device expired');
+      throw authError('the code expired before it was approved', 'livediagram auth login --device');
+    }
     await io.sleep(interval * 1000);
     const poll = await postForm(io, server.token_endpoint, {
       grant_type: DEVICE_CODE_GRANT,

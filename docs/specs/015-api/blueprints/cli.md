@@ -646,11 +646,14 @@ random bytes, base64url; `user_code` is 8 letters of `USER_CODE_ALPHABET`, print
   `http://127.0.0.1:<port>/callback`, `response_type=code`, `code_challenge_method=S256`; opens the browser
   (`openerFor` in `apps/cli/src/node-io.ts`: `open` on macOS, `xdg-open` on Linux, `rundll32
   url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never passes through a shell, so `&` in
-  it is never a command separator; only an http(s) URL is opened) and always prints the URL to stderr. The first `GET /callback` with the matching `state` answers the callback page and closes the server;
+  it is never a command separator; only an http(s) URL is opened) and always prints the URL to stderr. The first
+  `GET /callback` with the matching `state` answers the callback page and closes the server;
   `error=access_denied` ends with exit 4. `POST /oauth/token` form `grant_type=authorization_code`, `code`,
   `code_verifier`, `redirect_uri`, `client_id`. Timeout `LOGIN_TIMEOUT_MS`.
 - `loginWithDevice`: `POST /oauth/device_authorization`; stderr: `Open <verification_uri> and enter <user code>.`
-  and the complete URL; polls `/oauth/token` every `interval` seconds, honouring `slow_down`.
+  and the complete URL; polls `/oauth/token` every `interval` seconds, honouring `slow_down`, until the code's
+  `expires_in` (`DEVICE_CODE_TTL_S` when absent) has passed: a poll that would land after it is not sent, and the
+  login ends with the expired-code error, as for `expired_token`.
 - `loginWithToken`: stdin must not be a terminal (exit 2 otherwise); reads to end, trims, `isApiTokenFormat`, else
   exit 1.
 - All three end in `GET {apiBase}/tokens/current` with the new token, then `store.put(profile, credential)`, then

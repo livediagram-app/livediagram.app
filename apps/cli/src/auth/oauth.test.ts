@@ -96,7 +96,7 @@ describe('auth login through the browser', () => {
       `Opening ${url.href} in your browser. If it does not open, open it yourself.`,
     );
     expect((await io.visit('http://127.0.0.1:4321/favicon.ico')).status).toBe(404);
-    expect((await io.visit('http://127.0.0.1:4321/callback?state=wrong&code=x')).status).toBe(404);
+    expect((await io.visit('http://127.0.0.1:4321/callback?state=wrong&code=x')).status).toBe(400);
     const page = await io.visit(`http://127.0.0.1:4321/callback?state=${q.get('state')}&code=c1`);
     expect([page.status, page.html]).toEqual([200, expect.stringContaining("You're signed in")]);
     expect(await exit).toBe(0);
@@ -188,6 +188,16 @@ describe('auth login --device', () => {
       expect(await exit).toBe(4);
       expect(io.err()).toContain(words);
     }
+  });
+
+  it('stops polling once the code has expired, however long the server says pending', async () => {
+    const { io, exit } = await start(['auth', 'login', '--device'], {
+      tokenAnswers: Array.from({ length: 500 }, () => ({ error: 'authorization_pending' })),
+    });
+    expect(await exit).toBe(4);
+    expect(io.err()).toContain('the code expired before it was approved');
+    // DEVICE_CODE_TTL_S (600 s, no expires_in given) at a 5 s interval: 120 polls, never more.
+    expect(io.slept).toHaveLength(120);
   });
 
   it('needs a device endpoint, and a host whose server starts one', async () => {
