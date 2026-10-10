@@ -158,7 +158,7 @@ export const documentShare = defineVerb({
   id: 'document.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: view (default) lets people open, read and comment on it, participate also lets them add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a document: view (default) lets people open and read it, participate also lets them comment, add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,

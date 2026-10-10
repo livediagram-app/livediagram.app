@@ -28,7 +28,7 @@ import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from
 import { refuseGuestVoteOverCap } from '../vote-integrity';
 import {
   gateEdit,
-  gateRead,
+  gateParticipate,
   missingDocument,
   readBody,
   requireOwner,
@@ -59,12 +59,12 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const action = parseQaAction(body.action);
   if (!action) return badRequest('invalid action');
 
-  // The audience's two verbs are open to anyone who can read the document;
+  // The audience's two verbs are a Participant's (docs/specs/013-workspace/share-roles.md: a Viewer only looks);
   // running the board needs edit rights. The facilitator baton is a
   // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
   // holds it.
   const allowed = isParticipantQaAction(action)
-    ? await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId)
+    ? await gateParticipate(ctx, id, existing.ownerId, existing.teamId, tabId)
     : await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
   if (!allowed) return forbidden();
   // A guest's upvote counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);

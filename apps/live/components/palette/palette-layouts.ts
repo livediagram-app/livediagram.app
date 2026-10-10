@@ -244,3 +244,40 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
 export function paletteLandingCategory(mode: EditorMode, esBoard: boolean): string {
   return esBoard ? 'event-storming' : paletteLayoutFor(mode).landing;
 }
+
+// A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
+// Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
+// notation's coloured notes; elsewhere the landing category's sticky and text tiles, else the Sticky and Text tiles.
+const PARTICIPANT_FALLBACK_TILES = ['tools:sticky', 'tools:text'] as const;
+
+export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
+  const landing = paletteLandingCategory(mode, esBoard);
+  const category = paletteCategoriesFor(mode, { esBoard }).find((c) => c.id === landing);
+  const tiles = (category?.tiles ?? []).filter(
+    (t) => t.action.type === 'sticky' || t.action.type === 'text',
+  );
+  if (tiles.length > 0) return tiles;
+  return PARTICIPANT_FALLBACK_TILES.map(tileById).filter(
+    (t): t is PaletteTileDef => t !== undefined,
+  );
+}
+
+export function participantPaletteCategories(
+  mode: EditorMode,
+  esBoard: boolean,
+): ResolvedPaletteCategory[] {
+  const identity = IDENTITY.get('participate')!;
+  return [{ ...identity, tiles: participantTiles(mode, esBoard) }];
+}
+
+// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
+// Painter, Slide Deck).
+export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
+  'select',
+  'pan',
+  'laser',
+  'spotlight',
+  'avatar',
+  'isometric',
+  'zen',
+];

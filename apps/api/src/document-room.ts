@@ -826,6 +826,9 @@ export class DocumentRoom implements DurableObject {
       // responses and ideas relay like an Editor's; its `el` op goes through the participant content rule and
       // never relays as sent; everything else needs an Editor.
       const level = parseStoredLevel(sender.role);
+      // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a poll answer and a
+      // reaction are taking part, so they need a Participant.
+      if (level === 'view' && (opKind === 'poll-answer' || opKind === 'reaction')) return;
       if (!isPresenceOp && level !== 'edit') {
         if (level !== 'participate') return;
         if (opKind === 'el') {

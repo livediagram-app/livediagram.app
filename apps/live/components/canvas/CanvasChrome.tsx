@@ -27,7 +27,6 @@ import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
-import { ParticipantToolbar } from '@/components/palette/ParticipantToolbar';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
@@ -317,9 +316,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     activeDockPanel,
     handleDockButtonClick,
   });
-  // The strip only renders for an editor (not read-only) with the chrome up,
-  // and never on a whiteboard.
-  const stripShown = !readOnly && !chromeHidden && !whiteboard;
+  // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
+  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock.
+  const paletteShown = (!readOnly && !whiteboard) || !!props.participantPalette;
+  // The strip only renders with the chrome up.
+  const stripShown = paletteShown && !chromeHidden;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
   // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
@@ -329,7 +330,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // the left of the strip's row, the strip beside it (no room for a corner card
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
-  const menuInStrip = isMobile && !readOnly && !whiteboard;
+  const menuInStrip = isMobile && paletteShown;
   const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
@@ -521,20 +522,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
-      {readOnly && props.participantPalette ? (
-        <ParticipantToolbar
-          hidden={chromeHidden}
-          canvasTool={canvasTool}
-          onSetCanvasTool={props.onSetCanvasTool}
-          onExitAvatarMode={props.onExitAvatarMode}
-          {...pickPaletteAddHandlers(props)}
-          pendingDraw={pendingDraw}
-          esBoard={props.esBoard}
-        />
-      ) : null}
-      {!readOnly && !whiteboard ? (
+      {paletteShown ? (
         <ToolbarPalette
-          key={props.esBoard ? 'es-board' : 'standard'}
+          key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
+          participant={readOnly}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
@@ -550,7 +541,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
-          onAddPage={props.illustratePages?.edit?.addPage}
+          onAddPage={readOnly ? undefined : props.illustratePages?.edit?.addPage}
           tabElements={elements}
         />
       ) : null}

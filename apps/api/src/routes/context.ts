@@ -143,9 +143,9 @@ export function gateRead(
   );
 }
 
-// The Participant gate (docs/specs/013-workspace/share-roles.md): the content doors a Participant may use beside
-// an Editor, Plan cards and Sheet cells. A Viewer is refused. Comments and agent presence stay on gateRead: a
-// Viewer comments, and an agent acts at its owner's level.
+// The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
+// Editor (comments, Q&A notes and upvotes, Plan cards, Sheet cells). A Viewer only looks, so it is refused. Agent
+// presence stays on gateRead: an agent acts at its owner's level.
 export function gateParticipate(
   ctx: RouteContext,
   documentId: string,
@@ -327,6 +327,20 @@ export async function deniedOnTab(
 ): Promise<Response> {
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   return grant ? notFound() : forbidden();
+}
+
+// The refusal for a Participant door (docs/specs/013-workspace/share-roles.md): no grant, 403; a grant confined
+// to another tab, 404, as deniedOnTab; a grant whose level is below Participant (a Viewer), 403.
+export async function deniedParticipate(
+  ctx: RouteContext,
+  liveDoc: { id: string; ownerId: string; teamId: string | null },
+  tabId?: string,
+): Promise<Response> {
+  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  if (grant && grant.tabScope !== null && grant.tabScope !== tabId) return notFound();
+  if (grant)
+    console.info('[access-levels] participation refused', { documentId: liveDoc.id, tabId });
+  return forbidden();
 }
 
 // The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't

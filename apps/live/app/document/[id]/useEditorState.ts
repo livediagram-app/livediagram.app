@@ -2170,7 +2170,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editorMode: editorMode.mode,
     canEdit: !isReadOnly,
     canEditCards: participant.can.planCards,
-    canVote: hydrated,
+    // Card votes and card comments are a Participant's (docs/specs/013-workspace/share-roles.md).
+    canVote: hydrated && participant.can.takePart,
     teamPeople,
     presence: planPresence.presence,
     publishPresence: planPresence.publish,

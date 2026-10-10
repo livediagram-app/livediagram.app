@@ -76,6 +76,9 @@ type Props = Pick<
     onAddPage?: (kind: PageKind) => void;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
+    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
+    // modes, and no Search (it would offer every element type).
+    participant?: boolean;
   };
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
@@ -128,6 +131,7 @@ function Divider() {
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
+  const participant = !!props.participant;
   // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
   // inside, so pressing anything else on the strip closes it.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -146,7 +150,7 @@ export function ToolbarPalette(props: Props) {
     });
   // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
   // mode's Popular, or the notation on an event-storming board.
-  const defaultId = paletteLandingCategory(editorMode, !!esBoard);
+  const defaultId = participant ? 'participate' : paletteLandingCategory(editorMode, !!esBoard);
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, so a board change re-lands the category.
   const [categoryId, setCategoryId] = useState(defaultId);
@@ -251,9 +255,9 @@ export function ToolbarPalette(props: Props) {
     search.openFrom(button);
   });
   useEffect(() => {
-    if (esBoard || hidden) return;
+    if (esBoard || participant || hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [esBoard, hidden]);
+  }, [esBoard, participant, hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     track('UI', 'Opened', 'ToolbarSearch');
@@ -334,13 +338,13 @@ export function ToolbarPalette(props: Props) {
                 notation is the palette there. */}
                 {/* ...and lead with the board's own control instead, as the Event Storming
                 category's body does. */}
-                {esBoard && props.esBoardControls?.onImportPhoto ? (
+                {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
                   <>
                     <EsPhotoStripButton controls={props.esBoardControls} />
                     <Divider />
                   </>
                 ) : null}
-                {esBoard ? null : (
+                {esBoard && !participant ? null : (
                   <>
                     <PaletteDropdown
                       ariaLabel="Selection mode"
@@ -465,7 +469,7 @@ export function ToolbarPalette(props: Props) {
                 {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
                     "Search: every element type"). Not on an event-storming board, whose notation is
                     its palette. */}
-                {esBoard ? null : (
+                {esBoard || participant ? null : (
                   <>
                     <Divider />
                     <div ref={searchButtonRef} className="flex">
@@ -488,7 +492,7 @@ export function ToolbarPalette(props: Props) {
               {category.content}
             </StripPopover>
           ) : null}
-          {search.open && !esBoard ? (
+          {search.open && !esBoard && !participant ? (
             <StripPopover
               right={search.right}
               isMobile={isMobile}

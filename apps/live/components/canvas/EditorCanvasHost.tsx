@@ -468,14 +468,13 @@ export function EditorCanvasHost() {
     scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
     pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
     takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
-    // view-role visitor: the server owns the board and gates them on
-    // read access, which is the point of the element. Running it is
-    // the facilitator's, else any editor's.
+    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
+    // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
+    // gates them. Running it is the facilitator's, else any editor's.
     selfOwnerId: selfParticipant.id,
     selfName: selfParticipant.name,
-    addQaNote: qaBoard.addQaNote,
-    voteQaNote: qaBoard.voteQaNote,
+    addQaNote: can.takePart ? qaBoard.addQaNote : undefined,
+    voteQaNote: can.takePart ? qaBoard.voteQaNote : undefined,
     discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
     closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
     reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
@@ -569,7 +568,7 @@ export function EditorCanvasHost() {
         // shoves it; their own client decides what to do with the request.
         onAvatarPush={broadcastAvatarPush}
         avatarShove={avatarShove}
-        onFireReaction={isReadOnly ? undefined : fireReaction}
+        onFireReaction={can.takePart ? fireReaction : undefined}
         // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
         // nothing, which makes it the same read-only act as following somebody,
         // and the person who spots the thing worth looking at is often not the

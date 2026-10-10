@@ -47,7 +47,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | Term                | Identifier                                                                        | Meaning                                                                       |
 | ------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Access level        | `AccessLevel`, `ACCESS_LEVELS` (ascending); wire and column field `role` (SR1)    | What a link or embed admits                                                   |
-| Viewer              | `'view'`; card **Viewer**, stub `VIEWER`, pill **Viewing**                        | Today's view link                                                             |
+| Viewer              | `'view'`; card **Viewer**, stub `VIEWER`, pill **Viewing**                        | Looks only; writes nothing                                                    |
 | Participant         | `'participate'`; card **Participant**, stub `PARTICIPANT`, pill **Participating** | Takes part and changes content                                                |
 | Editor              | `'edit'`; card **Editor**, stub `EDITOR`, pill **Editing**                        | Changes anything; may hold the baton                                          |
 | Participation act   | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`                             | A dot, a response or an idea                                                  |
@@ -65,17 +65,20 @@ when it is one of the three, else `view`.
 
 Doors by level (server):
 
-| Door                                                                                       | Needs                           |
-| ------------------------------------------------------------------------------------------ | ------------------------------- |
-| Reads; comments; Q&A add and upvote; live poll answer                                      | view (unchanged)                |
-| Room: `vote`; `el-delta` `response` or `idea`                                              | participate                     |
-| Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                     |
-| Items: create, patch, move, patches                                                        | participate (`gateParticipate`) |
-| Sheets: `writes` of kind `cells`                                                           | participate                     |
-| Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `reorder` | edit                            |
-| Room: `el-delta` `check`, `board`, `comment-*`; `poll-start`, `poll-end`; `drag-preview`   | edit                            |
-| Items: bulk, delete, tally; item types; Sheets: create, delete, `layout`, `title`          | edit                            |
-| Facilitator baton                                                                          | edit (`canHold`, unchanged)     |
+| Door                                                                                       | Needs                             |
+| ------------------------------------------------------------------------------------------ | --------------------------------- |
+| Reads (document, tabs, images, comment threads, the Timeline); share resolve; make a copy  | view                              |
+| Room: presence (cursor, select, laser, follow, focus); never `poll-answer` or `reaction`   | view                              |
+| Comments: add, reply, resolve, reopen, delete own; card comments                           | participate (`deniedParticipate`) |
+| Q&A: add a note, upvote; room `poll-answer` and `reaction`                                 | participate                       |
+| Room: `vote`; `el-delta` `response` or `idea`                                              | participate                       |
+| Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
+| Items: create, patch, move, patches                                                        | participate (`gateParticipate`)   |
+| Sheets: `writes` of kind `cells`                                                           | participate                       |
+| Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `reorder` | edit                              |
+| Room: `el-delta` `check`, `board`, `comment-*`; `poll-start`, `poll-end`; `drag-preview`   | edit                              |
+| Items: bulk, delete, tally; item types; Sheets: create, delete, `layout`, `title`          | edit                              |
+| Facilitator baton                                                                          | edit (`canHold`, unchanged)       |
 
 An Editor's `el` op is relayed as today. A Participant's `el` op takes the participant path:
 
@@ -173,8 +176,10 @@ Hooks that write a tab's structure, or write without passing `commit`, take `str
 snap colours, the whiteboard, the eraser, swatch overrides, the cleanup preview, board scenes and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
-Gestures opened for a Participant, each beside `isReadOnly`: the Participant palette (`ParticipantToolbar`: the
-landing category's sticky and text tiles, an Event Storming board's notes); inline text edit (`canWriteText`); a
+Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant
+(`ToolbarPalette participant`, `usePaletteCatalogue participant`): one category, `participate`
+(`participantPaletteCategories`: the landing category's sticky and text tiles, an Event Storming board's notes),
+the selection modes in `PARTICIPANT_CANVAS_TOOLS`, no Search, no Event Storming photo import, on every mode; inline text edit (`canWriteText`); a
 move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for
 what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move)
 beside `canEdit` (structure) and `canRetire` (Trash, Archive, the type editor). Sheets: `canEdit` writes cells,
@@ -263,7 +268,7 @@ REST: `POST /api/documents/:id/share` takes `role?: 'view' | 'participate' | 'ed
 
 MCP: `share_document.role` is `z.enum(['view', 'participate', 'edit']).optional()`, default `participate`; the
 description reads `"participate" (default): recipients add stickies, write and vote but cannot reshape it. "view":
-they look, comment and answer polls. "edit": they can change anything.`
+they only look, with no comments or votes. "edit": they can change anything.`
 
 ## Data and persistence
 
@@ -344,17 +349,21 @@ lands in a new document, where no adder key matches it.
 
 Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 
-| Level       | Title / blurb                                                                 | Stub          | Glyph              | Solid (stub)                                 |
-| ----------- | ----------------------------------------------------------------------------- | ------------- | ------------------ | -------------------------------------------- |
-| edit        | **Editor** / "Draws with you in real time."                                   | `EDITOR`      | `lucidePencilLine` | as today                                     |
-| participate | **Participant** / "Adds stickies, writes and votes. Can't reshape the board." | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
-| view        | **Viewer** / "Watches, comments and answers polls. Can't change a thing."     | `VIEWER`      | `lucideEye`        | as today                                     |
+| Level       | Title / blurb                                                                  | Stub          | Glyph              | Solid (stub)                                 |
+| ----------- | ------------------------------------------------------------------------------ | ------------- | ------------------ | -------------------------------------------- |
+| edit        | **Editor** / "Draws with you in real time."                                    | `EDITOR`      | `lucidePencilLine` | as today                                     |
+| participate | **Participant** / "Adds stickies, writes and votes. Can't reshape the board."  | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
+| view        | **Viewer** / "Watches, pans and zooms. Can't comment, vote or change a thing." | `VIEWER`      | `lucideEye`        | as today                                     |
 
 - Three cards, one per row at every width (SR8); the pass stub widens to fit `PARTICIPANT` (SR7).
 - Arrow keys step through `LEVEL_ORDER`, wrapping; Home and End reach the ends.
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
-- A Participant's palette shows the sticky and text tiles only; the mode switch, tab add, rename and delete,
-  context menus' structural rows and the quick-style panel (except a sticky's colour row) are absent.
+- A Participant's palette strip: the selection-mode dropdown (Select, Hand, Laser, Spotlight, Avatar, Isometric,
+  Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
+  and its tiles; the mode switch, tab add, rename and delete and context menus' structural rows are absent.
+- A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
+  add or upvote, no card votes or comments, no reactions. Its selection holds nothing
+  (`RemoteSelector.holds`, `lockedByOther`).
 - Badges: "Editor", "Participant", "Viewer". Shared-with-you chip: "Edit", "Participate", "View".
 
 ## Accessibility

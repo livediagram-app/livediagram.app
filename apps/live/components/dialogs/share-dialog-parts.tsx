@@ -67,7 +67,7 @@ export const ROLE_PASS: Record<
   view: {
     stamp: 'Viewer',
     title: 'Viewer',
-    blurb: "Watches, comments and answers polls. Can't change a thing.",
+    blurb: "Watches, pans and zooms. Can't comment, vote or change a thing.",
     Icon: ViewPassIcon,
     solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
     selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',

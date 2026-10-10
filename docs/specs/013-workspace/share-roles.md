@@ -1,7 +1,7 @@
 # Share roles
 
-**Status: Participant links built; token levels, ownership powers and collaboration keys still ahead
-([Later](#later)).**
+**Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
+ahead ([Later](#later)).**
 
 Everyone who reaches a document without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
@@ -16,14 +16,16 @@ Participant level is the middle: take part in the board, never reshape it.
 
 ## The levels
 
-| Level           | Wire name     | May                                                                                                                                                                                                                                       |
-| --------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Open and read every tab it admits; pan, zoom, point, use the laser, follow and be followed, appear in the presence stack, present on their own screen, export; comment on a thread, answer a live poll, add to and upvote on a Q&A board. |
-| **Participant** | `participate` | All of Viewer; take part in session tools; add, write and arrange stickies and text; write on any element; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)).                          |
-| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                         |
+| Level           | Wire name     | May                                                                                                                                                                                                                                                                                                             |
+| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment, poll answer, Q&A note or upvote, vote, answer or reaction.                                  |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; answer live polls; add to and upvote on Q&A boards; react; take part in session tools; add, write and arrange stickies and text; write on any element; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
+| **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration; hold the facilitator baton.                                                                                                                                                                               |
 
 - **The levels are a ladder**: every level holds everything below it.
-- **Viewer is today's view link, unchanged.** Every existing view link keeps exactly what it could do.
+- **A Viewer only looks.** A comment, a poll answer, a Q&A note or upvote, a vote and a reaction are all taking
+  part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
+  editing the element it looks at.
 - **Running a session is facilitation, an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
   editors and the [facilitator baton](../012-collaboration/facilitator.md). A Participant takes part and never
   runs, and never holds the baton.
@@ -55,6 +57,14 @@ A Participant changes the board's **content**, never its **shape**.
 - **Undo** takes back the Participant's own steps; an undo that would make a forbidden change is refused like any
   other.
 
+## The Participant palette
+
+- **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: the
+  landing category's sticky and text tiles, an Event Storming board's coloured notes, else Sticky and Text. On
+  every mode, Draw included. No Search, no More.
+- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Avatar, Isometric and Zen. Eraser, Format
+  Painter and Slide Deck are an Editor's.
+
 ## Ownership
 
 Ownership is a set of powers, held by the document's **owner**: its creator, or whoever moved it into their own
@@ -65,8 +75,8 @@ and moves stay with the owner and joined team members. No level grants any of th
 ## Share links
 
 - The Share dialog offers three role cards, in this order: **Editor** ("Draws with you in real time."),
-  **Participant** ("Adds stickies, writes and votes. Can't reshape the board.") and **Viewer** ("Watches, comments
-  and answers polls. Can't change a thing."). A pass's stub prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
+  **Participant** ("Adds stickies, writes and votes. Can't reshape the board.") and **Viewer** ("Watches, pans and
+  zooms. Can't comment, vote or change a thing."). A pass's stub prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
 - `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
 - The editor's role pill reads Editing, Participating or Viewing.
@@ -98,8 +108,9 @@ and moves stay with the owner and joined team members. No level grants any of th
 
 ## Moving to three levels
 
-- **No existing link changes.** View links stay Viewer, edit links stay Editor; a newly created Participant link is
-  the first of its kind.
+- **Edit links stay Editor; view links stay Viewer, which now only looks.** A view link handed out before this
+  change loses commenting, poll answers and the Q&A board (decided 2026-10-10): an owner who wants an audience to
+  chime in issues a Participant link.
 - **No old reader escalates.** Before the server can write a `participate` link, every reader of a stored level
   reads an unknown value as Viewer. An editor bundle from before this change reads a Participant link as Editor,
   shows editing controls, and the server refuses its first save; a reload fixes it.
@@ -117,7 +128,6 @@ Specified in the research and not built yet:
 - **Ownership powers** as a named set every door asks beside the level.
 - **Server-derived collaboration keys**, pinned per socket, so nobody can answer as someone else; until then a
   Participant's dots and answers carry the same client-chosen key an Editor's do.
-- **A look-only Viewer** that cannot comment or answer.
 - **An answers route** so a token can take part without a socket.
 
 ## Domain language
