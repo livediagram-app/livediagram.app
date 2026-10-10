@@ -101,8 +101,8 @@ function AccentBar({
 
 // --- Scenes ------------------------------------------------------------------
 
-// The Collaborate category's groups, in BEHAVIOUR_GROUPS order
-// (apps/live/components/palette/palette-create-tabs.tsx). Ask and Record are
+// The Collaborate categories, in PALETTE_CATEGORIES order
+// (apps/live/components/palette/palette-categories.tsx). Ask and Record are
 // the two this article covers, so they are the two drawn lit.
 const GROUPS: { label: string; lit: boolean }[] = [
   { label: 'Ask', lit: true },
@@ -113,43 +113,17 @@ const GROUPS: { label: string; lit: boolean }[] = [
   { label: 'Navigate', lit: false },
 ];
 
-/** The Collaborate category: a search across every group, over the six
- *  groups you click into. Ask and Record hold the elements that collect what
- *  the room thinks. */
-export function CollaborateGroups() {
+/** Facilitate mode's Collaborate band in the category picker: the six Collaborate
+ *  categories. Ask and Record hold the elements that collect what the room thinks. */
+export function CollaborateCategories() {
   const px = 52;
   const py = 12;
   return (
-    <Scene w={420} h={228} bg="plain">
-      <Panel x={px} y={py} w={316} h={204} title="COLLABORATE">
-        <rect
-          x={px + 12}
-          y={py + 32}
-          width={292}
-          height={24}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <circle
-          cx={px + 25}
-          cy={py + 44}
-          r={4}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.5}
-        />
-        <path
-          d="M0 0 L4 4"
-          transform={`translate(${px + 28} ${py + 47})`}
-          className="stroke-slate-400"
-          strokeWidth={1.5}
-        />
-        <Label x={px + 38} y={py + 45} size={10} tone="muted">
-          Search collaboration
-        </Label>
+    <Scene w={420} h={196} bg="plain">
+      <Panel x={px} y={py} w={316} h={170} title="COLLABORATE">
         {GROUPS.map((g, i) => {
           const gx = px + 12 + (i % 3) * 100;
-          const gy = py + 66 + Math.floor(i / 3) * 66;
+          const gy = py + 34 + Math.floor(i / 3) * 66;
           return (
             <g key={g.label}>
               <rect

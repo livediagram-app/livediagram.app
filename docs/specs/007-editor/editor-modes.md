@@ -239,8 +239,8 @@ holds.
   event-storming boards.
 - **Catalogue categories** (My shapes, Icons, Stickers, Tech) are
   bodies with their own content and take no tile list.
-- **A body decides presentation only** (a grid, rows with a blurb, the
-  Behaviours group browser, Media's and Components' collapsed groups); it
+- **A body decides presentation only** (a grid, rows with a blurb, Media's
+  and Components' collapsed groups); it
   renders whatever tiles the layout hands it. A category with no body of its
   own, such as Popular, is a tile grid.
 - **Every surface reads the layout:** the Toolbar strip and its More popover.
@@ -253,27 +253,31 @@ Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar.
+Docs, Website), keeping Image and Avatar. Facilitate's **Write** also leaves out **Page** and
+**Annotation**, its **Draw** leaves out **Shape Pen** and **Polygon**, and its **Build** leaves out
+**Lane** and **Timeline**: a session needs none of them. Facilitate offers the Collaborate elements as
+six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
+("Collaborate's six" below).
 
-| Category       | Diagram | Illustrate | Plan | Facilitate |
-| -------------- | ------- | ---------- | ---- | ---------- |
-| Popular        | yes     | yes        | no   | yes        |
-| Plan's seven   | no      | no         | yes  | no         |
-| Logo           | no      | logo page  | no   | no         |
-| Shapes         | yes     | yes        | no   | yes        |
-| My shapes      | yes     | yes        | no   | yes        |
-| Write          | yes     | yes        | no   | yes        |
-| Draw           | yes     | no         | no   | yes        |
-| Build          | yes     | yes        | no   | yes        |
-| Components     | no      | yes        | no   | no         |
-| Devices        | no      | yes        | no   | no         |
-| Event Storming | board   | no         | no   | no         |
-| Icons          | yes     | yes        | no   | yes        |
-| Stickers       | no      | yes        | no   | yes        |
-| Tech           | yes     | no         | no   | no         |
-| Media          | yes     | yes        | no   | yes        |
-| Data           | no      | yes        | no   | no         |
-| Collaborate    | no      | no         | no   | yes        |
+| Category          | Diagram | Illustrate | Plan | Facilitate |
+| ----------------- | ------- | ---------- | ---- | ---------- |
+| Popular           | yes     | yes        | no   | yes        |
+| Plan's seven      | no      | no         | yes  | no         |
+| Logo              | no      | logo page  | no   | no         |
+| Shapes            | yes     | yes        | no   | yes        |
+| My shapes         | yes     | yes        | no   | yes        |
+| Write             | yes     | yes        | no   | yes        |
+| Draw              | yes     | no         | no   | yes        |
+| Build             | yes     | yes        | no   | yes        |
+| Components        | no      | yes        | no   | no         |
+| Devices           | no      | yes        | no   | no         |
+| Event Storming    | board   | no         | no   | no         |
+| Icons             | yes     | yes        | no   | yes        |
+| Stickers          | no      | yes        | no   | yes        |
+| Tech              | yes     | no         | no   | no         |
+| Media             | yes     | yes        | no   | yes        |
+| Data              | no      | yes        | no   | no         |
+| Collaborate's six | no      | no         | no   | yes        |
 
 Illustrate offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).

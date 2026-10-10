@@ -1,12 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { BehaviourGroups } from '@/components/illustrations/palette-behaviour';
+import { CollaborateCategories } from '@/components/illustrations/palette-behaviour';
 
 export const metadata = helpMetadata({
   title: 'Collaborate',
   description:
-    'The palette Collaborate category holds every element that comes alive with the room: comment and action panels, estimate cards, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, Pickers, Reveal zones, Session buttons (timer, stopwatch, dot vote, poll), agendas, decision records, roll calls, Reaction pads, Selection Mode buttons, Portals, Chairs, Bring Focus and Link cards.',
+    'The palette Collaborate categories hold every element that comes alive with the room: comment and action panels, estimate cards, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, Pickers, Reveal zones, Session buttons (timer, stopwatch, dot vote, poll), agendas, decision records, roll calls, Reaction pads, Selection Mode buttons, Portals, Chairs, Bring Focus and Link cards.',
   path: '/help/palette/behaviour/',
 });
 
@@ -18,25 +18,25 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("behaviour")}
 >
 
-The **Collaborate** category (under **Dynamic** in the palette's category picker, in [Facilitate mode](/help/canvas/facilitate-mode/)) holds every element whose content arrives at _runtime_. Diagram mode keeps only the **Comment panel** and the **Action card**, in its Write category; from any mode, the [element search](/help/palette/toolbar-layout/) still finds and places the rest. Everywhere else in the palette you are placing a picture; here you are placing something that does a job when somebody presses it, or collects an answer from everybody in the room.
+The **Collaborate** elements are every element whose content arrives at _runtime_. Everywhere else in the palette you are placing a picture; here you are placing something that does a job when somebody presses it, or collects an answer from everybody in the room.
 
 This page is the map. Each element has its own short article, so you can link somebody straight to the one they need.
 
-## Where to find it
+## Where to find them
 
-Collaborate is in the palette in **Diagram** and **Draw** mode. **Illustrate** mode has no Collaborate category, and [Plan mode](/help/canvas/plan-mode/) has a smaller **Tools** category instead, holding the temperature check, estimate card, idea box, Picker, Timer and Stopwatch.
+The Collaborate elements are in [Facilitate mode](/help/canvas/facilitate-mode/)'s palette, as six categories under their own **Collaborate** heading in the category picker: **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**. Each is one pick away, and the toolbar shows its tiles straight away.
 
-## What the category contains
-
-The category browses by group the way Icons and Technology do: a grid of group tiles that you click to open, with a breadcrumb back to the grid and a **Search collaboration** box above that cuts across all of them at once.
-
-<Figure caption="Collaborate browses as group tiles, with one search box across all of them.">
-  <BehaviourGroups />
+<Figure caption="In Facilitate mode, each Collaborate group is its own category, under a Collaborate heading.">
+  <CollaborateCategories />
 </Figure>
 
-Inside a group, each element is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
+Diagram mode keeps only the **Comment panel** and the **Action card**, in its Write category. **Draw** and **Illustrate** offer none of them, and [Plan mode](/help/canvas/plan-mode/) has a smaller **Tools** category instead, holding the temperature check, estimate card, idea box, Picker, Timer and Stopwatch. From any mode, the [element search](/help/palette/toolbar-layout/) still finds and places every one.
 
-The groups, room-first:
+## What the categories contain
+
+In each category, every element is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
+
+The categories, room-first:
 
 - **Ask**: the [quiz](/help/palette/collaborate/quizzes/), [estimate cards](/help/palette/collaborate/estimate-cards/), the [temperature check](/help/palette/collaborate/temperature-checks/), the [idea box](/help/palette/collaborate/idea-boxes/), the [Q&A board](/help/palette/collaborate/qa-boards/), and the **Dot Vote** and **Poll** [session buttons](/help/palette/behaviour/session-buttons/).
 - **Tools**: the **Timer** and **Stopwatch** [session buttons](/help/palette/behaviour/session-buttons/), the [Reveal zone](/help/palette/behaviour/reveal-zones/), the [Done check](/help/palette/behaviour/done-checks/) and the [Picker](/help/palette/behaviour/pickers/).
@@ -47,7 +47,7 @@ The groups, room-first:
 
 They are grouped by what the element does with the room rather than by what it looks like. That is why the Portal sits beside the Chair, Bring Focus and the Link card (each takes somebody somewhere: another tab, a seat, one spot on the canvas, or the page the card points at), and why the poll and dot vote sit with the estimate card rather than in a group of their own: putting a question to everybody is one job however it is asked.
 
-**Collaborate used to be two categories**: Behaviour (elements that do something when pressed) and Collaborate (elements that collect an answer). The split was real, but it was no help to navigate by: you reach for both while running a session, and nothing told you why the Done check lived apart from the estimate card.
+**Collaborate used to be one category**, with these six as groups you clicked into. In Facilitate mode you reach for every one of them mid-session, so each is now its own category, one pick away.
 
 ## Changing one
 

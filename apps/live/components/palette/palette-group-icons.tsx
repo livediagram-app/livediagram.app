@@ -1,8 +1,9 @@
 import { lucideSmile } from '@livediagram/icons/lucide';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 // Glyphs for the collapsible tile groups inside a palette category
-// (PaletteTileGroup). Kept beside the tab icons rather than inline in the tab
-// bodies, so the category files stay a list of what's in them.
+// (PaletteTileGroup), and for the six Collaborate categories, which were groups
+// once (palette-categories.tsx). Kept beside the tab icons rather than inline in
+// the tab bodies, so the category files stay a list of what's in them.
 
 /** Media → Embed: a framed play triangle. */
 export function EmbedGroupIcon() {

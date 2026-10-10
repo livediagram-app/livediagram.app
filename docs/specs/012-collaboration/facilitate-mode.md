@@ -23,12 +23,12 @@ boards.
 | **session**         | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                   |
 | **facilitator**     | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Facilitate mode                     |
 | **session tools**   | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole           |
-| **Collaborate**     | The palette category of session elements (id `behaviour`)                                     | the mode, or comments and presence in general |
+| **Collaborate**     | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general |
 
 - The interface says **Facilitate**; specs and code say **Facilitate mode** or `'facilitate'`.
 - "Session" and "Collaborate" are not the mode's name: both already name other things (the
-  Session strip, Session buttons and the share session; the Collaborate palette category and
-  menu rows).
+  Session strip, Session buttons and the share session; the Collaborate elements and menu
+  rows).
 - Facilitate mode is a mode, never a kind: a retro is a general tab in Facilitate mode, and
   everything on it is there in every other mode.
 
@@ -45,12 +45,12 @@ boards.
 
 ## What Diagram gives up
 
-- **The Collaborate category** (every Selection Mode, session, ask, record, reaction and navigate
+- **The Collaborate elements** (every Ask, Tools, Record, React, Selection Mode and Navigate
   tile) and **the Stickers category** leave Diagram's palette.
 - **The Session strip** leaves Diagram entirely (below).
 - **Diagram keeps two Collaborate tiles in Write:** the **Comment panel** and the **Action card**
   (`collab:comment-pin`, `collab:action-card`), because comments and assigned actions belong to
-  every mode (below). In Facilitate they stay in Collaborate's Record group too.
+  every mode (below). In Facilitate they sit in the Record category.
 - **Diagram keeps Icons**, Technology, Media and everything else it has.
 - **Content stays.** A session element already on a tab (a session button, a reveal zone, an
   agenda, a sticker) renders and works in every mode exactly as before: pressing a session button
@@ -80,19 +80,36 @@ mode as today:
 
 Facilitate's layout, in order:
 
-| Band      | Categories                                            |
-| --------- | ----------------------------------------------------- |
-| _(none)_  | Popular                                               |
-| Common    | Shapes, My shapes (with a shape library), Write, Draw |
-| Structure | Build                                                 |
-| Decorate  | Icons, Stickers, Media                                |
-| Dynamic   | Collaborate                                           |
+| Band        | Categories                                            |
+| ----------- | ----------------------------------------------------- |
+| _(none)_    | Popular                                               |
+| Common      | Shapes, My shapes (with a shape library), Write, Draw |
+| Structure   | Build                                                 |
+| Decorate    | Icons, Stickers, Media                                |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 
 - **Popular** (the landing category), twelve fixed tiles: Sticky note, Text, Frame, Arrow,
   Timer button, Vote button, Poll button, Reveal zone, Agenda, Idea box, Q&A board, Temperature
   check.
-- **Collaborate** holds all its groups (Ask, Tools, Record, React, Selection Mode, Navigate)
-  exactly as Diagram's did ([Palette top-level categories](../010-palette/palette-top-level-categories.md)).
+- **Write, Draw and Build hold what a session uses, not what a diagram or a page does.** Write is
+  Text and Sticky note (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow and Line (no
+  Shape Pen, no Polygon); Build is Mind node, Table and Frame (no Lane, no Timeline). Search still
+  finds the six left out and places them, as it does any other mode's tile.
+- **The Collaborate elements are six categories, not one.** Each group of
+  [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
+  is its own category in a **Collaborate** band (the heading names the elements, where Dynamic
+  named a mechanism), in the same room-first order, each a list of rows:
+  - **Ask**: Dot vote, Poll, Quiz, the estimate scales, Temperature check, Idea box, Q&A board.
+  - **Tools**: Timer, Stopwatch, Reveal zone, Done check, Picker.
+  - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
+  - **React**: the five reaction pads.
+  - **Selection Mode**: one button per selection mode.
+  - **Navigate**: Portal, Bring focus, Chair, Link card.
+
+  In Facilitate every one of them is a tile you reach for mid-session, so a parent category was a
+  click in front of each, with a group browser one level down. Six categories put every group one
+  pick away in the category picker and let the toolbar strip show each group's tiles directly.
+
 - Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
   and pages, not sessions.
 - A **Participant** gets the participant palette Facilitate's landing category gives

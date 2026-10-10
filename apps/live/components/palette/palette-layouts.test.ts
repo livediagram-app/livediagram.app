@@ -60,7 +60,7 @@ describe('palette layouts', () => {
   });
 
   // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('gives Facilitate Popular, the drawing basics, the decorations and Collaborate', () => {
+  it('gives Facilitate Popular, the drawing basics, the decorations and the six Collaborate categories', () => {
     expect(ids('facilitate')).toEqual([
       'popular',
       'shapes',
@@ -71,7 +71,12 @@ describe('palette layouts', () => {
       'icons',
       'stickers',
       'media',
-      'behaviour',
+      'collab-ask',
+      'collab-tools',
+      'collab-record',
+      'collab-react',
+      'collab-mode',
+      'collab-navigate',
     ]);
     expect(paletteLandingCategory('facilitate', false)).toBe('popular');
   });
@@ -94,11 +99,30 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('holds every Collaborate tile in Facilitate, as Diagram did', () => {
-    const collaborate = paletteCategoriesFor('facilitate').find((c) => c.id === 'behaviour')!;
-    expect(collaborate.tiles!.map((t) => t.id)).toEqual(
-      tilesForCategory('behaviour').map((t) => t.id),
+  it('holds every Collaborate tile in Facilitate, across its six categories', () => {
+    const held = paletteCategoriesFor('facilitate')
+      .filter((c) => c.id.startsWith('collab-'))
+      .flatMap((c) => c.tiles!.map((t) => t.id));
+    expect(held.sort()).toEqual(
+      tilesForCategory('behaviour')
+        .map((t) => t.id)
+        .sort(),
     );
+  });
+
+  it("leaves Page, Annotation, Shape Pen, Polygon, Lane and Timeline out of Facilitate's Write, Draw and Build", () => {
+    const tilesOf = (id: string) =>
+      paletteCategoriesFor('facilitate')
+        .find((c) => c.id === id)!
+        .tiles!.map((t) => t.id);
+    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
+    expect(tilesOf('draw')).toEqual([
+      'tools:pencil',
+      'tools:highlighter',
+      'tools:arrow',
+      'tools:line',
+    ]);
+    expect(tilesOf('build')).toEqual(['tools:mind-node', 'tools:table', 'tools:frame']);
   });
 
   it("gives a Facilitate Participant the landing's sticky and text, and an image", () => {

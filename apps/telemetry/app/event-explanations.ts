@@ -1011,7 +1011,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|SessionPoll':
     'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
   'UI|Opened|BehaviourGroup':
-    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements).",
+    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements). No longer recorded: Facilitate mode offers each of those categories directly in the palette.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -1102,7 +1102,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|BehaviourSearch':
-    "Someone searched within the palette's Collaborate tab (formerly Behaviours).",
+    "Someone searched within the palette's Collaborate tab (formerly Behaviours). No longer recorded: the Collaborate tab became six palette categories, and the palette's own search finds their tiles.",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',

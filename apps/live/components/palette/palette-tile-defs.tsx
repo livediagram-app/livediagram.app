@@ -120,7 +120,7 @@ export type PaletteTileSection =
   // held: both are elements whose content arrives at runtime, both are reached
   // for while facilitating, and a user looking for the Done check found it in
   // one and the Estimate card in the other with nothing to tell them which.
-  // They are now sub-groups of Behaviours — see BEHAVIOUR_GROUPS.
+  // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
   | 'media'
   | 'components'
   | 'devices'
@@ -1881,14 +1881,29 @@ export function tileDisplayName(def: PaletteTileDef): string {
   return tileCaption(def.label, def.caption);
 }
 
+// The Collaborate elements' six categories (docs/specs/012-collaboration/facilitate-mode.md "The palette"):
+// each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order. Facilitate
+// offers them in place of one Collaborate category with a group browser inside it.
+export const COLLABORATE_CATEGORY_GROUPS: Readonly<
+  Record<string, NonNullable<PaletteTileDef['tileGroup']>>
+> = {
+  'collab-ask': 'ask',
+  'collab-tools': 'facilitate',
+  'collab-record': 'record',
+  'collab-react': 'reaction',
+  'collab-mode': 'mode',
+  'collab-navigate': 'move',
+};
+
 /**
  * The tiles a palette CATEGORY holds by default, which is not the same thing as a
  * section id. A mode's palette layout (palette-layouts.ts) starts from these and may
  * re-fill a category for that mode; ask the layout (paletteCategoriesFor) for what a
  * palette actually shows.
  *
- * Most categories are a section. Three are not: Write, Draw and Behaviour are
- * tool GROUPS inside the tools section (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
+ * Most categories are a section. Write and Draw are not: they are tool GROUPS
+ * inside the tools section, and the six Collaborate categories are `tileGroup`s of
+ * the Behaviour tool group (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
  * is empty and a caller that assumed otherwise silently showed nothing (the
  * since-removed Edit Favourites dialog did exactly that and dropped all three).
  *
@@ -1897,6 +1912,10 @@ export function tileDisplayName(def: PaletteTileDef): string {
  * those through their own search.
  */
 export function tilesForCategory(categoryId: string): PaletteTileDef[] {
+  const collaborate = COLLABORATE_CATEGORY_GROUPS[categoryId];
+  if (collaborate) {
+    return tilesInToolGroup('behaviour').filter((t) => t.tileGroup === collaborate);
+  }
   if (TOOL_GROUPS.some((g) => g.id === categoryId)) {
     return tilesInToolGroup(categoryId as ToolGroupId);
   }

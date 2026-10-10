@@ -1,15 +1,14 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { headlineCase } from '@livediagram/api-schema';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
 import { CARD_TILE_GLYPH_PX } from './palette-plan-tiles';
 import {
   PALETTE_TILES,
   TILE_GLYPH_PX,
   TOOL_GROUPS,
+  COLLABORATE_CATEGORY_GROUPS,
   tilesForCategory,
   tilesInSection,
   tilesInToolGroup,
@@ -144,11 +143,14 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 8,
   components: 9,
   data: 7,
-  // Behaviours absorbed Collaborate (docs/specs/010-palette/palette-top-level-categories.md), so this is both families:
-  // Ask (estimate + quiz + temperature + idea box + Q&A board), Run the
-  // room (3), Session (3), Record (3), Reactions (5), Selection
-  // Mode (8 modes), Navigate (2), plus the comment pin loose on top.
-  behaviour: 34,
+  // The Collaborate elements, one category per group (docs/specs/012-collaboration/facilitate-mode.md
+  // "The palette"): 34 tiles between them.
+  'collab-ask': 7,
+  'collab-tools': 5,
+  'collab-record': 5,
+  'collab-react': 5,
+  'collab-mode': 8,
+  'collab-navigate': 4,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
@@ -209,80 +211,29 @@ describe('TOOL_GROUPS', () => {
   });
 });
 
-// Behaviour and Collaborate draw their tiles by CATEGORY (docs/specs/008-canvas/canvas-and-palette.md
-// "Sub-categories"): each tab hands PaletteGroupBrowser a list of group
-// definitions, and a tile is drawn by the category whose id matches its
-// `tileGroup`. A tile whose group is in no definition is drawn by nothing: it
-// stays in the catalogue, keeps working in search and in a layout's Popular, and is
-// simply absent from the palette tab it belongs to. No error, no empty
-// category, nothing to notice — the browser drops a category with no tiles, so
-// a typo'd group id fails silently at both ends.
-//
-// The Tools tab has had `TOOL_GROUPS` and a partition test since it grew
-// sub-sections; these two kept their groups inside the JSX until they became
-// category browsers, so there was nothing to assert against.
-//
-// The definitions are read through the SAME constant the render passes — the
-// source is scraped only for WHICH constant that is, so renaming or swapping
-// the array cannot leave this test checking a list nobody renders. A list
-// typed into this file would agree with itself and prove nothing, which is the
-// failure mode SHAPE_KEYWORDS and the palette census both hit.
-const GROUP_CONSTANTS: Record<string, { id: string }[]> = {
-  BEHAVIOUR_GROUPS,
-};
+// The Collaborate elements are six categories, one per `tileGroup` of the Behaviour tool group
+// (COLLABORATE_CATEGORY_GROUPS). A tile whose group maps to no category would stay in the catalogue
+// and in search but be absent from every palette, with nothing to notice, so the six must partition
+// the tool group exactly.
+describe('the Collaborate categories', () => {
+  const ids = Object.keys(COLLABORATE_CATEGORY_GROUPS);
 
-function renderedGroups(component: string): { groups: Set<string>; allowsLoose: boolean } {
-  const src = readFileSync(new URL('./palette-create-tabs.tsx', import.meta.url), 'utf8');
-  const start = src.indexOf(`export function ${component}`);
-  // Bound to THIS component: a fixed-length slice ran past the Collaborate tab
-  // into the next one and collected its filters as if they were Collaborate's.
-  const after = src.indexOf('\nexport function ', start + 1);
-  const body = src.slice(start, after === -1 ? undefined : after);
-  const constName = body.match(/groups=\{([A-Z_]+)\}/)?.[1] ?? '';
-  const defs = GROUP_CONSTANTS[constName] ?? [];
-  return {
-    groups: new Set(defs.map((g) => g.id)),
-    // The ungrouped tiles are drawn above the category grid, or not at all.
-    allowsLoose: /leadIn=\{/.test(body),
-  };
-}
+  it('partition the Behaviour tool group: every tile in exactly one', () => {
+    const placed = ids.flatMap((id) => tilesForCategory(id).map((t) => t.id)).sort();
+    expect(placed).toEqual(
+      tilesInToolGroup('behaviour')
+        .map((t) => t.id)
+        .sort(),
+    );
+  });
 
-// Behaviours is a toolGroup INSIDE the tools section, not a section of its
-// own: asking for a 'behaviour' section returns nothing and would make every
-// row look empty. It is the only grouped tab left — Collaborate was merged
-// into it (docs/specs/010-palette/palette-top-level-categories.md) — and the list stays an array so a second one costs a
-// line rather than a rewrite.
-const TABS = [
-  {
-    name: 'behaviour',
-    component: 'PaletteBehaviourTab',
-    tiles: () => tilesInToolGroup('behaviour'),
-  },
-] as const;
-
-describe('grouped palette tabs draw every tile they hold', () => {
-  for (const tab of TABS) {
-    it(`${tab.name}: every tile lands in a row that exists`, () => {
-      const { groups, allowsLoose } = renderedGroups(tab.component);
-      // Guard against the source read silently finding nothing.
-      expect(groups.size, `${tab.name}: no tileGroup filters found`).toBeGreaterThan(1);
-
-      const undrawn = tab
-        .tiles()
-        .filter((t) => (t.tileGroup ? !groups.has(t.tileGroup) : !allowsLoose))
-        .map((t) => `${t.id} (${t.tileGroup ?? 'no group'})`);
-      expect(undrawn).toEqual([]);
-    });
-
-    it(`${tab.name}: every row it draws has tiles in it`, () => {
-      // The mirror: a filter for a group nothing carries renders a heading
-      // over an empty list.
-      const { groups } = renderedGroups(tab.component);
-      const tiles = tab.tiles();
-      const empty = [...groups].filter((g) => !tiles.some((t) => t.tileGroup === g));
-      expect(empty).toEqual([]);
-    });
-  }
+  it('are each a catalogue category with tiles in it', () => {
+    const catalogue = new Set(PALETTE_CATEGORIES.map((c) => c.id));
+    for (const id of ids) {
+      expect(catalogue.has(id), id).toBe(true);
+      expect(tilesForCategory(id).length, id).toBeGreaterThan(0);
+    }
+  });
 });
 
 // One tile strip, one size step (docs/specs/004-interface-design/iconography.md): every tile glyph

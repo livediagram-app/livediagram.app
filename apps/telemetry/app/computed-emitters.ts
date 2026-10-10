@@ -405,10 +405,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'the rich-text command a note applied',
   },
   'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
-    values: ['BehaviourSearch', 'IconSearch', 'TechSearch', 'StickerSearch'],
+    values: ['IconSearch', 'TechSearch', 'StickerSearch'],
   },
   'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
-    values: ['BehaviourGroup', 'IconGroup', 'TechGroup', 'StickerGroup'],
+    values: ['IconGroup', 'TechGroup', 'StickerGroup'],
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {

@@ -37,14 +37,15 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band           | Categories                                                                                                                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_ | Popular, full width                                                                                                                                                                             |
-| **Plan**       | Cards, Boards, Widgets, Metrics, Visualisations ([Plan mode](../026-plan/plan-mode.md#the-palette) only)                                                                                        |
-| **Common**     | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
-| **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
-| **Decorate**   | Icons, Stickers, Technology, Media                                                                                                                                                              |
-| **Dynamic**    | Data, Collaborate (Facilitate)                                                                                                                                                                  |
+| Band            | Categories                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_  | Popular, full width                                                                                                                                                                             |
+| **Plan**        | Cards, Boards, Widgets, Metrics, Visualisations ([Plan mode](../026-plan/plan-mode.md#the-palette) only)                                                                                        |
+| **Common**      | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
+| **Structure**   | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                              |
+| **Dynamic**     | Data (Illustrate)                                                                                                                                                                               |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                    |
 
 ## Why flatten
 
@@ -154,10 +155,13 @@ which two groups they are. A rename that broke seven live links to say
 
 ## Collaborate: one category, fully grouped
 
-**Collaborate is Facilitate's.** Since [Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette),
-only Facilitate's layout offers the category, with every group below; Diagram offers it no longer,
-and keeps only the Comment panel and the Action card, in its Write category. Search still finds
-every Collaborate tile from any mode.
+**Collaborate is Facilitate's, as six categories.** Since [Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette),
+only Facilitate's layout offers the Collaborate elements, and it offers each group below as its
+own category in a **Collaborate** band of its own (`collab-ask`, `collab-tools`, `collab-record`, `collab-react`,
+`collab-mode`, `collab-navigate`), so the parent category and its group browser are gone. Diagram
+keeps only the Comment panel and the Action card, in its Write category. Search still finds every
+Collaborate tile from any mode. What follows is how the groups came to be; they are unchanged as
+categories.
 
 **Renamed from Behaviours to Collaborate.** The category is what you open to run a
 session with the room, and "Collaborate" names that job where "Behaviours" named the

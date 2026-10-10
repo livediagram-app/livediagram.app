@@ -165,8 +165,9 @@ const ILLUSTRATE: PaletteLayout = {
 };
 
 // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette"): running a session
-// with a team. Popular, the drawing basics, the decorations a room reaches for, and Collaborate,
-// every group of it; no tech icons, mock-up kit, charts or workshop notation.
+// with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
+// Polygon, no Lane or Timeline), the decorations a room reaches for, and the Collaborate elements as
+// six categories, one per group; no tech icons, mock-up kit, charts or workshop notation.
 const FACILITATE: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -191,13 +192,18 @@ const FACILITATE: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    { id: 'write' },
-    { id: 'draw' },
-    { id: 'build' },
+    { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
+    { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
+    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline') },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
-    { id: 'behaviour' },
+    { id: 'collab-ask' },
+    { id: 'collab-tools' },
+    { id: 'collab-record' },
+    { id: 'collab-react' },
+    { id: 'collab-mode' },
+    { id: 'collab-navigate' },
   ],
 };
 
