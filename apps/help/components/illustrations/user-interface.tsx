@@ -228,7 +228,7 @@ export function PanelLayout() {
     <Scene w={420} h={250}>
       <MenuCard x={12} y={12} />
       <Strip x={82} y={12} />
-      <Panel x={318} y={56} w={90} h={66} title="VOTE">
+      <Panel x={318} y={56} w={90} h={66} title="AI ASSISTANT">
         {[0, 1].map((i) => (
           <rect
             key={i}

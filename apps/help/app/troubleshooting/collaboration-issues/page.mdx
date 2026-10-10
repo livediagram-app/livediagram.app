@@ -27,8 +27,8 @@ Real-time collaboration in livediagram works through a per-document room: everyo
 ## When edits or cursors lag or stall
 
 1. **Give it a moment, then reload.** When a connection drops, the editor reconnects on its own and catches up on what it missed, without reloading the page. If it still seems stuck, the affected person refreshing re-arms the connection.
-2. **Remember view-only visitors do not edit.** Someone on a view-role link can show their cursor and selection but cannot change the canvas. If their edits are not landing, check whether they hold an edit-role link.
-3. **Avoid editing the exact same element at once.** Edits to different elements, even on the same tab, merge cleanly. Two people changing the same element is the one case where the last change to arrive wins, which is why an element somebody else has selected shows as locked for you until they let go.
+2. **Remember not every link can edit.** A Viewer link only looks. A Participant link can add stickies, write text, comment and vote, but cannot move or restyle the drawing. If someone's changes are not landing, check whether they need an Editor link.
+3. **Avoid editing the exact same element at once.** Edits to different elements, even on the same tab, merge cleanly. Two people changing the same element is the one case where the last change to arrive wins, which is why an element another editor has selected shows as locked for you until they let go (a Viewer's selection never locks anything).
 4. **Watch for a dropped link mid-session.** If a share link is revoked, or the password changes, visitors using it are disconnected (or sent back to the password prompt). If the document is moved to the [Trash](/help/account-and-data/trash/), everyone in it is told it was deleted. An expired link lets people already inside carry on until their next load or save. Ask the owner for a fresh link.
 
 ## If it still will not connect

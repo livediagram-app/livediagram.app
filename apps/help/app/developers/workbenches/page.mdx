@@ -27,7 +27,7 @@ A workbench opens your documents through your [CLI](/help/developers/cli/) sign-
 livediagram workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor"
 ```
 
-Your browser opens a page asking **Allow Acme Editor at `https://127.0.0.1:5175` to open your documents?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
+Your browser opens (or, outside a terminal, the command prints) a page headed **Allow this workbench?**, asking **Allow Acme Editor at `https://127.0.0.1:5175` to open your documents with the token livediagram CLI?** Check the address: it is what livediagram enforces, while the name is only a label. Choose **Allow**, and the command finishes by itself. **Don't allow** pairs nothing.
 
 Pairing belongs to one CLI sign-in and one address. If someone obtained your token, it would still open nothing in a tool you never allowed.
 

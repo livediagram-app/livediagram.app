@@ -31,7 +31,7 @@ Paths are relative to `https://livediagram.app/api`. For the exact request and r
 
 ## List your documents
 
-A document **list** returns metadata only, not the tab contents:
+A document **list** returns the documents in your personal library (documents in a team library are not included), as metadata only, not the tab contents:
 
 ```bash
 curl https://livediagram.app/api/documents \
@@ -105,22 +105,24 @@ W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=a
 
 Every changeset's answer ends with the same verdict, `lint clean` or `lint 1 warning`.
 
-Add `budget=2000` to fit a view to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a document at a glance, ask the document itself: `GET /documents/abc123?view=overview`.
+Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a document at a glance, ask the document itself: `GET /documents/abc123?view=overview`.
 
 ## Create a document
 
-`POST /documents` creates a document. You supply the `id` (any unique string), a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes:
+`POST /documents` creates a document. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livediagram, not just your account, so use a fresh UUID for the document, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
 
 ```bash
+DOC=$(uuidgen) TAB=$(uuidgen) FOLDER=$(uuidgen)
+
 curl -X POST https://livediagram.app/api/documents \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "svc-map",
+    "id": "'"$DOC"'",
     "name": "Service map",
     "tabs": [
       {
-        "id": "tab-1",
+        "id": "'"$TAB"'",
         "name": "Overview",
         "elements": [
           { "id": "n1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 160, "height": 80, "label": "Web" },
@@ -138,7 +140,7 @@ Arrows, text, images, and the rest of the element types follow the same pattern 
 Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the document open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept.
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/svc-map/tabs/tab-1/changesets \
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -146,17 +148,17 @@ curl -X POST https://livediagram.app/api/documents/svc-map/tabs/tab-1/changesets
     "operations": [
       { "op": "set", "target": "n2", "fields": { "label": "Orders API" } },
       { "op": "add", "element": { "id": "n3", "type": "shape", "shape": "cylinder", "x": 0, "y": 320, "width": 160, "height": 80, "label": "Orders DB" } },
-      { "op": "rm", "target": "old-note" }
+      { "op": "rm", "target": "n1" }
     ]
   }'
 ```
 
-`set` changes only the fields you name, `add` takes a whole element, and `rm` removes an element along with any arrow pinned to it. The answer lists what changed, the changeset's id and the tab's new revision. Add `?dryRun=1` to see the answer without changing anything.
+`set` changes only the fields you name, `add` takes a whole element, and `rm` removes an element (here the `Web` box) along with any arrow pinned to it. The answer lists what changed, the changeset's id and the tab's new revision. Add `?dryRun=1` to see the answer without changing anything.
 
 The same operations read well as text, one a line, which is easier for a script or an agent to write. Send them as a string:
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/svc-map/tabs/tab-1/changesets \
+curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -181,9 +183,9 @@ To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elemen
   alone too: the changeset is refused with `409 elements_held`, naming who holds it.
 </Note>
 
-To rename a tab, `PUT` its name: `PUT /documents/svc-map/tabs/tab-1/name` with `{ "name": "Overview" }`. The whole-tab `PUT` the editor saves with is not open to tokens; it answers `405 use_changesets`.
+To rename a tab, `PUT` its name: `PUT /documents/$DOC/tabs/$TAB/name` with `{ "name": "Overview" }`. The whole-tab `PUT` the editor saves with is not open to tokens; it answers `405 use_changesets`.
 
-`GET /documents/svc-map/changesets` lists the recent changesets, and `POST /documents/svc-map/changesets/<id>/revert` undoes one, leaving any element somebody changed since.
+`GET /documents/$DOC/changesets` lists the recent changesets, and `POST /documents/$DOC/changesets/<id>/revert` undoes one, leaving any element somebody changed since.
 
 ## Organise into folders
 
@@ -192,37 +194,37 @@ Create a folder, then move a document into it:
 ```bash
 curl -X POST https://livediagram.app/api/folders \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "infra", "name": "Infrastructure" }'
+  -d '{ "id": "'"$FOLDER"'", "name": "Infrastructure" }'
 
-curl -X PUT https://livediagram.app/api/documents/svc-map/folder \
+curl -X PUT https://livediagram.app/api/documents/$DOC/folder \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "folderId": "infra" }'
+  -d '{ "folderId": "'"$FOLDER"'" }'
 ```
 
 ## Delete and restore
 
-`DELETE /documents/svc-map` moves the document to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 document_trashed`. Add `?permanent=true` to delete it for good straight away.
+`DELETE /documents/$DOC` moves the document to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 document_trashed`. Add `?permanent=true` to delete it for good straight away.
 
 ```bash
-curl -X DELETE https://livediagram.app/api/documents/svc-map \
+curl -X DELETE https://livediagram.app/api/documents/$DOC \
   -H "Authorization: Bearer $TOKEN"
 
 # What you can restore: your own Trash and every team's you belong to
 curl https://livediagram.app/api/trash \
   -H "Authorization: Bearer $TOKEN"
 
-curl -X POST https://livediagram.app/api/trash/svc-map/restore \
+curl -X POST https://livediagram.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`DELETE /trash/svc-map` deletes one trashed document for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+`DELETE /trash/$DOC` deletes one trashed document for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
 
 ## Share a document
 
-Create a share link with a role of `view` or `edit`:
+Create a share link with a role of `view`, `participate` or `edit`:
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/svc-map/share \
+curl -X POST https://livediagram.app/api/documents/$DOC/share \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "role": "view" }'
 ```

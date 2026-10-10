@@ -16,9 +16,9 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-Everything around the canvas is a toolbar, a **panel** or a fixed control. The canvas itself fills the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe. The layout is the same on a computer, a tablet and a phone.
+Everything around the canvas is a toolbar, a **panel** or a fixed control. The canvas itself fills the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe. The layout is much the same on a computer, a tablet and a phone.
 
-<Figure caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, a Vote panel docked top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
+<Figure caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, the AI panel docked top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
   <PanelLayout />
 </Figure>
 
@@ -27,8 +27,8 @@ Everything around the canvas is a toolbar, a **panel** or a fixed control. The c
 - **Top-left**: the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your documents and folders) under it. On a computer the [editor mode](/help/canvas/editor-modes/) switch sits beside it.
 - **Top centre**: the [palette strip](/help/palette/toolbar-layout/), for picking a selection mode and adding things to the canvas. In [Draw mode](/help/canvas/draw-mode/) its dock takes the strip's place.
 - **Top-right**: the AI panel and the tool panels, when they are in use, below the strip when it reaches that far.
-- **Bottom-left**: the [Map](/help/user-interface/minimap/), once a tab has a few elements.
-- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, the [session tools](/help/collaboration/session-tools/) (**Timer**, **Vote** and **Poll**, in Diagram mode; Timer and Vote in Plan mode), **Collaborate** (while the tab has a comment or an action), **Layers** and the **Theme & canvas** paintbrush side by side, and the [zoom controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their buttons, and close when you press the button again. On a phone the session tools take a row of their own above the rest.
+- **Bottom-left**: the [Map](/help/user-interface/minimap/), on a computer or tablet, once a tab has a few elements.
+- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, the [session tools](/help/collaboration/session-tools/) (**Timer**, **Vote** and **Poll**, in Diagram mode; Timer and Vote in Plan mode), the mode's own buttons (**Slides** in Illustrate mode; **New Card**, **Find a Card**, **Card Types** and **Trash** in Plan mode), **Collaborate** (while the tab has a comment or an action), **Layers** and the **Theme & canvas** paintbrush side by side (no paintbrush in Draw mode), and the [zoom controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their buttons, and close when you press the button again. On a phone the session tools take a row of their own above the rest.
 - **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick controls](/help/user-interface/quick-controls/) (Search, Settings, appearance) at its right-hand end.
 - **Next to a selection**: the [toolbar](/help/user-interface/toolbar/), and the [Quick Style panel](/help/canvas/quick-style-panel/) for a shape or arrow.
 
@@ -36,7 +36,7 @@ The tool panels (Laser, Spotlight, Eraser, Format, Avatar and Slide Deck) appear
 
 ## Put panels in the corner you want
 
-The corner panels can be dragged by their header to any corner of the screen: the AI Assistant and Map panels, the tool panels, and the Poll and Vote panels that appear while a [session tool](/help/collaboration/session-tools/) is running. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
+With a mouse or trackpad, the corner panels can be dragged by their header to any corner of the screen: the AI Assistant and Map panels, and the tool panels. On a touch screen, tapping a panel's header collapses or expands it instead. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
 
 Your arrangement is remembered on this device, so a reload restores it. Once a panel has moved from its default spot, a **Reset position** button in its header sends it back. Each panel can also be collapsed from its header to a slim banner.
 
@@ -46,11 +46,11 @@ The palette strip, the menu button, the bottom-right buttons and the bottom bar 
 
 On a phone the menu button sits in a card of its own at the left of the strip, without the mode switch, and the strip's tiles swipe sideways. Tap a panel's header to collapse or expand it. See [Toolbar Layout](/help/palette/toolbar-layout/#on-a-phone).
 
-[Panel Opacity](/help/palette/panel-opacity/) fades every panel so the canvas shows through, and **UI Scale** under **Appearance** makes them bigger or smaller.
+[Panel Opacity](/help/palette/panel-opacity/) fades every panel so the canvas shows through, and **UI Scale** under **Appearance** makes them bigger or smaller (on a computer).
 
 <Tip>
   Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides every panel and leaves
-  just the canvas and the zoom controls.
+  just the canvas, the zoom controls and, in Diagram and Plan mode, the session tools.
 </Tip>
 
 </ArticleLayout>

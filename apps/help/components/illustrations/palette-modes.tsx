@@ -131,59 +131,60 @@ export function LaserMode() {
       <PickerTrigger tool="laser" />
       <Shape x={84} y={120} w={76} h={44} label="A" />
       <Shape x={264} y={150} w={76} h={44} accent label="B" />
-      {/* Fading laser trail: faint tail to bright head */}
+      {/* Fading laser trail, from under A to just short of B: faint tail to bright head,
+          clear of both labels. */}
       <path
-        d="M104 176 q60 -40 140 -10 q30 12 56 -2"
+        d="M100 186 q50 24 104 4"
         className="stroke-rose-200"
         strokeWidth={5}
         fill="none"
         strokeLinecap="round"
       />
       <path
-        d="M196 162 q30 12 56 -2 q20 -10 44 -4"
+        d="M196 192 q26 -8 52 -20"
         className="stroke-rose-400"
         strokeWidth={3.5}
         fill="none"
         strokeLinecap="round"
       />
-      {/* Bright head dot */}
-      <circle cx={296} cy={156} r={5} className="fill-rose-500" />
-      <circle cx={296} cy={156} r={9} className="fill-rose-400/30" />
+      {/* Bright head dot, pointing at B */}
+      <circle cx={250} cy={171} r={5} className="fill-rose-500" />
+      <circle cx={250} cy={171} r={9} className="fill-rose-400/30" />
     </Scene>
   );
 }
 
 /** Avatar mode: the picker set to Avatar, the pixel character standing on the
- *  shape being talked about (ringed), and the dashed path it walked from the
- *  previous shape. */
+ *  shape being talked about (its feet inside it, which is what rings it), to the
+ *  side of the label so both read, at the end of the dashed path it walked. */
 export function AvatarMode() {
   return (
     <Scene w={420} h={230}>
       <PickerTrigger tool="avatar" />
       <Shape x={68} y={150} w={76} h={44} label="A" />
-      <Shape x={248} y={128} w={88} h={50} accent label="B" />
+      <Shape x={226} y={128} w={140} h={54} label="B" />
       {/* Walked path + the click that started it */}
       <path
-        d="M116 186 q54 6 104 -12"
+        d="M150 178 q76 26 172 2"
         className="stroke-brand-300"
         strokeWidth={2}
         fill="none"
         strokeDasharray="4 5"
         strokeLinecap="round"
       />
-      <circle cx={116} cy={186} r={4} className="fill-brand-300/60" />
+      <circle cx={150} cy={178} r={4} className="fill-brand-300/60" />
       {/* "You are here" ring on the shape the avatar arrived at */}
       <rect
-        x={244}
+        x={222}
         y={124}
-        width={96}
-        height={58}
+        width={148}
+        height={62}
         rx={8}
         className="fill-none stroke-brand-400"
         strokeWidth={2}
       />
-      {/* The character, standing on the ringed shape (feet on its lower edge) */}
-      <PixelCharacter fx={272} fy={182} />
+      {/* The character, feet inside the ringed shape where the path ends */}
+      <PixelCharacter fx={334} fy={178} />
     </Scene>
   );
 }

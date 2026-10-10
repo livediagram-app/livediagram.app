@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, the session tools, and Layers with the **Theme & canvas** paintbrush, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, the session tools, any mode or Collaborate buttons, and Layers with the **Theme & canvas** paintbrush, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
 
 <Figure caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
   <ZoomControls />
@@ -27,7 +27,7 @@ The **zoom controls** sit at the end of the cluster in the bottom-right corner o
 - **Zoom out** / **Zoom in**: step 10% further or closer.
 - **The percentage button**: shows the current level. **Click it to fit the whole canvas** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size).
 
-Zoom runs from 10% to 500%.
+Zoom runs from 10% to 500%. When a [Sheet](/help/canvas/plan-mode/sheets/) fills the canvas, the controls zoom the sheet instead (50% to 200%, and Fit returns it to 100%); while a Plan board or view fills it, zoom is off.
 
 ## From the keyboard and trackpad
 
@@ -42,6 +42,6 @@ Zoom runs from 10% to 500%.
 
 ## On a phone and in zen mode
 
-On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a dedicated **Fit** button stands in for fit-to-screen. In [Zen mode](/help/tools/zen-mode/) everything else hides but the zoom controls stay, joined by an **Exit zen mode** button.
+On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a dedicated **Fit** button stands in for fit-to-screen. In [Zen mode](/help/tools/zen-mode/) everything else hides but the zoom controls stay (along with any session tools in use), joined by an **Exit zen mode** button.
 
 </ArticleLayout>

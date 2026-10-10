@@ -26,7 +26,7 @@ The import reads each file by what is inside it, never by its name, so all of th
 
 - `.drawio` and `.xml` files, compressed or not.
 - **Files saved to Google Drive.** draw.io saves to Drive without an extension; download them and pick them as they are.
-- **PNG and SVG exports** made with **Include a copy of my diagram** ticked. A PNG or SVG without the diagram inside is left out, and the report says how to export it so it works.
+- **PNG and SVG exports** made with **Include a copy of my diagram** ticked. A PNG without the diagram inside is left out, and the report says how to export it so it works; an SVG without it is left out as not a draw.io file.
 - **JSON exports** (draw.io's **Export as JSON**). When the export includes the full diagram, it imports exactly like the `.drawio` file. When it holds only the shapes and connections, without their positions, livediagram lays the diagram out for you, and the import says so.
 
 Anything else in a folder, such as notes or pictures, is left out and named in the report, never treated as an error.
@@ -41,7 +41,7 @@ On the [Explorer page](/help/explorer/explorer-page/), **Import from** at the to
   <ImportFromHeader />
 </Figure>
 
-The group shows wherever you can start a new document, such as Recent, My documents and its folders. It is not on Home, Shared with me, a team, Trash or the Library pages. From inside a folder, the new documents go into that folder.
+The group shows wherever you can start a new document, such as Recent, My documents and its folders. It is not on Home, Inbox, Shared with me, a team, This browser, Trash, Image gallery or Themes. It does show on Shape libraries, where draw.io libraries are imported. From inside a folder, the new documents go into that folder.
 
 In the **Import from draw.io** dialog, press **Choose files** or **Choose a folder**, or drop files or a folder onto the panel. A single diagram with nothing left out imports straight away. Otherwise the panel lists what it found, each under the name its document will get, with the date it was last edited and how many pages it has (a library shows how many shapes it holds). Every row starts ticked; untick the ones you don't want, or use **Select all**, then press the import button, which counts what you chose (for example **Import 2 files**). **Back** returns you to the picker.
 
@@ -51,7 +51,7 @@ In the **Import from draw.io** dialog, press **Choose files** or **Choose a fold
 
 ## Names and dates
 
-- A document is **named after its file**. When the file has draw.io's default name (such as "Untitled Diagram"), it takes the name saved inside the file, else its first page's name, else "draw.io diagram" with the date.
+- A document is **named after its file**. When the file has draw.io's default name (such as "Untitled Diagram"), it takes the name saved inside the file, else its first page's name (unless it is draw.io's default, such as "Page-1"), else "draw.io diagram" with the date.
 - A document is **dated as the diagram**: draw.io records when a file was last saved, and the document shows that date (falling back to the file's own date), so your library keeps its history.
 
 ## What comes across
@@ -65,6 +65,7 @@ When the import finishes, it lists the new documents (and any new shape librarie
 - A file over **50 MB** is left out.
 - A file with more than **100 pages** imports its first 100, and the report counts the rest.
 - A page with more than **10,000 elements** imports its first 10,000.
+- A JSON export without positions lays out at most **500 shapes** and **1,000 connections** per page; the rest are counted in the report.
 - Each page must fit in one tab (just under 2 MB of stored data). A page too large to store is left out of its document and named in the report; the file's other pages still arrive.
 
 <Tip>

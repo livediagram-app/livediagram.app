@@ -64,7 +64,7 @@ The terminal waits up to ten minutes for you. If the browser cannot reach it (on
 livediagram auth login --device
 ```
 
-The terminal prints a page address, `https://livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see the same **Connect livediagram CLI** card with its **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+The terminal prints a page address, `https://livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livediagram CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
 
 <Figure caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
   <CliDeviceSignIn />
@@ -163,7 +163,7 @@ livediagram graph render flow.mmd --png flow.png
 
 To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel, and nothing on livediagram is deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Tab names, themes and backgrounds are not sent, and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 
 ## Help, Guides and the Agent Skill
 
@@ -179,7 +179,7 @@ Help is kept short so an agent pays only for what it asks. `skill install` write
 
 ## Output and Exit Codes
 
-The CLI never prompts: it is safe in pipes, scripts and CI. **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
+The CLI never prompts when its input or output is not a terminal, so it is safe in pipes, scripts and CI. (In a terminal, only `link init` without `--folder` or `--doc` asks you to pick a folder.) **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
 
 | Exit code | Meaning                                                    |
 | --------- | ---------------------------------------------------------- |
@@ -213,7 +213,7 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 ## Usage Counts
 
-The CLI counts which commands succeed, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first run says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
 ## Keep It Safe
 

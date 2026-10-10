@@ -19,7 +19,7 @@ livediagram is open source under the **MIT license**. That is permissive on purp
 
 - **Free for everyone.** There is no paid tier and no plan to introduce one. Every feature ships to every user.
 - **No license checks.** Nothing in the core editor calls home to verify a licence or gate a feature, which is also what keeps self-hosting honest.
-- **Optional, not required, outside services.** Sign-in is optional. With it unconfigured, the app runs in pure-guest mode and works fully without any account system. Email, the AI features and the Google Drive mirror are the same: each stays off until a deployment adds its key.
+- **Optional, not required, outside services.** Sign-in is optional. With it unconfigured, the app runs in pure-guest mode and works fully without any account system. Email, the AI features and the Google Drive mirror are the same: each stays off until a deployment adds its key. Image search (Openverse) needs no key and is on everywhere; it runs from the browser, and only when someone searches.
 
 Because the code is visible to the world, you can audit precisely how your data is handled rather than relying on a privacy policy alone.
 
@@ -38,7 +38,7 @@ Every secret a deployment needs is supplied at runtime through environment varia
 You have two ways to satisfy yourself about how livediagram treats your data.
 
 1. **Read the code.** Follow how a document is saved, how access is checked, or what an analytics event contains, all in the open.
-2. **Self-host it.** Deploy your own instance so the data never leaves infrastructure you control. A self-hoster who wants zero outbound runtime traffic beyond their own hosting can run the guest-only, telemetry-off configuration. See [self-hosting](/help/self-hosting/self-hosting-overview/).
+2. **Self-host it.** Deploy your own instance so the data never leaves infrastructure you control. A self-hoster who wants no server-side outbound traffic beyond their own hosting can run the guest-only, telemetry-off configuration; visitors' browsers still load the editor's fonts from Google Fonts, and image search contacts Openverse when someone uses it. See [self-hosting](/help/self-hosting/self-hosting-overview/).
 
 ## Found a problem?
 

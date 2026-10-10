@@ -85,56 +85,44 @@ export function RequestRouting() {
   );
 }
 
-/** The deploy flow: GitHub Actions builds, then deploys marketing, telemetry,
- *  help, community and api in parallel; live and the optional mcp follow the
- *  api; the router goes last because its bindings need the six path-routed
- *  apps to exist. */
+/** The deploy flow, as three stages left to right: GitHub Actions deploys
+ *  marketing, telemetry, help, community and api in parallel; live and mcp
+ *  follow the api; the router goes last because its bindings need the six
+ *  path-routed apps to exist. Elbow connectors only, so no line crosses a box. */
 export function DeployFlow() {
-  const first: [string, number][] = [
-    ['marketing', 14],
-    ['telemetry', 50],
-    ['help', 86],
-    ['community', 122],
-    ['api', 166],
-  ];
+  const first = ['marketing', 'telemetry', 'help', 'community', 'api'];
+  const rowY = (i: number) => 44 + i * 38;
+  const apiY = rowY(4) + 14;
   return (
     <Scene w={420} h={260}>
-      {/* GitHub Actions trigger */}
-      <Shape x={10} y={96} w={80} h={48} kind="rect" label="GitHub" labelTone="strong" />
-      <Label x={50} y={160} anchor="middle" size={10} tone="muted">
+      {/* The trigger */}
+      <Shape x={8} y={106} w={64} h={40} kind="rect" label="GitHub" labelTone="strong" />
+      <Label x={40} y={160} anchor="middle" size={10} tone="muted">
         Actions
       </Label>
+      <Arrow from={[72, 126]} to={[92, 126]} />
 
-      {/* First wave, in parallel */}
-      {first.map(([name, y]) => (
-        <g key={name}>
-          <Shape x={118} y={y} w={88} h={28} kind="rect" accent label={name} />
-          <Arrow from={[90, 120]} to={[118, y + 14]} kind="curved" />
-        </g>
+      {/* Stage 1: in parallel */}
+      <Panel x={92} y={14} w={112} h={232} title="IN PARALLEL" />
+      {first.map((name, i) => (
+        <Shape key={name} x={104} y={rowY(i)} w={88} h={28} kind="rect" accent label={name} />
       ))}
-      <Label x={162} y={210} anchor="middle" size={10} tone="muted">
-        in parallel
-      </Label>
 
-      {/* After the api */}
-      <Shape x={228} y={150} w={72} h={28} kind="rect" accent label="live" />
-      <Shape x={228} y={196} w={72} h={28} kind="rect" dashed label="mcp" labelTone="strong" />
-      <Arrow from={[206, 180]} to={[228, 164]} />
-      <Arrow from={[206, 180]} to={[228, 210]} />
-      <Label x={264} y={240} anchor="middle" size={10} tone="muted">
-        optional
-      </Label>
+      {/* Stage 2: after the api */}
+      <Panel x={222} y={150} w={96} h={96} title="AFTER API" />
+      <Shape x={234} y={178} w={72} h={28} kind="rect" accent label="live" />
+      <Shape x={234} y={212} w={72} h={28} kind="rect" accent label="mcp" />
+      <Arrow from={[192, apiY]} to={[234, 192]} kind="elbow" />
+      <Arrow from={[192, apiY]} to={[234, 226]} kind="elbow" />
 
-      {/* Router last */}
-      <Shape x={326} y={70} w={84} h={48} kind="rect" label="router" labelTone="strong" />
-      <Arrow from={[206, 28]} to={[326, 84]} kind="curved" tone="muted" />
-      <Arrow from={[206, 64]} to={[326, 90]} tone="muted" />
-      <Arrow from={[206, 100]} to={[326, 96]} tone="muted" />
-      <Arrow from={[206, 136]} to={[326, 102]} tone="muted" />
-      <Arrow from={[300, 164]} to={[350, 118]} kind="curved" tone="muted" />
-      <Label x={368} y={134} anchor="middle" size={10} tone="muted">
-        last
-      </Label>
+      {/* Stage 3: the router, once everything it binds to exists */}
+      {/* Both earlier stages join one bus, so the router takes a single arrow. */}
+      <Panel x={336} y={88} w={76} h={86} title="LAST" />
+      <Shape x={346} y={118} w={56} h={40} kind="rect" label="router" labelTone="strong" />
+      <Arrow from={[204, 138]} to={[326, 138]} tone="muted" head={false} />
+      <Arrow from={[306, 192]} to={[326, 192]} tone="muted" head={false} />
+      <Arrow from={[326, 192]} to={[326, 138]} tone="muted" head={false} />
+      <Arrow from={[326, 138]} to={[346, 138]} tone="muted" />
     </Scene>
   );
 }
