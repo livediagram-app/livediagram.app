@@ -255,7 +255,8 @@ budget:
   subtree's total, so a step subtracts and adds lengths instead of re-rendering. O(n + c log c) for c containers.
 - The header line and the elision line always print, even when they alone exceed the budget.
 - `fitLines(lines, budget)` fits every other view: whole lines in order until the next would exceed the budget,
-  then the elision line (`VW40`).
+  then the view's closing line, then the elision line (`VW40`). A closing line (`find`'s `<n> matches: …`) is
+  reserved like the header and always prints; only counted lines are dropped, so a cut is never silent.
 
 Invariants:
 
@@ -475,7 +476,8 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
 cells, entity field names and types, checklist item text, code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
-arrow prints as an own-line arrow under its source's chain. The last line is
+arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the
+elision line) is
 `<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `field`, `item`, `code`,
 `comment`. No match prints `0 matches`.
 
