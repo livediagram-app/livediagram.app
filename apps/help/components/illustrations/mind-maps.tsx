@@ -165,7 +165,8 @@ export function MindMapGrowth() {
       <Arrow from={[112, 103]} to={[150, 60]} kind="curved" head={false} width={2} />
       <Arrow from={[112, 103]} to={[150, 146]} kind="curved" head={false} width={2} />
       <Arrow from={[234, 60]} to={[290, 44]} kind="curved" head={false} width={2} />
-      <Arrow from={[234, 60]} to={[290, 82]} kind="straight" head={false} width={2} />
+      {/* A new connector copies its siblings' look, so it curves like Lakes' */}
+      <Arrow from={[234, 60]} to={[290, 82]} kind="curved" head={false} width={2} />
       <KeyHint x={150} y={184} k="Tab" text="adds a child" />
       <KeyHint x={268} y={184} k="Enter" text="adds a sibling" />
     </Scene>
@@ -253,12 +254,12 @@ export function MindMapFlows() {
     { id: 'bubble', label: 'Bubble' },
   ] as const;
   return (
-    <Scene w={420} h={220} bg="plain">
+    <Scene w={420} h={270} bg="plain">
       <rect
         x={70}
         y={14}
         width={280}
-        height={194}
+        height={246}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -269,26 +270,28 @@ export function MindMapFlows() {
       <Label x={84} y={52} size={10} tone="muted">
         Branches to the right, siblings stacked down
       </Label>
+      {/* Two per row, as the menu lays them out (MenuTileGrid cols={2}) */}
       {flows.map((f, i) => {
-        const tx = 84 + i * 64;
+        const tx = 84 + (i % 2) * 128;
+        const ty = 64 + Math.floor(i / 2) * 60;
         const on = i === 0;
         return (
           <g key={f.id}>
             <rect
               x={tx}
-              y={64}
-              width={58}
-              height={62}
+              y={ty}
+              width={122}
+              height={54}
               rx={8}
               className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-slate-50 stroke-slate-200'}
               strokeWidth={1.5}
             />
-            <g transform={`translate(${tx + 29} 88)`}>
+            <g transform={`translate(${tx + 61} ${ty + 20})`}>
               <FlowGlyph flow={f.id} />
             </g>
             <Label
-              x={tx + 29}
-              y={115}
+              x={tx + 61}
+              y={ty + 44}
               size={10}
               anchor="middle"
               weight={on ? 700 : 500}
@@ -303,14 +306,14 @@ export function MindMapFlows() {
         <g key={t}>
           <rect
             x={84}
-            y={138 + i * 32}
+            y={190 + i * 32}
             width={250}
             height={26}
             rx={6}
             className="fill-slate-50 stroke-slate-200"
             strokeWidth={1.5}
           />
-          <Label x={209} y={152 + i * 32} size={11} weight={600} anchor="middle" tone="body">
+          <Label x={209} y={204 + i * 32} size={11} weight={600} anchor="middle" tone="body">
             {t}
           </Label>
         </g>

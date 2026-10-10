@@ -142,7 +142,8 @@ export function ProgressMenu() {
       <circle cx={318} cy={86.5} r={7} className="fill-white stroke-brand-500" strokeWidth={2} />
       {anims.map((a, i) => {
         const tx = 158 + i * 58;
-        const on = a === 'Fill';
+        // None, so the flyout is complete: an animation would add Speed and Repeat rows below.
+        const on = a === 'None';
         return (
           <g key={a}>
             <rect
@@ -373,8 +374,14 @@ export function LineDataDialog() {
         scrim={false}
       >
         <Button x={46} y={58} w={84} h={22} label="Import CSV" />
+        {/* Each series name has its own remove ×, as the dialog draws it */}
         {series.map((s, i) => (
-          <Field key={s} x={136 + i * 96} y={92} w={88} value={s} />
+          <g key={s}>
+            <Field x={136 + i * 96} y={92} w={76} value={s} />
+            <Label x={222 + i * 96} y={103} anchor="middle" size={11} tone="muted">
+              ×
+            </Label>
+          </g>
         ))}
         <rect
           x={328}

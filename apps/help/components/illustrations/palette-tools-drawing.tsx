@@ -29,10 +29,11 @@ export function HighlighterTile() {
       <path
         d="M290 168 C320 162 360 162 396 166"
         fill="none"
-        className="stroke-amber-300"
-        strokeOpacity={0.55}
+        className="stroke-yellow-300"
+        strokeOpacity={0.45}
         strokeWidth={14}
         strokeLinecap="round"
+        style={{ mixBlendMode: 'multiply' }}
       />
       <Cursor x={396} y={166} colour="brand" />
     </Scene>
@@ -50,10 +51,11 @@ export function HighlighterStroke() {
       <Shape x={240} y={92} w={120} h={52} label="Checkout" />
       {/* The marker swipe: wide, round-capped, translucent so the label shows through */}
       <path
-        d="M226 128 C258 100 342 98 372 124 C344 148 254 152 226 128 Z"
+        d="M232 120 C262 100 342 98 372 124 C344 148 254 152 222 132"
         fill="none"
-        className="stroke-amber-300"
-        strokeOpacity={0.55}
+        className="stroke-yellow-300"
+        strokeOpacity={0.45}
+        style={{ mixBlendMode: 'multiply' }}
         strokeWidth={14}
         strokeLinecap="round"
         strokeLinejoin="round"
