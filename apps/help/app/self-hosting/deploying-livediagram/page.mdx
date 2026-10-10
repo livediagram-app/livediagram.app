@@ -40,12 +40,12 @@ The router Worker inspects the path and forwards accordingly: `/api/*` to the ap
 
 Deployments run through **GitHub Actions to Cloudflare Workers**. In broad strokes:
 
-1. Continuous integration runs lint, format, typecheck, test, and build on every pull request and push.
+1. Continuous integration runs lint, format, typecheck, test, and build on every pull request and every push to `main`.
 2. A separate, manually triggered deploy workflow builds everything, then deploys the apps.
-3. The marketing, telemetry, help, community, and api Workers deploy in parallel. The live editor follows the api, so a new editor never calls an api that lacks its routes, and the optional mcp Worker follows the api too. The router deploys last because its bindings depend on the six path-routed apps already existing.
+3. The marketing, telemetry, help, community, and api Workers deploy in parallel. The live editor follows the api, so a new editor never calls an api that lacks its routes, and the mcp Worker follows the api too. The bundled workflow always deploys mcp, so a fork that does not want the MCP server removes the `deploy-mcp` job, or creates its KV namespace first. The router deploys last because its bindings depend on the six path-routed apps already existing.
 4. Database migrations are applied to D1 as part of the api deploy, before the new Worker code goes live.
 
-Deploying needs a Cloudflare API token and account id, supplied as repository secrets (`CF_API_TOKEN` and `CF_ACCOUNT_ID`), never committed to source. You can also deploy each Worker by hand with `wrangler deploy` in the same order. The repository also has a staging workflow that the hosted service uses for rehearsals; a fork can delete it.
+Deploying needs a Cloudflare API token and account id, supplied as repository secrets (`CF_API_TOKEN` and `CF_ACCOUNT_ID`), never committed to source. You can also deploy by hand: run `pnpm build`, apply migrations with `pnpm --filter @livediagram/api db:migrate:remote`, then run `wrangler deploy` for each Worker in the same order. The repository also has a staging workflow that the hosted service uses for rehearsals. It runs automatically after every green CI on `main`, so a fork should delete it, or it fails on every merge.
 
 <Figure caption="GitHub Actions deploys five apps in parallel, then live and the optional mcp after the api, and the router last.">
   <DeployFlow />
